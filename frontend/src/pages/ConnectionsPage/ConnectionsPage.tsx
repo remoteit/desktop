@@ -86,7 +86,7 @@ export const ConnectionsPage: React.FC = () => {
       )}
       <SessionsList title="Proxy" sessions={proxy} />
       <SessionsList title="Network" sessions={local} />
-      <SessionsList title="Others" sessions={other} other />
+      <SessionsList title="Other Connections" sessions={other} other />
       <SessionsList
         title="Recent"
         sessions={recent}

@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
-import { Title } from './Title'
 import { emit } from '../services/Controller'
 
 type Props = {

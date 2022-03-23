@@ -147,14 +147,19 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'owner',
     label: 'Owner',
-    value: ({ device }) => device?.owner.email,
+    value: ({ device }) =>
+      device && (
+        <Avatar email={device.owner.email} size={22} inline>
+          {device.owner.email}
+        </Avatar>
+      ),
   }),
   new Attribute({
     id: 'access',
     label: 'Users',
     defaultWidth: 175,
     value: ({ device }) =>
-      device?.shared ? <Avatar email={device?.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
+      device?.shared ? <Avatar email={device.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
   }),
   new DeviceAttribute({
     id: 'lastReported',

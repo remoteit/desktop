@@ -50,7 +50,7 @@ const useStyles = minWidth =>
       fontSize: fontSizes.sm,
       fontFamily: 'Roboto Mono',
       color: palette.grayDarker.main,
-      alignItems: 'start',
+      '& > :first-child': { alignSelf: 'start' },
       '& > span': {
         fontFamily: 'Roboto',
         color: palette.grayDark.main,

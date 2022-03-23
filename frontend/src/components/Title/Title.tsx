@@ -3,11 +3,10 @@ import { makeStyles } from '@material-ui/core'
 import { spacing } from '../../styling'
 import classnames from 'classnames'
 
-type Props = { inline?: boolean; enabled?: boolean; license?: string; className?: string }
+type Props = { inline?: boolean; enabled?: boolean; className?: string }
 
-export const Title: React.FC<Props> = ({ children, inline, enabled, license, className }) => {
-  const unlicensed = license === 'EVALUATION' || license === 'UNLICENSED'
-  const css = useStyles({ inline, enabled, unlicensed })
+export const Title: React.FC<Props> = ({ children, inline, enabled, className }) => {
+  const css = useStyles({ inline, enabled })
   return <span className={classnames(css.title, className)}>{children}</span>
 }
 
@@ -18,12 +17,12 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     marginLeft: inline ? spacing.lg : 0,
-    color: unlicensed ? palette.warning.main : enabled ? palette.primary.main : undefined,
+    color: enabled ? palette.primary.main : undefined,
     '& sup': {
       lineHeight: 1,
       marginLeft: spacing.xs,
       marginRight: spacing.xxs,
-      color: unlicensed ? palette.warning.main : enabled ? palette.primary.main : palette.grayDark.main,
+      color: enabled ? palette.primary.main : palette.grayDark.main,
     },
   }),
 }))
