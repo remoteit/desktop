@@ -74,6 +74,7 @@ export class User {
   }
 
   signOut = () => {
+    this.id = ''
     this.username = ''
     this.authHash = ''
     this.signedIn = false
