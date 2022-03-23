@@ -5,16 +5,24 @@ import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { getTargetPlatformIcon } from '../../helpers/platformHelper'
-import { spacing } from '../../styling'
+import { spacing, FontSize } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
   service?: IService
   device?: IDevice
   mini?: boolean
+  size?: FontSize
 }
 
-export function ConnectionStateIcon({ connection, service, device, mini, ...props }: ConnectionStateIconProps) {
+export function ConnectionStateIcon({
+  connection,
+  service,
+  device,
+  mini,
+  size = 'md',
+  ...props
+}: ConnectionStateIconProps) {
   const history = useHistory()
   const instance = device || service
 
@@ -55,7 +63,7 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
       </span>
     )
   else {
-    element = <Icon {...props} size="md" name={name} spin={spin} type={type} color="black" fullColor fixedWidth />
+    element = <Icon {...props} size={size} name={name} spin={spin} type={type} color="black" fullColor fixedWidth />
   }
 
   if (showQuality && device) {

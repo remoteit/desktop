@@ -19,7 +19,7 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
-  options.unshift({ id: user.id, name: orgName || user.email, role: 'OWNER' })
+  options.unshift({ id: user.id, name: orgName || 'Personal', role: 'OWNER' })
   if (options.length < 2) return null
 
   return (

@@ -5,6 +5,7 @@ import { useMediaQuery, makeStyles, ListSubheader, ListItemIcon, LinearProgress 
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
 import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
 import { Attribute } from './Attributes'
+import { spacing } from '../styling'
 
 const MIN_WIDTH = 50
 
@@ -80,6 +81,7 @@ export const DeviceListHeader: React.FC<Props> = ({
 const useStyles = makeStyles(({ palette }) => ({
   header: {
     borderBottom: `1px solid ${palette.grayLighter.main}`,
+    '& .MuiListItemIcon-root': { marginRight: spacing.sm },
   },
   fetching: {
     position: 'absolute',

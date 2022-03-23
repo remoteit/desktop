@@ -93,6 +93,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderBottomRightRadius: radius,
     overflow: 'visible',
     paddingLeft: spacing.md,
+    '& .MuiListItemIcon-root': { marginRight: spacing.sm },
   },
   button: {
     position: 'absolute',
