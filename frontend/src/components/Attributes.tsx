@@ -9,6 +9,7 @@ import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
+import { DeviceRole } from './DeviceRole'
 import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -143,6 +144,12 @@ export const attributes: Attribute[] = [
       }
       return device?.permissions.map(p => <Chip label={lookup[p]} size="small" variant="outlined" key={p} />)
     },
+  }),
+  new DeviceAttribute({
+    id: 'role',
+    label: 'Role',
+    defaultWidth: 210,
+    value: ({ device }) => <DeviceRole device={device} />,
   }),
   new DeviceAttribute({
     id: 'owner',

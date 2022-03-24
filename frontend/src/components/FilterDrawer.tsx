@@ -84,9 +84,9 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={state.tag?.names || ['']}
+                value={state.tag?.values || ['']}
                 onSelect={value => {
-                  let result = state.tag?.names
+                  let result = state.tag?.values
                   const index = result && result.indexOf(value)
 
                   if (index !== undefined && index >= 0) result?.splice(index, 1)
@@ -94,7 +94,7 @@ export const FilterDrawer: React.FC = () => {
                   else result === undefined ? (result = [value]) : result.push(value)
 
                   if (!result?.length) update({ tag: undefined })
-                  else update({ tag: { names: result, operator: state.tag?.operator || 'ANY' } })
+                  else update({ tag: { values: result, operator: state.tag?.operator || 'ANY' } })
                 }}
                 filterList={tags}
               >

@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { Typography } from '@material-ui/core'
 import { makeStyles, useMediaQuery } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { getOwnDevices, getActiveOrganizationMembership } from '../../models/accounts'
+import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
-import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -17,14 +18,17 @@ import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
-  const { searched, navigationBack, navigationForward, feature, device } = useSelector((state: ApplicationState) => ({
-    feature: state.ui.feature,
-    selected: state.ui.selected,
-    searched: state.devices.searched,
-    navigationBack: state.ui.navigationBack,
-    navigationForward: state.ui.navigationForward,
-    device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-  }))
+  const { searched, navigationBack, navigationForward, feature, device, editTags } = useSelector(
+    (state: ApplicationState) => ({
+      feature: state.ui.feature,
+      selected: state.ui.selected,
+      searched: state.devices.searched,
+      navigationBack: state.ui.navigationBack,
+      navigationForward: state.ui.navigationForward,
+      device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+      editTags: canEditTags(getActiveOrganizationMembership(state)),
+    })
+  )
   const { handleBack, handleForward } = useNavigation()
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
@@ -86,17 +90,12 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
-      {breadcrumbs && (
-        <>
-          bread
-          <Breadcrumbs />
-        </>
-      )}
+      {breadcrumbs && <Breadcrumbs />}
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />
       </Route>
-      {feature.tagging && (
+      {feature.tagging && editTags && (
         <>
           <Route path="/devices" exact>
             <IconButton to="/devices/select" icon="check-square" title="Show Select" />

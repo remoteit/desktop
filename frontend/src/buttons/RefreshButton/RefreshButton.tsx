@@ -30,15 +30,6 @@ export const RefreshButton: React.FC<Props> = ({ device, ...props }) => {
   }
 
   return (
-    <IconButton
-      onClick={onClick}
-      disabled={fetching}
-      title={title}
-      icon="sync"
-      type="light"
-      spin={fetching}
-      fixedWidth
-      {...props}
-    />
+    <IconButton onClick={onClick} disabled={fetching} title={title} icon="sync" spin={fetching} fixedWidth {...props} />
   )
 }

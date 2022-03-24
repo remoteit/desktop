@@ -160,6 +160,16 @@ export default createModel<RootModel>()({
   },
 })
 
+export function selectMembershipFromDevice(state: ApplicationState, device?: IDevice) {
+  return state.accounts.membership.find(m => m.organization.id === device?.owner.id)
+}
+
+export function selectOrganizationRole(state: ApplicationState, accountId?: string) {
+  accountId = accountId || getActiveAccountId(state)
+  const membership = state.accounts.membership.find(m => m.organization.id === accountId)
+  return membership?.role
+}
+
 export function isUserAccount(state: ApplicationState) {
   return getActiveAccountId(state) === state.auth.user?.id
 }
