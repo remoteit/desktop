@@ -46,10 +46,10 @@ export const DeviceListHeader: React.FC<Props> = ({
     event.preventDefault()
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('mouseup', onUp)
-    ui.resizeColumn({
-      id: moveRef.current[0],
-      width: Math.max(moveRef.current[1] + (event.clientX - moveRef.current[2]), MIN_WIDTH),
-    })
+    const px = Math.max(moveRef.current[1] + (event.clientX - moveRef.current[2]), MIN_WIDTH)
+    // const containerPx = containerRef.current?.parentElement?.getBoundingClientRect().width || 1000
+    // const percentage = Math.round((px / containerPx) * 10000) / 100
+    ui.resizeColumn({ id: moveRef.current[0], width: px })
     setResize(0)
   }
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Typography } from '@material-ui/core'
-import { makeStyles, useMediaQuery } from '@material-ui/core'
+import { getOwnDevices, getActiveOrganizationMembership } from '../../models/accounts'
+import { makeStyles, useMediaQuery, Typography } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { getOwnDevices, getActiveOrganizationMembership } from '../../models/accounts'
+import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
 import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
 import { attributeName } from '../../shared/nameHelper'
@@ -13,6 +13,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { FilterButton } from '../../buttons/FilterButton'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
+import { isElectron } from '../../services/Browser'
 import { Title } from '../Title'
 import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
@@ -33,7 +34,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const hideSidebar = useMediaQuery('(max-width:1150px)')
+  const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
@@ -48,7 +49,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
       {hideSidebar && (
         <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
       )}
-      {showSearch || searched || (
+      {!(showSearch || searched) && isElectron() && (
         <>
           <IconButton
             title="Back"
