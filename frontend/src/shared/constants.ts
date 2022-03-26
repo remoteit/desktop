@@ -4,7 +4,7 @@
   
   ONLY EDIT THE SOURCE FILE IN frontend
 */
-const { env } = process
+const env = process.env
 export const CLIENT_ID = env.REACT_APP_CLIENT_ID
 export const COGNITO_USER_POOL_ID = env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
 export const COGNITO_AUTH_DOMAIN = env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
@@ -60,6 +60,8 @@ export const MAX_CONNECTION_NAME_LENGTH = 62
 export const SIDEBAR_WIDTH = 250
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
+export const HIDE_SIDEBAR_WIDTH = 1150
+export const HIDE_TWO_PANEL_WIDTH = 750
 
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',
