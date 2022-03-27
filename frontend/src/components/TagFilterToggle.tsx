@@ -21,7 +21,7 @@ export const TagFilterToggle: React.FC<Props> = ({ tag, onUpdate }) => {
           tag &&
           onUpdate({
             tag: {
-              names: tag.names,
+              names: tag.values,
               operator: matchAny ? 'ALL' : 'ANY',
             },
           })

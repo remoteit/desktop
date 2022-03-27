@@ -1,10 +1,9 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
-import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
+import { makeStyles, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { RestoreButton } from '../../buttons/RestoreButton'
-import { DeviceLabel } from '../DeviceLabel'
 import { Attribute } from '../Attributes'
 import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -38,8 +37,7 @@ export const DeviceListItem: React.FC<Props> = ({
 
   if (!device) return null
 
-  const handleClick = event => {
-    event.stopPropagation()
+  const handleClick = () => {
     if (select) onSelect && onSelect(device.id)
     else history.push(`/devices/${device.id}`)
   }
@@ -56,7 +54,7 @@ export const DeviceListItem: React.FC<Props> = ({
               <Icon name="square" size="md" type="light" />
             )
           ) : (
-            <ConnectionStateIcon device={device} connection={connected} size="lg" />
+            <ConnectionStateIcon device={device} connection={connected} />
           )}
         </ListItemIcon>
         <AttributeValue device={device} connection={connected} attribute={primary} />
@@ -81,7 +79,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '&:hover > div:first-child': { background: palette.primaryHighlight.main },
     '&.Mui-selected > div:first-child': { background: palette.primaryHighlight.main },
     '&.Mui-selected:hover > div:first-child': { background: palette.primaryLighter.main },
-    '& > div:first-child .MuiListItemText-root': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-child > *': { opacity: offline ? 0.3 : 1 },
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }),
@@ -95,6 +93,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderBottomRightRadius: radius,
     overflow: 'visible',
     paddingLeft: spacing.md,
+    '& .MuiListItemIcon-root': { marginRight: spacing.sm },
   },
   button: {
     position: 'absolute',

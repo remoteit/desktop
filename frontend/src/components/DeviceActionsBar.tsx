@@ -2,8 +2,10 @@ import React from 'react'
 import { makeStyles, Box, Typography, Collapse } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { getActiveAccountId } from '../models/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
 import { useHistory } from 'react-router-dom'
+import { selectTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { Title } from './Title'
 import { Container } from './Container'
@@ -13,14 +15,18 @@ import { spacing, radius } from '../styling'
 type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] }
 
 export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
-  const { tags, adding, removing } = useSelector((state: ApplicationState) => ({
-    tags: state.tags.all,
+  const { accountId, tags, adding, removing } = useSelector((state: ApplicationState) => ({
+    accountId: getActiveAccountId(state),
+    tags: selectTags(state),
     adding: state.tags.adding,
     removing: state.tags.removing,
   }))
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
+
+  const onCreate = async tag => await dispatch.tags.create({ tag, accountId })
+
   return (
     <Container
       integrated
@@ -35,6 +41,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
               button="tag-add"
               tags={tags}
               buttonProps={{ title: 'Add Tag', color: 'alwaysWhite', loading: adding, disabled: adding }}
+              onCreate={onCreate}
               onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
             />
             <TagEditor
@@ -42,6 +49,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
               tags={getSelectedTags(devices, selected)}
               button="tag-remove"
               buttonProps={{ title: 'Remove Tag', color: 'alwaysWhite', loading: removing, disabled: removing }}
+              onCreate={onCreate}
               onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
             />
             <IconButton

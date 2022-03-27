@@ -1,4 +1,4 @@
-import { EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import { EVENTS, environment, preferences, EventBus, Logger, Command } from 'remoteit-headless'
 import AutoUpdater from './AutoUpdater'
 import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
@@ -105,8 +105,19 @@ export default class ElectronApp {
       buttonLabel: 'Select',
     })
 
-    EventBus.emit(EVENTS.filePath, result.filePaths[0])
-    Logger.info('FILE PROMPT RESULT', { result })
+    let filePath = result?.filePaths[0]
+
+    if (environment.isMac && filePath?.endsWith('.app')) {
+      filePath = filePath.replace(/(\s)/g, '\\ ')
+      const commands = new Command({
+        command: `defaults read ${filePath}/Contents/Info.plist CFBundleExecutable`,
+      })
+      const executable = await commands.exec()
+      filePath += '/Contents/MacOS/' + executable.trim()
+    }
+
+    EventBus.emit(EVENTS.filePath, filePath)
+    Logger.info('FILE PROMPT RESULT', { result, filePath })
   }
 
   private setDeepLink(link?: string) {

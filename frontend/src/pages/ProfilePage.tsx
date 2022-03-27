@@ -13,7 +13,7 @@ import { Icon } from '../components/Icon'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
-export const OverviewPage: React.FC = () => {
+export const ProfilePage: React.FC = () => {
   const { user } = useSelector((state: ApplicationState) => state.auth)
   const { auth } = useDispatch<Dispatch>()
   const css = useStyles()
@@ -30,7 +30,7 @@ export const OverviewPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Overview</Title>
+            <Title>Profile</Title>
           </Typography>
         </>
       }
@@ -44,7 +44,7 @@ export const OverviewPage: React.FC = () => {
       </Gutters>
       <List>
         <InlineTextFieldSetting icon="at" value={user.email} label="EMAIL" disabled={true} />
-        <ListItem dense className={css.field} button>
+        {/* <ListItem dense className={css.field} button>
           <ListItemIcon>
             <Icon name="language" size="md" fixedWidth />
           </ListItemIcon>
@@ -58,7 +58,7 @@ export const OverviewPage: React.FC = () => {
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="ja">Japanese</MenuItem>
           </TextField>
-        </ListItem>
+        </ListItem> */}
         <AccordionMenuItem subtitle="Account deletion" gutters>
           <DeleteAccountSection email={user.email} paidPlan={false} />
         </AccordionMenuItem>

@@ -5,7 +5,7 @@ import { spacing, radius } from '../../styling'
 
 type Props = {
   email?: string
-  totpCode: string | null
+  totpCode?: string
   loadTotpCode: () => Promise<void>
   totpVerified: boolean
   sendVerifyTotp: (event: any) => void

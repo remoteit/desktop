@@ -102,6 +102,7 @@ const useStyles = makeStyles(({ palette }) => ({
     minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'grid',
+      // gridTemplateColumns: `${primary.width(columnWidths)}% ${attributes?.map(a => a.width(columnWidths)).join('% ')}%`,
       gridTemplateColumns: `${primary.width(columnWidths)}px ${attributes
         ?.map(a => a.width(columnWidths))
         .join('px ')}px`,

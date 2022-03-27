@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles, useMediaQuery } from '@material-ui/core'
+import { getOwnDevices, getActiveOrganizationMembership } from '../../models/accounts'
+import { makeStyles, useMediaQuery, Typography } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
+import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
-import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -12,24 +13,28 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { FilterButton } from '../../buttons/FilterButton'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
+import { isElectron } from '../../services/Browser'
 import { Title } from '../Title'
 import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
-  const { searched, navigationBack, navigationForward, feature, device } = useSelector((state: ApplicationState) => ({
-    feature: state.ui.feature,
-    selected: state.ui.selected,
-    searched: state.devices.searched,
-    navigationBack: state.ui.navigationBack,
-    navigationForward: state.ui.navigationForward,
-    device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-  }))
+  const { searched, navigationBack, navigationForward, feature, device, editTags } = useSelector(
+    (state: ApplicationState) => ({
+      feature: state.ui.feature,
+      selected: state.ui.selected,
+      searched: state.devices.searched,
+      navigationBack: state.ui.navigationBack,
+      navigationForward: state.ui.navigationForward,
+      device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+      editTags: canEditTags(getActiveOrganizationMembership(state)),
+    })
+  )
   const { handleBack, handleForward } = useNavigation()
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const hideSidebar = useMediaQuery('(max-width:1150px)')
+  const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
@@ -44,7 +49,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
       {hideSidebar && (
         <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
       )}
-      {showSearch || searched || (
+      {!(showSearch || searched) && isElectron() && (
         <>
           <IconButton
             title="Back"
@@ -86,17 +91,12 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
-      {breadcrumbs && (
-        <>
-          bread
-          <Breadcrumbs />
-        </>
-      )}
+      {breadcrumbs && <Breadcrumbs />}
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />
       </Route>
-      {feature.tagging && (
+      {feature.tagging && editTags && (
         <>
           <Route path="/devices" exact>
             <IconButton to="/devices/select" icon="check-square" title="Show Select" />

@@ -296,7 +296,7 @@ declare global {
 
   type ITagFilter = {
     operator: ITagOperator
-    names: string[]
+    values: string[]
   }
 
   type ILabel = {

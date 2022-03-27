@@ -32,7 +32,7 @@ import { NotificationsPage } from '../pages/NotificationsPage'
 import { isPortal, getOs } from '../services/Browser'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
-import { OverviewPage } from '../pages/OverviewPage'
+import { ProfilePage } from '../pages/ProfilePage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
@@ -272,7 +272,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
 
               <Route path={['/account', '/account/overview']}>
-                <OverviewPage />
+                <ProfilePage />
               </Route>
             </Switch>
           }

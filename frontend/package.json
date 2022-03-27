@@ -1,11 +1,10 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.7.0-alpha.1",
+  "version": "3.7.0-alpha.3",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
-    "start": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 SKIP_PREFLIGHT_CHECK=true npm-run-all -p copy watch-*",
-    "copy": "cp ../.env ./",
+    "start": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 SKIP_PREFLIGHT_CHECK=true npm-run-all -p watch-*",
     "build": "react-scripts build",
     "test": "NODE_ENV=test react-scripts test",
     "eject": "react-scripts eject",

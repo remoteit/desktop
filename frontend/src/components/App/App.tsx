@@ -1,5 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { HIDE_SIDEBAR_WIDTH, HIDE_TWO_PANEL_WIDTH } from '../../shared/constants'
 import { useMediaQuery, makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { ApplicationState } from '../../store'
@@ -19,8 +20,8 @@ export const App: React.FC = () => {
     uninstalling: state.ui.uninstalling,
   }))
   const layout: ILayout = {
-    hideSidebar: useMediaQuery('(max-width:1150px)'),
-    singlePanel: useMediaQuery('(max-width:750px)'),
+    hideSidebar: useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`),
+    singlePanel: useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`),
   }
   const css = useStyles({ overlapHeader: layout.hideSidebar && isElectron() && isMac() })
 

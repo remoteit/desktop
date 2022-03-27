@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { makeStyles, Chip, Tooltip } from '@material-ui/core'
 import { TagAutocomplete } from './TagAutocomplete'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
@@ -14,6 +12,7 @@ type Props = {
   createOnly?: boolean
   button?: string
   buttonProps?: ButtonProps
+  onCreate?: (tag: ITag) => void
   onSelect?: (tag: ITag) => void
 }
 
@@ -24,9 +23,9 @@ export const TagEditor: React.FC<Props> = ({
   createOnly,
   button,
   buttonProps,
+  onCreate,
   onSelect,
 }) => {
-  const dispatch = useDispatch<Dispatch>()
   const getColor = useLabel()
   const [open, setOpen] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
@@ -86,7 +85,7 @@ export const TagEditor: React.FC<Props> = ({
           ),
         }}
         onSelect={async (action, tag) => {
-          if (action === 'new') await dispatch.tags.create(tag)
+          if (action === 'new') onCreate && onCreate(tag)
           if (onSelect) onSelect(tag)
         }}
         onClose={handleClose}

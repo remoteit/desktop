@@ -90,8 +90,13 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
       }
     >
       {device.state === 'inactive' && (
-        <Notice severity="warning" gutterTop>
+        <Notice severity="info" gutterTop>
           Device offline
+        </Notice>
+      )}
+      {device.license === 'UNLICENSED' && (
+        <Notice severity="warning" gutterTop>
+          Device unlicensed
         </Notice>
       )}
       <Typography variant="subtitle1">
@@ -116,7 +121,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             guide="guideAWS"
             step={4}
             instructions="Select the service below."
-            hide={!s.name.includes('Start here')}
+            hide={!s.name.includes('Start')}
             highlight
             autoNext
           >

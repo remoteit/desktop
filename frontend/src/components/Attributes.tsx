@@ -9,6 +9,7 @@ import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
+import { DeviceRole } from './DeviceRole'
 import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -145,15 +146,27 @@ export const attributes: Attribute[] = [
     },
   }),
   new DeviceAttribute({
+    id: 'role',
+    label: 'Role',
+    defaultWidth: 210,
+    value: ({ device }) => <DeviceRole device={device} />,
+  }),
+  new DeviceAttribute({
     id: 'owner',
     label: 'Owner',
-    value: ({ device }) => device?.owner.email,
+    value: ({ device }) =>
+      device && (
+        <Avatar email={device.owner.email} size={22} inline>
+          {device.owner.email}
+        </Avatar>
+      ),
   }),
   new Attribute({
     id: 'access',
     label: 'Users',
+    defaultWidth: 175,
     value: ({ device }) =>
-      device?.shared ? <Avatar email={device?.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
+      device?.shared ? <Avatar email={device.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
   }),
   new DeviceAttribute({
     id: 'lastReported',

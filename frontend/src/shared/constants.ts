@@ -4,34 +4,34 @@
   
   ONLY EDIT THE SOURCE FILE IN frontend
 */
-export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID
-export const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
-export const COGNITO_AUTH_DOMAIN = process.env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
-export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL
-export const AUTH_API_URL =
-  process.env.REACT_AUTH_API_URL || process.env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
-export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API
-export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API
-export const DEVELOPER_KEY = process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY
-export const PROTOCOL =
-  process.env.PROTOCOL || process.env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
-export const PORTAL = (process.env.REACT_APP_PORTAL || process.env.PORTAL) === 'true' ? true : false
-export const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || PROTOCOL + 'authCallback'
+const env = process.env
+export const CLIENT_ID = env.REACT_APP_CLIENT_ID
+export const COGNITO_USER_POOL_ID = env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
+export const COGNITO_AUTH_DOMAIN = env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
+export const API_URL = env.REACT_APP_API_URL || env.API_URL || 'https://api.remote.it/apv/v27'
+export const AUTH_API_URL = env.REACT_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
+export const GRAPHQL_API = env.REACT_APP_GRAPHQL_API
+export const GRAPHQL_BETA_API = env.REACT_APP_GRAPHQL_BETA_API
+export const DEVELOPER_KEY =
+  env.REACT_APP_DEVELOPER_KEY || env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+export const PROTOCOL = env.PROTOCOL || env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
+export const PORTAL = (env.REACT_APP_PORTAL || env.PORTAL) === 'true' ? true : false
+export const REDIRECT_URL = env.REACT_APP_REDIRECT_URL || env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const CALLBACK_URL =
-  process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development'
-    ? process.env.REACT_APP_DEV_CALLBACK_URL
-    : process.env.REACT_APP_PROD_CALLBACK_URL
-export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL
-export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL
-export const PORT = process.env.REACT_APP_PORT || 29999
+  env.REACT_APP_CALLBACK_URL || env.CALLBACK_URL || env.NODE_ENV === 'development'
+    ? env.REACT_APP_DEV_CALLBACK_URL
+    : env.REACT_APP_PROD_CALLBACK_URL
+export const WEBSOCKET_URL = env.REACT_APP_WEBSOCKET_URL
+export const WEBSOCKET_BETA_URL = env.REACT_APP_WEBSOCKET_BETA_URL
+export const PORT = env.REACT_APP_PORT || 29999
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 
 //API Zendesk
-export const ZENDESK_URL = process.env.ZENDESK_URL || process.env.REACT_APP_ZENDESK_URL
+export const ZENDESK_URL = env.ZENDESK_URL || env.REACT_APP_ZENDESK_URL
 //segment-analytics
-export const SEGMENT_PROJECT_PORTAL_KEY = process.env.REACT_APP_SEGMENT_PROJECT_PORTAL_KEY
-export const SEGMENT_PROJECT_KEY = process.env.REACT_APP_SEGMENT_PROJECT_KEY
+export const SEGMENT_PROJECT_PORTAL_KEY = env.REACT_APP_SEGMENT_PROJECT_PORTAL_KEY
+export const SEGMENT_PROJECT_KEY = env.REACT_APP_SEGMENT_PROJECT_KEY
 
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
@@ -60,6 +60,8 @@ export const MAX_CONNECTION_NAME_LENGTH = 62
 export const SIDEBAR_WIDTH = 250
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
+export const HIDE_SIDEBAR_WIDTH = 1150
+export const HIDE_TWO_PANEL_WIDTH = 750
 
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',

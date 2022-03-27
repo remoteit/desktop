@@ -8,9 +8,11 @@ import { Container } from '../components/Container'
 import { ColorSelect } from '../components/ColorSelect'
 import { findTagIndex } from '../helpers/utilHelper'
 import { Typography, List } from '@material-ui/core'
+import { getActiveAccountId, getActiveOrganizationMembership } from '../models/accounts'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { selectTags, canEditTags } from '../models/tags'
 import { REGEX_TAG_SAFE } from '../shared/constants'
 import { useLabel } from '../hooks/useLabel'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -19,12 +21,20 @@ export const TagsPage: React.FC = () => {
   const getColor = useLabel()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
-  const { deleting, updating, creating, tags } = useSelector((state: ApplicationState) => ({
-    deleting: state.tags.deleting,
-    updating: state.tags.updating,
-    creating: state.tags.creating,
-    tags: state.tags.all,
-  }))
+  const { accountId, membership, deleting, updating, creating, canEdit, tags } = useSelector(
+    (state: ApplicationState) => {
+      const membership = getActiveOrganizationMembership(state)
+      return {
+        membership,
+        accountId: getActiveAccountId(state),
+        deleting: state.tags.deleting,
+        updating: state.tags.updating,
+        creating: state.tags.creating,
+        canEdit: canEditTags(membership),
+        tags: selectTags(state),
+      }
+    }
+  )
 
   useEffect(() => {
     analyticsHelper.page('TagsPage')
@@ -34,7 +44,7 @@ export const TagsPage: React.FC = () => {
     if (findTagIndex(tags, name) >= 0) {
       setConfirm({ tag, name })
     } else {
-      dispatch.tags.rename({ tag, name })
+      dispatch.tags.rename({ tag, name, accountId })
     }
   }
 
@@ -44,13 +54,16 @@ export const TagsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Tags</Title>
-            <TagEditor
-              createOnly
-              button="plus"
-              tags={tags}
-              buttonProps={{ title: 'Add Tag', loading: creating, disabled: creating }}
-            />
+            <Title>{membership?.organization.name || 'Personal'} Tags</Title>
+            {canEdit && (
+              <TagEditor
+                createOnly
+                button="plus"
+                tags={tags}
+                buttonProps={{ title: 'Add Tag', loading: creating, disabled: creating }}
+                onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
+              />
+            )}
           </Typography>
         </>
       }
@@ -65,12 +78,15 @@ export const TagsPage: React.FC = () => {
               updating === tag.name ? (
                 <Icon name="spinner-third" spin />
               ) : (
-                <ColorSelect tag={tag} onSelect={color => dispatch.tags.update({ ...tag, color })} />
+                <ColorSelect
+                  tag={tag}
+                  onSelect={color => dispatch.tags.update({ tag: { ...tag, color }, accountId })}
+                />
               )
             }
             resetValue={tag.name}
             filter={REGEX_TAG_SAFE}
-            disabled={deleting === tag.name || updating === tag.name}
+            disabled={!canEdit || deleting === tag.name || updating === tag.name}
             warning={
               <>
                 <Notice severity="danger" gutterBottom fullWidth>
@@ -79,7 +95,7 @@ export const TagsPage: React.FC = () => {
                 All devices will have this tag removed from them.
               </>
             }
-            onDelete={() => dispatch.tags.delete(tag)}
+            onDelete={() => dispatch.tags.delete({ tag, accountId })}
             onSave={value => rename(tag, value.toString())}
           />
         ))}
@@ -87,7 +103,7 @@ export const TagsPage: React.FC = () => {
       <Confirm
         open={!!confirm}
         onConfirm={() => {
-          confirm && dispatch.tags.rename(confirm)
+          confirm && dispatch.tags.rename({ ...confirm, accountId })
           setConfirm(undefined)
         }}
         onDeny={() => setConfirm(undefined)}

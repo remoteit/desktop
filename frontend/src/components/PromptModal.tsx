@@ -56,6 +56,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                     disableGutters
                     label="Application path"
                     value={app.value(token)}
+                    variant="filled"
                     onSave={value => {
                       if (value) {
                         setTokens({ ...tokens, path: value })

@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
 import { AccordionMenu } from './AccordionMenu'
+import { selectTags } from '../models/tags'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
 
@@ -45,7 +46,7 @@ export const FilterDrawer: React.FC = () => {
       platform: state.devices.platform,
     },
     open: state.ui.drawerMenu === 'FILTER',
-    tags: state.tags.all.map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
+    tags: selectTags(state).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
     feature: state.ui.feature,
   }))
 
@@ -83,9 +84,9 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={state.tag?.names || ['']}
+                value={state.tag?.values || ['']}
                 onSelect={value => {
-                  let result = state.tag?.names
+                  let result = state.tag?.values
                   const index = result && result.indexOf(value)
 
                   if (index !== undefined && index >= 0) result?.splice(index, 1)
@@ -93,7 +94,7 @@ export const FilterDrawer: React.FC = () => {
                   else result === undefined ? (result = [value]) : result.push(value)
 
                   if (!result?.length) update({ tag: undefined })
-                  else update({ tag: { names: result, operator: state.tag?.operator || 'ANY' } })
+                  else update({ tag: { values: result, operator: state.tag?.operator || 'ANY' } })
                 }}
                 filterList={tags}
               >

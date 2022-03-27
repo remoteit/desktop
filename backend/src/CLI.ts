@@ -111,7 +111,6 @@ export default class CLI {
     this.readUser()
     this.readDevice()
     this.readTargets()
-    this.readConnections()
     this.readSettings()
   }
 

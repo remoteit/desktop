@@ -2,6 +2,7 @@ require('dotenv').config()
 require('win-ca')
 
 import debug from 'debug'
+import Command from './Command'
 import AirBrake from './AirBrake'
 import Application from './Application'
 import preferences from './preferences'
@@ -60,6 +61,7 @@ export {
   EventBus,
   hostName,
   preferences,
+  Command,
   Logger,
   User,
   user,

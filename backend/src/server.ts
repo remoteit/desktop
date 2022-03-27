@@ -96,6 +96,7 @@ class Server {
     credentials: UserCredentials,
     callback: (error: Error | null, success?: boolean) => void
   ) => {
+    cli.readUser()
     const { admin } = cli.data
     d(`Authenticate`, credentials)
 

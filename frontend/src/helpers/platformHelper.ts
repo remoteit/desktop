@@ -83,10 +83,6 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
     case 1209:
       name = 'axis'
       break
-    case 1202:
-      name = 'router'
-      type = 'regular'
-      break
     case 65535:
       name = 'hdd'
       type = 'regular'

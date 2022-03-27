@@ -1,20 +1,23 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
+import { getActiveAccountId } from './accounts'
 import {
   graphQLSetTag,
   graphQLAddTag,
   graphQLRemoveTag,
   graphQLDeleteTag,
   graphQLRenameTag,
+  graphQLMergeTag,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { ApplicationState } from '../store'
 import { findTagIndex } from '../helpers/utilHelper'
 import { getNextLabel } from './labels'
 import { RootModel } from './rootModel'
 
 type ITagState = {
-  all: ITag[]
+  all: { [accountId: string]: ITag[] }
   adding?: boolean
   creating?: boolean
   removing?: boolean
@@ -23,31 +26,38 @@ type ITagState = {
 }
 
 const defaultState: ITagState = {
-  all: [],
+  all: {},
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch() {
+    async fetch(_, state) {
+      const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
-        ` query {
+        ` query($account: String) {
             login {
-              tags {
-                name
-                color
-                created
+              account(id: $account) {
+                tags {
+                  name
+                  color
+                  created
+                }
               }
             }
-          }`
+          }`,
+        {
+          account: accountId,
+        }
       )
       if (result === 'ERROR') return
-      const all = await dispatch.tags.parse(result)
-      dispatch.tags.setOrdered({ all })
+      const tags = await dispatch.tags.parse(result)
+      dispatch.tags.setTags({ tags, accountId })
     },
 
-    async parse(result: AxiosResponse<any> | undefined, globalState) {
-      const all = result?.data?.data?.login?.tags
+    async parse(result: AxiosResponse<any> | undefined) {
+      const all = result?.data?.data?.login?.account?.tags
+      if (!all) return
       const parsed = all.map(t => ({
         name: t.name,
         color: t.color,
@@ -56,24 +66,24 @@ export default createModel<RootModel>()({
       return parsed
     },
 
-    async add({ tag, device }: { tag: ITag; device: IDevice }) {
+    async add({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
       if (!device) return
       const original = { ...device }
       device.tags.push(tag)
       dispatch.accounts.setDevice({ id: device.id, device })
-      const result = await graphQLAddTag(device.id, tag.name)
-      if (result === 'ERROR') {
+      const result = await graphQLAddTag(device.id, tag.name, accountId)
+      if (result === 'ERROR' || !result?.data?.data?.addTag) {
         dispatch.accounts.setDevice({ id: device.id, device: original })
       }
     },
 
-    async addSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, globalState) {
+    async addSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, state) {
       dispatch.tags.set({ adding: true })
-      eachSelectedDevice(globalState, selected, device => {
+      eachSelectedDevice(state, selected, device => {
         device.tags.push(tag)
         dispatch.accounts.setDevice({ id: device.id, device })
       })
-      const result = await graphQLAddTag(selected, tag.name)
+      const result = await graphQLAddTag(selected, tag.name, getActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} added to ${selected.length} device${selected.length > 1 ? 's' : ''}.`,
@@ -81,21 +91,21 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ adding: false })
     },
 
-    async remove({ tag, device }: { tag: ITag; device: IDevice }) {
+    async remove({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
       const original = { ...device }
       const index = findTagIndex(device.tags, tag.name)
       device.tags.splice(index, 1)
       dispatch.accounts.setDevice({ id: device.id, device })
-      const result = await graphQLRemoveTag(device.id, tag.name)
+      const result = await graphQLRemoveTag(device.id, tag.name, accountId)
       if (result === 'ERROR') {
         dispatch.accounts.setDevice({ id: device.id, device: original })
       }
     },
 
-    async removeSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, globalState) {
+    async removeSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, state) {
       let count = 0
       dispatch.tags.set({ removing: true })
-      eachSelectedDevice(globalState, selected, device => {
+      eachSelectedDevice(state, selected, device => {
         const index = findTagIndex(device.tags, tag.name)
         if (index >= 0) {
           count++
@@ -103,7 +113,7 @@ export default createModel<RootModel>()({
           dispatch.accounts.setDevice({ id: device.id, device })
         }
       })
-      const result = await graphQLRemoveTag(selected, tag.name)
+      const result = await graphQLRemoveTag(selected, tag.name, getActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} removed from ${count} device${count > 1 ? 's' : ''}.`,
@@ -111,66 +121,72 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ removing: false })
     },
 
-    async create(tag: ITag, globalState) {
-      const tags = globalState.tags.all
+    async create({ tag, accountId }: { tag: ITag; accountId: string }, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ creating: true })
-      tag.color = tag.color || getNextLabel(globalState)
-      const result = await graphQLSetTag({ name: tag.name, color: tag.color })
+      tag.color = tag.color || getNextLabel(state)
+      const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
       if (result === 'ERROR') return
-      dispatch.tags.setOrdered({ all: [...tags, tag] })
+      dispatch.tags.setTags({ tags: [...tags, tag], accountId })
       dispatch.tags.set({ creating: false })
     },
 
-    async update(tag: ITag, globalState) {
-      const tags = globalState.tags.all
+    async update({ tag, accountId }: { tag: ITag; accountId: string }, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ updating: tag.name })
-      const result = await graphQLSetTag({ name: tag.name, color: tag.color })
+      const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
       tags[index] = tag
-      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ updating: undefined })
     },
 
-    async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
-      const tags = globalState.tags.all
+    async rename({ tag, name, accountId }: { tag: ITag; name: string; accountId: string }, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ updating: tag.name })
-      const result = await graphQLRenameTag(tag.name, name)
+      const result = await graphQLRenameTag(tag.name, name, accountId)
       if (result === 'ERROR') return
       const found = findTagIndex(tags, name)
       const index = findTagIndex(tags, tag.name)
-      if (found >= 0) {
+      if (found >= 0 && tag.name.toLowerCase() !== name.toLowerCase()) {
+        // merge
+        const result = await graphQLMergeTag(tag.name, name, accountId)
+        if (result === 'ERROR') return
         tags.splice(index, 1)
         dispatch.ui.set({ noticeMessage: `Tag merged into existing tag ‘${name}.’` })
       } else {
+        // rename
+        const result = await graphQLRenameTag(tag.name, name, accountId)
+        if (result === 'ERROR') return
         tags[index].name = name
       }
-      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ updating: undefined })
       dispatch.devices.fetch()
     },
 
-    async delete(tag: ITag, globalState) {
-      const tags = globalState.tags.all
+    async delete({ tag, accountId }: { tag: ITag; accountId: string }, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ deleting: tag.name })
-      const result = await graphQLDeleteTag(tag.name)
+      const result = await graphQLDeleteTag(tag.name, accountId)
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
       tags.splice(index, 1)
-      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ deleting: undefined })
       dispatch.devices.fetch()
+    },
+    async setTags({ tags, accountId }: { tags: ITag[]; accountId: string }, state) {
+      tags = tags.sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0))
+      let all = { ...state.tags.all }
+      all[accountId] = tags
+      dispatch.tags.set({ all })
     },
   }),
   reducers: {
     reset(state: ITagState) {
       state = { ...defaultState }
-      return state
-    },
-    setOrdered(state: ITagState, params: ILookup<any>) {
-      Object.keys(params).forEach(
-        key => (state[key] = params[key].sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0)))
-      )
       return state
     },
     set(state: ITagState, params: ILookup<any>) {
@@ -179,3 +195,13 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectTags(state: ApplicationState, accountId?: string) {
+  accountId = accountId || getActiveAccountId(state)
+  return state.tags.all[accountId] || []
+}
+
+export function canEditTags(membership?: IOrganizationMembership) {
+  const role = membership?.role || 'OWNER'
+  return ['OWNER', 'ADMIN'].includes(role)
+}

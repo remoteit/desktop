@@ -61,7 +61,13 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
           </ListItemIcon>
         </Tooltip>
         <ListItemIcon className={css.platform + ' ' + css.title}>
-          <TargetPlatform id={session.target.platform} size="md" color={offline ? 'gray' : 'primary'} tooltip />
+          <TargetPlatform
+            id={session.target.platform}
+            size="md"
+            color={offline ? 'gray' : 'primary'}
+            tooltip
+            fullColor={!offline}
+          />
         </ListItemIcon>
         <ListItemText
           className={css.title}
@@ -69,7 +75,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
             <Title>
               {service ? (
                 <>
-                  <span className={css.service}>{attributeName(service)}</span> - {attributeName(device)}
+                  {attributeName(service)} - <span className={css.name}>{attributeName(device)}</span>
                 </>
               ) : (
                 session.target.name
@@ -87,9 +93,10 @@ const useStyles = makeStyles(({ palette }) => ({
   title: ({ state, offline }: any) => ({
     opacity: state === 'offline' ? 0.5 : 1,
     '& > span': {
+      fontWeight: 500,
       overflow: 'hidden',
       whiteSpace: 'nowrap',
-      color: offline ? palette.grayDark.main : palette.primaryLight.main,
+      color: offline ? palette.grayDarker.main : palette.primary.main,
     },
   }),
   connection: ({ offline, state }: any) => ({
@@ -105,10 +112,10 @@ const useStyles = makeStyles(({ palette }) => ({
     width: '1.5em',
     marginRight: '-1.5em',
   }),
-  service: ({ offline }: any) => ({
-    color: offline ? palette.grayDarker.main : palette.primary.main,
-    fontWeight: 500,
-  }),
+  name: {
+    fontWeight: 400,
+    opacity: 0.8,
+  },
   item: {
     '& .MuiIconButton-root': { visibility: 'hidden' },
     '&:hover .MuiIconButton-root': { visibility: 'visible' },

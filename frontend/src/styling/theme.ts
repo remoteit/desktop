@@ -418,14 +418,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
 }
 
 export function selectTheme(themeMode?: ApplicationState['ui']['themeMode']) {
-  let darkMode = isSystemDarkMode()
-  if (themeMode === 'dark') darkMode = true
-  if (themeMode === 'light') darkMode = false
+  const darkMode = isDarkMode(themeMode)
   console.log('SELECT THEME. DARK MODE:', darkMode)
   const theme = createTheme(jssTheme(darkMode))
   return theme
 }
 
-function isSystemDarkMode() {
-  return window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
+export function isDarkMode(themeMode?: ApplicationState['ui']['themeMode']) {
+  let darkMode = window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
+  if (themeMode === 'dark') darkMode = true
+  if (themeMode === 'light') darkMode = false
+  return darkMode
 }

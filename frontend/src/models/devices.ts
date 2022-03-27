@@ -71,7 +71,7 @@ export const defaultState: IDeviceState = {
   query: '',
   append: false,
   filter: 'all',
-  sort: 'name',
+  sort: 'state,name',
   tag: undefined,
   owner: 'all',
   platform: undefined,
@@ -153,7 +153,7 @@ export default createModel<RootModel>()({
 
       set({ fetching: true })
       try {
-        const gqlResponse = await graphQLFetchDevice(id)
+        const gqlResponse = await graphQLFetchDevice(id, accountId)
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
         const loginId = gqlResponse?.data?.data?.login?.id
@@ -385,7 +385,9 @@ export function isOffline(instance?: IDevice | IService, connection?: IConnectio
 }
 
 export function selectDevice(state: ApplicationState, deviceId?: string) {
-  return getAllDevices(state).find(d => d.id === deviceId)
+  const accountId = getActiveAccountId(state)
+  const device = selectDeviceByAccount(state, accountId, deviceId)
+  return device || getAllDevices(state).find(d => d.id === deviceId)
 }
 
 export function selectDeviceByAccount(state: ApplicationState, deviceId?: string, accountId?: string) {

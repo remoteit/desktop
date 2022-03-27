@@ -199,10 +199,10 @@ function getApplicationType(typeId: number | undefined) {
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
-        defaultLaunchType: LAUNCH_TYPE.URL,
+        defaultLaunchType: LAUNCH_TYPE.COMMAND,
         windowsLaunchType: LAUNCH_TYPE.COMMAND,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultCommandTemplate: '',
+        defaultCommandTemplate: '[path] -Username [username] [host]:[port]',
         windowsCommandTemplate: '"[path]" -Username [username] [host]:[port]',
       })
     case 28:

@@ -9,9 +9,8 @@ import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
-  const { open, columnWidths, selected, feature } = useSelector((state: ApplicationState) => ({
+  const { open, selected, feature } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'COLUMNS',
-    columnWidths: state.ui.columnWidths,
     selected: state.ui.columns,
     feature: state.ui.feature,
   }))
@@ -26,12 +25,12 @@ export const ColumnsDrawer: React.FC = () => {
 
   const attributes = masterAttributes.concat(deviceAttributes).filter(a => a.column && a.show(feature))
 
-  const onReset = () => {
-    const deviceName = attributes.find(a => a.id === 'deviceName')?.defaultWidth
-    const services = attributes.find(a => a.id === 'services')?.defaultWidth
-    ui.setPersistent({ columns: [...defaultState.columns], columnWidths: { ...columnWidths, deviceName, services } })
-    ui.set({ drawerMenu: null })
-  }
+  const onReset = () =>
+    ui.setPersistent({
+      columns: [...defaultState.columns],
+      columnWidths: { ...defaultState.columnWidths },
+      drawerMenu: null,
+    })
 
   return (
     <Drawer open={open}>

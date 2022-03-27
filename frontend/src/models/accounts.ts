@@ -88,7 +88,7 @@ export default createModel<RootModel>()({
       accountId = accountId || devices[0]?.accountId
       if (!devices) debugger
       if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const all = { ...state.devices.all }
+      let all = { ...state.devices.all }
       all[accountId] = devices
       dispatch.devices.set({ all })
     },
@@ -159,6 +159,16 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectMembershipFromDevice(state: ApplicationState, device?: IDevice) {
+  return state.accounts.membership.find(m => m.organization.id === device?.owner.id)
+}
+
+export function selectOrganizationRole(state: ApplicationState, accountId?: string) {
+  accountId = accountId || getActiveAccountId(state)
+  const membership = state.accounts.membership.find(m => m.organization.id === accountId)
+  return membership?.role
+}
 
 export function isUserAccount(state: ApplicationState) {
   return getActiveAccountId(state) === state.auth.user?.id

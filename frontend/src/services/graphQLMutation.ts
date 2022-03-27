@@ -244,48 +244,57 @@ export async function graphQLReadNotice(id: string) {
   )
 }
 
-export async function graphQLSetTag(tag: { name: string; color: number }) {
+export async function graphQLSetTag(tag: { name: string; color: number }, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($tag: [TagInput!]!) {
-        setTag(tag: $tag)
+    ` mutation query($tag: [TagInput!]!, $accountId: String) {
+        setTag(tag: $tag, accountId: $accountId)
       }`,
-    { tag }
+    { tag, accountId }
   )
 }
 
-export async function graphQLAddTag(serviceId: string | string[], name: string) {
+export async function graphQLAddTag(serviceId: string | string[], name: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: [String!]!, $name: [String!]!) {
-        addTag(serviceId: $serviceId, name: $name)
+    ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
+        addTag(serviceId: $serviceId, name: $name, accountId: $accountId)
     }`,
-    { serviceId, name }
+    { serviceId, name, accountId }
   )
 }
 
-export async function graphQLRemoveTag(serviceId: string | string[], name: string) {
+export async function graphQLRemoveTag(serviceId: string | string[], name: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: [String!]!, $name: [String!]!) {
-        removeTag(serviceId: $serviceId, name: $name)
+    ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
+        removeTag(serviceId: $serviceId, name: $name, accountId: $accountId)
     }`,
-    { serviceId, name }
+    { serviceId, name, accountId }
   )
 }
 
-export async function graphQLRenameTag(from: string, to: string) {
+export async function graphQLRenameTag(from: string, to: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($from: String!, $to: String!) {
-        renameTag(from: $from, to: $to)
+    ` mutation query($from: String!, $to: String!, $accountId: String) {
+        renameTag(from: $from, to: $to, accountId: $accountId)
     }`,
-    { from, to }
+    { from, to, accountId }
   )
 }
 
-export async function graphQLDeleteTag(name: string) {
+export async function graphQLMergeTag(from: string, to: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($name: [String!]!) {
-        deleteTag(name: $name)
+    ` mutation query($from: String!, $to: String!, $accountId: String) {
+        mergeTag(from: $from, to: $to, accountId: $accountId)
+    }`,
+    { from, to, accountId }
+  )
+}
+
+export async function graphQLDeleteTag(name: string, accountId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($name: [String!]!, $accountId: String) {
+        deleteTag(name: $name, accountId: $accountId)
       }`,
-    { name }
+    { name, accountId }
   )
 }
 

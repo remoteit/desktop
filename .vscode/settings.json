@@ -6,7 +6,8 @@
     "portfinder",
     "promisify",
     "recapitate",
-    "submenu"
+    "submenu",
+    "TOTP"
   ],
   "jest.pathToJest": "backend/node_modules/.bin/ts-jest",
   "jest.pathToConfig": "/backend",

@@ -16,7 +16,7 @@ const DEVICE_SELECT = `
   permissions
   license
   attributes
-  tags {
+  tags (accountId: $account) {
     name
     color
     created
@@ -87,7 +87,7 @@ export async function graphQLFetchDevices({
   platform,
 }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $tag: TagFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
           account(id: $account) {
@@ -121,9 +121,9 @@ export async function graphQLFetchDevices({
 /* 
   Fetches single, or array of devices across shared accounts by id
 */
-export async function graphQLFetchDevice(id: string) {
+export async function graphQLFetchDevice(id: string, account: string) {
   return await graphQLRequest(
-    ` query($id: [String!]!) {
+    ` query($id: [String!]!, $account: String) {
         login {
           id
           device(id: $id)  {
@@ -133,6 +133,7 @@ export async function graphQLFetchDevice(id: string) {
       }`,
     {
       id,
+      account,
     }
   )
 }
