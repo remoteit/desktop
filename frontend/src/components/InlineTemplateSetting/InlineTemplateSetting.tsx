@@ -35,7 +35,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({
       label={
         <>
           {app.contextTitle}
-          <Tooltip title="Available tokens: [host] [port] [id] [path]" placement="top" arrow>
+          <Tooltip title="Default tokens: [host] [port] [id] [path]" placement="top" arrow>
             <span style={{ zIndex: 10 }}>
               <Icon name="question-circle" size="sm" type="regular" inline />
             </span>

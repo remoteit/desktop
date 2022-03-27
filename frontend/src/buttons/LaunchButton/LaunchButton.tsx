@@ -60,7 +60,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
 
   const launch = () => {
     if (app.launchType === LAUNCH_TYPE.URL) windowOpen(app.string)
-    else emit('launch/app', app.string)
+    else emit('launch/app', app.string, !app.tokens.includes('path'))
   }
 
   const LaunchIcon = <Icon name="launch" size={props.size} color={props.color} type={props.type} fixedWidth />

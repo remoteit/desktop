@@ -107,13 +107,13 @@ export default class ElectronApp {
 
     let filePath = result?.filePaths[0]
 
-    if (environment.isMac) {
+    if (environment.isMac && filePath?.endsWith('.app')) {
       filePath = filePath.replace(/(\s)/g, '\\ ')
       const commands = new Command({
         command: `defaults read ${filePath}/Contents/Info.plist CFBundleExecutable`,
       })
       const executable = await commands.exec()
-      filePath += '/Contents/MacOS/' + executable
+      filePath += '/Contents/MacOS/' + executable.trim()
     }
 
     EventBus.emit(EVENTS.filePath, filePath)

@@ -1,7 +1,14 @@
 import React, { useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
+import {
+  makeStyles,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  InputLabel,
+  TextFieldProps,
+} from '@material-ui/core'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'
@@ -9,15 +16,23 @@ import { emit } from '../services/Controller'
 type Props = {
   label?: string
   value?: string
+  variant?: TextFieldProps['variant']
   disabled?: boolean
   disableGutters?: boolean
   onSave?: (value?: string) => void
 }
 
-export const InlineFileFieldSetting: React.FC<Props> = ({ label, value = '', disabled, disableGutters, onSave }) => {
+export const InlineFileFieldSetting: React.FC<Props> = ({
+  label,
+  value = '',
+  variant,
+  disabled,
+  disableGutters,
+  onSave,
+}) => {
   const { filePath } = useSelector((state: ApplicationState) => state.backend)
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
+  const css = useStyles({ filled: variant === 'filled' })
 
   const filePrompt = () => emit('filePrompt')
 
@@ -29,8 +44,15 @@ export const InlineFileFieldSetting: React.FC<Props> = ({ label, value = '', dis
   }, [filePath])
 
   return (
-    <ListItem button onClick={filePrompt} disabled={disabled} disableGutters={disableGutters} dense>
-      <ListItemText className={css.margin}>
+    <ListItem
+      button
+      classes={{ container: css.container }}
+      onClick={filePrompt}
+      disabled={disabled}
+      disableGutters={disableGutters}
+      dense
+    >
+      <ListItemText>
         {label && <InputLabel shrink>{label}</InputLabel>}
         {value || '–'}
       </ListItemText>
@@ -42,6 +64,10 @@ export const InlineFileFieldSetting: React.FC<Props> = ({ label, value = '', dis
   )
 }
 
-const useStyles = makeStyles({
-  margin: { marginLeft: spacing.sm },
-})
+const useStyles = makeStyles(({ palette }) => ({
+  container: ({ filled }: { filled?: boolean }) => ({
+    '& .MuiListItem-root': { backgroundColor: filled ? palette.grayLightest.main : undefined },
+    '& .MuiListItemText-root': { marginLeft: spacing.sm },
+    '& .MuiListItemSecondaryAction-root': { right: filled ? spacing.xs : undefined },
+  }),
+}))
