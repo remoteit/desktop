@@ -153,7 +153,7 @@ export default createModel<RootModel>()({
 
       set({ fetching: true })
       try {
-        const gqlResponse = await graphQLFetchDevice(id)
+        const gqlResponse = await graphQLFetchDevice(id, accountId)
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
         const loginId = gqlResponse?.data?.data?.login?.id

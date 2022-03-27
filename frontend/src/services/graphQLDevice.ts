@@ -121,9 +121,9 @@ export async function graphQLFetchDevices({
 /* 
   Fetches single, or array of devices across shared accounts by id
 */
-export async function graphQLFetchDevice(id: string) {
+export async function graphQLFetchDevice(id: string, account: string) {
   return await graphQLRequest(
-    ` query($id: [String!]!) {
+    ` query($id: [String!]!, $account: String) {
         login {
           id
           device(id: $id)  {
@@ -133,6 +133,7 @@ export async function graphQLFetchDevice(id: string) {
       }`,
     {
       id,
+      account,
     }
   )
 }
