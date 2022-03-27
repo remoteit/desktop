@@ -4,9 +4,8 @@
   "private": true,
   "main": "build/index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env copy-and-lock compile build-frontend pack",
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-and-lock compile build-frontend pack",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "copy-env": "cp ../.env ./",
     "copy-and-lock": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/* && cp ./src/cli-version.json ./build",
     "clean": "rimraf build && mkdir build",
     "compile": "tsc",
