@@ -110,7 +110,7 @@ export const attributes: Attribute[] = [
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 440,
+    defaultWidth: 400,
     align: 'right',
   }),
   new DeviceAttribute({
@@ -164,7 +164,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'access',
     label: 'Users',
-    defaultWidth: 175,
+    defaultWidth: 200,
     value: ({ device }) =>
       device?.shared ? <Avatar email={device.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
   }),

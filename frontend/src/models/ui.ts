@@ -11,6 +11,7 @@ const SAVED_STATES = [
   'guideAWS',
   'guideLaunch',
   'themeMode',
+  'accordion',
   'drawerMenu',
   'drawerAccordion',
   'columns',
@@ -109,7 +110,7 @@ export const defaultState: UIState = {
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
   guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
-  accordion: { config: true, configConnected: false },
+  accordion: { config: true, configConnected: false, options: false, service: false },
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,
@@ -179,6 +180,11 @@ export default createModel<RootModel>()({
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
       })
     },
+    async accordion(params: ILookup<boolean>, state) {
+      const accordion = { ...state.ui.accordion, ...params }
+      dispatch.ui.setPersistent({ accordion })
+    },
+
     async setPersistent(params: ILookup<any>, state) {
       Object.keys(params).forEach(key => {
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
@@ -204,10 +210,6 @@ export default createModel<RootModel>()({
       state.setupAddingService = false
       state.setupServiceBusy = undefined
       state.restoring = false
-      return state
-    },
-    accordion(state: UIState, params: ILookup<boolean>) {
-      state.accordion = { ...state.accordion, ...params }
       return state
     },
     reset(state: UIState) {
