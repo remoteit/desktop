@@ -101,6 +101,11 @@ export const PUBLIC_CONNECTION = {
   log: false,
 }
 
+export const LANGUAGES: ILookup<string> = {
+  en: 'English',
+  ja: 'Japanese',
+}
+
 export const ROUTES: IRoute[] = [
   {
     key: 'failover',
