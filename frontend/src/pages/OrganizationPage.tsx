@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
+import { Typography, List } from '@material-ui/core'
 import { selectOwner } from '../models/organization'
 import { getRemoteitLicense } from '../models/licensing'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
+import { OrganizationOptionMenu } from '../components/OrganizationOptionMenu'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { DeleteButton } from '../buttons/DeleteButton'
 import { SeatsSetting } from '../components/SeatsSetting'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -22,7 +22,6 @@ export const OrganizationPage: React.FC = () => {
     license: getRemoteitLicense(state),
     owner: selectOwner(state),
   }))
-  const [removing, setRemoving] = React.useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const enterprise = !license?.plan?.billing
 
@@ -39,21 +38,8 @@ export const OrganizationPage: React.FC = () => {
             <Title>Organization</Title>
             {organization.id && (
               <>
-                <DeleteButton
-                  title="Delete Organization"
-                  destroying={removing}
-                  warning={
-                    <>
-                      You will be permanently deleting <i>{organization.name}. </i>
-                      This will remove all your members and their access to your devices.
-                    </>
-                  }
-                  onDelete={() => {
-                    setRemoving(true)
-                    dispatch.organization.removeOrganization()
-                  }}
-                />
                 <IconButton title="Add member" icon="user-plus" to="/account/organization/share" size="md" />
+                <OrganizationOptionMenu organization={organization} />
               </>
             )}
           </Typography>

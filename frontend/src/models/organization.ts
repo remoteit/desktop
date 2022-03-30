@@ -14,22 +14,37 @@ export const ROLE: ILookup<string> = {
 }
 
 export type IOrganizationState = {
+  initialized: boolean
   id?: string
   name?: string
   created?: Date
   account?: IUserRef
   members: IOrganizationMember[]
-  activeId?: string
-  initialized: boolean
+  roles: IOrganizationRole[]
 }
 
 const organizationState: IOrganizationState = {
+  initialized: false,
   id: undefined,
   name: undefined,
   created: undefined,
   members: [],
-  activeId: undefined,
-  initialized: false,
+  roles: [
+    {
+      id: '1',
+      type: 'ADMIN',
+      name: 'Admin',
+      tags: [],
+      permissions: ['MANAGE'],
+    },
+    {
+      id: '2',
+      type: 'MEMBER',
+      name: 'Member',
+      tags: [],
+      permissions: ['CONNECT'],
+    },
+  ],
 }
 
 export default createModel<RootModel>()({

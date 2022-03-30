@@ -11,7 +11,7 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
   const disabled = member.role === 'OWNER' || member.license !== 'LICENSED'
   const role = member.license === 'UNLICENSED' ? 'MEMBER' : member.role
 
-  const handleSelect = (role: IOrganizationRole) => {
+  const handleSelect = (role: IOrganizationRoleType) => {
     dispatch.organization.setMembers([{ ...member, role }])
   }
 
@@ -23,7 +23,7 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       disabled={disabled}
       value={role}
       variant="filled"
-      onChange={e => handleSelect(e.target.value as IOrganizationRole)}
+      onChange={e => handleSelect(e.target.value as IOrganizationRoleType)}
     >
       <MenuItem dense value="OWNER" disabled>
         {ROLE.OWNER}

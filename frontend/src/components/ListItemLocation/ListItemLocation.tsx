@@ -1,14 +1,14 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
+import { makeStyles, ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
+import { Color, spacing } from '../../styling'
 import { Icon } from '../Icon'
-import { Color } from '../../styling'
 
 export type Props = {
   pathname: string
   title?: React.ReactElement | string
   subtitle?: string
-  icon?: string
+  icon?: React.ReactElement | string
   iconColor?: Color
   iconType?: IconType
   disabled?: boolean
@@ -39,6 +39,7 @@ export const ListItemLocation: React.FC<Props> = ({
 }) => {
   const history = useHistory()
   const location = useLocation()
+  const css = useStyles({ icon: !!icon })
 
   if (!match) match = pathname
   if (typeof match === 'string') match = [match]
@@ -48,11 +49,17 @@ export const ListItemLocation: React.FC<Props> = ({
     if (props.onClick) props.onClick()
     if (!disabled) history.push(pathname)
   }
-  const iconEl = icon && <Icon name={icon} size="md" color={iconColor} type={iconType} fixedWidth />
+  const iconEl =
+    icon && typeof icon === 'string' ? (
+      <Icon name={icon} size="md" color={iconColor} type={iconType} fixedWidth />
+    ) : (
+      icon
+    )
 
   return (
     <ListItem
       {...props}
+      className={css.root}
       button={!matches as any}
       selected={!!matches}
       onClick={onClick}
@@ -75,3 +82,9 @@ export const ListItemLocation: React.FC<Props> = ({
     </ListItem>
   )
 }
+
+type styleProps = { icon: boolean }
+
+const useStyles = makeStyles({
+  root: ({ icon }: styleProps) => ({ paddingLeft: icon ? undefined : spacing.sm }),
+})

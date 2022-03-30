@@ -25,7 +25,7 @@ import { ServiceName } from '../components/ServiceName'
 import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { spacing, fontSizes } from '../styling'
+import { fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -33,7 +33,6 @@ type Props = {
 }
 
 export const DevicePage: React.FC<Props> = ({ device }) => {
-  const css = useStyles()
   const location = useLocation()
   const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
@@ -72,12 +71,10 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
               `/devices/${device.id}/logs`,
               `/devices/${device.id}`,
             ]}
+            icon={<ConnectionStateIcon device={device} connection={connection} size="lg" />}
             exactMatch
             dense
           >
-            <ListItemIcon>
-              <ConnectionStateIcon device={device} connection={connection} size="lg" />
-            </ListItemIcon>
             <ListItemText
               primary={
                 <Typography variant="h3">
@@ -109,7 +106,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
         {editable && <LicensingNotice device={device} />}
         {editable && setupAddingService && (
           <ListItem disabled dense>
-            <ListItemText className={css.service} primary="Registering..." />
+            <ListItemText primary="Registering..." />
             <ListItemSecondaryAction>
               <CircularProgress color="primary" size={fontSizes.md} />
             </ListItemSecondaryAction>
@@ -130,10 +127,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
               match={`/devices/${device.id}/${s.id}`}
               dense
             >
-              <ListItemText
-                className={css.service}
-                primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
-              />
+              <ListItemText primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />} />
               <ListItemSecondaryAction>
                 <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
               </ListItemSecondaryAction>
@@ -145,7 +139,3 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  service: { marginLeft: spacing.sm },
-})

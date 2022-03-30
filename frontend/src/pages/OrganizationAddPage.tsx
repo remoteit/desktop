@@ -22,7 +22,7 @@ export const OrganizationAddPage = () => {
   }))
 
   const [emails, setEmails] = React.useState<string[]>([])
-  const [role, setRole] = React.useState<IOrganizationRole>('MEMBER')
+  const [role, setRole] = React.useState<IOrganizationRoleType>('MEMBER')
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()

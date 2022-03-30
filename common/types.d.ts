@@ -349,18 +349,27 @@ declare global {
     user: IUserRef
     organizationId: string
     license: ILicenseTypes
-    role: IOrganizationRole
+    role: IOrganizationRoleType
     created: Date
   }
 
   type IOrganizationMembership = {
     organization: IOrganization
-    role: IOrganizationRole
+    role: IOrganizationRoleType
     created: Date
     license: ILicenseTypes
   }
 
-  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'REMOVE'
+  type IOrganizationRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' // TEMP
+
+  type IOrganizationRole = {
+    // TEMP
+    id: string
+    type: IOrganizationRoleType
+    name: string
+    tags: ITag[]
+    permissions: IPermission[]
+  }
 
   type IGeo = {
     countryName: string

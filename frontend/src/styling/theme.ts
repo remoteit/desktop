@@ -257,22 +257,30 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
           '& > .MuiList-padding': { padding: 0 },
+          '& .MuiListItemIcon-root': { minWidth: 50 },
+          '& .MuiListItem-root': {
+            paddingLeft: 0,
+            paddingRight: spacing.md,
+          },
+          '& .MuiDivider-root': {
+            marginTop: 10,
+            marginBottom: 10,
+          },
         },
       },
       MuiMenuItem: {
         root: {
-          '& .MuiListItemIcon-root': { minWidth: 50 },
           paddingLeft: 0,
-          paddingRight: spacing.lg,
+          paddingRight: spacing.md,
           color: palette.grayDarkest.main,
           fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
-        },
-        gutters: {
-          paddingLeft: spacing.sm,
-          paddingRight: spacing.sm,
-          marginLeft: spacing.sm,
-          marginRight: spacing.sm,
+          '&.MuiMenuItem-gutters': {
+            paddingLeft: spacing.sm,
+            paddingRight: spacing.sm,
+            marginLeft: spacing.sm,
+            marginRight: spacing.sm,
+          },
         },
       },
       MuiInput: {

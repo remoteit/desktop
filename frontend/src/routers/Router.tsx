@@ -18,7 +18,10 @@ import { LicensingPage } from '../pages/LicensingPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
+import { OrganizationSAMLPage } from '../pages/OrganizationSAMLPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
+import { OrganizationRolePage } from '../pages/OrganizationRolePage'
+import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
@@ -238,6 +241,19 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         />
       </Route>
 
+      <Route path={['/account/organization/roles', '/account/organization/roles/:roleID']}>
+        <DynamicPanel
+          primary={<OrganizationRolesPage />}
+          secondary={
+            <Route path="/account/organization/roles/:roleID">
+              <OrganizationRolePage />
+            </Route>
+          }
+          layout={layout}
+          root={['/account']}
+        />
+      </Route>
+
       <Route path="/account">
         <DynamicPanel
           primary={<AccountPage />}
@@ -253,6 +269,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/account/organization/share">
                 <OrganizationAddPage />
+              </Route>
+
+              <Route path="/account/organization/saml">
+                <OrganizationSAMLPage />
               </Route>
 
               <Route path="/account/organization">

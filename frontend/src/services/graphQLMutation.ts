@@ -114,7 +114,7 @@ export async function graphQLRemoveOrganization() {
   )
 }
 
-export async function graphQLSetMembers(email: string[], role: IOrganizationRole, license?: ILicenseTypes) {
+export async function graphQLSetMembers(email: string[], role: IOrganizationRoleType, license?: ILicenseTypes) {
   return await graphQLBasicRequest(
     ` mutation query($email: [String!]!, $role: OrganizationRole, $license: LicenseOption) {
         setMember(email: $email, role: $role, license: $license)

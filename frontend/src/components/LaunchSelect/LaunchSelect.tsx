@@ -8,7 +8,6 @@ import { spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
-import { isPortal } from '../../services/Browser'
 import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
