@@ -2,8 +2,8 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
+import { newConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { getLicenseChip } from '../../components/LicenseChip'
-import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
@@ -66,7 +66,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
-  if (connection?.autoLaunch) title += ' + Launch'
+  if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
 
   if (chip && chip.show) {
     color = chip.colorName

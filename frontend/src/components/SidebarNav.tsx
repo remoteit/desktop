@@ -1,5 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
 import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
@@ -14,7 +15,7 @@ export const SidebarNav: React.FC = () => {
     unreadAnnouncements: selectAnnouncements(state, true).length,
     connections: selectConnections(state).filter(connection => connection.enabled).length,
     sessions: state.sessions.all.length,
-    devices: state.devices.total,
+    devices: getDeviceModel(state).total,
     remoteUI: isRemoteUI(state),
   }))
   const css = useStyles({ sessions })

@@ -1,18 +1,9 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
 import { useLocation } from 'react-router-dom'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  CircularProgress,
-} from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
-import { Container } from '../components/Container'
+import { getDeviceModel } from '../models/accounts'
+import { ApplicationState } from '../store'
+import { Typography, List, ListItem, ListItemText, ListItemSecondaryAction, CircularProgress } from '@material-ui/core'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
@@ -22,6 +13,7 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
+import { Container } from '../components/Container'
 import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -37,7 +29,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
   const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
-    sortService: state.devices.sortServiceOption,
+    sortService: getDeviceModel(state).sortServiceOption,
   }))
 
   useEffect(() => {

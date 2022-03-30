@@ -86,11 +86,8 @@ export default createModel<RootModel>()({
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {
       accountId = accountId || devices[0]?.accountId
-      if (!devices) debugger
       if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      let all = { ...state.devices.all }
-      all[accountId] = devices
-      dispatch.devices.set({ all })
+      dispatch.devices.set({ all: devices, accountId })
     },
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
@@ -198,19 +195,20 @@ export function getActiveOrganizationMembership(state: ApplicationState): IOrgan
   return state.accounts.membership.find(m => m.organization.id === id)
 }
 
+export function getDeviceModel(state: ApplicationState, accountId?: string) {
+  return state.devices[accountId || getActiveAccountId(state)] || state.devices.default
+}
+
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
-  return state.devices.all[accountId || getActiveAccountId(state)] || []
+  return getDeviceModel(state, accountId).all || []
 }
 
 export function getOwnDevices(state: ApplicationState): IDevice[] {
-  return state.devices.all[state.auth.user?.id || ''] || []
+  return getDeviceModel(state, state.auth.user?.id || '').all || []
 }
 
 export function getAllDevices(state: ApplicationState): IDevice[] {
   return (
-    Object.keys(state.devices.all).reduce(
-      (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
-      []
-    ) || []
+    Object.keys(state.devices).reduce((all: IDevice[], accountId) => all.concat(state.devices[accountId].all), []) || []
   )
 }

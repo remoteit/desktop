@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { getDeviceModel } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Checkbox } from '@material-ui/core'
@@ -10,7 +10,7 @@ type Props = { select?: boolean; devices: IDevice[] }
 export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) => {
   const { selected, total } = useSelector((state: ApplicationState) => ({
     selected: state.ui.selected,
-    total: state.devices.total,
+    total: getDeviceModel(state).total,
   }))
   const dispatch = useDispatch<Dispatch>()
   const indeterminate = selected.length > 0 && selected.length < total
@@ -31,7 +31,6 @@ export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) =
       <Checkbox
         checked={selected.length === total}
         indeterminate={indeterminate}
-        // className={css.checkbox}
         onClick={onClick}
         checkedIcon={<Icon name="check-square" size="md" type="solid" />}
         indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
@@ -41,8 +40,3 @@ export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) =
     </>
   )
 }
-/* 
-
-TODO = implement clicking on checkbox to select/deselect all
-
-*/

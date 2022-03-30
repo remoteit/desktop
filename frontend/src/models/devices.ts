@@ -18,7 +18,7 @@ import {
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
-import { getActiveAccountId, getAllDevices, getDevices } from './accounts'
+import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -27,15 +27,10 @@ import { RootModel } from './rootModel'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
-type IGetDevice = {
-  id: string
-  hidden?: boolean
-  thisDevice?: boolean
-}
-
 type IDeviceState = {
-  all: { [accountId: string]: IDevice[] }
+  all: IDevice[]
   initialized: boolean
+  accountId: string
   total: number
   results: number
   searched: boolean
@@ -59,8 +54,9 @@ type IDeviceState = {
 }
 
 export const defaultState: IDeviceState = {
-  all: {},
+  all: [],
   initialized: false,
+  accountId: '',
   total: 0,
   results: 0,
   searched: false,
@@ -83,29 +79,40 @@ export const defaultState: IDeviceState = {
   registrationCommand: undefined,
 }
 
+type IDeviceAccountState = {
+  [accountId: string]: IDeviceState
+}
+
+const defaultAccountState: IDeviceAccountState = {
+  default: { ...defaultState },
+}
+
 export default createModel<RootModel>()({
-  state: { ...defaultState },
+  state: { ...defaultAccountState },
   effects: dispatch => ({
     async init(_, state) {
-      let states = {}
+      const accountId = getActiveAccountId(state)
+      let states = { accountId }
       SAVED_STATES.forEach(key => {
-        const value = getLocalStorage(state, `device-${key}`)
+        const value = getLocalStorage(state, `device-${accountId}-${key}`)
         if (value) states[key] = value
       })
-      dispatch.devices.set(states)
+      await dispatch.devices.set(states)
     },
     /* 
       GraphQL search query for all device data
     */
-    async fetch(_, globalState) {
-      const accountId = getActiveAccountId(globalState)
-      const userId = globalState.auth.user?.id
-      const ids = globalState.backend.device.uid ? [globalState.backend.device.uid] : []
+    async fetch(_, state) {
+      const accountId = getActiveAccountId(state)
+      const deviceModel = getDeviceModel(state, accountId)
+      if (!deviceModel.initialized) await dispatch.devices.init()
+      const userId = state.auth.user?.id
+      const ids = state.backend.device.uid ? [state.backend.device.uid] : []
       if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, mergeDevices, appendUniqueDevices } = dispatch.accounts
-      const { query, sort, tag, owner, filter, size, from, append, searched, platform } = globalState.devices
+      const { query, sort, tag, owner, filter, size, from, append, searched, platform } = deviceModel
       const options: gqlOptions = {
         size,
         from,
@@ -113,7 +120,7 @@ export default createModel<RootModel>()({
         state: filter === 'all' ? undefined : filter,
         tag,
         name: query,
-        ids: append ? undefined : ids.concat(getConnectionIds(globalState)),
+        ids: append ? undefined : ids.concat(getConnectionIds(state)),
         sort,
         owner: owner === 'all' ? undefined : owner === 'me',
         platform,
@@ -144,10 +151,21 @@ export default createModel<RootModel>()({
     /*
       Fetches a single device and merges in the state
     */
-    async fetchSingle({ id, hidden, thisDevice }: IGetDevice, globalState): Promise<IDevice | undefined> {
+    async fetchSingle(
+      {
+        id,
+        hidden,
+        thisDevice,
+      }: {
+        id: string
+        hidden?: boolean
+        thisDevice?: boolean
+      },
+      state
+    ): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
-      const device = selectDevice(globalState, id)
-      const accountId = device?.accountId || getActiveAccountId(globalState)
+      const device = selectDevice(state, id)
+      const accountId = device?.accountId || getActiveAccountId(state)
       let result: IDevice | undefined
       if (!id) return
 
@@ -186,8 +204,8 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async renameService(service: IService, globalState) {
-      let device = getAllDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
+    async renameService(service: IService, state) {
+      let device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].name = service.name
@@ -221,8 +239,8 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setServiceAttributes(service: IService, globalState) {
-      let device = getAllDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
+    async setServiceAttributes(service: IService, state) {
+      let device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].attributes = service.attributes
@@ -231,7 +249,6 @@ export default createModel<RootModel>()({
     },
 
     async cloudAddService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
-      console.log('CLOUD ADD SERVICE', form)
       dispatch.ui.set({ setupServiceBusy: form.uid, setupAddingService: true })
       const result = await graphQLAddService({
         deviceId,
@@ -241,7 +258,6 @@ export default createModel<RootModel>()({
         port: form.port,
         enabled: !form.disabled,
       })
-      console.log('CLOUD RESULT', result)
       if (result !== 'ERROR') {
         const id = result?.data?.data?.addService?.id
         if (id) {
@@ -253,7 +269,6 @@ export default createModel<RootModel>()({
     },
 
     async cloudUpdateService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
-      console.log('CLOUD UPDATE SERVICE', form)
       dispatch.ui.set({ setupServiceBusy: form.uid })
       await graphQLUpdateService({
         id: form.uid,
@@ -276,12 +291,12 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
     },
 
-    async claimDevice(code: string, globalState) {
+    async claimDevice(code: string, state) {
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
       const result = await graphQLClaimDevice(code)
-      if (globalState.auth.user) await dispatch.accounts.setActive(globalState.auth.user.id)
+      if (state.auth.user) await dispatch.accounts.setActive(state.auth.user.id)
 
       if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice
@@ -306,8 +321,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async destroy(device: IDevice, globalState) {
-      const { auth } = globalState
+    async destroy(device: IDevice, state) {
+      const { auth } = state
       dispatch.devices.set({ destroying: true })
       const result = device.permissions.includes('MANAGE')
         ? await graphQLDeleteDevice(device.id)
@@ -322,17 +337,11 @@ export default createModel<RootModel>()({
       dispatch.devices.set({ destroying: false })
     },
 
-    async userAttributes({ userAttributes }: { userAttributes: string[] }, globalState) {
-      const unique = new Set(userAttributes.concat(globalState.devices.userAttributes))
+    async userAttributes({ userAttributes }: { userAttributes: string[] }, state) {
+      const unique = new Set(userAttributes.concat(getDeviceModel(state).userAttributes))
       dispatch.devices.set({ userAttributes: [...Array.from(unique)].sort() })
     },
 
-    async setPersistent(params: ILookup<any>, state) {
-      Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${key}`, params[key] || '')
-      })
-      dispatch.devices.set(params)
-    },
     async transferDevice(data: ITransferProps) {
       if (data.email && data.device) {
         dispatch.devices.set({ transferring: true })
@@ -345,14 +354,31 @@ export default createModel<RootModel>()({
         dispatch.devices.set({ transferring: false })
       }
     },
+    async setPersistent(params: ILookup<any>, state) {
+      const accountId = params.accountId || getActiveAccountId(state)
+      Object.keys(params).forEach(key => {
+        if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${accountId}-${key}`, params[key] || '')
+      })
+      dispatch.devices.set(params)
+    },
+    async set(params: { accountId?: string } & ILookup<any>, state) {
+      const accountId = params.accountId || getActiveAccountId(state)
+      const deviceState = { ...getDeviceModel(state, accountId) }
+
+      Object.keys(params).forEach(key => {
+        deviceState[key] = params[key]
+      })
+
+      dispatch.devices.rootSet({ [accountId]: deviceState })
+    },
   }),
 
   reducers: {
-    reset(state: IDeviceState) {
-      state = { ...defaultState }
+    reset(state: IDeviceAccountState) {
+      state = { ...defaultAccountState }
       return state
     },
-    set(state: IDeviceState, params: ILookup<any>) {
+    rootSet(state: IDeviceAccountState, params: ILookup<any>) {
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })
@@ -370,12 +396,13 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
 }
 
 export function selectIsFiltered(state: ApplicationState) {
+  const devices = getDeviceModel(state)
   return (
-    state.devices.sort !== defaultState.sort ||
-    state.devices.filter !== defaultState.filter ||
-    state.devices.owner !== defaultState.owner ||
-    state.devices.platform !== defaultState.platform ||
-    state.devices.tag !== defaultState.tag
+    devices.sort !== defaultState.sort ||
+    devices.filter !== defaultState.filter ||
+    devices.owner !== defaultState.owner ||
+    devices.platform !== defaultState.platform ||
+    devices.tag !== defaultState.tag
   )
 }
 

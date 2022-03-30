@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import { useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
 import { Color, spacing } from '../../styling'
@@ -14,6 +15,7 @@ export type Props = {
   disabled?: boolean
   showDisabled?: boolean
   disableGutters?: boolean
+  disableIcon?: boolean
   dense?: boolean
   className?: string
   match?: string | string[]
@@ -30,16 +32,18 @@ export const ListItemLocation: React.FC<Props> = ({
   iconColor,
   iconType,
   disabled,
+  disableIcon,
   showDisabled,
   match,
   exactMatch,
   badge,
+  className,
   children,
   ...props
 }) => {
   const history = useHistory()
   const location = useLocation()
-  const css = useStyles({ icon: !!icon })
+  const css = useStyles({ icon: !!disableIcon || !!icon })
 
   if (!match) match = pathname
   if (typeof match === 'string') match = [match]
@@ -59,7 +63,7 @@ export const ListItemLocation: React.FC<Props> = ({
   return (
     <ListItem
       {...props}
-      className={css.root}
+      className={classnames(css.root, className)}
       button={!matches as any}
       selected={!!matches}
       onClick={onClick}

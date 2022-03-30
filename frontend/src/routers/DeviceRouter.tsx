@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Switch, Route, useParams, useHistory } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
+import { getDeviceModel } from '../models/accounts'
 import { selectDevice } from '../models/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { NetworkPage } from '../pages/NetworkPage'
@@ -25,7 +26,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
   const { remoteUI, device, targetDevice, targets, fetching } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
-    fetching: state.devices.fetching,
+    fetching: getDeviceModel(state).fetching,
     device: selectDevice(state, deviceID),
     targetDevice: state.backend.device,
     targets: state.backend.targets,

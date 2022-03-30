@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
+import { getDeviceModel } from '../models/accounts'
 import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -42,7 +43,7 @@ export const Connect: React.FC = () => {
       device,
       connection: selectConnection(state, service),
       session: state.sessions.all.find(s => s.id === sessionID),
-      fetching: state.devices.fetching,
+      fetching: getDeviceModel(state).fetching,
       accordion: state.ui.accordion,
     }
   })

@@ -1,4 +1,5 @@
 import React from 'react'
+import { getDeviceModel } from '../models/accounts'
 import { defaultState } from '../models/devices'
 import { TARGET_PLATFORMS } from '../helpers/platformHelper'
 import { ApplicationState, Dispatch } from '../store'
@@ -38,13 +39,7 @@ export const FilterDrawer: React.FC = () => {
   const getColor = useLabel()
   const { devices } = useDispatch<Dispatch>()
   const { state, open, tags, feature } = useSelector((state: ApplicationState) => ({
-    state: {
-      sort: state.devices.sort,
-      tag: state.devices.tag,
-      filter: state.devices.filter,
-      owner: state.devices.owner,
-      platform: state.devices.platform,
-    },
+    state: getDeviceModel(state),
     open: state.ui.drawerMenu === 'FILTER',
     tags: selectTags(state).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
     feature: state.ui.feature,

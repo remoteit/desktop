@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { getDeviceModel } from '../../models/accounts'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import { DeviceActionsBar } from '../../components/DeviceActionsBar'
 import { ApplicationState } from '../../store'
@@ -21,7 +22,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
         .concat(deviceAttributes)
         .filter(a => a.show(state.ui.feature) && state.ui.columns.includes(a.id) && !a.required),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
-      fetching: state.devices.fetching,
+      fetching: getDeviceModel(state).fetching,
       columnWidths: state.ui.columnWidths,
       devices: getDevices(state).filter((d: IDevice) => !d.hidden),
       myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),

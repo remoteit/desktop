@@ -72,9 +72,6 @@ export const OrganizationSAMLPage: React.FC = () => {
           <Quote margin={0} noInset listItem>
             <List disablePadding>
               <ListItem>
-                <FileUpload onUpload={data => alert(JSON.stringify(data, null, 2))} />
-              </ListItem>
-              <ListItem>
                 <TextField
                   required
                   fullWidth
@@ -96,6 +93,9 @@ export const OrganizationSAMLPage: React.FC = () => {
                     setForm({ ...form, domain: value })
                   }}
                 />
+              </ListItem>
+              <ListItem>
+                <FileUpload onUpload={data => alert(JSON.stringify(data, null, 2))} />
               </ListItem>
               <ListItemCheckbox
                 label="Use SAML only"
