@@ -62,8 +62,7 @@ type UIState = {
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
-  autoCopy: boolean,
-  appRefreshed: boolean
+  autoCopy: boolean
 }
 
 export const defaultState: UIState = {
@@ -111,8 +110,7 @@ export const defaultState: UIState = {
   accordion: { config: true, configConnected: false },
   autoConnect: false,
   autoLaunch: false,
-  autoCopy: false,
-  appRefreshed: false
+  autoCopy: false
 }
 
 export default createModel<RootModel>()({
@@ -148,8 +146,7 @@ export default createModel<RootModel>()({
       dispatch.sessions.fetch()
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
-      await dispatch.devices.fetch()
-      dispatch.ui.set({ appRefreshed: true })
+      dispatch.devices.fetch()
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode
