@@ -112,7 +112,7 @@ export const defaultState: UIState = {
   accordion: { config: true, configConnected: false },
   autoConnect: false,
   autoLaunch: false,
-  autoCopy: false,
+  autoCopy: false
 }
 
 export default createModel<RootModel>()({
