@@ -51,7 +51,6 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
         className={css.item}
         pathname={pathname}
         match={isNew ? '/connections/new' : pathname}
-        disableIcon
         exactMatch
         dense
       >

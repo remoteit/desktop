@@ -43,7 +43,7 @@ export const ListItemLocation: React.FC<Props> = ({
 }) => {
   const history = useHistory()
   const location = useLocation()
-  const css = useStyles({ icon: !!disableIcon || !!icon })
+  const css = useStyles({ disableIcon: !!disableIcon })
 
   if (!match) match = pathname
   if (typeof match === 'string') match = [match]
@@ -87,8 +87,8 @@ export const ListItemLocation: React.FC<Props> = ({
   )
 }
 
-type styleProps = { icon: boolean }
+type styleProps = { disableIcon: boolean }
 
 const useStyles = makeStyles({
-  root: ({ icon }: styleProps) => ({ paddingLeft: icon ? undefined : spacing.sm }),
+  root: ({ disableIcon }: styleProps) => ({ paddingLeft: disableIcon ? spacing.sm : undefined }),
 })

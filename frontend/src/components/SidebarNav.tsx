@@ -23,13 +23,13 @@ export const SidebarNav: React.FC = () => {
   return (
     <List className={css.list}>
       {remoteUI ? (
-        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" />
+        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
       ) : (
         <>
-          <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections">
+          <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
             <ListItemSecondaryAction>
               {!!connections && (
-                <Tooltip title="Added" placement="top" arrow>
+                <Tooltip title="Active" placement="top" arrow>
                   <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
                 </Tooltip>
               )}
@@ -40,7 +40,7 @@ export const SidebarNav: React.FC = () => {
               )}
             </ListItemSecondaryAction>
           </ListItemLocation>
-          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch>
+          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
             {!!devices && (
               <ListItemSecondaryAction>
                 <Tooltip title="Total" placement="top" arrow>

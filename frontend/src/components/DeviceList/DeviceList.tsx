@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
@@ -39,7 +40,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
   return (
     <>
-      <List className={css.grid} disablePadding>
+      <List className={classnames(css.list, css.grid)} disablePadding>
         <DeviceListHeader
           devices={devices}
           primary={primary}
@@ -98,14 +99,18 @@ type StyleProps = {
 
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, primary, columnWidths }: StyleProps) => ({
-    display: 'inline-block',
-    minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      display: 'grid',
       // gridTemplateColumns: `${primary.width(columnWidths)}% ${attributes?.map(a => a.width(columnWidths)).join('% ')}%`,
       gridTemplateColumns: `${primary.width(columnWidths)}px ${attributes
         ?.map(a => a.width(columnWidths))
         .join('px ')}px`,
+    },
+  }),
+  list: {
+    display: 'inline-block',
+    minWidth: '100%',
+    '& .MuiListItem-root, & .MuiListSubheader-root': {
+      display: 'grid',
       alignItems: 'center',
       '& > .MuiBox-root': {
         paddingRight: spacing.sm,
@@ -121,5 +126,5 @@ const useStyles = makeStyles(({ palette }) => ({
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     },
-  }),
+  },
 }))
