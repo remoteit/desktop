@@ -95,7 +95,7 @@ export const OrganizationSAMLPage: React.FC = () => {
                 />
               </ListItem>
               <ListItem>
-                <FileUpload onUpload={data => alert(JSON.stringify(data, null, 2))} />
+                <FileUpload onUpload={metadata => setForm({ ...form, metadata })} />
               </ListItem>
               <ListItemCheckbox
                 label="Use SAML only"
@@ -113,6 +113,7 @@ export const OrganizationSAMLPage: React.FC = () => {
           Save
         </Button>
         <Button onClick={exit}>Cancel</Button>
+        {form.metadata && <pre>{form.metadata}</pre>}
       </Gutters>
     </Container>
   )

@@ -1,12 +1,22 @@
 import React, { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
 import { makeStyles, Typography, Box, ButtonBase } from '@material-ui/core'
 import { spacing } from '../styling'
 
 export const FileUpload: React.FC<{ onUpload: (data: any) => void }> = ({ onUpload }) => {
+  const { ui } = useDispatch<Dispatch>()
   const onDrop = useCallback(files => {
-    console.log('FILE DROPPED', files)
-    onUpload(files[0])
+    files.forEach(file => {
+      const reader = new FileReader()
+      let result = ''
+      reader.onabort = () => ui.set({ errorMessage: 'File reading was aborted' })
+      reader.onerror = () => ui.set({ errorMessage: 'File reading has failed' })
+      reader.onload = () => (result += reader.result)
+      reader.onloadend = () => onUpload(result)
+      reader.readAsText(file)
+    })
   }, [])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
   const css = useStyles({ isDragActive })
