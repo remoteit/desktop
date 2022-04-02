@@ -59,6 +59,7 @@ export const REGEX_EMAIL_DOMAIN = /@\w+\.\w{2,5}/
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
 export const MAX_CONNECTION_NAME_LENGTH = 62
+export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')

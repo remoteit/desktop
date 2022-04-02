@@ -105,7 +105,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             ))}
           </Quote>
         ) : (
-          <Notice fullWidth>
+          <Notice fullWidth gutterTop>
             Add custom [tokens]
             <em>
               You can add custom [tokens] to the templates above. Just enclose a tag in brackets to create a [token] you

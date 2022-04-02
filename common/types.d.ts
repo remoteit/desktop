@@ -135,6 +135,7 @@ declare global {
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
     default?: boolean // if the connection is in a default state - gets removed on modification
+    description?: string
     deviceID?: string
     disconnecting?: boolean
     enabled: boolean // if the connection is active
@@ -283,6 +284,8 @@ declare global {
       defaultPort?: number
       launchTemplate?: string
       commandTemplate?: string
+      targetHost?: string
+      description?: strings
     }
   }
 

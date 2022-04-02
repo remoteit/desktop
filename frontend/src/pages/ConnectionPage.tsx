@@ -47,10 +47,19 @@ export const ConnectionPage: React.FC = () => {
       backgroundColor={connection.enabled ? 'primaryHighlight' : 'grayLighter'}
       bodyProps={{ insetShadow: false }}
       header={
-        <Typography variant="h1" gutterBottom>
-          <Title>{connection.name}</Title>
-          <InfoButton device={device} service={service} />
-        </Typography>
+        <>
+          <Typography variant="h1" gutterBottom={!service.attributes.description}>
+            <Title>{connection.name}</Title>
+            <InfoButton device={device} service={service} />
+          </Typography>
+          {service.attributes.description && (
+            <Gutters bottom="xl" top={null}>
+              <Typography variant="body2" color="textSecondary">
+                {service.attributes.description}
+              </Typography>
+            </Gutters>
+          )}
+        </>
       }
     >
       <Connect />

@@ -97,12 +97,12 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
       <List>
         {editable && <LicensingNotice device={device} />}
         {editable && setupAddingService && (
-          <ListItem disabled dense>
+          <ListItemLocation pathname="" disableIcon disabled dense>
             <ListItemText primary="Registering..." />
             <ListItemSecondaryAction>
               <CircularProgress color="primary" size={fontSizes.md} />
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemLocation>
         )}
         {device.services.sort(getSortOptions(sortService).sortService).map(s => (
           <GuideStep
@@ -117,6 +117,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             <ListItemLocation
               pathname={`/devices/${device.id}/${s.id}${servicePage}`}
               match={`/devices/${device.id}/${s.id}`}
+              disableIcon
               dense
             >
               <ListItemText primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />} />

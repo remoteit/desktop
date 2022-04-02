@@ -31,6 +31,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targetDevice, device }) => {
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <Typography variant="h1">

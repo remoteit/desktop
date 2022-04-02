@@ -59,6 +59,8 @@ export function newConnection(service?: IService | null) {
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
+    connection.targetHost = service.attributes.targetHost
+    connection.description = service.attributes.description
     if (device) connection.name = connectionName(service, device)
   }
 
