@@ -72,7 +72,7 @@ export default createModel<RootModel>()({
       setConnection(proxyConnection)
 
       const result = await graphQLConnect(connection.id, connection.publicRestriction)
-      if (result !== 'ERROR') {
+      if (result && result !== 'ERROR') {
         const data = result?.data?.data?.connect
         console.log('PROXY CONNECTED', data)
         setConnection({

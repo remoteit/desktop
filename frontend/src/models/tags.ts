@@ -52,13 +52,13 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const tags = await dispatch.tags.parse(result)
-      dispatch.tags.setTags({ tags, accountId })
+      if (tags) dispatch.tags.setTags({ tags, accountId })
     },
 
     async parse(result: AxiosResponse<any> | undefined) {
       const all = result?.data?.data?.login?.account?.tags
       if (!all) return
-      const parsed = all.map(t => ({
+      const parsed: ITag[] = all.map(t => ({
         name: t.name,
         color: t.color,
         created: new Date(t.created),
