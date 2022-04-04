@@ -89,7 +89,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
         </Notice>
       )}
       <Typography variant="subtitle1">
-        <Title>Services</Title>
+        <Title>Service</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />

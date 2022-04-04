@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Divider, IconButton, Menu } from '@material-ui/core'
 import { DeleteButton } from '../buttons/DeleteButton'
@@ -34,14 +34,14 @@ export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
           <ListItemLocation
             title="Settings"
             icon="sliders-h"
-            pathname={`/account/organization/saml`}
+            pathname="/account/organization/saml"
             disableGutters
             dense
           />
           <ListItemLocation
-            title="Roles and Permissions"
+            title="Roles"
             icon="shield-alt"
-            pathname={`/account/organization/roles`}
+            pathname={`/account/organization/roles/${organization.roles[0].id}`}
             disableGutters
             dense
           />

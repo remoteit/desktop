@@ -91,7 +91,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       </TemplateSetting>
       <ListItem className={subClassName}>
         {app.allCustomTokens.length ? (
-          <Quote margin={spacing.xs}>
+          <Quote margin="xs">
             {app.allCustomTokens.map(token => (
               <TextField
                 fullWidth

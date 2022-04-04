@@ -15,7 +15,8 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationSAMLPage: React.FC = () => {
-  const { saml } = useSelector((state: ApplicationState) => ({
+  const { emailDomain, saml } = useSelector((state: ApplicationState) => ({
+    emailDomain: state.auth.user?.email.split('@')[1],
     saml: {
       enabled: true,
       domain: '',
@@ -26,11 +27,6 @@ export const OrganizationSAMLPage: React.FC = () => {
   const history = useHistory()
   const [form, setForm] = useState<ILookup<string | boolean>>(saml)
   const [error, setError] = useState<string>('')
-  const onDrop = useCallback(files => {
-    // Do something with the files
-    console.log('FILE DROPPED', files)
-  }, [])
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
   // const dispatch = useDispatch<Dispatch>()
   const disabled = isEqual(form, saml)
 
@@ -69,19 +65,19 @@ export const OrganizationSAMLPage: React.FC = () => {
           onClick={() => setForm({ ...form, enabled: !form.enabled })}
         />
         <ListItem dense>
-          <Quote margin={0} noInset listItem>
+          <Quote margin={null} noInset listItem>
             <List disablePadding>
               <ListItem>
                 <TextField
                   required
                   fullWidth
-                  label="Domain Name"
-                  value={form.domain}
-                  disabled={!form.enabled}
+                  disabled
+                  label="Email Domain"
+                  value={emailDomain}
+                  // disabled={!form.enabled}
                   error={!!error}
                   variant="filled"
                   helperText={error}
-                  placeholder="@example.com"
                   onChange={event => {
                     const value = event.target.value.toString()
                     const result = value.match(REGEX_EMAIL_DOMAIN)

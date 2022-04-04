@@ -102,7 +102,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
               <Icon ref={iconRef} name={icon} color={iconColor} size="md" modified={modified} fixedWidth />
             </ListItemIcon>
           </TooltipWrapper>
-          {quote ? <Quote margin={0}>{ListItemContent}</Quote> : ListItemContent}
+          {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
           <ListItemSecondaryAction>
             {showButton && (
               <Button onClick={onButtonClick} size="small">

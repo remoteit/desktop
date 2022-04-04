@@ -18,7 +18,6 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
 
   return (
     <DeviceHeaderMenu device={device}>
-      <Gutters bottom={null}></Gutters>
       <Gutters>
         <DataDisplay attributes={deviceAttributes} device={device} feature={feature} />
       </Gutters>

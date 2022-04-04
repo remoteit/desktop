@@ -25,8 +25,8 @@ export const FileUpload: React.FC<{ onUpload: (data: any) => void }> = ({ onUplo
     <ButtonBase className={css.paper} {...getRootProps()}>
       <input {...getInputProps()} />
       <Box>
-        <Typography variant="body2">Upload metadata file</Typography>
-        <Typography variant="caption">Drag and drop or click to upload</Typography>
+        <Typography variant="body2">Upload SAML metadata file</Typography>
+        <Typography variant="caption">Drag and drop or click </Typography>
       </Box>
     </ButtonBase>
   )

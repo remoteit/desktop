@@ -76,7 +76,7 @@ export const NotificationMode: React.FC = () => {
         <ListItemSwitch label="Webhook" checked={webHook} onClick={onWebChange} />
       </List>
       <Gutters inset="icon" top={null}>
-        <Quote margin={0}>
+        <Quote margin={null}>
           <TextField
             disabled={!webHook}
             onChange={e => checkWebHookUrl(e.currentTarget.value.trim())}

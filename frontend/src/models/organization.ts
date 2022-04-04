@@ -13,8 +13,24 @@ export const ROLE: ILookup<string> = {
   LIMITED: 'Limited',
 }
 
+export const PERMISSION: ILookup<{ name: string; description: string; icon: string }> = {
+  CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
+  SCRIPTING: { name: 'Scripting', description: 'Run device scripts', icon: 'code' },
+  MANAGE: { name: 'Manage', description: 'Tag and manage devices ', icon: 'pencil' },
+}
+
+export const DEFAULT_ROLE: IOrganizationRole = {
+  id: '',
+  type: 'CUSTOM',
+  name: '',
+  tags: [],
+  access: 'ANY',
+  permissions: ['MANAGE'],
+}
+
 export type IOrganizationState = {
   initialized: boolean
+  updating: boolean
   id?: string
   name?: string
   created?: Date
@@ -25,6 +41,7 @@ export type IOrganizationState = {
 
 const organizationState: IOrganizationState = {
   initialized: false,
+  updating: false,
   id: undefined,
   name: undefined,
   created: undefined,
@@ -35,13 +52,15 @@ const organizationState: IOrganizationState = {
       type: 'ADMIN',
       name: 'Admin',
       tags: [],
-      permissions: ['MANAGE'],
+      access: 'UNLIMITED',
+      permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
     },
     {
       id: '2',
       type: 'MEMBER',
       name: 'Member',
       tags: [],
+      access: 'UNLIMITED',
       permissions: ['CONNECT'],
     },
   ],

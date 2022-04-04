@@ -24,7 +24,7 @@ export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, chi
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
       {children}
-      <Icon name="launch" size="sm" color="grayDark" fixedWidth />
+      <Icon name="launch" size="sm" color="grayDark" inlineLeft fixedWidth />
     </ListItem>
   )
 }

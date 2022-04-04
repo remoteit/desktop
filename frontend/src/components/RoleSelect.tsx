@@ -34,6 +34,7 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       <MenuItem dense value="MEMBER">
         {ROLE.MEMBER}
       </MenuItem>
+      {/* add dynamic roles here */}
     </TextField>
   )
 }

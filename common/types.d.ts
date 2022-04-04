@@ -371,6 +371,7 @@ declare global {
     type: IOrganizationRoleType
     name: string
     tags: ITag[]
+    access: 'UNLIMITED' | 'ANY' | 'ALL'
     permissions: IPermission[]
   }
 
