@@ -25,7 +25,7 @@ export const DEFAULT_ROLE: IOrganizationRole = {
   name: '',
   tags: [],
   access: 'ANY',
-  permissions: ['MANAGE'],
+  permissions: ['CONNECT'],
 }
 
 export type IOrganizationState = {

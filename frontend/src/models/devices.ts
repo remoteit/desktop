@@ -11,6 +11,7 @@ import {
   graphQLTransferDevice,
 } from '../services/graphQLMutation'
 import {
+  graphQLFetchDeviceCount,
   graphQLFetchDevices,
   graphQLFetchDevice,
   graphQLCreateRegistration,
@@ -185,6 +186,21 @@ export default createModel<RootModel>()({
       set({ fetching: false })
 
       return result
+    },
+
+    async fetchCount(params: { tag?: ITagFilter }, state) {
+      const options: gqlOptions = {
+        size: 0,
+        from: 0,
+        account: state.auth.user?.id || '',
+        owner: true,
+        ...params,
+      }
+      const result = await graphQLFetchDeviceCount(options)
+      if (result === 'ERROR') return
+      const count = result?.data?.data?.login?.account?.devices?.total || 0
+      console.log('FETCH COUNT', count)
+      return count
     },
 
     async graphQLFetchProcessor(options: gqlOptions) {

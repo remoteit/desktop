@@ -119,7 +119,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           fontSize: fontSizes.xxs,
           paddingLeft: spacing.xxs,
           paddingRight: spacing.xxs,
-          '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
+          marginRight: spacing.xxs,
         },
         outlined: {
           borderColor: palette.grayLighter.main,

@@ -4,11 +4,9 @@ import { useParams, useHistory } from 'react-router-dom'
 import {
   makeStyles,
   Button,
-  Divider,
   Typography,
   List,
   ListItem,
-  ListItemText,
   ListItemSecondaryAction,
   MenuItem,
   TextField,
@@ -42,17 +40,32 @@ export const OrganizationRolePage: React.FC = () => {
       tags: selectTags(state, accountId),
     }
   })
-  const [form, setForm] = useState<IOrganizationRole>({ ...DEFAULT_ROLE })
+  const [form, setForm] = useState<IOrganizationRole>()
+  const [count, setCount] = useState<number>()
   const systemRole = ['ADMIN', 'MEMBER'].includes(role.type)
-  const fullAccess = form.access === 'UNLIMITED'
+  const fullAccess = form?.access === 'UNLIMITED'
+
+  const changeForm = async (changedForm: IOrganizationRole) => {
+    setForm(changedForm)
+    setCount(undefined)
+    let filter = {}
+    if (changedForm.access !== 'UNLIMITED' && changedForm.tags.length)
+      filter = {
+        tag: {
+          values: changedForm.tags.map(t => t.name),
+          operator: changedForm.access,
+        },
+      }
+    const result = await dispatch.devices.fetchCount(filter)
+    setCount(result)
+  }
 
   useEffect(() => {
-    if (role.id !== form.id) {
-      console.log('SET FORM ', role)
-      setForm(role)
-    }
+    if (role.id !== form?.id) changeForm(role)
     analyticsHelper.page('OrganizationRolePage')
   }, [roleID])
+
+  if (!form) return null
 
   return (
     <Container
@@ -90,43 +103,56 @@ export const OrganizationRolePage: React.FC = () => {
             variant="filled"
             onChange={event => {
               const access = event.target.value as IOrganizationRole['access']
-              setForm({ ...form, access })
+              changeForm({ ...form, access })
             }}
           >
             <MenuItem value="UNLIMITED">All devices</MenuItem>
             <MenuItem value={fullAccess ? 'ANY' : form.access}>Tagged devices</MenuItem>
           </TextField>
+          <ListItemSecondaryAction>
+            <Chip color="primary" label={count === undefined ? 'Counting...' : `${count} devices`} size="small" />
+          </ListItemSecondaryAction>
         </ListItem>
         {!fullAccess && (
           <>
             <ListItem>
-              <ListItemText>
-                <Tags
-                  tags={form.tags}
-                  onDelete={tag => {
-                    let tags = form.tags
-                    const index = findTagIndex(tags, tag.name)
-                    tags.splice(index, 1)
-                    setForm({ ...form, tags })
-                  }}
-                  onClick={tag => {
-                    dispatch.devices.set({ tag: { values: [tag.name] } })
-                    dispatch.devices.fetch()
-                    history.push('/devices')
-                  }}
-                />
-                <TagEditor
-                  allowAdding={false}
-                  // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
-                  onSelect={tag => {
-                    let tags = form.tags
-                    tags.push(tag)
-                    setForm({ ...form, tags })
-                  }}
-                  tags={tags}
-                  filter={role.tags}
-                />
-              </ListItemText>
+              {/* <InputLabel shrink>Device Filter</InputLabel> */}
+              <Tags
+                tags={form.tags}
+                onDelete={tag => {
+                  let tags = [...form.tags]
+                  const index = findTagIndex(tags, tag.name)
+                  tags.splice(index, 1)
+                  changeForm({ ...form, tags })
+                }}
+                onClick={tag => {
+                  dispatch.devices.set({ tag: { values: [tag.name] } })
+                  dispatch.devices.fetch()
+                  history.push('/devices')
+                }}
+              />
+              <TagEditor
+                allowAdding={false}
+                // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
+                onSelect={tag => {
+                  let tags = [...form.tags]
+                  tags.push(tag)
+                  changeForm({ ...form, tags })
+                }}
+                tags={tags}
+                filter={form.tags}
+              />
+              &nbsp;
+              {/* <Chip
+                label="PREVIEW"
+                size="small"
+                className={css.button}
+                onClick={() => {
+                  dispatch.devices.set({ tag: { values: form.tags.map(t => t.name), operator: form.access } })
+                  dispatch.devices.fetch()
+                  history.push('/devices')
+                }}
+              /> */}
               <ListItemSecondaryAction>
                 <Typography variant="caption">Match: &nbsp;</Typography>
                 <TextField
@@ -136,7 +162,7 @@ export const OrganizationRolePage: React.FC = () => {
                   disabled={disabled}
                   value={form.access}
                   variant="filled"
-                  onChange={event => setForm({ ...form, access: event.target.value as IOrganizationRole['access'] })}
+                  onChange={event => changeForm({ ...form, access: event.target.value as IOrganizationRole['access'] })}
                 >
                   <MenuItem dense value="ANY">
                     Any
@@ -145,16 +171,6 @@ export const OrganizationRolePage: React.FC = () => {
                     All
                   </MenuItem>
                 </TextField>
-                &nbsp;
-                <Chip
-                  label="View devices"
-                  size="small"
-                  onClick={() => {
-                    dispatch.devices.set({ tag: { values: form.tags.map(t => t.name), operator: form.access } })
-                    dispatch.devices.fetch()
-                    history.push('/devices')
-                  }}
-                />
               </ListItemSecondaryAction>
             </ListItem>
           </>
@@ -203,6 +219,7 @@ export const OrganizationRolePage: React.FC = () => {
 const useStyles = makeStyles(({ palette }) => ({
   form: {
     '& .MuiTextField-root': { maxWidth: 400 },
-    '& .MuiListItemText-root': { marginRight: 150 },
+    '& .MuiListItem-secondaryAction': { paddingRight: 130 },
   },
+  button: { fontWeight: 'bold', letterSpacing: 1, color: palette.grayDarker.main },
 }))
