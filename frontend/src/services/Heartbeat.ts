@@ -1,34 +1,48 @@
-import network from './Network'
 import { isPortal } from './Browser'
 import { store } from '../store'
 import { emit } from './Controller'
 
-const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC
+const HEARTBEAT_INTERVAL = 1000 * 20 // 20 SEC
 const CAFFEINATE_INTERVAL = 1000 // 1 SEC
 
 class Heartbeat {
   count = 0
-  interval?: number = undefined
+  restInterval?: number = undefined
+  caffeineInterval?: number = undefined
 
   init() {
     if (!isPortal()) {
-      window.setInterval(this.beat, HEARTBEAT_INTERVAL)
-      window.onfocus = this.beat
+      window.onfocus = this.focus
+      window.onblur = this.blur
+      if (document.hasFocus()) this.focus()
     }
   }
 
-  beat() {
-    const { auth } = store.getState()
-    network.isActive() && auth.backendAuthenticated && emit('heartbeat')
+  focus = () => {
+    this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
   }
 
-  caffeinate() {
+  blur = () => {
+    if (this.restInterval) {
+      window.clearInterval(this.restInterval)
+      this.restInterval = undefined
+    }
+  }
+
+  beat = () => {
+    const { auth } = store.getState()
+    if (navigator.onLine && auth.backendAuthenticated) {
+      emit('heartbeat')
+    }
+  }
+
+  caffeinate = () => {
     this.count = 0
-    if (this.interval) window.clearInterval(this.interval)
-    this.interval = window.setInterval(() => {
-      if (this.count++ > 10) {
-        window.clearInterval(this.interval)
-        this.interval = undefined
+    if (this.caffeineInterval) window.clearInterval(this.caffeineInterval)
+    this.caffeineInterval = window.setInterval(() => {
+      if (this.count++ > 15) {
+        window.clearInterval(this.caffeineInterval)
+        this.caffeineInterval = undefined
       }
       this.beat()
     }, CAFFEINATE_INTERVAL)
