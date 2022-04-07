@@ -127,7 +127,7 @@ export const InlineSetting: React.FC<Props> = ({
         <Title>
           <ListItemText style={{ color }}>
             {label && <InputLabel shrink>{label}</InputLabel>}
-            {displayValue || value || '–'}
+            {(displayValue === undefined ? value : displayValue) || '–'}
           </ListItemText>
         </Title>
         {!disabled && (

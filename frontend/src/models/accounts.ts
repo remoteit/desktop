@@ -39,7 +39,6 @@ export default createModel<RootModel>()({
                   organization {
                     id
                     name
-                    samlName
                     account {
                       id
                       email

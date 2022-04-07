@@ -7,12 +7,12 @@ import { Gutters } from './Gutters'
 import { Body } from './Body'
 
 export const OrganizationEmpty: React.FC = () => {
-  const { name } = useSelector((state: ApplicationState) => ({
-    name: (state.auth.user?.email || '').split('@')[0],
+  const { username } = useSelector((state: ApplicationState) => ({
+    username: (state.auth.user?.email || '').split('@')[0],
     // licensed: !!selectLicense(state, REMOTEIT_PRODUCT_ID).license?.plan.commercial,
     // licensed: !!getLimit('org-users', state), // Would be better
   }))
-  const [create, setCreate] = React.useState<string>(`${name}'s org`)
+  const [name, setName] = React.useState<string>(`${username}'s org`)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -27,16 +27,16 @@ export const OrganizationEmpty: React.FC = () => {
           className={css.form}
           onSubmit={event => {
             event.preventDefault()
-            dispatch.organization.setOrganization(create)
+            dispatch.organization.setOrganization({ name })
           }}
         >
           <TextField
             autoFocus
             label="Name"
             variant="filled"
-            value={create}
-            placeholder={create}
-            onChange={event => setCreate(event.target.value.toString())}
+            value={name}
+            placeholder={name}
+            onChange={event => setName(event.target.value.toString())}
           />
           <Button variant="contained" color="primary" type="submit" size="large">
             Create

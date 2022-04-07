@@ -11,8 +11,8 @@ export const DeviceLabelSetting: React.FC<{ device: IDevice }> = ({ device }) =>
 
   return (
     <InlineTextFieldSetting
-      value={device.attributes.label}
       label="Device Label"
+      value={device.attributes.label}
       resetValue={device.attributes.label}
       icon={<LabelButton device={device} />}
       onSave={label => {

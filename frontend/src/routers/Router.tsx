@@ -18,10 +18,10 @@ import { LicensingPage } from '../pages/LicensingPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
-import { OrganizationSAMLPage } from '../pages/OrganizationSAMLPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationRolePage } from '../pages/OrganizationRolePage'
 import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
+import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
@@ -272,7 +272,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
 
               <Route path="/account/organization/saml">
-                <OrganizationSAMLPage />
+                <OrganizationSettingsPage />
               </Route>
 
               <Route path="/account/organization">

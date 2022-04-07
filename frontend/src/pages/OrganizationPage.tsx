@@ -50,7 +50,7 @@ export const OrganizationPage: React.FC = () => {
                 value={organization.name}
                 label="Name"
                 resetValue={organization.name}
-                onSave={name => dispatch.organization.setOrganization(name.toString())}
+                onSave={name => dispatch.organization.setOrganization({ name: name.toString() })}
               />
               <SeatsSetting license={license} />
               <Gutters>

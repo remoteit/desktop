@@ -4,10 +4,9 @@ import { Typography, TextField, ListItem, MenuItem } from '@material-ui/core'
 import { useApplication } from '../hooks/useApplication'
 import { ApplicationState } from '../store'
 import { TemplateSetting } from './TemplateSetting'
-import { ROUTES } from '../shared/constants'
+import { ROUTES } from '../models/devices'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
-import { spacing } from '../styling'
 
 type Props = IService['attributes'] & {
   className?: string

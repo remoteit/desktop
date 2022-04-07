@@ -170,6 +170,7 @@ export const MFAPreference: React.FC = () => {
               <Button
                 variant="contained"
                 color="primary"
+                size="small"
                 onClick={() => {
                   setShowEnableSelection(false)
                   setShowMFASelection(true)

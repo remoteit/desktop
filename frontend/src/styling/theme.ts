@@ -87,8 +87,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           '& + .MuiButton-root': { marginLeft: spacing.sm },
         },
         contained: {
-          '&:hover': { backgroundColor: palette.grayDark.main },
-          '&, &.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
+          color: palette.alwaysWhite.main,
+          backgroundColor: palette.grayDark.main,
+          '&:hover': { backgroundColor: palette.grayDarker.main },
+          '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
           boxShadow: 'none',
         },
         text: { padding: `${spacing.sm}px ${spacing.md}px` },
@@ -109,13 +111,21 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         ripple: { color: palette.primary?.main || undefined },
       },
       MuiChip: {
-        root: { borderRadius: radius, backgroundColor: palette.grayLightest.main },
+        root: {
+          borderRadius: radius,
+          backgroundColor: palette.grayLightest.main,
+          color: palette.alwaysWhite.main,
+          fontWeight: 500,
+        },
         clickable: {
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },
         sizeSmall: {
           height: 20,
           borderRadius: 10,
+          fontWeight: 400,
+          color: 'inherit',
+          letterSpacing: 0,
           fontSize: fontSizes.xxs,
           paddingLeft: spacing.xxs,
           paddingRight: spacing.xxs,

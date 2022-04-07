@@ -9,6 +9,7 @@ type Props = {
   disabled?: boolean
   checked?: boolean
   indeterminate?: boolean
+  disableGutters?: boolean
   onClick: (checked: boolean) => void
 }
 
@@ -18,12 +19,19 @@ export const ListItemCheckbox: React.FC<Props> = ({
   disabled,
   checked,
   indeterminate,
+  disableGutters,
   onClick,
   children,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
-    <ListItem disabled={disabled} button dense onClick={() => inputRef.current?.click()}>
+    <ListItem
+      disabled={disabled}
+      disableGutters={disableGutters}
+      button
+      dense
+      onClick={() => inputRef.current?.click()}
+    >
       <ListItemIcon>
         <Checkbox
           checked={!!checked}

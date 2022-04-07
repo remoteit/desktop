@@ -403,6 +403,28 @@ export default createModel<RootModel>()({
   },
 })
 
+export const ROUTES: IRoute[] = [
+  {
+    key: 'failover',
+    icon: 'code-branch',
+    name: 'Peer to peer with proxy failover',
+    description:
+      'Default is to prioritize peer to peer connections over proxy connections, but use proxy if peer to peer fails. Also allows overriding at time of connection.',
+  },
+  {
+    key: 'p2p',
+    icon: 'arrows-h',
+    name: 'Peer to peer only',
+    description: 'Only connect using peer to peer. Does not allow overriding.',
+  },
+  {
+    key: 'proxy',
+    icon: 'cloud',
+    name: 'Proxy only',
+    description: 'Only allow proxy connections. Does not allow overriding.',
+  },
+]
+
 function graphQLMetadata(gqlData?: AxiosResponse) {
   const error = graphQLGetErrors(gqlData)
   const total = gqlData?.data?.data?.login?.account?.devices?.total || 0

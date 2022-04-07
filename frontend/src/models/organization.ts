@@ -1,5 +1,10 @@
 import { createModel } from '@rematch/core'
-import { graphQLSetOrganization, graphQLRemoveOrganization, graphQLSetMembers } from '../services/graphQLMutation'
+import {
+  graphQLSetOrganization,
+  graphQLRemoveOrganization,
+  graphQLSetMembers,
+  graphQLSetSAML,
+} from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getRemoteitLicense } from './licensing'
 import { ApplicationState } from '../store'
@@ -33,6 +38,13 @@ export type IOrganizationState = {
   updating: boolean
   id?: string
   name?: string
+  require2FA: boolean
+  domain?: string
+  samlEnabled: boolean
+  providers: null | IOrganizationProvider[]
+  verificationCNAME?: string
+  verificationValue?: string
+  verified: boolean
   created?: Date
   account?: IUserRef
   members: IOrganizationMember[]
@@ -44,6 +56,13 @@ const organizationState: IOrganizationState = {
   updating: false,
   id: undefined,
   name: undefined,
+  require2FA: false,
+  domain: undefined,
+  samlEnabled: false,
+  providers: null,
+  verificationCNAME: undefined,
+  verificationValue: undefined,
+  verified: false,
   created: undefined,
   members: [],
   roles: [
@@ -80,8 +99,15 @@ export default createModel<RootModel>()({
           ` query {
               login {
                 organization {
-                  name
                   id
+                  name
+                  require2FA
+                  domain
+                  samlEnabled
+                  providers
+                  verificationCNAME
+                  verificationValue
+                  verified
                   created
                   members {
                     created
@@ -115,8 +141,7 @@ export default createModel<RootModel>()({
       }
 
       dispatch.organization.set({
-        id: org.id,
-        name: org.name,
+        ...org,
         created: new Date(org.created),
         members: [
           ...org.members.map(m => ({
@@ -124,19 +149,28 @@ export default createModel<RootModel>()({
             created: new Date(m.created),
           })),
         ],
-        access: [],
       })
     },
 
-    async setOrganization(name: string, state) {
-      let members = state.organization.members
-      dispatch.organization.set({ name: name, id: state.auth.user?.id, members })
-      const result = await graphQLSetOrganization(name)
+    async setOrganization(params: IOrganizationSettings, state) {
+      let org = state.organization
+      await dispatch.organization.set({ ...params, id: org.id || state.auth.user?.id })
+      const result = await graphQLSetOrganization(params)
       if (result === 'ERROR') {
-        dispatch.organization.fetch()
-      } else {
-        dispatch.ui.set({ successMessage: `Your organization '${name}' has been set.` })
+        await dispatch.organization.fetch()
+      } else if (!org.id) {
+        dispatch.ui.set({ successMessage: 'Your organization has been created.' })
       }
+    },
+
+    async setSAML(params: { enabled: boolean; metadata?: string }, state) {
+      dispatch.organization.set({ updating: true })
+      const result = await graphQLSetSAML(params)
+      if (result !== 'ERROR') {
+        dispatch.ui.set({ successMessage: params.enabled ? 'SAML enabled and metadata uploaded.' : 'SAML disabled.' })
+      }
+      await dispatch.organization.fetch()
+      dispatch.organization.set({ updating: false })
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {

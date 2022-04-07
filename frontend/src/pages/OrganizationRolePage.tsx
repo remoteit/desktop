@@ -143,16 +143,6 @@ export const OrganizationRolePage: React.FC = () => {
                 filter={form.tags}
               />
               &nbsp;
-              {/* <Chip
-                label="PREVIEW"
-                size="small"
-                className={css.button}
-                onClick={() => {
-                  dispatch.devices.set({ tag: { values: form.tags.map(t => t.name), operator: form.access } })
-                  dispatch.devices.fetch()
-                  history.push('/devices')
-                }}
-              /> */}
               <ListItemSecondaryAction>
                 <Typography variant="caption">Match: &nbsp;</Typography>
                 <TextField

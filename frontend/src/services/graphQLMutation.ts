@@ -97,12 +97,21 @@ export async function graphQLShareDevice(params: IShareProps) {
   )
 }
 
-export async function graphQLSetOrganization(name: string) {
+export async function graphQLSetOrganization(params: IOrganizationSettings) {
   return await graphQLBasicRequest(
-    ` mutation query($name: String!) {
-        setOrganization(name: $name)
+    ` mutation query($name: String, $domain: String, $require2FA: Boolean, $providers: [AuthenticationProvider!]) {
+        setOrganization(name: $name, domain: $domain, require2FA: $require2FA, providers: $providers)
       }`,
-    { name }
+    params
+  )
+}
+
+export async function graphQLSetSAML(params: { enabled: boolean; metadata?: string }) {
+  return await graphQLBasicRequest(
+    ` mutation query($enabled: Boolean, $metadata: String) {
+        configureSAML(enabled: $enabled, metadata: $metadata)
+      }`,
+    params
   )
 }
 
@@ -141,6 +150,15 @@ export async function graphQLClaimDevice(code: string) {
         }
       }`,
     { code }
+  )
+}
+
+export async function graphQLConfigureSAML(params: { enabled: boolean; metadata: string }) {
+  return await graphQLBasicRequest(
+    ` mutation query($enabled: Boolean!, $metadata: String!)) {
+        configureSAML(enabled: $enabled, metadata: $metadata)
+      }`,
+    params
   )
 }
 
