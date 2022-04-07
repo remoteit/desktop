@@ -43,6 +43,7 @@ export const REGEX_NAME_SAFE = /[^a-zA-Z0-9_ -]/g
 export const REGEX_NOT_FILE_SAFE = /[\W]/g
 export const REGEX_IP_SAFE = /[^0-9.]+/g
 export const REGEX_PORT_SAFE = /[^0-9]+/g
+export const REGEX_DOMAIN_SAFE = /[^a-zA-Z0-9-.]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const REGEX_CHARACTERS = /^([^0-9]*)$/
 export const REGEX_LAST_NUMBER = /-*\d*$/
@@ -51,12 +52,13 @@ export const REGEX_VALID_IP =
 export const REGEX_VALID_HOSTNAME =
   /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 export const REGEX_TAG_SAFE = /[\s]/g
-export const REGEX_VALID_URL = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/
 export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]+/g
 export const REGEX_CONNECTION_TRIM = /^-|-$/
+
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
 export const MAX_CONNECTION_NAME_LENGTH = 62
+export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
@@ -101,24 +103,7 @@ export const PUBLIC_CONNECTION = {
   log: false,
 }
 
-export const ROUTES: IRoute[] = [
-  {
-    key: 'failover',
-    icon: 'code-branch',
-    name: 'Peer to peer with proxy failover',
-    description:
-      'Default is to prioritize peer to peer connections over proxy connections, but use proxy if peer to peer fails. Also allows overriding at time of connection.',
-  },
-  {
-    key: 'p2p',
-    icon: 'arrows-h',
-    name: 'Peer to peer only',
-    description: 'Only connect using peer to peer. Does not allow overriding.',
-  },
-  {
-    key: 'proxy',
-    icon: 'cloud',
-    name: 'Proxy only',
-    description: 'Only allow proxy connections. Does not allow overriding.',
-  },
-]
+export const LANGUAGES: ILookup<string> = {
+  en: 'English',
+  ja: 'Japanese',
+}

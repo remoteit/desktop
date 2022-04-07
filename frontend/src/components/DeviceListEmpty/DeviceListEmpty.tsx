@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
+import { getDeviceModel } from '../../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { DEMO_DEVICE_CLAIM_CODE } from '../../shared/constants'
@@ -15,7 +16,7 @@ export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
   const { noResults, userAccount, claiming } = useSelector((state: ApplicationState) => ({
-    noResults: (state.devices.searched || selectIsFiltered(state)) && !state.devices.results,
+    noResults: (getDeviceModel(state).searched || selectIsFiltered(state)) && !getDeviceModel(state).results,
     userAccount: isUserAccount(state),
     claiming: state.ui.claiming,
   }))

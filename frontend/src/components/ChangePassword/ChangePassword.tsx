@@ -35,10 +35,12 @@ export const ChangePassword = () => {
           <PasswordStrengthInput onChange={(password: string) => setPassword(password)} />
         </Gutters>
         <Gutters bottom="xl">
-          <Button variant="contained" color="primary" type="submit">
+          <Button variant="contained" color="primary" type="submit" size="small">
             Save
           </Button>
-          <Button color="default">Cancel</Button>
+          <Button color="default" size="small">
+            Cancel
+          </Button>
         </Gutters>
       </form>
     </>

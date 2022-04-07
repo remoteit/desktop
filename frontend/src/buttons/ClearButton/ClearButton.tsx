@@ -28,10 +28,10 @@ export const ClearButton: React.FC<Props> = ({ disabled, id, all }) => {
       Clear all
     </Button>
   ) : (
-    <IconButton className={css.button} onClick={forget} disabled={disabled} size="sm" icon="times" />
+    <IconButton className={css.button} onClick={forget} disabled={disabled} size="sm" type="light" icon="times" />
   )
 }
 
-const useStyles = makeStyles({
-  button: { padding: spacing.xs, marginRight: spacing.xs },
-})
+const useStyles = makeStyles(theme => ({
+  button: { padding: spacing.xs, marginRight: spacing.xs, color: theme.palette.gray.main },
+}))

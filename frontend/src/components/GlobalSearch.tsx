@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import reactStringReplace from 'react-string-replace'
 import debounce from 'lodash.debounce'
 import classnames from 'classnames'
+import { getDeviceModel } from '../models/accounts'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -21,7 +22,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     userEmail: state.auth.user?.email,
     enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
     fetching: state.search.fetching,
-    query: state.devices.query,
+    query: getDeviceModel(state).query,
     data: selectAllSearch(state),
   }))
   const css = useStyles()

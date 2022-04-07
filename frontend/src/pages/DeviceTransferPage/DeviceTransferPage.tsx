@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { getDeviceModel } from '../../models/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Typography, Button } from '@material-ui/core'
@@ -17,7 +18,7 @@ type Props = {
 export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) => {
   const { contacts = [], transferring } = useSelector((state: ApplicationState) => ({
     contacts: state.contacts.all,
-    transferring: state.devices.transferring,
+    transferring: getDeviceModel(state).transferring,
   }))
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)

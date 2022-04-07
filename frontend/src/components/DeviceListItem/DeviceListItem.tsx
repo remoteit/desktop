@@ -93,7 +93,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderBottomRightRadius: radius,
     overflow: 'visible',
     paddingLeft: spacing.md,
-    '& .MuiListItemIcon-root': { marginRight: spacing.sm },
+    '& .MuiListItemIcon-root': { marginRight: spacing.sm }, // TODO clear when connected isn't blue?
   },
   button: {
     position: 'absolute',

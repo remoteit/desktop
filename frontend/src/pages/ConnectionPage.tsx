@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Typography } from '@material-ui/core'
 import { selectById } from '../models/devices'
+import { getDeviceModel } from '../models/accounts'
 import { selectConnection } from '../helpers/connectionHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -25,7 +26,7 @@ export const ConnectionPage: React.FC = () => {
       service,
       device,
       connection: selectConnection(state, service),
-      fetching: state.devices.fetching,
+      fetching: getDeviceModel(state).fetching,
       accordion: state.ui.accordion,
     }
   })
@@ -46,10 +47,19 @@ export const ConnectionPage: React.FC = () => {
       backgroundColor={connection.enabled ? 'primaryHighlight' : 'grayLighter'}
       bodyProps={{ insetShadow: false }}
       header={
-        <Typography variant="h1" gutterBottom>
-          <Title>{connection.name}</Title>
-          <InfoButton device={device} service={service} />
-        </Typography>
+        <>
+          <Typography variant="h1" gutterBottom={!service.attributes.description}>
+            <Title>{connection.name}</Title>
+            <InfoButton device={device} service={service} />
+          </Typography>
+          {service.attributes.description && (
+            <Gutters bottom="xl" top={null}>
+              <Typography variant="body2" color="textSecondary">
+                {service.attributes.description}
+              </Typography>
+            </Gutters>
+          )}
+        </>
       }
     >
       <Connect />

@@ -19,6 +19,7 @@ input {
 code,
 pre {
   font-family: 'Roboto Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 11px;
 }
 
 header {

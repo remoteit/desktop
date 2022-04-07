@@ -1,5 +1,5 @@
 import React from 'react'
-import { ROUTES } from '../../shared/constants'
+import { ROUTES } from '../../models/devices'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { InlineSelectSetting } from '../InlineSelectSetting'
 

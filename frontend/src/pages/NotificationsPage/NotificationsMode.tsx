@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { TextField, Button, List } from '@material-ui/core'
 import { Gutters } from '../../components/Gutters'
-import { REGEX_VALID_URL } from '../../shared/constants'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
@@ -74,7 +73,7 @@ export const NotificationMode: React.FC = () => {
         <ListItemSwitch label="Webhook" checked={urlNotifications} onClick={onWebChange} />
       </List>
       <Gutters inset="icon" top={null}>
-        <Quote margin={0}>
+        <Quote margin={null}>
           <TextField
             disabled={!urlNotifications}
             onChange={e => changeWebHookUrl(e.currentTarget.value.trim())}

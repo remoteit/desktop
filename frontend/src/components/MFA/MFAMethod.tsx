@@ -66,6 +66,5 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     '& > *': { marginRight: spacing.md },
-    '& .MuiChip-root': { color: theme.palette.alwaysWhite.main, fontWeight: 'bold' },
   },
 }))

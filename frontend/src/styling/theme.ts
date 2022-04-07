@@ -87,8 +87,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           '& + .MuiButton-root': { marginLeft: spacing.sm },
         },
         contained: {
-          '&:hover': { backgroundColor: palette.grayDark.main },
-          '&, &.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
+          color: palette.alwaysWhite.main,
+          backgroundColor: palette.grayDark.main,
+          '&:hover': { backgroundColor: palette.grayDarker.main },
+          '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
           boxShadow: 'none',
         },
         text: { padding: `${spacing.sm}px ${spacing.md}px` },
@@ -109,17 +111,26 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         ripple: { color: palette.primary?.main || undefined },
       },
       MuiChip: {
-        root: { borderRadius: radius, backgroundColor: palette.grayLightest.main },
+        root: {
+          borderRadius: radius,
+          backgroundColor: palette.grayLightest.main,
+          color: palette.alwaysWhite.main,
+          fontWeight: 500,
+        },
+        colorSecondary: { color: palette.alwaysWhite.main },
         clickable: {
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },
         sizeSmall: {
           height: 20,
           borderRadius: 10,
+          fontWeight: 400,
+          color: 'inherit',
+          letterSpacing: 0,
           fontSize: fontSizes.xxs,
           paddingLeft: spacing.xxs,
           paddingRight: spacing.xxs,
-          '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
+          marginRight: spacing.xxs,
         },
         outlined: {
           borderColor: palette.grayLighter.main,
@@ -257,22 +268,30 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
           '& > .MuiList-padding': { padding: 0 },
+          '& .MuiListItemIcon-root': { minWidth: 50 },
+          '& .MuiListItem-root': {
+            paddingLeft: 0,
+            paddingRight: spacing.md,
+          },
+          '& .MuiDivider-root': {
+            marginTop: 10,
+            marginBottom: 10,
+          },
         },
       },
       MuiMenuItem: {
         root: {
-          '& .MuiListItemIcon-root': { minWidth: 50 },
           paddingLeft: 0,
-          paddingRight: spacing.lg,
+          paddingRight: spacing.md,
           color: palette.grayDarkest.main,
           fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
-        },
-        gutters: {
-          paddingLeft: spacing.sm,
-          paddingRight: spacing.sm,
-          marginLeft: spacing.sm,
-          marginRight: spacing.sm,
+          '&.MuiMenuItem-gutters': {
+            paddingLeft: spacing.sm,
+            paddingRight: spacing.sm,
+            marginLeft: spacing.sm,
+            marginRight: spacing.sm,
+          },
         },
       },
       MuiInput: {

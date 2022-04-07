@@ -3,6 +3,7 @@ import { getOwnDevices, getActiveOrganizationMembership } from '../../models/acc
 import { makeStyles, useMediaQuery, Typography } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { getDeviceModel } from '../../models/accounts'
 import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
 import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
@@ -23,7 +24,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
     (state: ApplicationState) => ({
       feature: state.ui.feature,
       selected: state.ui.selected,
-      searched: state.devices.searched,
+      searched: getDeviceModel(state).searched,
       navigationBack: state.ui.navigationBack,
       navigationForward: state.ui.navigationForward,
       device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),

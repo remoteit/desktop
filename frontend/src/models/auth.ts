@@ -9,6 +9,7 @@ import {
   COGNITO_USER_POOL_ID,
   COGNITO_AUTH_DOMAIN,
   REDIRECT_URL,
+  LANGUAGES,
 } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
@@ -163,6 +164,7 @@ export default createModel<RootModel>()({
     async changeLanguage(language: string) {
       const { setLanguage } = dispatch.auth
       await r3.post('/user/language/', { language })
+      dispatch.ui.set({ successMessage: `Language changed to ${LANGUAGES[language]}` })
       setLanguage(language)
     },
     /* TODO validate and hook changeEmail up */

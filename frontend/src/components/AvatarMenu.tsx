@@ -87,14 +87,14 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         )}
-        <Divider className={css.divider} />
+        <Divider />
         <PortalUI>
           <ListItemSetting
             label="Switch to Legacy View"
             icon="history"
             onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
           />
-          <Divider className={css.divider} />
+          <Divider />
         </PortalUI>
         <DesktopUI>
           <ListItemSetting
@@ -140,24 +140,9 @@ const useStyles = makeStyles(({ palette }) => ({
   label: {
     display: 'flex',
   },
-  avatar: {
-    borderWidth: 3,
-    borderStyle: 'solid',
-    borderColor: palette.white.main,
-    '&:hover': { borderColor: palette.primaryLight.main },
-  },
   menu: {
     '& .MuiMenu-list': {
       backgroundColor: palette.white.main,
     },
-    '& .MuiListItem-root': {
-      paddingLeft: 0,
-      paddingRight: spacing.lg,
-      borderRadius: spacing.xxs,
-    },
-  },
-  divider: {
-    marginTop: 10,
-    marginBottom: 10,
   },
 }))

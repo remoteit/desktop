@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { LANGUAGES } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles, Typography, List, TextField, MenuItem, ListItem, ListItemIcon, Link } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
@@ -44,21 +45,21 @@ export const ProfilePage: React.FC = () => {
       </Gutters>
       <List>
         <InlineTextFieldSetting icon="at" value={user.email} label="EMAIL" disabled={true} />
-        {/* <ListItem dense className={css.field} button>
+        <ListItem dense className={css.field} button>
           <ListItemIcon>
-            <Icon name="language" size="md" fixedWidth />
+            <Icon name="language" fixedWidth />
           </ListItemIcon>
           <TextField
             select
             fullWidth
-            label="Language preference"
-            value="en"
+            label="Email Language"
+            value={user?.language}
             onChange={e => auth.changeLanguage(e.target.value)}
           >
-            <MenuItem value="en">English</MenuItem>
-            <MenuItem value="ja">Japanese</MenuItem>
+            <MenuItem value="en">{LANGUAGES.en}</MenuItem>
+            <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>
           </TextField>
-        </ListItem> */}
+        </ListItem>
         <AccordionMenuItem subtitle="Account deletion" gutters>
           <DeleteAccountSection email={user.email} paidPlan={false} />
         </AccordionMenuItem>

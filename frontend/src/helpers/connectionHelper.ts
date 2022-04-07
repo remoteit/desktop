@@ -8,6 +8,8 @@ import {
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
+import { LAUNCH_TYPE } from '../shared/applications'
+import { isPortal } from '../services/Browser'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -57,10 +59,16 @@ export function newConnection(service?: IService | null) {
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
+    connection.targetHost = service.attributes.targetHost
+    connection.description = service.attributes.description
     if (device) connection.name = connectionName(service, device)
   }
 
   return connection
+}
+
+export function launchDisabled(connection: IConnection) {
+  return connection.launchType === LAUNCH_TYPE.COMMAND && isPortal()
 }
 
 export function setConnection(connection: IConnection) {

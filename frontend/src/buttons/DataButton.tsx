@@ -9,6 +9,7 @@ export type DataButtonProps = {
   label?: string
   icon: string | React.ReactElement
   iconColor?: Color
+  gutterBottom?: boolean
   fullWidth?: boolean
   showBackground?: boolean
   onClick: (event?: any) => void
@@ -20,11 +21,12 @@ export const DataButton: React.FC<DataButtonProps> = ({
   label,
   icon,
   iconColor,
+  gutterBottom,
   fullWidth,
   showBackground,
   onClick,
 }) => {
-  const css = useStyles({ showBackground, fullWidth })
+  const css = useStyles({ showBackground, fullWidth, gutterBottom })
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
@@ -40,7 +42,15 @@ export const DataButton: React.FC<DataButtonProps> = ({
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  box: ({ showBackground, fullWidth }: { showBackground?: boolean; fullWidth?: boolean }) => ({
+  box: ({
+    showBackground,
+    fullWidth,
+    gutterBottom,
+  }: {
+    showBackground?: boolean
+    fullWidth?: boolean
+    gutterBottom?: boolean
+  }) => ({
     display: 'flex',
     alignItems: 'center',
     textAlign: 'left',
@@ -48,6 +58,7 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingLeft: spacing.xxs,
     paddingRight: spacing.lg,
     width: fullWidth ? '100%' : undefined,
+    marginBottom: gutterBottom ? spacing.xs : undefined,
     backgroundColor: showBackground ? palette.grayLightest.main : undefined,
     '&:hover': { backgroundColor: showBackground ? palette.primaryHighlight.main : undefined },
     '& svg': { minWidth: 60 },

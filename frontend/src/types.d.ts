@@ -25,6 +25,15 @@ declare global {
     | 'service/uptime'
     | 'connectd/install/error'
 
+  type IOrganizationProvider = 'SAML'
+
+  type IOrganizationSettings = {
+    name?: string
+    domain?: string
+    require2FA?: boolean
+    providers?: null | IOrganizationProvider[]
+  }
+
   type ILicenseChip = {
     name: string
     colorName: Color

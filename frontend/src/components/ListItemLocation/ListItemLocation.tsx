@@ -1,19 +1,21 @@
 import React from 'react'
+import classnames from 'classnames'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
+import { makeStyles, ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
+import { Color, spacing } from '../../styling'
 import { Icon } from '../Icon'
-import { Color } from '../../styling'
 
 export type Props = {
   pathname: string
   title?: React.ReactElement | string
   subtitle?: string
-  icon?: string
+  icon?: React.ReactElement | string
   iconColor?: Color
   iconType?: IconType
   disabled?: boolean
   showDisabled?: boolean
   disableGutters?: boolean
+  disableIcon?: boolean
   dense?: boolean
   className?: string
   match?: string | string[]
@@ -30,15 +32,18 @@ export const ListItemLocation: React.FC<Props> = ({
   iconColor,
   iconType,
   disabled,
+  disableIcon,
   showDisabled,
   match,
   exactMatch,
   badge,
+  className,
   children,
   ...props
 }) => {
   const history = useHistory()
   const location = useLocation()
+  const css = useStyles({ disableIcon: !!disableIcon })
 
   if (!match) match = pathname
   if (typeof match === 'string') match = [match]
@@ -48,11 +53,17 @@ export const ListItemLocation: React.FC<Props> = ({
     if (props.onClick) props.onClick()
     if (!disabled) history.push(pathname)
   }
-  const iconEl = icon && <Icon name={icon} size="md" color={iconColor} type={iconType} fixedWidth />
+  const iconEl =
+    icon && typeof icon === 'string' ? (
+      <Icon name={icon} size="md" color={iconColor} type={iconType} fixedWidth />
+    ) : (
+      icon
+    )
 
   return (
     <ListItem
       {...props}
+      className={classnames(css.root, className)}
       button={!matches as any}
       selected={!!matches}
       onClick={onClick}
@@ -75,3 +86,9 @@ export const ListItemLocation: React.FC<Props> = ({
     </ListItem>
   )
 }
+
+type styleProps = { disableIcon: boolean }
+
+const useStyles = makeStyles({
+  root: ({ disableIcon }: styleProps) => ({ paddingLeft: disableIcon ? spacing.sm : undefined }),
+})

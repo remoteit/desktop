@@ -135,6 +135,7 @@ declare global {
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
     default?: boolean // if the connection is in a default state - gets removed on modification
+    description?: string
     deviceID?: string
     disconnecting?: boolean
     enabled: boolean // if the connection is active
@@ -283,6 +284,8 @@ declare global {
       defaultPort?: number
       launchTemplate?: string
       commandTemplate?: string
+      targetHost?: string
+      description?: strings
     }
   }
 
@@ -339,7 +342,6 @@ declare global {
     id: string
     name: string
     created: Date
-    samlName: string
     members?: IOrganizationMember[]
     account?: IUserRef
     licenses: ILicense[]
@@ -349,18 +351,28 @@ declare global {
     user: IUserRef
     organizationId: string
     license: ILicenseTypes
-    role: IOrganizationRole
+    role: IOrganizationRoleType
     created: Date
   }
 
   type IOrganizationMembership = {
     organization: IOrganization
-    role: IOrganizationRole
+    role: IOrganizationRoleType
     created: Date
     license: ILicenseTypes
   }
 
-  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'REMOVE'
+  type IOrganizationRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' // TEMP
+
+  type IOrganizationRole = {
+    // TEMP
+    id: string
+    type: IOrganizationRoleType
+    name: string
+    tags: ITag[]
+    access: 'UNLIMITED' | 'ANY' | 'ALL'
+    permissions: IPermission[]
+  }
 
   type IGeo = {
     countryName: string

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
 import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
@@ -14,7 +15,7 @@ export const SidebarNav: React.FC = () => {
     unreadAnnouncements: selectAnnouncements(state, true).length,
     connections: selectConnections(state).filter(connection => connection.enabled).length,
     sessions: state.sessions.all.length,
-    devices: state.devices.total,
+    devices: getDeviceModel(state).total,
     remoteUI: isRemoteUI(state),
   }))
   const css = useStyles({ sessions })
@@ -22,13 +23,13 @@ export const SidebarNav: React.FC = () => {
   return (
     <List className={css.list}>
       {remoteUI ? (
-        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" />
+        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
       ) : (
         <>
-          <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections">
+          <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
             <ListItemSecondaryAction>
               {!!connections && (
-                <Tooltip title="Added" placement="top" arrow>
+                <Tooltip title="Active" placement="top" arrow>
                   <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
                 </Tooltip>
               )}
@@ -39,7 +40,7 @@ export const SidebarNav: React.FC = () => {
               )}
             </ListItemSecondaryAction>
           </ListItemLocation>
-          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch>
+          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
             {!!devices && (
               <ListItemSecondaryAction>
                 <Tooltip title="Total" placement="top" arrow>
@@ -52,7 +53,7 @@ export const SidebarNav: React.FC = () => {
       )}
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
+      <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="code" dense />
       <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
       <Divider variant="inset" />

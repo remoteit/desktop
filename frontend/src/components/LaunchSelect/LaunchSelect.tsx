@@ -8,7 +8,6 @@ import { spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
-import { isPortal } from '../../services/Browser'
 import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
@@ -54,7 +53,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
         </TextField>
       </ListItem>
       <ListItem dense>
-        <Quote margin={0} noInset listItem>
+        <Quote margin={null} noInset listItem>
           <List className={css.indent} disablePadding>
             <AutoLaunchToggle connection={connection} service={service} />
             <InlineTemplateSetting app={app} connection={connection} service={service} />

@@ -42,6 +42,8 @@ const useStyles = makeStyles(({ palette }) => ({
     fontSize: size * 0.625,
     height: size,
     width: size,
+    verticalAlign: 'middle',
+    display: 'inline-flex',
     fontFamily: 'Roboto Mono',
     backgroundColor: labelLookup[color].color,
     borderWidth: button ? 3 : 1,

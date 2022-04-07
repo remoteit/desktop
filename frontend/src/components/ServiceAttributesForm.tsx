@@ -4,10 +4,9 @@ import { Typography, TextField, ListItem, MenuItem } from '@material-ui/core'
 import { useApplication } from '../hooks/useApplication'
 import { ApplicationState } from '../store'
 import { TemplateSetting } from './TemplateSetting'
-import { ROUTES } from '../shared/constants'
+import { ROUTES } from '../models/devices'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
-import { spacing } from '../styling'
 
 type Props = IService['attributes'] & {
   className?: string
@@ -91,7 +90,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       </TemplateSetting>
       <ListItem className={subClassName}>
         {app.allCustomTokens.length ? (
-          <Quote margin={spacing.xs}>
+          <Quote margin="xs">
             {app.allCustomTokens.map(token => (
               <TextField
                 fullWidth
@@ -105,7 +104,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             ))}
           </Quote>
         ) : (
-          <Notice fullWidth>
+          <Notice fullWidth gutterTop>
             Add custom [tokens]
             <em>
               You can add custom [tokens] to the templates above. Just enclose a tag in brackets to create a [token] you

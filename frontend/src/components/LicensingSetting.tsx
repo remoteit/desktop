@@ -40,7 +40,7 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
             </ListItem>
             {!!(license.id || license.limits?.length) && (
               <ListItem>
-                <ListItemIcon></ListItemIcon>
+                <ListItemIcon />
                 <Box>
                   {license.limits && (
                     <Box width={400} marginBottom={3} marginTop={1}>

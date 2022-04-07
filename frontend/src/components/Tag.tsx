@@ -66,7 +66,8 @@ const useStyles = makeStyles({
     '& + span': { marginLeft: spacing.xxs },
   },
   chip: {
-    marginBottom: spacing.xxs,
+    marginBottom: 2,
+    marginTop: 2,
     '& .MuiChip-label > *': { marginRight: spacing.xs },
     '& .MuiChip-deleteIconSmall': {
       marginLeft: -spacing.sm,

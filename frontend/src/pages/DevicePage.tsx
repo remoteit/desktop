@@ -1,18 +1,9 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
 import { useLocation } from 'react-router-dom'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  CircularProgress,
-} from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
-import { Container } from '../components/Container'
+import { getDeviceModel } from '../models/accounts'
+import { ApplicationState } from '../store'
+import { Typography, List, ListItem, ListItemText, ListItemSecondaryAction, CircularProgress } from '@material-ui/core'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
@@ -22,10 +13,11 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
+import { Container } from '../components/Container'
 import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { spacing, fontSizes } from '../styling'
+import { fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -33,12 +25,11 @@ type Props = {
 }
 
 export const DevicePage: React.FC<Props> = ({ device }) => {
-  const css = useStyles()
   const location = useLocation()
   const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
-    sortService: state.devices.sortServiceOption,
+    sortService: getDeviceModel(state).sortServiceOption,
   }))
 
   useEffect(() => {
@@ -72,12 +63,10 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
               `/devices/${device.id}/logs`,
               `/devices/${device.id}`,
             ]}
+            icon={<ConnectionStateIcon device={device} connection={connection} size="lg" />}
             exactMatch
             dense
           >
-            <ListItemIcon>
-              <ConnectionStateIcon device={device} connection={connection} size="lg" />
-            </ListItemIcon>
             <ListItemText
               primary={
                 <Typography variant="h3">
@@ -100,7 +89,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
         </Notice>
       )}
       <Typography variant="subtitle1">
-        <Title>Services</Title>
+        <Title>Service</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
@@ -108,12 +97,12 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
       <List>
         {editable && <LicensingNotice device={device} />}
         {editable && setupAddingService && (
-          <ListItem disabled dense>
-            <ListItemText className={css.service} primary="Registering..." />
+          <ListItemLocation pathname="" disableIcon disabled dense>
+            <ListItemText primary="Registering..." />
             <ListItemSecondaryAction>
               <CircularProgress color="primary" size={fontSizes.md} />
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemLocation>
         )}
         {device.services.sort(getSortOptions(sortService).sortService).map(s => (
           <GuideStep
@@ -128,12 +117,10 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             <ListItemLocation
               pathname={`/devices/${device.id}/${s.id}${servicePage}`}
               match={`/devices/${device.id}/${s.id}`}
+              disableIcon
               dense
             >
-              <ListItemText
-                className={css.service}
-                primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
-              />
+              <ListItemText primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />} />
               <ListItemSecondaryAction>
                 <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
               </ListItemSecondaryAction>
@@ -145,7 +132,3 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  service: { marginLeft: spacing.sm },
-})

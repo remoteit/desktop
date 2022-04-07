@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { getDeviceModel } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getActiveOrganizationMembership } from '../models/accounts'
@@ -15,7 +16,7 @@ export const SetupLinuxPage: React.FC = () => {
     user: state.auth.user,
     organization: state.organization,
     activeMembership: getActiveOrganizationMembership(state),
-    registrationCommand: state.devices.registrationCommand,
+    registrationCommand: getDeviceModel(state).registrationCommand,
   }))
   // const [type, setType] = useState<'curl' | 'wget'>('wget')
   const dispatch = useDispatch<Dispatch>()

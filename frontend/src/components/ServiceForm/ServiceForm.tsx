@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME, DEFAULT_CONNECTION } from '../../shared/constants'
+import {
+  DEFAULT_TARGET,
+  REGEX_VALID_IP,
+  REGEX_VALID_HOSTNAME,
+  DEFAULT_CONNECTION,
+  MAX_DESCRIPTION_LENGTH,
+} from '../../shared/constants'
 import { makeStyles, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
@@ -160,6 +166,24 @@ export const ServiceForm: React.FC<Props> = ({
             }}
           />
         </ListItem>
+        <ListItem className={css.field}>
+          <TextField
+            multiline
+            label="Service Description"
+            value={form.attributes.description || ''}
+            disabled={disabled}
+            variant="filled"
+            onChange={event => {
+              form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
+              setForm({ ...form })
+            }}
+          />
+          <Typography variant="caption">
+            <i>Optional</i>
+            <br />
+            Service description or connection instructions.
+          </Typography>
+        </ListItem>
         {editable && (
           <>
             <ListItem className={css.field}>
@@ -242,38 +266,50 @@ export const ServiceForm: React.FC<Props> = ({
         )}
       </List>
       <AccordionMenuItem subtitle="Connection defaults" gutters>
-        <>
-          <List>
-            <ListItem className={css.field}>
-              <TextField
-                label="Default Local Port"
-                value={form.attributes.defaultPort || ''}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => {
-                  form.attributes.defaultPort = validPort(event)
-                  setForm({ ...form })
-                }}
-              />
-              <Typography variant="caption">
-                Default local port to use when a system connects to this service.
-              </Typography>
-            </ListItem>
-            <ServiceAttributesForm
-              className={css.field}
-              subClassName={css.fieldSub}
-              connection={{
-                ...DEFAULT_CONNECTION,
-                ...form.attributes,
-                typeID: form.type,
-                port: form.attributes.defaultPort,
-              }}
+        <List>
+          <ListItem className={css.field}>
+            <TextField
+              label="Default Local Port"
+              value={form.attributes.defaultPort || ''}
               disabled={disabled}
-              attributes={form.attributes}
-              onUpdate={attributes => setForm({ ...form, attributes })}
+              variant="filled"
+              onChange={event => {
+                form.attributes.defaultPort = validPort(event)
+                setForm({ ...form })
+              }}
             />
-          </List>
-        </>
+            <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
+          </ListItem>
+          <ListItem className={css.field}>
+            <TextField
+              label="Host Name Override"
+              value={form.attributes.targetHost || ''}
+              disabled={disabled}
+              variant="filled"
+              onChange={event => {
+                form.attributes.targetHost = event.target.value.toString()
+                setForm({ ...form })
+              }}
+            />
+            <Typography variant="caption">
+              Override host name when accessing this service. Needed by host name dependant sites. <i>Example </i>
+              <b>webui.company.com</b>
+            </Typography>
+          </ListItem>
+          <ServiceAttributesForm
+            className={css.field}
+            subClassName={css.fieldSub}
+            connection={{
+              ...DEFAULT_CONNECTION,
+              ...form.attributes,
+              typeID: form.type,
+              port: form.attributes.defaultPort,
+            }}
+            disabled={disabled}
+            attributes={form.attributes}
+            onUpdate={attributes => setForm({ ...form, attributes })}
+          />
+        </List>
       </AccordionMenuItem>
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { getDeviceModel } from '../../models/accounts'
 import { ApplicationState } from '../../store'
 import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
@@ -20,7 +21,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
     restoring: state.ui.restoring,
     canRestore:
       !state.backend.device.uid &&
-      (state.devices.total > state.devices.size ||
+      (getDeviceModel(state).total > getDeviceModel(state).size ||
         !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
   }))
 

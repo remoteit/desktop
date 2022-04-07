@@ -1,11 +1,11 @@
 import React from 'react'
-import { useTooltip, useTooltipInPortal, defaultStyles } from '@visx/tooltip'
-import { localPoint } from '@visx/event'
-import { Bar } from '@visx/shape'
-import { Group } from '@visx/group'
-import { AxisBottom, AxisLeft } from '@visx/axis'
+// import { useTooltip, useTooltipInPortal, defaultStyles } from '@visx/tooltip'
+// import { localPoint } from '@visx/event'
+// import { Bar } from '@visx/shape'
+// import { Group } from '@visx/group'
+// import { AxisBottom, AxisLeft } from '@visx/axis'
 import { ITimeSeriesData } from '../../models/analytics'
-import { scaleBand, scaleLinear } from '@visx/scale'
+// import { scaleBand, scaleLinear } from '@visx/scale'
 import { spacing } from '../../styling'
 import { format as formatDate } from 'date-fns'
 import { Typography } from '@material-ui/core'
@@ -25,7 +25,7 @@ export type TooltipProps = {
   height: number
   showControls?: boolean
 }
-
+/* 
 type TooltipData = ITimeSeriesData
 
 const formattedDate = (date: Date) => formatDate(date, 'MMM d')
@@ -39,7 +39,7 @@ const tooltipStyles = {
   backgroundColor: lightColors.grayLighter,
   color: lightColors.grayDark,
 }
-let tooltipTimeout
+let tooltipTimeout */
 
 export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   title,
@@ -48,7 +48,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   width,
   height,
 }) => {
-  const { containerRef, TooltipInPortal } = useTooltipInPortal({
+  /*   const { containerRef, TooltipInPortal } = useTooltipInPortal({
     scroll: true,
     detectBounds: true,
   })
@@ -103,10 +103,10 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
       tooltipTop: coords ? coords.y : 0,
       tooltipData: datum,
     })
-  }
+  } */
 
   // scales, memoize for performance
-  const xScale = scaleBand({
+  /*   const xScale = scaleBand({
     range: [0, xMax],
     domain: timeseriesData.map(getDate),
     padding: 0.2,
@@ -117,11 +117,11 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
     nice: true,
     domain: [0, Math.max(2, maxYTick)],
   })
-  console.log('yScale', yScale)
+  console.log('yScale', yScale) */
   return (
     <>
       <Typography variant="h4">{title}</Typography>
-      <svg width={width} height={height} ref={containerRef}>
+      {/* <svg width={width} height={height} ref={containerRef}>
         <Group top={margin.top} left={margin.left}>
           <AxisLeft
             left={0}
@@ -158,7 +158,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
             )
           })}
         </Group>
-      </svg>
+      </svg> 
       {tooltipOpen && (
         <TooltipInPortal
           key={Math.random()} // update tooltip bounds each render
@@ -171,7 +171,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
             {tooltipData && tooltipData.count} {tooltipLabel}
           </div>
         </TooltipInPortal>
-      )}
+      )}*/}
     </>
   )
 }

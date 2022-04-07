@@ -57,7 +57,7 @@ export default createModel<RootModel>()({
       const AWSUser = {
         ...state.auth.AWSUser,
         ...userInfo.attributes,
-        authProvider: userInfo.username.includes('Google') || userInfo.username.includes('google') ? 'Google' : '',
+        authProvider: userInfo.username?.toLowerCase().includes('google') ? 'Google' : '',
       }
       await dispatch.auth.set({ AWSUser, backupCode: AWSUser['custom:backup_code'] })
     },

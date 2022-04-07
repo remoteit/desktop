@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { getDeviceModel } from './accounts'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
@@ -22,23 +23,23 @@ const searchState: ISearchState = {
 export default createModel<RootModel>()({
   state: searchState,
   effects: dispatch => ({
-    async updateSearch(_, rootState) {
-      const { total, size } = rootState.devices
-      const { membership: member } = rootState.accounts
+    async updateSearch(_, state) {
+      const { total, size } = getDeviceModel(state)
+      const { membership: member } = state.accounts
 
       dispatch.search.set({ cloudSearch: total > size || member.length })
 
       const devices = await dispatch.search.parseDevices()
       await dispatch.search.set({ devices })
     },
-    async fetch(name: string, rootState) {
-      if (!rootState.auth.user) return
-      if (!rootState.search.cloudSearch) return
+    async fetch(name: string, state) {
+      if (!state.auth.user) return
+      if (!state.search.cloudSearch) return
 
       dispatch.search.set({ fetching: true })
 
-      const ids: string[] = getAccountIds(rootState)
-      const state = 'active'
+      const ids: string[] = getAccountIds(state)
+      const searchState = 'active'
       const size = Math.max(4 - ids.length, 0) + 3
       const accountQueries = ids.map(
         (id, index) => `
@@ -69,7 +70,7 @@ export default createModel<RootModel>()({
             }`,
           {
             size,
-            state,
+            state: searchState,
             name,
           }
         )
@@ -103,10 +104,10 @@ export default createModel<RootModel>()({
         })
         .flat()
     },
-    async parseDevices(_, rootState): Promise<ISearch[]> {
-      const id = getActiveAccountId(rootState)
+    async parseDevices(_, state): Promise<ISearch[]> {
+      const id = getActiveAccountId(state)
       if (!id) return []
-      return getAllDevices(rootState)
+      return getAllDevices(state)
         .filter(d => !d.hidden)
         .map(device =>
           device.services

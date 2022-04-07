@@ -12,6 +12,7 @@ import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
+import { Gutters } from './Gutters'
 
 export const ServiceHeaderMenu: React.FC<{
   device?: IDevice
@@ -41,6 +42,13 @@ export const ServiceHeaderMenu: React.FC<{
             />
             <DeviceOptionMenu device={device} service={service} target={target} />
           </Typography>
+          {service.attributes.description && (
+            <Gutters top={null}>
+              <Typography variant="body2" color="textSecondary">
+                {service.attributes.description}
+              </Typography>
+            </Gutters>
+          )}
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
             <ListItemLocation
@@ -61,7 +69,7 @@ export const ServiceHeaderMenu: React.FC<{
             />
             {device.permissions.includes('MANAGE') && (
               <ListItemLocation
-                title="Edit"
+                title="Setup"
                 icon="pen"
                 iconColor="grayDarker"
                 pathname={`/devices/${device.id}/${serviceID}/edit`}
