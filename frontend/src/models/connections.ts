@@ -128,10 +128,13 @@ export default createModel<RootModel>()({
     },
 
     async clearByDevice(deviceId: string, globalState) {
-      const { clear } = dispatch.connections
+      const { clear, disconnect } = dispatch.connections
       const { all } = globalState.connections
-      all.forEach(c => {
-        if (c.deviceID === deviceId) clear(c.id)
+      all.forEach(async c => {
+        if (c.deviceID === deviceId) {
+          if (c.enabled) await disconnect(c)
+          await clear(c.id)
+        }
       })
     },
 
