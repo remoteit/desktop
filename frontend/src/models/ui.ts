@@ -109,11 +109,11 @@ export const defaultState: UIState = {
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
-  guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
+  guideLaunch: { title: 'Launch Guide', active: false, step: 1, total: 1 },
   accordion: { config: true, configConnected: false, options: false, service: false },
   autoConnect: false,
   autoLaunch: false,
-  autoCopy: false
+  autoCopy: false,
 }
 
 export default createModel<RootModel>()({
