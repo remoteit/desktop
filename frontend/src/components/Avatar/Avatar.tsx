@@ -52,9 +52,4 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: inline ? spacing.sm : 0,
     '&:hover': { borderColor: button ? palette.primaryLight.main : undefined },
   }),
-  children: {
-    // overflow: 'hidden',
-    // textOverflow: 'ellipsis',
-    // whiteSpace: 'nowrap',
-  },
 }))

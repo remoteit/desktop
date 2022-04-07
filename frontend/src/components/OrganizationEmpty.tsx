@@ -7,11 +7,7 @@ import { Gutters } from './Gutters'
 import { Body } from './Body'
 
 export const OrganizationEmpty: React.FC = () => {
-  const { username } = useSelector((state: ApplicationState) => ({
-    username: (state.auth.user?.email || '').split('@')[0],
-    // licensed: !!selectLicense(state, REMOTEIT_PRODUCT_ID).license?.plan.commercial,
-    // licensed: !!getLimit('org-users', state), // Would be better
-  }))
+  const username = useSelector((state: ApplicationState) => (state.auth.user?.email || '').split('@')[0])
   const [name, setName] = React.useState<string>(`${username}'s org`)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
