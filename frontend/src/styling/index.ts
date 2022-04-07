@@ -103,7 +103,7 @@ export const darkColors: { [key in Color]: string } = {
   darken: 'rgba(255,255,255,0.3)',
   screen: 'rgba(255,255,255,0.03)',
   rpi: '#C51A4A',
-  guide: '#4fe8bf',
+  guide: '#ebe985',
   test: '#2B2926',
 }
 
