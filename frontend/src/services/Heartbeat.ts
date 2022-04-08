@@ -1,3 +1,4 @@
+import network from '../services/Network'
 import { isPortal } from './Browser'
 import { store } from '../store'
 import { emit } from './Controller'
@@ -12,17 +13,19 @@ class Heartbeat {
 
   init() {
     if (!isPortal()) {
-      window.onfocus = this.focus
-      window.onblur = this.blur
-      if (document.hasFocus()) this.focus()
+      window.onfocus = this.start
+      window.onblur = this.stop
+      network.on('connect', this.start)
+      network.on('disconnect', this.stop)
+      if (document.hasFocus()) this.start()
     }
   }
 
-  focus = () => {
-    this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
+  start = () => {
+    if (network.isActive()) this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
   }
 
-  blur = () => {
+  stop = () => {
     if (this.restInterval) {
       window.clearInterval(this.restInterval)
       this.restInterval = undefined
