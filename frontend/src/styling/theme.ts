@@ -15,6 +15,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     primaryLight: { main: colors.primaryLight, dark: darkColors.primaryLight },
     primaryLighter: { main: colors.primaryLighter, dark: darkColors.primaryLighter },
     primaryHighlight: { main: colors.primaryHighlight, dark: darkColors.primaryHighlight },
+    primaryBackground: { main: colors.primaryBackground, dark: darkColors.primaryBackground },
     successLight: { main: colors.successLight, dark: darkColors.successLight },
     success: { main: colors.success, dark: darkColors.success },
     successDark: { main: colors.successDark, dark: darkColors.successDark },
