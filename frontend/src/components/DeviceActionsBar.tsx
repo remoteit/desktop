@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Box, Typography, Collapse } from '@material-ui/core'
+import { makeStyles, Box, Divider, Typography, InputLabel, Collapse } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
@@ -37,8 +37,9 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>
             </Title>
+            <InputLabel shrink>tags</InputLabel>
             <TagEditor
-              button="tag-add"
+              button="plus"
               tags={tags}
               buttonProps={{ title: 'Add Tag', color: 'alwaysWhite', loading: adding, disabled: adding }}
               onCreate={onCreate}
@@ -47,11 +48,12 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
             <TagEditor
               allowAdding={false}
               tags={getSelectedTags(devices, selected)}
-              button="tag-remove"
+              button="minus"
               buttonProps={{ title: 'Remove Tag', color: 'alwaysWhite', loading: removing, disabled: removing }}
               onCreate={onCreate}
               onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
             />
+            <Divider orientation="vertical" color="white" />
             <IconButton
               icon="times"
               title="Clear selection"
@@ -84,11 +86,25 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: spacing.sm,
     marginBottom: spacing.xs,
     paddingRight: spacing.sm,
-    '& .MuiTypography-root': {
+    '& .MuiTypography-subtitle1': {
       marginTop: spacing.xs,
       marginBottom: spacing.xs,
       fontWeight: 800,
       color: palette.alwaysWhite.main,
+    },
+    '& .MuiInputLabel-root': {
+      color: palette.alwaysWhite.main,
+      marginRight: spacing.xs,
+    },
+    '& > div + div': {
+      marginLeft: -spacing.xs,
+    },
+    '& .MuiDivider-root': {
+      height: '1.5em',
+      backgroundColor: palette.alwaysWhite.main,
+      marginLeft: spacing.sm,
+      marginRight: spacing.sm,
+      opacity: 0.3,
     },
   },
 }))
