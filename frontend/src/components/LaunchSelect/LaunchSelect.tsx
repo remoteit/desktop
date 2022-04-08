@@ -8,7 +8,6 @@ import { spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
-import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
   service: IService
@@ -48,8 +47,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           value={app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
-          <MenuItem value={LAUNCH_TYPE.URL}>URL</MenuItem>
-          <MenuItem value={LAUNCH_TYPE.COMMAND}>Command</MenuItem>
+          <MenuItem value="URL">URL</MenuItem>
+          <MenuItem value="COMMAND">Command</MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>
