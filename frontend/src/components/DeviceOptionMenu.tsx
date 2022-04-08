@@ -34,9 +34,13 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) =
         autoFocus={false}
         elevation={2}
       >
-        {service && (
-          <CopyMenuItem icon="share-alt" title="Copy connection link" value={`${PROTOCOL}connect/${service?.id}`} />
-        )}
+        <div>
+          {service ? (
+            <CopyMenuItem icon="link" title="Service link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
+          ) : (
+            <CopyMenuItem icon="link" title="Device link" value={`${PROTOCOL}devices/${device.id}`} />
+          )}
+        </div>
         <MenuItem
           dense
           to={`/devices/${device.id}/transfer`}
