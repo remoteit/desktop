@@ -15,6 +15,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
     return errors ? 'ERROR' : response
   } catch (error) {
     await apiError(error)
+    return 'ERROR'
   }
 }
 

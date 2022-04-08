@@ -240,8 +240,8 @@ export default createModel<RootModel>()({
       dispatch.auth.set({ signInError })
     },
     async dataReady(_: void, state) {
-      if (state.backend.initialized && !isPortal()) {
-        console.warn('BACKEND ALREADY INITIALIZED')
+      if (state.backend.initialized) {
+        console.warn('DATA ALREADY INITIALIZED')
         return
       }
       dispatch.backend.set({ initialized: true })
