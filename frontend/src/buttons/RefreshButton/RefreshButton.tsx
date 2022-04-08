@@ -23,7 +23,10 @@ export const RefreshButton: React.FC<Props> = ({ device, ...props }) => {
   const onClick = async () => {
     if (device) {
       devices.fetchSingle({ id: device.id })
-      if (logPage) logs.fetch()
+      if (logPage) {
+        logs.set({ from: 0, maxDate: new Date() })
+        logs.fetch()
+      }
     } else {
       ui.refreshAll()
       network.connect()
