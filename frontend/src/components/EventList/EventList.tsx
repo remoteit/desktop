@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { List, Box, Button, makeStyles, Typography } from '@material-ui/core'
@@ -37,7 +38,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
         <Notice
           severity="warning"
           button={
-            <Button variant="contained" href="https://link.remote.it/portal/account" size="small" target="_blank">
+            <Button to="/account/plans" variant="contained" size="small" component={Link}>
               Upgrade
             </Button>
           }
@@ -61,7 +62,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   box: {
     display: 'flex',
     justifyContent: 'center',
