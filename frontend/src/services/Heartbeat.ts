@@ -4,7 +4,7 @@ import { store } from '../store'
 import { emit } from './Controller'
 
 const HEARTBEAT_INTERVAL = 1000 * 20 // 20 SEC
-const CAFFEINATE_INTERVAL = 1000 // 1 SEC
+const CAFFEINATE_INTERVAL = 2000 // 2 SEC
 
 class Heartbeat {
   count = 0

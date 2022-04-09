@@ -150,6 +150,7 @@ export default createModel<RootModel>()({
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
       dispatch.devices.fetch()
+      dispatch.devices.fetchConnections()
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode

@@ -495,7 +495,6 @@ declare global {
     owner?: boolean
     sort?: string
     name?: string
-    ids?: string[]
     platform?: number[]
   }
 

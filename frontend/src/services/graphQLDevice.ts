@@ -1,6 +1,5 @@
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
-import { updateConnections } from '../helpers/connectionHelper'
 import { store } from '../store'
 
 const DEVICE_SELECT = `
@@ -83,11 +82,10 @@ export async function graphQLFetchDevices({
   owner,
   name,
   account,
-  ids = [],
   platform,
 }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
           account(id: $account) {
@@ -98,13 +96,9 @@ export async function graphQLFetchDevices({
               }
             }
           }
-          connections: device(id: $ids)  {
-            ${DEVICE_SELECT}
-          }
         }
       }`,
     {
-      ids,
       tag,
       size,
       from,
@@ -113,8 +107,22 @@ export async function graphQLFetchDevices({
       owner,
       account,
       platform,
-      name: name?.trim() ? name : undefined,
+      name: name?.trim() || undefined,
     }
+  )
+}
+
+export async function graphQLFetchConnections(params: { account: string; ids: string[] }) {
+  return await graphQLRequest(
+    ` query($ids: [String!]!, $account: String) {
+        login {
+          id
+          connections: device(id: $ids)  {
+            ${DEVICE_SELECT}
+          }
+        }
+      }`,
+    params
   )
 }
 
@@ -229,7 +237,7 @@ export function graphQLAdaptor(
     })
   )
   store.dispatch.devices.userAttributes({ userAttributes: metaData.userAttributes })
-  return updateConnections(data)
+  return data
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {

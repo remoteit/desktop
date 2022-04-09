@@ -253,6 +253,7 @@ export default createModel<RootModel>()({
       await dispatch.connections.init()
       await dispatch.tags.fetch()
       dispatch.devices.fetch()
+      dispatch.devices.fetchConnections()
       dispatch.contacts.fetch()
       dispatch.sessions.fetch()
       dispatch.announcements.fetch()
