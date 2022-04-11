@@ -82,7 +82,7 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'tags', 'services'],
+  columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
   feature: { tagging: false },
   serviceContextMenu: undefined,

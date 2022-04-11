@@ -69,35 +69,33 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   }
 
   return (
-    <>
-      <SessionsTooltip
-        service={service}
-        open={openTooltip}
-        sessions={sessions}
-        secondaryLabel={label}
-        placement="top"
-        arrow
-        label
+    <SessionsTooltip
+      service={service}
+      open={openTooltip}
+      sessions={sessions}
+      secondaryLabel={label}
+      placement="top"
+      arrow
+      label
+    >
+      <Box
+        component="span"
+        className={classnames(onClick && css.clickable, css.indicator)}
+        onMouseEnter={() => setOpenTooltip(true)}
+        onMouseLeave={() => setOpenTooltip(false)}
+        onMouseDown={event => {
+          event.stopPropagation()
+          onClick && onClick({ el: event.currentTarget, serviceID: service.id })
+          setOpenTooltip(false)
+        }}
       >
-        <Box
-          component="span"
-          className={classnames(onClick && css.clickable, css.indicator)}
-          onMouseEnter={() => setOpenTooltip(true)}
-          onMouseLeave={() => setOpenTooltip(false)}
-          onMouseDown={event => {
-            event.stopPropagation()
-            onClick && onClick({ el: event.currentTarget, serviceID: service.id })
-            setOpenTooltip(false)
-          }}
-        >
-          <span className={css.background}>
-            {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
-            {proxy && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
-            {service.type}
-          </span>
-        </Box>
-      </SessionsTooltip>
-    </>
+        <span className={css.background}>
+          {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
+          {proxy && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
+          {service.type}
+        </span>
+      </Box>
+    </SessionsTooltip>
   )
 }
 

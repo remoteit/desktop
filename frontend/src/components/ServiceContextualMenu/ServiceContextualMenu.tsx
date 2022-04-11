@@ -50,7 +50,7 @@ export const ServiceContextualMenu: React.FC = () => {
       disableScrollLock
       elevation={2}
     >
-      <ListItem className={css.name} dense>
+      <ListItem className={css.name}>
         <Typography variant="caption" align="center" display="block">
           {service?.name}
         </Typography>
@@ -102,7 +102,7 @@ export const ServiceContextualMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  name: { paddingTop: 0, paddingLeft: spacing.md },
+  name: { paddingTop: 0, paddingLeft: spacing.sm, paddingBottom: spacing.xs },
   connect: {
     paddingTop: 0,
     paddingBottom: 0,

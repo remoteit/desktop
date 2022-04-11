@@ -17,5 +17,6 @@ const useStyles = makeStyles(({ palette }) => ({
   color: ({ backgroundColor, typeColor }: Props) => ({
     color: palette[typeColor].main,
     backgroundColor: palette[backgroundColor].main,
+    fontWeight: 500,
   }),
 }))

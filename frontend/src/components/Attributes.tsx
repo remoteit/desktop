@@ -90,7 +90,7 @@ export const attributes: Attribute[] = [
     required: true,
   }),
   new Attribute({
-    id: 'active',
+    id: 'status',
     label: 'Status',
     defaultWidth: 100,
     value: ({ device, connection }) =>
@@ -108,7 +108,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'tags',
     label: 'Tags',
-    defaultWidth: 100,
+    defaultWidth: 120,
     value: ({ device }) => <Tags tags={device?.tags || []} small />,
     feature: 'tagging',
   }),
@@ -116,8 +116,7 @@ export const attributes: Attribute[] = [
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 400,
-    align: 'right',
+    defaultWidth: 350,
   }),
   new DeviceAttribute({
     id: 'tagEditor',
