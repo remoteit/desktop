@@ -39,6 +39,10 @@ export function SignInForm() {
 
   console.log('DESKTOP SIGN IN FORM RENDER')
 
+  const onSignInSuccess = (user: CognitoUser) => {
+    setTimeout(() => auth.handleSignInSuccess(user), 0)
+  }
+
   return (
     <CognitoAuth
       fullWidth
@@ -49,7 +53,7 @@ export function SignInForm() {
       errorMessage={signInError}
       inputEmail={localUsername}
       onClickCheckboxRemember={onClickCheckboxRemember}
-      onSignInSuccess={(user: CognitoUser) => auth.handleSignInSuccess(user)}
+      onSignInSuccess={onSignInSuccess}
       segmentSettings={segmentSettings}
       themeOverride={theme}
     />
