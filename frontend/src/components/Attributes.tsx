@@ -10,6 +10,7 @@ import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
 import { DeviceRole } from './DeviceRole'
+import { ColorChip } from './ColorChip'
 import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -90,11 +91,16 @@ export const attributes: Attribute[] = [
   }),
   new Attribute({
     id: 'active',
-    label: 'Online',
+    label: 'Status',
     defaultWidth: 100,
-    value: ({ device }) =>
-      device?.state === 'active' ? (
-        <Chip label="Online" size="small" color="primary" />
+    value: ({ device, connection }) =>
+      connection?.connected ? (
+        <Chip label="Connected" size="small" color="primary" />
+      ) : connection?.enabled ? (
+        <Chip label="Ready" size="small" color="primary" />
+      ) : device?.state === 'active' ? (
+        // <Chip label="Online" size="small" />
+        <ColorChip label="Online" size="small" typeColor="primary" backgroundColor="grayLightest" />
       ) : (
         <Chip label="Offline" size="small" />
       ),

@@ -126,5 +126,14 @@ const useStyles = makeStyles(({ palette }) => ({
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     },
+    '&::before': {
+      content: '""',
+      position: 'fixed',
+      width: 40,
+      height: '100%',
+      zIndex: 1000,
+      right: 0,
+      boxShadow: `inset -30px 0px 20px -15px ${palette.white.main}`,
+    },
   },
 }))
