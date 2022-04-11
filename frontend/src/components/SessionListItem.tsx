@@ -65,8 +65,8 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
             id={session.target.platform}
             size="md"
             color={offline ? 'gray' : 'primary'}
+            fullColor
             tooltip
-            fullColor={!offline}
           />
         </ListItemIcon>
         <ListItemText
