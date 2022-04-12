@@ -228,6 +228,7 @@ export default createModel<RootModel>()({
         dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
       }
       dispatch.ui.set({ connected: false })
+      dispatch.auth.set({ backendAuthenticated: false })
     },
     async signInError(signInError: string) {
       dispatch.auth.set({ signInError })
@@ -274,7 +275,6 @@ export default createModel<RootModel>()({
       removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)
       dispatch.auth.set({ user: undefined })
-      dispatch.auth.set({ backendAuthenticated: false })
       dispatch.organization.reset()
       dispatch.accounts.reset()
       dispatch.connections.reset()

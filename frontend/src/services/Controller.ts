@@ -67,7 +67,7 @@ class Controller extends EventEmitter {
     const state = store.getState()
     if (!isPortal()) {
       emit('authentication', this.credentials)
-      if (!state.auth.backendAuthenticated) emit('init')
+      if (!state.backend.initialized) emit('init')
     }
   }
 
