@@ -1,6 +1,7 @@
 import { getApplication } from '../shared/applications'
 
 export const useApplication = (service?: IService, connection?: IConnection) => {
+  // @TODO = try useCallback here to avoid re-rendering
   return getApplication(service, connection)
 }
 

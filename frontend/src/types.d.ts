@@ -214,6 +214,8 @@ declare global {
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 
+  type IGlobalTooltip = { el?: HTMLElement; title: React.ReactElement | string; color?: string }
+
   type ILayout = {
     hideSidebar: boolean
     singlePanel: boolean

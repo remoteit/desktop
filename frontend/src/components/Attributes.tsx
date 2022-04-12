@@ -171,7 +171,7 @@ export const attributes: Attribute[] = [
     label: 'Users',
     defaultWidth: 200,
     value: ({ device }) =>
-      device?.shared ? <Avatar email={device.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
+      device?.shared ? <Avatar email={device.owner.email} size={22} /> : <AvatarList users={device?.access} />,
   }),
   new DeviceAttribute({
     id: 'lastReported',

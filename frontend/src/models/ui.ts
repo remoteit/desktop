@@ -37,6 +37,7 @@ type UIState = {
   columnWidths: ILookup<number>
   feature: ILookup<boolean>
   serviceContextMenu?: IContextMenu
+  globalTooltip?: IGlobalTooltip
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -86,6 +87,7 @@ export const defaultState: UIState = {
   columnWidths: {},
   feature: { tagging: false },
   serviceContextMenu: undefined,
+  globalTooltip: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,
