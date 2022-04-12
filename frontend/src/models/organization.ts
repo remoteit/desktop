@@ -12,6 +12,7 @@ import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 
 export const ROLE: ILookup<string> = {
+  // @TODO deprecate
   OWNER: 'Admin / Owner',
   ADMIN: 'Admin',
   MEMBER: 'Member',
@@ -217,6 +218,47 @@ export default createModel<RootModel>()({
         dispatch.organization.clear()
         dispatch.ui.set({ successMessage: `Your organization has been removed.` })
       }
+    },
+
+    async setRole(role: IOrganizationRole, state) {
+      if (!role.id) role.id = role.name // TEMP
+
+      let roles = [...state.organization.roles]
+      const index = roles.findIndex(r => r.id === role.id)
+      if (index > -1) roles[index] = role
+      else roles.push(role)
+
+      // const result = await graphQLSetRole(role)
+      // if (result === 'ERROR') {
+      //   dispatch.organization.fetch()
+      // } else {
+      //   dispatch.ui.set({ successMessage: `Successfully updated ${role.name}.` })
+      // }
+
+      dispatch.ui.set({
+        successMessage:
+          roles.length === state.organization.roles.length
+            ? `Successfully updated ${role.name}.`
+            : `Successfully added ${role.name}.`,
+      })
+      await dispatch.organization.set({ roles })
+      return role.id
+    },
+
+    async removeRole(role: IOrganizationRole, state) {
+      let roles = [...state.organization.roles]
+      const index = roles.findIndex(r => r.id === role.id)
+      if (index > -1) roles.splice(index, 1)
+
+      // const result = await graphQLSetRole(role, 'REMOVE')
+      // if (result === 'ERROR') {
+      //   dispatch.organization.fetch()
+      // } else {
+      //   dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
+      // }
+
+      dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
+      dispatch.organization.set({ roles })
     },
   }),
   reducers: {

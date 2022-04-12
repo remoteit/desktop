@@ -362,7 +362,7 @@ declare global {
     license: ILicenseTypes
   }
 
-  type IOrganizationRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' // TEMP
+  type IOrganizationRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string // TEMP
 
   type IOrganizationRole = {
     // TEMP

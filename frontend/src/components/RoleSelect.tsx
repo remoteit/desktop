@@ -1,12 +1,13 @@
 import React from 'react'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { TextField, MenuItem } from '@material-ui/core'
 import { ROLE } from '../models/organization'
 
 type Props = { member: IOrganizationMember }
 
 export const RoleSelect: React.FC<Props> = ({ member }) => {
+  const roles = useSelector((state: ApplicationState) => state.organization.roles)
   const dispatch = useDispatch<Dispatch>()
   const disabled = member.role === 'OWNER' || member.license !== 'LICENSED'
   const role = member.license === 'UNLICENSED' ? 'MEMBER' : member.role
@@ -34,7 +35,11 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       <MenuItem dense value="MEMBER">
         {ROLE.MEMBER}
       </MenuItem>
-      {/* add dynamic roles here */}
+      {roles.map(r => (
+        <MenuItem dense value={r.id}>
+          {r.name}
+        </MenuItem>
+      ))}
     </TextField>
   )
 }

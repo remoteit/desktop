@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import isEqual from 'lodash/isEqual'
 import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
 import { useParams, useHistory } from 'react-router-dom'
 import {
@@ -17,13 +18,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { findTagIndex } from '../helpers/utilHelper'
+import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
 import { Container } from '../components/Container'
 import { TagEditor } from '../components/TagEditor'
 import { Gutters } from '../components/Gutters'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 const NAME_MAX_LENGTH = 64
 
@@ -40,10 +42,11 @@ export const OrganizationRolePage: React.FC = () => {
       tags: selectTags(state, accountId),
     }
   })
-  const [form, setForm] = useState<IOrganizationRole>()
+  const [form, setForm] = useState<IOrganizationRole>(role)
   const [count, setCount] = useState<number>()
   const systemRole = ['ADMIN', 'MEMBER'].includes(role.type)
   const fullAccess = form?.access === 'UNLIMITED'
+  const changed = !isEqual(form, role)
 
   const changeForm = async (changedForm: IOrganizationRole) => {
     setForm(changedForm)
@@ -62,10 +65,7 @@ export const OrganizationRolePage: React.FC = () => {
 
   useEffect(() => {
     if (role.id !== form?.id) changeForm(role)
-    analyticsHelper.page('OrganizationRolePage')
   }, [roleID])
-
-  if (!form) return null
 
   return (
     <Container
@@ -73,6 +73,19 @@ export const OrganizationRolePage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>{role.name || 'New Role'}</Title>
+          {!systemRole && role.id && (
+            <DeleteButton
+              warning={
+                <>
+                  <Notice severity="danger" fullWidth gutterBottom>
+                    You will be permanently deleting the role <i>{role.name}.</i>
+                  </Notice>
+                  Any members with this role will be reset to the default member role.
+                </>
+              }
+              onDelete={() => dispatch.organization.removeRole(form)}
+            />
+          )}
         </Typography>
       }
     >
@@ -82,7 +95,7 @@ export const OrganizationRolePage: React.FC = () => {
           <TextField
             required
             fullWidth
-            autoFocus={true}
+            autoFocus
             label="Name"
             value={form.name}
             disabled={disabled || systemRole}
@@ -99,7 +112,7 @@ export const OrganizationRolePage: React.FC = () => {
             fullWidth
             disabled={disabled || systemRole}
             label="Device access"
-            value={form.access}
+            value={form?.access}
             variant="filled"
             onChange={event => {
               const access = event.target.value as IOrganizationRole['access']
@@ -196,10 +209,18 @@ export const OrganizationRolePage: React.FC = () => {
       </List>
       {!systemRole && (
         <Gutters top="lg">
-          <Button variant="contained" color="primary" disabled={disabled} onClick={console.log}>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={disabled || !changed}
+            onClick={async () => {
+              const roleID = await dispatch.organization.setRole(form)
+              history.push(`/account/organization/roles/${roleID}`)
+            }}
+          >
             Save
           </Button>
-          <Button onClick={() => history.push('/account/organization')}>Cancel</Button>
+          {/* <Button onClick={() => history.push('/account/organization/roles')}>Cancel</Button> */}
         </Gutters>
       )}
     </Container>
