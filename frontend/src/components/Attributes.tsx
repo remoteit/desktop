@@ -113,6 +113,12 @@ export const attributes: Attribute[] = [
     feature: 'tagging',
   }),
   new Attribute({
+    id: 'qualitySmall',
+    label: 'Quality',
+    defaultWidth: 120,
+    value: ({ device }) => <QualityDetails device={device} small />,
+  }),
+  new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,

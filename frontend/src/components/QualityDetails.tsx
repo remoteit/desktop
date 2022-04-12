@@ -6,7 +6,7 @@ import { Percent } from './Percent'
 import { Round } from './Round'
 import { Typography, Divider, Box } from '@material-ui/core'
 
-export const QualityDetails: React.FC<{ device?: IDevice }> = ({ device }) => {
+export const QualityDetails: React.FC<{ device?: IDevice; small?: boolean }> = ({ device, small }) => {
   let title: string = 'Unknown'
   let color: Color = 'gray'
 
@@ -27,9 +27,16 @@ export const QualityDetails: React.FC<{ device?: IDevice }> = ({ device }) => {
       break
   }
 
+  const icon = (
+    <>
+      <Icon name="circle" color={color} size="bug" type="solid" inlineLeft /> {title}
+    </>
+  )
+  if (small) return icon
+
   return (
     <Box>
-      <Icon name="circle" color={color} size="bug" type="solid" inlineLeft /> {title}
+      {icon}
       <Quote>
         <Divider orientation="vertical" />
         <Typography variant="body2">
