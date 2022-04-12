@@ -64,7 +64,11 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    if (!isPortal()) emit('authentication', this.credentials)
+    const state = store.getState()
+    if (!isPortal()) {
+      emit('authentication', this.credentials)
+      if (!state.auth.backendAuthenticated) emit('init')
+    }
   }
 
   // Retry open with delay, force skips delay

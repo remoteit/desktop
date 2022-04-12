@@ -30,28 +30,17 @@ export function ConnectionStateIcon({
 
   let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
   let element: any
-  let title: any = 'Online'
+  let quality: any
   let spin = false
 
-  if (connection?.enabled) {
-    title = 'Connected'
-  }
   if (connection?.connecting) {
     name = 'spinner-third'
     type = 'regular'
     showQuality = false
-    title = 'Connecting'
     spin = true
   }
   if (instance?.state === 'inactive') {
-    title = 'Offline'
     showQuality = false
-  }
-  if (instance?.license === 'EVALUATION') {
-    title = 'Evaluation'
-  }
-  if (instance?.license === 'UNLICENSED') {
-    title = 'Unlicensed'
   }
 
   const css = useStyles()
@@ -67,10 +56,8 @@ export function ConnectionStateIcon({
   }
 
   if (showQuality && device) {
-    title = (
+    quality = (
       <>
-        <b className={css.capitalize}>{title}</b>
-        <br />
         <Icon
           name="circle"
           color={device.quality === 'POOR' ? 'danger' : 'warning'}
@@ -81,6 +68,7 @@ export function ConnectionStateIcon({
         Connectivity {device.quality.toLowerCase()}
       </>
     )
+
     element = (
       <IconButton
         className={css.button}
@@ -101,10 +89,12 @@ export function ConnectionStateIcon({
     )
   }
 
-  return (
-    <Tooltip title={title} placement="top" arrow>
+  return quality ? (
+    <Tooltip title={quality} placement="top" arrow>
       <span className={css.icon}>{element}</span>
     </Tooltip>
+  ) : (
+    element
   )
 }
 

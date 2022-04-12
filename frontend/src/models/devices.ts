@@ -147,7 +147,6 @@ export default createModel<RootModel>()({
       const ids = state.backend.device.uid ? [state.backend.device.uid] : []
       const options = { account: userId, ids: ids.concat(getConnectionIds(state)) }
 
-      dispatch.devices.set({ fetching: true })
       const gqlResponse = await graphQLFetchConnections(options)
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
@@ -161,7 +160,6 @@ export default createModel<RootModel>()({
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
 
       cleanOrphanConnections(options.ids)
-      dispatch.devices.set({ fetching: false })
     },
 
     /*
