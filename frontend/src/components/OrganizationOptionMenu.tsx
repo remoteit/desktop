@@ -4,7 +4,6 @@ import { Dispatch, ApplicationState } from '../store'
 import { Divider, IconButton, Menu } from '@material-ui/core'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { ListItemLocation } from './ListItemLocation'
-import { TestUI } from './TestUI'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -39,15 +38,13 @@ export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
             disableGutters
             dense
           />
-          <TestUI>
-            <ListItemLocation
-              title="Roles"
-              icon="shield-alt"
-              pathname={`/account/organization/roles/${organization.roles[0].id}`}
-              disableGutters
-              dense
-            />
-          </TestUI>
+          <ListItemLocation
+            title="Roles"
+            icon="shield-alt"
+            pathname={`/account/organization/roles/${organization.roles[0].id}`}
+            disableGutters
+            dense
+          />
         </div>
         <Divider />
         <DeleteButton

@@ -54,7 +54,6 @@ export interface AuthState {
   notificationSettings: INotificationSetting
   mfaMethod: string
   AWSUser: AWSUser
-  loggedIn?: boolean
 }
 
 const defaultState: AuthState = {
@@ -68,7 +67,6 @@ const defaultState: AuthState = {
   notificationSettings: {},
   mfaMethod: '',
   AWSUser: { authProvider: '' },
-  loggedIn: false,
 }
 
 export const authServiceConfig = {

@@ -102,7 +102,7 @@ export const attributes: Attribute[] = [
         // <Chip label="Online" size="small" />
         <ColorChip label="Online" size="small" typeColor="primary" backgroundColor="grayLightest" />
       ) : (
-        <Chip label="Offline" size="small" />
+        <ColorChip label="Offline" size="small" typeColor="gray" backgroundColor="grayLightest" />
       ),
   }),
   new Attribute({

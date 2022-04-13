@@ -31,7 +31,7 @@ const useStyles = makeStyles(({ palette }) => ({
     left: 0,
     zIndex: 4,
     position: 'sticky',
-    background: palette.white.main,
+    backgroundImage: `linear-gradient(90deg, ${palette.white.main} 95%, transparent)`,
     paddingLeft: spacing.md,
   },
   title: {
