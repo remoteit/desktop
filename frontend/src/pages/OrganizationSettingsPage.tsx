@@ -70,7 +70,10 @@ export const OrganizationSettingsPage: React.FC = () => {
           displayValue={domain.toString()}
           resetValue={defaultDomain}
           filter={REGEX_DOMAIN_SAFE}
-          onSave={value => dispatch.organization.setOrganization({ domain: value.toString() })}
+          onSave={async value => {
+            await dispatch.organization.setOrganization({ domain: value.toString() })
+            setTimeout(() => dispatch.organization.fetch(), 1000)
+          }}
         />
         {domain &&
           (org.verified ? (
