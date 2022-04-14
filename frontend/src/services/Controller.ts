@@ -31,13 +31,12 @@ class Controller extends EventEmitter {
     const { ui, auth } = store.dispatch
 
     if (!navigator.onLine) return
-
-    this.log('ONLINE - CONNECT LOCAL SOCKET')
-
     if (state.auth.backendAuthenticated) {
+      this.log('-- ONLINE AUTHORIZED RE-CONNECT')
       this.open()
       ui.refreshAll()
     } else {
+      this.log('1- ONLINE AUTHORIZE AND CONNECT')
       ui.set({ errorMessage: '' })
       auth.init()
     }
@@ -64,11 +63,7 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    const state = store.getState()
-    if (!isPortal()) {
-      emit('authentication', this.credentials)
-      if (!state.backend.initialized) emit('init')
-    }
+    if (!isPortal()) emit('authentication', this.credentials)
   }
 
   // Retry open with delay, force skips delay
@@ -128,13 +123,13 @@ function getEventHandlers() {
 
     authenticated: auth.backendAuthenticated,
 
-    disconnect: auth.disconnect,
-
     dataReady: auth.dataReady,
 
-    connect_error: () => {
-      backend.set({ error: true })
-    },
+    disconnect: auth.disconnect,
+
+    'signed-out': () => auth.signedOut(),
+
+    connect_error: () => backend.set({ error: true }),
 
     pool: (result: IConnection[]) => {
       controller.log('socket pool', result)
@@ -190,9 +185,6 @@ function getEventHandlers() {
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
     filePath: (filePath: string) => backend.set({ filePath }),
-
-    // User
-    'signed-out': () => auth.signedOut(),
 
     // AutoUpdate
     'update/downloaded': (version: string) => {

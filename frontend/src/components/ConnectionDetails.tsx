@@ -41,7 +41,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const { ref } = useResizeObserver<HTMLDivElement>({ onResize: measure })
 
   useEffect(() => {
-    setTimeout(measure, 100)
+    const timeout = setTimeout(measure, 100)
+    return () => clearTimeout(timeout)
   }, [connection, service])
 
   if (!connection && !session) return null

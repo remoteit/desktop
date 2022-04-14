@@ -5,6 +5,7 @@ import { emit } from './Controller'
 
 const HEARTBEAT_INTERVAL = 1000 * 20 // 20 SEC
 const CAFFEINATE_INTERVAL = 2000 // 2 SEC
+const CAFFEINATE_COUNT = 8
 
 class Heartbeat {
   count = 0
@@ -43,7 +44,7 @@ class Heartbeat {
     this.count = 0
     if (this.caffeineInterval) window.clearInterval(this.caffeineInterval)
     this.caffeineInterval = window.setInterval(() => {
-      if (this.count++ > 15) {
+      if (this.count++ > CAFFEINATE_COUNT) {
         window.clearInterval(this.caffeineInterval)
         this.caffeineInterval = undefined
       }

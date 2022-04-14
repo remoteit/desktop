@@ -37,11 +37,11 @@ export function SignInForm() {
     appVersion,
   }
 
-  console.log('DESKTOP SIGN IN FORM RENDER')
-
   const onSignInSuccess = (user: CognitoUser) => {
-    setTimeout(() => auth.handleSignInSuccess(user), 0)
+    setTimeout(() => auth.handleSignInSuccess(user), 100)
   }
+
+  console.log('DESKTOP SIGN IN FORM RENDER')
 
   return (
     <CognitoAuth

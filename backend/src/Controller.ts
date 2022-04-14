@@ -88,6 +88,7 @@ class Controller {
   }
 
   init = () => {
+    Logger.info('INIT FRONTEND DATA')
     binaryInstaller.check()
     this.initBackend()
     this.check()
@@ -183,6 +184,7 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady')
+    Logger.info('DATA READY')
   }
 
   connection = async (connection: IConnection) => {
