@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import { List, Typography, Chip } from '@material-ui/core'
+import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -11,7 +11,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
   const history = useHistory()
-  const { name, roles } = useSelector((state: ApplicationState) => state.organization)
+  const { name, roles, members } = useSelector((state: ApplicationState) => state.organization)
 
   useEffect(() => {
     analyticsHelper.page('OrganizationRolesPage')
@@ -31,7 +31,6 @@ export const OrganizationRolesPage: React.FC = () => {
         <Title>Role</Title>
         <IconButton icon="plus" to={'/account/organization/roles/add'} title="Add role" />
       </Typography>
-
       <List>
         {roles.map(r => (
           <ListItemLocation
@@ -41,7 +40,11 @@ export const OrganizationRolesPage: React.FC = () => {
             exactMatch
             disableIcon
             dense
-          />
+          >
+            <ListItemSecondaryAction>
+              {/* <Chip label={members.filter(m => m.roleId === r.id).length} size="small" /> */}
+            </ListItemSecondaryAction>
+          </ListItemLocation>
         ))}
       </List>
     </Container>

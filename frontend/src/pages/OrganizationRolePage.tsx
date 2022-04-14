@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
+import cloneDeep from 'lodash/cloneDeep'
 import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
 import { useParams, useHistory } from 'react-router-dom'
 import {
@@ -17,7 +18,6 @@ import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
 import { ListItemSetting } from '../components/ListItemSetting'
-import { findTagIndex } from '../helpers/utilHelper'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
 import { Container } from '../components/Container'
@@ -42,29 +42,22 @@ export const OrganizationRolePage: React.FC = () => {
       tags: selectTags(state, accountId),
     }
   })
-  const [form, setForm] = useState<IOrganizationRole>(role)
+  const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
   const [count, setCount] = useState<number>()
-  const systemRole = ['ADMIN', 'MEMBER'].includes(role.type)
-  const fullAccess = form?.access === 'UNLIMITED'
+  const [saving, setSaving] = useState<boolean>(false)
+  const systemRole = !!role.system
+  const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
   const changed = !isEqual(form, role)
 
   const changeForm = async (changedForm: IOrganizationRole) => {
     setForm(changedForm)
     setCount(undefined)
-    let filter = {}
-    if (changedForm.access !== 'UNLIMITED' && changedForm.tags.length)
-      filter = {
-        tag: {
-          values: changedForm.tags.map(t => t.name),
-          operator: changedForm.access,
-        },
-      }
-    const result = await dispatch.devices.fetchCount(filter)
+    const result = await dispatch.devices.fetchCount(changedForm)
     setCount(result)
   }
 
   useEffect(() => {
-    if (role.id !== form?.id) changeForm(role)
+    changeForm(cloneDeep(role))
   }, [roleID])
 
   return (
@@ -112,71 +105,74 @@ export const OrganizationRolePage: React.FC = () => {
             fullWidth
             disabled={disabled || systemRole}
             label="Device access"
-            value={form?.access}
+            value={Boolean(form?.tag).toString()}
             variant="filled"
             onChange={event => {
-              const access = event.target.value as IOrganizationRole['access']
-              changeForm({ ...form, access })
+              const tag = event.target.value === 'true' ? DEFAULT_ROLE.tag : undefined
+              changeForm({ ...form, tag })
             }}
           >
-            <MenuItem value="UNLIMITED">All devices</MenuItem>
-            <MenuItem value={fullAccess ? 'ANY' : form.access}>Tagged devices</MenuItem>
+            <MenuItem value="false">All devices</MenuItem>
+            <MenuItem value="true">Tagged devices</MenuItem>
           </TextField>
           <ListItemSecondaryAction>
-            <Chip color="primary" label={count === undefined ? 'Counting...' : `${count} devices`} size="small" />
+            <Typography variant="caption">Found: &nbsp;</Typography>
+            <Chip label={count === undefined ? 'Counting...' : `${count} devices`} />
           </ListItemSecondaryAction>
         </ListItem>
-        {!fullAccess && (
-          <>
-            <ListItem>
-              {/* <InputLabel shrink>Device Filter</InputLabel> */}
-              <Tags
-                tags={form.tags}
-                onDelete={tag => {
-                  let tags = [...form.tags]
-                  const index = findTagIndex(tags, tag.name)
-                  tags.splice(index, 1)
-                  changeForm({ ...form, tags })
+        {form.tag && (
+          <ListItem>
+            {/* <InputLabel shrink>Device Filter</InputLabel> */}
+            <Tags
+              tags={filteredTags}
+              onDelete={({ name }) => {
+                let tag = ({ ...form.tag } || DEFAULT_ROLE.tag) as ITagFilter
+                if (!tag.values) return
+                const index = tag.values.indexOf(name)
+                tag.values.splice(index, 1)
+                form.tag = tag
+                changeForm({ ...form })
+              }}
+              onClick={tag => {
+                dispatch.devices.set({ tag: { values: [tag.name] } })
+                dispatch.devices.fetch()
+                history.push('/devices')
+              }}
+            />
+            <TagEditor
+              allowAdding={false}
+              // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
+              onSelect={tag => {
+                form.tag && form.tag.values.push(tag.name)
+                changeForm({ ...form })
+              }}
+              tags={tags}
+              filter={filteredTags}
+            />
+            &nbsp;
+            <ListItemSecondaryAction>
+              <Typography variant="caption">Match: &nbsp;</Typography>
+              <TextField
+                select
+                hiddenLabel
+                size="small"
+                disabled={disabled}
+                value={form.tag.operator}
+                variant="filled"
+                onChange={event => {
+                  form.tag && (form.tag.operator = event.target.value as ITagOperator)
+                  changeForm({ ...form })
                 }}
-                onClick={tag => {
-                  dispatch.devices.set({ tag: { values: [tag.name] } })
-                  dispatch.devices.fetch()
-                  history.push('/devices')
-                }}
-              />
-              <TagEditor
-                allowAdding={false}
-                // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
-                onSelect={tag => {
-                  let tags = [...form.tags]
-                  tags.push(tag)
-                  changeForm({ ...form, tags })
-                }}
-                tags={tags}
-                filter={form.tags}
-              />
-              &nbsp;
-              <ListItemSecondaryAction>
-                <Typography variant="caption">Match: &nbsp;</Typography>
-                <TextField
-                  select
-                  hiddenLabel
-                  size="small"
-                  disabled={disabled}
-                  value={form.access}
-                  variant="filled"
-                  onChange={event => changeForm({ ...form, access: event.target.value as IOrganizationRole['access'] })}
-                >
-                  <MenuItem dense value="ANY">
-                    Any
-                  </MenuItem>
-                  <MenuItem dense value="ALL">
-                    All
-                  </MenuItem>
-                </TextField>
-              </ListItemSecondaryAction>
-            </ListItem>
-          </>
+              >
+                <MenuItem dense value="ANY">
+                  Any
+                </MenuItem>
+                <MenuItem dense value="ALL">
+                  All
+                </MenuItem>
+              </TextField>
+            </ListItemSecondaryAction>
+          </ListItem>
         )}
       </List>
       <Typography variant="subtitle1">Permissions</Typography>
@@ -187,6 +183,7 @@ export const OrganizationRolePage: React.FC = () => {
           if (systemRole && !allowed) return null
           return (
             <ListItemSetting
+              key={p}
               toggle={systemRole ? undefined : allowed}
               disabled={disabled}
               icon={PERMISSION[p].icon}
@@ -212,15 +209,17 @@ export const OrganizationRolePage: React.FC = () => {
           <Button
             variant="contained"
             color="primary"
-            disabled={disabled || !changed}
+            disabled={disabled || !changed || saving}
             onClick={async () => {
+              setSaving(true)
+              if (form.tag && form.tag.values.length === 0) form.tag = undefined
               const roleID = await dispatch.organization.setRole(form)
+              setSaving(false)
               history.push(`/account/organization/roles/${roleID}`)
             }}
           >
-            Save
+            {saving ? 'Saving...' : 'Save'}
           </Button>
-          {/* <Button onClick={() => history.push('/account/organization/roles')}>Cancel</Button> */}
         </Gutters>
       )}
     </Container>

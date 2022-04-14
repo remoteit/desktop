@@ -29,14 +29,14 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       <MenuItem dense value="OWNER" disabled>
         {ROLE.OWNER}
       </MenuItem>
-      <MenuItem dense value="ADMIN">
+      {/* <MenuItem dense value="ADMIN">
         {ROLE.ADMIN}
       </MenuItem>
       <MenuItem dense value="MEMBER">
         {ROLE.MEMBER}
-      </MenuItem>
+      </MenuItem> */}
       {roles.map(r => (
-        <MenuItem dense value={r.id}>
+        <MenuItem key={r.id} value={r.name.toUpperCase() /* FIXME */} dense>
           {r.name}
         </MenuItem>
       ))}

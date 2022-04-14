@@ -201,13 +201,13 @@ export default createModel<RootModel>()({
       return result
     },
 
-    async fetchCount(params: { tag?: ITagFilter }, state) {
+    async fetchCount(params: IOrganizationRole, state) {
       const options: gqlOptions = {
         size: 0,
         from: 0,
         account: state.auth.user?.id || '',
         owner: true,
-        ...params,
+        tag: params.tag?.values.length ? params.tag : undefined,
       }
       const result = await graphQLFetchDeviceCount(options)
       if (result === 'ERROR') return

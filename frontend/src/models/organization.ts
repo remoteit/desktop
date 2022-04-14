@@ -4,8 +4,11 @@ import {
   graphQLRemoveOrganization,
   graphQLSetMembers,
   graphQLSetSAML,
+  graphQLCreateRole,
+  graphQLUpdateRole,
+  graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { getRemoteitLicense } from './licensing'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -27,10 +30,8 @@ export const PERMISSION: ILookup<{ name: string; description: string; icon: stri
 
 export const DEFAULT_ROLE: IOrganizationRole = {
   id: '',
-  type: 'CUSTOM',
   name: '',
-  tags: [],
-  access: 'ANY',
+  tag: { operator: 'ANY', values: [] },
   permissions: ['CONNECT'],
 }
 
@@ -52,7 +53,7 @@ export type IOrganizationState = {
   roles: IOrganizationRole[]
 }
 
-const organizationState: IOrganizationState = {
+const defaultState: IOrganizationState = {
   initialized: false,
   updating: false,
   id: undefined,
@@ -68,26 +69,22 @@ const organizationState: IOrganizationState = {
   members: [],
   roles: [
     {
-      id: '1',
-      type: 'ADMIN',
+      id: 'system1',
       name: 'Admin',
-      tags: [],
-      access: 'UNLIMITED',
+      system: true,
       permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
     },
     {
-      id: '2',
-      type: 'MEMBER',
+      id: 'system2',
       name: 'Member',
-      tags: [],
-      access: 'UNLIMITED',
+      system: true,
       permissions: ['CONNECT'],
     },
   ],
 }
 
 export default createModel<RootModel>()({
-  state: organizationState,
+  state: { ...defaultState },
   effects: dispatch => ({
     async init() {
       await dispatch.organization.fetch()
@@ -95,9 +92,8 @@ export default createModel<RootModel>()({
     },
 
     async fetch() {
-      try {
-        const result = await graphQLRequest(
-          ` query {
+      const result = await graphQLBasicRequest(
+        ` query {
               login {
                 organization {
                   id
@@ -110,6 +106,15 @@ export default createModel<RootModel>()({
                   verificationValue
                   verified
                   created
+                  roles {
+                    id
+                    name
+                    permissions
+                    tag {
+                      operator
+                      values
+                    }
+                  }
                   members {
                     created
                     role
@@ -122,12 +127,9 @@ export default createModel<RootModel>()({
                 }
               }
             }`
-        )
-        graphQLGetErrors(result)
-        await dispatch.organization.parse(result)
-      } catch (error) {
-        await apiError(error)
-      }
+      )
+      if (result === 'ERROR') return
+      await dispatch.organization.parse(result)
     },
 
     async parse(gqlResponse: AxiosResponse<any> | void, state) {
@@ -148,6 +150,13 @@ export default createModel<RootModel>()({
           ...org.members.map(m => ({
             ...m,
             created: new Date(m.created),
+          })),
+        ],
+        roles: [
+          ...defaultState.roles,
+          ...org.roles.map(r => ({
+            ...r,
+            created: new Date(r.created),
           })),
         ],
       })
@@ -221,26 +230,34 @@ export default createModel<RootModel>()({
     },
 
     async setRole(role: IOrganizationRole, state) {
-      if (!role.id) role.id = role.name // TEMP
-
       let roles = [...state.organization.roles]
       const index = roles.findIndex(r => r.id === role.id)
-      if (index > -1) roles[index] = role
-      else roles.push(role)
 
-      // const result = await graphQLSetRole(role)
-      // if (result === 'ERROR') {
-      //   dispatch.organization.fetch()
-      // } else {
-      //   dispatch.ui.set({ successMessage: `Successfully updated ${role.name}.` })
-      // }
+      let result
+      if (index > -1) {
+        roles[index] = role
+        result = await graphQLUpdateRole({
+          id: role.id,
+          name: role.name,
+          grant: role.permissions,
+          // revoke: Object.keys(PERMISSION).filter((p: IPermission) => !role.permissions.includes(p)),
+          tag: role.tag,
+        })
+      } else {
+        result = await graphQLCreateRole(role)
+        if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
+        roles.push(role)
+      }
+
+      if (result === 'ERROR') {
+        dispatch.organization.fetch()
+        return
+      }
 
       dispatch.ui.set({
-        successMessage:
-          roles.length === state.organization.roles.length
-            ? `Successfully updated ${role.name}.`
-            : `Successfully added ${role.name}.`,
+        successMessage: index > -1 ? `Successfully updated ${role.name}.` : `Successfully added ${role.name}.`,
       })
+
       await dispatch.organization.set({ roles })
       return role.id
     },
@@ -249,13 +266,12 @@ export default createModel<RootModel>()({
       let roles = [...state.organization.roles]
       const index = roles.findIndex(r => r.id === role.id)
       if (index > -1) roles.splice(index, 1)
+      const result = await graphQLRemoveRole(role.id)
 
-      // const result = await graphQLSetRole(role, 'REMOVE')
-      // if (result === 'ERROR') {
-      //   dispatch.organization.fetch()
-      // } else {
-      //   dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
-      // }
+      if (result === 'ERROR') {
+        dispatch.organization.fetch()
+        return
+      }
 
       dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
       dispatch.organization.set({ roles })
@@ -267,11 +283,11 @@ export default createModel<RootModel>()({
       return state
     },
     clear(state: IOrganizationState) {
-      state = { ...organizationState, initialized: true }
+      state = { ...defaultState, initialized: true }
       return state
     },
     reset(state: IOrganizationState) {
-      state = organizationState
+      state = { ...defaultState }
       return state
     },
   },

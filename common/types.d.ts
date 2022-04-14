@@ -365,13 +365,21 @@ declare global {
   type IOrganizationRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string // TEMP
 
   type IOrganizationRole = {
-    // TEMP
     id: string
-    type: IOrganizationRoleType
     name: string
-    tags: ITag[]
-    access: 'UNLIMITED' | 'ANY' | 'ALL'
+    // created: Date
+    // updated: Date
+    system?: boolean
     permissions: IPermission[]
+    tag?: ITagFilter
+  }
+
+  type ICreateRole = {
+    id?: string
+    name?: string
+    grant?: IPermission[]
+    revoke?: IPermission[]
+    tag?: ITagFilter
   }
 
   type IGeo = {

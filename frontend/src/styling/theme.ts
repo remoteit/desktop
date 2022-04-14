@@ -113,12 +113,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiChip: {
         root: {
+          color: palette.grayDarker.main,
           borderRadius: radius,
           backgroundColor: palette.grayLightest.main,
-          color: palette.alwaysWhite.main,
-          fontWeight: 500,
         },
-        colorSecondary: { color: palette.alwaysWhite.main },
+        colorPrimary: { color: palette.alwaysWhite.main, fontWeight: 500 },
+        colorSecondary: { color: palette.alwaysWhite.main, fontWeight: 500 },
         clickable: {
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },
