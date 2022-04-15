@@ -117,7 +117,7 @@ export default createModel<RootModel>()({
                   }
                   members {
                     created
-                    role
+                    roleId
                     license
                     user {
                       id

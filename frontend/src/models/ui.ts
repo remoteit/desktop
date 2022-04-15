@@ -35,7 +35,7 @@ type UIState = {
   drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
-  feature: ILookup<boolean>
+  feature: ILookup<boolean> // will be set by license limit automatically
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   redirect?: string
@@ -85,7 +85,7 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
-  feature: { tagging: false },
+  feature: { tagging: false, saml: false },
   serviceContextMenu: undefined,
   globalTooltip: undefined,
   redirect: undefined,

@@ -34,7 +34,7 @@ export default createModel<RootModel>()({
               login {
                 membership {
                   created
-                  role
+                  roleId
                   license
                   organization {
                     id
