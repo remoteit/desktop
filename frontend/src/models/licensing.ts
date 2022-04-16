@@ -160,7 +160,8 @@ export default createModel<RootModel>()({
             }`
         )
         graphQLGetErrors(result)
-        dispatch.licensing.parse(result)
+        await dispatch.licensing.parse(result)
+        await dispatch.licensing.limitFeatures()
       } catch (error) {
         await apiError(error)
       }
@@ -169,7 +170,6 @@ export default createModel<RootModel>()({
     async parse(gqlResponse: AxiosResponse<any> | void, state) {
       if (!gqlResponse) return
       const data = gqlResponse?.data?.data
-      console.log('LICENSING', data)
       await dispatch.licensing.set({
         plans: data.plans,
         licenses: data?.login.licenses.map(l => parseLicense(l)),
@@ -177,17 +177,16 @@ export default createModel<RootModel>()({
         purchasing: undefined,
         updating: undefined,
       })
-      await dispatch.licensing.limitFeatures()
+      console.log('LICENSING', data)
     },
 
     async limitFeatures(_, globalState) {
       const limits = getLimits(globalState)
-      const { feature } = globalState.ui
+      const feature = { ...globalState.ui.feature }
       limits.forEach(l => {
-        if (feature[l.name] !== undefined) {
-          dispatch.ui.set({ feature: { ...feature, [l.name]: l.value } })
-        }
+        if (feature[l.name] !== undefined) feature[l.name] = l.value
       })
+      dispatch.ui.set({ feature })
     },
 
     async subscribe(form: IPurchase, globalState) {
