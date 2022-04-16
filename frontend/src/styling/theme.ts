@@ -117,8 +117,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           borderRadius: radius,
           backgroundColor: palette.grayLightest.main,
         },
-        colorPrimary: { color: palette.alwaysWhite.main, fontWeight: 500 },
-        colorSecondary: { color: palette.alwaysWhite.main, fontWeight: 500 },
+        colorPrimary: { color: palette.alwaysWhite.main },
+        colorSecondary: { color: palette.alwaysWhite.main },
         clickable: {
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },

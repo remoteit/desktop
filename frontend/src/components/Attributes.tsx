@@ -95,14 +95,15 @@ export const attributes: Attribute[] = [
     defaultWidth: 100,
     value: ({ device, connection }) =>
       connection?.connected ? (
-        <Chip label="Connected" size="small" color="primary" />
+        <ColorChip label="CONNECTED" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
       ) : connection?.enabled ? (
-        <Chip label="Ready" size="small" color="primary" />
+        // <Chip label="READY" size="small" color="primary" />
+        <ColorChip label="READY" size="small" typeColor="primary" />
       ) : device?.state === 'active' ? (
-        // <Chip label="Online" size="small" />
-        <ColorChip label="Online" size="small" typeColor="primary" backgroundColor="grayLightest" />
+        // <Chip label="ONLINE" size="small" color="secondary" />
+        <ColorChip label="ONLINE" size="small" typeColor="secondary" />
       ) : (
-        <ColorChip label="Offline" size="small" typeColor="gray" backgroundColor="grayLightest" />
+        <ColorChip label="Offline" size="small" typeColor="gray" />
       ),
   }),
   new Attribute({

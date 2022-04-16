@@ -25,7 +25,7 @@ export const ROLE: ILookup<string> = {
 export const PERMISSION: ILookup<{ name: string; description: string; icon: string }> = {
   CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
   SCRIPTING: { name: 'Scripting', description: 'Run device scripts', icon: 'code' },
-  MANAGE: { name: 'Manage', description: 'Tag and manage devices ', icon: 'pencil' },
+  MANAGE: { name: 'Manage', description: 'Manage devices ', icon: 'pencil' },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
