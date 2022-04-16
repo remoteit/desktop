@@ -372,6 +372,7 @@ declare global {
     // created: Date
     // updated: Date
     system?: boolean
+    disabled?: boolean
     permissions: IPermission[]
     tag?: ITagFilter
   }

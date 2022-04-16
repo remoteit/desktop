@@ -65,6 +65,7 @@ const defaultState: IOrganizationState = {
       name: 'Owner',
       system: true,
       permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
+      disabled: true,
     },
     {
       id: 'ADMIN',
@@ -194,10 +195,13 @@ export default createModel<RootModel>()({
       await dispatch.organization.set({ members: updated })
 
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
+      const member = members[0]
+      const role = state.organization.roles.find(r => r.id === member.roleId)
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
-        members[0].roleId,
-        members[0].license
+        role?.system ? undefined : member.roleId,
+        role?.system ? member.roleId : undefined,
+        member.license
       )
       if (result === 'ERROR') {
         dispatch.organization.fetch()

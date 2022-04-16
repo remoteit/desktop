@@ -25,11 +25,8 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       variant="filled"
       onChange={e => handleSelect(e.target.value)}
     >
-      <MenuItem dense value="0" disabled>
-        Owner
-      </MenuItem>
       {roles.map(r => (
-        <MenuItem key={r.id} value={r.id} dense>
+        <MenuItem key={r.id} value={r.id} disabled={!!r.disabled} dense>
           {r.name}
         </MenuItem>
       ))}

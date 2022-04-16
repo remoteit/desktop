@@ -33,7 +33,7 @@ export const OrganizationRolesPage: React.FC = () => {
       </Typography>
       <List>
         {roles.map(r => {
-          if (r.id === 'OWNER') return null
+          if (r.disabled) return null
           const count = members.filter(m => m.roleId === r.id).length
           return (
             <ListItemLocation

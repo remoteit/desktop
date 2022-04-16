@@ -83,6 +83,11 @@ export const OrganizationRolePage: React.FC = () => {
       }
     >
       <List className={css.form}>
+        {systemRole && (
+          <Notice severity="info" gutterBottom>
+            System roles cannot be modified.
+          </Notice>
+        )}
         <Typography variant="subtitle1">Role</Typography>
         <ListItem>
           <TextField
