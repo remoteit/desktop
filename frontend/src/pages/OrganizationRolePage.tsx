@@ -38,7 +38,7 @@ export const OrganizationRolePage: React.FC = () => {
     const accountId = getActiveAccountId(state)
     return {
       disabled: state.organization.updating,
-      role: state.organization.roles.find(r => r.id === roleID) || { ...DEFAULT_ROLE },
+      role: state.organization.roles.find(r => r.id === roleID) || DEFAULT_ROLE,
       tags: selectTags(state, accountId),
     }
   })
@@ -126,12 +126,12 @@ export const OrganizationRolePage: React.FC = () => {
             <Tags
               tags={filteredTags}
               onDelete={({ name }) => {
-                let tag = ({ ...form.tag } || DEFAULT_ROLE.tag) as ITagFilter
+                let tag = { ...(form.tag || DEFAULT_ROLE.tag) } as ITagFilter
                 if (!tag.values) return
                 const index = tag.values.indexOf(name)
                 tag.values.splice(index, 1)
                 form.tag = tag
-                changeForm({ ...form })
+                changeForm(form)
               }}
               onClick={tag => {
                 dispatch.devices.set({ tag: { values: [tag.name] } })
@@ -144,7 +144,7 @@ export const OrganizationRolePage: React.FC = () => {
               // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
               onSelect={tag => {
                 form.tag && form.tag.values.push(tag.name)
-                changeForm({ ...form })
+                changeForm(form)
               }}
               tags={tags}
               filter={filteredTags}
@@ -161,7 +161,7 @@ export const OrganizationRolePage: React.FC = () => {
                 variant="filled"
                 onChange={event => {
                   form.tag && (form.tag.operator = event.target.value as ITagOperator)
-                  changeForm({ ...form })
+                  changeForm(form)
                 }}
               >
                 <MenuItem dense value="ANY">
@@ -215,6 +215,7 @@ export const OrganizationRolePage: React.FC = () => {
               if (form.tag && form.tag.values.length === 0) form.tag = undefined
               const roleID = await dispatch.organization.setRole(form)
               setSaving(false)
+              setForm(cloneDeep(form)) // reset change detection
               history.push(`/account/organization/roles/${roleID}`)
             }}
           >
