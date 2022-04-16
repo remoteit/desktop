@@ -34,6 +34,7 @@ export default createModel<RootModel>()({
               login {
                 membership {
                   created
+                  role
                   roleId
                   license
                   organization {
@@ -63,7 +64,8 @@ export default createModel<RootModel>()({
       dispatch.accounts.set({
         membership: membership.map(m => ({
           created: new Date(m.created),
-          role: m.role,
+          role: m.role || m.roleId,
+          roleId: m.roleId || m.role,
           license: m.license,
           organization: {
             ...m.organization,

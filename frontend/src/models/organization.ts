@@ -14,14 +14,6 @@ import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 
-export const ROLE: ILookup<string> = {
-  // @TODO deprecate
-  OWNER: 'Admin / Owner',
-  ADMIN: 'Admin',
-  MEMBER: 'Member',
-  LIMITED: 'Limited',
-}
-
 export const PERMISSION: ILookup<{ name: string; description: string; icon: string }> = {
   CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
   SCRIPTING: { name: 'Scripting', description: 'Run device scripts', icon: 'code' },
@@ -69,13 +61,19 @@ const defaultState: IOrganizationState = {
   members: [],
   roles: [
     {
-      id: 'system1',
+      id: 'OWNER',
+      name: 'Owner',
+      system: true,
+      permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
+    },
+    {
+      id: 'ADMIN',
       name: 'Admin',
       system: true,
       permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
     },
     {
-      id: 'system2',
+      id: 'MEMBER',
       name: 'Member',
       system: true,
       permissions: ['CONNECT'],
@@ -118,6 +116,7 @@ export default createModel<RootModel>()({
                   members {
                     created
                     roleId
+                    role
                     license
                     user {
                       id
@@ -149,6 +148,7 @@ export default createModel<RootModel>()({
         members: [
           ...org.members.map(m => ({
             ...m,
+            roleId: m.roleId || m.role,
             created: new Date(m.created),
           })),
         ],
@@ -196,7 +196,7 @@ export default createModel<RootModel>()({
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
-        members[0].role,
+        members[0].roleId,
         members[0].license
       )
       if (result === 'ERROR') {
@@ -299,7 +299,7 @@ export function selectOwner(state: ApplicationState): IOrganizationMember | unde
   return (
     user && {
       created: new Date(user.created || ''),
-      role: 'OWNER',
+      roleId: 'OWNER',
       license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
       organizationId: user.id,
       user: {

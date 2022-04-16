@@ -32,20 +32,24 @@ export const OrganizationRolesPage: React.FC = () => {
         <IconButton icon="plus" to={'/account/organization/roles/add'} title="Add role" />
       </Typography>
       <List>
-        {roles.map(r => (
-          <ListItemLocation
-            key={r.id}
-            title={r.name}
-            pathname={`/account/organization/roles/${r.id}`}
-            exactMatch
-            disableIcon
-            dense
-          >
-            <ListItemSecondaryAction>
-              {/* <Chip label={members.filter(m => m.roleId === r.id).length} size="small" /> */}
-            </ListItemSecondaryAction>
-          </ListItemLocation>
-        ))}
+        {roles.map(r => {
+          if (r.id === 'OWNER') return null
+          const count = members.filter(m => m.roleId === r.id).length
+          return (
+            <ListItemLocation
+              key={r.id}
+              title={r.name}
+              pathname={`/account/organization/roles/${r.id}`}
+              exactMatch
+              disableIcon
+              dense
+            >
+              <ListItemSecondaryAction>
+                <Chip label={count ? `${count} member${count === 1 ? '' : 's'}` : 'none'} size="small" />
+              </ListItemSecondaryAction>
+            </ListItemLocation>
+          )
+        })}
       </List>
     </Container>
   )

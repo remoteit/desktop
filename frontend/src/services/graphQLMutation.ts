@@ -123,12 +123,17 @@ export async function graphQLRemoveOrganization() {
   )
 }
 
-export async function graphQLSetMembers(email: string[], role: IOrganizationRoleType, license?: ILicenseTypes) {
+export async function graphQLSetMembers(
+  email: string[],
+  roleId: IOrganizationRoleIdType,
+  license?: ILicenseTypes,
+  role?: IOrganizationRoleIdType
+) {
   return await graphQLBasicRequest(
-    ` mutation query($email: [String!]!, $role: OrganizationRole, $license: LicenseOption) {
-        setMember(email: $email, role: $role, license: $license)
+    ` mutation query($email: [String!]!, $role: OrganizationRole, $roleId: ID, $license: LicenseOption) {
+        setMember(email: $email, role: $role, roleId: $roleId, license: $license)
       }`,
-    { email, role, license }
+    { email, role, roleId, license }
   )
 }
 
