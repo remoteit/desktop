@@ -37,6 +37,10 @@ export function SignInForm() {
     appVersion,
   }
 
+  const onSignInSuccess = (user: CognitoUser) => {
+    setTimeout(() => auth.handleSignInSuccess(user), 100)
+  }
+
   console.log('DESKTOP SIGN IN FORM RENDER')
 
   return (
@@ -49,7 +53,7 @@ export function SignInForm() {
       errorMessage={signInError}
       inputEmail={localUsername}
       onClickCheckboxRemember={onClickCheckboxRemember}
-      onSignInSuccess={(user: CognitoUser) => auth.handleSignInSuccess(user)}
+      onSignInSuccess={onSignInSuccess}
       segmentSettings={segmentSettings}
       themeOverride={theme}
     />

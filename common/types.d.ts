@@ -351,27 +351,38 @@ declare global {
     user: IUserRef
     organizationId: string
     license: ILicenseTypes
-    role: IOrganizationRoleType
+    roleId: IOrganizationRoleIdType
+    // role?: IOrganizationRoleType
     created: Date
   }
 
   type IOrganizationMembership = {
     organization: IOrganization
-    role: IOrganizationRoleType
+    role?: IOrganizationRoleIdType
+    roleId: IOrganizationRoleIdType
     created: Date
     license: ILicenseTypes
   }
 
-  type IOrganizationRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' // TEMP
+  type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string
 
   type IOrganizationRole = {
-    // TEMP
     id: string
-    type: IOrganizationRoleType
     name: string
-    tags: ITag[]
-    access: 'UNLIMITED' | 'ANY' | 'ALL'
+    // created: Date
+    // updated: Date
+    system?: boolean
+    disabled?: boolean
     permissions: IPermission[]
+    tag?: ITagFilter
+  }
+
+  type ICreateRole = {
+    id?: string
+    name?: string
+    grant?: IPermission[]
+    revoke?: IPermission[]
+    tag?: ITagFilter
   }
 
   type IGeo = {
@@ -495,7 +506,6 @@ declare global {
     owner?: boolean
     sort?: string
     name?: string
-    ids?: string[]
     platform?: number[]
   }
 

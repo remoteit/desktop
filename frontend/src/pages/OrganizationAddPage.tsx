@@ -22,7 +22,7 @@ export const OrganizationAddPage = () => {
   }))
 
   const [emails, setEmails] = React.useState<string[]>([])
-  const [role, setRole] = React.useState<IOrganizationRoleType>('MEMBER')
+  const [roleId, setRoleId] = React.useState<IOrganizationRoleIdType>('MEMBER')
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
@@ -36,7 +36,7 @@ export const OrganizationAddPage = () => {
   const add = () => {
     dispatch.organization.setMembers(
       emails.map(email => ({
-        role,
+        roleId,
         created: new Date(),
         license: freeLicenses ? 'LICENSED' : 'UNLICENSED',
         organizationId: organization.id || '',
@@ -83,14 +83,14 @@ export const OrganizationAddPage = () => {
             </>
           }
           disabled={disabled}
-          checked={role === 'ADMIN'}
-          onClick={() => setRole('ADMIN')}
+          checked={roleId === 'ADMIN'}
+          onClick={() => setRoleId('ADMIN')}
         />
         <ListItemRadio
           label="Member"
           subLabel="Can connect to all devices."
-          checked={role === 'MEMBER'}
-          onClick={() => setRole('MEMBER')}
+          checked={roleId === 'MEMBER'}
+          onClick={() => setRoleId('MEMBER')}
         />
       </List>
       <Gutters>

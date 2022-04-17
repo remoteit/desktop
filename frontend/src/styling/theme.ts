@@ -15,6 +15,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     primaryLight: { main: colors.primaryLight, dark: darkColors.primaryLight },
     primaryLighter: { main: colors.primaryLighter, dark: darkColors.primaryLighter },
     primaryHighlight: { main: colors.primaryHighlight, dark: darkColors.primaryHighlight },
+    primaryBackground: { main: colors.primaryBackground, dark: darkColors.primaryBackground },
     successLight: { main: colors.successLight, dark: darkColors.successLight },
     success: { main: colors.success, dark: darkColors.success },
     successDark: { main: colors.successDark, dark: darkColors.successDark },
@@ -112,11 +113,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiChip: {
         root: {
+          color: palette.grayDarker.main,
           borderRadius: radius,
           backgroundColor: palette.grayLightest.main,
-          color: palette.alwaysWhite.main,
-          fontWeight: 500,
         },
+        colorPrimary: { color: palette.alwaysWhite.main },
         colorSecondary: { color: palette.alwaysWhite.main },
         clickable: {
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },

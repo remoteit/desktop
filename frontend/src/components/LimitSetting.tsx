@@ -18,6 +18,19 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       template = 'value'
       message = limit.value !== null ? `${v(limit.actual)} of ${v(limit.value)} user licenses used` : undefined
       break
+    case 'saml':
+      template = 'text'
+      message = limit.value ? 'SAML available' : 'SAML unavailable'
+      break
+    case 'roles':
+      template = 'text'
+      message = limit.value ? 'Custom roles available' : 'Custom roles unavailable'
+      break
+    case 'tagging':
+      // hidden
+      // template = 'text'
+      // message = limit.value ? 'Tagging active' : 'Tagging unavailable'
+      break
     case 'aws-services':
       template = 'value'
       message =
@@ -27,10 +40,6 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       template = 'text'
       message = `Services are granted an evaluation period of ${humanizeDays(limit.value)}`
       break
-    // case 'tagging':
-    //   template = 'text'
-    //   message = limit.value ? 'Tagging is enabled.' : 'Tagging is not available.'
-    //   break
     case 'log-limit':
       template = 'text'
       message = `Log history is available for ${humanizeDays(limit.value)}`
@@ -57,7 +66,11 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   // Templates
   switch (template) {
     case 'text':
-      return <Typography variant="caption">{message}</Typography>
+      return (
+        <Typography variant="caption" component="div">
+          {message}
+        </Typography>
+      )
     case 'value':
       let value = limit.value ? (limit.actual / limit.value) * 100 : 0
       if (value > 100) value = (100 / value) * 100

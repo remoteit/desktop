@@ -10,6 +10,7 @@ import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
 import { DeviceRole } from './DeviceRole'
+import { ColorChip } from './ColorChip'
 import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -89,29 +90,40 @@ export const attributes: Attribute[] = [
     required: true,
   }),
   new Attribute({
-    id: 'active',
-    label: 'Online',
+    id: 'status',
+    label: 'Status',
     defaultWidth: 100,
-    value: ({ device }) =>
-      device?.state === 'active' ? (
-        <Chip label="Online" size="small" color="primary" />
+    value: ({ device, connection }) =>
+      connection?.connected ? (
+        <ColorChip label="CONNECTED" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
+      ) : connection?.enabled ? (
+        // <Chip label="READY" size="small" color="primary" />
+        <ColorChip label="READY" size="small" typeColor="primary" />
+      ) : device?.state === 'active' ? (
+        // <Chip label="ONLINE" size="small" color="secondary" />
+        <ColorChip label="ONLINE" size="small" typeColor="secondary" />
       ) : (
-        <Chip label="Offline" size="small" />
+        <ColorChip label="Offline" size="small" typeColor="gray" />
       ),
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
-    defaultWidth: 100,
+    defaultWidth: 120,
     value: ({ device }) => <Tags tags={device?.tags || []} small />,
     feature: 'tagging',
+  }),
+  new Attribute({
+    id: 'qualitySmall',
+    label: 'Quality',
+    defaultWidth: 120,
+    value: ({ device }) => <QualityDetails device={device} small />,
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 400,
-    align: 'right',
+    defaultWidth: 350,
   }),
   new DeviceAttribute({
     id: 'tagEditor',
@@ -166,7 +178,7 @@ export const attributes: Attribute[] = [
     label: 'Users',
     defaultWidth: 200,
     value: ({ device }) =>
-      device?.shared ? <Avatar email={device.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
+      device?.shared ? <Avatar email={device.owner.email} size={22} /> : <AvatarList users={device?.access} />,
   }),
   new DeviceAttribute({
     id: 'lastReported',

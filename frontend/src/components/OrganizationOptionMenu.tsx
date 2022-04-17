@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Divider, IconButton, Menu } from '@material-ui/core'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { ListItemLocation } from './ListItemLocation'
-import { TestUI } from './TestUI'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = { organization: ApplicationState['IOrganizationState'] }
 
 export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
+  const samlFeature = useSelector((state: ApplicationState) => state.ui.feature.saml)
   const [removing, setRemoving] = useState<boolean>(false)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const dispatch = useDispatch<Dispatch>()
@@ -32,41 +32,43 @@ export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
         autoFocus={false}
       >
         <div>
-          <ListItemLocation
-            title="Settings"
-            icon="sliders-h"
-            pathname="/account/organization/saml"
-            disableGutters
-            dense
-          />
-          <TestUI>
-            <ListItemLocation
-              title="Roles"
-              icon="shield-alt"
-              pathname={`/account/organization/roles/${organization.roles[0].id}`}
-              disableGutters
-              dense
-            />
-          </TestUI>
-        </div>
-        <Divider />
-        <DeleteButton
-          menuItem
-          title="Delete Organization"
-          destroying={removing}
-          warning={
+          {samlFeature && (
             <>
-              <Notice severity="danger" fullWidth gutterBottom>
-                You will be permanently deleting <i>{organization.name}. </i>
-              </Notice>
-              This will remove all your members and their access to your devices.
+              <ListItemLocation
+                title="Settings"
+                icon="sliders-h"
+                pathname="/account/organization/saml"
+                disableGutters
+                dense
+              />
+              <ListItemLocation
+                title="Roles"
+                icon="shield-alt"
+                pathname={`/account/organization/roles/${organization.roles[0].id}`}
+                disableGutters
+                dense
+              />
+              <Divider />
             </>
-          }
-          onDelete={() => {
-            setRemoving(true)
-            dispatch.organization.removeOrganization()
-          }}
-        />
+          )}
+          <DeleteButton
+            menuItem
+            title="Delete Organization"
+            destroying={removing}
+            warning={
+              <>
+                <Notice severity="danger" fullWidth gutterBottom>
+                  You will be permanently deleting <i>{organization.name}. </i>
+                </Notice>
+                This will remove all your members and their access to your devices.
+              </>
+            }
+            onDelete={() => {
+              setRemoving(true)
+              dispatch.organization.removeOrganization()
+            }}
+          />
+        </div>
       </Menu>
     </>
   )

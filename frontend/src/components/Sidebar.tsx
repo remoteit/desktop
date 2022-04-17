@@ -1,6 +1,6 @@
 import React from 'react'
 import { SIDEBAR_WIDTH } from '../shared/constants'
-import { makeStyles, Box, ListItem } from '@material-ui/core'
+import { makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../services/Browser'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterButton } from '../buttons/RegisterButton'
@@ -21,9 +21,7 @@ export const Sidebar: React.FC = () => {
           <RegisterButton />
         </span>
       </section>
-      <ListItem className={css.select} dense>
-        <AccountSelect fullWidth />
-      </ListItem>
+      <AccountSelect />
       <SidebarNav />
       <RemoteManagement />
     </Box>
@@ -46,8 +44,5 @@ const useStyles = addSpace =>
     header: {
       display: 'flex',
       justifyContent: 'space-between',
-    },
-    select: {
-      marginTop: spacing.md,
     },
   }))

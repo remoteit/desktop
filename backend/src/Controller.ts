@@ -55,6 +55,7 @@ class Controller {
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().length > DEFAULT_SOCKETS_LENGTH) socket.removeAllListeners()
 
+    socket.on('init', this.init)
     socket.on('user/lock', user.signOut)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
@@ -84,7 +85,10 @@ class Controller {
     socket.on('showFolder', this.showFolder)
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
+  }
 
+  init = () => {
+    Logger.info('INIT FRONTEND DATA')
     binaryInstaller.check()
     this.initBackend()
     this.check()
@@ -180,6 +184,7 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady')
+    Logger.info('DATA READY')
   }
 
   connection = async (connection: IConnection) => {

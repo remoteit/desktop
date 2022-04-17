@@ -1,14 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-ui/core'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { getAttributes } from './Attributes'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { DataDisplay } from './DataDisplay'
 import { CopyButton } from '../buttons/CopyButton'
-import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 
@@ -27,7 +24,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const launchRef = useRef<HTMLDivElement>(null)
   const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
-  const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
   const css = useStyles()
 
@@ -45,7 +41,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const { ref } = useResizeObserver<HTMLDivElement>({ onResize: measure })
 
   useEffect(() => {
-    setTimeout(measure, 100)
+    const timeout = setTimeout(measure, 100)
+    return () => clearTimeout(timeout)
   }, [connection, service])
 
   if (!connection && !session) return null
@@ -53,7 +50,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   let name = connection?.host
   let port = connection?.port
 
-  if (port === -1 || !name) {
+  if ((port === -1 || !name) && !connection?.enabled) {
     name = 'Starting...'
     port = undefined
   }

@@ -13,7 +13,7 @@ export const UserLogPage: React.FC = () => {
   const { logs } = useDispatch<Dispatch>()
 
   const refresh = () => {
-    logs.set({ from: 0 })
+    logs.set({ from: 0, maxDate: new Date() })
     logs.fetch()
   }
 

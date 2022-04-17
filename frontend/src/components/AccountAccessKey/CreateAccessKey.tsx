@@ -98,7 +98,7 @@ export function CreateAccessKey(props) {
           </Grid>
           <Button variant="contained" className={classes.download} onClick={downloadCSV}>
             <Icon name="download" className={classes.icon} />
-            Download CREDENTIALS
+            Download Credentials
           </Button>
         </Paper>
       </div>

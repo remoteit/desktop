@@ -15,7 +15,6 @@ export const PortSetting: React.FC<{ service: IService; connection: IConnection 
     return port
   })
 
-  console.log('CONNECTION PORT', connection)
   if (!service) return null
 
   const disabled = connection.enabled || connection.public

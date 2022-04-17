@@ -19,7 +19,7 @@ export const SessionsList: React.FC<Props> = ({ sessions, title, action, ...prop
   return (
     <>
       <Typography variant="subtitle1">
-        <Title enabled={!props.offline}>{title}</Title>
+        <Title>{title}</Title>
         {action}
       </Typography>
       {sessions.map((s, i) => {

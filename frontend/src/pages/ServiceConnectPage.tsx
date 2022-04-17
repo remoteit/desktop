@@ -26,7 +26,7 @@ export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[]
       device={device}
       service={service}
       target={target}
-      backgroundColor={connection.enabled ? 'primaryHighlight' : 'grayLighter'}
+      backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
     >
       <Connect />
     </ServiceHeaderMenu>

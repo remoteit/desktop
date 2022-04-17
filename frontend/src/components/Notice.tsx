@@ -1,8 +1,7 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { spacing, fontSizes } from '../styling'
-import { Paper, Box } from '@material-ui/core'
-import { makeStyles, alpha } from '@material-ui/core/styles'
+import { makeStyles, alpha, Paper, Box } from '@material-ui/core'
 import classnames from 'classnames'
 
 type Props = {

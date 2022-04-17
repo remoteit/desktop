@@ -62,6 +62,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   return (
     <Switch>
+      {/* Deep links */}
       <Redirect
         from={'/connect/:serviceID'}
         to={{

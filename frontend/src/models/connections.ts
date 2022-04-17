@@ -6,11 +6,10 @@ import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 
-type IConnectionsState = { all: IConnection[]; useCommand: boolean }
+type IConnectionsState = { all: IConnection[] }
 
 const defaultState: IConnectionsState = {
   all: [],
-  useCommand: true,
 }
 
 export default createModel<RootModel>()({
@@ -70,9 +69,11 @@ export default createModel<RootModel>()({
       }
 
       setConnection(proxyConnection)
-
       const result = await graphQLConnect(connection.id, connection.publicRestriction)
-      if (result && result !== 'ERROR') {
+
+      if (result === 'ERROR') {
+        setConnection(connection)
+      } else {
         const data = result?.data?.data?.connect
         console.log('PROXY CONNECTED', data)
         setConnection({
@@ -94,9 +95,15 @@ export default createModel<RootModel>()({
 
     async proxyDisconnect(connection: IConnection) {
       if (!connection.publicId) return
-      setConnection({ ...connection, enabled: false, host: undefined, port: undefined })
+      let disconnect = { ...connection, enabled: false }
+      setConnection(disconnect)
       const result = await graphQLDisconnect(connection.id, connection.publicId)
-      if (result !== 'ERROR') console.log('PROXY DISCONNECTED', result)
+      if (result === 'ERROR') {
+        setConnection(connection)
+      } else {
+        setConnection({ ...disconnect, connected: false })
+        console.log('PROXY DISCONNECTED', result)
+      }
     },
 
     async connect(connection: IConnection) {
@@ -128,10 +135,13 @@ export default createModel<RootModel>()({
     },
 
     async clearByDevice(deviceId: string, globalState) {
-      const { clear } = dispatch.connections
+      const { clear, disconnect } = dispatch.connections
       const { all } = globalState.connections
-      all.forEach(c => {
-        if (c.deviceID === deviceId) clear(c.id)
+      all.forEach(async c => {
+        if (c.deviceID === deviceId) {
+          if (c.enabled) await disconnect(c)
+          await clear(c.id)
+        }
       })
     },
 

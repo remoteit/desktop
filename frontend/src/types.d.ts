@@ -214,6 +214,8 @@ declare global {
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 
+  type IGlobalTooltip = { el?: HTMLElement; title: React.ReactElement | string; color?: string }
+
   type ILayout = {
     hideSidebar: boolean
     singlePanel: boolean
@@ -227,6 +229,7 @@ declare module '@material-ui/core/styles/createPalette' {
     primaryLight: Palette['primary']
     primaryLighter: Palette['primary']
     primaryHighlight: Palette['primaryHighlight']
+    primaryBackground: Palette['primaryBackground']
     secondary: Palette['secondary']
     successLight: Palette['successLight']
     success: Palette['success']
@@ -256,6 +259,7 @@ declare module '@material-ui/core/styles/createPalette' {
     primaryLight?: PaletteOptions['primary']
     primaryLighter?: PaletteOptions['primary']
     primaryHighlight?: Palette['primaryHighlight']
+    primaryBackground?: Palette['primaryBackground']
     secondary?: Palette['secondary']
     successLight?: Palette['successLight']
     success?: Palette['success']

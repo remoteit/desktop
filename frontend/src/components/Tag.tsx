@@ -30,6 +30,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
             {tag.name}
           </>
         }
+        placement="top"
         arrow
       >
         <span className={css.dot}>
@@ -61,7 +62,10 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
 }
 
 const useStyles = makeStyles({
-  tooltip: ({ color }: any) => ({ backgroundColor: color }),
+  tooltip: ({ color }: any) => ({
+    backgroundColor: color,
+    '& .MuiTooltip-arrow': { color },
+  }),
   dot: {
     '& + span': { marginLeft: spacing.xxs },
   },

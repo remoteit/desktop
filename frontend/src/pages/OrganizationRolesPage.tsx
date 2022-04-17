@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import { List, Typography, Chip } from '@material-ui/core'
+import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -11,7 +11,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
   const history = useHistory()
-  const { name, roles } = useSelector((state: ApplicationState) => state.organization)
+  const { name, roles, members } = useSelector((state: ApplicationState) => state.organization)
 
   useEffect(() => {
     analyticsHelper.page('OrganizationRolesPage')
@@ -31,18 +31,25 @@ export const OrganizationRolesPage: React.FC = () => {
         <Title>Role</Title>
         <IconButton icon="plus" to={'/account/organization/roles/add'} title="Add role" />
       </Typography>
-
       <List>
-        {roles.map(r => (
-          <ListItemLocation
-            key={r.id}
-            title={r.name}
-            pathname={`/account/organization/roles/${r.id}`}
-            exactMatch
-            disableIcon
-            dense
-          />
-        ))}
+        {roles.map(r => {
+          if (r.disabled) return null
+          const count = members.filter(m => m.roleId === r.id).length
+          return (
+            <ListItemLocation
+              key={r.id}
+              title={r.name}
+              pathname={`/account/organization/roles/${r.id}`}
+              exactMatch
+              disableIcon
+              dense
+            >
+              <ListItemSecondaryAction>
+                <Chip label={count ? `${count} member${count === 1 ? '' : 's'}` : 'none'} size="small" />
+              </ListItemSecondaryAction>
+            </ListItemLocation>
+          )
+        })}
       </List>
     </Container>
   )

@@ -4,32 +4,26 @@ import {
   graphQLRemoveOrganization,
   graphQLSetMembers,
   graphQLSetSAML,
+  graphQLCreateRole,
+  graphQLUpdateRole,
+  graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { getRemoteitLicense } from './licensing'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 
-export const ROLE: ILookup<string> = {
-  OWNER: 'Admin / Owner',
-  ADMIN: 'Admin',
-  MEMBER: 'Member',
-  LIMITED: 'Limited',
-}
-
 export const PERMISSION: ILookup<{ name: string; description: string; icon: string }> = {
   CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
   SCRIPTING: { name: 'Scripting', description: 'Run device scripts', icon: 'code' },
-  MANAGE: { name: 'Manage', description: 'Tag and manage devices ', icon: 'pencil' },
+  MANAGE: { name: 'Manage', description: 'Manage devices ', icon: 'pencil' },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
   id: '',
-  type: 'CUSTOM',
   name: '',
-  tags: [],
-  access: 'ANY',
+  tag: { operator: 'ANY', values: [] },
   permissions: ['CONNECT'],
 }
 
@@ -51,7 +45,7 @@ export type IOrganizationState = {
   roles: IOrganizationRole[]
 }
 
-const organizationState: IOrganizationState = {
+const defaultState: IOrganizationState = {
   initialized: false,
   updating: false,
   id: undefined,
@@ -67,26 +61,29 @@ const organizationState: IOrganizationState = {
   members: [],
   roles: [
     {
-      id: '1',
-      type: 'ADMIN',
+      id: 'OWNER',
+      name: 'Owner',
+      system: true,
+      permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
+      disabled: true,
+    },
+    {
+      id: 'ADMIN',
       name: 'Admin',
-      tags: [],
-      access: 'UNLIMITED',
+      system: true,
       permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
     },
     {
-      id: '2',
-      type: 'MEMBER',
+      id: 'MEMBER',
       name: 'Member',
-      tags: [],
-      access: 'UNLIMITED',
+      system: true,
       permissions: ['CONNECT'],
     },
   ],
 }
 
 export default createModel<RootModel>()({
-  state: organizationState,
+  state: { ...defaultState },
   effects: dispatch => ({
     async init() {
       await dispatch.organization.fetch()
@@ -94,9 +91,8 @@ export default createModel<RootModel>()({
     },
 
     async fetch() {
-      try {
-        const result = await graphQLRequest(
-          ` query {
+      const result = await graphQLBasicRequest(
+        ` query {
               login {
                 organization {
                   id
@@ -109,8 +105,18 @@ export default createModel<RootModel>()({
                   verificationValue
                   verified
                   created
+                  roles {
+                    id
+                    name
+                    permissions
+                    tag {
+                      operator
+                      values
+                    }
+                  }
                   members {
                     created
+                    roleId
                     role
                     license
                     user {
@@ -121,12 +127,9 @@ export default createModel<RootModel>()({
                 }
               }
             }`
-        )
-        graphQLGetErrors(result)
-        await dispatch.organization.parse(result)
-      } catch (error) {
-        await apiError(error)
-      }
+      )
+      if (result === 'ERROR') return
+      await dispatch.organization.parse(result)
     },
 
     async parse(gqlResponse: AxiosResponse<any> | void, state) {
@@ -146,7 +149,15 @@ export default createModel<RootModel>()({
         members: [
           ...org.members.map(m => ({
             ...m,
+            roleId: m.roleId || m.role,
             created: new Date(m.created),
+          })),
+        ],
+        roles: [
+          ...defaultState.roles,
+          ...org.roles.map(r => ({
+            ...r,
+            created: new Date(r.created),
           })),
         ],
       })
@@ -184,10 +195,13 @@ export default createModel<RootModel>()({
       await dispatch.organization.set({ members: updated })
 
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
+      const member = members[0]
+      const role = state.organization.roles.find(r => r.id === member.roleId)
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
-        members[0].role,
-        members[0].license
+        role?.system ? undefined : member.roleId,
+        role?.system ? member.roleId : undefined,
+        member.license
       )
       if (result === 'ERROR') {
         dispatch.organization.fetch()
@@ -218,6 +232,54 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ successMessage: `Your organization has been removed.` })
       }
     },
+
+    async setRole(role: IOrganizationRole, state) {
+      let roles = [...state.organization.roles]
+      const index = roles.findIndex(r => r.id === role.id)
+
+      let result
+      if (index > -1) {
+        roles[index] = role
+        result = await graphQLUpdateRole({
+          id: role.id,
+          name: role.name,
+          grant: role.permissions,
+          // revoke: Object.keys(PERMISSION).filter((p: IPermission) => !role.permissions.includes(p)),
+          tag: role.tag,
+        })
+      } else {
+        result = await graphQLCreateRole(role)
+        if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
+        roles.push(role)
+      }
+
+      if (result === 'ERROR') {
+        dispatch.organization.fetch()
+        return
+      }
+
+      dispatch.ui.set({
+        successMessage: index > -1 ? `Successfully updated ${role.name}.` : `Successfully added ${role.name}.`,
+      })
+
+      await dispatch.organization.set({ roles })
+      return role.id
+    },
+
+    async removeRole(role: IOrganizationRole, state) {
+      let roles = [...state.organization.roles]
+      const index = roles.findIndex(r => r.id === role.id)
+      if (index > -1) roles.splice(index, 1)
+      const result = await graphQLRemoveRole(role.id)
+
+      if (result === 'ERROR') {
+        dispatch.organization.fetch()
+        return
+      }
+
+      dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
+      dispatch.organization.set({ roles })
+    },
   }),
   reducers: {
     set(state: IOrganizationState, params: ILookup<any>) {
@@ -225,11 +287,11 @@ export default createModel<RootModel>()({
       return state
     },
     clear(state: IOrganizationState) {
-      state = { ...organizationState, initialized: true }
+      state = { ...defaultState, initialized: true }
       return state
     },
     reset(state: IOrganizationState) {
-      state = organizationState
+      state = { ...defaultState }
       return state
     },
   },
@@ -241,7 +303,7 @@ export function selectOwner(state: ApplicationState): IOrganizationMember | unde
   return (
     user && {
       created: new Date(user.created || ''),
-      role: 'OWNER',
+      roleId: 'OWNER',
       license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
       organizationId: user.id,
       user: {

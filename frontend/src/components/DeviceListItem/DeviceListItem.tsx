@@ -75,10 +75,15 @@ export const DeviceListItem: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: { offline: boolean }) => ({
-    '& > div:first-child': { background: palette.white.main },
-    '&:hover > div:first-child': { background: palette.primaryHighlight.main },
-    '&.Mui-selected > div:first-child': { background: palette.primaryHighlight.main },
-    '&.Mui-selected:hover > div:first-child': { background: palette.primaryLighter.main },
+    '&:hover > div:first-child': {
+      backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
+    },
+    '&.Mui-selected > div:first-child': {
+      backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
+    },
+    '&.Mui-selected:hover > div:first-child': {
+      backgroundImage: `linear-gradient(90deg, ${palette.primaryLighter.main} 95%, transparent)`,
+    },
     '& > div:first-child > *': { opacity: offline ? 0.3 : 1 },
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
@@ -91,9 +96,9 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
+    backgroundImage: `linear-gradient(90deg, ${palette.white.main} 95%, transparent)`,
     overflow: 'visible',
     paddingLeft: spacing.md,
-    '& .MuiListItemIcon-root': { marginRight: spacing.sm }, // TODO clear when connected isn't blue?
   },
   button: {
     position: 'absolute',

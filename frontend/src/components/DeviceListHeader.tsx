@@ -81,7 +81,6 @@ export const DeviceListHeader: React.FC<Props> = ({
 const useStyles = makeStyles(({ palette }) => ({
   header: {
     borderBottom: `1px solid ${palette.grayLighter.main}`,
-    '& .MuiListItemIcon-root': { marginRight: spacing.sm },
   },
   fetching: {
     position: 'absolute',

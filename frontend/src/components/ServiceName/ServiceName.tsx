@@ -32,7 +32,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   if (connection?.name && menu && menu[0] === '/connections') name = connection.name
 
   return (
-    <Title enabled={connection?.enabled} inline={inline}>
+    <Title inline={inline}>
       {name || 'No device found'}
       {unlicensed && (
         <Tooltip title="Unlicensed" placement="top" arrow>

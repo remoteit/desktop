@@ -14,11 +14,12 @@ import {
   graphQLFetchDeviceCount,
   graphQLFetchDevices,
   graphQLFetchDevice,
+  graphQLFetchConnections,
   graphQLCreateRegistration,
   graphQLAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
+import { cleanOrphanConnections, getConnectionIds, updateConnections } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
@@ -107,12 +108,9 @@ export default createModel<RootModel>()({
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
       if (!deviceModel.initialized) await dispatch.devices.init()
-      const userId = state.auth.user?.id
-      const ids = state.backend.device.uid ? [state.backend.device.uid] : []
-      if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
       const { set, graphQLFetchProcessor } = dispatch.devices
-      const { setDevices, mergeDevices, appendUniqueDevices } = dispatch.accounts
+      const { setDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, tag, owner, filter, size, from, append, searched, platform } = deviceModel
       const options: gqlOptions = {
         size,
@@ -121,14 +119,13 @@ export default createModel<RootModel>()({
         state: filter === 'all' ? undefined : filter,
         tag,
         name: query,
-        ids: append ? undefined : ids.concat(getConnectionIds(state)),
         sort,
         owner: owner === 'all' ? undefined : owner === 'me',
         platform,
       }
 
       set({ fetching: true })
-      const { devices, connections, total, error } = await graphQLFetchProcessor(options)
+      const { devices, total, error } = await graphQLFetchProcessor(options)
 
       if (searched) set({ results: total })
       else set({ total })
@@ -138,15 +135,31 @@ export default createModel<RootModel>()({
         await appendUniqueDevices({ devices, accountId })
       } else {
         await setDevices({ devices, accountId })
-        await mergeDevices({ devices: connections, accountId: userId })
       }
 
-      if (!error) {
-        dispatch.search.updateSearch()
-        cleanOrphanConnections(options.ids)
-      }
-
+      if (!error) dispatch.search.updateSearch()
       set({ fetching: false, append: false, initialized: true })
+    },
+
+    async fetchConnections(_, state) {
+      const userId = state.auth.user?.id
+      if (!userId) return
+      const ids = state.backend.device.uid ? [state.backend.device.uid] : []
+      const options = { account: userId, ids: ids.concat(getConnectionIds(state)) }
+
+      const gqlResponse = await graphQLFetchConnections(options)
+      const error = graphQLGetErrors(gqlResponse)
+      const connectionData = gqlResponse?.data?.data?.login?.connections
+      const loginId = gqlResponse?.data?.data?.login?.id
+      if (error) return console.error(error)
+
+      const connections = await graphQLAdaptor(connectionData, loginId, options.account, true)
+      updateConnections(connections)
+      /// need to change this ⬇️ so that it saves to a different object
+      // await dispatch.accounts.mergeDevices({ devices: connections, accountId: userId })
+      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
+
+      cleanOrphanConnections(options.ids)
     },
 
     /*
@@ -188,13 +201,13 @@ export default createModel<RootModel>()({
       return result
     },
 
-    async fetchCount(params: { tag?: ITagFilter }, state) {
+    async fetchCount(params: IOrganizationRole, state) {
       const options: gqlOptions = {
         size: 0,
         from: 0,
         account: state.auth.user?.id || '',
         owner: true,
-        ...params,
+        tag: params.tag?.values.length ? params.tag : undefined,
       }
       const result = await graphQLFetchDeviceCount(options)
       if (result === 'ERROR') return
@@ -206,10 +219,9 @@ export default createModel<RootModel>()({
     async graphQLFetchProcessor(options: gqlOptions) {
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [deviceData, connectionData, total, loginId, error] = graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(connectionData, loginId, options.account, true)
+        const [deviceData, total, loginId, error] = graphQLMetadata(gqlResponse)
         const devices = graphQLAdaptor(deviceData, loginId, options.account)
-        return { devices, connections, total, error }
+        return { devices, total, error }
       } catch (error) {
         await apiError(error)
         return { devices: [], total: 0, error }
@@ -429,8 +441,8 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   const error = graphQLGetErrors(gqlData)
   const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
   const devices = gqlData?.data?.data?.login?.account?.devices?.items || {}
-  const { connections, id } = gqlData?.data?.data?.login || {}
-  return [devices, connections, total, id, error]
+  const id = gqlData?.data?.data?.login?.id
+  return [devices, total, id, error]
 }
 
 export function selectIsFiltered(state: ApplicationState) {

@@ -54,7 +54,6 @@ export interface AuthState {
   notificationSettings: INotificationSetting
   mfaMethod: string
   AWSUser: AWSUser
-  loggedIn?: boolean
 }
 
 const defaultState: AuthState = {
@@ -68,7 +67,6 @@ const defaultState: AuthState = {
   notificationSettings: {},
   mfaMethod: '',
   AWSUser: { authProvider: '' },
-  loggedIn: false,
 }
 
 export const authServiceConfig = {
@@ -84,15 +82,17 @@ export const authServiceConfig = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init(_: void, state) {
+    async init(_, state) {
       let { user } = state.auth
-      console.log('AUTH INIT', { user })
+      console.log('AUTH INIT START', { user })
       if (!user) {
         const authService = new AuthService(authServiceConfig)
         await sleep(500)
-        dispatch.auth.set({ authService })
+        await dispatch.auth.set({ authService })
+        await dispatch.auth.checkSession({ refreshToken: true })
       }
       dispatch.auth.set({ initialized: true })
+      console.log('AUTH INIT END')
     },
     async fetchUser(_, state) {
       const { auth } = dispatch as Dispatch
@@ -177,12 +177,11 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `Invalid format.` })
       }
     },
-    async forceRefreshToken(_: void, state) {
+    async forceRefreshToken(_, state) {
       if (!state.auth.authService) return
       await state.auth.authService.forceTokenRefresh()
     },
     async checkSession(options: { refreshToken: boolean }, state) {
-      const { ui } = dispatch
       if (!state.auth.authService) return
       try {
         const result = await state.auth.authService.checkSignIn(options)
@@ -190,7 +189,7 @@ export default createModel<RootModel>()({
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error, result)
-          if (result.error?.message) ui.set({ errorMessage: result.error.message })
+          if (result.error?.message) dispatch.ui.set({ errorMessage: result.error.message })
         }
       } catch (error) {
         console.error('Check sign in error', error)
@@ -203,32 +202,37 @@ export default createModel<RootModel>()({
         } else if (!getLocalStorage(state, CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.removeItem('username')
         }
-
         if (cognitoUser?.authProvider === 'Google') {
           setLocalStorage(state, HOSTED_UI_KEY, 'true')
         }
-        dispatch.auth.set({ authenticated: true })
-        dispatch.auth.fetchUser()
-        dispatch.mfa.getAWSUser()
+        await dispatch.auth.set({ authenticated: true })
+        await dispatch.auth.fetchUser()
+        await dispatch.mfa.getAWSUser()
+        console.log('AUTHENTICATED SUCCESS')
       }
     },
     async getUsernameLocal() {
       const localUsername = localStorage.getItem('username')
       dispatch.auth.set({ localUsername })
     },
-    async backendAuthenticated(_: void, state) {
+    async backendAuthenticated(_, state) {
       if (state.auth.authenticated) {
         dispatch.auth.set({ backendAuthenticated: true })
+        console.log('BACKEND AUTHENTICATED')
+        if (!state.backend.initialized) {
+          emit('init')
+          console.log('INIT BACKEND')
+        }
       }
     },
-    async disconnect(_: void, state) {
+    async disconnect(_, state) {
       console.log('DISCONNECT')
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
         dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
       }
-      dispatch.auth.set({ backendAuthenticated: false })
       dispatch.ui.set({ connected: false })
+      dispatch.auth.set({ backendAuthenticated: false })
     },
     async signInError(signInError: string) {
       dispatch.auth.set({ signInError })
@@ -239,9 +243,9 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.set({ signInError })
     },
-    async dataReady(_: void, state) {
-      if (state.backend.initialized && !isPortal()) {
-        console.warn('BACKEND ALREADY INITIALIZED')
+    async dataReady(_, state) {
+      if (state.backend.initialized) {
+        console.warn('DATA ALREADY INITIALIZED')
         return
       }
       dispatch.backend.set({ initialized: true })
@@ -253,6 +257,7 @@ export default createModel<RootModel>()({
       await dispatch.connections.init()
       await dispatch.tags.fetch()
       dispatch.devices.fetch()
+      dispatch.devices.fetchConnections()
       dispatch.contacts.fetch()
       dispatch.sessions.fetch()
       dispatch.announcements.fetch()
@@ -269,7 +274,7 @@ export default createModel<RootModel>()({
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut(_: void, state) {
+    async signedOut(_, state) {
       await state.auth.authService?.signOut()
       removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)

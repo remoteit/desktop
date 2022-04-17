@@ -102,12 +102,14 @@ export const OptionsPage: React.FC = () => {
         />
         {(os === 'mac' || os === 'windows') && (
           <>
-            <ListItemSetting
-              label="Auto update"
-              icon="chevron-double-up"
-              toggle={!!preferences.autoUpdate}
-              onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-            />
+            <DesktopUI>
+              <ListItemSetting
+                label="Auto update"
+                icon="chevron-double-up"
+                toggle={!!preferences.autoUpdate}
+                onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+              />
+            </DesktopUI>
             <TestUI>
               <ListItemSetting
                 quote

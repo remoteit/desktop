@@ -11,7 +11,6 @@ import { DataButton } from '../DataButton'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import { Color, FontSize } from '../../styling'
-import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
   menuItem?: boolean
@@ -59,7 +58,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   }
 
   const launch = () => {
-    if (app.launchType === LAUNCH_TYPE.URL) windowOpen(app.string)
+    if (app.launchType === 'URL') windowOpen(app.string)
     else emit('launch/app', app.string, !app.tokens.includes('path'))
   }
 

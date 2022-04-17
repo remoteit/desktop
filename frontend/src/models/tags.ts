@@ -79,14 +79,19 @@ export default createModel<RootModel>()({
 
     async addSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, state) {
       dispatch.tags.set({ adding: true })
+      let add: IDevice['id'][] = []
       eachSelectedDevice(state, selected, device => {
-        device.tags.push(tag)
-        dispatch.accounts.setDevice({ id: device.id, device })
+        const index = findTagIndex(device.tags, tag.name)
+        if (index === -1) {
+          device.tags.push(tag)
+          add.push(device.id)
+          dispatch.accounts.setDevice({ id: device.id, device })
+        }
       })
-      const result = await graphQLAddTag(selected, tag.name, getActiveAccountId(state))
+      const result = await graphQLAddTag(add, tag.name, getActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
-          successMessage: `${tag.name} added to ${selected.length} device${selected.length > 1 ? 's' : ''}.`,
+          successMessage: `${tag.name} added to ${add.length} device${add.length === 1 ? '' : 's'}.`,
         })
       dispatch.tags.set({ adding: false })
     },

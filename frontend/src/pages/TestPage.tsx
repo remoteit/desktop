@@ -107,12 +107,15 @@ export const TestPage: React.FC = () => {
       </List>
       <Typography variant="subtitle1">Features</Typography>
       <List>
-        <ListItemSetting
-          hideIcon
-          label="Enable tagging"
-          toggle={!!feature.tagging}
-          onClick={() => ui.set({ feature: { ...feature, tagging: !feature.tagging } })}
-        />
+        {Object.keys(feature).map(f => (
+          <ListItemSetting
+            hideIcon
+            key={f}
+            label={`Enable ${f}`}
+            toggle={!!feature[f]}
+            onClick={() => ui.set({ feature: { ...feature, [f]: !feature[f] } })}
+          />
+        ))}
       </List>
       <Typography variant="subtitle1">Licensing Options</Typography>
       <List>

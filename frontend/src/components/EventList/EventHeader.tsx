@@ -24,7 +24,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const getMinDays = () => {
     let lifetimeDays = 0
     if (device) {
-      const createdAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
+      const createdAt = device?.createdAt ? new Date(device.createdAt) : new Date()
       lifetimeDays = Math.floor((new Date().getTime() - createdAt.getTime()) / DAY)
     }
     let limit = allowed

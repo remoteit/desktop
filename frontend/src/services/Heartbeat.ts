@@ -1,34 +1,52 @@
-import network from './Network'
+import network from '../services/Network'
 import { isPortal } from './Browser'
 import { store } from '../store'
 import { emit } from './Controller'
 
-const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC
-const CAFFEINATE_INTERVAL = 1000 // 1 SEC
+const HEARTBEAT_INTERVAL = 1000 * 20 // 20 SEC
+const CAFFEINATE_INTERVAL = 2000 // 2 SEC
+const CAFFEINATE_COUNT = 8
 
 class Heartbeat {
   count = 0
-  interval?: number = undefined
+  restInterval?: number = undefined
+  caffeineInterval?: number = undefined
 
   init() {
     if (!isPortal()) {
-      window.setInterval(this.beat, HEARTBEAT_INTERVAL)
-      window.onfocus = this.beat
+      window.onfocus = this.start
+      window.onblur = this.stop
+      network.on('connect', this.start)
+      network.on('disconnect', this.stop)
+      if (document.hasFocus()) this.start()
     }
   }
 
-  beat() {
-    const { auth } = store.getState()
-    network.isActive() && auth.backendAuthenticated && emit('heartbeat')
+  start = () => {
+    if (network.isActive()) this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
   }
 
-  caffeinate() {
+  stop = () => {
+    if (this.restInterval) {
+      window.clearInterval(this.restInterval)
+      this.restInterval = undefined
+    }
+  }
+
+  beat = () => {
+    const { auth } = store.getState()
+    if (navigator.onLine && auth.backendAuthenticated) {
+      emit('heartbeat')
+    }
+  }
+
+  caffeinate = () => {
     this.count = 0
-    if (this.interval) window.clearInterval(this.interval)
-    this.interval = window.setInterval(() => {
-      if (this.count++ > 10) {
-        window.clearInterval(this.interval)
-        this.interval = undefined
+    if (this.caffeineInterval) window.clearInterval(this.caffeineInterval)
+    this.caffeineInterval = window.setInterval(() => {
+      if (this.count++ > CAFFEINATE_COUNT) {
+        window.clearInterval(this.caffeineInterval)
+        this.caffeineInterval = undefined
       }
       this.beat()
     }, CAFFEINATE_INTERVAL)

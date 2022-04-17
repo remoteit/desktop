@@ -8,7 +8,7 @@ import { Icon } from '../components/Icon'
 export const ColumnsButton: React.FC = () => {
   const { open, changed } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'COLUMNS',
-    changed: state.ui.columns.length > defaultState.columns.length,
+    changed: state.ui.columns.length !== defaultState.columns.length,
   }))
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles({ open })

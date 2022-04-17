@@ -12,7 +12,6 @@ import {
   Tooltip,
   IconButton,
 } from '@material-ui/core'
-import { ROLE } from '../models/organization'
 import { useSelector, useDispatch } from 'react-redux'
 import { LicenseChip } from '../components/LicenseChip'
 import { Container } from '../components/Container'
@@ -24,7 +23,10 @@ import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembershipPage: React.FC = () => {
-  const { membership } = useSelector((state: ApplicationState) => state.accounts)
+  const { membership, roles } = useSelector((state: ApplicationState) => ({
+    membership: state.accounts.membership,
+    roles: state.organization.roles,
+  }))
   const { accounts } = useDispatch<Dispatch>()
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                <Chip label={ROLE[m.role]} size="small" />
+                <Chip label={roles.find(r => r.id === m.roleId)?.name} size="small" />
                 <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                   <LicenseChip license={m.license} />
                 </Box>

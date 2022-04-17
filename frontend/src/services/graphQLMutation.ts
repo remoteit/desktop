@@ -123,12 +123,17 @@ export async function graphQLRemoveOrganization() {
   )
 }
 
-export async function graphQLSetMembers(email: string[], role: IOrganizationRoleType, license?: ILicenseTypes) {
+export async function graphQLSetMembers(
+  email: string[],
+  roleId?: IOrganizationRoleIdType,
+  role?: IOrganizationRoleIdType,
+  license?: ILicenseTypes
+) {
   return await graphQLBasicRequest(
-    ` mutation query($email: [String!]!, $role: OrganizationRole, $license: LicenseOption) {
-        setMember(email: $email, role: $role, license: $license)
+    ` mutation query($email: [String!]!, $role: OrganizationRole, $roleId: ID, $license: LicenseOption) {
+        setMember(email: $email, role: $role, roleId: $roleId, license: $license)
       }`,
-    { email, role, license }
+    { email, role, roleId, license }
   )
 }
 
@@ -257,6 +262,37 @@ export async function graphQLReadNotice(id: string) {
   return await graphQLBasicRequest(
     ` mutation query($id: String!) {
         readNotice(id: $id)
+      }`,
+    { id }
+  )
+}
+
+export async function graphQLCreateRole(params: ICreateRole) {
+  return await graphQLBasicRequest(
+    ` mutation query($name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter) {
+        createRole(name: $name, grant: $grant, revoke: $revoke, tag: $tag) {
+          id
+        }
+      }`,
+    params
+  )
+}
+
+export async function graphQLUpdateRole(params: ICreateRole) {
+  return await graphQLBasicRequest(
+    ` mutation query($id: String!, $name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter) {
+        updateRole(id: $id, name: $name, grant: $grant, revoke: $revoke, tag: $tag) {
+          id
+        }
+      }`,
+    params
+  )
+}
+
+export async function graphQLRemoveRole(id: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($id: String!) {
+        deleteRole(id: $id)
       }`,
     { id }
   )

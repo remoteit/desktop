@@ -1,18 +1,18 @@
 import React from 'react'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { TextField, MenuItem } from '@material-ui/core'
-import { ROLE } from '../models/organization'
 
 type Props = { member: IOrganizationMember }
 
 export const RoleSelect: React.FC<Props> = ({ member }) => {
+  const roles = useSelector((state: ApplicationState) => state.organization.roles)
   const dispatch = useDispatch<Dispatch>()
-  const disabled = member.role === 'OWNER' || member.license !== 'LICENSED'
-  const role = member.license === 'UNLICENSED' ? 'MEMBER' : member.role
+  const disabled = member.roleId === 'OWNER' || member.license !== 'LICENSED'
+  const roleId = member.license === 'UNLICENSED' ? 'MEMBER' : member.roleId
 
-  const handleSelect = (role: IOrganizationRoleType) => {
-    dispatch.organization.setMembers([{ ...member, role }])
+  const handleSelect = (roleId: string) => {
+    dispatch.organization.setMembers([{ ...member, roleId }])
   }
 
   return (
@@ -21,20 +21,15 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       hiddenLabel
       size="small"
       disabled={disabled}
-      value={role}
+      value={roleId}
       variant="filled"
-      onChange={e => handleSelect(e.target.value as IOrganizationRoleType)}
+      onChange={e => handleSelect(e.target.value)}
     >
-      <MenuItem dense value="OWNER" disabled>
-        {ROLE.OWNER}
-      </MenuItem>
-      <MenuItem dense value="ADMIN">
-        {ROLE.ADMIN}
-      </MenuItem>
-      <MenuItem dense value="MEMBER">
-        {ROLE.MEMBER}
-      </MenuItem>
-      {/* add dynamic roles here */}
+      {roles.map(r => (
+        <MenuItem key={r.id} value={r.id} disabled={!!r.disabled} dense>
+          {r.name}
+        </MenuItem>
+      ))}
     </TextField>
   )
 }

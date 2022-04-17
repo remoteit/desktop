@@ -35,8 +35,9 @@ type UIState = {
   drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
-  feature: ILookup<boolean>
+  feature: ILookup<boolean> // will be set by license limit automatically
   serviceContextMenu?: IContextMenu
+  globalTooltip?: IGlobalTooltip
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -82,10 +83,11 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'tags', 'services'],
+  columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
-  feature: { tagging: false },
+  feature: { tagging: false, saml: false },
   serviceContextMenu: undefined,
+  globalTooltip: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,
@@ -109,11 +111,11 @@ export const defaultState: UIState = {
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
-  guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
+  guideLaunch: { title: 'Launch Guide', active: false, step: 1, total: 1 },
   accordion: { config: true, configConnected: false, options: false, service: false },
   autoConnect: false,
   autoLaunch: false,
-  autoCopy: false
+  autoCopy: false,
 }
 
 export default createModel<RootModel>()({
@@ -150,6 +152,7 @@ export default createModel<RootModel>()({
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
       dispatch.devices.fetch()
+      dispatch.devices.fetchConnections()
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode

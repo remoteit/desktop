@@ -44,7 +44,7 @@ export const ConnectionPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      backgroundColor={connection.enabled ? 'primaryHighlight' : 'grayLighter'}
+      backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
       bodyProps={{ insetShadow: false }}
       header={
         <>
