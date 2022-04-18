@@ -112,7 +112,7 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ removing: true })
       eachSelectedDevice(state, selected, device => {
         const index = findTagIndex(device.tags, tag.name)
-        if (index >= 0) {
+        if (index !== -1) {
           count++
           device.tags.splice(index, 1)
           dispatch.accounts.setDevice({ id: device.id, device })

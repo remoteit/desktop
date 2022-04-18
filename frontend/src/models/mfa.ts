@@ -63,52 +63,49 @@ export default createModel<RootModel>()({
     },
 
     async setMFAPreference(mfaMethod: IMfa['mfaMethod']) {
-      const { mfa, ui } = dispatch
       try {
         const response = await axios.post(
           `${AUTH_API_URL}/mfaPref`,
           { MfaPref: mfaMethod },
           { headers: { developerKey: DEVELOPER_KEY, Authorization: await getToken() } }
         )
-        mfa.set({ mfaMethod: response.data.MfaPref, backupCode: response.data.backupCode })
+        dispatch.mfa.set({ mfaMethod: response.data.MfaPref, backupCode: response.data.backupCode })
         if (response.data.MfaPref !== 'NO_MFA') {
-          ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
+          dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
         }
         console.log('SET MFA PREFERENCE', response)
       } catch (error) {
         if (error instanceof Error) {
-          ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
+          dispatch.ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
         }
       }
     },
 
     async updatePhone(phone: string, state) {
-      const { mfa, ui } = dispatch
       try {
         await state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
-        await mfa.getAWSUser()
+        await dispatch.mfa.getAWSUser()
         await state.auth.authService?.verifyCurrentUserAttribute('phone_number')
-        await mfa.setMFAPreference('NO_MFA')
-        ui.set({ successMessage: 'Verification sent.' })
+        await dispatch.mfa.setMFAPreference('NO_MFA')
+        dispatch.ui.set({ successMessage: 'Verification sent.' })
         return true
       } catch (error) {
         console.error(error)
         if (error instanceof Error) {
-          ui.set({ errorMessage: ' Update phone error: ' + error.message })
+          dispatch.ui.set({ errorMessage: ' Update phone error: ' + error.message })
         }
       }
     },
 
     async verifyPhone(verificationCode: string, state) {
-      const { mfa, ui } = dispatch
       try {
         await state.auth.authService?.verifyCurrentUserAttributeSubmit('phone_number', verificationCode)
-        await mfa.setMFAPreference('SMS_MFA')
-        await mfa.getAWSUser()
+        await dispatch.mfa.setMFAPreference('SMS_MFA')
+        await dispatch.mfa.getAWSUser()
       } catch (error) {
         console.error(error)
         if (error instanceof Error) {
-          ui.set({ errorMessage: 'Phone verification error: ' + error.message })
+          dispatch.ui.set({ errorMessage: 'Phone verification error: ' + error.message })
         }
       }
     },
@@ -118,17 +115,16 @@ export default createModel<RootModel>()({
     },
 
     async verifyTotpCode(code: string, state) {
-      const { mfa, ui } = dispatch
       try {
         await state.auth.authService?.verifyTotpToken(code)
       } catch (error) {
         console.error(error)
         if (error instanceof Error) {
-          ui.set({ errorMessage: `Invalid TOTP Code. (${error.message})` })
+          dispatch.ui.set({ errorMessage: `Invalid TOTP Code. (${error.message})` })
         }
         return
       }
-      await mfa.setMFAPreference('SOFTWARE_TOKEN_MFA')
+      await dispatch.mfa.setMFAPreference('SOFTWARE_TOKEN_MFA')
     },
   }),
   reducers: {
