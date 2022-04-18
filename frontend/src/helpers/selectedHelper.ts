@@ -1,4 +1,4 @@
-import { getAllDevices } from '../models/accounts'
+import { getDevices } from '../models/accounts'
 import { ApplicationState } from '../store'
 
 export function eachSelectedDevice(
@@ -6,7 +6,7 @@ export function eachSelectedDevice(
   selected: IDevice['id'][],
   callback: (device: IDevice) => void
 ) {
-  getAllDevices(state).forEach(device => {
+  getDevices(state).forEach(device => {
     if (selected.includes(device.id)) callback(device)
   })
 }
