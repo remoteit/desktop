@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
+import { selectFeature } from '../../models/ui'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { TestUI } from '../../components/TestUI'
@@ -13,7 +14,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const SettingsPage: React.FC = () => {
   const { preferences, feature } = useSelector((state: ApplicationState) => ({
     preferences: state.backend.preferences,
-    feature: state.ui.feature,
+    feature: selectFeature(state),
   }))
 
   useEffect(() => {
