@@ -4,13 +4,14 @@ import { Dispatch, ApplicationState } from '../store'
 import { Divider, IconButton, Menu } from '@material-ui/core'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { ListItemLocation } from './ListItemLocation'
+import { selectFeature } from '../models/ui'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = { organization: ApplicationState['IOrganizationState'] }
 
 export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
-  const samlFeature = useSelector((state: ApplicationState) => state.ui.feature.saml)
+  const { saml, roles } = useSelector((state: ApplicationState) => selectFeature(state))
   const [removing, setRemoving] = useState<boolean>(false)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const dispatch = useDispatch<Dispatch>()
@@ -32,25 +33,25 @@ export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
         autoFocus={false}
       >
         <div>
-          {samlFeature && (
-            <>
-              <ListItemLocation
-                title="Settings"
-                icon="sliders-h"
-                pathname="/account/organization/saml"
-                disableGutters
-                dense
-              />
-              <ListItemLocation
-                title="Roles"
-                icon="shield-alt"
-                pathname={`/account/organization/roles/${organization.roles[0].id}`}
-                disableGutters
-                dense
-              />
-              <Divider />
-            </>
+          {saml && (
+            <ListItemLocation
+              title="Settings"
+              icon="sliders-h"
+              pathname="/account/organization/saml"
+              disableGutters
+              dense
+            />
           )}
+          {roles && (
+            <ListItemLocation
+              title="Roles"
+              icon="shield-alt"
+              pathname={`/account/organization/roles/${organization.roles.find(r => !r.disabled).id}`}
+              disableGutters
+              dense
+            />
+          )}
+          {(saml || roles) && <Divider />}
           <DeleteButton
             menuItem
             title="Delete Organization"

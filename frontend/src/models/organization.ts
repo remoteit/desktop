@@ -27,6 +27,34 @@ export const DEFAULT_ROLE: IOrganizationRole = {
   permissions: ['CONNECT'],
 }
 
+export const SYSTEM_ROLES: IOrganizationRole[] = [
+  {
+    id: 'OWNER',
+    name: 'Owner',
+    system: true,
+    permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
+    disabled: true,
+  },
+  {
+    id: 'NONE',
+    name: 'No Access',
+    system: true,
+    permissions: [],
+  },
+  {
+    id: 'ADMIN',
+    name: 'Admin',
+    system: true,
+    permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
+  },
+  {
+    id: 'MEMBER',
+    name: 'Member',
+    system: true,
+    permissions: ['CONNECT'],
+  },
+]
+
 export type IOrganizationState = {
   initialized: boolean
   updating: boolean
@@ -59,27 +87,7 @@ const defaultState: IOrganizationState = {
   verified: false,
   created: undefined,
   members: [],
-  roles: [
-    {
-      id: 'OWNER',
-      name: 'Owner',
-      system: true,
-      permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
-      disabled: true,
-    },
-    {
-      id: 'ADMIN',
-      name: 'Admin',
-      system: true,
-      permissions: ['MANAGE', 'CONNECT', 'SCRIPTING'],
-    },
-    {
-      id: 'MEMBER',
-      name: 'Member',
-      system: true,
-      permissions: ['CONNECT'],
-    },
-  ],
+  roles: [...SYSTEM_ROLES],
 }
 
 export default createModel<RootModel>()({

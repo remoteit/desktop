@@ -18,7 +18,7 @@ export const AccountSelect: React.FC = () => {
       id: m.organization.id,
       name: m.organization.name,
       roleId: m.roleId,
-      role: state.organization.roles.find(r => r.id === m.roleId)?.name || m.roleId,
+      role: m.organization.roles.find(r => r.id === m.roleId)?.name || m.roleId,
     })),
     orgName: state.organization.name,
   }))

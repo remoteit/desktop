@@ -342,6 +342,7 @@ declare global {
     id: string
     name: string
     created: Date
+    roles: IOrganizationRole[]
     members?: IOrganizationMember[]
     account?: IUserRef
     licenses: ILicense[]

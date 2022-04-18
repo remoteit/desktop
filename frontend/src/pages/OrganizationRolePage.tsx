@@ -110,13 +110,16 @@ export const OrganizationRolePage: React.FC = () => {
             fullWidth
             disabled={disabled || systemRole}
             label="Device access"
-            value={Boolean(form?.tag).toString()}
+            value={role.id === 'NONE' ? '-' : Boolean(form?.tag).toString()}
             variant="filled"
             onChange={event => {
               const tag = event.target.value === 'true' ? DEFAULT_ROLE.tag : undefined
               changeForm({ ...form, tag })
             }}
           >
+            <MenuItem value="-" disabled>
+              None
+            </MenuItem>
             <MenuItem value="false">All devices</MenuItem>
             <MenuItem value="true">Tagged devices</MenuItem>
           </TextField>
