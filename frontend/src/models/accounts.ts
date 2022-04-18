@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
+import { SYSTEM_ROLES } from './organization'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLicenses, parseLicense } from './licensing'
@@ -40,6 +41,10 @@ export default createModel<RootModel>()({
                   organization {
                     id
                     name
+                    roles {
+                      id
+                      name
+                    }
                     account {
                       id
                       email
@@ -69,6 +74,7 @@ export default createModel<RootModel>()({
           license: m.license,
           organization: {
             ...m.organization,
+            roles: [...SYSTEM_ROLES, ...m.organization.roles],
             licenses: m.organization?.licenses?.map(l => parseLicense(l)),
           },
         })),
@@ -158,7 +164,10 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectMembershipFromDevice(state: ApplicationState, device?: IDevice) {
+export function selectMembershipFromDevice(
+  state: ApplicationState,
+  device?: IDevice
+): IOrganizationMembership | undefined {
   return state.accounts.membership.find(m => m.organization.id === device?.owner.id)
 }
 
