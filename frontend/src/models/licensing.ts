@@ -21,6 +21,7 @@ export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
+export const ENTERPRISE_PLAN_ID = 'b44f92a6-a7b9-11eb-b094-02a962787033'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
@@ -321,9 +322,14 @@ export function getLicenses(state: ApplicationState) {
 }
 
 export function getFreeLicenses(state: ApplicationState) {
+  if (isEnterprise(state)) return 1
   const purchased = getRemoteitLicense(state)?.quantity || 0
   const used = 1 + state.organization.members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
   return Math.max(purchased - used, 0)
+}
+
+function isEnterprise(state: ApplicationState) {
+  return getLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
 }
 
 export function getLimits(state: ApplicationState) {

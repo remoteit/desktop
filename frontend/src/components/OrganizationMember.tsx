@@ -34,7 +34,11 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
         }
       />
       <ListItemSecondaryAction>
-        <RoleSelect member={member} />
+        <RoleSelect
+          roleId={member.roleId}
+          license={member.license}
+          onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
+        />
         {!enterprise && (
           <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
             <LicenseSelect member={member} disabled={!freeLicenses} />

@@ -1,29 +1,30 @@
 import React from 'react'
-import { Dispatch, ApplicationState } from '../store'
-import { useDispatch, useSelector } from 'react-redux'
-import { TextField, MenuItem } from '@material-ui/core'
+import { ApplicationState } from '../store'
+import { useSelector } from 'react-redux'
+import { TextField, TextFieldProps, MenuItem } from '@material-ui/core'
 
-type Props = { member: IOrganizationMember }
+type Props = {
+  size?: TextFieldProps['size']
+  roleId: IOrganizationRoleIdType
+  license: ILicenseTypes
+  onSelect: (roleId: string) => void
+}
 
-export const RoleSelect: React.FC<Props> = ({ member }) => {
+export const RoleSelect: React.FC<Props> = ({ roleId, license, size = 'small', onSelect }) => {
   const roles = useSelector((state: ApplicationState) => state.organization.roles)
-  const dispatch = useDispatch<Dispatch>()
-  const disabled = member.roleId === 'OWNER' || member.license !== 'LICENSED'
-  const roleId = member.license === 'UNLICENSED' ? 'MEMBER' : member.roleId
-
-  const handleSelect = (roleId: string) => {
-    dispatch.organization.setMembers([{ ...member, roleId }])
-  }
+  const disabled = roleId === 'OWNER' || license !== 'LICENSED'
+  const resultRoleId = license === 'UNLICENSED' ? 'MEMBER' : roleId
 
   return (
     <TextField
       select
-      hiddenLabel
-      size="small"
+      size={size}
+      label={size === 'small' ? undefined : 'Role'}
+      hiddenLabel={size === 'small'}
       disabled={disabled}
-      value={roleId}
+      value={resultRoleId}
       variant="filled"
-      onChange={e => handleSelect(e.target.value)}
+      onChange={e => onSelect(e.target.value)}
     >
       {roles.map(r => (
         <MenuItem key={r.id} value={r.id} disabled={!!r.disabled} dense>
