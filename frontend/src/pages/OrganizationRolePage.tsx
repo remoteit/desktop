@@ -16,7 +16,6 @@ import {
 } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { getActiveAccountId } from '../models/accounts'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
@@ -34,14 +33,11 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const { disabled, role, tags } = useSelector((state: ApplicationState) => {
-    const accountId = getActiveAccountId(state)
-    return {
-      disabled: state.organization.updating,
-      role: state.organization.roles.find(r => r.id === roleID) || DEFAULT_ROLE,
-      tags: selectTags(state, accountId),
-    }
-  })
+  const { disabled, role, tags } = useSelector((state: ApplicationState) => ({
+    disabled: state.organization.updating,
+    role: state.organization.roles.find(r => r.id === roleID) || DEFAULT_ROLE,
+    tags: selectTags(state, state.auth.user?.id),
+  }))
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
   const [count, setCount] = useState<number>()
   const [saving, setSaving] = useState<boolean>(false)
