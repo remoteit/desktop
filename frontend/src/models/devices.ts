@@ -144,9 +144,7 @@ export default createModel<RootModel>()({
     async fetchConnections(_, state) {
       const userId = state.auth.user?.id
       if (!userId) return
-      const ids = state.backend.device.uid ? [state.backend.device.uid] : []
-      const options = { account: userId, ids: ids.concat(getConnectionIds(state)) }
-
+      const options = { account: userId, ids: getConnectionIds(state) }
       const gqlResponse = await graphQLFetchConnections(options)
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
