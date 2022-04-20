@@ -23,7 +23,7 @@ class Heartbeat {
   }
 
   start = () => {
-    if (network.isActive()) this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
+    if (network.isActive() && !this.restInterval) this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
   }
 
   stop = () => {

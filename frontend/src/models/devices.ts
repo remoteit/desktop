@@ -153,8 +153,6 @@ export default createModel<RootModel>()({
 
       const connections = await graphQLAdaptor(connectionData, loginId, options.account, true)
       updateConnections(connections)
-      /// need to change this ⬇️ so that it saves to a different object
-      // await dispatch.accounts.mergeDevices({ devices: connections, accountId: userId })
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
 
       cleanOrphanConnections(options.ids)

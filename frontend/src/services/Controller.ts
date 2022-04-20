@@ -113,7 +113,7 @@ function getEventHandlers() {
 
   return {
     connect: () => {
-      controller.log('CONNECT LOCAL SOCKET')
+      controller.log('event: CONNECT LOCAL SOCKET')
       controller.auth()
       ui.set({ connected: true })
       backend.set({ error: false })
@@ -121,28 +121,37 @@ function getEventHandlers() {
 
     unauthorized: (error: Error) => auth.backendSignInError(error.message),
 
-    authenticated: auth.backendAuthenticated,
+    authenticated: () => {
+      controller.log('event: BACKEND AUTHENTICATED')
+      auth.backendAuthenticated()
+    },
 
-    dataReady: auth.dataReady,
+    dataReady: () => {
+      controller.log('event: DATA READY')
+      auth.dataReady()
+    },
 
-    disconnect: auth.disconnect,
+    disconnect: () => {
+      controller.log('event: DISCONNECT')
+      auth.disconnect()
+    },
 
     'signed-out': () => auth.signedOut(),
 
     connect_error: () => backend.set({ error: true }),
 
     pool: (result: IConnection[]) => {
-      controller.log('socket pool', result)
+      controller.log('event: socket pool', result)
       connections.restoreConnections(result)
     },
 
     connection: (result: IConnection) => {
-      controller.log('socket connection', result)
+      controller.log('event: socket connection', result)
       connections.updateConnection(result)
     },
 
     targets: (result: ITarget[]) => {
-      controller.log('socket targets', result)
+      controller.log('event: socket targets', result)
       if (result) {
         backend.set({ targets: result })
         backend.targetUpdated(result)
@@ -150,17 +159,17 @@ function getEventHandlers() {
     },
 
     device: (result: ITargetDevice) => {
-      controller.log('socket device', result)
+      controller.log('event: socket device', result)
       if (result) backend.targetDeviceUpdated(result)
     },
 
     scan: (result: IScanData) => {
-      controller.log('socket scan', result)
+      controller.log('event: socket scan', result)
       if (result) backend.set({ scanData: result })
     },
 
     interfaces: (result: IInterface[]) => {
-      controller.log('socket interfaces', result)
+      controller.log('event: socket interfaces', result)
       if (result) {
         backend.set({ interfaces: result })
         analyticsHelper.setOobActive(result.length > 1)
@@ -210,7 +219,7 @@ function getEventHandlers() {
     },
 
     'binary/install/error': (error: string) => binaries.installError(error),
-    'binary/install/progress': (progress: number) => controller.log('binary/install/progress', progress),
+    'binary/install/progress': (progress: number) => controller.log('event: binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: BinaryName) => binaries.notInstalled(binary),
   } as EventHandlers

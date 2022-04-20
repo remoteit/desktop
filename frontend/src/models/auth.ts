@@ -226,7 +226,6 @@ export default createModel<RootModel>()({
       }
     },
     async disconnect(_, state) {
-      console.log('DISCONNECT')
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
         dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })

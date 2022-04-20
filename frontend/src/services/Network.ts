@@ -47,7 +47,7 @@ class Network extends EventEmitter {
   }
 
   offline = () => {
-    this.log('NETWORK OFFLINE')
+    this.log('DISCONNECT')
     store.dispatch.ui.set({ offline: !navigator.onLine })
     this.shouldConnect = true
     this.emit('disconnect')
