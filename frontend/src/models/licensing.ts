@@ -224,7 +224,7 @@ export default createModel<RootModel>()({
           dispatch.licensing.set({ purchasing: undefined })
         }
       }
-      await dispatch.organization.fetch()
+      await dispatch.ui.refreshAll()
       setTimeout(() => dispatch.licensing.set({ purchasing: undefined }), 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
