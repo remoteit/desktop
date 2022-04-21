@@ -42,7 +42,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
       {merge || (
         <ListItem dense>
           <ListItemIcon className={css.mergeIcon}>
-            <InitiatorPlatform id={session.platform} connected={!offline} />
+            <InitiatorPlatform id={session.platform} connected={!offline} thisDevice={!other} />
           </ListItemIcon>
           <ListItemText primary={<Title enabled={!offline}>{other ? session.user?.email : 'This system'}</Title>} />
         </ListItem>
