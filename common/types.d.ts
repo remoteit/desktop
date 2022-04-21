@@ -311,7 +311,7 @@ declare global {
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string
 
-  type IPermission = 'CONNECT' | 'SCRIPTING' | 'MANAGE'
+  type IPermission = 'VIEW' | 'CONNECT' | 'SCRIPTING' | 'MANAGE' | 'ADMIN'
 
   type IUser = {
     id: string
@@ -360,6 +360,7 @@ declare global {
   type IOrganizationMembership = {
     organization: IOrganization
     role?: IOrganizationRoleIdType
+    customRole?: { id: string; name: string }
     roleId: IOrganizationRoleIdType
     created: Date
     license: ILicenseTypes
@@ -384,6 +385,7 @@ declare global {
     grant?: IPermission[]
     revoke?: IPermission[]
     tag?: ITagFilter
+    accountId: string
   }
 
   type IGeo = {

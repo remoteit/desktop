@@ -1,7 +1,7 @@
 import React from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { TextField, TextFieldProps, MenuItem } from '@material-ui/core'
+import { TextField, TextFieldProps, MenuItem, Divider } from '@material-ui/core'
 
 type Props = {
   size?: TextFieldProps['size']
@@ -31,6 +31,10 @@ export const RoleSelect: React.FC<Props> = ({ roleId, license, size = 'small', o
           {r.name}
         </MenuItem>
       ))}
+      <Divider />
+      <MenuItem key="custom" dense onClick={() => {}}>
+        Custom...
+      </MenuItem>
     </TextField>
   )
 }

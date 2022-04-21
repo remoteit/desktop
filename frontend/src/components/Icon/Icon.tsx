@@ -45,7 +45,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       fullColor,
       fixedWidth,
       name,
-      size,
+      size = 'base',
       fontSize,
       rotate,
       spin,

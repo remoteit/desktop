@@ -33,29 +33,32 @@ export const OrganizationOptionMenu: React.FC<Props> = ({ organization }) => {
         disableScrollLock
         autoFocus={false}
       >
-        <PaywallUI limitName="saml" title="Business plan required for SAML or a custom Domain.">
-          <ListItemLocation
-            title="Settings"
-            icon="sliders-h"
-            pathname="/account/organization/saml"
-            disabled={!saml}
-            disableGutters
-            showDisabled
-            dense
-          />
-        </PaywallUI>
-        <PaywallUI limitName="roles" title="Business plan required to use custom tag based roles and permissions.">
-          <ListItemLocation
-            title="Roles"
-            icon="shield-alt"
-            pathname={`/account/organization/roles/${organization.roles.find(r => !r.disabled).id}`}
-            disabled={!roles}
-            disableGutters
-            showDisabled
-            dense
-          />
-        </PaywallUI>
+        <div>
+          <PaywallUI limitName="saml" title="Business plan required for SAML or a custom Domain.">
+            <ListItemLocation
+              title="Settings"
+              icon="sliders-h"
+              pathname="/account/organization/saml"
+              disabled={!saml}
+              disableGutters
+              showDisabled
+              dense
+            />
+          </PaywallUI>
+          <PaywallUI limitName="roles" title="Business plan required to use custom tag based roles and permissions.">
+            <ListItemLocation
+              title="Roles"
+              icon="shield-alt"
+              pathname={`/account/organization/roles/${organization.roles.find(r => !r.disabled).id}`}
+              disabled={!roles}
+              disableGutters
+              showDisabled
+              dense
+            />
+          </PaywallUI>
+        </div>
         <Divider />
+        {/* @TODO hide delete org unless org owner */}
         <DeleteButton
           menuItem
           title="Delete Organization"

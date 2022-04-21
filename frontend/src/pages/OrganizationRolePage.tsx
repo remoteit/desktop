@@ -69,7 +69,7 @@ export const OrganizationRolePage: React.FC = () => {
                   <Notice severity="danger" fullWidth gutterBottom>
                     You will be permanently deleting the role <i>{role.name}.</i>
                   </Notice>
-                  Any members with this role will be reset to the default member role.
+                  Any members with this role will loose access until they have been set to another role.
                 </>
               }
               onDelete={() => dispatch.organization.removeRole(form)}
@@ -184,11 +184,11 @@ export const OrganizationRolePage: React.FC = () => {
         {Object.keys(PERMISSION).map(p => {
           const permission = p as IPermission
           const allowed = form.permissions.includes(permission)
-          if (systemRole && !allowed) return null
+          if ((systemRole || PERMISSION[p].system) && !allowed) return null
           return (
             <ListItemSetting
               key={p}
-              toggle={systemRole ? undefined : allowed}
+              toggle={systemRole || PERMISSION[p].system ? undefined : allowed}
               disabled={disabled}
               icon={PERMISSION[p].icon}
               label={PERMISSION[p].name}

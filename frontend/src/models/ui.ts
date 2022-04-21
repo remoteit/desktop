@@ -148,15 +148,15 @@ export default createModel<RootModel>()({
       }
     },
     async refreshAll() {
-      dispatch.devices.set({ from: 0 })
-      dispatch.tags.fetch()
-      dispatch.accounts.fetch()
-      dispatch.organization.fetch()
+      await dispatch.devices.set({ from: 0 })
+      await dispatch.accounts.fetch()
+      await dispatch.devices.fetch()
+      await dispatch.devices.fetchConnections()
       dispatch.sessions.fetch()
+      dispatch.tags.fetch()
       dispatch.licensing.fetch()
+      dispatch.organization.fetch()
       dispatch.announcements.fetch()
-      dispatch.devices.fetch()
-      dispatch.devices.fetchConnections()
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode

@@ -357,6 +357,7 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         await dispatch.connections.clearByDevice(device.id)
         await dispatch.devices.fetch()
+        await dispatch.devices.fetchConnections()
       }
       dispatch.devices.set({ destroying: false })
     },
@@ -371,7 +372,9 @@ export default createModel<RootModel>()({
         dispatch.devices.set({ transferring: true })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
+          await dispatch.connections.clearByDevice(data.device.id)
           await dispatch.devices.fetch()
+          await dispatch.devices.fetchConnections()
           dispatch.ui.set({ successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.` })
         }
         await dispatch.connections.clearByDevice(data.device.id)

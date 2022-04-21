@@ -36,7 +36,10 @@ export default createModel<RootModel>()({
                 membership {
                   created
                   role
-                  roleId
+                  customRole {
+                    id
+                    name
+                  }
                   license
                   organization {
                     id
@@ -69,8 +72,8 @@ export default createModel<RootModel>()({
       dispatch.accounts.set({
         membership: membership.map(m => ({
           created: new Date(m.created),
-          role: m.role || m.roleId,
-          roleId: m.roleId || m.role,
+          roleId: m.role === 'CUSTOM' ? m.customRole?.id : m.role,
+          roleName: m.role === 'CUSTOM' ? m.customRole?.name : SYSTEM_ROLES.find(r => r.id === m.role)?.name,
           license: m.license,
           organization: {
             ...m.organization,

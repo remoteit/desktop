@@ -125,8 +125,8 @@ export async function graphQLRemoveOrganization() {
 
 export async function graphQLSetMembers(
   email: string[],
-  roleId?: IOrganizationRoleIdType,
   role?: IOrganizationRoleIdType,
+  roleId?: IOrganizationRoleIdType,
   license?: ILicenseTypes
 ) {
   return await graphQLBasicRequest(
@@ -269,8 +269,8 @@ export async function graphQLReadNotice(id: string) {
 
 export async function graphQLCreateRole(params: ICreateRole) {
   return await graphQLBasicRequest(
-    ` mutation query($name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter) {
-        createRole(name: $name, grant: $grant, revoke: $revoke, tag: $tag) {
+    ` mutation query($name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter, $accountId: String) {
+        createRole(name: $name, grant: $grant, revoke: $revoke, tag: $tag, accountId: $accountId) {
           id
         }
       }`,
@@ -280,8 +280,8 @@ export async function graphQLCreateRole(params: ICreateRole) {
 
 export async function graphQLUpdateRole(params: ICreateRole) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!, $name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter) {
-        updateRole(id: $id, name: $name, grant: $grant, revoke: $revoke, tag: $tag) {
+    ` mutation query($id: String!, $name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter, $accountId: String) {
+        updateRole(id: $id, name: $name, grant: $grant, revoke: $revoke, tag: $tag, accountId: $accountId) {
           id
         }
       }`,
@@ -289,12 +289,12 @@ export async function graphQLUpdateRole(params: ICreateRole) {
   )
 }
 
-export async function graphQLRemoveRole(id: string) {
+export async function graphQLRemoveRole(id: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!) {
-        deleteRole(id: $id)
+    ` mutation query($id: String!, $accountId: String) {
+        deleteRole(id: $id, accountId: $accountId)
       }`,
-    { id }
+    { id, accountId }
   )
 }
 

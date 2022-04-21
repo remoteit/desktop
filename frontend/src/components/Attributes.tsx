@@ -95,13 +95,13 @@ export const attributes: Attribute[] = [
     defaultWidth: 100,
     value: ({ device, connection }) =>
       connection?.connected ? (
-        <ColorChip label="CONNECTED" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
+        <ColorChip label="Connected" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
       ) : connection?.enabled ? (
         // <Chip label="READY" size="small" color="primary" />
-        <ColorChip label="READY" size="small" typeColor="primary" />
+        <ColorChip label="Ready" size="small" typeColor="primary" />
       ) : device?.state === 'active' ? (
         // <Chip label="ONLINE" size="small" color="secondary" />
-        <ColorChip label="ONLINE" size="small" typeColor="secondary" />
+        <ColorChip label="Online" size="small" typeColor="secondary" />
       ) : (
         <ColorChip label="Offline" size="small" typeColor="gray" />
       ),
@@ -150,6 +150,7 @@ export const attributes: Attribute[] = [
     defaultWidth: 210,
     value: ({ device }) => {
       const lookup: ILookup<string> = {
+        VIEW: 'View',
         CONNECT: 'Connect',
         SCRIPTING: 'Script',
         MANAGE: 'Manage',
