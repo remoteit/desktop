@@ -269,7 +269,7 @@ export async function graphQLReadNotice(id: string) {
 
 export async function graphQLCreateRole(params: ICreateRole) {
   return await graphQLBasicRequest(
-    ` mutation query($name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter, $accountId: String) {
+    ` mutation query($name: String, $grant: [RolePermission!], $revoke: [RolePermission!], $tag: ListFilter, $accountId: String) {
         createRole(name: $name, grant: $grant, revoke: $revoke, tag: $tag, accountId: $accountId) {
           id
         }
@@ -280,7 +280,7 @@ export async function graphQLCreateRole(params: ICreateRole) {
 
 export async function graphQLUpdateRole(params: ICreateRole) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!, $name: String, $grant: [ServicePermission!], $revoke: [ServicePermission!], $tag: ListFilter, $accountId: String) {
+    ` mutation query($id: String!, $name: String, $grant: [RolePermission!], $revoke: [RolePermission!], $tag: ListFilter, $accountId: String) {
         updateRole(id: $id, name: $name, grant: $grant, revoke: $revoke, tag: $tag, accountId: $accountId) {
           id
         }

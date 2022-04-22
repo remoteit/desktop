@@ -18,9 +18,12 @@ import { LicensingPage } from '../pages/LicensingPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
+import { OrganizationPage } from '../pages/OrganizationPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationRolePage } from '../pages/OrganizationRolePage'
+import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
+import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
@@ -36,7 +39,6 @@ import { isPortal, getOs } from '../services/Browser'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
 import { ProfilePage } from '../pages/ProfilePage'
-import { OrganizationPage } from '../pages/OrganizationPage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
@@ -238,20 +240,49 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
             </Switch>
           }
           layout={layout}
-          root={['/settings']}
+          root="/settings"
         />
       </Route>
 
-      <Route path={['/account/organization/roles', '/account/organization/roles/:roleID']}>
+      <Route path={['/organization/roles', '/organization/roles/:roleID']}>
         <DynamicPanel
           primary={<OrganizationRolesPage />}
           secondary={
-            <Route path="/account/organization/roles/:roleID">
+            <Route path="/organization/roles/:roleID">
               <OrganizationRolePage />
             </Route>
           }
           layout={layout}
-          root={['/account']}
+          root="/organization"
+        />
+      </Route>
+
+      <Route path="/organization/empty">
+        <Panel layout={layout}>
+          <OrganizationEmptyPage />
+        </Panel>
+      </Route>
+
+      <Route path="/organization">
+        <DynamicPanel
+          primary={<OrganizationPage />}
+          secondary={
+            <Switch>
+              <Route path="/organization/share">
+                <OrganizationAddPage />
+              </Route>
+
+              <Route path="/organization/saml">
+                <OrganizationSettingsPage />
+              </Route>
+
+              <Route path="/organization">
+                <OrganizationMembersPage />
+              </Route>
+            </Switch>
+          }
+          layout={layout}
+          root="/organization"
         />
       </Route>
 
@@ -266,18 +297,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/account/plans">
                 <PlansPage />
-              </Route>
-
-              <Route path="/account/organization/share">
-                <OrganizationAddPage />
-              </Route>
-
-              <Route path="/account/organization/saml">
-                <OrganizationSettingsPage />
-              </Route>
-
-              <Route path="/account/organization">
-                <OrganizationPage />
               </Route>
 
               <Route path="/account/licensing">

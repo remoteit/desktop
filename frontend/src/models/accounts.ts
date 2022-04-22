@@ -1,9 +1,9 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { SYSTEM_ROLES } from './organization'
+import { getRemoteitLicense } from './licensing'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { SYSTEM_ROLES, graphQLOrganization, parseOrganization } from './organization'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -41,19 +41,7 @@ export default createModel<RootModel>()({
                     name
                   }
                   license
-                  organization {
-                    id
-                    name
-                    roles {
-                      id
-                      name
-                    }
-                    account {
-                      id
-                      email
-                    }
-                    ${graphQLLicenses}
-                  }
+                  ${graphQLOrganization}
                 }
               }
             }`
@@ -68,18 +56,14 @@ export default createModel<RootModel>()({
       const gqlData = gqlResponse?.data?.data?.login
       console.log('MEMBERSHIPS', gqlData)
       if (!gqlData) return
-      const membership: IOrganizationMembership[] = gqlData.membership || []
+      const membership = gqlData.membership || []
       dispatch.accounts.set({
         membership: membership.map(m => ({
           created: new Date(m.created),
           roleId: m.role === 'CUSTOM' ? m.customRole?.id : m.role,
           roleName: m.role === 'CUSTOM' ? m.customRole?.name : SYSTEM_ROLES.find(r => r.id === m.role)?.name,
-          license: m.license,
-          organization: {
-            ...m.organization,
-            roles: [...SYSTEM_ROLES, ...m.organization.roles],
-            licenses: m.organization?.licenses?.map(l => parseLicense(l)),
-          },
+          license: m.license || [],
+          organization: parseOrganization(m.organization),
         })),
       })
       if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
@@ -174,11 +158,11 @@ export function selectMembershipFromDevice(
   return state.accounts.membership.find(m => m.organization.id === device?.owner.id)
 }
 
-export function selectOrganizationRole(state: ApplicationState, accountId?: string) {
-  accountId = accountId || getActiveAccountId(state)
-  const membership = state.accounts.membership.find(m => m.organization.id === accountId)
-  return membership?.role
-}
+// export function selectOrganizationRoleId(state: ApplicationState, accountId?: string) {
+//   accountId = accountId || getActiveAccountId(state)
+//   const membership = state.accounts.membership.find(m => m.organization.id === accountId)
+//   return membership?.roleId
+// }
 
 export function isUserAccount(state: ApplicationState) {
   return getActiveAccountId(state) === state.auth.user?.id
@@ -197,15 +181,37 @@ export function getActiveAccountId(state: ApplicationState) {
 export function getActiveUser(state: ApplicationState): IUserRef | undefined {
   const id = getActiveAccountId(state)
   const membershipOrganizations = state.accounts.membership.map(m => ({
-    id: m.organization.id,
-    email: m.organization.name,
+    id: m.organization.id || '',
+    email: m.organization.name || 'unknown',
+    created: m.organization.created,
   }))
   return membershipOrganizations.find(m => m.id === id) || state.auth.user
 }
 
-export function getActiveOrganizationMembership(state: ApplicationState): IOrganizationMembership | undefined {
+export function getActiveOrganizationMembership(state: ApplicationState): IOrganizationMembership {
+  const thisOrg = () => ({
+    roleId: 'OWNER',
+    roleName: 'Owner',
+    license: getRemoteitLicense(state)?.valid ? 'LICENSED' : 'UNLICENSED',
+    created: state.organization.created || new Date(),
+    organization: {
+      id: state.organization.id,
+      name: state.organization.name || '',
+      created: state.organization.created || new Date(),
+      roles: state.organization.roles,
+      members: state.organization.members,
+      account: { id: state.auth.user?.id || '', email: state.auth.user?.email || '' },
+      licenses: state.licensing.licenses,
+    },
+  })
+  if (isUserAccount(state) && state.organization.id) return thisOrg()
   const id = getActiveAccountId(state)
-  return state.accounts.membership.find(m => m.organization.id === id)
+  return state.accounts.membership.find(m => m.organization.id === id) || thisOrg()
+}
+
+export function getActiveOrganizationPermissions(state: ApplicationState): IPermission[] | undefined {
+  const membership = getActiveOrganizationMembership(state)
+  return membership?.organization.roles.find(r => r.id === membership?.roleId)?.permissions
 }
 
 export function getDeviceModel(state: ApplicationState, accountId?: string) {

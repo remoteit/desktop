@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
+import { getActiveOrganizationMembership, getActiveOrganizationPermissions } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -10,12 +11,16 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
-  const history = useHistory()
-  const { name, roles, members } = useSelector((state: ApplicationState) => state.organization)
+  const { roles, members, permissions } = useSelector((state: ApplicationState) => ({
+    ...getActiveOrganizationMembership(state).organization,
+    permissions: getActiveOrganizationPermissions(state),
+  }))
 
   useEffect(() => {
     analyticsHelper.page('OrganizationRolesPage')
   }, [])
+
+  if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
 
   return (
     <Container
@@ -23,13 +28,12 @@ export const OrganizationRolesPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>Roles</Title>
-          <Chip label={name} size="small" onClick={() => history.push('/account/organization')} />
         </Typography>
       }
     >
       <Typography variant="subtitle1">
         <Title>Role</Title>
-        <IconButton icon="plus" to={'/account/organization/roles/add'} title="Add role" />
+        <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />
       </Typography>
       <List>
         {roles.map(r => {
@@ -39,7 +43,7 @@ export const OrganizationRolesPage: React.FC = () => {
             <ListItemLocation
               key={r.id}
               title={r.name}
-              pathname={`/account/organization/roles/${r.id}`}
+              pathname={`/organization/roles/${r.id}`}
               exactMatch
               disableIcon
               dense

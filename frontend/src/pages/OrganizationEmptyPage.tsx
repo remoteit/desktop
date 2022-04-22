@@ -1,14 +1,16 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles, TextField, Typography, Button } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing } from '../styling'
-import { Gutters } from './Gutters'
-import { Body } from './Body'
+import { Gutters } from '../components/Gutters'
+import { Body } from '../components/Body'
 
-export const OrganizationEmpty: React.FC = () => {
+export const OrganizationEmptyPage: React.FC = () => {
   const username = useSelector((state: ApplicationState) => (state.auth.user?.email || '').split('@')[0])
   const [name, setName] = React.useState<string>(`${username}'s org`)
+  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -21,9 +23,10 @@ export const OrganizationEmpty: React.FC = () => {
       <Gutters bottom="xxl">
         <form
           className={css.form}
-          onSubmit={event => {
+          onSubmit={async event => {
             event.preventDefault()
-            dispatch.organization.setOrganization({ name })
+            await dispatch.organization.setOrganization({ name })
+            history.push('/organization')
           }}
         >
           <TextField

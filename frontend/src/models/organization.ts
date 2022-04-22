@@ -8,9 +8,9 @@ import {
   graphQLUpdateRole,
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { getActiveAccountId } from './accounts'
+import { getActiveAccountId, getActiveUser } from './accounts'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getRemoteitLicense } from './licensing'
+import { graphQLLicenses, getRemoteitLicense, parseLicense } from './licensing'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -20,7 +20,7 @@ export const PERMISSION: ILookup<{ name: string; description: string; icon: stri
   CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'code' },
   MANAGE: { name: 'Manage', description: 'Manage devices', icon: 'pencil' },
-  ADMIN: { name: 'Administrator', description: 'Manage organization users', icon: 'user-hard-hat', system: true },
+  ADMIN: { name: 'Administrator', description: 'Manage organization users', icon: 'user-hard-hat' },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
@@ -45,12 +45,6 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     permissions: [],
   },
   {
-    id: 'ADMIN',
-    name: 'Admin',
-    system: true,
-    permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
-  },
-  {
     id: 'MEMBER',
     name: 'Member',
     system: true,
@@ -58,11 +52,9 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
   },
 ]
 
-export type IOrganizationState = {
+export type IOrganizationState = IOrganization & {
   initialized: boolean
   updating: boolean
-  id?: string
-  name?: string
   require2FA: boolean
   domain?: string
   samlEnabled: boolean
@@ -70,17 +62,13 @@ export type IOrganizationState = {
   verificationCNAME?: string
   verificationValue?: string
   verified: boolean
-  created?: Date
-  account?: IUserRef
-  members: IOrganizationMember[]
-  roles: IOrganizationRole[]
 }
 
 const defaultState: IOrganizationState = {
   initialized: false,
   updating: false,
-  id: undefined,
-  name: undefined,
+  id: '',
+  name: '',
   require2FA: false,
   domain: undefined,
   samlEnabled: false,
@@ -91,7 +79,45 @@ const defaultState: IOrganizationState = {
   created: undefined,
   members: [],
   roles: [...SYSTEM_ROLES],
+  licenses: [],
 }
+
+export const graphQLOrganization = `
+  organization {
+    id
+    name
+    require2FA
+    domain
+    samlEnabled
+    providers
+    verificationCNAME
+    verificationValue
+    verified
+    created
+    roles {
+      id
+      name
+      permissions
+      tag {
+        operator
+        values
+      }
+    }
+    members {
+      created
+      role
+      customRole {
+        id
+        name
+      }
+      license
+      user {
+        id
+        email
+      }
+    }
+    ${graphQLLicenses}
+  }`
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
@@ -105,77 +131,21 @@ export default createModel<RootModel>()({
       const result = await graphQLBasicRequest(
         ` query {
               login {
-                organization {
-                  id
-                  name
-                  require2FA
-                  domain
-                  samlEnabled
-                  providers
-                  verificationCNAME
-                  verificationValue
-                  verified
-                  created
-                  roles {
-                    id
-                    name
-                    permissions
-                    tag {
-                      operator
-                      values
-                    }
-                  }
-                  members {
-                    created
-                    role
-                    customRole {
-                      id
-                      name
-                    }
-                    license
-                    user {
-                      id
-                      email
-                    }
-                  }
-                }
+                ${graphQLOrganization}
               }
             }`
       )
       if (result === 'ERROR') return
-      await dispatch.organization.parse(result)
+      const data = await dispatch.organization.parse(result)
+      if (data) await dispatch.organization.set(data)
+      else await dispatch.organization.clear()
     },
 
-    async parse(gqlResponse: AxiosResponse<any> | void, state) {
+    async parse(gqlResponse: AxiosResponse<any> | void, _) {
       if (!gqlResponse) return
-      const user = state.auth.user
       const org = gqlResponse?.data?.data?.login?.organization
       console.log('ORGANIZATION DATA', org)
-
-      if (!org || !user) {
-        dispatch.organization.clear()
-        return
-      }
-
-      dispatch.organization.set({
-        ...org,
-        created: new Date(org.created),
-        members: [
-          ...org.members.map(m => ({
-            ...m,
-            roleId: m.role === 'CUSTOM' ? m.customRole?.id : m.role,
-            roleName: m.role === 'CUSTOM' ? m.customRole?.name : SYSTEM_ROLES.find(r => r.id === m.role)?.name,
-            created: new Date(m.created),
-          })),
-        ],
-        roles: [
-          ...defaultState.roles,
-          ...org.roles.map(r => ({
-            ...r,
-            created: new Date(r.created),
-          })),
-        ],
-      })
+      return parseOrganization(org)
     },
 
     async setOrganization(params: IOrganizationSettings, state) {
@@ -314,8 +284,32 @@ export default createModel<RootModel>()({
   },
 })
 
+export function parseOrganization(data): IOrganizationState | undefined {
+  if (!data) return
+  return {
+    ...data,
+    created: new Date(data.created),
+    members: [
+      ...data.members.map(m => ({
+        ...m,
+        roleId: m.role === 'CUSTOM' ? m.customRole?.id : m.role,
+        roleName: m.role === 'CUSTOM' ? m.customRole?.name : SYSTEM_ROLES.find(r => r.id === m.role)?.name,
+        created: new Date(m.created),
+      })),
+    ],
+    roles: [
+      ...defaultState.roles,
+      ...data.roles.map(r => ({
+        ...r,
+        created: new Date(r.created),
+      })),
+    ],
+    licenses: data.licenses?.map(l => parseLicense(l)),
+  }
+}
+
 export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {
-  const user = state.auth.user
+  const user = getActiveUser(state)
   const license = getRemoteitLicense(state)
   return (
     user && {

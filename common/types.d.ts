@@ -336,16 +336,17 @@ declare global {
   type IUserRef = {
     id: string
     email: string
+    created?: Date
   }
 
   type IOrganization = {
     id: string
     name: string
-    created: Date
-    roles: IOrganizationRole[]
-    members?: IOrganizationMember[]
+    created?: Date
     account?: IUserRef
     licenses: ILicense[]
+    members: IOrganizationMember[]
+    roles: IOrganizationRole[]
   }
 
   type IOrganizationMember = {
@@ -353,15 +354,13 @@ declare global {
     organizationId: string
     license: ILicenseTypes
     roleId: IOrganizationRoleIdType
-    // role?: IOrganizationRoleType
-    created: Date
+    created?: Date
   }
 
   type IOrganizationMembership = {
     organization: IOrganization
-    role?: IOrganizationRoleIdType
-    customRole?: { id: string; name: string }
     roleId: IOrganizationRoleIdType
+    roleName: string
     created: Date
     license: ILicenseTypes
   }

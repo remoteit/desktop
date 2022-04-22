@@ -207,6 +207,6 @@ export function selectTags(state: ApplicationState, accountId?: string) {
 }
 
 export function canEditTags(membership?: IOrganizationMembership) {
-  const role = membership?.role || 'OWNER'
+  const role = membership?.roleId || 'OWNER'
   return ['OWNER', 'ADMIN'].includes(role)
 }

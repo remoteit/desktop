@@ -14,6 +14,7 @@ import {
   TextField,
   Chip,
 } from '@material-ui/core'
+import { getActiveOrganizationMembership } from '../models/accounts'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -33,11 +34,12 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const { disabled, role, tags } = useSelector((state: ApplicationState) => ({
+  const { disabled, roles, tags } = useSelector((state: ApplicationState) => ({
     disabled: state.organization.updating,
-    role: state.organization.roles.find(r => r.id === roleID) || DEFAULT_ROLE,
+    roles: getActiveOrganizationMembership(state).organization.roles,
     tags: selectTags(state, state.auth.user?.id),
   }))
+  const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
   const [count, setCount] = useState<number>()
   const [saving, setSaving] = useState<boolean>(false)
@@ -220,7 +222,7 @@ export const OrganizationRolePage: React.FC = () => {
               const roleID = await dispatch.organization.setRole(form)
               setSaving(false)
               setForm(cloneDeep(form)) // reset change detection
-              history.push(`/account/organization/roles/${roleID}`)
+              history.push(`/organization/roles/${roleID}`)
             }}
           >
             {saving ? 'Saving...' : 'Save'}

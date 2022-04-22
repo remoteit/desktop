@@ -11,13 +11,21 @@ import { Avatar } from './Avatar'
 
 type Props = {
   member: IOrganizationMember
+  roles?: IOrganizationRole[]
   freeLicenses?: boolean
   removing?: boolean
   enterprise?: boolean
   onClick?: () => void
 }
 
-export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, enterprise, onClick }) => {
+export const OrganizationMember: React.FC<Props> = ({
+  member,
+  roles = [],
+  freeLicenses,
+  removing,
+  enterprise,
+  onClick,
+}) => {
   const dispatch = useDispatch<Dispatch>()
 
   return (
@@ -35,6 +43,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
       />
       <ListItemSecondaryAction>
         <RoleSelect
+          roles={roles}
           roleId={member.roleId}
           license={member.license}
           onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}

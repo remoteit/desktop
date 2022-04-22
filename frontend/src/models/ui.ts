@@ -111,7 +111,7 @@ export const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350 },
+  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350, organization: 350 },
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 5 },

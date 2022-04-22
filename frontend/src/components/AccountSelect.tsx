@@ -18,13 +18,13 @@ export const AccountSelect: React.FC = () => {
       id: m.organization.id,
       name: m.organization.name,
       roleId: m.roleId,
-      role: m.organization.roles.find(r => r.id === m.roleId)?.name || m.roleId,
+      roleName: m.roleName,
     })),
     orgName: state.organization.name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
-  options.unshift({ id: user.id, name: orgName || 'Personal', roleId: 'OWNER', role: 'Owner' })
+  options.unshift({ id: user.id, name: orgName || 'Personal', roleId: 'OWNER', roleName: 'Owner' })
   if (options.length < 2) return null
 
   return (
@@ -50,7 +50,7 @@ export const AccountSelect: React.FC = () => {
         {options.map(option => (
           <MenuItem className={css.menu} value={option.id} key={option.id}>
             {option.name}
-            <Chip label={option.role} size="small" />
+            <Chip label={option.roleName} size="small" />
           </MenuItem>
         ))}
         <Divider className={css.divider} />

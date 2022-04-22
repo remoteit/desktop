@@ -24,7 +24,7 @@ export const SetupLinuxPage: React.FC = () => {
 
   let accountId = user?.id || ''
   let accountName = organization.name
-  if (activeMembership?.role === 'ADMIN') {
+  if (activeMembership?.roleId === 'ADMIN') {
     accountId = activeMembership.organization.id
     accountName = activeMembership.organization.name
   }

@@ -1,17 +1,15 @@
 import React from 'react'
-import { ApplicationState } from '../store'
-import { useSelector } from 'react-redux'
 import { TextField, TextFieldProps, MenuItem, Divider } from '@material-ui/core'
 
 type Props = {
   size?: TextFieldProps['size']
+  roles: IOrganizationRole[]
   roleId: IOrganizationRoleIdType
   license: ILicenseTypes
   onSelect: (roleId: string) => void
 }
 
-export const RoleSelect: React.FC<Props> = ({ roleId, license, size = 'small', onSelect }) => {
-  const roles = useSelector((state: ApplicationState) => state.organization.roles)
+export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'small', onSelect }) => {
   const disabled = roleId === 'OWNER' || license !== 'LICENSED'
   const resultRoleId = license === 'UNLICENSED' ? 'MEMBER' : roleId
 

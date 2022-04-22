@@ -63,7 +63,13 @@ export const OrganizationAddPage = () => {
       <Typography variant="subtitle1">Role Assignment</Typography>
       <Gutters>
         <Box display="flex" alignItems="center">
-          <RoleSelect size="medium" roleId={roleId} license={license} onSelect={id => setRoleId(id)} />
+          <RoleSelect
+            size="medium"
+            roleId={roleId}
+            roles={organization.roles}
+            license={license}
+            onSelect={id => setRoleId(id)}
+          />
           {disabled && (
             <Notice severity="warning">
               Purchase additional licenses to set a role. <br />
