@@ -75,14 +75,12 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
               <Icon name="plus" size="sm" />
             </Button>
           </div>
-          {selectedPrice?.amount ? (
+          {selectedPrice?.amount && (
             <>
               {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
               &nbsp;/&nbsp;
               {selectedPrice?.interval.toLowerCase()}
             </>
-          ) : (
-            <em>Free</em>
           )}
         </InlineSetting>
         {confirm && (
