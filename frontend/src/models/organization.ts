@@ -247,12 +247,10 @@ export default createModel<RootModel>()({
 
       const action = updated.length > organization.members.length ? 'added' : 'updated'
       const member = members[0]
-      const role = organization.roles.find(r => r.id === member.roleId)
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
         member.organizationId,
-        role?.system ? member.roleId : undefined,
-        role?.system ? undefined : member.roleId,
+        member.roleId,
         member.license
       )
       if (result === 'ERROR') {

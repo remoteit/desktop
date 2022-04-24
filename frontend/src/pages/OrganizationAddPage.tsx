@@ -25,7 +25,9 @@ export const OrganizationAddPage = () => {
   })
 
   const [emails, setEmails] = React.useState<string[]>([])
-  const [roleId, setRoleId] = React.useState<IOrganizationRoleIdType>('MEMBER')
+  const [roleId, setRoleId] = React.useState<IOrganizationRoleIdType>(
+    organization.roles.find(r => r.name === 'Member')?.id || ''
+  )
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
@@ -35,6 +37,8 @@ export const OrganizationAddPage = () => {
   useEffect(() => {
     analyticsHelper.page('AccountLinkPage')
   }, [])
+
+  console.log('ROLE', roleId, organization.roles)
 
   const exit = () => history.push(location.pathname.replace('/share', ''))
   const add = () => {
