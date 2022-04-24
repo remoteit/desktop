@@ -1,4 +1,5 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import { TextField, TextFieldProps, MenuItem, Divider } from '@material-ui/core'
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 }
 
 export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'small', onSelect }) => {
+  const history = useHistory()
   const disabled = roleId === 'OWNER' || license !== 'LICENSED'
 
   return (
@@ -29,7 +31,14 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'sm
         </MenuItem>
       ))}
       <Divider />
-      <MenuItem key="custom" dense onClick={() => {}}>
+      <MenuItem
+        key="custom"
+        dense
+        onClick={event => {
+          event.preventDefault()
+          history.push(`/organization/roles/${roleId}`)
+        }}
+      >
         Custom...
       </MenuItem>
     </TextField>

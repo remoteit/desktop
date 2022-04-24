@@ -31,7 +31,7 @@ export const OrganizationMember: React.FC<Props> = ({
   return (
     <ListItem key={member.user.email} dense>
       <ListItemIcon>
-        <Avatar email={member.user.email} size={spacing.lg} />
+        <Avatar email={member.user.email} size={28} />
       </ListItemIcon>
       <ListItemText
         primary={member.user.email}

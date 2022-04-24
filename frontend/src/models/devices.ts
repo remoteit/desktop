@@ -201,7 +201,7 @@ export default createModel<RootModel>()({
       const options: gqlOptions = {
         size: 0,
         from: 0,
-        account: state.auth.user?.id || '',
+        account: getActiveAccountId(state),
         owner: true,
         tag: params.tag?.values.length ? params.tag : undefined,
       }

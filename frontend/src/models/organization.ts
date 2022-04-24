@@ -43,6 +43,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     name: 'No Access',
     system: true,
     permissions: [],
+    disabled: true,
   },
 ]
 
