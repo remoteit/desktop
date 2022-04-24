@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { getOwnDevices, getActiveOrganizationMembership } from '../../models/accounts'
+import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
 import { makeStyles, useMediaQuery, Typography } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -29,7 +29,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
       navigationBack: state.ui.navigationBack,
       navigationForward: state.ui.navigationForward,
       device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-      editTags: canEditTags(getActiveOrganizationMembership(state)),
+      editTags: canEditTags(state, getActiveAccountId(state)),
     })
   )
   const { handleBack, handleForward } = useNavigation()

@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
 import { getActiveAccountId } from './accounts'
+import { getOrganizationPermissions } from './organization'
 import {
   graphQLSetTag,
   graphQLAddTag,
@@ -206,7 +207,7 @@ export function selectTags(state: ApplicationState, accountId?: string) {
   return state.tags.all[accountId] || []
 }
 
-export function canEditTags(membership?: IOrganizationMembership) {
-  const role = membership?.roleId || 'OWNER'
-  return ['OWNER', 'ADMIN'].includes(role)
+export function canEditTags(state: ApplicationState, accountId?: string) {
+  const permissions = getOrganizationPermissions(state, accountId)
+  return !!permissions?.includes('ADMIN')
 }

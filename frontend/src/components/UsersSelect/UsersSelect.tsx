@@ -2,6 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectSessionUsers } from '../../models/sessions'
+import { getOrganization } from '../../models/organization'
 import { makeStyles, ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
@@ -15,7 +16,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const css = useStyles()
   const { connected, access } = useSelector((state: ApplicationState) => ({
     connected: selectSessionUsers(state, service ? service.id : device?.id).length,
-    access: device?.owner.id === state.auth.user?.id ? state.organization.members.map(m => m.user) : [],
+    access: device?.owner.id === state.auth.user?.id ? getOrganization(state).members.map(m => m.user) : [],
   }))
   const users = (service ? service.access : device?.access) || []
   const usersLinked = access.filter(user => !users.find(_u => _u.email === user.email))

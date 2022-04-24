@@ -1,7 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { selectMembershipFromDevice } from '../models/accounts'
+import { memberOrganization } from '../models/organization'
+import { accountFromDevice, getMembership } from '../models/accounts'
 import { Chip } from '@material-ui/core'
 
 type Props = {
@@ -10,10 +11,10 @@ type Props = {
 
 export const DeviceRole: React.FC<Props> = ({ device }) => {
   const { membership, roles } = useSelector((state: ApplicationState) => {
-    const membership = selectMembershipFromDevice(state, device)
+    const accountId = accountFromDevice(state, device)
     return {
-      membership,
-      roles: membership?.organization.roles || state.organization.roles,
+      membership: getMembership(state, accountId),
+      roles: memberOrganization(state.organization.all, accountId).roles,
     }
   })
 

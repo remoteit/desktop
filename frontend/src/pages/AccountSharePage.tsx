@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Typography, Button } from '@material-ui/core'
+import { getOrganization } from '../models/organization'
 import { ContactSelector } from '../components/ContactSelector'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
@@ -18,7 +19,7 @@ export const AccountSharePage = () => {
     contacts = [],
   } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
-    access: state.organization.members.map(m => m.user),
+    access: getOrganization(state).members.map(m => m.user),
     contacts: state.contacts.all,
   }))
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Redirect } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
-import { getActiveOrganizationMembership, getActiveOrganizationPermissions } from '../models/accounts'
+import { getOrganizationPermissions, getOrganization } from '../models/organization'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -12,8 +12,8 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
   const { roles, members, permissions } = useSelector((state: ApplicationState) => ({
-    ...getActiveOrganizationMembership(state).organization,
-    permissions: getActiveOrganizationPermissions(state),
+    ...getOrganization(state),
+    permissions: getOrganizationPermissions(state),
   }))
 
   useEffect(() => {

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { getFreeLicenses } from '../models/licensing'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
+import { getOrganization } from '../models/organization'
 import { Typography, Button, Box } from '@material-ui/core'
 import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
@@ -14,11 +15,14 @@ import { useHistory } from 'react-router-dom'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationAddPage = () => {
-  const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => ({
-    contacts: state.contacts.all.filter(c => !state.organization.members.find(s => s.user.id === c.id)) || [],
-    organization: state.organization,
-    freeLicenses: getFreeLicenses(state),
-  }))
+  const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => {
+    const organization = getOrganization(state)
+    return {
+      organization,
+      contacts: state.contacts.all.filter(c => !organization.members.find(s => s.user.id === c.id)) || [],
+      freeLicenses: getFreeLicenses(state),
+    }
+  })
 
   const [emails, setEmails] = React.useState<string[]>([])
   const [roleId, setRoleId] = React.useState<IOrganizationRoleIdType>('MEMBER')

@@ -15,7 +15,8 @@ import {
   ListItemText,
   ListItemSecondaryAction,
 } from '@material-ui/core'
-import { getActiveOrganizationMembership, getActiveOrganizationPermissions } from '../models/accounts'
+import { getMembership } from '../models/accounts'
+import { memberOrganization, getOrganizationPermissions } from '../models/organization'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
@@ -28,27 +29,27 @@ import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationSettingsPage: React.FC = () => {
-  const { updating, domain, defaultDomain, samlOnly, thisOrg, org, permissions } = useSelector(
+  const { updating, domain, defaultDomain, samlOnly, isThisOrg, organization, permissions } = useSelector(
     (state: ApplicationState) => {
-      const membership = getActiveOrganizationMembership(state)
+      const membership = getMembership(state)
+      const organization = memberOrganization(state.organization.all, membership.account.id)
       return {
+        organization,
+        isThisOrg: organization.id === state.auth.user?.id,
         updating: state.organization.updating,
-        domain: state.organization.domain || '',
+        domain: organization.domain || '',
         defaultDomain: state.auth.user?.email.split('@')[1],
-        samlOnly: !!state.organization.providers?.includes('SAML'),
-        thisOrg: state.organization,
-        org: membership?.organization || state.organization,
-        permissions: getActiveOrganizationPermissions(state),
+        samlOnly: !!organization.providers?.includes('SAML'),
+        permissions: getOrganizationPermissions(state),
       }
     }
   )
   const [removing, setRemoving] = useState<boolean>(false)
   const [form, setForm] = useState<{ samlEnabled?: boolean; metadata?: string }>({
-    samlEnabled: thisOrg.samlEnabled,
+    samlEnabled: organization.samlEnabled,
     metadata: '',
   })
   const dispatch = useDispatch<Dispatch>()
-  const isThisOrg = thisOrg.id === org.id
 
   useEffect(() => {
     analyticsHelper.page('OrganizationSAMLPage')
@@ -77,7 +78,7 @@ export const OrganizationSettingsPage: React.FC = () => {
             warning={
               <>
                 <Notice severity="danger" fullWidth gutterBottom>
-                  You will be permanently deleting <i>{org.name}. </i>
+                  You will be permanently deleting <i>{organization.name}. </i>
                 </Notice>
                 This will remove all your members and their access to your devices.
               </>
@@ -94,9 +95,9 @@ export const OrganizationSettingsPage: React.FC = () => {
       <List>
         <InlineTextFieldSetting
           hideIcon
-          value={org.name}
+          value={organization.name}
           label="Organization Name"
-          resetValue={org.name}
+          resetValue={organization.name}
           onSave={name => dispatch.organization.setOrganization({ name: name.toString() })}
         />
       </List>
@@ -117,7 +118,7 @@ export const OrganizationSettingsPage: React.FC = () => {
               }}
             />
             {domain &&
-              (thisOrg.verified ? (
+              (organization.verified ? (
                 <ListItem>
                   <ListItemIcon />
                   <ListItemText
@@ -141,37 +142,42 @@ export const OrganizationSettingsPage: React.FC = () => {
                       </Link>
                     </Typography>
                     <DataCopy
-                      value={thisOrg.verificationCNAME}
+                      value={organization.verificationCNAME}
                       label="Verification CNAME"
                       showBackground
                       fullWidth
                       gutterBottom
                     />
-                    <DataCopy value={thisOrg.verificationValue} label="Verification Value" showBackground fullWidth />
+                    <DataCopy
+                      value={organization.verificationValue}
+                      label="Verification Value"
+                      showBackground
+                      fullWidth
+                    />
                   </Box>
                 </ListItem>
               ))}
             <ListItemSetting
-              toggle={thisOrg.require2FA}
+              toggle={organization.require2FA}
               label="Require 2FA"
               subLabel="All organization members will be required to use Two Factor Authentication."
-              disabled={samlOnly && thisOrg.verified}
-              onClick={() => dispatch.organization.setOrganization({ require2FA: !thisOrg.require2FA })}
+              disabled={samlOnly && organization.verified}
+              onClick={() => dispatch.organization.setOrganization({ require2FA: !organization.require2FA })}
               icon="lock"
             />
             <ListItemSetting
               toggle={samlOnly}
               label="Require SAML"
               subLabel="All organization members will not be able to login with email/password or Google."
-              disabled={thisOrg.require2FA || !thisOrg.verified}
+              disabled={organization.require2FA || !organization.verified}
               onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
               icon="shield"
             />
           </List>
           <Typography variant="subtitle1">SAML Configuration</Typography>
           <List>
-            {thisOrg.verified ? (
-              thisOrg.samlEnabled ? (
+            {organization.verified ? (
+              organization.samlEnabled ? (
                 <>
                   <ListItem>
                     <ListItemIcon>

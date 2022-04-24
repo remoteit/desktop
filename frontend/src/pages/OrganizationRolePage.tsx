@@ -14,7 +14,7 @@ import {
   TextField,
   Chip,
 } from '@material-ui/core'
-import { getActiveOrganizationMembership } from '../models/accounts'
+import { getOrganization } from '../models/organization'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -36,7 +36,7 @@ export const OrganizationRolePage: React.FC = () => {
   const css = useStyles()
   const { disabled, roles, tags } = useSelector((state: ApplicationState) => ({
     disabled: state.organization.updating,
-    roles: getActiveOrganizationMembership(state).organization.roles,
+    roles: getOrganization(state).roles,
     tags: selectTags(state, state.auth.user?.id),
   }))
   const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE

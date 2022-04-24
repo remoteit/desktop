@@ -3,13 +3,13 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { getFreeLicenses } from '../models/licensing'
 import { OrganizationMember } from '../components/OrganizationMember'
+import { IOrganizationState } from '../models/organization'
 import { List } from '@material-ui/core'
 
-type Props = { organization?: IOrganization; owner?: IOrganizationMember; enterprise?: boolean }
+type Props = { organization?: IOrganizationState; owner?: IOrganizationMember; enterprise?: boolean }
 
 export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, enterprise }) => {
   const [removing, setRemoving] = useState<string>()
-
   const licenses = useSelector((state: ApplicationState) => getFreeLicenses(state))
 
   useEffect(() => {
@@ -27,17 +27,20 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, e
           enterprise={enterprise}
         />
       )}
-      {organization?.members?.sort(alphaEmailSort).map(member => (
-        <OrganizationMember
-          key={member.user.id}
-          member={member}
-          roles={organization?.roles}
-          removing={removing === member.user.id}
-          onClick={() => setRemoving(member.user.id)}
-          freeLicenses={!!licenses || member.license === 'LICENSED'}
-          enterprise={enterprise}
-        />
-      ))}
+      {organization?.members &&
+        organization.members
+          .sort(alphaEmailSort)
+          .map(member => (
+            <OrganizationMember
+              key={member.user.id}
+              member={member}
+              roles={organization?.roles}
+              removing={removing === member.user.id}
+              onClick={() => setRemoving(member.user.id)}
+              freeLicenses={!!licenses || member.license === 'LICENSED'}
+              enterprise={enterprise}
+            />
+          ))}
     </List>
   )
 }

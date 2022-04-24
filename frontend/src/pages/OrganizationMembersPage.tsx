@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { Typography, List } from '@material-ui/core'
 import { selectOwner } from '../models/organization'
 import { REMOTEIT_PRODUCT_ID } from '../models/licensing'
-import { getActiveOrganizationMembership } from '../models/accounts'
+import { getOrganization } from '../models/organization'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
 import { SeatsSetting } from '../components/SeatsSetting'
@@ -16,10 +16,10 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembersPage: React.FC = () => {
   const { organization, license, owner } = useSelector((state: ApplicationState) => {
-    const membership = getActiveOrganizationMembership(state)
+    const organization = getOrganization(state)
     return {
-      organization: membership?.organization,
-      license: membership?.organization?.licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null,
+      organization,
+      license: organization.licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null,
       owner: selectOwner(state),
     }
   })

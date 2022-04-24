@@ -8,9 +8,9 @@ import {
   graphQLUpdateRole,
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { getActiveAccountId, getActiveUser } from './accounts'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { graphQLLicenses, getRemoteitLicense, parseLicense } from './licensing'
+import { getActiveAccountId, getActiveUser, getAccountIds, getMembership } from './accounts'
+import { getRemoteitLicense, parseLicense } from './licensing'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -44,43 +44,52 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     system: true,
     permissions: [],
   },
-  {
-    id: 'MEMBER',
-    name: 'Member',
-    system: true,
-    permissions: ['VIEW', 'CONNECT'],
-  },
 ]
 
-export type IOrganizationState = IOrganization & {
-  initialized: boolean
-  updating: boolean
-  require2FA: boolean
-  domain?: string
-  samlEnabled: boolean
-  providers: null | IOrganizationProvider[]
-  verificationCNAME?: string
-  verificationValue?: string
-  verified: boolean
-}
-
-const defaultState: IOrganizationState = {
-  initialized: false,
-  updating: false,
-  id: '',
-  name: '',
-  require2FA: false,
-  domain: undefined,
-  samlEnabled: false,
-  providers: null,
-  verificationCNAME: undefined,
-  verificationValue: undefined,
-  verified: false,
-  created: undefined,
-  members: [],
-  roles: [...SYSTEM_ROLES],
-  licenses: [],
-}
+export const graphQLLicenses = `
+  licenses {
+    id
+    updated
+    created
+    expiration
+    valid
+    quantity
+    plan {
+      id
+      name
+      description
+      duration
+      commercial
+      billing
+      product {
+        id
+        name
+        description
+      }
+    }
+    subscription {
+      total
+      status
+      price {
+        id
+        amount
+        currency
+        interval
+      }
+      card {
+        brand
+        month
+        year
+        last
+        name
+        email
+        phone
+        postal
+        country
+        expiration
+      }
+    }
+  }`
 
 export const graphQLOrganization = `
   organization {
@@ -97,6 +106,7 @@ export const graphQLOrganization = `
     roles {
       id
       name
+      system
       permissions
       tag {
         operator
@@ -105,7 +115,6 @@ export const graphQLOrganization = `
     }
     members {
       created
-      role
       customRole {
         id
         name
@@ -119,69 +128,126 @@ export const graphQLOrganization = `
     ${graphQLLicenses}
   }`
 
+export type IOrganizationState = {
+  id: string
+  name: string
+  created?: Date
+  account?: IUserRef
+  licenses: ILicense[]
+  members: IOrganizationMember[]
+  roles: IOrganizationRole[]
+  require2FA: boolean
+  domain?: string
+  samlEnabled: boolean
+  providers: null | IOrganizationProvider[]
+  verificationCNAME?: string
+  verificationValue?: string
+  verified: boolean
+}
+
+const defaultState: IOrganizationState = {
+  id: '',
+  name: '',
+  require2FA: false,
+  domain: undefined,
+  samlEnabled: false,
+  providers: null,
+  verificationCNAME: undefined,
+  verificationValue: undefined,
+  verified: false,
+  created: undefined,
+  members: [],
+  roles: [...SYSTEM_ROLES],
+  licenses: [],
+}
+
+type IOrganizationAccountState = {
+  initialized: boolean
+  updating: boolean
+  all: ILookup<IOrganizationState>
+}
+
+const defaultAccountState: IOrganizationAccountState = {
+  initialized: false,
+  updating: false,
+  all: {},
+}
+
 export default createModel<RootModel>()({
-  state: { ...defaultState },
+  state: { ...defaultAccountState },
   effects: dispatch => ({
     async init() {
       await dispatch.organization.fetch()
-      dispatch.organization.set({ initialized: true })
+      dispatch.organization.setActive({ initialized: true })
     },
 
-    async fetch() {
+    async fetch(_, state) {
+      const ids: string[] = getAccountIds(state)
+      const accountQueries = ids.map(
+        (id, index) => `
+        _${index}: account(id: "${id}") {
+          ${graphQLOrganization}
+        }`
+      )
       const result = await graphQLBasicRequest(
         ` query {
-              login {
-                ${graphQLOrganization}
-              }
-            }`
+            login {
+              ${accountQueries.join('\n')}
+            }
+          }`
       )
       if (result === 'ERROR') return
-      const data = await dispatch.organization.parse(result)
-      if (data) await dispatch.organization.set(data)
-      else await dispatch.organization.clear()
+      const all = await dispatch.organization.parse({ result, ids })
+      if (all) await dispatch.organization.set({ all })
+      else await dispatch.organization.clearActive()
     },
 
-    async parse(gqlResponse: AxiosResponse<any> | void, _) {
-      if (!gqlResponse) return
-      const org = gqlResponse?.data?.data?.login?.organization
-      console.log('ORGANIZATION DATA', org)
-      return parseOrganization(org)
+    async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }) {
+      const data = result?.data?.data?.login
+      let orgs: IOrganizationAccountState['all'] = {}
+      ids.forEach((id, index) => {
+        const org = data[`_${index}`].organization
+        console.log('ORGANIZATION DATA', org)
+        if (org) orgs[id] = parseOrganization(org)
+      })
+      return orgs
     },
 
     async setOrganization(params: IOrganizationSettings, state) {
-      let org = state.organization
-      await dispatch.organization.set({ ...params, id: org.id || state.auth.user?.id })
+      let organization = getOrganization(state)
+      await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
       const result = await graphQLSetOrganization(params)
       if (result === 'ERROR') {
         await dispatch.organization.fetch()
-      } else if (!org.id) {
+      } else if (!organization.id) {
         dispatch.ui.set({ successMessage: 'Your organization has been created.' })
       }
     },
 
-    async setSAML(params: { enabled: boolean; metadata?: string }, state) {
-      dispatch.organization.set({ updating: true })
+    async setSAML(params: { enabled: boolean; metadata?: string }) {
+      dispatch.organization.setActive({ updating: true })
       const result = await graphQLSetSAML(params)
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: params.enabled ? 'SAML enabled and metadata uploaded.' : 'SAML disabled.' })
       }
       await dispatch.organization.fetch()
-      dispatch.organization.set({ updating: false })
+      dispatch.organization.setActive({ updating: false })
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {
-      let updated = [...state.organization?.members]
+      const organization = getOrganization(state)
+      let updated = [...organization.members]
 
       members.forEach(m => {
         const index = updated.findIndex(u => u.user.email === m.user.email)
         if (index > -1) updated[index] = m
         else updated.push(m)
       })
-      await dispatch.organization.set({ members: updated })
+      await dispatch.organization.setActive({ members: updated })
 
-      const action = updated.length > state.organization.members.length ? 'added' : 'updated'
+      const action = updated.length > organization.members.length ? 'added' : 'updated'
       const member = members[0]
-      const role = state.organization.roles.find(r => r.id === member.roleId)
+      const role = organization.roles.find(r => r.id === member.roleId)
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
         role?.system ? member.roleId : undefined,
@@ -202,9 +268,10 @@ export default createModel<RootModel>()({
 
     async removeMember(member: IOrganizationMember, state) {
       const result = await graphQLSetMembers([member.user.email], 'REMOVE')
+      const organization = getOrganization(state)
       if (result !== 'ERROR') {
-        dispatch.organization.set({
-          members: state.organization.members.filter(m => m.user.email !== member.user.email),
+        dispatch.organization.setActive({
+          members: organization.members.filter(m => m.user.email !== member.user.email),
         })
         dispatch.ui.set({ successMessage: `Successfully removed ${member?.user?.email}.` })
       }
@@ -213,13 +280,13 @@ export default createModel<RootModel>()({
     async removeOrganization(_, state) {
       const result = await graphQLRemoveOrganization()
       if (result !== 'ERROR') {
-        dispatch.organization.clear()
+        dispatch.organization.clearActive()
         dispatch.ui.set({ successMessage: `Your organization has been removed.` })
       }
     },
 
     async setRole(role: IOrganizationRole, state) {
-      let roles = [...state.organization.roles]
+      let roles = [...getOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
       const permissions: IPermission[] = ['CONNECT', 'MANAGE', 'SCRIPTING']
 
@@ -249,12 +316,12 @@ export default createModel<RootModel>()({
         successMessage: index > -1 ? `Successfully updated ${role.name}.` : `Successfully added ${role.name}.`,
       })
 
-      await dispatch.organization.set({ roles })
+      await dispatch.organization.setActive({ roles })
       return role.id
     },
 
     async removeRole(role: IOrganizationRole, state) {
-      let roles = [...state.organization.roles]
+      let roles = [...getOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
       if (index > -1) roles.splice(index, 1)
       const result = await graphQLRemoveRole(role.id, getActiveAccountId(state))
@@ -265,35 +332,63 @@ export default createModel<RootModel>()({
       }
 
       dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
-      dispatch.organization.set({ roles })
+      dispatch.organization.setActive({ roles })
+    },
+
+    async clearActive() {
+      dispatch.organization.setActive({ ...defaultState })
+    },
+
+    async setActive(params: ILookup<any>, state) {
+      const id = getActiveAccountId(state)
+      let org = { ...getOrganization(state) }
+      Object.keys(params).forEach(key => (org[key] = params[key]))
+      const all = { ...state.organization.all }
+      all[id] = org
+      dispatch.organization.set({ all })
     },
   }),
   reducers: {
-    set(state: IOrganizationState, params: ILookup<any>) {
+    set(state: IOrganizationAccountState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
-    clear(state: IOrganizationState) {
-      state = { ...defaultState, initialized: true }
-      return state
-    },
-    reset(state: IOrganizationState) {
-      state = { ...defaultState }
+    reset(state: IOrganizationAccountState) {
+      state = { ...defaultAccountState }
       return state
     },
   },
 })
 
-export function parseOrganization(data): IOrganizationState | undefined {
-  if (!data) return
+export function thisOrganization(state: ApplicationState) {
+  const id = state.auth.user?.id || ''
+  return memberOrganization(state.organization.all, id)
+}
+
+export function getOrganization(state: ApplicationState, accountId?: string) {
+  accountId = accountId || getActiveAccountId(state)
+  return memberOrganization(state.organization.all, accountId)
+}
+
+export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
+  return organization[accountId || ''] || { ...defaultState }
+}
+
+export function getOrganizationPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
+  const membership = getMembership(state, accountId)
+  const organization = getOrganization(state, accountId)
+  return organization.roles.find(r => r.id === membership.roleId)?.permissions
+}
+
+export function parseOrganization(data: any = {}): IOrganizationState {
   return {
     ...data,
     created: new Date(data.created),
     members: [
       ...data.members.map(m => ({
         ...m,
-        roleId: m.role === 'CUSTOM' ? m.customRole?.id : m.role,
-        roleName: m.role === 'CUSTOM' ? m.customRole?.name : SYSTEM_ROLES.find(r => r.id === m.role)?.name,
+        roleId: m.customRole.id,
+        roleName: m.customRole.name,
         created: new Date(m.created),
       })),
     ],

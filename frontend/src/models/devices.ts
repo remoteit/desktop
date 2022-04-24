@@ -414,6 +414,7 @@ export default createModel<RootModel>()({
   },
 })
 
+// TODO move to connection model?
 export const ROUTES: IRoute[] = [
   {
     key: 'failover',

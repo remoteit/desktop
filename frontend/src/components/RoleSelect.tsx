@@ -11,7 +11,6 @@ type Props = {
 
 export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'small', onSelect }) => {
   const disabled = roleId === 'OWNER' || license !== 'LICENSED'
-  const resultRoleId = license === 'UNLICENSED' ? 'MEMBER' : roleId
 
   return (
     <TextField
@@ -20,7 +19,7 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'sm
       label={size === 'small' ? undefined : 'Role'}
       hiddenLabel={size === 'small'}
       disabled={disabled}
-      value={resultRoleId}
+      value={roleId}
       variant="filled"
       onChange={e => onSelect(e.target.value)}
     >

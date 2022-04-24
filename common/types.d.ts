@@ -339,16 +339,6 @@ declare global {
     created?: Date
   }
 
-  type IOrganization = {
-    id: string
-    name: string
-    created?: Date
-    account?: IUserRef
-    licenses: ILicense[]
-    members: IOrganizationMember[]
-    roles: IOrganizationRole[]
-  }
-
   type IOrganizationMember = {
     user: IUserRef
     organizationId: string
@@ -357,12 +347,12 @@ declare global {
     created?: Date
   }
 
-  type IOrganizationMembership = {
-    organization: IOrganization
+  type IMembership = {
     roleId: IOrganizationRoleIdType
     roleName: string
     created: Date
     license: ILicenseTypes
+    account: IUserRef
   }
 
   type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string
@@ -370,8 +360,6 @@ declare global {
   type IOrganizationRole = {
     id: string
     name: string
-    // created: Date
-    // updated: Date
     system?: boolean
     disabled?: boolean
     permissions: IPermission[]

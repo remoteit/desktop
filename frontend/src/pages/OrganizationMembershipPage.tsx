@@ -12,6 +12,7 @@ import {
   ListItemSecondaryAction,
 } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
+import { thisOrganization, memberOrganization } from '../models/organization'
 import { getRemoteitLicense } from '../models/licensing'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
@@ -25,9 +26,10 @@ import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembershipPage: React.FC = () => {
-  const { membership, organization, license, email } = useSelector((state: ApplicationState) => ({
+  const { membership, organization, organizations, license, email } = useSelector((state: ApplicationState) => ({
     membership: state.accounts.membership,
-    organization: state.organization,
+    organizations: state.organization.all,
+    organization: thisOrganization(state),
     license: getRemoteitLicense(state),
     email: state.auth.user?.email || '',
   }))
@@ -36,7 +38,7 @@ export const OrganizationMembershipPage: React.FC = () => {
   useEffect(() => {
     analyticsHelper.page('AccountAccessPage')
   }, [])
-  console.log('LICENSE', organization)
+
   return (
     <Container
       header={
@@ -65,33 +67,36 @@ export const OrganizationMembershipPage: React.FC = () => {
               <Divider variant="inset" />
             </>
           )}
-          {membership.map(m => (
-            <ListItem key={m.organization.id}>
-              <ListItemIcon>
-                <Icon name="industry-alt" />
-              </ListItemIcon>
-              <ListItemText
-                primary={m.organization.name}
-                secondary={
-                  <>
-                    Owner <b>{m.organization.account?.email}</b>
-                    &nbsp; - Joined <Duration startTime={m.created?.getTime()} ago />
-                  </>
-                }
-              />
-              <ListItemSecondaryAction>
-                <Chip label={m.organization.roles.find(r => r.id === m.roleId)?.name} size="small" />
-                <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
-                  <LicenseChip license={m.license} />
-                </Box>
-                <IconButton
-                  icon="sign-out"
-                  title="Leave Account"
-                  onClick={() => accounts.leaveMembership(m.organization.id)}
+          {membership.map(m => {
+            const mo = memberOrganization(organizations, m.account.id)
+            return (
+              <ListItem key={m.account.id}>
+                <ListItemIcon>
+                  <Icon name="industry-alt" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={mo.name}
+                  secondary={
+                    <>
+                      Owner <b>{m.account.email}</b>
+                      &nbsp; - Joined <Duration startTime={m.created.getTime()} ago />
+                    </>
+                  }
                 />
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
+                <ListItemSecondaryAction>
+                  <Chip label={mo.roles.find(r => r.id === m.roleId)?.name} size="small" />
+                  <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
+                    <LicenseChip license={m.license} />
+                  </Box>
+                  <IconButton
+                    icon="sign-out"
+                    title="Leave Account"
+                    onClick={() => accounts.leaveMembership(m.account.id)}
+                  />
+                </ListItemSecondaryAction>
+              </ListItem>
+            )
+          })}
         </List>
       ) : (
         <Body center>

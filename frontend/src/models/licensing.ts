@@ -10,6 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLLicenses, getOrganization } from './organization'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import humanize from 'humanize-duration'
@@ -37,51 +38,6 @@ export const LicenseLookup: ILicenseLookup[] = [
 ]
 
 const defaultLicense = LicenseLookup[0]
-
-export const graphQLLicenses = `
-  licenses {
-    id
-    updated
-    created
-    expiration
-    valid
-    quantity
-    plan {
-      id
-      name
-      description
-      duration
-      commercial
-      billing
-      product {
-        id
-        name
-        description
-      }
-    }
-    subscription {
-      total
-      status
-      price {
-        id
-        amount
-        currency
-        interval
-      }
-      card {
-        brand
-        month
-        year
-        last
-        name
-        email
-        phone
-        postal
-        country
-        expiration
-      }
-    }
-  }`
 
 type ILicensing = {
   initialized: boolean
@@ -321,10 +277,11 @@ export function getLicenses(state: ApplicationState) {
   return licenses
 }
 
+// TODO fix so that it uses org licenses
 export function getFreeLicenses(state: ApplicationState) {
   if (isEnterprise(state)) return 1
   const purchased = getRemoteitLicense(state)?.quantity || 0
-  const used = 1 + state.organization.members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
+  const used = 1 + getOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
   return Math.max(purchased - used, 0)
 }
 

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { List, Typography } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { getActiveOrganizationPermissions, getActiveOrganizationMembership } from '../models/accounts'
+import { getOrganizationPermissions, getOrganization } from '../models/organization'
 import { selectFeature } from '../models/ui'
 import { PaywallUI } from '../components/PaywallUI'
 import { Container } from '../components/Container'
@@ -13,27 +13,29 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
-  const { permissions, feature, organization, thisOrganization } = useSelector((state: ApplicationState) => ({
-    permissions: getActiveOrganizationPermissions(state),
+  const { initialized, permissions, feature, organization } = useSelector((state: ApplicationState) => ({
+    initialized: state.organization.initialized,
+    permissions: getOrganizationPermissions(state),
     feature: selectFeature(state),
-    organization: getActiveOrganizationMembership(state).organization,
-    thisOrganization: state.organization,
+    organization: getOrganization(state),
   }))
 
   useEffect(() => {
     analyticsHelper.page('OrganizationPage')
   }, [])
 
-  if (thisOrganization.initialized && !thisOrganization.id) return <Redirect to={'/organization/empty'} />
+  if (initialized && !organization.id) return <Redirect to={'/organization/empty'} />
 
   const admin = !!permissions?.includes('ADMIN')
+  // const license = organization?.licenses?.find(l => l.subscription?.status === 'ACTIVE')
+  // const plan = license?.plan
 
   return (
     <Container
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>{organization?.name || '...'}</Title>
+          <Title>{organization.name || '...'}</Title>
         </Typography>
       }
     >

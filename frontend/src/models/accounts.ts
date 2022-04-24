@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { getRemoteitLicense } from './licensing'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { SYSTEM_ROLES, graphQLOrganization, parseOrganization } from './organization'
+import { SYSTEM_ROLES } from './organization'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
@@ -11,7 +11,7 @@ import { RootModel } from './rootModel'
 const ACCOUNT_KEY = 'account'
 
 export type IAccountsState = {
-  membership: IOrganizationMembership[]
+  membership: IMembership[]
   activeId?: string // user.id
 }
 
@@ -35,13 +35,17 @@ export default createModel<RootModel>()({
               login {
                 membership {
                   created
-                  role
                   customRole {
                     id
                     name
                   }
                   license
-                  ${graphQLOrganization}
+                  organization {
+                    account {
+                      id
+                      email
+                    }
+                  }
                 }
               }
             }`
@@ -60,10 +64,10 @@ export default createModel<RootModel>()({
       dispatch.accounts.set({
         membership: membership.map(m => ({
           created: new Date(m.created),
-          roleId: m.role === 'CUSTOM' ? m.customRole?.id : m.role,
-          roleName: m.role === 'CUSTOM' ? m.customRole?.name : SYSTEM_ROLES.find(r => r.id === m.role)?.name,
+          roleId: m.customRole.id,
+          roleName: m.customRole.name,
           license: m.license || [],
-          organization: parseOrganization(m.organization),
+          account: m.organization.account,
         })),
       })
       if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
@@ -74,7 +78,7 @@ export default createModel<RootModel>()({
       const { membership } = state.accounts
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
-        dispatch.accounts.set({ membership: membership.filter(m => m.organization.id !== id) })
+        dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id) })
         dispatch.ui.set({ successMessage: 'You have successfully left the organization.' })
       }
     },
@@ -151,11 +155,8 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectMembershipFromDevice(
-  state: ApplicationState,
-  device?: IDevice
-): IOrganizationMembership | undefined {
-  return state.accounts.membership.find(m => m.organization.id === device?.owner.id)
+export function accountFromDevice(state: ApplicationState, device?: IDevice) {
+  return device?.owner.id || getActiveAccountId(state)
 }
 
 // export function selectOrganizationRoleId(state: ApplicationState, accountId?: string) {
@@ -164,12 +165,12 @@ export function selectMembershipFromDevice(
 //   return membership?.roleId
 // }
 
-export function isUserAccount(state: ApplicationState) {
-  return getActiveAccountId(state) === state.auth.user?.id
+export function isUserAccount(state: ApplicationState, accountId?: string) {
+  return (accountId || getActiveAccountId(state)) === state.auth.user?.id
 }
 
 export function getAccountIds(state: ApplicationState) {
-  let ids = state.accounts.membership.map(m => m.organization.id)
+  let ids = state.accounts.membership.map(m => m.account.id)
   state.auth.user && ids.unshift(state.auth.user.id)
   return ids
 }
@@ -181,37 +182,27 @@ export function getActiveAccountId(state: ApplicationState) {
 export function getActiveUser(state: ApplicationState): IUserRef | undefined {
   const id = getActiveAccountId(state)
   const membershipOrganizations = state.accounts.membership.map(m => ({
-    id: m.organization.id || '',
-    email: m.organization.name || 'unknown',
-    created: m.organization.created,
+    id: m.account.id || '',
+    email: m.account.email || 'unknown',
+    created: m.created,
   }))
   return membershipOrganizations.find(m => m.id === id) || state.auth.user
 }
 
-export function getActiveOrganizationMembership(state: ApplicationState): IOrganizationMembership {
-  const thisOrg = () => ({
+export function getMembership(state: ApplicationState, accountId?: string): IMembership {
+  const thisMembership = () => ({
     roleId: 'OWNER',
     roleName: 'Owner',
     license: getRemoteitLicense(state)?.valid ? 'LICENSED' : 'UNLICENSED',
-    created: state.organization.created || new Date(),
-    organization: {
-      id: state.organization.id,
-      name: state.organization.name || '',
-      created: state.organization.created || new Date(),
-      roles: state.organization.roles,
-      members: state.organization.members,
-      account: { id: state.auth.user?.id || '', email: state.auth.user?.email || '' },
-      licenses: state.licensing.licenses,
+    created: state.auth.user?.created || new Date(),
+    account: {
+      id: state.auth.user?.id || '',
+      email: state.auth.user?.email || 'unknown',
     },
   })
-  if (isUserAccount(state) && state.organization.id) return thisOrg()
-  const id = getActiveAccountId(state)
-  return state.accounts.membership.find(m => m.organization.id === id) || thisOrg()
-}
-
-export function getActiveOrganizationPermissions(state: ApplicationState): IPermission[] | undefined {
-  const membership = getActiveOrganizationMembership(state)
-  return membership?.organization.roles.find(r => r.id === membership?.roleId)?.permissions
+  if (isUserAccount(state, accountId)) return thisMembership()
+  accountId = accountId || getActiveAccountId(state)
+  return state.accounts.membership.find(m => m.account.id === accountId) || thisMembership()
 }
 
 export function getDeviceModel(state: ApplicationState, accountId?: string) {
