@@ -99,8 +99,8 @@ export async function graphQLShareDevice(params: IShareProps) {
 
 export async function graphQLSetOrganization(params: IOrganizationSettings) {
   return await graphQLBasicRequest(
-    ` mutation query($name: String, $domain: String, $require2FA: Boolean, $providers: [AuthenticationProvider!]) {
-        setOrganization(name: $name, domain: $domain, require2FA: $require2FA, providers: $providers)
+    ` mutation query($accountId: String, $name: String, $domain: String, $require2FA: Boolean, $providers: [AuthenticationProvider!]) {
+        setOrganization(accountId: $accountId, name: $name, domain: $domain, require2FA: $require2FA, providers: $providers)
       }`,
     params
   )
@@ -125,15 +125,16 @@ export async function graphQLRemoveOrganization() {
 
 export async function graphQLSetMembers(
   email: string[],
+  accountId?: string,
   role?: IOrganizationRoleIdType,
   roleId?: IOrganizationRoleIdType,
   license?: ILicenseTypes
 ) {
   return await graphQLBasicRequest(
-    ` mutation query($email: [String!]!, $role: OrganizationRole, $roleId: ID, $license: LicenseOption) {
-        setMember(email: $email, role: $role, roleId: $roleId, license: $license)
+    ` mutation query($accountId: String, $email: [String!]!, $role: OrganizationRole, $roleId: ID, $license: LicenseOption) {
+        setMember(accountId: $accountID, email: $email, role: $role, roleId: $roleId, license: $license)
       }`,
-    { email, role, roleId, license }
+    { accountId, email, role, roleId, license }
   )
 }
 

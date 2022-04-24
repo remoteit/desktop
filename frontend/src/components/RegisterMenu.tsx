@@ -89,7 +89,7 @@ export const RegisterMenu: React.FC = () => {
             component={Link}
           >
             <ListItemIcon>
-              <Icon name="laptop" size="md" fixedWidth />
+              <Icon name="laptop" size="sm" fixedWidth />
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>

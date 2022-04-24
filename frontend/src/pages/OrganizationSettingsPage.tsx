@@ -100,7 +100,7 @@ export const OrganizationSettingsPage: React.FC = () => {
           value={organization.name}
           label="Organization Name"
           resetValue={organization.name}
-          onSave={name => dispatch.organization.setOrganization({ name: name.toString() })}
+          onSave={name => dispatch.organization.setOrganization({ name: name.toString(), accountId: organization.id })}
         />
       </List>
       {isThisOrg && (

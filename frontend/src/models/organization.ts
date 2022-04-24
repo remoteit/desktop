@@ -250,6 +250,7 @@ export default createModel<RootModel>()({
       const role = organization.roles.find(r => r.id === member.roleId)
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
+        member.organizationId,
         role?.system ? member.roleId : undefined,
         role?.system ? undefined : member.roleId,
         member.license
@@ -267,7 +268,7 @@ export default createModel<RootModel>()({
     },
 
     async removeMember(member: IOrganizationMember, state) {
-      const result = await graphQLSetMembers([member.user.email], 'REMOVE')
+      const result = await graphQLSetMembers([member.user.email], member.organizationId, 'REMOVE')
       const organization = getOrganization(state)
       if (result !== 'ERROR') {
         dispatch.organization.setActive({
