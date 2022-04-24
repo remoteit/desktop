@@ -8,7 +8,6 @@ import { Container } from '../components/Container'
 import { ColorSelect } from '../components/ColorSelect'
 import { findTagIndex } from '../helpers/utilHelper'
 import { Typography, List } from '@material-ui/core'
-import { memberOrganization } from '../models/organization'
 import { getActiveAccountId } from '../models/accounts'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
@@ -22,11 +21,10 @@ export const TagsPage: React.FC = () => {
   const getColor = useLabel()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
-  const { name, accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: ApplicationState) => {
+  const { accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: ApplicationState) => {
     const accountId = getActiveAccountId(state)
     return {
       accountId,
-      name: memberOrganization(state.organization.all, accountId).name,
       deleting: state.tags.deleting,
       updating: state.tags.updating,
       creating: state.tags.creating,
@@ -53,7 +51,7 @@ export const TagsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{name || 'Personal'} Tags</Title>
+            <Title>Tags</Title>
             {canEdit && (
               <TagEditor
                 createOnly

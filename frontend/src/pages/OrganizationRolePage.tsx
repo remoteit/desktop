@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
+import { getActiveAccountId } from '../models/accounts'
+import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
 import { useParams, useHistory } from 'react-router-dom'
 import {
   makeStyles,
@@ -14,7 +15,7 @@ import {
   TextField,
   Chip,
 } from '@material-ui/core'
-import { getOrganization } from '../models/organization'
+
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -37,7 +38,7 @@ export const OrganizationRolePage: React.FC = () => {
   const { disabled, roles, tags } = useSelector((state: ApplicationState) => ({
     disabled: state.organization.updating,
     roles: getOrganization(state).roles,
-    tags: selectTags(state, state.auth.user?.id),
+    tags: selectTags(state, getActiveAccountId(state)),
   }))
   const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))

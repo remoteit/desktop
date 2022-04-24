@@ -65,6 +65,15 @@ export const OrganizationPage: React.FC = () => {
             dense
           />
         </PaywallUI>
+        <PaywallUI limitName="tagging" title="Business plan required to use custom tag based roles and permissions.">
+          <ListItemLocation
+            title="Tags"
+            pathname="/organization/tags"
+            icon="tag"
+            disabled={!feature.tagging || !admin}
+            dense
+          />
+        </PaywallUI>
         <PaywallUI limitName="saml" title="Business plan required for SAML or a custom Domain.">
           <ListItemLocation
             title="Settings"

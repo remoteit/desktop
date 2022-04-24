@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
@@ -36,13 +37,22 @@ export const OrganizationRolesPage: React.FC = () => {
         <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />
       </Typography>
       <List>
-        {roles.map(r => {
+        {roles.sort(systemSort).map(r => {
           if (r.disabled) return null
           const count = members.filter(m => m.roleId === r.id).length
           return (
             <ListItemLocation
               key={r.id}
-              title={r.name}
+              title={
+                <>
+                  {r.name}
+                  {r.system && (
+                    <sup>
+                      <Icon name="shield-alt" size="xxs" inline />
+                    </sup>
+                  )}
+                </>
+              }
               pathname={`/organization/roles/${r.id}`}
               exactMatch
               disableIcon
@@ -57,4 +67,8 @@ export const OrganizationRolesPage: React.FC = () => {
       </List>
     </Container>
   )
+}
+
+function systemSort(a: IOrganizationRole, b: IOrganizationRole) {
+  return Number(b.system || 0) - Number(a.system || 0)
 }

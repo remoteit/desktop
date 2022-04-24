@@ -72,22 +72,24 @@ export const OrganizationSettingsPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>Settings</Title>
-          <DeleteButton
-            title="Delete Organization"
-            destroying={removing}
-            warning={
-              <>
-                <Notice severity="danger" fullWidth gutterBottom>
-                  You will be permanently deleting <i>{organization.name}. </i>
-                </Notice>
-                This will remove all your members and their access to your devices.
-              </>
-            }
-            onDelete={() => {
-              setRemoving(true)
-              dispatch.organization.removeOrganization()
-            }}
-          />
+          {isThisOrg && (
+            <DeleteButton
+              title="Delete Organization"
+              destroying={removing}
+              warning={
+                <>
+                  <Notice severity="danger" fullWidth gutterBottom>
+                    You will be permanently deleting <i>{organization.name}. </i>
+                  </Notice>
+                  This will remove all your members and their access to your devices.
+                </>
+              }
+              onDelete={() => {
+                setRemoving(true)
+                dispatch.organization.removeOrganization()
+              }}
+            />
+          )}
         </Typography>
       }
     >
