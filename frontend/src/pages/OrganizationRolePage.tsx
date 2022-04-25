@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
+import { getActiveAccountId } from '../models/accounts'
+import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
 import { useParams, useHistory } from 'react-router-dom'
 import {
   makeStyles,
@@ -14,9 +15,9 @@ import {
   TextField,
   Chip,
 } from '@material-ui/core'
+
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { getActiveAccountId } from '../models/accounts'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
@@ -34,14 +35,12 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const { disabled, role, tags } = useSelector((state: ApplicationState) => {
-    const accountId = getActiveAccountId(state)
-    return {
-      disabled: state.organization.updating,
-      role: state.organization.roles.find(r => r.id === roleID) || DEFAULT_ROLE,
-      tags: selectTags(state, accountId),
-    }
-  })
+  const { disabled, roles, tags } = useSelector((state: ApplicationState) => ({
+    disabled: state.organization.updating,
+    roles: getOrganization(state).roles,
+    tags: selectTags(state, getActiveAccountId(state)),
+  }))
+  const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
   const [count, setCount] = useState<number>()
   const [saving, setSaving] = useState<boolean>(false)
@@ -73,7 +72,7 @@ export const OrganizationRolePage: React.FC = () => {
                   <Notice severity="danger" fullWidth gutterBottom>
                     You will be permanently deleting the role <i>{role.name}.</i>
                   </Notice>
-                  Any members with this role will be reset to the default member role.
+                  Any members with this role will loose access until they have been set to another role.
                 </>
               }
               onDelete={() => dispatch.organization.removeRole(form)}
@@ -110,13 +109,16 @@ export const OrganizationRolePage: React.FC = () => {
             fullWidth
             disabled={disabled || systemRole}
             label="Device access"
-            value={Boolean(form?.tag).toString()}
+            value={role.id === 'NONE' ? '-' : Boolean(form?.tag).toString()}
             variant="filled"
             onChange={event => {
               const tag = event.target.value === 'true' ? DEFAULT_ROLE.tag : undefined
               changeForm({ ...form, tag })
             }}
           >
+            <MenuItem value="-" disabled>
+              None
+            </MenuItem>
             <MenuItem value="false">All devices</MenuItem>
             <MenuItem value="true">Tagged devices</MenuItem>
           </TextField>
@@ -185,11 +187,11 @@ export const OrganizationRolePage: React.FC = () => {
         {Object.keys(PERMISSION).map(p => {
           const permission = p as IPermission
           const allowed = form.permissions.includes(permission)
-          if (systemRole && !allowed) return null
+          if ((systemRole || PERMISSION[p].system) && !allowed) return null
           return (
             <ListItemSetting
               key={p}
-              toggle={systemRole ? undefined : allowed}
+              toggle={systemRole || PERMISSION[p].system ? undefined : allowed}
               disabled={disabled}
               icon={PERMISSION[p].icon}
               label={PERMISSION[p].name}
@@ -221,7 +223,7 @@ export const OrganizationRolePage: React.FC = () => {
               const roleID = await dispatch.organization.setRole(form)
               setSaving(false)
               setForm(cloneDeep(form)) // reset change detection
-              history.push(`/account/organization/roles/${roleID}`)
+              history.push(`/organization/roles/${roleID}`)
             }}
           >
             {saving ? 'Saving...' : 'Save'}

@@ -95,11 +95,12 @@ export default createModel<RootModel>()({
 
           // deleting
         } else if (globalState.ui.setupDeletingDevice) {
-          const result = await devices.fetchSingle({ id: device.uid })
-          if (result) {
-            await sleep(2000)
-            await devices.fetch()
-          }
+          console.log('DELETE THIS DEVICE', device.uid)
+          await dispatch.connections.clearByDevice(device.uid)
+          await sleep(2000)
+          await devices.fetch()
+          await devices.fetchConnections()
+
           ui.set({
             setupDeletingDevice: false,
             successMessage: 'Device unregistered successfully!',

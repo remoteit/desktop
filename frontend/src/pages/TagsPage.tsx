@@ -8,7 +8,7 @@ import { Container } from '../components/Container'
 import { ColorSelect } from '../components/ColorSelect'
 import { findTagIndex } from '../helpers/utilHelper'
 import { Typography, List } from '@material-ui/core'
-import { getActiveAccountId, getActiveOrganizationMembership } from '../models/accounts'
+import { getActiveAccountId } from '../models/accounts'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -21,20 +21,17 @@ export const TagsPage: React.FC = () => {
   const getColor = useLabel()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
-  const { accountId, membership, deleting, updating, creating, canEdit, tags } = useSelector(
-    (state: ApplicationState) => {
-      const membership = getActiveOrganizationMembership(state)
-      return {
-        membership,
-        accountId: getActiveAccountId(state),
-        deleting: state.tags.deleting,
-        updating: state.tags.updating,
-        creating: state.tags.creating,
-        canEdit: canEditTags(membership),
-        tags: selectTags(state),
-      }
+  const { accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: ApplicationState) => {
+    const accountId = getActiveAccountId(state)
+    return {
+      accountId,
+      deleting: state.tags.deleting,
+      updating: state.tags.updating,
+      creating: state.tags.creating,
+      canEdit: canEditTags(state, accountId),
+      tags: selectTags(state),
     }
-  )
+  })
 
   useEffect(() => {
     analyticsHelper.page('TagsPage')
@@ -54,7 +51,7 @@ export const TagsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{membership?.organization.name || 'Personal'} Tags</Title>
+            <Title>Tags</Title>
             {canEdit && (
               <TagEditor
                 createOnly

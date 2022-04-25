@@ -1,6 +1,7 @@
 import { emit } from '../services/Controller'
 import { Theme } from '@material-ui/core'
 import { RootModel } from './rootModel'
+import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
@@ -16,6 +17,7 @@ const SAVED_STATES = [
   'drawerAccordion',
   'columns',
   'columnWidths',
+  'featureOverride',
 ]
 
 type UIState = {
@@ -36,6 +38,7 @@ type UIState = {
   columns: string[]
   columnWidths: ILookup<number>
   feature: ILookup<boolean> // will be set by license limit automatically
+  featureOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   redirect?: string
@@ -85,7 +88,8 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
-  feature: { tagging: false, saml: false },
+  feature: { tagging: false, saml: false, roles: false },
+  featureOverride: {},
   serviceContextMenu: undefined,
   globalTooltip: undefined,
   redirect: undefined,
@@ -107,7 +111,7 @@ export const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350 },
+  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350, organization: 350 },
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
@@ -121,19 +125,19 @@ export const defaultState: UIState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_, globalState) {
+    async init() {
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         dispatch.ui.setTheme(undefined)
       })
-
-      // restore state
+      await dispatch.ui.restoreState()
+    },
+    async restoreState(_, globalState) {
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(globalState, `ui-${key}`)
         if (value) states[key] = value
       })
-
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
     },
@@ -144,15 +148,15 @@ export default createModel<RootModel>()({
       }
     },
     async refreshAll() {
-      dispatch.devices.set({ from: 0 })
-      dispatch.tags.fetch()
-      dispatch.accounts.fetch()
-      dispatch.organization.fetch()
+      await dispatch.devices.set({ from: 0 })
+      await dispatch.accounts.fetch()
+      await dispatch.devices.fetch()
+      await dispatch.devices.fetchConnections()
       dispatch.sessions.fetch()
+      dispatch.tags.fetch()
       dispatch.licensing.fetch()
+      dispatch.organization.fetch()
       dispatch.announcements.fetch()
-      dispatch.devices.fetch()
-      dispatch.devices.fetchConnections()
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode
@@ -187,7 +191,6 @@ export default createModel<RootModel>()({
       const accordion = { ...state.ui.accordion, ...params }
       dispatch.ui.setPersistent({ accordion })
     },
-
     async setPersistent(params: ILookup<any>, state) {
       Object.keys(params).forEach(key => {
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
@@ -221,3 +224,12 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectFeature(state: ApplicationState): UIState['feature'] {
+  const { feature, featureOverride } = state.ui
+  let result = {}
+  Object.keys(feature).forEach(f => {
+    result[f] = featureOverride[f] === undefined ? !!feature[f] : !!featureOverride[f]
+  })
+  return result
+}

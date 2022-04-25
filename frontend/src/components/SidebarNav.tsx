@@ -1,8 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
+import { getDeviceModel } from '../models/accounts'
 import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
 import { selectConnections } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
@@ -49,8 +49,10 @@ export const SidebarNav: React.FC = () => {
               </ListItemSecondaryAction>
             )}
           </ListItemLocation>
+          <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
         </>
       )}
+
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
       <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="code" dense />

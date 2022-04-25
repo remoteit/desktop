@@ -2,7 +2,8 @@ import React, { useEffect } from 'react'
 import { getDeviceModel } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { getActiveOrganizationMembership } from '../models/accounts'
+import { getOrganization } from '../models/organization'
+import { getMembership } from '../models/accounts'
 import { makeStyles, Box, Typography, Link } from '@material-ui/core'
 import { DataCopy } from '../components/DataCopy'
 import { Body } from '../components/Body'
@@ -12,10 +13,10 @@ import { Help } from '../components/Help'
 // const defaultServices = [28, 4]
 
 export const SetupLinuxPage: React.FC = () => {
-  const { user, organization, activeMembership, registrationCommand } = useSelector((state: ApplicationState) => ({
+  const { user, organization, membership, registrationCommand } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
-    organization: state.organization,
-    activeMembership: getActiveOrganizationMembership(state),
+    organization: getOrganization(state),
+    membership: getMembership(state),
     registrationCommand: getDeviceModel(state).registrationCommand,
   }))
   // const [type, setType] = useState<'curl' | 'wget'>('wget')
@@ -24,10 +25,7 @@ export const SetupLinuxPage: React.FC = () => {
 
   let accountId = user?.id || ''
   let accountName = organization.name
-  if (activeMembership?.role === 'ADMIN') {
-    accountId = activeMembership.organization.id
-    accountName = activeMembership.organization.name
-  }
+  if (membership?.roleId === 'ADMIN') accountId = membership.account.id
 
   useEffect(() => {
     dispatch.devices.createRegistration({ services: [28], accountId }) // ssh

@@ -14,15 +14,15 @@ import {
 import { selectDeviceByAccount } from '../models/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { ListItemLocation } from '../components/ListItemLocation'
+import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { Link } from 'react-router-dom'
-import { Icon } from '../components/Icon'
+import { Icon } from './Icon'
 
 const CLAIM_CODE_LENGTH = 8
 
-export const RegisterButton: React.FC = () => {
+export const RegisterMenu: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
   const [el, setEl] = useState<Element | null>(null)
@@ -89,7 +89,7 @@ export const RegisterButton: React.FC = () => {
             component={Link}
           >
             <ListItemIcon>
-              <Icon name="hdd" size="md" fixedWidth />
+              <Icon name="laptop" size="sm" fixedWidth />
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
@@ -130,7 +130,7 @@ export const RegisterButton: React.FC = () => {
             <ListItemIcon>
               <Icon name="aws" size="md" type="brands" fixedWidth />
             </ListItemIcon>
-            <ListItemText primary="remote.it demo device" secondary={hasDemo && 'Already shared'} />
+            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </List>
         <Divider />

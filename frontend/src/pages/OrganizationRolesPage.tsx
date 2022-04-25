@@ -1,21 +1,27 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
+import { getOrganizationPermissions, getOrganization } from '../models/organization'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
-  const history = useHistory()
-  const { name, roles, members } = useSelector((state: ApplicationState) => state.organization)
+  const { roles, members, permissions } = useSelector((state: ApplicationState) => ({
+    ...getOrganization(state),
+    permissions: getOrganizationPermissions(state),
+  }))
 
   useEffect(() => {
     analyticsHelper.page('OrganizationRolesPage')
   }, [])
+
+  if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
 
   return (
     <Container
@@ -23,23 +29,31 @@ export const OrganizationRolesPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>Roles</Title>
-          <Chip label={name} size="small" onClick={() => history.push('/account/organization')} />
         </Typography>
       }
     >
       <Typography variant="subtitle1">
         <Title>Role</Title>
-        <IconButton icon="plus" to={'/account/organization/roles/add'} title="Add role" />
+        <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />
       </Typography>
       <List>
-        {roles.map(r => {
+        {roles.sort(systemSort).map(r => {
           if (r.disabled) return null
           const count = members.filter(m => m.roleId === r.id).length
           return (
             <ListItemLocation
               key={r.id}
-              title={r.name}
-              pathname={`/account/organization/roles/${r.id}`}
+              title={
+                <>
+                  {r.name}
+                  {r.system && (
+                    <sup>
+                      <Icon name="shield-alt" size="xxs" inline />
+                    </sup>
+                  )}
+                </>
+              }
+              pathname={`/organization/roles/${r.id}`}
               exactMatch
               disableIcon
               dense
@@ -53,4 +67,8 @@ export const OrganizationRolesPage: React.FC = () => {
       </List>
     </Container>
   )
+}
+
+function systemSort(a: IOrganizationRole, b: IOrganizationRole) {
+  return Number(b.system || 0) - Number(a.system || 0)
 }

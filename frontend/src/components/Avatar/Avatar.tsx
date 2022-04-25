@@ -38,7 +38,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, inline, tool
 
 const useStyles = makeStyles(({ palette }) => ({
   avatar: ({ size, color, button, inline }: { size: number; color: number; button?: boolean; inline?: boolean }) => ({
-    color: palette.white.main,
+    color: palette.alwaysWhite.main,
     fontSize: size * 0.625,
     height: size,
     width: size,

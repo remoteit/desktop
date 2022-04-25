@@ -1,19 +1,21 @@
 import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List, ListItem } from '@material-ui/core'
+import { Typography, List, ListItem, Divider } from '@material-ui/core'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { selectFeature } from '../models/ui'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
-  const { tests, informed, preferences, feature } = useSelector((state: ApplicationState) => ({
+  const { tests, informed, preferences, feature, featureOverride } = useSelector((state: ApplicationState) => ({
     ...state.licensing,
     preferences: state.backend.preferences,
+    featureOverride: selectFeature(state),
     feature: state.ui.feature,
   }))
   const { licensing, ui } = useDispatch<Dispatch>()
@@ -111,11 +113,18 @@ export const TestPage: React.FC = () => {
           <ListItemSetting
             hideIcon
             key={f}
-            label={`Enable ${f}`}
-            toggle={!!feature[f]}
-            onClick={() => ui.set({ feature: { ...feature, [f]: !feature[f] } })}
+            label={`${f} (default ${feature[f] ? 'enabled' : 'disabled'})`}
+            toggle={!!featureOverride[f]}
+            onClick={() => ui.setPersistent({ featureOverride: { ...featureOverride, [f]: !featureOverride[f] } })}
           />
         ))}
+        <Divider variant="inset" />
+        <ListItemSetting
+          hideIcon
+          button="Reset"
+          label="Reset feature overrides"
+          onButtonClick={() => ui.setPersistent({ featureOverride: {} })}
+        />
       </List>
       <Typography variant="subtitle1">Licensing Options</Typography>
       <List>

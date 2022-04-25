@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
 import { Typography, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
+import { getOrganization } from '../models/organization'
 import { useSelector } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -14,7 +15,7 @@ import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountAccessPage: React.FC = () => {
-  const members = useSelector((state: ApplicationState) => state.organization.members)
+  const members = useSelector((state: ApplicationState) => getOrganization(state).members)
 
   useEffect(() => {
     analyticsHelper.page('AccountAccessPage')

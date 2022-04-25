@@ -1,4 +1,5 @@
 import React from 'react'
+import { getOrganization } from '../../models/organization'
 import { List, Typography } from '@material-ui/core'
 import { UserListItem } from '../UserListItem'
 import { ShareDetails } from '../ShareDetails'
@@ -16,7 +17,7 @@ const sort = (users: IUser[]) => users.sort((a, b) => (a.email > b.email ? 1 : b
 
 export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users = [] }) => {
   const { access, isAccountOwner } = useSelector((state: ApplicationState) => ({
-    access: state.organization.members.map(m => m.user),
+    access: getOrganization(state).members.map(m => m.user),
     isAccountOwner: state.auth.user?.id === device?.accountId,
   }))
   const filtered = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))

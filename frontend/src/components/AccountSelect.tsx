@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { makeStyles, Chip, TextField, MenuItem, Divider, ListItem } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { thisOrganization, memberOrganization } from '../models/organization'
 import { getActiveAccountId } from '../models/accounts'
 import { spacing } from '../styling'
 import { useHistory } from 'react-router-dom'
@@ -15,16 +16,16 @@ export const AccountSelect: React.FC = () => {
     user: state.auth.user || { id: '', email: '' },
     activeId: getActiveAccountId(state),
     options: state.accounts.membership.map(m => ({
-      id: m.organization.id,
-      name: m.organization.name,
+      id: m.account.id,
+      name: memberOrganization(state.organization.all, m.account.id).name,
       roleId: m.roleId,
-      role: state.organization.roles.find(r => r.id === m.roleId)?.name || m.roleId,
+      roleName: m.roleName,
     })),
-    orgName: state.organization.name,
+    orgName: thisOrganization(state).name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
-  options.unshift({ id: user.id, name: orgName || 'Personal', roleId: 'OWNER', role: 'Owner' })
+  options.unshift({ id: user.id, name: orgName || 'Personal', roleId: 'OWNER', roleName: 'Owner' })
   if (options.length < 2) return null
 
   return (
@@ -50,7 +51,7 @@ export const AccountSelect: React.FC = () => {
         {options.map(option => (
           <MenuItem className={css.menu} value={option.id} key={option.id}>
             {option.name}
-            <Chip label={option.role} size="small" />
+            <Chip label={option.roleName} size="small" />
           </MenuItem>
         ))}
         <Divider className={css.divider} />

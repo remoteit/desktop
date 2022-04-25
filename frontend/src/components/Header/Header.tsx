@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { getOwnDevices, getActiveOrganizationMembership } from '../../models/accounts'
+import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
 import { makeStyles, useMediaQuery, Typography } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
 import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
+import { selectFeature } from '../../models/ui'
 import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
 import { attributeName } from '../../shared/nameHelper'
@@ -22,13 +23,13 @@ import { spacing } from '../../styling'
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
   const { searched, navigationBack, navigationForward, feature, device, editTags } = useSelector(
     (state: ApplicationState) => ({
-      feature: state.ui.feature,
+      feature: selectFeature(state),
       selected: state.ui.selected,
       searched: getDeviceModel(state).searched,
       navigationBack: state.ui.navigationBack,
       navigationForward: state.ui.navigationForward,
       device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-      editTags: canEditTags(getActiveOrganizationMembership(state)),
+      editTags: canEditTags(state, getActiveAccountId(state)),
     })
   )
   const { handleBack, handleForward } = useNavigation()

@@ -144,9 +144,7 @@ export default createModel<RootModel>()({
     async fetchConnections(_, state) {
       const userId = state.auth.user?.id
       if (!userId) return
-      const ids = state.backend.device.uid ? [state.backend.device.uid] : []
-      const options = { account: userId, ids: ids.concat(getConnectionIds(state)) }
-
+      const options = { account: userId, ids: getConnectionIds(state) }
       const gqlResponse = await graphQLFetchConnections(options)
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
@@ -155,8 +153,6 @@ export default createModel<RootModel>()({
 
       const connections = await graphQLAdaptor(connectionData, loginId, options.account, true)
       updateConnections(connections)
-      /// need to change this ⬇️ so that it saves to a different object
-      // await dispatch.accounts.mergeDevices({ devices: connections, accountId: userId })
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
 
       cleanOrphanConnections(options.ids)
@@ -205,7 +201,7 @@ export default createModel<RootModel>()({
       const options: gqlOptions = {
         size: 0,
         from: 0,
-        account: state.auth.user?.id || '',
+        account: getActiveAccountId(state),
         owner: true,
         tag: params.tag?.values.length ? params.tag : undefined,
       }
@@ -361,6 +357,7 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         await dispatch.connections.clearByDevice(device.id)
         await dispatch.devices.fetch()
+        await dispatch.devices.fetchConnections()
       }
       dispatch.devices.set({ destroying: false })
     },
@@ -375,7 +372,9 @@ export default createModel<RootModel>()({
         dispatch.devices.set({ transferring: true })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
+          await dispatch.connections.clearByDevice(data.device.id)
           await dispatch.devices.fetch()
+          await dispatch.devices.fetchConnections()
           dispatch.ui.set({ successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.` })
         }
         await dispatch.connections.clearByDevice(data.device.id)
@@ -415,6 +414,7 @@ export default createModel<RootModel>()({
   },
 })
 
+// TODO move to connection model?
 export const ROUTES: IRoute[] = [
   {
     key: 'failover',

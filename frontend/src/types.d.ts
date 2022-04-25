@@ -32,6 +32,7 @@ declare global {
     domain?: string
     require2FA?: boolean
     providers?: null | IOrganizationProvider[]
+    accountId?: string
   }
 
   type ILicenseChip = {

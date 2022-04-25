@@ -11,19 +11,27 @@ import { Avatar } from './Avatar'
 
 type Props = {
   member: IOrganizationMember
+  roles?: IOrganizationRole[]
   freeLicenses?: boolean
   removing?: boolean
   enterprise?: boolean
   onClick?: () => void
 }
 
-export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, enterprise, onClick }) => {
+export const OrganizationMember: React.FC<Props> = ({
+  member,
+  roles = [],
+  freeLicenses,
+  removing,
+  enterprise,
+  onClick,
+}) => {
   const dispatch = useDispatch<Dispatch>()
 
   return (
     <ListItem key={member.user.email} dense>
       <ListItemIcon>
-        <Avatar email={member.user.email} size={spacing.lg} />
+        <Avatar email={member.user.email} size={28} />
       </ListItemIcon>
       <ListItemText
         primary={member.user.email}
@@ -34,7 +42,12 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
         }
       />
       <ListItemSecondaryAction>
-        <RoleSelect member={member} />
+        <RoleSelect
+          roles={roles}
+          roleId={member.roleId}
+          license={member.license}
+          onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
+        />
         {!enterprise && (
           <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
             <LicenseSelect member={member} disabled={!freeLicenses} />

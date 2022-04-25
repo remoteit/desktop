@@ -311,7 +311,7 @@ declare global {
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string
 
-  type IPermission = 'CONNECT' | 'SCRIPTING' | 'MANAGE'
+  type IPermission = 'VIEW' | 'CONNECT' | 'SCRIPTING' | 'MANAGE' | 'ADMIN'
 
   type IUser = {
     id: string
@@ -336,15 +336,7 @@ declare global {
   type IUserRef = {
     id: string
     email: string
-  }
-
-  type IOrganization = {
-    id: string
-    name: string
-    created: Date
-    members?: IOrganizationMember[]
-    account?: IUserRef
-    licenses: ILicense[]
+    created?: Date
   }
 
   type IOrganizationMember = {
@@ -352,16 +344,15 @@ declare global {
     organizationId: string
     license: ILicenseTypes
     roleId: IOrganizationRoleIdType
-    // role?: IOrganizationRoleType
-    created: Date
+    created?: Date
   }
 
-  type IOrganizationMembership = {
-    organization: IOrganization
-    role?: IOrganizationRoleIdType
+  type IMembership = {
     roleId: IOrganizationRoleIdType
+    roleName: string
     created: Date
     license: ILicenseTypes
+    account: IUserRef
   }
 
   type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string
@@ -369,8 +360,6 @@ declare global {
   type IOrganizationRole = {
     id: string
     name: string
-    // created: Date
-    // updated: Date
     system?: boolean
     disabled?: boolean
     permissions: IPermission[]
@@ -383,6 +372,7 @@ declare global {
     grant?: IPermission[]
     revoke?: IPermission[]
     tag?: ITagFilter
+    accountId: string
   }
 
   type IGeo = {

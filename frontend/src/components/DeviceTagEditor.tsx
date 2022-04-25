@@ -2,7 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { selectMembershipFromDevice } from '../models/accounts'
+import { accountFromDevice } from '../models/accounts'
 import { selectTags, canEditTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
@@ -11,12 +11,11 @@ type Props = { device?: IDevice; button?: string }
 
 export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
   const { tags, accountId, canEdit } = useSelector((state: ApplicationState) => {
-    const membership = selectMembershipFromDevice(state, device)
-    const accountId = membership?.organization.id || state.auth.user?.id || ''
+    const accountId = accountFromDevice(state, device)
     return {
       accountId,
       tags: selectTags(state, accountId),
-      canEdit: canEditTags(membership),
+      canEdit: canEditTags(state, accountId),
     }
   })
   const dispatch = useDispatch<Dispatch>()

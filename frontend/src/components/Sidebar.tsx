@@ -3,7 +3,7 @@ import { SIDEBAR_WIDTH } from '../shared/constants'
 import { makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../services/Browser'
 import { RemoteManagement } from './RemoteManagement'
-import { RegisterButton } from '../buttons/RegisterButton'
+import { RegisterMenu } from './RegisterMenu'
 import { AccountSelect } from './AccountSelect'
 import { SidebarNav } from './SidebarNav'
 import { AvatarMenu } from './AvatarMenu'
@@ -17,9 +17,7 @@ export const Sidebar: React.FC = () => {
     <Box className={css.sidebar}>
       <section className={css.header}>
         <AvatarMenu />
-        <span className={css.header}>
-          <RegisterButton />
-        </span>
+        <RegisterMenu />
       </section>
       <AccountSelect />
       <SidebarNav />

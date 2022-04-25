@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
 import { getActiveAccountId } from './accounts'
+import { getOrganizationPermissions } from './organization'
 import {
   graphQLSetTag,
   graphQLAddTag,
@@ -112,7 +113,7 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ removing: true })
       eachSelectedDevice(state, selected, device => {
         const index = findTagIndex(device.tags, tag.name)
-        if (index >= 0) {
+        if (index !== -1) {
           count++
           device.tags.splice(index, 1)
           dispatch.accounts.setDevice({ id: device.id, device })
@@ -206,7 +207,7 @@ export function selectTags(state: ApplicationState, accountId?: string) {
   return state.tags.all[accountId] || []
 }
 
-export function canEditTags(membership?: IOrganizationMembership) {
-  const role = membership?.role || 'OWNER'
-  return ['OWNER', 'ADMIN'].includes(role)
+export function canEditTags(state: ApplicationState, accountId?: string) {
+  const permissions = getOrganizationPermissions(state, accountId)
+  return !!permissions?.includes('ADMIN')
 }

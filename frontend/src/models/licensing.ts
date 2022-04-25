@@ -10,6 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLLicenses, getOrganization } from './organization'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import humanize from 'humanize-duration'
@@ -21,6 +22,7 @@ export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
+export const ENTERPRISE_PLAN_ID = 'b44f92a6-a7b9-11eb-b094-02a962787033'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
@@ -36,51 +38,6 @@ export const LicenseLookup: ILicenseLookup[] = [
 ]
 
 const defaultLicense = LicenseLookup[0]
-
-export const graphQLLicenses = `
-  licenses {
-    id
-    updated
-    created
-    expiration
-    valid
-    quantity
-    plan {
-      id
-      name
-      description
-      duration
-      commercial
-      billing
-      product {
-        id
-        name
-        description
-      }
-    }
-    subscription {
-      total
-      status
-      price {
-        id
-        amount
-        currency
-        interval
-      }
-      card {
-        brand
-        month
-        year
-        last
-        name
-        email
-        phone
-        postal
-        country
-        expiration
-      }
-    }
-  }`
 
 type ILicensing = {
   initialized: boolean
@@ -223,7 +180,7 @@ export default createModel<RootModel>()({
           dispatch.licensing.set({ purchasing: undefined })
         }
       }
-      await dispatch.organization.fetch()
+      await dispatch.ui.refreshAll()
       setTimeout(() => dispatch.licensing.set({ purchasing: undefined }), 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
@@ -320,10 +277,16 @@ export function getLicenses(state: ApplicationState) {
   return licenses
 }
 
+// TODO fix so that it uses org licenses
 export function getFreeLicenses(state: ApplicationState) {
+  if (isEnterprise(state)) return 1
   const purchased = getRemoteitLicense(state)?.quantity || 0
-  const used = 1 + state.organization.members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
+  const used = 1 + getOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
   return Math.max(purchased - used, 0)
+}
+
+function isEnterprise(state: ApplicationState) {
+  return getLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
 }
 
 export function getLimits(state: ApplicationState) {

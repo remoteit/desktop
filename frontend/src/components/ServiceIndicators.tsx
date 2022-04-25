@@ -1,6 +1,6 @@
 import React from 'react'
 import { ServiceMiniState } from './ServiceMiniState'
-import { Tooltip, Chip, Box, makeStyles } from '@material-ui/core'
+import { Chip, Box, makeStyles } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 
@@ -31,11 +31,7 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
           onClick={serviceContextMenu => ui.set({ serviceContextMenu })}
         />
       ))}
-      {!!extra && (
-        <Tooltip title={`${device.services.length} services total`} arrow placement="top">
-          <Chip label={`+${extra}`} size="small" />
-        </Tooltip>
-      )}
+      {!!extra && <Chip label={`+${extra}`} size="small" />}
     </Box>
   )
 }
