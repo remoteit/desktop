@@ -70,7 +70,7 @@ export default createModel<RootModel>()({
           account: m.organization.account,
         })),
       })
-      if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
+      if (!membership.find(m => m.organization.account.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
       }
     },

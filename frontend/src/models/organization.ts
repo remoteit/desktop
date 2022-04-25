@@ -179,7 +179,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init() {
       await dispatch.organization.fetch()
-      dispatch.organization.setActive({ initialized: true })
+      dispatch.organization.set({ initialized: true })
     },
 
     async fetch(_, state) {
@@ -208,7 +208,6 @@ export default createModel<RootModel>()({
       let orgs: IOrganizationAccountState['all'] = {}
       ids.forEach((id, index) => {
         const org = data[`_${index}`].organization
-        console.log('ORGANIZATION DATA', org)
         if (org) orgs[id] = parseOrganization(org)
       })
       return orgs
@@ -226,13 +225,13 @@ export default createModel<RootModel>()({
     },
 
     async setSAML(params: { enabled: boolean; metadata?: string }) {
-      dispatch.organization.setActive({ updating: true })
+      dispatch.organization.set({ updating: true })
       const result = await graphQLSetSAML(params)
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: params.enabled ? 'SAML enabled and metadata uploaded.' : 'SAML disabled.' })
       }
       await dispatch.organization.fetch()
-      dispatch.organization.setActive({ updating: false })
+      dispatch.organization.set({ updating: false })
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {
