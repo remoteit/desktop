@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { getFreeLicenses } from '../models/licensing'
+import { getFreeLicenses } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { getOrganization } from '../models/organization'

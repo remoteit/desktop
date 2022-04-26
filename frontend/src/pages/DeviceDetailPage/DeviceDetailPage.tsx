@@ -3,13 +3,13 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
 import { deviceAttributes } from '../../components/Attributes'
-import { selectFeature } from '../../models/ui'
+import { selectLimitsLookup } from '../../models/organization'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Gutters } from '../../components/Gutters'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const feature = useSelector((state: ApplicationState) => selectFeature(state))
+  const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state, device?.accountId))
 
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
@@ -20,7 +20,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
   return (
     <DeviceHeaderMenu device={device}>
       <Gutters>
-        <DataDisplay attributes={deviceAttributes} device={device} feature={feature} />
+        <DataDisplay attributes={deviceAttributes} device={device} limits={limits} />
       </Gutters>
     </DeviceHeaderMenu>
   )

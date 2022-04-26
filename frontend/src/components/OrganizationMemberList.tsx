@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { getFreeLicenses } from '../models/licensing'
+import { getFreeLicenses } from '../models/plans'
 import { OrganizationMember } from '../components/OrganizationMember'
 import { IOrganizationState } from '../models/organization'
 import { List } from '@material-ui/core'

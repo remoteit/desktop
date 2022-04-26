@@ -219,7 +219,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, licensing, ui, devices } = store.dispatch
+    const { accounts, sessions, plans, ui, devices } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -310,7 +310,7 @@ class CloudController {
 
       case 'LICENSE_UPDATED':
         this.log('LICENSE UPDATED EVENT', event)
-        licensing.updated()
+        plans.updated()
         break
     }
     return event

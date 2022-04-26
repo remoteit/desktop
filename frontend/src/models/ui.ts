@@ -1,7 +1,6 @@
 import { emit } from '../services/Controller'
 import { Theme } from '@material-ui/core'
 import { RootModel } from './rootModel'
-import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
@@ -37,8 +36,7 @@ type UIState = {
   drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
-  feature: ILookup<boolean> // will be set by license limit automatically
-  featureOverride: ILookup<boolean>
+  limitsOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   redirect?: string
@@ -88,8 +86,7 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
-  feature: { tagging: false, saml: false, roles: false },
-  featureOverride: {},
+  limitsOverride: {},
   serviceContextMenu: undefined,
   globalTooltip: undefined,
   redirect: undefined,
@@ -154,7 +151,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.fetchConnections()
       dispatch.sessions.fetch()
       dispatch.tags.fetch()
-      dispatch.licensing.fetch()
+      dispatch.plans.fetch()
       dispatch.organization.fetch()
       dispatch.announcements.fetch()
     },
@@ -224,12 +221,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function selectFeature(state: ApplicationState): UIState['feature'] {
-  const { feature, featureOverride } = state.ui
-  let result = {}
-  Object.keys(feature).forEach(f => {
-    result[f] = featureOverride[f] === undefined ? !!feature[f] : !!featureOverride[f]
-  })
-  return result
-}

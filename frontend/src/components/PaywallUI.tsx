@@ -1,6 +1,7 @@
 import React from 'react'
-import { makeStyles, Tooltip, Box } from '@material-ui/core'
+import { Tooltip, Box } from '@material-ui/core'
 import { ApplicationState } from '../store'
+import { selectLimitsLookup } from '../models/organization'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
@@ -11,29 +12,28 @@ type Props = {
 }
 
 export const PaywallUI: React.FC<Props> = ({ limitName = '', title, to = '/account/plans', children, ...props }) => {
-  const feature = useSelector((state: ApplicationState) => state.ui.feature)
+  const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state))
   const history = useHistory()
-  const css = useStyles()
 
-  if (feature[limitName]) return <>{children}</>
+  if (limits[limitName]) return <>{children}</>
 
   return (
-    <Tooltip title={title} placement="left" arrow>
-      <Box className={css.limited} {...props} onClick={() => history.push(to)}>
+    <Tooltip title={title} placement="top" arrow>
+      <Box {...props} onClick={() => history.push(to)}>
         {children}
       </Box>
     </Tooltip>
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  limited: {
-    background: `repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 10px,
-      ${palette.warningHighlight.main} 10px,
-      ${palette.warningHighlight.main} 20px
-    )`,
-  },
-}))
+// const useStyles = makeStyles(({ palette }) => ({
+//   limited: {
+//     background: `repeating-linear-gradient(
+//       45deg,
+//       transparent,
+//       transparent 10px,
+//       ${palette.warningHighlight.main} 10px,
+//       ${palette.warningHighlight.main} 20px
+//     )`,
+//   },
+// }))

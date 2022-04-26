@@ -3,22 +3,25 @@ import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography, List } from '@material-ui/core'
 import { selectOwner } from '../models/organization'
-import { REMOTEIT_PRODUCT_ID } from '../models/licensing'
-import { getOrganization } from '../models/organization'
+import { REMOTEIT_PRODUCT_ID } from '../models/plans'
+import { selectPermissions, getOrganization } from '../models/organization'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
 import { SeatsSetting } from '../components/SeatsSetting'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Body } from '../components/Body'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembersPage: React.FC = () => {
-  const { organization, license, owner } = useSelector((state: ApplicationState) => {
+  const { organization, permissions, license, owner } = useSelector((state: ApplicationState) => {
     const organization = getOrganization(state)
     return {
       organization,
+      permissions: selectPermissions(state),
       license: organization.licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null,
       owner: selectOwner(state),
     }
@@ -28,6 +31,15 @@ export const OrganizationMembersPage: React.FC = () => {
   useEffect(() => {
     analyticsHelper.page('OrganizationPage')
   }, [])
+
+  if (!permissions?.includes('ADMIN'))
+    return (
+      <Body center>
+        <Typography variant="body2" color="textSecondary">
+          Please contact the organization owner to request admin privileges.
+        </Typography>
+      </Body>
+    )
 
   return (
     <Container

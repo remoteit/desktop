@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Redirect } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
-import { getOrganizationPermissions, getOrganization } from '../models/organization'
+import { selectPermissions, getOrganization } from '../models/organization'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -14,7 +14,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 export const OrganizationRolesPage: React.FC = () => {
   const { roles, members, permissions } = useSelector((state: ApplicationState) => ({
     ...getOrganization(state),
-    permissions: getOrganizationPermissions(state),
+    permissions: selectPermissions(state),
   }))
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export const OrganizationRolesPage: React.FC = () => {
         <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />
       </Typography>
       <List>
-        {roles.sort(systemSort).map(r => {
+        {roles.map(r => {
           if (r.disabled) return null
           const count = members.filter(m => m.roleId === r.id).length
           return (
@@ -48,7 +48,7 @@ export const OrganizationRolesPage: React.FC = () => {
                   {r.name}
                   {r.system && (
                     <sup>
-                      <Icon name="shield-alt" size="xxs" inline />
+                      <Icon name="lock" size="xxxs" type="solid" color="grayDark" inline />
                     </sup>
                   )}
                 </>
@@ -67,8 +67,4 @@ export const OrganizationRolesPage: React.FC = () => {
       </List>
     </Container>
   )
-}
-
-function systemSort(a: IOrganizationRole, b: IOrganizationRole) {
-  return Number(b.system || 0) - Number(a.system || 0)
 }

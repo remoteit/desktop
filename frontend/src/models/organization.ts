@@ -9,8 +9,8 @@ import {
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getActiveAccountId, getActiveUser, getAccountIds, getMembership } from './accounts'
-import { getRemoteitLicense, parseLicense } from './licensing'
+import { getActiveAccountId, getActiveUser, getAccountIds, getMembership, isUserAccount } from './accounts'
+import { REMOTEIT_PRODUCT_ID, selectRemoteitLicense, selectBaseLimits } from './plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -38,16 +38,9 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
     disabled: true,
   },
-  {
-    id: 'NONE',
-    name: 'No Access',
-    system: true,
-    permissions: [],
-    disabled: true,
-  },
 ]
 
-export const graphQLLicenses = `
+export const graphQLLicensesLimits = `
   licenses {
     id
     updated
@@ -90,6 +83,14 @@ export const graphQLLicenses = `
         expiration
       }
     }
+  }
+  limits {
+    name
+    value
+    actual
+    license {
+      id
+    }
   }`
 
 export const graphQLOrganization = `
@@ -126,7 +127,6 @@ export const graphQLOrganization = `
         email
       }
     }
-    ${graphQLLicenses}
   }`
 
 export type IOrganizationState = {
@@ -135,6 +135,7 @@ export type IOrganizationState = {
   created?: Date
   account?: IUserRef
   licenses: ILicense[]
+  limits: ILimit[]
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
   require2FA: boolean
@@ -160,6 +161,7 @@ const defaultState: IOrganizationState = {
   members: [],
   roles: [...SYSTEM_ROLES],
   licenses: [],
+  limits: [],
 }
 
 type IOrganizationAccountState = {
@@ -188,6 +190,7 @@ export default createModel<RootModel>()({
         (id, index) => `
         _${index}: account(id: "${id}") {
           ${graphQLOrganization}
+          ${graphQLLicensesLimits}
         }`
       )
       const result = await graphQLBasicRequest(
@@ -207,8 +210,10 @@ export default createModel<RootModel>()({
       const data = result?.data?.data?.login
       let orgs: IOrganizationAccountState['all'] = {}
       ids.forEach((id, index) => {
-        const org = data[`_${index}`].organization
-        if (org) orgs[id] = parseOrganization(org)
+        const { organization, licenses, limits } = data[`_${index}`]
+        orgs[id] = parseOrganization(organization)
+        orgs[id].licenses = licenses?.map(l => parseLicense(l))
+        orgs[id].limits = limits
       })
       return orgs
     },
@@ -373,13 +378,28 @@ export function memberOrganization(organization: ILookup<IOrganizationState>, ac
   return organization[accountId || ''] || { ...defaultState }
 }
 
-export function getOrganizationPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
+export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
   const membership = getMembership(state, accountId)
   const organization = getOrganization(state, accountId)
   return organization.roles.find(r => r.id === membership.roleId)?.permissions
 }
 
-export function parseOrganization(data: any = {}): IOrganizationState {
+export function selectLimitsLookup(state: ApplicationState, accountId?: string): ILookup<ILimit['value']> {
+  const limits = selectBaseLimits(state, accountId)
+  const notUser = !isUserAccount(state, accountId)
+
+  const { limitsOverride } = state.ui
+  let result = {}
+
+  limits.forEach(l => {
+    result[l.name] = limitsOverride[l.name] === undefined || notUser ? l.value : limitsOverride[l.name]
+  })
+
+  return result
+}
+
+export function parseOrganization(data: any): IOrganizationState {
+  if (!data) return { ...defaultState }
   return {
     ...data,
     created: new Date(data.created),
@@ -398,13 +418,29 @@ export function parseOrganization(data: any = {}): IOrganizationState {
         created: new Date(r.created),
       })),
     ],
-    licenses: data.licenses?.map(l => parseLicense(l)),
+  }
+}
+
+export function parseLicense(data) {
+  if (!data) return null
+  return {
+    ...data,
+    created: new Date(data.created),
+    updated: new Date(data.updated),
+    expiration: data.expiration && new Date(data.expiration),
+    subscription: data.subscription && {
+      ...data.subscription,
+      card: data.subscription.card && {
+        ...data.subscription.card,
+        expiration: data.subscription.card.expiration && new Date(data.subscription.card.expiration),
+      },
+    },
   }
 }
 
 export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {
   const user = getActiveUser(state)
-  const license = getRemoteitLicense(state)
+  const license = selectRemoteitLicense(state)
   return (
     user && {
       created: new Date(user.created || ''),

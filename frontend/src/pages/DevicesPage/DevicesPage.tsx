@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { selectFeature } from '../../models/ui'
+import { selectLimitsLookup } from '../../models/organization'
 import { getDeviceModel } from '../../models/accounts'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import { DeviceActionsBar } from '../../components/DeviceActionsBar'
@@ -21,7 +21,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
       selected: state.ui.selected,
       attributes: masterAttributes
         .concat(deviceAttributes)
-        .filter(a => a.show(selectFeature(state)) && state.ui.columns.includes(a.id) && !a.required),
+        .filter(a => a.show(selectLimitsLookup(state)) && state.ui.columns.includes(a.id) && !a.required),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
       fetching: getDeviceModel(state).fetching,
       columnWidths: state.ui.columnWidths,

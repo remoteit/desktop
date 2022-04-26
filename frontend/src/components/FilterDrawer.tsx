@@ -6,8 +6,8 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
-import { selectFeature } from '../models/ui'
 import { AccordionMenu } from './AccordionMenu'
+import { selectLimitsLookup } from '../models/organization'
 import { selectTags } from '../models/tags'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
@@ -43,7 +43,7 @@ export const FilterDrawer: React.FC = () => {
     state: getDeviceModel(state),
     open: state.ui.drawerMenu === 'FILTER',
     tags: selectTags(state).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
-    feature: selectFeature(state),
+    feature: selectLimitsLookup(state),
   }))
 
   const update = values => {

@@ -8,9 +8,7 @@ import { Gutters } from '../components/Gutters'
 import { Plans } from '../components/Plans'
 
 export const PlansPage: React.FC = () => {
-  const { initialized } = useSelector((state: ApplicationState) => ({
-    initialized: state.licensing.initialized,
-  }))
+  const { initialized } = useSelector((state: ApplicationState) => state.plans)
 
   if (!initialized) return <LoadingMessage message="Loading plans..." />
 

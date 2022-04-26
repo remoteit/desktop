@@ -1,5 +1,5 @@
 import React from 'react'
-import { PERSONAL_PLAN_ID } from '../models/licensing'
+import { PERSONAL_PLAN_ID } from '../models/plans'
 import {
   makeStyles,
   Divider,
@@ -27,7 +27,7 @@ type Props = {
 export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
-  const purchasing = useSelector((state: ApplicationState) => state.licensing.purchasing === form.planId)
+  const purchasing = useSelector((state: ApplicationState) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
 
@@ -46,8 +46,8 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   }
 
   const onSubmit = () => {
-    if (license?.plan?.billing) dispatch.licensing.updateSubscription(form)
-    else dispatch.licensing.subscribe(form)
+    if (license?.plan?.billing) dispatch.plans.updateSubscription(form)
+    else dispatch.plans.subscribe(form)
   }
 
   const unchanged = () =>
@@ -71,7 +71,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         <List className={css.list}>
           <ListItem>
             <Button
-              onClick={() => dispatch.licensing.unsubscribe(license?.plan.id)}
+              onClick={() => dispatch.plans.unsubscribe(license?.plan.id)}
               color="primary"
               variant="contained"
               disabled={purchasing}

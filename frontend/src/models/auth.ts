@@ -248,7 +248,7 @@ export default createModel<RootModel>()({
         return
       }
       dispatch.backend.set({ initialized: true })
-      dispatch.licensing.init()
+      dispatch.plans.init()
       await cloudController.init()
       await dispatch.accounts.init()
       await dispatch.organization.init()
@@ -286,7 +286,7 @@ export default createModel<RootModel>()({
       dispatch.logs.reset()
       dispatch.search.reset()
       dispatch.announcements.reset()
-      dispatch.licensing.reset()
+      dispatch.plans.reset()
       dispatch.contacts.reset()
       dispatch.billing.reset()
       dispatch.backend.reset()

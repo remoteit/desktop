@@ -1,5 +1,5 @@
 import React from 'react'
-import { selectLicense, lookupLicenseProductId, humanizeDays } from '../models/licensing'
+import { selectFullLicense, lookupLicenseProductId, humanizeDays } from '../models/plans'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
@@ -19,7 +19,7 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
   } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
-    return selectLicense(state, { productId })
+    return selectFullLicense(state, { productId })
   })
 
   if (!license) return null

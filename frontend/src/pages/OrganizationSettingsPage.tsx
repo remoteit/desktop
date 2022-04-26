@@ -16,7 +16,7 @@ import {
   ListItemSecondaryAction,
 } from '@material-ui/core'
 import { getMembership } from '../models/accounts'
-import { memberOrganization, getOrganizationPermissions } from '../models/organization'
+import { memberOrganization, selectPermissions } from '../models/organization'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
@@ -40,7 +40,7 @@ export const OrganizationSettingsPage: React.FC = () => {
         domain: organization.domain || '',
         defaultDomain: state.auth.user?.email.split('@')[1],
         samlOnly: !!organization.providers?.includes('SAML'),
-        permissions: getOrganizationPermissions(state),
+        permissions: selectPermissions(state),
       }
     }
   )
@@ -173,7 +173,7 @@ export const OrganizationSettingsPage: React.FC = () => {
               subLabel="All organization members will not be able to login with email/password or Google."
               disabled={organization.require2FA || !organization.verified}
               onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
-              icon="shield"
+              icon="shield-alt"
             />
           </List>
           <Typography variant="subtitle1">SAML Configuration</Typography>

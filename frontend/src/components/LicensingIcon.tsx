@@ -1,5 +1,5 @@
 import React from 'react'
-import { REMOTEIT_PRODUCT_ID, AWS_PRODUCT_ID } from '../models/licensing'
+import { REMOTEIT_PRODUCT_ID, AWS_PRODUCT_ID } from '../models/plans'
 import { Icon } from './Icon'
 
 export const LicensingIcon: React.FC<{ license: ILicense }> = ({ license }) => {

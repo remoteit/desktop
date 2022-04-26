@@ -11,7 +11,7 @@ import {
 import { useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { getRemoteitLicense } from '../models/licensing'
+import { selectRemoteitLicense } from '../models/plans'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -19,15 +19,15 @@ export const CreditCard: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: ApplicationState) => ({
-    license: getRemoteitLicense(state),
-    updating: state.licensing.updating,
+    license: selectRemoteitLicense(state),
+    updating: state.plans.updating,
   }))
   const card = license?.subscription?.card
   const expired = !!card && card.expiration < new Date()
-  const update = () => dispatch.licensing.updateCreditCard(license?.subscription?.card?.last)
+  const update = () => dispatch.plans.updateCreditCard(license?.subscription?.card?.last)
 
   React.useEffect(() => {
-    if (location.pathname.includes('success')) dispatch.licensing.restore()
+    if (location.pathname.includes('success')) dispatch.plans.restore()
   }, [])
 
   if (!card) return null

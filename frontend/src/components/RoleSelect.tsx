@@ -1,6 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
-import { TextField, TextFieldProps, MenuItem, Divider } from '@material-ui/core'
+import { TextField, TextFieldProps, MenuItem } from '@material-ui/core'
 
 type Props = {
   size?: TextFieldProps['size']
@@ -11,7 +10,6 @@ type Props = {
 }
 
 export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'small', onSelect }) => {
-  const history = useHistory()
   const disabled = roleId === 'OWNER' || license !== 'LICENSED'
 
   return (
@@ -30,17 +28,6 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'sm
           {r.name}
         </MenuItem>
       ))}
-      <Divider />
-      <MenuItem
-        key="custom"
-        dense
-        onClick={event => {
-          event.preventDefault()
-          history.push(`/organization/roles/${roleId}`)
-        }}
-      >
-        Custom...
-      </MenuItem>
     </TextField>
   )
 }

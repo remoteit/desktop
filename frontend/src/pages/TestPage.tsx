@@ -4,21 +4,22 @@ import { Typography, List, ListItem, Divider } from '@material-ui/core'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
+import { selectBaseLimits } from '../models/plans'
 import { ListItemSetting } from '../components/ListItemSetting'
-import { selectFeature } from '../models/ui'
+import { selectLimitsLookup } from '../models/organization'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
-  const { tests, informed, preferences, feature, featureOverride } = useSelector((state: ApplicationState) => ({
-    ...state.licensing,
+  const { tests, informed, preferences, limits, limitsOverride } = useSelector((state: ApplicationState) => ({
+    ...state.plans,
     preferences: state.backend.preferences,
-    featureOverride: selectFeature(state),
-    feature: state.ui.feature,
+    limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
+    limits: selectBaseLimits(state, state.auth.user?.id),
   }))
-  const { licensing, ui } = useDispatch<Dispatch>()
+  const { plans, ui } = useDispatch<Dispatch>()
 
   const onSave = (url: string) => {
     emit('preferences', { ...preferences, apiGraphqlURL: url })
@@ -109,15 +110,20 @@ export const TestPage: React.FC = () => {
       </List>
       <Typography variant="subtitle1">Features</Typography>
       <List>
-        {Object.keys(feature).map(f => (
-          <ListItemSetting
-            hideIcon
-            key={f}
-            label={`${f} (default ${feature[f] ? 'enabled' : 'disabled'})`}
-            toggle={!!featureOverride[f]}
-            onClick={() => ui.setPersistent({ featureOverride: { ...featureOverride, [f]: !featureOverride[f] } })}
-          />
-        ))}
+        {limits.map(l => {
+          if (typeof l.value === 'boolean')
+            return (
+              <ListItemSetting
+                hideIcon
+                key={l.name}
+                label={`${l.name} (default ${l.value ? 'enabled' : 'disabled'})`}
+                toggle={limitsOverride[l.name]}
+                onClick={() =>
+                  ui.setPersistent({ limitsOverride: { ...limitsOverride, [l.name]: !limitsOverride[l.name] } })
+                }
+              />
+            )
+        })}
         <Divider variant="inset" />
         <ListItemSetting
           hideIcon
@@ -132,20 +138,20 @@ export const TestPage: React.FC = () => {
           hideIcon
           label="Override licenses and limits"
           toggle={tests.limit}
-          onClick={() => licensing.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
+          onClick={() => plans.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
         />
-        <ListItemSetting hideIcon label="Clear licenses and limits" onClick={() => licensing.testClearLicensing()} />
+        <ListItemSetting hideIcon label="Clear licenses and limits" onClick={() => plans.testClearLicensing()} />
         <ListItemSetting
           hideIcon
           label="Set service licenses"
           subLabel="Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY"
-          onClick={() => licensing.testServiceLicensing()}
+          onClick={() => plans.testServiceLicensing()}
         />
         <ListItemSetting
           hideIcon
           label="License message cleared"
           toggle={informed}
-          onClick={() => licensing.set({ informed: !informed })}
+          onClick={() => plans.set({ informed: !informed })}
         />
       </List>
     </Container>

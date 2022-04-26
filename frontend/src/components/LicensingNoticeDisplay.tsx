@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListItem, Button, Tooltip, IconButton } from '@material-ui/core'
-import { PERSONAL_PLAN_ID } from '../models/licensing'
+import { PERSONAL_PLAN_ID } from '../models/plans'
 import { Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useDispatch } from 'react-redux'
@@ -24,9 +24,9 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
   managePath = '/settings/plans',
   fullWidth,
 }) => {
-  const { licensing } = useDispatch<Dispatch>()
+  const { plans } = useDispatch<Dispatch>()
 
-  const onClose = () => licensing.set({ informed: true })
+  const onClose = () => plans.set({ informed: true })
 
   let notice: React.ReactElement | null = null
   const title = `Your ${license?.plan.description} plan of ${license?.plan.product.name}`
