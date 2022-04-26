@@ -7,6 +7,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -27,9 +28,11 @@ export const OrganizationRolesPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Typography variant="h1">
-          <Title>Roles</Title>
-        </Typography>
+        <Gutters top="sm">
+          <Typography variant="h2" gutterBottom>
+            <Title>Roles</Title>
+          </Typography>
+        </Gutters>
       }
     >
       <Typography variant="subtitle1">

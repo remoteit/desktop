@@ -292,6 +292,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             paddingRight: spacing.sm,
             marginLeft: spacing.sm,
             marginRight: spacing.sm,
+            maxWidth: `calc(100% - ${spacing.sm * 2}px)`,
           },
         },
       },

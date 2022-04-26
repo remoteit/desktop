@@ -319,7 +319,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
-      const result = await graphQLClaimDevice(code)
+      const result = await graphQLClaimDevice(code, getActiveAccountId(state))
       if (state.auth.user) await dispatch.accounts.setActive(state.auth.user.id)
 
       if (result !== 'ERROR') {

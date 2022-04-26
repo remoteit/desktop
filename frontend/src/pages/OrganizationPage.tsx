@@ -37,7 +37,7 @@ export const OrganizationPage: React.FC = () => {
       header={
         <Gutters top="sm">
           {license && <ListSubheader disableGutters>{license?.plan.description} Plan</ListSubheader>}
-          <Typography variant="h3" gutterBottom>
+          <Typography variant="h2" gutterBottom>
             <Title>{organization.name || '...'}</Title>
           </Typography>
         </Gutters>
