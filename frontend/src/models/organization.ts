@@ -10,7 +10,7 @@ import {
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getActiveAccountId, getActiveUser, getAccountIds, getMembership, isUserAccount } from './accounts'
-import { REMOTEIT_PRODUCT_ID, selectRemoteitLicense, selectBaseLimits } from './plans'
+import { selectRemoteitLicense, selectBaseLimits } from './plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -254,7 +254,7 @@ export default createModel<RootModel>()({
       const member = members[0]
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
-        member.organizationId,
+        organization.id,
         member.roleId,
         member.license
       )
