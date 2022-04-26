@@ -1,11 +1,11 @@
 import React, { useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
-import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
+import { makeStyles, Button, TextField, MenuItem, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { makeStyles } from '@material-ui/core/styles'
-import { ScanNetwork } from '../ScanNetwork'
 import { spacing, fontSizes } from '../../styling'
+import { ScanNetwork } from '../ScanNetwork'
+import { Icon } from '../Icon'
 import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -91,7 +91,7 @@ export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) 
           {selectedLoading ? (
             <>
               Scanning
-              <CircularProgress size={fontSizes.lg} color="inherit" />
+              <Icon name="spinner-third" type="solid" spin inline />
             </>
           ) : (
             'Scan'
