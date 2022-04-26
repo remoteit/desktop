@@ -39,6 +39,7 @@ type UIState = {
   limitsOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
+  registrationCommand?: string
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -89,6 +90,7 @@ export const defaultState: UIState = {
   limitsOverride: {},
   serviceContextMenu: undefined,
   globalTooltip: undefined,
+  registrationCommand: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,

@@ -52,7 +52,6 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
-  registrationCommand?: string
 }
 
 export const defaultState: IDeviceState = {
@@ -78,7 +77,6 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
-  registrationCommand: undefined,
 }
 
 type IDeviceAccountState = {
@@ -346,7 +344,7 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         const { registrationCommand } = result?.data?.data?.login?.account
         console.log('CREATE REGISTRATION', registrationCommand)
-        dispatch.devices.set({ registrationCommand })
+        dispatch.ui.set({ registrationCommand })
       }
     },
 

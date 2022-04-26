@@ -251,7 +251,7 @@ class CloudController {
           // if new unknown device discovered
           if (!target.device && target.id === target.deviceId && state === 'active') {
             const state = store.getState()
-            if (target.owner.id === getActiveAccountId(state) && getDeviceModel(state).registrationCommand) {
+            if (target.owner.id === getActiveAccountId(state) && state.ui.registrationCommand) {
               ui.set({
                 redirect: `/devices/${target.deviceId}`,
                 successMessage: `${target.name} registered successfully!`,
