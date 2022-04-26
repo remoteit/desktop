@@ -17,7 +17,7 @@ export const AccountSelect: React.FC = () => {
     activeId: getActiveAccountId(state),
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
-      name: memberOrganization(state.organization.all, m.account.id).name,
+      name: memberOrganization(state.organization.all, m.account.id).name || 'Personal',
       roleId: m.roleId,
       roleName: m.roleName,
     })),

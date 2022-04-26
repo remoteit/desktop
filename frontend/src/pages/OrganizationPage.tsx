@@ -7,7 +7,6 @@ import { List, Typography, ListSubheader } from '@material-ui/core'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectRemoteitLicense } from '../models/plans'
 import { selectLimitsLookup } from '../models/organization'
-import { PaywallUI } from '../components/PaywallUI'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
@@ -44,7 +43,7 @@ export const OrganizationPage: React.FC = () => {
       }
     >
       {!admin && (
-        <Notice severity="warning" gutterTop>
+        <Notice severity="info" gutterTop>
           You need admin privileges to change this organization.
         </Notice>
       )}

@@ -3,6 +3,7 @@ import {
   graphQLSetOrganization,
   graphQLRemoveOrganization,
   graphQLSetMembers,
+  graphQLRemoveMembers,
   graphQLSetSAML,
   graphQLCreateRole,
   graphQLUpdateRole,
@@ -271,7 +272,7 @@ export default createModel<RootModel>()({
     },
 
     async removeMember(member: IOrganizationMember, state) {
-      const result = await graphQLSetMembers([member.user.email], member.organizationId, 'REMOVE')
+      const result = await graphQLRemoveMembers([member.user.email], member.organizationId)
       const organization = getOrganization(state)
       if (result !== 'ERROR') {
         dispatch.organization.setActive({
