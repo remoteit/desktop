@@ -28,12 +28,12 @@ export const LicenseLookup: ILicenseLookup[] = [
   {
     productId: REMOTEIT_PRODUCT_ID,
     platform: undefined,
-    managePath: '/settings/plans',
+    managePath: '/account/plans',
   },
   {
     productId: AWS_PRODUCT_ID,
     platform: 1185,
-    managePath: '/settings/plans',
+    managePath: '/account/plans',
   },
 ]
 

@@ -72,7 +72,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (chip && chip.show) {
     color = chip.colorName
     title = chip.disabled ? chip.name : title
-    if (chip.disabled) clickHandler = () => history.push('/settings/plans')
+    if (chip.disabled) clickHandler = () => history.push('/account/plans')
     variant = 'text'
   }
 

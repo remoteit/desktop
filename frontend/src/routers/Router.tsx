@@ -15,9 +15,7 @@ import { DownloadDesktopPage } from '../pages/DownloadDesktopPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
-import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
-import { AccountAccessPage } from '../pages/AccountAccessPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationRolePage } from '../pages/OrganizationRolePage'
@@ -192,20 +190,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           primary={<SettingsPage />}
           secondary={
             <Switch>
-              <Route path={['/settings/membership/share', '/settings/access/share']}>
-                <AccountSharePage />
-              </Route>
-
-              <Route path="/settings/access">
-                <AccountAccessPage />
-              </Route>
-
               <Route path="/settings/notifications">
                 <NotificationsPage />
-              </Route>
-
-              <Route path="/settings/plans">
-                <PlansPage />
               </Route>
 
               <Route path="/settings/reports">

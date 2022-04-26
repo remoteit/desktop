@@ -21,7 +21,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
   noticeType,
   license,
   serviceLimit,
-  managePath = '/settings/plans',
+  managePath = '/account/plans',
   fullWidth,
 }) => {
   const { plans } = useDispatch<Dispatch>()
