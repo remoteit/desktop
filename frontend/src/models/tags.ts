@@ -56,6 +56,11 @@ export default createModel<RootModel>()({
       if (tags) dispatch.tags.setTags({ tags, accountId })
     },
 
+    async fetchIfEmpty(_, state) {
+      const accountId = getActiveAccountId(state)
+      if (!state.tags.all[accountId]) dispatch.tags.fetch()
+    },
+
     async parse(result: AxiosResponse<any> | undefined) {
       const all = result?.data?.data?.login?.account?.tags
       if (!all) return
@@ -138,21 +143,20 @@ export default createModel<RootModel>()({
     },
 
     async update({ tag, accountId }: { tag: ITag; accountId: string }, state) {
-      const tags = selectTags(state)
       dispatch.tags.set({ updating: tag.name })
+      const tags = selectTags(state, accountId)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
       tags[index] = tag
       dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ updating: undefined })
+      dispatch.devices.fetch()
     },
 
     async rename({ tag, name, accountId }: { tag: ITag; name: string; accountId: string }, state) {
-      const tags = selectTags(state)
       dispatch.tags.set({ updating: tag.name })
-      const result = await graphQLRenameTag(tag.name, name, accountId)
-      if (result === 'ERROR') return
+      const tags = selectTags(state, accountId)
       const found = findTagIndex(tags, name)
       const index = findTagIndex(tags, tag.name)
       if (found >= 0 && tag.name.toLowerCase() !== name.toLowerCase()) {

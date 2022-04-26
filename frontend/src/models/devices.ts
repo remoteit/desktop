@@ -141,6 +141,11 @@ export default createModel<RootModel>()({
       set({ fetching: false, append: false, initialized: true })
     },
 
+    async fetchIfEmpty(_, state) {
+      const deviceModel = getDeviceModel(state)
+      if (!deviceModel.initialized) await dispatch.devices.fetch()
+    },
+
     async fetchConnections(_, state) {
       const userId = state.auth.user?.id
       if (!userId) return

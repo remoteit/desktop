@@ -42,9 +42,8 @@ export const AccountSelect: React.FC = () => {
           const id = event.target.value as string
           if (id) {
             await accounts.setActive(id.toString())
-            devices.set({ query: '', searched: false, from: 0 })
-            devices.fetch()
-            tags.fetch()
+            devices.fetchIfEmpty()
+            tags.fetchIfEmpty()
           }
         }}
       >
