@@ -272,8 +272,8 @@ export default createModel<RootModel>()({
     },
 
     async removeMember(member: IOrganizationMember, state) {
-      const result = await graphQLRemoveMembers([member.user.email], member.organizationId)
       const organization = getOrganization(state)
+      const result = await graphQLRemoveMembers([member.user.email], organization.id)
       if (result !== 'ERROR') {
         dispatch.organization.setActive({
           members: organization.members.filter(m => m.user.email !== member.user.email),

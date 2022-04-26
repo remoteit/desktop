@@ -20,7 +20,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
 
   useEffect(() => {
     setForm(getDefaults())
-  }, [])
+  }, [license])
 
   const getDefaults = () => {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]

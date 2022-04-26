@@ -16,7 +16,7 @@ const SAVED_STATES = [
   'drawerAccordion',
   'columns',
   'columnWidths',
-  'featureOverride',
+  'limitsOverride',
 ]
 
 type UIState = {

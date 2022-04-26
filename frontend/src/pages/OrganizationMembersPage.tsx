@@ -3,7 +3,7 @@ import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography, List } from '@material-ui/core'
 import { selectOwner } from '../models/organization'
-import { REMOTEIT_PRODUCT_ID } from '../models/plans'
+import { selectRemoteitLicense } from '../models/plans'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
@@ -11,7 +11,6 @@ import { SeatsSetting } from '../components/SeatsSetting'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -22,14 +21,14 @@ export const OrganizationMembersPage: React.FC = () => {
     return {
       organization,
       permissions: selectPermissions(state),
-      license: organization.licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null,
+      license: selectRemoteitLicense(state) || null,
       owner: selectOwner(state),
     }
   })
   const enterprise = !license?.plan?.billing
 
   useEffect(() => {
-    analyticsHelper.page('OrganizationPage')
+    analyticsHelper.page('OrganizationMembersPage')
   }, [])
 
   if (!permissions?.includes('ADMIN'))

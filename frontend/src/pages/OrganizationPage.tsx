@@ -7,6 +7,7 @@ import { List, Typography, ListSubheader } from '@material-ui/core'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectRemoteitLicense } from '../models/plans'
 import { selectLimitsLookup } from '../models/organization'
+import { PaywallUI } from '../components/PaywallUI'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
@@ -58,14 +59,16 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
-        <ListItemLocation
-          title="Roles"
-          icon="user"
-          pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
-          disabled={!limits.roles || !admin}
-          showDisabled
-          dense
-        />
+        <PaywallUI limitName="roles" title="Roles are available for Business and Enterprise plans">
+          <ListItemLocation
+            title="Roles"
+            icon="user"
+            pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
+            disabled={!limits.roles || !admin}
+            showDisabled
+            dense
+          />
+        </PaywallUI>
         <ListItemLocation
           title="Tags"
           pathname="/organization/tags"

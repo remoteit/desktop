@@ -129,7 +129,7 @@ export const TestPage: React.FC = () => {
           hideIcon
           button="Reset"
           label="Reset feature overrides"
-          onButtonClick={() => ui.setPersistent({ featureOverride: {} })}
+          onButtonClick={() => ui.setPersistent({ limitsOverride: {} })}
         />
       </List>
       <Typography variant="subtitle1">Licensing Options</Typography>

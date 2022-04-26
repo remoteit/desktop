@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip, Box } from '@material-ui/core'
+import { Tooltip, TooltipProps, Box } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { selectLimitsLookup } from '../models/organization'
 import { useSelector } from 'react-redux'
@@ -9,16 +9,24 @@ type Props = {
   limitName?: string
   title: string
   to?: string
+  placement?: TooltipProps['placement']
 }
 
-export const PaywallUI: React.FC<Props> = ({ limitName = '', title, to = '/account/plans', children, ...props }) => {
+export const PaywallUI: React.FC<Props> = ({
+  limitName = '',
+  title,
+  to = '/account/plans',
+  placement,
+  children,
+  ...props
+}) => {
   const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state))
   const history = useHistory()
 
   if (limits[limitName]) return <>{children}</>
 
   return (
-    <Tooltip title={title} placement="top" arrow>
+    <Tooltip title={title} placement={placement} enterDelay={600} arrow>
       <Box {...props} onClick={() => history.push(to)}>
         {children}
       </Box>
