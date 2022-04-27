@@ -21,39 +21,40 @@ export const SidebarNav: React.FC = () => {
   }))
   const css = useStyles({ sessions })
 
+  if (remoteUI)
+    return (
+      <List className={css.list}>
+        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
+        <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
+      </List>
+    )
+
   return (
     <List className={css.list}>
-      {remoteUI ? (
-        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
-      ) : (
-        <>
-          <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
-            <ListItemSecondaryAction>
-              {!!connections && (
-                <Tooltip title="Active" placement="top" arrow>
-                  <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
-                </Tooltip>
-              )}
-              {!!sessions && (
-                <Tooltip title="Connected" placement="top" arrow>
-                  <Chip size="small" label={sessions.toLocaleString()} className={css.sessions} color="primary" />
-                </Tooltip>
-              )}
-            </ListItemSecondaryAction>
-          </ListItemLocation>
-          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
-            {!!devices && (
-              <ListItemSecondaryAction>
-                <Tooltip title="Total" placement="top" arrow>
-                  <Chip size="small" label={devices.toLocaleString()} />
-                </Tooltip>
-              </ListItemSecondaryAction>
-            )}
-          </ListItemLocation>
-          <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
-        </>
-      )}
-
+      <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
+        <ListItemSecondaryAction>
+          {!!connections && (
+            <Tooltip title="Active" placement="top" arrow>
+              <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
+            </Tooltip>
+          )}
+          {!!sessions && (
+            <Tooltip title="Connected" placement="top" arrow>
+              <Chip size="small" label={sessions.toLocaleString()} className={css.sessions} color="primary" />
+            </Tooltip>
+          )}
+        </ListItemSecondaryAction>
+      </ListItemLocation>
+      <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
+        {!!devices && (
+          <ListItemSecondaryAction>
+            <Tooltip title="Total" placement="top" arrow>
+              <Chip size="small" label={devices.toLocaleString()} />
+            </Tooltip>
+          </ListItemSecondaryAction>
+        )}
+      </ListItemLocation>
+      <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
       <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="code" dense />
