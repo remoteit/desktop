@@ -1,5 +1,5 @@
 import React from 'react'
-import { humanizeDays } from '../models/licensing'
+import { humanizeDays } from '../models/plans'
 import { makeStyles, LinearProgress, Typography, Box } from '@material-ui/core'
 import { spacing } from '../styling'
 

@@ -16,7 +16,7 @@ import {
   ListItemSecondaryAction,
 } from '@material-ui/core'
 import { getMembership } from '../models/accounts'
-import { memberOrganization, getOrganizationPermissions } from '../models/organization'
+import { memberOrganization, selectPermissions, selectLimitsLookup } from '../models/organization'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
@@ -29,7 +29,7 @@ import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationSettingsPage: React.FC = () => {
-  const { updating, domain, defaultDomain, samlOnly, isThisOrg, organization, permissions } = useSelector(
+  const { updating, domain, defaultDomain, samlOnly, isThisOrg, organization, limits, permissions } = useSelector(
     (state: ApplicationState) => {
       const membership = getMembership(state)
       const organization = memberOrganization(state.organization.all, membership.account.id)
@@ -40,7 +40,8 @@ export const OrganizationSettingsPage: React.FC = () => {
         domain: organization.domain || '',
         defaultDomain: state.auth.user?.email.split('@')[1],
         samlOnly: !!organization.providers?.includes('SAML'),
-        permissions: getOrganizationPermissions(state),
+        limits: selectLimitsLookup(state),
+        permissions: selectPermissions(state),
       }
     }
   )
@@ -103,7 +104,7 @@ export const OrganizationSettingsPage: React.FC = () => {
           onSave={name => dispatch.organization.setOrganization({ name: name.toString(), accountId: organization.id })}
         />
       </List>
-      {isThisOrg && (
+      {isThisOrg && limits.saml && (
         <>
           <Typography variant="subtitle1">Authentication</Typography>
           <List>
@@ -173,7 +174,7 @@ export const OrganizationSettingsPage: React.FC = () => {
               subLabel="All organization members will not be able to login with email/password or Google."
               disabled={organization.require2FA || !organization.verified}
               onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
-              icon="shield"
+              icon="shield-alt"
             />
           </List>
           <Typography variant="subtitle1">SAML Configuration</Typography>

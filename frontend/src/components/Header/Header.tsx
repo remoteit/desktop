@@ -5,7 +5,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
 import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
-import { selectFeature } from '../../models/ui'
+import { selectLimitsLookup } from '../../models/organization'
 import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
 import { attributeName } from '../../shared/nameHelper'
@@ -23,7 +23,7 @@ import { spacing } from '../../styling'
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
   const { searched, navigationBack, navigationForward, feature, device, editTags } = useSelector(
     (state: ApplicationState) => ({
-      feature: selectFeature(state),
+      feature: selectLimitsLookup(state),
       selected: state.ui.selected,
       searched: getDeviceModel(state).searched,
       navigationBack: state.ui.navigationBack,

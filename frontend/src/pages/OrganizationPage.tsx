@@ -1,23 +1,26 @@
 import React, { useEffect } from 'react'
 import { Redirect } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { List, Typography } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { getOrganizationPermissions, getOrganization } from '../models/organization'
-import { selectFeature } from '../models/ui'
+import { List, Typography, ListSubheader } from '@material-ui/core'
+import { selectPermissions, getOrganization } from '../models/organization'
+import { selectRemoteitLicense } from '../models/plans'
+import { selectLimitsLookup } from '../models/organization'
 import { PaywallUI } from '../components/PaywallUI'
 import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
-  const { initialized, permissions, feature, organization } = useSelector((state: ApplicationState) => ({
-    initialized: state.organization.initialized,
-    permissions: getOrganizationPermissions(state),
-    feature: selectFeature(state),
+  const { initialized, permissions, limits, organization, license } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
+    initialized: state.organization.initialized,
+    permissions: selectPermissions(state),
+    limits: selectLimitsLookup(state),
+    license: selectRemoteitLicense(state),
   }))
 
   useEffect(() => {
@@ -27,20 +30,21 @@ export const OrganizationPage: React.FC = () => {
   if (initialized && !organization.id) return <Redirect to={'/organization/empty'} />
 
   const admin = !!permissions?.includes('ADMIN')
-  // const license = organization?.licenses?.find(l => l.subscription?.status === 'ACTIVE')
-  // const plan = license?.plan
 
   return (
     <Container
       gutterBottom
       header={
-        <Typography variant="h1">
-          <Title>{organization.name || '...'}</Title>
-        </Typography>
+        <Gutters top="sm">
+          {license && <ListSubheader disableGutters>{license?.plan.description} Plan</ListSubheader>}
+          <Typography variant="h2" gutterBottom>
+            <Title>{organization.name || '...'}</Title>
+          </Typography>
+        </Gutters>
       }
     >
       {!admin && (
-        <Notice severity="warning" gutterTop>
+        <Notice severity="info" gutterTop>
           You need admin privileges to change this organization.
         </Notice>
       )}
@@ -55,35 +59,32 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
-        <PaywallUI limitName="roles" title="Business plan required to use custom tag based roles and permissions.">
+        <PaywallUI limitName="roles" title="Roles are available for Business and Enterprise plans">
           <ListItemLocation
             title="Roles"
-            icon="shield-alt"
+            icon="user"
             pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
-            disabled={!feature.roles || !admin}
+            disabled={!limits.roles || !admin}
             showDisabled
             dense
           />
         </PaywallUI>
-        <PaywallUI limitName="tagging" title="Business plan required to use custom tag based roles and permissions.">
-          <ListItemLocation
-            title="Tags"
-            pathname="/organization/tags"
-            icon="tag"
-            disabled={!feature.tagging || !admin}
-            dense
-          />
-        </PaywallUI>
-        <PaywallUI limitName="saml" title="Business plan required for SAML or a custom Domain.">
-          <ListItemLocation
-            title="Settings"
-            icon="sliders-h"
-            pathname="/organization/saml"
-            disabled={!feature.saml || !admin}
-            showDisabled
-            dense
-          />
-        </PaywallUI>
+        <ListItemLocation
+          title="Tags"
+          pathname="/organization/tags"
+          icon="tag"
+          disabled={!limits.tagging || !admin}
+          showDisabled
+          dense
+        />
+        <ListItemLocation
+          title="Settings"
+          icon="sliders-h"
+          pathname="/organization/saml"
+          disabled={!admin}
+          showDisabled
+          dense
+        />
       </List>
     </Container>
   )

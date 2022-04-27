@@ -5,9 +5,9 @@ import { PlanCard } from './PlanCard'
 import { makeStyles } from '@material-ui/core'
 import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
-import { getRemoteitLicense } from '../models/licensing'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID } from '../models/licensing'
+import { selectRemoteitLicense } from '../models/plans'
+import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID } from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { windowOpen } from '../services/Browser'
@@ -56,9 +56,9 @@ export const Plans: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { plans, license, purchasing } = useSelector((state: ApplicationState) => ({
-    plans: state.licensing.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
-    purchasing: state.licensing.purchasing,
-    license: getRemoteitLicense(state),
+    plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
+    purchasing: state.plans.purchasing,
+    license: selectRemoteitLicense(state),
   }))
   const getDefaults = () => {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
@@ -71,15 +71,15 @@ export const Plans: React.FC = () => {
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
-  const enterprise = !license?.plan?.billing
-  const personal = license?.plan?.id === PERSONAL_PLAN_ID
+  const enterprise = !!license && !license.plan.billing
+  const personal = !license || license.plan.id === PERSONAL_PLAN_ID
 
   React.useEffect(() => {
     setForm(getDefaults())
   }, [license])
 
   React.useEffect(() => {
-    if (location.pathname.includes('success')) dispatch.licensing.restore()
+    if (location.pathname.includes('success')) dispatch.plans.restore()
   }, [])
 
   return (

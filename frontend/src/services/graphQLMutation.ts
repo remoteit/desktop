@@ -137,6 +137,15 @@ export async function graphQLSetMembers(
   )
 }
 
+export async function graphQLRemoveMembers(email: string[], accountId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($accountId: String, $email: [String!]!) {
+        removeMember(accountId: $accountId, email: $email)
+      }`,
+    { accountId, email }
+  )
+}
+
 export async function graphQLLeaveMembership(id: string) {
   return await graphQLBasicRequest(
     ` mutation query($id: ID!) {
@@ -146,15 +155,15 @@ export async function graphQLLeaveMembership(id: string) {
   )
 }
 
-export async function graphQLClaimDevice(code: string) {
+export async function graphQLClaimDevice(code: string, accountId?: string) {
   return await graphQLBasicRequest(
-    ` mutation query($code: String!) {
-        claimDevice(code: $code) {
+    ` mutation query($code: String!, $accountId: String) {
+        claimDevice(code: $code, accountId: $accountId) {
           id
           name
         }
       }`,
-    { code }
+    { code, accountId }
   )
 }
 

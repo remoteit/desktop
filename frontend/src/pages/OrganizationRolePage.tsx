@@ -197,7 +197,7 @@ export const OrganizationRolePage: React.FC = () => {
               label={PERMISSION[p].name}
               subLabel={PERMISSION[p].description}
               onClick={
-                systemRole
+                systemRole || PERMISSION[p].system
                   ? undefined
                   : () => {
                       if (allowed) {

@@ -1,8 +1,7 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { getRemoteitLicense } from './licensing'
+import { selectRemoteitLicense } from './plans'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { SYSTEM_ROLES } from './organization'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
@@ -159,12 +158,6 @@ export function accountFromDevice(state: ApplicationState, device?: IDevice) {
   return device?.owner.id || getActiveAccountId(state)
 }
 
-// export function selectOrganizationRoleId(state: ApplicationState, accountId?: string) {
-//   accountId = accountId || getActiveAccountId(state)
-//   const membership = state.accounts.membership.find(m => m.organization.id === accountId)
-//   return membership?.roleId
-// }
-
 export function isUserAccount(state: ApplicationState, accountId?: string) {
   return (accountId || getActiveAccountId(state)) === state.auth.user?.id
 }
@@ -193,7 +186,7 @@ export function getMembership(state: ApplicationState, accountId?: string): IMem
   const thisMembership = () => ({
     roleId: 'OWNER',
     roleName: 'Owner',
-    license: getRemoteitLicense(state)?.valid ? 'LICENSED' : 'UNLICENSED',
+    license: selectRemoteitLicense(state)?.valid ? 'LICENSED' : 'UNLICENSED',
     created: state.auth.user?.created || new Date(),
     account: {
       id: state.auth.user?.id || '',

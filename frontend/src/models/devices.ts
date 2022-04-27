@@ -52,7 +52,6 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
-  registrationCommand?: string
 }
 
 export const defaultState: IDeviceState = {
@@ -78,7 +77,6 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
-  registrationCommand: undefined,
 }
 
 type IDeviceAccountState = {
@@ -139,6 +137,11 @@ export default createModel<RootModel>()({
 
       if (!error) dispatch.search.updateSearch()
       set({ fetching: false, append: false, initialized: true })
+    },
+
+    async fetchIfEmpty(_, state) {
+      const deviceModel = getDeviceModel(state)
+      if (!deviceModel.initialized) await dispatch.devices.fetch()
     },
 
     async fetchConnections(_, state) {
@@ -319,7 +322,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
-      const result = await graphQLClaimDevice(code)
+      const result = await graphQLClaimDevice(code, getActiveAccountId(state))
       if (state.auth.user) await dispatch.accounts.setActive(state.auth.user.id)
 
       if (result !== 'ERROR') {
@@ -341,7 +344,7 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         const { registrationCommand } = result?.data?.data?.login?.account
         console.log('CREATE REGISTRATION', registrationCommand)
-        dispatch.devices.set({ registrationCommand })
+        dispatch.ui.set({ registrationCommand })
       }
     },
 

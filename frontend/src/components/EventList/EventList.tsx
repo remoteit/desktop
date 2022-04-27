@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { List, Box, Button, makeStyles, Typography } from '@material-ui/core'
 import { fontSizes, spacing } from '../../styling'
-import { getLimit, humanizeDays } from '../../models/licensing'
+import { selectLimit, humanizeDays } from '../../models/plans'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
 
@@ -19,7 +19,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
     useSelector((state: ApplicationState) => ({
       ...state.logs,
       user: state.auth.user,
-      logLimit: getLimit('log-limit', state) || 'P1W',
+      logLimit: selectLimit('log-limit', state) || 'P1W',
     }))
 
   const fetchMore = () => {

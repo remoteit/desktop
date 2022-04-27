@@ -9,7 +9,7 @@ import {
   Collapse,
   Divider,
   Button,
-  Link,
+  Chip,
   Typography,
 } from '@material-ui/core'
 import { Icon } from '../Icon'
@@ -84,10 +84,17 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
         <Typography variant="subtitle1" gutterBottom>
           Add a service
         </Typography>
-        <Link onClick={toggleAll} color="inherit" component="button" className={css.toggle}>
-          {allClosed ? 'Expand All' : 'Close All'}
-          {allClosed ? <Icon name="chevron-down" inline /> : <Icon name="chevron-up" inline />}
-        </Link>
+        <Chip
+          size="small"
+          onClick={toggleAll}
+          className={css.chip}
+          label={
+            <>
+              {allClosed ? 'Expand All' : 'Close All'}
+              {allClosed ? <Icon name="chevron-down" size="xs" inline /> : <Icon name="chevron-up" size="xs" inline />}
+            </>
+          }
+        />
       </div>
       <List>
         {data.map((ip, row) => (
@@ -156,12 +163,8 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     width: '100%',
   },
-  toggle: {
-    padding: '6px 22px 0px 22px',
-    '& .MuiSvgIcon-root': {
-      marginBottom: -6,
-      marginLeft: spacing.sm,
-    },
+  chip: {
+    marginRight: spacing.md,
   },
   port: {
     paddingLeft: 70,

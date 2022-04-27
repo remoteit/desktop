@@ -10,7 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { graphQLLicenses, getOrganization } from './organization'
+import { getOrganization, selectLimitsLookup } from './organization'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import humanize from 'humanize-duration'
@@ -28,22 +28,20 @@ export const LicenseLookup: ILicenseLookup[] = [
   {
     productId: REMOTEIT_PRODUCT_ID,
     platform: undefined,
-    managePath: '/settings/plans',
+    managePath: '/account/plans',
   },
   {
     productId: AWS_PRODUCT_ID,
     platform: 1185,
-    managePath: '/settings/plans',
+    managePath: '/account/plans',
   },
 ]
 
 const defaultLicense = LicenseLookup[0]
 
-type ILicensing = {
+type IPlans = {
   initialized: boolean
   plans: IPlan[]
-  licenses: ILicense[]
-  limits: ILimit[]
   updating?: string
   purchasing?: string
   informed: boolean
@@ -56,11 +54,9 @@ type ILicensing = {
   }
 }
 
-const defaultState: ILicensing = {
+const defaultState: IPlans = {
   initialized: false,
   plans: [],
-  licenses: [],
-  limits: [],
   updating: undefined,
   purchasing: undefined,
   informed: false,
@@ -71,18 +67,18 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init() {
-      await dispatch.licensing.fetch()
-      dispatch.licensing.set({ initialized: true })
+      await dispatch.plans.fetch()
+      dispatch.plans.set({ initialized: true })
     },
 
     async restore(_, globalState) {
-      const license = getRemoteitLicense(globalState)
+      const license = selectRemoteitLicense(globalState)
       const last = license?.subscription?.card?.last
       const planId = license?.plan.id
 
-      dispatch.licensing.set({
-        purchasing: localStorage.getItem('licensing.purchasing') !== planId ? planId : undefined,
-        updating: localStorage.getItem('licensing.updating') === last ? last : undefined,
+      dispatch.plans.set({
+        purchasing: localStorage.getItem('plans.purchasing') !== planId ? planId : undefined,
+        updating: localStorage.getItem('plans.updating') === last ? last : undefined,
       })
     },
     async fetch() {
@@ -103,22 +99,10 @@ export default createModel<RootModel>()({
                   interval
                 }
               }          
-              login {
-                ${graphQLLicenses}
-                limits {
-                  name
-                  value
-                  actual
-                  license {
-                    id
-                  }
-                }
-              }
             }`
         )
         graphQLGetErrors(result)
-        await dispatch.licensing.parse(result)
-        await dispatch.licensing.limitFeatures()
+        await dispatch.plans.parse(result)
       } catch (error) {
         await apiError(error)
       }
@@ -127,32 +111,20 @@ export default createModel<RootModel>()({
     async parse(gqlResponse: AxiosResponse<any> | void, state) {
       if (!gqlResponse) return
       const data = gqlResponse?.data?.data
-      await dispatch.licensing.set({
+      await dispatch.plans.set({
         plans: data.plans,
-        licenses: data?.login.licenses.map(l => parseLicense(l)),
-        limits: data?.login.limits,
         purchasing: undefined,
         updating: undefined,
       })
-      console.log('LICENSING', data)
-    },
-
-    async limitFeatures(_, globalState) {
-      const limits = getLimits(globalState)
-      const feature = { ...globalState.ui.feature }
-      limits.forEach(l => {
-        if (feature[l.name] !== undefined) feature[l.name] = l.value
-      })
-      dispatch.ui.set({ feature })
     },
 
     async subscribe(form: IPurchase, globalState) {
-      dispatch.licensing.set({ purchasing: form.planId })
-      localStorage.setItem('licensing.purchasing', form.planId || '')
+      dispatch.plans.set({ purchasing: form.planId })
+      localStorage.setItem('plans.purchasing', form.planId || '')
 
-      const license = getRemoteitLicense(globalState)
+      const license = selectRemoteitLicense(globalState)
       if (license?.subscription) {
-        await dispatch.licensing.unsubscribe(form.planId)
+        await dispatch.plans.unsubscribe(form.planId)
       }
       const result = await graphQLSubscribe(form)
       if (result !== 'ERROR') {
@@ -161,7 +133,7 @@ export default createModel<RootModel>()({
         if (checkout?.url) window.location.href = checkout.url
         else {
           dispatch.ui.set({ errorMessage: 'Error purchasing license' })
-          dispatch.licensing.set({ purchasing: undefined })
+          dispatch.plans.set({ purchasing: undefined })
         }
       }
     },
@@ -171,30 +143,30 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
         return
       }
-      dispatch.licensing.set({ purchasing: planId })
+      dispatch.plans.set({ purchasing: planId })
       const result = await graphQLUpdateSubscription({ priceId, quantity })
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
         if (!success) {
           dispatch.ui.set({ errorMessage: 'Subscription update failed, please contact support.' })
-          dispatch.licensing.set({ purchasing: undefined })
+          dispatch.plans.set({ purchasing: undefined })
         }
       }
       await dispatch.ui.refreshAll()
-      setTimeout(() => dispatch.licensing.set({ purchasing: undefined }), 30 * 1000)
+      setTimeout(() => dispatch.plans.set({ purchasing: undefined }), 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
 
     async unsubscribe(planId: string | undefined) {
-      dispatch.licensing.set({ purchasing: planId })
+      dispatch.plans.set({ purchasing: planId })
       await graphQLUnsubscribe()
       dispatch.devices.fetch()
       console.log('UNSUBSCRIBE')
     },
 
     async updateCreditCard(last: string | undefined) {
-      dispatch.licensing.set({ updating: last || true })
-      localStorage.setItem('licensing.updating', last || '')
+      dispatch.plans.set({ updating: last || true })
+      localStorage.setItem('plans.updating', last || '')
       const result = await graphQLCreditCard()
       if (result !== 'ERROR') {
         const card = result?.data?.data?.updateCreditCard
@@ -204,8 +176,8 @@ export default createModel<RootModel>()({
     },
 
     async updated() {
-      await dispatch.licensing.fetch()
-      dispatch.licensing.set({ purchasing: undefined, updating: undefined })
+      await dispatch.plans.fetch()
+      dispatch.plans.set({ purchasing: undefined, updating: undefined })
       dispatch.ui.set({ successMessage: 'Subscription updated.' })
     },
 
@@ -231,56 +203,36 @@ export default createModel<RootModel>()({
     },
 
     async testClearLicensing() {
-      dispatch.licensing.set({
+      dispatch.plans.set({
         licenses: [],
         limits: [],
       })
     },
   }),
   reducers: {
-    reset(state: ILicensing) {
+    reset(state: IPlans) {
       state = { ...defaultState }
       return state
     },
-    set(state: ILicensing, params: ILookup<any>) {
+    set(state: IPlans, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },
 })
 
-export function parseLicense(data) {
-  if (!data) return null
-  return {
-    ...data,
-    created: new Date(data.created),
-    updated: new Date(data.updated),
-    expiration: data.expiration && new Date(data.expiration),
-    subscription: data.subscription && {
-      ...data.subscription,
-      card: data.subscription.card && {
-        ...data.subscription.card,
-        expiration: data.subscription.card.expiration && new Date(data.subscription.card.expiration),
-      },
-    },
-  }
-}
-
-export function getRemoteitLicense(state: ApplicationState): ILicense | null {
+export function selectRemoteitLicense(state: ApplicationState): ILicense | null {
   return getLicenses(state).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 }
 
 export function getLicenses(state: ApplicationState) {
-  let licenses: ILicense[]
-  if (state.licensing.tests.license) licenses = state.licensing.tests.licenses
-  else licenses = state.licensing.licenses
-  return licenses
+  if (state.plans.tests.license) return state.plans.tests.licenses
+  else return getOrganization(state).licenses
 }
 
-// TODO fix so that it uses org licenses
 export function getFreeLicenses(state: ApplicationState) {
   if (isEnterprise(state)) return 1
-  const purchased = getRemoteitLicense(state)?.quantity || 0
+  const purchased = selectRemoteitLicense(state)?.quantity || 0
   const used = 1 + getOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
   return Math.max(purchased - used, 0)
 }
@@ -289,17 +241,17 @@ function isEnterprise(state: ApplicationState) {
   return getLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
 }
 
-export function getLimits(state: ApplicationState) {
-  if (state.licensing.tests.limit) return state.licensing.tests.limits
-  else return state.licensing.limits
+export function selectBaseLimits(state: ApplicationState, accountId?: string) {
+  if (state.plans.tests.limit) return state.plans.tests.limits
+  else return getOrganization(state, accountId).limits
 }
 
-export function getLimit(name: string, state: ApplicationState) {
-  return getLimits(state).find(limit => limit.name === name)?.value
+export function selectLimit(name: string, state: ApplicationState) {
+  return selectBaseLimits(state).find(limit => limit.name === name)?.value
 }
 
 export function getInformed(state: ApplicationState) {
-  return state.licensing.tests.limit ? false : state.licensing.informed
+  return state.plans.tests.limit ? false : state.plans.informed
 }
 
 export function lookupLicenseManagePath(productId?: string) {
@@ -314,12 +266,12 @@ export function lookupLicenseProductId(device?: IDevice) {
   return lookup.productId
 }
 
-export function selectLicense(
+export function selectFullLicense(
   state: ApplicationState,
   { productId, license }: { productId?: string; license?: ILicense }
 ) {
   license = license || getLicenses(state).find(l => l.plan.product.id === productId)
-  const limits = getLimits(state)
+  const limits = selectBaseLimits(state)
   const informed = getInformed(state)
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
@@ -352,9 +304,9 @@ export function selectLicenses(state: ApplicationState): { licenses: ILicense[];
     licenses: getLicenses(state).map(license => ({
       ...license,
       managePath: lookupLicenseManagePath(license.plan.product.id),
-      limits: getLimits(state).filter(limit => limit.license?.id === license.id),
+      limits: selectBaseLimits(state).filter(limit => limit.license?.id === license.id),
     })),
-    limits: getLimits(state).filter(limit => !limit.license),
+    limits: selectBaseLimits(state).filter(limit => !limit.license),
   }
 }
 
@@ -364,7 +316,7 @@ export function selectLicenseIndicator(state: ApplicationState) {
   let indicators = 0
   const { licenses } = selectLicenses(state)
   for (var license of licenses) {
-    const { noticeType } = selectLicense(state, { license })
+    const { noticeType } = selectFullLicense(state, { license })
     if (noticeType && noticeType !== 'ACTIVE') indicators++
   }
   return indicators

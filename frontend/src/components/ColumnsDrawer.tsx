@@ -3,7 +3,8 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@material-ui/core'
 import { masterAttributes, deviceAttributes } from './Attributes'
-import { defaultState, selectFeature } from '../models/ui'
+import { selectLimitsLookup } from '../models/organization'
+import { defaultState } from '../models/ui'
 import { spacing } from '../styling'
 import { Drawer } from './Drawer'
 import { Icon } from './Icon'
@@ -12,7 +13,7 @@ export const ColumnsDrawer: React.FC = () => {
   const { open, selected, feature } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'COLUMNS',
     selected: state.ui.columns,
-    feature: selectFeature(state),
+    feature: selectLimitsLookup(state),
   }))
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()

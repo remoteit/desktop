@@ -12,8 +12,8 @@ import {
   ListItemSecondaryAction,
 } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
-import { thisOrganization, memberOrganization } from '../models/organization'
-import { getRemoteitLicense } from '../models/licensing'
+import { getThisOrganization, memberOrganization } from '../models/organization'
+import { selectRemoteitLicense } from '../models/plans'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -29,8 +29,8 @@ export const OrganizationMembershipPage: React.FC = () => {
   const { membership, organization, organizations, license, email } = useSelector((state: ApplicationState) => ({
     membership: state.accounts.membership,
     organizations: state.organization.all,
-    organization: thisOrganization(state),
-    license: getRemoteitLicense(state),
+    organization: getThisOrganization(state),
+    license: selectRemoteitLicense(state),
     email: state.auth.user?.email || '',
   }))
   const { accounts } = useDispatch<Dispatch>()

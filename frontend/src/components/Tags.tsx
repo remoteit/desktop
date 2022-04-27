@@ -17,18 +17,25 @@ export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelet
 
   const dot = tags.length > 1 && small
 
-  const Tags = tags.map((tag, index) => (
-    <Tag
-      key={index}
-      dot={dot}
-      tag={tag}
-      labels={labels}
-      onDelete={onDelete ? () => onDelete(tag) : undefined}
-      onClick={onClick ? () => onClick(tag) : undefined}
-    />
-  ))
+  const Tags = tags
+    .sort(nameSort)
+    .map((tag, index) => (
+      <Tag
+        key={index}
+        dot={dot}
+        tag={tag}
+        labels={labels}
+        onDelete={onDelete ? () => onDelete(tag) : undefined}
+        onClick={onClick ? () => onClick(tag) : undefined}
+      />
+    ))
 
   if (!tags.length && showEmpty) return <>None</>
 
   return <Box>{dot ? <Chip size="small" label={Tags} /> : Tags}</Box>
+}
+
+function nameSort(a: ITag, b: ITag) {
+  return a.color < b.color ? -1 : 1
+  // return a.name.localeCompare(b.name)
 }

@@ -14,7 +14,7 @@ interface Props {
 
 export const UserListItem: React.FC<Props> = ({ user, isConnected, isUserLinked = false, children }) => {
   const location = useLocation()
-  const redirectTo = isUserLinked ? '/settings/access' : location.pathname + '/' + user.email
+  const redirectTo = isUserLinked ? '/organization' : location.pathname + '/' + user.email
   return (
     <ListItemLocation pathname={redirectTo} dense>
       <ListItemIcon>

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { makeStyles, Chip, TextField, MenuItem, Divider, ListItem } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { thisOrganization, memberOrganization } from '../models/organization'
+import { getThisOrganization, memberOrganization } from '../models/organization'
 import { getActiveAccountId } from '../models/accounts'
 import { spacing } from '../styling'
 import { useHistory } from 'react-router-dom'
@@ -17,11 +17,11 @@ export const AccountSelect: React.FC = () => {
     activeId: getActiveAccountId(state),
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
-      name: memberOrganization(state.organization.all, m.account.id).name,
+      name: memberOrganization(state.organization.all, m.account.id).name || 'Personal',
       roleId: m.roleId,
       roleName: m.roleName,
     })),
-    orgName: thisOrganization(state).name,
+    orgName: getThisOrganization(state).name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
@@ -42,9 +42,8 @@ export const AccountSelect: React.FC = () => {
           const id = event.target.value as string
           if (id) {
             await accounts.setActive(id.toString())
-            devices.set({ query: '', searched: false, from: 0 })
-            devices.fetch()
-            tags.fetch()
+            devices.fetchIfEmpty()
+            tags.fetchIfEmpty()
           }
         }}
       >

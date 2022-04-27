@@ -219,7 +219,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, licensing, ui, devices } = store.dispatch
+    const { accounts, sessions, plans, ui, devices } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -251,7 +251,7 @@ class CloudController {
           // if new unknown device discovered
           if (!target.device && target.id === target.deviceId && state === 'active') {
             const state = store.getState()
-            if (target.owner.id === getActiveAccountId(state) && getDeviceModel(state).registrationCommand) {
+            if (target.owner.id === getActiveAccountId(state) && state.ui.registrationCommand) {
               ui.set({
                 redirect: `/devices/${target.deviceId}`,
                 successMessage: `${target.name} registered successfully!`,
@@ -310,7 +310,7 @@ class CloudController {
 
       case 'LICENSE_UPDATED':
         this.log('LICENSE UPDATED EVENT', event)
-        licensing.updated()
+        plans.updated()
         break
     }
     return event
