@@ -29,6 +29,7 @@ type UIState = {
   offline: boolean
   uninstalling: boolean
   claiming: boolean
+  fetching: boolean
   routingLock?: IRouteType
   routingMessage?: string
   sidebarMenu: boolean
@@ -80,6 +81,7 @@ export const defaultState: UIState = {
   offline: !navigator.onLine,
   uninstalling: false,
   claiming: false,
+  fetching: false,
   routingLock: undefined,
   routingMessage: undefined,
   sidebarMenu: false,
@@ -147,6 +149,7 @@ export default createModel<RootModel>()({
       }
     },
     async refreshAll() {
+      dispatch.ui.set({ fetching: true })
       await dispatch.devices.set({ from: 0 })
       await dispatch.accounts.fetch()
       await dispatch.devices.fetch()
@@ -156,6 +159,7 @@ export default createModel<RootModel>()({
       dispatch.plans.fetch()
       dispatch.organization.fetch()
       dispatch.announcements.fetch()
+      dispatch.ui.set({ fetching: false })
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode
