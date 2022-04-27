@@ -365,7 +365,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getThisOrganization(state: ApplicationState) {
+export function getOwnOrganization(state: ApplicationState) {
   const id = state.auth.user?.id || ''
   return memberOrganization(state.organization.all, id)
 }

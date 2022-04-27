@@ -15,7 +15,7 @@ export const Sidebar: React.FC = () => {
   const css = useStyles(addSpace)()
 
   return (
-    <Body className={css.sidebar} scrollbarBackground="grayLighter">
+    <Body className={css.sidebar} scrollbarBackground="grayLighter" insetShadow={false}>
       <section className={css.header}>
         <AvatarMenu />
         <RegisterMenu />

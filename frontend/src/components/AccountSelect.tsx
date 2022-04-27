@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { makeStyles, Chip, TextField, MenuItem, Divider, ListItem } from '@material-ui/core'
-import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { getThisOrganization, memberOrganization } from '../models/organization'
+import { ApplicationState, Dispatch } from '../store'
+import { makeStyles, Chip, TextField, MenuItem, Divider, ListItem } from '@material-ui/core'
+import { getOwnOrganization, memberOrganization } from '../models/organization'
 import { getActiveAccountId } from '../models/accounts'
 import { spacing } from '../styling'
 import { useHistory } from 'react-router-dom'
@@ -21,7 +21,7 @@ export const AccountSelect: React.FC = () => {
       roleId: m.roleId,
       roleName: m.roleName,
     })),
-    orgName: getThisOrganization(state).name,
+    orgName: getOwnOrganization(state).name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))

@@ -11,7 +11,7 @@ import {
 import { useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectRemoteitLicense } from '../models/plans'
+import { selectOwnRemoteitLicense } from '../models/plans'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -19,7 +19,7 @@ export const CreditCard: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: ApplicationState) => ({
-    license: selectRemoteitLicense(state),
+    license: selectOwnRemoteitLicense(state),
     updating: state.plans.updating,
   }))
   const card = license?.subscription?.card

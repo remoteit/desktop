@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core'
 import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectRemoteitLicense } from '../models/plans'
+import { selectOwnRemoteitLicense } from '../models/plans'
 import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID } from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -58,7 +58,7 @@ export const Plans: React.FC = () => {
   const { plans, license, purchasing } = useSelector((state: ApplicationState) => ({
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: state.plans.purchasing,
-    license: selectRemoteitLicense(state),
+    license: selectOwnRemoteitLicense(state),
   }))
   const getDefaults = () => {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]

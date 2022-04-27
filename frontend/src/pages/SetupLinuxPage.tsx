@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { getOrganization, getThisOrganization, selectPermissions } from '../models/organization'
+import { getOrganization, getOwnOrganization, selectPermissions } from '../models/organization'
 import { makeStyles, Box, Typography, Link } from '@material-ui/core'
 import { DataCopy } from '../components/DataCopy'
 import { Body } from '../components/Body'
@@ -12,7 +12,7 @@ export const SetupLinuxPage: React.FC = () => {
   const { thisOrganization, organization, registrationCommand, permissions } = useSelector(
     (state: ApplicationState) => ({
       organization: getOrganization(state),
-      thisOrganization: getThisOrganization(state),
+      thisOrganization: getOwnOrganization(state),
       registrationCommand: state.ui.registrationCommand,
       permissions: selectPermissions(state),
     })

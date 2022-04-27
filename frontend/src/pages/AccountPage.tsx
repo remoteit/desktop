@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { List, Typography, Tooltip, ButtonBase } from '@material-ui/core'
-import { selectRemoteitLicense, selectLicenseIndicator } from '../models/plans'
+import { selectOwnRemoteitLicense, selectLicenseIndicator } from '../models/plans'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -11,7 +11,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountPage: React.FC = () => {
   const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
-    billing: !!selectRemoteitLicense(state)?.plan?.billing,
+    billing: !!selectOwnRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
   }))
