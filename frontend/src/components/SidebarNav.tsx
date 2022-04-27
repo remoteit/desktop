@@ -1,5 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { SIDEBAR_WIDTH } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
 import { getDeviceModel } from '../models/accounts'
@@ -96,7 +97,10 @@ const useStyles = makeStyles(({ palette }) => ({
     fontWeight: 500,
   },
   footer: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: spacing.lg,
+    backgroundColor: palette.grayLighter.main,
+    width: SIDEBAR_WIDTH - spacing.xl,
+    zIndex: 3,
   },
 }))

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import classnames from 'classnames'
-import { spacing } from '../styling'
+import { spacing, Color } from '../styling'
 import { makeStyles } from '@material-ui/core/styles'
 
 export type BodyProps = {
@@ -13,6 +13,7 @@ export type BodyProps = {
   gutterBottom?: boolean
   gutterTop?: boolean
   insetShadow?: boolean
+  scrollbarBackground?: Color
 }
 
 export const Body: React.FC<BodyProps> = ({
@@ -25,9 +26,10 @@ export const Body: React.FC<BodyProps> = ({
   gutterBottom,
   gutterTop,
   insetShadow = true,
+  scrollbarBackground,
   children,
 }) => {
-  const css = useStyles()
+  const css = useStyles({ scrollbarBackground })
   const [hover, setHover] = useState<boolean>(true)
   className = classnames(
     className,
@@ -55,22 +57,25 @@ export const Body: React.FC<BodyProps> = ({
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  body: {
-    flexGrow: 1,
-    height: '100%',
-    overflow: 'auto',
-    position: 'relative',
-    '-webkit-overflow-scrolling': 'touch',
-    '& section': { padding: spacing.xl },
-    '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
-    '&::-webkit-scrollbar:vertical': { width: 11 },
-    '&::-webkit-scrollbar:horizontal': { height: 11 },
-    '&::-webkit-scrollbar-corner': { background: palette.white.main },
-    '&::-webkit-scrollbar-thumb': {
-      borderRadius: 8,
-      border: `2px solid ${palette.white.main}`, // should match background, can't be transparent
-      backgroundColor: palette.white.main,
-    },
+  body: ({ scrollbarBackground }: BodyProps) => {
+    const background = scrollbarBackground ? palette[scrollbarBackground].main : palette.white.main
+    return {
+      flexGrow: 1,
+      height: '100%',
+      overflow: 'auto',
+      position: 'relative',
+      '-webkit-overflow-scrolling': 'touch',
+      '& section': { padding: spacing.xl },
+      '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
+      '&::-webkit-scrollbar:vertical': { width: 11 },
+      '&::-webkit-scrollbar:horizontal': { height: 11 },
+      '&::-webkit-scrollbar-corner': { background },
+      '&::-webkit-scrollbar-thumb': {
+        borderRadius: 8,
+        border: `2px solid ${background}`, // should match background, can't be transparent
+        backgroundColor: background,
+      },
+    }
   },
   insetShadow: {
     '&::after': {

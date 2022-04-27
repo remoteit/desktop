@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles, Divider } from '@material-ui/core'
-import { spacing } from '../../styling'
+import { spacing, Color } from '../../styling'
 import { Body, BodyProps } from '../Body'
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   bodyProps?: BodyProps
   bodyRef?: React.RefObject<HTMLDivElement>
   gutterBottom?: boolean
-  backgroundColor?: string
+  backgroundColor?: Color
   className?: string
 }
 
@@ -39,13 +39,13 @@ export const Container: React.FC<Props> = ({
       )}
       {sidebar ? (
         <div className={css.sidebar}>
-          <Body {...bodyProps} gutterBottom={gutterBottom}>
+          <Body {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
             {children}
           </Body>
           <div className={css.sideContent}>{sidebar}</div>
         </div>
       ) : (
-        <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom}>
+        <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
           {children}
         </Body>
       )}
