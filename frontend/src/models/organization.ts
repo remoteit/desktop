@@ -21,14 +21,14 @@ export const PERMISSION: ILookup<{ name: string; description: string; icon: stri
   CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'code' },
   MANAGE: { name: 'Manage', description: 'Manage devices', icon: 'pencil' },
-  ADMIN: { name: 'Administrator', description: 'Manage organization users', icon: 'user-hard-hat' },
+  ADMIN: { name: 'Administer', description: 'Manage organization users', icon: 'user-hard-hat' },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
   id: '',
   name: '',
   tag: { operator: 'ANY', values: [] },
-  permissions: ['CONNECT'],
+  permissions: ['VIEW', 'CONNECT'],
 }
 
 export const SYSTEM_ROLES: IOrganizationRole[] = [
