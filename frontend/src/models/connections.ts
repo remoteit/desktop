@@ -94,10 +94,16 @@ export default createModel<RootModel>()({
     },
 
     async proxyDisconnect(connection: IConnection) {
-      if (!connection.publicId) return
       let disconnect = { ...connection, enabled: false }
       setConnection(disconnect)
+
+      if (!connection.publicId) {
+        console.warn('No publicId for connection to proxy disconnect', connection)
+        return
+      }
+
       const result = await graphQLDisconnect(connection.id, connection.publicId)
+
       if (result === 'ERROR') {
         setConnection(connection)
       } else {
@@ -113,7 +119,10 @@ export default createModel<RootModel>()({
     },
 
     async disconnect(connection: IConnection | undefined) {
-      if (!connection) return
+      if (!connection) {
+        console.warn('No connection to disconnect')
+        return
+      }
       const { proxyDisconnect } = dispatch.connections
       if (connection.public) proxyDisconnect(connection)
       else if (connection.connected) emit('service/disconnect', connection)
