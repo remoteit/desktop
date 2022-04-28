@@ -12,7 +12,7 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
   const disabled = connection.enabled || connection.public
-  const resetValue = service?.attributes.targetHost || ''
+  const resetValue = service?.attributes.targetHost
 
   const save = (targetHost: string) =>
     connection &&
