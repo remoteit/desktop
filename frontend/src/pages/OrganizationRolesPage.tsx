@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { Redirect } from 'react-router-dom'
-import { List, ListItemSecondaryAction, Typography, Chip } from '@material-ui/core'
+import { Redirect, useHistory } from 'react-router-dom'
+import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@material-ui/core'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -13,7 +13,8 @@ import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
-  const { roles, members, permissions } = useSelector((state: ApplicationState) => ({
+  const history = useHistory()
+  const { name, roles, members, permissions } = useSelector((state: ApplicationState) => ({
     ...getOrganization(state),
     permissions: selectPermissions(state),
   }))
@@ -28,10 +29,18 @@ export const OrganizationRolesPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Gutters top="sm">
-          <Typography variant="h2" gutterBottom>
-            <Title>Roles</Title>
-          </Typography>
+        <Gutters top="sm" size="lg">
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h2">
+              <Title>Roles</Title>
+            </Typography>
+            <Chip
+              label={name}
+              size="small"
+              icon={<Icon name="chevron-left" size="xxs" type="solid" color="grayDark" fixedWidth />}
+              onClick={() => history.push('/organization')}
+            />
+          </Box>
         </Gutters>
       }
     >
