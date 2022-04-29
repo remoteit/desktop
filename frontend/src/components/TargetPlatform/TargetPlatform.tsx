@@ -22,6 +22,7 @@ export const TargetPlatform: React.FC<{
       {...{ name, type, size: props.size || size, color, fullColor }}
       inlineLeft={props.inlineLeft || !!label}
       fixedWidth
+      fullColor
     />
   )
 

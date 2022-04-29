@@ -9,6 +9,7 @@ import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
+import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
 import { ColorChip } from './ColorChip'
 import { lanShared } from '../helpers/lanSharing'
@@ -149,13 +150,7 @@ export const attributes: Attribute[] = [
     label: 'Permissions',
     defaultWidth: 210,
     value: ({ device }) => {
-      const lookup: ILookup<string> = {
-        VIEW: 'View',
-        CONNECT: 'Connect',
-        SCRIPTING: 'Script',
-        MANAGE: 'Manage',
-      }
-      return device?.permissions.map(p => <Chip label={lookup[p]} size="small" variant="outlined" key={p} />)
+      return device?.permissions.map(p => <Chip label={PERMISSION[p].name} size="small" variant="outlined" key={p} />)
     },
   }),
   new DeviceAttribute({

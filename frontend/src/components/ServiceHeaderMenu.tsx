@@ -13,13 +13,14 @@ import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Gutters } from './Gutters'
+import { Color } from '../styling'
 
 export const ServiceHeaderMenu: React.FC<{
   device?: IDevice
   service?: IService
   target?: ITarget
   footer?: React.ReactNode
-  backgroundColor?: string
+  backgroundColor?: Color
 }> = ({ device, service, target, footer, backgroundColor, children }) => {
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
 

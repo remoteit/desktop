@@ -1,43 +1,6 @@
 import React from 'react'
+import logo from './advantech-color.png'
 
 export const AdvantechColor = props => {
-  return (
-    <svg viewBox="0 0 120 25" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <g fillRule="nonzero">
-        <polygon id="Rectangle" fill="#004280" points="0 0 120 0 120 24.4 0 24.4"></polygon>
-        <path
-          d="M27.1,8 L27.1,20.8 L29.9,20.8 C34.3,20.8 36.9,18.1 36.9,14.5 C36.9,10.9 34.5,8 29.3,8 L27.1,8 Z M29.9,18.2 L29.9,10.5 C32.7,10.3 34,12.3 34,14.6 C34,16.7 32.7,18.4 29.9,18.2 Z"
-          id="Shape"
-          fill="#FFFFFF"
-        ></path>
-        <polygon fill="#FFFFFF" points="66 8 63.1 8 63.1 15.1 55.2 7.8 55.2 20.8 58.1 20.8 58.1 14.1 66 21.4"></polygon>
-        <polygon
-          fill="#FFFFFF"
-          points="67.3 10.5 70.8 10.5 70.8 20.8 73.9 20.8 73.9 10.5 77.4 10.5 77.4 8 67.3 8"
-        ></polygon>
-        <polygon
-          fill="#FFFFFF"
-          points="78.5 20.8 78.5 8 86.1 8 86.1 10.4 81.4 10.4 81.4 13.2 85.6 13.2 85.6 15.6 81.4 15.6 81.4 18.4 86.1 18.4 86.1 20.8"
-        ></polygon>
-        <polygon
-          fill="#FFFFFF"
-          points="106.2 8 106.2 13.2 101.2 13.2 101.2 8 98.3 8 98.3 20.8 101.2 20.8 101.2 15.6 106.2 15.6 106.2 20.8 109.1 20.8 109.1 8"
-        ></polygon>
-        <polygon fill="#FFFFFF" points="35.5 8 42 21.2 43.6 17.8 38.8 8"></polygon>
-        <polygon
-          fill="#FFFFFF"
-          points="48.6 7.6 47 10.9 48.3 14.3 45.3 14.3 44.3 16.4 49.1 16.4 51 20.8 54.3 20.8"
-        ></polygon>
-        <path
-          d="M86.7,14.4 C86.7,18.599 89.9,20.9 93.8,20.9 C95.3,20.9 96.2,20.5 96.8,20.099 L96.8,17.099 C96.2,17.9 95,18.4 93.8,18.4 C91.5,18.4 89.6,16.799 89.6,14.299 C89.6,11.799 91.701,10.299 93.8,10.299 C95,10.299 96.2,10.799 96.8,11.599 L96.8,8.8 C96.3,8.3 95.3,7.9 93.7,7.9 C89.8,7.9 86.7,10.7 86.7,14.4 Z"
-          fill="#FFFFFF"
-        ></path>
-        <path
-          d="M17.1,15.8 L18.9,11.3 L20.7,15.8 L17.1,15.8 Z M26.4,20.8 L19,4.8 L11.6,20.8 L15.2,20.8 L16.2,18.1 L21.5,18.1 L22.6,20.8 L26.4,20.8 Z"
-          id="Shape"
-          fill="#FFFFFF"
-        ></path>
-      </g>
-    </svg>
-  )
+  return <img src={logo} alt="Advantech" {...props} />
 }

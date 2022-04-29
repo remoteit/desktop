@@ -12,7 +12,7 @@ type Props = ButtonProps & {
 
 export const RefreshButton: React.FC<Props> = ({ device, ...props }) => {
   const fetching = useSelector(
-    (state: ApplicationState) => getDeviceModel(state).fetching || (device && state.logs.fetching)
+    (state: ApplicationState) => getDeviceModel(state).fetching || (device && state.logs.fetching) || state.ui.fetching
   )
   const { devices, ui, logs } = useDispatch<Dispatch>()
   const location = useLocation()

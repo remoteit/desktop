@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { Tooltip, IconButton } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, Tooltip, IconButton } from '@material-ui/core'
 import { isMac, isRemote } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing } from '../../styling'
@@ -69,6 +68,7 @@ const useStyles = showBorder =>
       backgroundColor: palette.white.main,
       margin: 'auto',
       borderTop: showBorder ? `1px solid ${palette.grayLighter.main}` : undefined,
+      contain: 'layout',
     },
     inset: {
       top: spacing.xl,

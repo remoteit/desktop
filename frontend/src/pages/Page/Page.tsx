@@ -96,6 +96,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         key={successMessage || 'success'}
         open={snackbar === 'success'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        autoHideDuration={20000}
         message={
           <>
             <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />

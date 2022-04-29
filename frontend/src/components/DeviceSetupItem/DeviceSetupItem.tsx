@@ -5,7 +5,7 @@ import { getDeviceModel } from '../../models/accounts'
 import { ApplicationState } from '../../store'
 import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
-import { getOwnDevices } from '../../models/accounts'
+import { getAllDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
@@ -14,15 +14,15 @@ import { osName } from '../../shared/nameHelper'
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
   const history = useHistory()
-  const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
-    thisDevice: getOwnDevices(state).find(d => d.thisDevice),
+  const { ownDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+    ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.auth.user?.id),
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
     restoring: state.ui.restoring,
     canRestore:
       !state.backend.device.uid &&
       (getDeviceModel(state).total > getDeviceModel(state).size ||
-        !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
+        !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
   }))
 
   if (restoring)
@@ -37,8 +37,8 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
   let subtitle = `Add remote access to this ${osName(os)} or any service on the local network.`
 
   if (registered) {
-    if (thisDevice) {
-      title = attributeName(thisDevice) || targetDevice.name || ''
+    if (ownDevice) {
+      title = attributeName(ownDevice) || targetDevice.name || ''
       subtitle = `Configure this system.`
     } else {
       return <Notice>This system is not registered to you.</Notice>

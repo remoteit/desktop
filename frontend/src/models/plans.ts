@@ -10,7 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { getOrganization, selectLimitsLookup } from './organization'
+import { getOrganization } from './organization'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import humanize from 'humanize-duration'
@@ -221,13 +221,17 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectRemoteitLicense(state: ApplicationState): ILicense | null {
-  return getLicenses(state).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
+export function selectOwnRemoteitLicense(state: ApplicationState): ILicense | null {
+  return getLicenses(state, state.auth.user?.id).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 }
 
-export function getLicenses(state: ApplicationState) {
+export function selectRemoteitLicense(state: ApplicationState, accountId?: string): ILicense | null {
+  return getLicenses(state, accountId).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
+}
+
+export function getLicenses(state: ApplicationState, accountId?: string) {
   if (state.plans.tests.license) return state.plans.tests.licenses
-  else return getOrganization(state).licenses
+  else return getOrganization(state, accountId).licenses
 }
 
 export function getFreeLicenses(state: ApplicationState) {
@@ -299,14 +303,21 @@ export function selectFullLicense(
   }
 }
 
-export function selectLicenses(state: ApplicationState): { licenses: ILicense[]; limits: ILimit[] } {
+export function selectOwnLicenses(state: ApplicationState) {
+  return selectLicenses(state, state.auth.user?.id)
+}
+
+export function selectLicenses(
+  state: ApplicationState,
+  accountId?: string
+): { licenses: ILicense[]; limits: ILimit[] } {
   return {
-    licenses: getLicenses(state).map(license => ({
+    licenses: getLicenses(state, accountId).map(license => ({
       ...license,
       managePath: lookupLicenseManagePath(license.plan.product.id),
-      limits: selectBaseLimits(state).filter(limit => limit.license?.id === license.id),
+      limits: selectBaseLimits(state, accountId).filter(limit => limit.license?.id === license.id),
     })),
-    limits: selectBaseLimits(state).filter(limit => !limit.license),
+    limits: selectBaseLimits(state, accountId).filter(limit => !limit.license),
   }
 }
 

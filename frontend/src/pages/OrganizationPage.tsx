@@ -59,16 +59,6 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
-        <PaywallUI limitName="roles" title="Roles are available for Business and Enterprise plans">
-          <ListItemLocation
-            title="Roles"
-            icon="user"
-            pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
-            disabled={!limits.roles || !admin}
-            showDisabled
-            dense
-          />
-        </PaywallUI>
         <ListItemLocation
           title="Tags"
           pathname="/organization/tags"
@@ -85,6 +75,16 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
+        <PaywallUI limitName="roles" title="Roles are available for Business and Enterprise plans">
+          <ListItemLocation
+            title="Roles"
+            icon="user-shield"
+            pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
+            disabled={!limits.roles || !admin}
+            showDisabled
+            dense
+          />
+        </PaywallUI>
       </List>
     </Container>
   )

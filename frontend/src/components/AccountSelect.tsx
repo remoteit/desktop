@@ -1,15 +1,17 @@
 import React, { useState } from 'react'
-import { makeStyles, Chip, TextField, MenuItem, Divider, ListItem } from '@material-ui/core'
-import { ApplicationState, Dispatch } from '../store'
+import { REGEX_FIRST_PATH } from '../shared/constants'
+import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { getThisOrganization, memberOrganization } from '../models/organization'
+import { ApplicationState, Dispatch } from '../store'
+import { makeStyles, Chip, TextField, MenuItem, Divider, ListItem } from '@material-ui/core'
+import { getOwnOrganization, memberOrganization } from '../models/organization'
 import { getActiveAccountId } from '../models/accounts'
 import { spacing } from '../styling'
-import { useHistory } from 'react-router-dom'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
+  const location = useLocation()
   const [open, setOpen] = useState<boolean>(false)
   const { accounts, devices, tags } = useDispatch<Dispatch>()
   const { user, options, activeId, orgName } = useSelector((state: ApplicationState) => ({
@@ -21,7 +23,7 @@ export const AccountSelect: React.FC = () => {
       roleId: m.roleId,
       roleName: m.roleName,
     })),
-    orgName: getThisOrganization(state).name,
+    orgName: getOwnOrganization(state).name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
@@ -40,10 +42,12 @@ export const AccountSelect: React.FC = () => {
         className={css.selectMenu}
         onChange={async event => {
           const id = event.target.value as string
+          const menu = location.pathname.match(REGEX_FIRST_PATH)
           if (id) {
             await accounts.setActive(id.toString())
             devices.fetchIfEmpty()
             tags.fetchIfEmpty()
+            if (menu && menu[0] === '/devices') history.push('/devices')
           }
         }}
       >

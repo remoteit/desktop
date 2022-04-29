@@ -177,7 +177,7 @@ export default class CLI {
       let result: IConnection = {
         id: c.id,
         host: c.namedHost,
-        port: c.namedPort,
+        port: c.namedPort === -1 ? undefined : c.namedPort,
         enabled: !c.isDisabled,
         createdTime: Date.parse(c.createdAt),
         startTime: c.startedAt ? Date.parse(c.startedAt) : undefined,
