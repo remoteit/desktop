@@ -24,6 +24,7 @@ import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
+import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
@@ -192,6 +193,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <Switch>
               <Route path="/settings/notifications">
                 <NotificationsPage />
+              </Route>
+
+              <Route path="/settings/defaults">
+                <ConnectionDefaultsPage />
               </Route>
 
               <Route path="/settings/reports">
