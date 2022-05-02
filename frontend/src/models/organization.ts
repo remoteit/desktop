@@ -403,6 +403,8 @@ export function parseOrganization(data: any): IOrganizationState {
   if (!data) return { ...defaultState }
   return {
     ...data,
+    // verified: true, // for development
+    // samlEnabled: true, // for development
     created: new Date(data.created),
     members: [
       ...data.members.map(m => ({

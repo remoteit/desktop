@@ -46,6 +46,7 @@ export const OrganizationSettingsPage: React.FC = () => {
     }
   )
   const [removing, setRemoving] = useState<boolean>(false)
+  const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<{ samlEnabled?: boolean; metadata?: string }>({
     samlEnabled: organization.samlEnabled,
     metadata: '',
@@ -157,6 +158,21 @@ export const OrganizationSettingsPage: React.FC = () => {
                       showBackground
                       fullWidth
                     />
+                    <Box paddingTop={1} paddingBottom={1}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        disabled={!!checking}
+                        onClick={async () => {
+                          setChecking(true)
+                          await dispatch.organization.fetch()
+                          setChecking(false)
+                        }}
+                      >
+                        {checking ? 'checking...' : 'Check domain'}
+                      </Button>
+                    </Box>
                   </Box>
                 </ListItem>
               ))}
@@ -167,14 +183,6 @@ export const OrganizationSettingsPage: React.FC = () => {
               disabled={samlOnly && organization.verified}
               onClick={() => dispatch.organization.setOrganization({ require2FA: !organization.require2FA })}
               icon="lock"
-            />
-            <ListItemSetting
-              toggle={samlOnly}
-              label="Require SAML"
-              subLabel="All organization members will not be able to login with email/password or Google."
-              disabled={organization.require2FA || !organization.verified}
-              onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
-              icon="shield-alt"
             />
           </List>
           <Typography variant="subtitle1">SAML Configuration</Typography>
@@ -201,6 +209,14 @@ export const OrganizationSettingsPage: React.FC = () => {
                       </Button>
                     </ListItemSecondaryAction>
                   </ListItem>
+                  <ListItemSetting
+                    toggle={samlOnly}
+                    label="Require SAML"
+                    subLabel="All organization members will not be able to login with email/password or Google."
+                    disabled={organization.require2FA || !organization.verified}
+                    onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
+                    icon="shield-alt"
+                  />
                 </>
               ) : (
                 <>
