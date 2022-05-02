@@ -261,7 +261,7 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') {
         dispatch.organization.fetch()
-      } else if (action === 'added') {
+      } else {
         dispatch.ui.set({
           successMessage:
             members.length > 1

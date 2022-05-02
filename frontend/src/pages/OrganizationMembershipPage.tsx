@@ -70,7 +70,7 @@ export const OrganizationMembershipPage: React.FC = () => {
           {membership.map(m => {
             const mo = memberOrganization(organizations, m.account.id)
             return (
-              <ListItem key={m.account.id}>
+              <ListItem key={m.roleId}>
                 <ListItemIcon>
                   <Icon name="industry-alt" />
                 </ListItemIcon>
@@ -84,7 +84,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                   }
                 />
                 <ListItemSecondaryAction>
-                  <Chip label={mo.roles.find(r => r.id === m.roleId)?.name} size="small" />
+                  <Chip label={m.roleName} size="small" />
                   <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                     <LicenseChip license={m.license} />
                   </Box>
