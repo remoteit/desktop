@@ -69,7 +69,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
               select
               fullWidth
               label="Service Type"
-              value={id || 0}
+              value={id || ''}
               variant="filled"
               onChange={e => setId(Number(e.target.value))}
             >

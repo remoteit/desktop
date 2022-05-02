@@ -8,11 +8,14 @@ import { Dispatch, ApplicationState } from '../../store'
 import { isWebUri } from 'valid-url'
 
 export const NotificationMode: React.FC = () => {
-  const { notificationUrl = '', urlNotifications = false, emailNotifications = false, desktopNotifications = false } = useSelector(
-    (state: ApplicationState) => state.auth.notificationSettings
-  )
+  const {
+    notificationUrl = '',
+    urlNotifications = false,
+    emailNotifications = false,
+    desktopNotifications = false,
+  } = useSelector((state: ApplicationState) => state.user.notificationSettings)
   const dispatch = useDispatch<Dispatch>()
-  const { updateUserMetadata } = dispatch.auth
+  const { updateNotificationSettings } = dispatch.user
   const [webHookUrl, setWebhookUrl] = useState(notificationUrl)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState(false)
@@ -26,20 +29,20 @@ export const NotificationMode: React.FC = () => {
 
   useEffect(() => {
     setWebhookUrl(notificationUrl)
-  }, [notificationUrl]);
+  }, [notificationUrl])
 
   const onEmailChange = (value: boolean) => {
-    updateUserMetadata({ ...metadata, emailNotifications: value })
+    updateNotificationSettings({ ...metadata, emailNotifications: value })
   }
 
   const onSystemChange = (value: boolean) => {
-    updateUserMetadata({ ...metadata, desktopNotifications: value })
+    updateNotificationSettings({ ...metadata, desktopNotifications: value })
   }
 
   const onWebChange = (value: boolean) => {
     setWebhookUrl('')
     setError(false)
-    updateUserMetadata({
+    updateNotificationSettings({
       ...metadata,
       notificationUrl: '',
       urlNotifications: value,
@@ -56,7 +59,7 @@ export const NotificationMode: React.FC = () => {
   const onSave = async () => {
     if (!error) {
       setLoading(true)
-      await updateUserMetadata({
+      await updateNotificationSettings({
         ...metadata,
         notificationUrl: urlNotifications && webHookUrl?.length ? webHookUrl : '',
         urlNotifications: urlNotifications,

@@ -128,10 +128,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                     onSave={value => onUpdate({ ...attributes, [token]: value })}
                   />
                 ) : (
-                  <ListItem disableGutters>
+                  <ListItem disableGutters key={token}>
                     <TextField
                       fullWidth
-                      key={token}
                       label={`${token} default`}
                       value={attributes[token] || ''}
                       disabled={disabled}

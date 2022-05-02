@@ -155,6 +155,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.fetch()
       await dispatch.devices.fetchConnections()
       dispatch.sessions.fetch()
+      dispatch.user.fetch()
       dispatch.tags.fetch()
       dispatch.plans.fetch()
       dispatch.organization.fetch()

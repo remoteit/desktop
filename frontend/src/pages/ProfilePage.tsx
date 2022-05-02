@@ -16,7 +16,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ProfilePage: React.FC = () => {
   const { user } = useSelector((state: ApplicationState) => state.auth)
-  const { auth } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export const ProfilePage: React.FC = () => {
             fullWidth
             label="Email Language"
             value={user?.language}
-            onChange={e => auth.changeLanguage(e.target.value)}
+            onChange={e => dispatch.user.changeLanguage(e.target.value)}
           >
             <MenuItem value="en">{LANGUAGES.en}</MenuItem>
             <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>

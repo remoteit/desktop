@@ -51,7 +51,7 @@ type IDeviceState = {
   from: number
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
-  userAttributes: string[]
+  customAttributes: string[]
 }
 
 export const defaultState: IDeviceState = {
@@ -76,7 +76,7 @@ export const defaultState: IDeviceState = {
   from: 0,
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
-  userAttributes: [],
+  customAttributes: [],
 }
 
 type IDeviceAccountState = {
@@ -365,9 +365,9 @@ export default createModel<RootModel>()({
       dispatch.devices.set({ destroying: false })
     },
 
-    async userAttributes({ userAttributes }: { userAttributes: string[] }, state) {
-      const unique = new Set(userAttributes.concat(getDeviceModel(state).userAttributes))
-      dispatch.devices.set({ userAttributes: [...Array.from(unique)].sort() })
+    async customAttributes({ customAttributes }: { customAttributes: string[] }, state) {
+      const unique = new Set(customAttributes.concat(getDeviceModel(state).customAttributes))
+      dispatch.devices.set({ customAttributes: [...Array.from(unique)].sort() })
     },
 
     async transferDevice(data: ITransferProps) {
