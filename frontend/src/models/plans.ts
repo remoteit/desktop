@@ -10,8 +10,8 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { getDevices, getActiveAccountId } from './accounts'
 import { getOrganization } from './organization'
-import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import humanize from 'humanize-duration'
 
@@ -71,8 +71,8 @@ export default createModel<RootModel>()({
       dispatch.plans.set({ initialized: true })
     },
 
-    async restore(_, globalState) {
-      const license = selectRemoteitLicense(globalState)
+    async restore(_, state) {
+      const license = selectRemoteitLicense(state)
       const last = license?.subscription?.card?.last
       const planId = license?.plan.id
 
@@ -118,11 +118,11 @@ export default createModel<RootModel>()({
       })
     },
 
-    async subscribe(form: IPurchase, globalState) {
+    async subscribe(form: IPurchase, state) {
       dispatch.plans.set({ purchasing: form.planId })
       localStorage.setItem('plans.purchasing', form.planId || '')
 
-      const license = selectRemoteitLicense(globalState)
+      const license = selectRemoteitLicense(state)
       if (license?.subscription) {
         await dispatch.plans.unsubscribe(form.planId)
       }
@@ -138,13 +138,13 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateSubscription({ priceId, planId, quantity }: IPurchase) {
+    async updateSubscription({ priceId, planId, quantity }: IPurchase, state) {
       if (!priceId) {
         dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
         return
       }
-      dispatch.plans.set({ purchasing: planId })
-      const result = await graphQLUpdateSubscription({ priceId, quantity })
+      dispatch.plans.set({ purchasing: planId || true })
+      const result = await graphQLUpdateSubscription({ priceId, quantity, accountId: getActiveAccountId(state) })
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
         if (!success) {
@@ -181,7 +181,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ successMessage: 'Subscription updated.' })
     },
 
-    async testServiceLicensing(_, globalState) {
+    async testServiceLicensing(_, state) {
       const states: ILicenseTypes[] = [
         'UNKNOWN',
         'EVALUATION',
@@ -191,7 +191,7 @@ export default createModel<RootModel>()({
         'EXEMPT',
         'LEGACY',
       ]
-      const devices = getDevices(globalState)
+      const devices = getDevices(state)
       const updated = devices.map((device, index) => ({
         ...device,
         services: device.services.map(service => ({
