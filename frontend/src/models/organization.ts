@@ -293,7 +293,7 @@ export default createModel<RootModel>()({
     async setRole(role: IOrganizationRole, state) {
       let roles = [...getOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
-      const permissions: IPermission[] = ['CONNECT', 'MANAGE', 'SCRIPTING']
+      const permissions = Object.keys(PERMISSION) as IPermission[]
 
       let result
       if (index > -1) {
