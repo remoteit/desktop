@@ -51,6 +51,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
         <InlineSetting
           hideIcon
           disabled={purchasing}
+          loading={purchasing}
           label="User Licenses"
           warning="This will change your billing."
           value={form.quantity}
