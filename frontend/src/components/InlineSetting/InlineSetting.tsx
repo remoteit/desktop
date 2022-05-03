@@ -15,6 +15,7 @@ type Props = {
   actionIcon?: React.ReactElement
   displayValue?: string | number
   disabled?: boolean
+  loading?: boolean
   color?: string
   resetValue?: string | number
   hideIcon?: boolean
@@ -37,6 +38,7 @@ export const InlineSetting: React.FC<Props> = ({
   actionIcon,
   displayValue,
   disabled,
+  loading,
   color,
   debug,
   warning,
@@ -134,6 +136,11 @@ export const InlineSetting: React.FC<Props> = ({
           <ListItemSecondaryAction className="hidden">
             <EditButton onClick={triggerEdit} />
             {onDelete && <DeleteButton onDelete={onDelete} warning={warning} />}
+          </ListItemSecondaryAction>
+        )}
+        {loading && (
+          <ListItemSecondaryAction>
+            <Icon spin type="solid" name="spinner-third" color="primary" inlineLeft />
           </ListItemSecondaryAction>
         )}
       </ListItem>
