@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
+import { getActiveAccountId } from './accounts'
 import { RootModel } from './rootModel'
 
 type ILogState = {
@@ -43,34 +44,30 @@ export default createModel<RootModel>()({
     async fetch(_, globalState) {
       const { set } = dispatch.logs
       const { deviceId, from, size, maxDate, minDate, events } = globalState.logs
+      const accountId = getActiveAccountId(globalState)
       let items = from === 0 ? [] : events.items
 
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
 
-      try {
-        let result, response
-        if (deviceId) {
-          response = await graphQLGetDeviceLogs(deviceId, from, size, minDate, maxDate)
-          graphQLGetErrors(response)
-          result = response?.data?.data?.login?.device[0] || {}
-        } else {
-          response = await graphQLGetLogs(from, size, minDate, maxDate)
-          graphQLGetErrors(response)
-          result = response?.data?.data?.login || {}
-        }
-        // const { events, eventsUrl } = result.events
-        console.log('LOGS', result.events)
-        set({
-          // eventsUrl,
-          events: {
-            ...result.events,
-            items: items.concat(result.events.items),
-            deviceId,
-          },
-        })
-      } catch (error) {
-        await apiError(error)
+      let result, response
+      if (deviceId) {
+        response = await graphQLGetDeviceLogs(deviceId, from, size, minDate, maxDate)
+        if (response === 'ERROR') return
+        result = response?.data?.data?.login?.device[0] || {}
+      } else {
+        response = await graphQLGetLogs(accountId, from, size, minDate, maxDate)
+        if (response === 'ERROR') return
+        result = response?.data?.data?.login?.account || {}
       }
+      console.log('LOGS', result.events)
+      set({
+        // eventsUrl,
+        events: {
+          ...result.events,
+          items: items.concat(result?.events?.items || []),
+          deviceId,
+        },
+      })
 
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
     },

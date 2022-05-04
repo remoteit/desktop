@@ -9,7 +9,7 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLBasicRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getDevices, getActiveAccountId } from './accounts'
 import { getOrganization } from './organization'
 import { RootModel } from './rootModel'
@@ -82,30 +82,26 @@ export default createModel<RootModel>()({
       })
     },
     async fetch() {
-      try {
-        const result: any = await graphQLRequest(
-          ` {
-              plans {
+      const result = await graphQLBasicRequest(
+        ` {
+            plans {
+              id
+              name
+              description
+              product {
                 id
-                name
-                description
-                product {
-                  id
-                }
-                prices {
-                  id
-                  amount
-                  currency
-                  interval
-                }
-              }          
-            }`
-        )
-        graphQLGetErrors(result)
-        await dispatch.plans.parse(result)
-      } catch (error) {
-        await apiError(error)
-      }
+              }
+              prices {
+                id
+                amount
+                currency
+                interval
+              }
+            }          
+          }`
+      )
+      if (result === 'ERROR') return
+      await dispatch.plans.parse(result)
     },
 
     async parse(gqlResponse: AxiosResponse<any> | void, state) {

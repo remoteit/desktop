@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { DateTime } from 'luxon'
+import { getActiveAccountId } from '../../models/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { makeStyles, List, ListItem, ListItemSecondaryAction } from '@material-ui/core'
@@ -14,10 +15,13 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const dispatch = useDispatch<Dispatch>()
   const { fetch, set } = dispatch.logs
 
-  const { events, deviceId, logLimit, minDate, selectedDate } = useSelector((state: ApplicationState) => ({
-    logLimit: selectLimit('log-limit', state) || 'P1W',
-    ...state.logs,
-  }))
+  const { events, deviceId, logLimit, activeAccount, minDate, selectedDate } = useSelector(
+    (state: ApplicationState) => ({
+      logLimit: selectLimit('log-limit', state) || 'P1W',
+      activeAccount: getActiveAccountId(state),
+      ...state.logs,
+    })
+  )
 
   let allowed = limitDays(logLimit)
 
@@ -43,11 +47,12 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   useEffect(() => {
     set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: new Date(), selectedDate: selectedDate || new Date() })
+    console.log('events', events)
     if (!events.items.length || device?.id !== deviceId) {
       set({ deviceId: device?.id, from: 0, events: { ...events, items: [] } })
       fetch()
     }
-  }, [])
+  }, [activeAccount])
 
   const handleChangeDate = (date: any) => {
     set({ selectedDate: date, from: 0, minDate, maxDate: date, events: { ...events, items: [] } })
