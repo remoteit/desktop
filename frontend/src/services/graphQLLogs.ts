@@ -1,4 +1,4 @@
-import { graphQLRequest } from './graphQL'
+import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 
 const EVENTS = `
     events(from: $from, size: $size, minDate: $minDate, maxDate: $maxDate) {
@@ -37,7 +37,7 @@ const EVENTS = `
 const EVENTS_URL = 'eventsUrl(minDate: $minDate, maxDate: $maxDate)'
 
 export async function graphQLGetDeviceLogs(id: string, from: number, size: number, minDate: Date, maxDate: Date) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     `  query($id: [String!]!, $from: Int, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
           login {
             id
@@ -58,16 +58,19 @@ export async function graphQLGetDeviceLogs(id: string, from: number, size: numbe
   )
 }
 
-export async function graphQLGetLogs(from: number, size: number, minDate: Date, maxDate: Date) {
-  return await graphQLRequest(
-    `  query($from: Int, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
+export async function graphQLGetLogs(account: string, from: number, size: number, minDate: Date, maxDate: Date) {
+  return await graphQLBasicRequest(
+    `  query($account: String!, $from: Int, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
           login {
-            id
-            ${EVENTS}
+            account(id: $account) {
+              id
+              ${EVENTS}
+            }
           }
         }
       `,
     {
+      account,
       from,
       minDate: minDate.toISOString(),
       maxDate: maxDate.toISOString(),

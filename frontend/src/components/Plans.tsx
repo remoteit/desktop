@@ -14,7 +14,7 @@ import { windowOpen } from '../services/Browser'
 
 const Features = {
   [PERSONAL_PLAN_ID]: [
-    'Up to 5 devices*',
+    'End-points: 5',
     'Prototyping / POC',
     '7 days of activity logs',
     'Web support',
@@ -25,16 +25,16 @@ const Features = {
     'SSO with Google',
   ],
   [PROFESSIONAL_PLAN_ID]: [
-    'Devices* are not limited',
+    'End-points: no limit',
     'Commercial usage',
     '30 days of activity logs',
-    'Basic device tagging',
+    'Basic end-point tagging',
     'Email support',
   ],
   [BUSINESS_PLAN_ID]: [
-    'Devices* are not limited',
+    'End-points: no limit',
     'Commercial usage',
-    'Advanced org management',
+    'Organizations',
     '1 year of activity logs',
     'Custom user roles',
     'User access control',
@@ -43,11 +43,11 @@ const Features = {
     'Unrestricted API usage',
   ],
   enterprise: [
-    'Volume devices* or user accounts',
-    '1 year of activity logs',
+    'Volume end-points or user accounts',
+    'Custom activity logs',
     'Slack support',
     'Analytics and reporting',
-    'Dedicated proxy available',
+    'Dedicated infrastructure available',
   ],
 }
 
