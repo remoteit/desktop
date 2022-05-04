@@ -47,7 +47,6 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   useEffect(() => {
     set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: new Date(), selectedDate: selectedDate || new Date() })
-    console.log('events', events)
     if (!events.items.length || device?.id !== deviceId) {
       set({ deviceId: device?.id, from: 0, events: { ...events, items: [] } })
       fetch()

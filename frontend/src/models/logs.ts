@@ -59,7 +59,7 @@ export default createModel<RootModel>()({
         if (response === 'ERROR') return
         result = response?.data?.data?.login?.account || {}
       }
-      console.log('LOGS', result.events)
+
       set({
         // eventsUrl,
         events: {
