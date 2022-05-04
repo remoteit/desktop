@@ -41,13 +41,15 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
 export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
+  const cd = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: service?.attributes.route !== 'p2p',
-    proxyOnly: service?.attributes.route === 'proxy',
-    autoLaunch: [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0), // default for web type services
+    failover: cd?.route ? cd.route !== 'p2p' : service?.attributes.route !== 'p2p',
+    proxyOnly: cd?.route ? cd.route === 'proxy' : service?.attributes.route === 'proxy',
+    autoLaunch:
+      cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
     public: state.auth.backendAuthenticated ? undefined : true,
   }
 

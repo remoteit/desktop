@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { isEqual, cloneDeep } from 'lodash'
+import { isEqual } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getAllDevices } from '../models/accounts'
