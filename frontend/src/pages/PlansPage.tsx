@@ -18,8 +18,7 @@ export const PlansPage: React.FC = () => {
       <Divider variant="inset" />
       <Gutters>
         <Typography variant="caption">
-          * Devices are virtual (like AWS EC2) or physical (like Raspberry Pi, Nvidia Jetson, Windows PC, etc) <br />
-          &nbsp; Pricing is represented and billed in US$ on most popular credit cards.
+          Pricing is represented and billed in US$ on most popular credit cards.
         </Typography>
       </Gutters>
     </Container>
