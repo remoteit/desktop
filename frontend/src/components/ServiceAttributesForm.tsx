@@ -5,6 +5,7 @@ import { useApplication } from '../hooks/useApplication'
 import { useStyles } from './ServiceForm/ServiceForm'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { ApplicationState } from '../store'
+import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
 import { validPort } from '../shared/nameHelper'
 import { ROUTES } from '../models/devices'
@@ -16,6 +17,7 @@ type Props = IService['attributes'] & {
   disabled: boolean
   customTokens?: string[]
   attributes: IService['attributes']
+  globalDefaults?: boolean
   onUpdate: (attributes: IService['attributes']) => void
 }
 
@@ -24,6 +26,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   connection,
   customTokens = [],
   attributes,
+  globalDefaults,
   onUpdate,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
@@ -31,51 +34,44 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   const css = useStyles()
 
   customTokens = customTokens || app.customTokens
-  // Defaults
-  attributes = {
-    ...attributes,
-    route: routingLock || attributes.route || ROUTES[0].key,
-    commandTemplate: attributes.commandTemplate,
-    launchTemplate: attributes.launchTemplate,
-  }
-
-  React.useEffect(() => {
-    // ensure defaults are passed
-    onUpdate(attributes)
-  }, [])
 
   return (
     <>
-      <ListItem className={css.field}>
-        <TextField
-          label="Default Local Port"
-          value={attributes.defaultPort || ''}
-          disabled={disabled}
-          variant="filled"
-          onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
-        />
-        <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
-      </ListItem>
-      <ListItem className={css.field}>
-        <TextField
-          label="Host Name Override"
-          value={attributes.targetHost || ''}
-          disabled={disabled}
-          variant="filled"
-          onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
-        />
-        <Typography variant="caption">
-          Override host name when accessing this service. Needed by host name dependant sites. <i>Example </i>
-          <b>webui.company.com</b>
-        </Typography>
-      </ListItem>
+      {!globalDefaults && (
+        <>
+          <ListItem className={css.field}>
+            <TextField
+              label="Default Local Port"
+              value={attributes.defaultPort || ''}
+              disabled={disabled}
+              variant="filled"
+              onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
+            />
+            <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
+          </ListItem>
+          <ListItem className={css.field}>
+            <TextField
+              label="Host Name Override"
+              value={attributes.targetHost || ''}
+              disabled={disabled}
+              variant="filled"
+              onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
+            />
+            <Typography variant="caption">
+              Override host name when accessing this service. Needed by host name dependant sites. <i>Example </i>
+              <b>webui.company.com</b>
+            </Typography>
+          </ListItem>
+        </>
+      )}
       <ListItem className={css.field}>
         <TextField
           select
           label="Routing"
-          value={attributes.route}
+          value={routingLock || attributes.route || ''}
           disabled={!!routingLock || disabled}
           variant="filled"
+          placeholder={routingLock || attributes.route || ROUTES[0].key}
           onChange={event => onUpdate({ ...attributes, route: event.target.value as IRouteType })}
         >
           {ROUTES.map(route => (
@@ -88,10 +84,35 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
         </Typography>
       </ListItem>
+      {globalDefaults && (
+        <>
+          <ListItem className={css.field}>
+            <TextField
+              select
+              variant="filled"
+              label="Launch type"
+              value={attributes.launchType || ''}
+              onChange={event => onUpdate({ ...attributes, launchType: event.target.value })}
+            >
+              <MenuItem value="URL">URL</MenuItem>
+              <MenuItem value="COMMAND">Command</MenuItem>
+            </TextField>
+          </ListItem>
+          <ListItem dense>
+            <ListItemCheckbox
+              disableGutters
+              label="Auto Launch"
+              checked={attributes.autoLaunch}
+              indeterminate={attributes.autoLaunch === undefined}
+              onClick={autoLaunch => onUpdate({ ...attributes, autoLaunch })}
+            />
+          </ListItem>
+        </>
+      )}
       <TemplateSetting
         className={css.field}
         label={`${app.launchTitle} Template`}
-        value={attributes.launchTemplate}
+        value={attributes.launchTemplate || ''}
         placeholder={app.launchTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
@@ -103,7 +124,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       <TemplateSetting
         className={css.field}
         label={`${app.commandTitle} Template`}
-        value={attributes.commandTemplate}
+        value={attributes.commandTemplate || ''}
         placeholder={app.commandTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, commandTemplate: value })}

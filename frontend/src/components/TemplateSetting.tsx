@@ -1,11 +1,7 @@
 import React from 'react'
-import { ListItem, TextField, Typography } from '@material-ui/core'
+import { ListItem, TextField, TextFieldProps, Typography } from '@material-ui/core'
 
-type Props = {
-  label: string
-  value?: string
-  disabled: boolean
-  placeholder?: string
+type Props = TextFieldProps & {
   onChange: (value: string) => void
   className?: string
 }

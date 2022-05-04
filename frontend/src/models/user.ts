@@ -2,17 +2,17 @@ import { LANGUAGES } from '../shared/constants'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 // import { getActiveAccountId } from './accounts'
-import { graphQLNotificationSettings } from '../services/graphQLMutation'
-import { graphQLBasicRequest } from '../services/graphQL'
-import { r3 } from '../services/remote.it'
 // import { ApplicationState } from '../store'
+import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from './rootModel'
+import { r3 } from '../services/remote.it'
 
 type IUserState = {
   id: string
   email: string
   notificationSettings: INotificationSetting
-  attributes: ILookup<string | number | boolean>
+  attributes: ILookup<any>
 }
 
 const defaultState: IUserState = {
@@ -52,11 +52,17 @@ export default createModel<RootModel>()({
       const data = await dispatch.user.parse(result)
       if (data) dispatch.user.set(data)
     },
-
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account
       console.log('USER DATA', data)
-      return data
+      return {
+        ...data,
+        attributes: data?.attributes?.$remoteit,
+      }
+    },
+    async setAttribute(attribute: ILookup<any>, state) {
+      dispatch.user.set({ attributes: { ...state.user.attributes, ...attribute } })
+      await graphQLSetAttributes(attribute)
     },
     async updateNotificationSettings(metadata: INotificationSetting) {
       const result = await graphQLNotificationSettings(metadata)

@@ -103,6 +103,20 @@ export const PUBLIC_CONNECTION = {
   log: false,
 }
 
+export const DEFAULT_SERVICE: IService = {
+  id: '',
+  contactedAt: new Date(),
+  createdAt: new Date(),
+  name: '',
+  lastReported: new Date(),
+  state: 'inactive',
+  type: '',
+  deviceID: '',
+  access: [],
+  license: 'UNKNOWN',
+  attributes: {},
+}
+
 export const LANGUAGES: ILookup<string> = {
   en: 'English',
   ja: 'Japanese',
