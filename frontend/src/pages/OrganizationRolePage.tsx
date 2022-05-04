@@ -226,7 +226,7 @@ export const OrganizationRolePage: React.FC = () => {
               history.push(`/organization/roles/${roleID}`)
             }}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
           </Button>
         </Gutters>
       )}

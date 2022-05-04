@@ -152,7 +152,7 @@ export default createModel<RootModel>()({
           dispatch.plans.set({ purchasing: undefined })
         }
       }
-      await dispatch.ui.refreshAll()
+      setTimeout(dispatch.ui.refreshAll, 5 * 1000)
       setTimeout(() => dispatch.plans.set({ purchasing: undefined }), 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
