@@ -14,6 +14,7 @@ import {
 import { selectDeviceByAccount } from '../models/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
+import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
@@ -28,11 +29,14 @@ export const RegisterMenu: React.FC = () => {
   const [el, setEl] = useState<Element | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo, hasThisDevice } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo, hasThisDevice, permissions } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.auth.user?.id) !== undefined,
     hasThisDevice: !!state.backend.device.uid,
+    permissions: selectPermissions(state),
   }))
+
+  const disabled = !permissions?.includes('MANAGE')
 
   const handleClose = () => {
     setEl(null)
@@ -62,8 +66,20 @@ export const RegisterMenu: React.FC = () => {
   return (
     <>
       <IconButton
-        title="Add device"
+        title={
+          disabled ? (
+            <>
+              Manage permission required to <br />
+              add a device to this organization.
+            </>
+          ) : (
+            'Add device'
+          )
+        }
+        forceTitle
+        hideDisableFade
         variant="contained"
+        disabled={disabled}
         onClick={handleOpen}
         color="primary"
         icon="plus"
@@ -96,7 +112,7 @@ export const RegisterMenu: React.FC = () => {
           <ListItemLocation
             icon="raspberry-pi"
             iconType="brands"
-            pathname="/devices/add/linux"
+            pathname="/add/linux"
             title="Linux & Raspberry Pi"
             subtitle="Including Jetson and OpenWRT"
             onClick={handleClose}
@@ -105,7 +121,7 @@ export const RegisterMenu: React.FC = () => {
           <ListItemLocation
             icon="windows"
             iconType="brands"
-            pathname="/devices/add/windows"
+            pathname="/add/windows"
             title="Windows"
             onClick={handleClose}
             disableGutters
@@ -113,7 +129,7 @@ export const RegisterMenu: React.FC = () => {
           <ListItemLocation
             icon="apple"
             iconType="brands"
-            pathname="/devices/add/apple"
+            pathname="/add/apple"
             title="Mac"
             onClick={handleClose}
             disableGutters
