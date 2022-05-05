@@ -4,8 +4,8 @@ import { makeStyles } from '@material-ui/core'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'
+import { windowOpen, isPortal } from '../../services/Browser'
 import { Notice } from '../../components/Notice'
-import { windowOpen } from '../../services/Browser'
 
 type Props = {
   className?: string
@@ -24,16 +24,22 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
       {props.service?.attributes.route === 'p2p' && props.connection?.public ? (
         <div>
           <Notice fullWidth severity="info" gutterBottom>
-            {props.size === 'small'
-              ? 'Peer to peer only'
-              : 'You cannot make a proxy connection to this service, it is set to peer to peer only.'}
+            {props.size === 'small' ? (
+              'Peer to peer only'
+            ) : (
+              <>
+                You cannot make a proxy connection to this service, it is set to peer to peer only.
+                {!isPortal() && <i> Please try again in a few minutes.</i>}
+              </>
+            )}
           </Notice>
-          <DynamicButton
-            {...props}
-            title="Launch Desktop"
-            color="grayDarkest"
-            onClick={() => windowOpen(`${PROTOCOL}connect/${props.service?.id || props.connection?.id}`)}
-          />
+          {isPortal() && (
+            <DynamicButton
+              {...props}
+              title="Launch Desktop"
+              onClick={() => windowOpen(`${PROTOCOL}connect/${props.service?.id || props.connection?.id}`)}
+            />
+          )}
         </div>
       ) : (
         <>
