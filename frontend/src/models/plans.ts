@@ -148,8 +148,7 @@ export default createModel<RootModel>()({
           dispatch.plans.set({ purchasing: undefined })
         }
       }
-      setTimeout(dispatch.ui.refreshAll, 5 * 1000)
-      setTimeout(() => dispatch.plans.set({ purchasing: undefined }), 30 * 1000)
+      setTimeout(() => dispatch.plans.set({ purchasing: undefined }), 60 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
 
@@ -173,6 +172,7 @@ export default createModel<RootModel>()({
 
     async updated() {
       await dispatch.plans.fetch()
+      await dispatch.organization.fetch()
       dispatch.plans.set({ purchasing: undefined, updating: undefined })
       dispatch.ui.set({ successMessage: 'Subscription updated.' })
     },
@@ -233,7 +233,8 @@ export function getLicenses(state: ApplicationState, accountId?: string) {
 export function getFreeLicenses(state: ApplicationState) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
-  const used = 1 + getOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
+  const used = getOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 1)
+  console.log('purchased', purchased, 'used', used)
   return Math.max(purchased - used, 0)
 }
 
