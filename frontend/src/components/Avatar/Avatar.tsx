@@ -11,9 +11,10 @@ export interface Props {
   button?: boolean
   tooltip?: boolean
   inline?: boolean
+  title?: string
 }
 
-export const Avatar: React.FC<Props> = ({ email, size = 40, button, inline, tooltip, children }) => {
+export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inline, tooltip, children }) => {
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const color = Math.ceil(seedRandom(email || '')() * 12)
   const css = useStyles({ size, color, button, inline })
@@ -28,7 +29,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, inline, tool
   )
 
   return tooltip ? (
-    <Tooltip title={email} arrow>
+    <Tooltip title={title || email} arrow>
       {Element}
     </Tooltip>
   ) : (
@@ -50,6 +51,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderStyle: 'solid',
     borderColor: palette.white.main,
     marginRight: inline ? spacing.sm : 0,
+    cursor: button ? 'pointer' : 'default',
     '&:hover': { borderColor: button ? palette.primaryLight.main : undefined },
   }),
 }))
