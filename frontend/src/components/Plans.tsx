@@ -55,7 +55,8 @@ export const Plans: React.FC = () => {
   const css = useStyles()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const { plans, license, purchasing } = useSelector((state: ApplicationState) => ({
+  const { accountId, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
+    accountId: state.user.id,
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: state.plans.purchasing,
     license: selectOwnRemoteitLicense(state),
@@ -64,6 +65,7 @@ export const Plans: React.FC = () => {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
     const price = plan.prices?.find(p => p.id === license?.subscription?.price?.id) || plan.prices?.[0]
     return {
+      accountId,
       checkout: false,
       planId: plan.id,
       priceId: price?.id,

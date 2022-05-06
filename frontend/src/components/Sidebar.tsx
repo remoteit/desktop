@@ -17,12 +17,14 @@ export const Sidebar: React.FC = () => {
   return (
     <Body className={css.sidebar} scrollbarBackground="grayLighter" insetShadow={false}>
       <section className={css.header}>
-        <AvatarMenu />
+        <AccountSelect />
         <RegisterMenu />
       </section>
-      <AccountSelect />
       <SidebarNav />
       <RemoteManagement />
+      <section className={css.footer}>
+        <AvatarMenu />
+      </section>
     </Body>
   )
 }
@@ -42,5 +44,11 @@ const useStyles = addSpace =>
     header: {
       display: 'flex',
       justifyContent: 'space-between',
+    },
+    footer: {
+      position: 'fixed',
+      bottom: spacing.lg,
+      width: SIDEBAR_WIDTH - spacing.xl,
+      zIndex: 3,
     },
   }))

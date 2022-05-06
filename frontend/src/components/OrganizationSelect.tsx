@@ -3,10 +3,11 @@ import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, Chip, Divider, List, ListItem } from '@material-ui/core'
+import { makeStyles, Tooltip, Divider, List, ListItem } from '@material-ui/core'
 import { getOwnOrganization, memberOrganization } from '../models/organization'
 import { getActiveAccountId } from '../models/accounts'
 import { IconButton } from '../buttons/IconButton'
+import { AvatarMenu } from './AvatarMenu'
 import { Avatar } from './Avatar'
 import { spacing } from '../styling'
 
@@ -40,31 +41,34 @@ export const OrganizationSelect: React.FC = () => {
   }
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
-  options.unshift({ id: user.id, email: user.email, name: orgName || 'Personal', roleId: 'OWNER', roleName: 'Owner' })
+  // options.unshift({ id: user.id, email: user.email, name: orgName || 'Personal', roleId: 'OWNER', roleName: 'Owner' })
   if (options.length < 2) return null
 
   return (
     <List>
+      <ListItem className={css.menu} disableGutters>
+        <IconButton icon="home" size="lg" type="light" />
+      </ListItem>
+
       {options.map(option => (
-        <ListItem className={css.menu} key={option.id} onClick={() => onSelect(option.id)}>
-          <Avatar email={option.email} title={`${option.name} - ${option.roleName}`} size={40} button tooltip />
+        <ListItem className={css.menu} key={option.id} onClick={() => onSelect(option.id)} disableGutters>
+          <Avatar
+            size={40}
+            email={option.email}
+            title={`${option.name} - ${option.roleName}`}
+            active={option.id === activeId}
+            button
+            tooltip
+          />
         </ListItem>
       ))}
-      <Divider className={css.divider} />
-      <ListItem onClick={() => history.push('/devices/membership')}>
-        <IconButton title="Manage memberships" icon="ellipsis-h" />
+      <ListItem className={css.menu} disableGutters>
+        <IconButton title="Memberships" icon="ellipsis-h" to="/devices/membership" />
       </ListItem>
     </List>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  wrapper: { marginTop: spacing.md },
-  selectMenu: { '& .MuiChip-root': { display: 'none' }, marginLeft: spacing.sm },
-  menu: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    '& .MuiChip-root': { color: palette.gray.main, marginLeft: spacing.md },
-  },
-  divider: { marginTop: spacing.sm, marginBottom: spacing.xs },
+  menu: { justifyContent: 'center' },
 }))

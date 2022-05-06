@@ -40,7 +40,8 @@ function stateNotification(event: ICloudEvent) {
       createNotification({
         title: `${target.name} ${actions[event.state]}`,
         body:
-          getTargetPlatform(target.platform) + (event.authUserId === target.owner.id ? '' : ' - ' + target.owner.email),
+          getTargetPlatform(target.platform) +
+          (event.authUserId === target.owner?.id ? '' : ' - ' + target.owner?.email),
         id: target.deviceId,
       })
     }

@@ -134,13 +134,13 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateSubscription({ priceId, planId, quantity }: IPurchase, state) {
+    async updateSubscription({ priceId, planId, quantity, accountId }: IPurchase) {
       if (!priceId) {
         dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
         return
       }
       dispatch.plans.set({ purchasing: planId || true })
-      const result = await graphQLUpdateSubscription({ priceId, quantity, accountId: getActiveAccountId(state) })
+      const result = await graphQLUpdateSubscription({ priceId, quantity, accountId })
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
         if (!success) {

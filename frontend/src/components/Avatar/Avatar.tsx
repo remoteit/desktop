@@ -12,12 +12,13 @@ export interface Props {
   tooltip?: boolean
   inline?: boolean
   title?: string
+  active?: boolean
 }
 
-export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inline, tooltip, children }) => {
+export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inline, tooltip, active, children }) => {
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const color = Math.ceil(seedRandom(email || '')() * 12)
-  const css = useStyles({ size, color, button, inline })
+  const css = useStyles({ size, color, button, inline, active })
 
   const Element = (
     <>
@@ -29,8 +30,8 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inlin
   )
 
   return tooltip ? (
-    <Tooltip title={title || email} arrow>
-      {Element}
+    <Tooltip title={title || email} placement="right" arrow>
+      <span>{Element}</span>
     </Tooltip>
   ) : (
     Element
@@ -38,7 +39,19 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inlin
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  avatar: ({ size, color, button, inline }: { size: number; color: number; button?: boolean; inline?: boolean }) => ({
+  avatar: ({
+    size,
+    color,
+    button,
+    inline,
+    active,
+  }: {
+    size: number
+    color: number
+    button?: boolean
+    inline?: boolean
+    active?: boolean
+  }) => ({
     color: palette.alwaysWhite.main,
     fontSize: size * 0.625,
     height: size,
@@ -49,7 +62,7 @@ const useStyles = makeStyles(({ palette }) => ({
     backgroundColor: labelLookup[color].color,
     borderWidth: button ? 3 : 1,
     borderStyle: 'solid',
-    borderColor: palette.white.main,
+    borderColor: active ? palette.black.main : palette.white.main,
     marginRight: inline ? spacing.sm : 0,
     cursor: button ? 'pointer' : 'default',
     '&:hover': { borderColor: button ? palette.primaryLight.main : undefined },
