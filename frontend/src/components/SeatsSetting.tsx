@@ -13,7 +13,8 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const fieldRef = useRef<HTMLInputElement>(null)
-  const { plans, purchasing } = useSelector((state: ApplicationState) => ({
+  const { accountId, plans, purchasing } = useSelector((state: ApplicationState) => ({
+    accountId: state.auth.user?.id || '',
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: !!state.plans.purchasing,
   }))
@@ -26,6 +27,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
     const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
     return {
+      accountId,
       priceId: price?.id,
       quantity: license?.quantity || 1,
     }
