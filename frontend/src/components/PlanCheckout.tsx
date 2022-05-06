@@ -45,8 +45,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
     onChange({ ...form, priceId })
   }
 
+  console.log('license', license)
   const onSubmit = () => {
-    if (license?.plan?.billing) dispatch.plans.updateSubscription(form)
+    console.log('submit license', license)
+    if (license?.subscription) dispatch.plans.updateSubscription(form)
     else dispatch.plans.subscribe(form)
   }
 

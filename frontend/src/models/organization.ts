@@ -223,11 +223,10 @@ export default createModel<RootModel>()({
       let organization = getOrganization(state)
       await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
       const result = await graphQLSetOrganization(params)
-      if (result === 'ERROR') {
-        await dispatch.organization.fetch()
-      } else if (!organization.id) {
-        dispatch.ui.set({ successMessage: 'Your organization has been created.' })
+      if (result !== 'ERROR') {
+        if (!organization.id) dispatch.ui.set({ successMessage: 'Your organization has been created.' })
       }
+      await dispatch.organization.fetch()
     },
 
     async setSAML(params: { enabled: boolean; metadata?: string }) {

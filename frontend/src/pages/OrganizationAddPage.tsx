@@ -38,8 +38,6 @@ export const OrganizationAddPage = () => {
     analyticsHelper.page('AccountLinkPage')
   }, [])
 
-  console.log('ROLE', roleId, organization.roles)
-
   const exit = () => history.push(location.pathname.replace('/share', ''))
   const add = () => {
     dispatch.organization.setMembers(

@@ -310,7 +310,7 @@ class CloudController {
 
       case 'LICENSE_UPDATED':
         this.log('LICENSE UPDATED EVENT', event)
-        plans.updated()
+        setTimeout(plans.updated, 2000) // because event comes in before plan is fully updated
         break
     }
     return event
