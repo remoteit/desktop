@@ -4,6 +4,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { getOrganization, getOwnOrganization, selectPermissions } from '../models/organization'
 import { makeStyles, Box, Typography, Link } from '@material-ui/core'
 import { DataCopy } from '../components/DataCopy'
+import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import { Help } from '../components/Help'
@@ -23,17 +24,25 @@ export const SetupLinuxPage: React.FC = () => {
   let accountId = thisOrganization.id
   let accountName = thisOrganization.name
 
-  if (permissions?.includes('ADMIN')) {
-    accountId = organization.id
-    accountName = organization.name
-  }
-
   useEffect(() => {
     dispatch.devices.createRegistration({ services: [28], accountId }) // ssh
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
   }, [accountId])
+
+  if (permissions?.includes('MANAGE')) {
+    accountId = organization.id
+    accountName = organization.name
+  } else {
+    return (
+      <Body center>
+        <Box>
+          <Notice>You must have the manage permission to add a device to this organization.</Notice>
+        </Box>
+      </Body>
+    )
+  }
 
   return (
     <Body center>

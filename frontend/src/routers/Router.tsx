@@ -62,23 +62,25 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   return (
     <Switch>
+      {/* Start */}
+      <Redirect from="/" to="/devices" exact />
       {/* Deep links */}
       <Redirect
-        from={'/connect/:serviceID'}
+        from="/connect/:serviceID"
         to={{
           pathname: '/connections/:serviceID',
           state: { autoConnect: true },
         }}
       />
       <Redirect
-        from={'/launch/:serviceID'}
+        from="/launch/:serviceID"
         to={{
           pathname: '/connections/:serviceID',
           state: { autoLaunch: true },
         }}
       />
       <Redirect
-        from={'/copy/:serviceID'}
+        from="/copy/:serviceID"
         to={{
           pathname: '/connections/:serviceID',
           state: { autoCopy: true },
@@ -111,11 +113,23 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           root={['/connections', '/connections/new']}
         />
       </Route>
+      {/* Add */}
+      <Route path="/add/linux">
+        <Panel layout={layout}>
+          <SetupLinuxPage />
+        </Panel>
+      </Route>
+      <Route path="/add/:icon">
+        <Panel layout={layout}>
+          <DownloadDesktopPage />
+        </Panel>
+      </Route>
+      {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
           <Redirect to={`/devices/${targetDevice.uid}`} />
         ) : isPortal() ? (
-          <Redirect to={`/devices/add/${os}`} />
+          <Redirect to={`/add/${os}`} />
         ) : (
           <Panel layout={layout}>
             <SetupDevice os={os} />
@@ -125,16 +139,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/devices/membership">
         <Panel layout={layout}>
           <OrganizationMembershipPage />
-        </Panel>
-      </Route>
-      <Route path="/devices/add/linux">
-        <Panel layout={layout}>
-          <SetupLinuxPage />
-        </Panel>
-      </Route>
-      <Route path="/devices/add/:icon">
-        <Panel layout={layout}>
-          <DownloadDesktopPage />
         </Panel>
       </Route>
       <Route path="/devices/setupWaiting">
@@ -175,16 +179,19 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <UserLogPage />
         </Panel>
       </Route>
+      {/* Announcements */}
       <Route path="/announcements">
         <Panel layout={layout}>
           <AnnouncementsPage />
         </Panel>
       </Route>
+      {/* Feedback */}
       <Route path="/shareFeedback">
         <Panel layout={layout}>
           <ShareFeedback />
         </Panel>
       </Route>
+      {/* Settings */}
       <Route path="/settings">
         <DynamicPanel
           primary={<SettingsPage />}
@@ -211,6 +218,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           root="/settings"
         />
       </Route>
+      {/* Organization */}
       <Route path={['/organization/roles', '/organization/roles/:roleID']}>
         <DynamicPanel
           primary={<OrganizationRolesPage />}
@@ -255,6 +263,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           root="/organization"
         />
       </Route>
+      {/* Account */}
       <Route path="/account">
         <DynamicPanel
           primary={<AccountPage />}
@@ -288,9 +297,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           layout={layout}
           root={['/account']}
         />
-      </Route>
-      <Route path="/">
-        <Redirect to="/devices" />
       </Route>
     </Switch>
   )
