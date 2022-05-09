@@ -90,14 +90,6 @@ export const AvatarMenu: React.FC = () => {
           />
         )}
         <Divider />
-        <PortalUI>
-          <ListItemSetting
-            label="Switch to Legacy View"
-            icon="history"
-            onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
-          />
-          <Divider />
-        </PortalUI>
         <DesktopUI>
           <ListItemSetting
             confirm

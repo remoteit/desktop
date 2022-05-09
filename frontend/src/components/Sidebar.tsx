@@ -3,8 +3,8 @@ import { makeStyles } from '@material-ui/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { isElectron, isMac } from '../services/Browser'
 import { RemoteManagement } from './RemoteManagement'
+import { ActiveOrganizationTitle } from './ActiveOrganizationTitle'
 import { RegisterMenu } from './RegisterMenu'
-import { AccountSelect } from './AccountSelect'
 import { SidebarNav } from './SidebarNav'
 import { AvatarMenu } from './AvatarMenu'
 import { spacing } from '../styling'
@@ -17,7 +17,7 @@ export const Sidebar: React.FC = () => {
   return (
     <Body className={css.sidebar} scrollbarBackground="grayLighter" insetShadow={false}>
       <section className={css.header}>
-        <AccountSelect />
+        <ActiveOrganizationTitle />
         <RegisterMenu />
       </section>
       <SidebarNav />

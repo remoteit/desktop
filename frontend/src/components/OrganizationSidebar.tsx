@@ -5,10 +5,12 @@ import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSelect } from './OrganizationSelect'
 import { spacing } from '../styling'
 
-export const OrganizationSidebar: React.FC = ({ children }) => {
+export const OrganizationSidebar: React.FC<{ hide?: boolean }> = ({ hide, children }) => {
   const css = useStyles({ addSpace: isMac() && isElectron() })
 
-  return (
+  return hide ? (
+    <>{children}</>
+  ) : (
     <Box className={css.container}>
       <Box className={css.organizationBar}>
         <OrganizationSelect />

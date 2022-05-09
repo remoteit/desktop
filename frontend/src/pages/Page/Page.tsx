@@ -17,21 +17,31 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  const { device, connected, successMessage, noticeMessage, errorMessage, offline, backendAuthenticated, label } =
-    useSelector((state: ApplicationState) => {
-      const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
-      return {
-        device,
-        connected: state.ui.connected,
-        successMessage: state.ui.successMessage,
-        noticeMessage: state.ui.noticeMessage,
-        errorMessage: state.ui.errorMessage,
-        offline: state.ui.offline,
-        backendAuthenticated: state.auth.backendAuthenticated,
-        os: state.backend.environment.os,
-        label: state.labels.find(l => l.id === device?.attributes.color),
-      }
-    })
+  const {
+    device,
+    connected,
+    successMessage,
+    noticeMessage,
+    errorMessage,
+    offline,
+    backendAuthenticated,
+    label,
+    memberships,
+  } = useSelector((state: ApplicationState) => {
+    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    return {
+      device,
+      connected: state.ui.connected,
+      successMessage: state.ui.successMessage,
+      noticeMessage: state.ui.noticeMessage,
+      errorMessage: state.ui.errorMessage,
+      offline: state.ui.offline,
+      backendAuthenticated: state.auth.backendAuthenticated,
+      os: state.backend.environment.os,
+      label: state.labels.find(l => l.id === device?.attributes.color),
+      memberships: state.accounts.membership.length,
+    }
+  })
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
@@ -46,7 +56,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   return (
     <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
-      <OrganizationSidebar>
+      <OrganizationSidebar hide={!memberships}>
         {children}
         <DragAppRegion />
         <Dialog open={offline} maxWidth="xs" fullWidth>
