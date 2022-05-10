@@ -251,7 +251,7 @@ class CloudController {
           // if new unknown device discovered
           if (!target.device && target.id === target.deviceId && state === 'active') {
             const state = store.getState()
-            if (target.owner.id === getActiveAccountId(state) && state.ui.registrationCommand) {
+            if (target.owner?.id === getActiveAccountId(state) && state.ui.registrationCommand) {
               ui.set({
                 redirect: `/devices/${target.deviceId}`,
                 successMessage: `${target.name} registered successfully!`,
@@ -310,7 +310,7 @@ class CloudController {
 
       case 'LICENSE_UPDATED':
         this.log('LICENSE UPDATED EVENT', event)
-        plans.updated()
+        setTimeout(plans.updated, 2000) // because event comes in before plan is fully updated
         break
     }
     return event

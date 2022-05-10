@@ -5,7 +5,7 @@ import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { isWebUri } from 'valid-url'
+import isURL from 'validator/lib/isURL'
 
 export const NotificationMode: React.FC = () => {
   const {
@@ -52,7 +52,7 @@ export const NotificationMode: React.FC = () => {
   const changeWebHookUrl = (value: string) => {
     setWebhookUrl(value)
     if (urlNotifications) {
-      isWebUri(value) ? setError(false) : setError(true)
+      isURL(value) ? setError(false) : setError(true)
     }
   }
 
