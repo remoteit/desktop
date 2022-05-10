@@ -49,7 +49,7 @@ export const ContactSelector: React.FC<Props> = ({ contacts, onChange, isTransfe
       classNamePrefix="select"
       placeholder={isTransfer ? 'Enter new device owner...' : 'Enter an email...'}
       onChange={handleChange}
-      isValidNewOption={v => !!isEmail(v)}
+      isValidNewOption={v => isEmail(v)}
       formatCreateLabel={validateEmail}
       styles={customStyles}
     />
