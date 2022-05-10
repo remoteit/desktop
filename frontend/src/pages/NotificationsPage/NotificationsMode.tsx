@@ -5,12 +5,15 @@ import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { isWebUri } from 'valid-url'
+import isURL from 'validator/lib/isURL'
 
 export const NotificationMode: React.FC = () => {
-  const { notificationUrl = '', urlNotifications = false, emailNotifications = false, desktopNotifications = false } = useSelector(
-    (state: ApplicationState) => state.auth.notificationSettings
-  )
+  const {
+    notificationUrl = '',
+    urlNotifications = false,
+    emailNotifications = false,
+    desktopNotifications = false,
+  } = useSelector((state: ApplicationState) => state.auth.notificationSettings)
   const dispatch = useDispatch<Dispatch>()
   const { updateUserMetadata } = dispatch.auth
   const [webHookUrl, setWebhookUrl] = useState(notificationUrl)
@@ -26,7 +29,7 @@ export const NotificationMode: React.FC = () => {
 
   useEffect(() => {
     setWebhookUrl(notificationUrl)
-  }, [notificationUrl]);
+  }, [notificationUrl])
 
   const onEmailChange = (value: boolean) => {
     updateUserMetadata({ ...metadata, emailNotifications: value })
@@ -49,7 +52,7 @@ export const NotificationMode: React.FC = () => {
   const changeWebHookUrl = (value: string) => {
     setWebhookUrl(value)
     if (urlNotifications) {
-      isWebUri(value) ? setError(false) : setError(true)
+      isURL(value) ? setError(false) : setError(true)
     }
   }
 
