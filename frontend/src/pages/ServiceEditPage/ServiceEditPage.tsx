@@ -50,11 +50,12 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
             backend.updateTargetService(form)
             // for rest api name change
             service.name = form.name || ''
-            devices.rename(service)
+            await devices.rename(service)
             // for cloud route attribute change
             service.attributes = { ...service.attributes, ...form.attributes }
-            devices.setServiceAttributes(service)
+            await devices.setServiceAttributes(service)
           }
+          history.push(`/devices/${device?.id}/${service.id}`)
         }}
       />
     </ServiceHeaderMenu>
