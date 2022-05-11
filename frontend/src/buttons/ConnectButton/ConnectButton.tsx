@@ -66,8 +66,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
-  if (disabled) title = 'Unauthorized'
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
+  if (disabled) title = 'Unauthorized'
 
   if (chip && chip.show) {
     color = chip.colorName
