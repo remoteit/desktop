@@ -17,7 +17,7 @@ export const AvatarList: React.FC<Props> = ({ users, size = 22 }) => {
   return (
     <AvatarGroup spacing={spacing} max={8} className={css.group}>
       {users.map((u, i) => (
-        <Avatar key={i} email={u.email} size={size} tooltip />
+        <Avatar key={i} email={u.email} size={size} />
       ))}
     </AvatarGroup>
   )

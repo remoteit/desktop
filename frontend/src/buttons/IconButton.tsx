@@ -84,7 +84,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   return !(forceTitle && title) && (disabled || !title) ? (
     button
   ) : (
-    <Tooltip title={title} placement={placement}>
+    <Tooltip title={title} placement={placement} arrow>
       <span>{button}</span>
     </Tooltip>
   )

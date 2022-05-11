@@ -41,19 +41,17 @@ export const AvatarMenu: React.FC = () => {
 
   return (
     <>
-      <Tooltip title={user.email} placement="right" enterDelay={800} arrow>
-        <ButtonBase className={css.base} onClick={handleOpen} ref={buttonRef}>
-          <Avatar email={user.email} button></Avatar>
-          <Typography variant="caption">{user.email}</Typography>
-        </ButtonBase>
-      </Tooltip>
+      <ButtonBase onClick={handleOpen} ref={buttonRef}>
+        <Avatar email={user.email} button tooltip></Avatar>
+        {/* <Typography variant="caption">{user.email}</Typography> */}
+      </ButtonBase>
       <Menu
         open={open}
         anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
-        anchorOrigin={{ horizontal: 'center', vertical: 'top' }}
-        transformOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         getContentAnchorEl={null}
         disableScrollLock
         elevation={2}
@@ -131,21 +129,21 @@ export const AvatarMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  base: {
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'start',
-    alignItems: 'center',
-    alignContent: 'center',
-    '& .MuiAvatar-root': { marginRight: spacing.sm },
-    '& .MuiTypography-root': {
-      margin: 0,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      // wordBreak: 'break-word',
-      textAlign: 'left',
-    },
-  },
+  // base: {
+  //   width: '100%',
+  //   display: 'flex',
+  //   justifyContent: 'start',
+  //   alignItems: 'center',
+  //   alignContent: 'center',
+  //   '& .MuiAvatar-root': { marginRight: spacing.sm },
+  //   '& .MuiTypography-root': {
+  //     margin: 0,
+  //     overflow: 'hidden',
+  //     textOverflow: 'ellipsis',
+  //     // wordBreak: 'break-word',
+  //     textAlign: 'left',
+  //   },
+  // },
   label: {
     display: 'flex',
   },

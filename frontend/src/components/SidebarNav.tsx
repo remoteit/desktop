@@ -68,7 +68,7 @@ export const SidebarNav: React.FC = () => {
         badge={unreadAnnouncements}
         dense
       />
-      <ListItemLocation title="Feedback" pathname="/shareFeedback" icon="comment-smile" dense />
+      <ListItemLocation className={css.footer} title="Feedback" pathname="/shareFeedback" icon="comment-smile" dense />
     </List>
   )
 }
@@ -96,5 +96,12 @@ const useStyles = makeStyles(({ palette }) => ({
   sessions: {
     marginLeft: `-${spacing.xs}px !important`,
     fontWeight: 500,
+  },
+  footer: {
+    position: 'fixed',
+    bottom: spacing.lg,
+    backgroundColor: palette.grayLighter.main,
+    width: SIDEBAR_WIDTH - spacing.xl,
+    zIndex: 3,
   },
 }))
