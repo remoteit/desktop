@@ -211,7 +211,6 @@ export default createModel<RootModel>()({
       const result = await graphQLFetchDeviceCount(options)
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0
-      console.log('FETCH COUNT', count)
       return count
     },
 
