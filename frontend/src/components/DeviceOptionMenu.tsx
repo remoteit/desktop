@@ -17,7 +17,9 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) =
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
-  if (!device || (userId !== device.accountId && !device.permissions.includes('MANAGE'))) return null
+  if (!device) return null
+
+  const manage = userId !== device.accountId && !device.permissions.includes('MANAGE')
 
   return (
     <>
@@ -41,22 +43,26 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) =
             <CopyMenuItem icon="link" title="Device link" value={`${PROTOCOL}devices/${device.id}`} />
           )}
         </div>
-        <MenuItem
-          dense
-          to={`/devices/${device.id}/transfer`}
-          component={Link}
-          autoFocus={false}
-          disabled={!device.permissions.includes('MANAGE')}
-          disableGutters
-        >
-          <ListItemIcon>
-            <Icon name="share" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="Transfer Device" />
-        </MenuItem>
-        <Divider />
-        <DeleteServiceMenuItem device={device} service={service} target={target} />
-        <DeleteDevice device={device} menuItem />
+        {manage && (
+          <>
+            <MenuItem
+              dense
+              to={`/devices/${device.id}/transfer`}
+              component={Link}
+              autoFocus={false}
+              disabled={!device.permissions.includes('MANAGE')}
+              disableGutters
+            >
+              <ListItemIcon>
+                <Icon name="share" size="md" />
+              </ListItemIcon>
+              <ListItemText primary="Transfer Device" />
+            </MenuItem>
+            <Divider />
+            <DeleteServiceMenuItem device={device} service={service} target={target} />
+            <DeleteDevice device={device} menuItem />
+          </>
+        )}
       </Menu>
     </>
   )
