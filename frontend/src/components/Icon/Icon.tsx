@@ -22,6 +22,7 @@ const COLOR_ICONS = [
   'hdd',
   'advantech',
   'axis',
+  'nas',
 ]
 
 library.add(fal, fab, far, fas)

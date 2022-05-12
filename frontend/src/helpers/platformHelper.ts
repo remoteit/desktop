@@ -21,6 +21,7 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   1205: 'OpenWrt',
   1206: 'Advantech',
   1209: 'AXIS',
+  1210: 'Synology',
   65535: 'Unknown',
 }
 
@@ -83,9 +84,11 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
     case 1209:
       name = 'axis'
       break
+    case 1210:
+      name = 'nas'
+      break
     case 65535:
       name = 'hdd'
-      type = 'regular'
       break
   }
 

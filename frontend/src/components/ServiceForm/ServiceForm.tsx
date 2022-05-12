@@ -313,7 +313,7 @@ export const ServiceForm: React.FC<Props> = ({
       </AccordionMenuItem>
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
-          Save
+          {disabled ? 'Saving...' : 'Save'}
         </Button>
         <Button onClick={onCancel}>Cancel</Button>
       </Gutters>
