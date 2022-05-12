@@ -19,7 +19,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) =
 
   if (!device) return null
 
-  const manage = userId !== device.accountId && !device.permissions.includes('MANAGE')
+  const manage = userId === device.accountId || device.permissions.includes('MANAGE')
 
   return (
     <>

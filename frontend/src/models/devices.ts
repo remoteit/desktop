@@ -378,7 +378,10 @@ export default createModel<RootModel>()({
           await dispatch.connections.clearByDevice(data.device.id)
           await dispatch.devices.fetch()
           await dispatch.devices.fetchConnections()
-          dispatch.ui.set({ successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.` })
+          dispatch.ui.set({
+            redirect: '/devices',
+            successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
+          })
         }
         await dispatch.connections.clearByDevice(data.device.id)
         dispatch.devices.set({ transferring: false })
