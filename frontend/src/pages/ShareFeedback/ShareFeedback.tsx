@@ -20,7 +20,7 @@ export const ShareFeedback: React.FC<{}> = () => {
   }
 
   const email = () => {
-    window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${fullVersion()} Feedback`)
+    window.location.href = encodeURI(`mailto:support@remote.it?subject=${fullVersion()} Feedback`)
   }
 
   return (
