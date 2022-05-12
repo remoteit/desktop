@@ -72,7 +72,7 @@ export const OrganizationRolePage: React.FC = () => {
                   <Notice severity="danger" fullWidth gutterBottom>
                     You will be permanently deleting the role <i>{role.name}.</i>
                   </Notice>
-                  Any members with this role will loose access until they have been set to another role.
+                  Any members with this role will lose access until they have been set to another role.
                 </>
               }
               onDelete={() => dispatch.organization.removeRole(form)}
