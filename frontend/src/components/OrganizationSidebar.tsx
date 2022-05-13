@@ -24,7 +24,6 @@ const useStyles = makeStyles(({ palette }) => ({
   container: {
     display: 'flex',
     height: '100%',
-    overflow: 'hidden',
     contain: 'layout',
   },
   organizationBar: ({ addSpace }: { addSpace: boolean }) => ({

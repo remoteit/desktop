@@ -1,9 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { SIDEBAR_WIDTH } from '../shared/constants'
+import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
-import { getDeviceModel } from '../models/accounts'
 import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
 import { selectConnections } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
@@ -101,7 +100,6 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'fixed',
     bottom: spacing.lg,
     backgroundColor: palette.grayLighter.main,
-    width: SIDEBAR_WIDTH - spacing.xl,
     zIndex: 3,
   },
 }))
