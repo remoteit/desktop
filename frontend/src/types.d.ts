@@ -30,7 +30,6 @@ declare global {
   type IOrganizationSettings = {
     name?: string
     domain?: string
-    require2FA?: boolean
     providers?: null | IOrganizationProvider[]
     accountId?: string
   }

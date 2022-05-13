@@ -35,7 +35,8 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const { disabled, roles, tags } = useSelector((state: ApplicationState) => ({
+  const { accountId, disabled, roles, tags } = useSelector((state: ApplicationState) => ({
+    accountId: getActiveAccountId(state),
     disabled: state.organization.updating,
     roles: getOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
@@ -72,7 +73,7 @@ export const OrganizationRolePage: React.FC = () => {
                   <Notice severity="danger" fullWidth gutterBottom>
                     You will be permanently deleting the role <i>{role.name}.</i>
                   </Notice>
-                  Any members with this role will loose access until they have been set to another role.
+                  Any members with this role will lose access until they have been set to another role.
                 </>
               }
               onDelete={() => dispatch.organization.removeRole(form)}
@@ -147,8 +148,7 @@ export const OrganizationRolePage: React.FC = () => {
               }}
             />
             <TagEditor
-              allowAdding={false}
-              // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
+              onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
               onSelect={tag => {
                 form.tag && form.tag.values.push(tag.name)
                 changeForm(form)

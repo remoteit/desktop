@@ -71,7 +71,11 @@ export const OrganizationRolesPage: React.FC = () => {
               dense
             >
               <ListItemSecondaryAction>
-                <Chip label={count ? `${count} member${count === 1 ? '' : 's'}` : 'none'} size="small" />
+                <Chip
+                  label={count ? `${count} member${count === 1 ? '' : 's'}` : 'none'}
+                  size="small"
+                  onClick={() => history.push('/organization/members')}
+                />
               </ListItemSecondaryAction>
             </ListItemLocation>
           )

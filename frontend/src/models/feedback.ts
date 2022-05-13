@@ -9,27 +9,21 @@ type FeedbackParams = { [key: string]: any }
 
 export type IFeedbackState = {
   body: string
-  subject: string
-  name?: string
-  email?: string
 }
 
-const state: IFeedbackState = {
+const defaultState: IFeedbackState = {
   body: '',
-  subject: 'Desktop App Feedback',
-  name: '',
-  email: '',
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
-    async sendFeedback(_, globalState) {
-      const { body, subject } = globalState.feedback
-      const { user } = globalState.auth
+    async sendFeedback(_, state) {
+      const { body } = state.feedback
+      const { user } = state.auth
       try {
         await createTicketZendesk({
-          subject,
+          subject: `${fullVersion()} Feedback`,
           body,
           name: user?.email,
           email: user?.email,
@@ -49,7 +43,7 @@ export default createModel<RootModel>()({
   },
 })
 
-async function createTicketZendesk(params: IFeedbackState) {
+async function createTicketZendesk(params: FeedbackParams) {
   const bodyVersion = ` \n\n\n ================ \n ${fullVersion()}`
   if (params.body.trim().length > 0) {
     const result = await axios.post(

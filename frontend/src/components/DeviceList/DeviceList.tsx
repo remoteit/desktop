@@ -129,11 +129,11 @@ const useStyles = makeStyles(({ palette }) => ({
     '&::before': {
       content: '""',
       position: 'fixed',
-      width: 40,
+      width: 50,
       height: '100%',
       zIndex: 1000,
       right: 0,
-      boxShadow: `inset -30px 0px 20px -15px ${palette.white.main}`,
+      boxShadow: `inset -40px -20px 20px -15px ${palette.white.main}`,
     },
   },
 }))

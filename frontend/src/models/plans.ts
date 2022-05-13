@@ -148,7 +148,11 @@ export default createModel<RootModel>()({
           dispatch.plans.set({ purchasing: undefined })
         }
       }
-      setTimeout(() => dispatch.plans.set({ purchasing: undefined }), 60 * 1000)
+      setTimeout(() => {
+        // event should come from ws and cause the update, otherwise:
+        dispatch.plans.set({ purchasing: undefined })
+        dispatch.ui.refreshAll()
+      }, 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
 

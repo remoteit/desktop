@@ -37,8 +37,12 @@ export class Application {
   constructor(options: { [key in keyof Application]?: any }) {
     const { os } = getEnvironment()
     if (os === 'windows') {
-      options.defaultLaunchType = options.windowsLaunchType || options.defaultLaunchType
-      options.defaultCommandTemplate = options.windowsCommandTemplate || options.defaultCommandTemplate
+      options.defaultLaunchType = options.windowsLaunchType || options.defaultLaunchType || this.windowsLaunchType
+      options.defaultCommandTemplate =
+        options.windowsCommandTemplate ||
+        options.defaultCommandTemplate ||
+        this.windowsCommandTemplate ||
+        this.defaultCommandTemplate
     }
     Object.assign(this, options)
   }

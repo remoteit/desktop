@@ -99,8 +99,8 @@ export async function graphQLShareDevice(params: IShareProps) {
 
 export async function graphQLSetOrganization(params: IOrganizationSettings) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $name: String, $domain: String, $require2FA: Boolean, $providers: [AuthenticationProvider!]) {
-        setOrganization(accountId: $accountId, name: $name, domain: $domain, require2FA: $require2FA, providers: $providers)
+    ` mutation query($accountId: String, $name: String, $domain: String, $providers: [AuthenticationProvider!]) {
+        setOrganization(accountId: $accountId, name: $name, domain: $domain, providers: $providers)
       }`,
     params
   )
