@@ -176,14 +176,6 @@ export const OrganizationSettingsPage: React.FC = () => {
                   </Box>
                 </ListItem>
               ))}
-            {/* <ListItemSetting
-              toggle={organization.require2FA}
-              label="Require 2FA"
-              subLabel="All organization members will be required to use Two Factor Authentication."
-              disabled={samlOnly && organization.verified}
-              onClick={() => dispatch.organization.setOrganization({ require2FA: !organization.require2FA })}
-              icon="lock"
-            /> */}
           </List>
           <Typography variant="subtitle1">SAML Configuration</Typography>
           <List>
@@ -213,7 +205,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                     toggle={samlOnly}
                     label="Require SAML"
                     subLabel="All organization members will not be able to login with email/password or Google."
-                    disabled={organization.require2FA || !organization.verified}
+                    disabled={!organization.verified}
                     onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
                     icon="shield-alt"
                   />

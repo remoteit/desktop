@@ -98,7 +98,6 @@ export const graphQLOrganization = `
   organization {
     id
     name
-    require2FA
     domain
     samlEnabled
     providers
@@ -139,7 +138,6 @@ export type IOrganizationState = {
   limits: ILimit[]
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
-  require2FA: boolean
   domain?: string
   samlEnabled: boolean
   providers: null | IOrganizationProvider[]
@@ -151,7 +149,6 @@ export type IOrganizationState = {
 const defaultState: IOrganizationState = {
   id: '',
   name: '',
-  require2FA: false,
   domain: undefined,
   samlEnabled: false,
   providers: null,
