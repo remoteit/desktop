@@ -155,7 +155,7 @@ export default createModel<RootModel>()({
 })
 
 export function accountFromDevice(state: ApplicationState, device?: IDevice) {
-  return device?.owner.id || getActiveAccountId(state)
+  return device?.accountId || getActiveAccountId(state)
 }
 
 export function isUserAccount(state: ApplicationState, accountId?: string) {

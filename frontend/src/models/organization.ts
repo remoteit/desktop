@@ -98,7 +98,6 @@ export const graphQLOrganization = `
   organization {
     id
     name
-    require2FA
     domain
     samlEnabled
     providers
@@ -139,7 +138,6 @@ export type IOrganizationState = {
   limits: ILimit[]
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
-  require2FA: boolean
   domain?: string
   samlEnabled: boolean
   providers: null | IOrganizationProvider[]
@@ -151,7 +149,6 @@ export type IOrganizationState = {
 const defaultState: IOrganizationState = {
   id: '',
   name: '',
-  require2FA: false,
   domain: undefined,
   samlEnabled: false,
   providers: null,
@@ -293,20 +290,21 @@ export default createModel<RootModel>()({
       let roles = [...getOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
       const permissions = Object.keys(PERMISSION) as IPermission[]
+      const data = {
+        id: role.id,
+        name: role.name,
+        grant: role.permissions,
+        revoke: permissions.filter(p => !role.permissions.includes(p)),
+        tag: role.tag,
+        accountId: getActiveAccountId(state),
+      }
 
       let result
       if (index > -1) {
         roles[index] = role
-        result = await graphQLUpdateRole({
-          id: role.id,
-          name: role.name,
-          grant: role.permissions,
-          revoke: permissions.filter(p => !role.permissions.includes(p)),
-          tag: role.tag,
-          accountId: getActiveAccountId(state),
-        })
+        result = await graphQLUpdateRole(data)
       } else {
-        result = await graphQLCreateRole({ ...role, accountId: getActiveAccountId(state) })
+        result = await graphQLCreateRole(data)
         if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
         roles.push(role)
       }

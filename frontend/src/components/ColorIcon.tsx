@@ -11,6 +11,7 @@ import { LinuxColor } from '../assets/LinuxColor'
 import { AxisColor } from '../assets/AxisColor'
 import { AWSColor } from '../assets/AWSColor'
 import { HddColor } from '../assets/HddColor'
+import { NAS } from '../assets/NAS'
 
 export const ColorIcon = ({ name, ...props }) => {
   const darkMode = useSelector((state: ApplicationState) => state.ui.themeDark)
@@ -25,6 +26,7 @@ export const ColorIcon = ({ name, ...props }) => {
   if (name === 'axis') return <AxisColor {...props} />
   if (name === 'aws') return <AWSColor darkMode={darkMode} {...props} />
   if (name === 'hdd') return <HddColor darkMode={darkMode} {...props} />
+  if (name === 'nas') return <NAS darkMode={darkMode} {...props} />
 
   return null
 }

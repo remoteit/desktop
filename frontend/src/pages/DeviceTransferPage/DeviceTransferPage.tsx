@@ -59,7 +59,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) =>
       </Gutters>
       <Gutters top="xl">
         <Button color="primary" onClick={() => setOpen(true)} disabled={!selected || transferring} variant="contained">
-          {transferring ? 'Transferring' : 'Transfer'}
+          {transferring ? 'Transferring...' : 'Transfer'}
         </Button>
         <Button disabled={transferring} onClick={onCancel}>
           Cancel

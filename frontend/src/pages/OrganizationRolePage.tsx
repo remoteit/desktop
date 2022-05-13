@@ -35,7 +35,8 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const { disabled, roles, tags } = useSelector((state: ApplicationState) => ({
+  const { accountId, disabled, roles, tags } = useSelector((state: ApplicationState) => ({
+    accountId: getActiveAccountId(state),
     disabled: state.organization.updating,
     roles: getOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
@@ -147,8 +148,7 @@ export const OrganizationRolePage: React.FC = () => {
               }}
             />
             <TagEditor
-              allowAdding={false}
-              // onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
+              onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
               onSelect={tag => {
                 form.tag && form.tag.values.push(tag.name)
                 changeForm(form)
