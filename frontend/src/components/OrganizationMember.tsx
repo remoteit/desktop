@@ -55,7 +55,12 @@ export const OrganizationMember: React.FC<Props> = ({
         )}
         <ConfirmButton
           confirm
-          confirmMessage="This will remove the user's access to all the organization’s devices"
+          confirmMessage={
+            <>
+              This will remove <b>{member.user.email}’s </b>
+              access to all the organization’s devices
+            </>
+          }
           confirmTitle="Are you sure?"
           title="Remove Account"
           icon="times"
