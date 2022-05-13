@@ -121,8 +121,8 @@ export const OrganizationSettingsPage: React.FC = () => {
                 setTimeout(() => dispatch.organization.fetch(), 1000)
               }}
             />
-            {domain &&
-              (organization.verified ? (
+            {domain ? (
+              organization.verified ? (
                 <ListItem>
                   <ListItemIcon />
                   <ListItemText
@@ -175,14 +175,25 @@ export const OrganizationSettingsPage: React.FC = () => {
                     </Box>
                   </Box>
                 </ListItem>
-              ))}
+              )
+            ) : (
+              <ListItem dense>
+                <ListItemIcon />
+                <Typography variant="caption" gutterBottom>
+                  Enter your Organization's domain name.
+                  <Link href="https://link.remote.it/support/setup-domain" target="_blank">
+                    Instructions.
+                  </Link>
+                </Typography>
+              </ListItem>
+            )}
           </List>
           <Typography variant="subtitle1">SAML Configuration</Typography>
           <List>
             {organization.verified ? (
               organization.samlEnabled ? (
                 <>
-                  <ListItem>
+                  <ListItem dense>
                     <ListItemIcon>
                       <Icon name="sign-in" size="md" fixedWidth />
                     </ListItemIcon>
@@ -229,9 +240,18 @@ export const OrganizationSettingsPage: React.FC = () => {
                       </Button>
                     </ListItemSecondaryAction>
                   </ListItem>
-                  <ListItem>
+                  <ListItem dense>
                     <ListItemIcon />
                     <FileUpload onUpload={metadata => setForm({ ...form, metadata })} />
+                  </ListItem>
+                  <ListItem dense>
+                    <ListItemIcon />
+                    <Typography variant="caption" gutterBottom>
+                      Setup
+                      <Link href="https://link.remote.it/support/setup-domain" target="_blank">
+                        Instructions.
+                      </Link>
+                    </Typography>
                   </ListItem>
                 </>
               )
