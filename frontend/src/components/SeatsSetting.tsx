@@ -5,6 +5,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
+import { getActiveAccountId } from '../models/accounts'
 import { InlineSetting } from './InlineSetting'
 import { Confirm } from './Confirm'
 import { Icon } from './Icon'
@@ -14,7 +15,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   const dispatch = useDispatch<Dispatch>()
   const fieldRef = useRef<HTMLInputElement>(null)
   const { accountId, plans, purchasing } = useSelector((state: ApplicationState) => ({
-    accountId: state.auth.user?.id || '',
+    accountId: getActiveAccountId(state),
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: !!state.plans.purchasing,
   }))
