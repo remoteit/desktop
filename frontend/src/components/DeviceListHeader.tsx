@@ -80,7 +80,7 @@ export const DeviceListHeader: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   header: {
-    borderBottom: `1px solid ${palette.grayLighter.main}`,
+    boxShadow: `inset 0 -1px ${palette.grayLighter.main}`,
   },
   fetching: {
     position: 'absolute',

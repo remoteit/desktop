@@ -107,7 +107,6 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   }),
   list: {
-    display: 'inline-block',
     minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'grid',
@@ -131,7 +130,7 @@ const useStyles = makeStyles(({ palette }) => ({
       position: 'fixed',
       width: 50,
       height: '100%',
-      zIndex: 1000,
+      zIndex: 5,
       right: 0,
       boxShadow: `inset -40px -20px 20px -15px ${palette.white.main}`,
     },
