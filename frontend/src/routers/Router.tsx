@@ -42,15 +42,16 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
-export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
+export const Router: React.FC = () => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
-  const { remoteUI, redirect, targetDevice, registered, os } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, redirect, targetDevice, registered, os, layout } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     redirect: state.ui.redirect,
     targetDevice: state.backend.device,
     registered: !!state.backend.device.uid,
     os: state.backend.environment.os || getOs(),
+    layout: state.ui.layout,
   }))
 
   useEffect(() => {

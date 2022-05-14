@@ -1,9 +1,9 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { HIDE_SIDEBAR_WIDTH, HIDE_TWO_PANEL_WIDTH, SIDEBAR_WIDTH, ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
 import { useMediaQuery, makeStyles, Box } from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../../store'
 import { isElectron, isMac } from '../../services/Browser'
-import { ApplicationState } from '../../store'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
 import { SignInPage } from '../../pages/SignInPage'
@@ -13,6 +13,7 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const { authInitialized, installed, signedOut, uninstalling, showOrgs } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
     installed: state.binaries.installed,
@@ -21,13 +22,19 @@ export const App: React.FC = () => {
     showOrgs: !!state.accounts.membership.length,
   }))
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const layout: ILayout = {
+  const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
+  const layout = {
     showOrgs,
     hideSidebar,
-    singlePanel: useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`),
+    singlePanel,
     sidePanelWidth: hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0),
   }
-  const css = useStyles({ overlapHeader: layout.hideSidebar && isElectron() && isMac() })
+
+  useEffect(() => {
+    dispatch.ui.set({ layout })
+  }, [hideSidebar, singlePanel, showOrgs])
+
+  const css = useStyles({ overlapHeader: hideSidebar && isElectron() && isMac() })
 
   if (uninstalling)
     return (
@@ -60,8 +67,8 @@ export const App: React.FC = () => {
   return (
     <Page>
       <Box className={css.columns}>
-        {layout.hideSidebar ? <SidebarMenu layout={layout} /> : <Sidebar layout={layout} />}
-        <Router layout={layout} />
+        {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+        <Router />
       </Box>
     </Page>
   )

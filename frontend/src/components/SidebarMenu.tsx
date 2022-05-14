@@ -4,8 +4,11 @@ import { ApplicationState, Dispatch } from '../store'
 import { Drawer } from '@material-ui/core'
 import { Sidebar } from './Sidebar'
 
-export const SidebarMenu: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const open = useSelector((state: ApplicationState) => state.ui.sidebarMenu)
+export const SidebarMenu: React.FC = () => {
+  const { open, layout } = useSelector((state: ApplicationState) => ({
+    open: state.ui.sidebarMenu,
+    layout: state.ui.layout,
+  }))
   const dispatch = useDispatch<Dispatch>()
 
   return (

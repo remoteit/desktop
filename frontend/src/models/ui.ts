@@ -2,6 +2,7 @@ import { emit } from '../services/Controller'
 import { Theme } from '@material-ui/core'
 import { RootModel } from './rootModel'
 import { createModel } from '@rematch/core'
+import { SIDEBAR_WIDTH } from '../shared/constants'
 import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
@@ -23,7 +24,7 @@ type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
-  navigation: ILookup<string>
+  layout: ILayout
   selected: IDevice['id'][]
   connected: boolean
   offline: boolean
@@ -61,6 +62,7 @@ type UIState = {
   noticeMessage: string
   errorMessage: string
   panelWidth: ILookup<number>
+  navigation: ILookup<string>
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
@@ -75,7 +77,7 @@ export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
   themeDark: isDarkMode(),
-  navigation: {},
+  layout: { showOrgs: false, hideSidebar: false, singlePanel: false, sidePanelWidth: SIDEBAR_WIDTH },
   selected: [],
   connected: false,
   offline: !navigator.onLine,
@@ -113,6 +115,7 @@ export const defaultState: UIState = {
   noticeMessage: '',
   errorMessage: '',
   panelWidth: { devices: 400, connections: 500, settings: 350, account: 350, organization: 350 },
+  navigation: {},
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 5 },

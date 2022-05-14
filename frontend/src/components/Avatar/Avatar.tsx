@@ -67,7 +67,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderColor: active ? palette.primary.main : palette.grayLighter.main,
     cursor: 'pointer',
     position: 'relative',
-    boxShadow: active ? `0 0 10px ${palette.primary.main}` : undefined,
+    boxShadow: active ? `0 0 10px ${palette.primaryLight.main}` : undefined,
     '&:hover': { backgroundColor: palette.primaryLight.main, borderColor: palette.primaryLight.main },
   }),
 }))

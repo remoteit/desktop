@@ -1,5 +1,6 @@
 import React from 'react'
 import Controller from '../../services/Controller'
+import { ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles, Snackbar, IconButton, Dialog } from '@material-ui/core'
@@ -16,26 +17,35 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  const { device, connected, successMessage, noticeMessage, errorMessage, offline, backendAuthenticated, label } =
-    useSelector((state: ApplicationState) => {
-      const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
-      return {
-        device,
-        connected: state.ui.connected,
-        successMessage: state.ui.successMessage,
-        noticeMessage: state.ui.noticeMessage,
-        errorMessage: state.ui.errorMessage,
-        offline: state.ui.offline,
-        backendAuthenticated: state.auth.backendAuthenticated,
-        os: state.backend.environment.os,
-        label: state.labels.find(l => l.id === device?.attributes.color),
-      }
-    })
+  const {
+    device,
+    connected,
+    successMessage,
+    noticeMessage,
+    errorMessage,
+    offline,
+    backendAuthenticated,
+    layout,
+    label,
+  } = useSelector((state: ApplicationState) => {
+    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    return {
+      device,
+      connected: state.ui.connected,
+      successMessage: state.ui.successMessage,
+      noticeMessage: state.ui.noticeMessage,
+      errorMessage: state.ui.errorMessage,
+      offline: state.ui.offline,
+      backendAuthenticated: state.auth.backendAuthenticated,
+      layout: state.ui.layout,
+      label: state.labels.find(l => l.id === device?.attributes.color),
+    }
+  })
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
-  const css = useStyles({ spacing: 0 })
+  const css = useStyles({ spacing: layout.showOrgs ? ORGANIZATION_BAR_WIDTH : 0 })
 
   // only show one message at a time
   let snackbar = ''
@@ -54,6 +64,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         </Notice>
       </Dialog>
       <Snackbar
+        className={css.snackbar}
         open={snackbar === 'retry'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message="Webserver connection lost. Retrying..."
@@ -64,6 +75,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
       />
       <Snackbar
+        className={css.snackbar}
         key={errorMessage || 'error'}
         open={snackbar === 'error'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
@@ -81,6 +93,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         onClose={clearErrorMessage}
       />
       <Snackbar
+        className={css.snackbar}
         key={noticeMessage || 'notice'}
         open={snackbar === 'notice'}
         message={
@@ -94,6 +107,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         autoHideDuration={20000}
       />
       <Snackbar
+        className={css.snackbar}
         key={successMessage || 'success'}
         open={snackbar === 'success'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
@@ -111,7 +125,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
         onClose={clearSuccessMessage}
       />
-      <UpdateNotice />
+      <UpdateNotice className={css.snackbar} />
     </RemoteHeader>
   )
 }
