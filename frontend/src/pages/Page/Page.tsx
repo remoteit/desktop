@@ -2,7 +2,7 @@ import React from 'react'
 import Controller from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton, Dialog } from '@material-ui/core'
+import { makeStyles, Snackbar, IconButton, Dialog } from '@material-ui/core'
 import { getOwnDevices } from '../../models/accounts'
 import { DragAppRegion } from '../../components/DragAppRegion'
 import { UpdateNotice } from '../../components/UpdateNotice'
@@ -35,6 +35,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
+  const css = useStyles({ spacing: 0 })
 
   // only show one message at a time
   let snackbar = ''
@@ -114,3 +115,9 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     </RemoteHeader>
   )
 }
+
+const useStyles = makeStyles({
+  snackbar: ({ spacing }: { spacing: number }) => ({
+    marginLeft: spacing,
+  }),
+})
