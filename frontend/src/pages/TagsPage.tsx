@@ -87,6 +87,11 @@ export const TagsPage: React.FC = () => {
             warning={
               <>
                 <Notice severity="danger" gutterBottom fullWidth>
+                  You are deleting the tag&nbsp;
+                  <i>
+                    <b>{tag.name}</b>
+                  </i>
+                  <br />
                   This cannot be undone.
                 </Notice>
                 All devices will have this tag removed from them.

@@ -154,12 +154,14 @@ export default createModel<RootModel>()({
       await dispatch.accounts.fetch()
       await dispatch.devices.fetch()
       await dispatch.devices.fetchConnections()
-      dispatch.sessions.fetch()
-      dispatch.user.fetch()
-      dispatch.tags.fetch()
-      dispatch.plans.fetch()
-      dispatch.organization.fetch()
-      dispatch.announcements.fetch()
+      await Promise.all([
+        dispatch.sessions.fetch(),
+        dispatch.user.fetch(),
+        dispatch.tags.fetch(),
+        dispatch.plans.fetch(),
+        dispatch.organization.fetch(),
+        dispatch.announcements.fetch(),
+      ])
       dispatch.ui.set({ fetching: false })
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
