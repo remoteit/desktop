@@ -1,6 +1,6 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { makeStyles, ButtonBase, Divider, Typography, Tooltip, Menu } from '@material-ui/core'
+import { makeStyles, ButtonBase, Divider, Menu } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -9,8 +9,6 @@ import { ListItemSetting } from './ListItemSetting'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
-import { PortalUI } from './PortalUI'
-import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
@@ -43,7 +41,6 @@ export const AvatarMenu: React.FC = () => {
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef}>
         <Avatar email={user.email} button tooltip></Avatar>
-        {/* <Typography variant="caption">{user.email}</Typography> */}
       </ButtonBase>
       <Menu
         open={open}
@@ -129,21 +126,6 @@ export const AvatarMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  // base: {
-  //   width: '100%',
-  //   display: 'flex',
-  //   justifyContent: 'start',
-  //   alignItems: 'center',
-  //   alignContent: 'center',
-  //   '& .MuiAvatar-root': { marginRight: spacing.sm },
-  //   '& .MuiTypography-root': {
-  //     margin: 0,
-  //     overflow: 'hidden',
-  //     textOverflow: 'ellipsis',
-  //     // wordBreak: 'break-word',
-  //     textAlign: 'left',
-  //   },
-  // },
   label: {
     display: 'flex',
   },
