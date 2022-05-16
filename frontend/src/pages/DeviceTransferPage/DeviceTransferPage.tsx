@@ -18,7 +18,7 @@ type Props = {
 export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) => {
   const { contacts = [], transferring } = useSelector((state: ApplicationState) => ({
     contacts: state.contacts.all,
-    transferring: getDeviceModel(state).transferring,
+    transferring: state.ui.transferring,
   }))
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
@@ -75,7 +75,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) =>
         title="Are you sure?"
         action="Transfer"
       >
-        <Notice severity="warning" gutterBottom fullWidth>
+        <Notice severity="danger" gutterBottom fullWidth>
           You will lose all access and control of this device upon transfer.
         </Notice>
         <Typography variant="body2">

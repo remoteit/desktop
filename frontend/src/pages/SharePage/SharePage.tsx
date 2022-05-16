@@ -15,15 +15,9 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
   const { shares } = useDispatch<Dispatch>()
-  const {
-    contacts = [],
-    user,
-    userSelected,
-    deleting,
-  } = useSelector((state: ApplicationState) => ({
-    contacts: state.contacts.all,
+  const { contacts, user, deleting } = useSelector((state: ApplicationState) => ({
+    contacts: state.contacts.all || [],
     user: state.contacts.all.find(c => c.email === email),
-    userSelected: state.shares.currentDevice?.userSelected,
     deleting: state.shares.deleting,
   }))
   const location = useLocation()
