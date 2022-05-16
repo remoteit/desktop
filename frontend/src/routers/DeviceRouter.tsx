@@ -24,12 +24,13 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { remoteUI, device, targetDevice, targets, fetching } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, device, targetDevice, targets, fetching, silent } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     fetching: getDeviceModel(state).fetching,
     device: selectDevice(state, deviceID),
     targetDevice: state.backend.device,
     targets: state.backend.targets,
+    silent: state.ui.silent,
   }))
 
   const history = useHistory()
@@ -40,7 +41,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     if (deviceID && !device && !fetching) {
       // check that target device is registered and don't redirect
       if (loaded && !(remoteUI && targetDevice.uid)) {
-        dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
+        if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
+        else dispatch.ui.set({ silent: false })
         history.push('/devices')
       } else if (!loaded) {
         dispatch.devices.fetchSingle({ id: deviceID, hidden: true })
