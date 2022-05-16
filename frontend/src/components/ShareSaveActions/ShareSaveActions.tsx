@@ -15,11 +15,11 @@ export function ShareSaveActions({
   const { sharing: saving } = useSelector((state: ApplicationState) => state.shares)
   return (
     <section>
+      <Button color="primary" onClick={onSave} disabled={disabled || saving} variant="contained">
+        {saving ? 'Sharing...' : 'Share'}
+      </Button>
       <Button disabled={saving} onClick={onCancel}>
         Cancel
-      </Button>
-      <Button color="primary" onClick={onSave} disabled={disabled || saving} variant="contained">
-        {saving ? 'Saving' : 'Save'}
       </Button>
     </section>
   )

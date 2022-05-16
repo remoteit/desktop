@@ -25,12 +25,15 @@ type UIState = {
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
   layout: ILayout
+  silent: boolean
   selected: IDevice['id'][]
   connected: boolean
   offline: boolean
   uninstalling: boolean
   claiming: boolean
   fetching: boolean
+  destroying: boolean
+  transferring: boolean
   routingLock?: IRouteType
   routingMessage?: string
   sidebarMenu: boolean
@@ -78,12 +81,15 @@ export const defaultState: UIState = {
   themeMode: 'system',
   themeDark: isDarkMode(),
   layout: { showOrgs: false, hideSidebar: false, singlePanel: false, sidePanelWidth: SIDEBAR_WIDTH },
+  silent: false,
   selected: [],
   connected: false,
   offline: !navigator.onLine,
   uninstalling: false,
   claiming: false,
   fetching: false,
+  destroying: false,
+  transferring: false,
   routingLock: undefined,
   routingMessage: undefined,
   sidebarMenu: false,

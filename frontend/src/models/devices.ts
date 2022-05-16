@@ -38,8 +38,6 @@ type IDeviceState = {
   searched: boolean
   fetching: boolean
   fetchingMore: boolean
-  destroying: boolean // fixme - move to ui model
-  transferring: boolean
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -63,8 +61,6 @@ export const defaultState: IDeviceState = {
   searched: false,
   fetching: true,
   fetchingMore: false,
-  destroying: false,
-  transferring: false,
   query: '',
   append: false,
   filter: 'all',
@@ -349,8 +345,9 @@ export default createModel<RootModel>()({
 
     async destroy(device: IDevice, state) {
       const { auth } = state
-      dispatch.devices.set({ destroying: true })
-      const result = device.permissions.includes('MANAGE')
+      const manager = device.permissions.includes('MANAGE')
+      dispatch.ui.set({ destroying: true, silent: true })
+      const result = manager
         ? await graphQLDeleteDevice(device.id)
         : await graphQLRemoveDevice({
             deviceId: device.id,
@@ -360,8 +357,11 @@ export default createModel<RootModel>()({
         await dispatch.connections.clearByDevice(device.id)
         await dispatch.devices.fetch()
         await dispatch.devices.fetchConnections()
+        dispatch.ui.set({
+          successMessage: `"${device.name}" was successfully ${manager ? 'deleted' : 'removed'}.`,
+        })
       }
-      dispatch.devices.set({ destroying: false })
+      dispatch.ui.set({ destroying: false })
     },
 
     async customAttributes({ customAttributes }: { customAttributes: string[] }, state) {
@@ -371,19 +371,18 @@ export default createModel<RootModel>()({
 
     async transferDevice(data: ITransferProps) {
       if (data.email && data.device) {
-        dispatch.devices.set({ transferring: true })
+        dispatch.ui.set({ transferring: true, silent: true })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
           await dispatch.connections.clearByDevice(data.device.id)
           await dispatch.devices.fetch()
           await dispatch.devices.fetchConnections()
           dispatch.ui.set({
-            redirect: '/devices',
             successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
         }
         await dispatch.connections.clearByDevice(data.device.id)
-        dispatch.devices.set({ transferring: false })
+        dispatch.ui.set({ transferring: false })
       }
     },
     async setPersistent(params: ILookup<any>, state) {

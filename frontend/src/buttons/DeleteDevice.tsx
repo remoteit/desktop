@@ -1,6 +1,5 @@
 import React from 'react'
 import { emit } from '../services/Controller'
-import { getDeviceModel } from '../models/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography } from '@material-ui/core'
@@ -17,7 +16,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
   const { devices, ui } = useDispatch<Dispatch>()
   const { destroying, userId, setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({
     userId: state.auth.user?.id,
-    destroying: getDeviceModel(state).destroying,
+    destroying: state.ui.destroying,
     setupBusy: state.ui.setupBusy,
     setupDeletingDevice: state.ui.setupDeletingDevice,
   }))
