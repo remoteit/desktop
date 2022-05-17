@@ -74,6 +74,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           placeholder={routingLock || attributes.route || ROUTES[0].key}
           onChange={event => onUpdate({ ...attributes, route: event.target.value as IRouteType })}
         >
+          <MenuItem value="">
+            <i>No default</i>
+          </MenuItem>
           {ROUTES.map(route => (
             <MenuItem value={route.key} key={route.key}>
               {route.name}
@@ -82,6 +85,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </TextField>
         <Typography variant="caption">
           {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
+          <b> Routing is only available on desktop.</b>
         </Typography>
       </ListItem>
       {globalDefaults && (
@@ -94,6 +98,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
               value={attributes.launchType || ''}
               onChange={event => onUpdate({ ...attributes, launchType: event.target.value })}
             >
+              <MenuItem value="">
+                <i>No default</i>
+              </MenuItem>
               <MenuItem value="URL">URL</MenuItem>
               <MenuItem value="COMMAND">Command</MenuItem>
             </TextField>
@@ -104,7 +111,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
               label="Auto Launch"
               checked={attributes.autoLaunch}
               indeterminate={attributes.autoLaunch === undefined}
-              onClick={autoLaunch => onUpdate({ ...attributes, autoLaunch })}
+              onClick={autoLaunch =>
+                onUpdate({ ...attributes, autoLaunch: attributes.autoLaunch === false ? undefined : autoLaunch })
+              }
             />
           </ListItem>
         </>
