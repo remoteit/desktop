@@ -10,8 +10,8 @@ import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
 import { ServiceDetailPage } from '../pages/ServiceDetailPage'
 import { ServiceConnectPage } from '../pages/ServiceConnectPage'
-import { UsersPageService } from '../pages/UsersPageService'
-import { UsersPageDevice } from '../pages/UsersPageDevice'
+import { ServiceUsersPage } from '../pages/ServiceUsersPage'
+import { DeviceUsersPage } from '../pages/DeviceUsersPage'
 import { ServiceEditPage } from '../pages/ServiceEditPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
@@ -74,7 +74,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <DeviceTransferPage targetDevice={targetDevice} device={device} />
           </Route>
           <Route path="/devices/:deviceID/users">
-            <UsersPageDevice device={device} />
+            <DeviceUsersPage device={device} />
           </Route>
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
@@ -92,7 +92,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <SharePage device={device} />
           </Route>
           <Route path="/devices/:deviceID/:serviceID/users">
-            <UsersPageService device={device} />
+            <ServiceUsersPage device={device} />
           </Route>
           <Route path="/devices/:deviceID/:serviceID/edit">
             <ServiceEditPage targetDevice={targetDevice} targets={targets} device={device} />
