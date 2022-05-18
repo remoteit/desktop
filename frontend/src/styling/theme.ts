@@ -201,6 +201,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           zIndex: 5,
           backgroundColor: palette.white.main,
         },
+        gutters: {
+          marginLeft: spacing.lg,
+          marginRight: spacing.xs,
+        },
       },
       MuiPaper: {
         rounded: { borderRadius: radius },

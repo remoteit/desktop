@@ -21,6 +21,8 @@ import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationRolePage } from '../pages/OrganizationRolePage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
+import { OrganizationGuestPage } from '../pages/OrganizationGuestPage'
+import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
@@ -252,12 +254,20 @@ export const Router: React.FC = () => {
                 <OrganizationAddPage />
               </Route>
 
-              <Route path="/organization/saml">
+              <Route path="/organization/settings">
                 <OrganizationSettingsPage />
               </Route>
 
               <Route path="/organization/tags">
                 <TagsPage />
+              </Route>
+
+              <Route path="/organization/guests/:userID">
+                <OrganizationGuestPage />
+              </Route>
+
+              <Route path="/organization/guests">
+                <OrganizationGuestsPage />
               </Route>
 
               <Route path="/organization">

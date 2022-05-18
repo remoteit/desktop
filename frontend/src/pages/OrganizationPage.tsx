@@ -60,6 +60,14 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         <ListItemLocation
+          title="Guests"
+          pathname="/organization/guests"
+          icon="user-circle"
+          disabled={!permissions?.includes('MANAGE')}
+          showDisabled
+          dense
+        />
+        <ListItemLocation
           title="Tags"
           pathname="/organization/tags"
           icon="tag"
@@ -70,7 +78,7 @@ export const OrganizationPage: React.FC = () => {
         <ListItemLocation
           title="Settings"
           icon="sliders-h"
-          pathname="/organization/saml"
+          pathname="/organization/settings"
           disabled={!admin}
           showDisabled
           dense
