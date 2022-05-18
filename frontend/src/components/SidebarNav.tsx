@@ -57,9 +57,9 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="code" dense />
-      <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
-      <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
+      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="code" dense />
+      <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
+      <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
       <ListItemLocation
         title="Announcements"
