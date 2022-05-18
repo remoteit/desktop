@@ -22,8 +22,8 @@ type Props = {
 export const NotificationSettings: React.FC<Props> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
   const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
-    globalNotificationEmail: state.auth?.notificationSettings?.emailNotifications,
-    globalNotificationSystem: state.auth?.notificationSettings?.desktopNotifications,
+    globalNotificationEmail: state.user.notificationSettings?.emailNotifications,
+    globalNotificationSystem: state.user.notificationSettings?.desktopNotifications,
   }))
   const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(
     device?.notificationSettings?.emailNotifications

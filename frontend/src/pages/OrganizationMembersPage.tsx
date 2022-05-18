@@ -50,16 +50,12 @@ export const OrganizationMembersPage: React.FC = () => {
             {organization?.id && <IconButton title="Add member" icon="user-plus" to="/organization/share" size="md" />}
           </Typography>
           {organization?.id && (
-            <List>
+            <List disablePadding>
               <SeatsSetting license={license} />
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
-                  Add members to your organization to automatically share your devices. &nbsp;
-                  {!enterprise && (
-                    <b>
-                      Unlicensed members will only be able to connect to the first five and can not be device admins.
-                    </b>
-                  )}
+                  Members will automatically have devices shared to them. &nbsp;
+                  {!enterprise && <b>Unlicensed members will only be able to connect to the first five devices.</b>}
                 </Typography>
               </Gutters>
               <LicensingNoticeDisplay noticeType="PERSONAL_ORGANIZATION" license={license} />

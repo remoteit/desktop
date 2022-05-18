@@ -10,7 +10,7 @@ import { Notice } from '../Notice'
 import { Icon } from '../Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const UpdateNotice: React.FC = () => {
+export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
   const updateReady = useSelector((state: ApplicationState) => selectUpdateNotice(state))
   const [open, setOpen] = useState<boolean>(!!updateReady)
   const { backend } = useDispatch<Dispatch>()
@@ -41,6 +41,7 @@ export const UpdateNotice: React.FC = () => {
     <>
       <Snackbar
         open={open}
+        className={className}
         message={`An update is available (v${updateReady}).`}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         action={[

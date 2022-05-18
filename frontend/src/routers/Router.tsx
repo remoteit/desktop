@@ -21,9 +21,12 @@ import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationRolePage } from '../pages/OrganizationRolePage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
+import { OrganizationGuestPage } from '../pages/OrganizationGuestPage'
+import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
+import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
@@ -41,15 +44,16 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
-export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
+export const Router: React.FC = () => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
-  const { remoteUI, redirect, targetDevice, registered, os } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, redirect, targetDevice, registered, os, layout } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     redirect: state.ui.redirect,
     targetDevice: state.backend.device,
     registered: !!state.backend.device.uid,
     os: state.backend.environment.os || getOs(),
+    layout: state.ui.layout,
   }))
 
   useEffect(() => {
@@ -201,6 +205,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <NotificationsPage />
               </Route>
 
+              <Route path="/settings/defaults">
+                <ConnectionDefaultsPage />
+              </Route>
+
               <Route path="/settings/reports">
                 <ReportsPage />
               </Route>
@@ -246,12 +254,20 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <OrganizationAddPage />
               </Route>
 
-              <Route path="/organization/saml">
+              <Route path="/organization/settings">
                 <OrganizationSettingsPage />
               </Route>
 
               <Route path="/organization/tags">
                 <TagsPage />
+              </Route>
+
+              <Route path="/organization/guests/:userID">
+                <OrganizationGuestPage />
+              </Route>
+
+              <Route path="/organization/guests">
+                <OrganizationGuestsPage />
               </Route>
 
               <Route path="/organization">

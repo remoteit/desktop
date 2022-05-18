@@ -325,6 +325,8 @@ declare global {
     language?: string
   }
 
+  type IGuest = { id: string; email: string; devices: IDevice[] }
+
   type INotificationSetting = {
     emailNotifications?: boolean
     desktopNotifications?: boolean

@@ -1,8 +1,12 @@
 import { getApplication } from '../shared/applications'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../store'
 
 export const useApplication = (service?: IService, connection?: IConnection) => {
+  const connectionDefaults = useSelector((state: ApplicationState) => state.user.attributes?.connectionDefaults || {})
+
   // @TODO = try useCallback here to avoid re-rendering
-  return getApplication(service, connection)
+  return getApplication(service, connection, connectionDefaults)
 }
 
 // export const useApplication = (service?: IService, connection?: IConnection) => {

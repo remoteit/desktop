@@ -177,7 +177,7 @@ export function graphQLAdaptor(
 ): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const thisDeviceId = store.getState().backend.device.uid
-  let metaData = { userAttributes: new Array<string>() }
+  let metaData = { customAttributes: new Array<string>() }
   let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
       id: d.id,
@@ -236,13 +236,13 @@ export function graphQLAdaptor(
       hidden,
     })
   )
-  store.dispatch.devices.userAttributes({ userAttributes: metaData.userAttributes })
+  store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
   return data
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
   const attributes = processAttributes(response)
-  metaData.userAttributes = metaData.userAttributes.concat(Object.keys(attributes).filter(c => c !== '$remoteit'))
+  metaData.customAttributes = metaData.customAttributes.concat(Object.keys(attributes).filter(c => c !== '$remoteit'))
   return attributes
 }
 

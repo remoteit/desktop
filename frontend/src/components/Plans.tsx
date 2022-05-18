@@ -56,7 +56,7 @@ export const Plans: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { accountId, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
-    accountId: state.auth.user?.id || '',
+    accountId: state.user.id,
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: state.plans.purchasing,
     license: selectOwnRemoteitLicense(state),

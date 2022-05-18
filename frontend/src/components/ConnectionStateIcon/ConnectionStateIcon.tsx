@@ -80,8 +80,7 @@ export function ConnectionStateIcon({
         <Badge
           variant="dot"
           color="error"
-          overlap="circular"
-          classes={{ colorError: device.quality === 'POOR' ? css.poor : css.moderate }}
+          classes={{ colorError: device.quality === 'POOR' ? css.poor : css.moderate, badge: css.badge }}
         >
           {element}
         </Badge>
@@ -122,4 +121,5 @@ const useStyles = makeStyles(({ palette }) => ({
   moderate: { backgroundColor: palette.warning.main },
   poor: { backgroundColor: palette.danger.main },
   button: { margin: `${-spacing.sm}px ${-spacing.sm}px` },
+  badge: { boxShadow: `0 0 4px 3px ${palette.grayLightest.main}` },
 }))

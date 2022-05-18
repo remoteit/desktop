@@ -1,59 +1,82 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Typography, TextField, ListItem, MenuItem } from '@material-ui/core'
+import { Typography, TextField, List, ListItem, MenuItem } from '@material-ui/core'
 import { useApplication } from '../hooks/useApplication'
+import { useStyles } from './ServiceForm/ServiceForm'
+import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { ApplicationState } from '../store'
+import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
+import { validPort } from '../shared/nameHelper'
 import { ROUTES } from '../models/devices'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
 
 type Props = IService['attributes'] & {
-  className?: string
-  subClassName?: string
   connection?: IConnection
   disabled: boolean
+  customTokens?: string[]
   attributes: IService['attributes']
+  globalDefaults?: boolean
   onUpdate: (attributes: IService['attributes']) => void
 }
 
 export const ServiceAttributesForm: React.FC<Props> = ({
-  className,
-  subClassName,
   disabled,
   connection,
+  customTokens = [],
   attributes,
+  globalDefaults,
   onUpdate,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
   const app = useApplication(undefined, connection)
+  const css = useStyles()
 
-  // Defaults
-  attributes = {
-    ...attributes,
-    route: routingLock || attributes.route || ROUTES[0].key,
-    commandTemplate: attributes.commandTemplate,
-    launchTemplate: attributes.launchTemplate,
-  }
-
-  React.useEffect(() => {
-    // ensure defaults are passed
-    onUpdate(attributes)
-  }, [])
+  customTokens = customTokens || app.customTokens
 
   return (
     <>
-      <ListItem className={className}>
+      {!globalDefaults && (
+        <>
+          <ListItem className={css.field}>
+            <TextField
+              label="Default Local Port"
+              value={attributes.defaultPort || ''}
+              disabled={disabled}
+              variant="filled"
+              onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
+            />
+            <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
+          </ListItem>
+          <ListItem className={css.field}>
+            <TextField
+              label="Host Name Override"
+              value={attributes.targetHost || ''}
+              disabled={disabled}
+              variant="filled"
+              onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
+            />
+            <Typography variant="caption">
+              Override host name when accessing this service. Needed by host name dependant sites. <i>Example </i>
+              <b>webui.company.com</b>
+            </Typography>
+          </ListItem>
+        </>
+      )}
+      <ListItem className={css.field}>
         <TextField
           select
           label="Routing"
-          value={attributes.route}
+          value={routingLock || attributes.route || ''}
           disabled={!!routingLock || disabled}
           variant="filled"
-          onChange={event => {
-            onUpdate({ ...attributes, route: event.target.value as IRouteType })
-          }}
+          placeholder={routingLock || attributes.route || ROUTES[0].key}
+          onChange={event => onUpdate({ ...attributes, route: event.target.value as IRouteType })}
         >
+          <MenuItem value="">
+            <i>No default</i>
+          </MenuItem>
           {ROUTES.map(route => (
             <MenuItem value={route.key} key={route.key}>
               {route.name}
@@ -62,12 +85,43 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </TextField>
         <Typography variant="caption">
           {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
+          <b> Routing is only available on desktop.</b>
         </Typography>
       </ListItem>
+      {globalDefaults && (
+        <>
+          <ListItem className={css.field}>
+            <TextField
+              select
+              variant="filled"
+              label="Launch type"
+              value={attributes.launchType || ''}
+              onChange={event => onUpdate({ ...attributes, launchType: event.target.value })}
+            >
+              <MenuItem value="">
+                <i>No default</i>
+              </MenuItem>
+              <MenuItem value="URL">URL</MenuItem>
+              <MenuItem value="COMMAND">Command</MenuItem>
+            </TextField>
+          </ListItem>
+          <ListItem dense>
+            <ListItemCheckbox
+              disableGutters
+              label="Auto Launch"
+              checked={attributes.autoLaunch}
+              indeterminate={attributes.autoLaunch === undefined}
+              onClick={autoLaunch =>
+                onUpdate({ ...attributes, autoLaunch: attributes.autoLaunch === false ? undefined : autoLaunch })
+              }
+            />
+          </ListItem>
+        </>
+      )}
       <TemplateSetting
-        className={className}
+        className={css.field}
         label={`${app.launchTitle} Template`}
-        value={attributes.launchTemplate}
+        value={attributes.launchTemplate || ''}
         placeholder={app.launchTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
@@ -77,9 +131,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         <b>{app.launchString}</b>
       </TemplateSetting>
       <TemplateSetting
-        className={className}
+        className={css.field}
         label={`${app.commandTitle} Template`}
-        value={attributes.commandTemplate}
+        value={attributes.commandTemplate || ''}
         placeholder={app.commandTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, commandTemplate: value })}
@@ -88,20 +142,35 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         <br />
         <b>{app.commandString}</b>
       </TemplateSetting>
-      <ListItem className={subClassName}>
-        {app.allCustomTokens.length ? (
+      <ListItem className={css.fieldSub}>
+        {customTokens.length ? (
           <Quote margin="xs">
-            {app.allCustomTokens.map(token => (
-              <TextField
-                fullWidth
-                key={token}
-                label={`${token} default`}
-                value={attributes[token] || ''}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
-              />
-            ))}
+            <List disablePadding>
+              {customTokens.map(token =>
+                token === 'path' ? (
+                  <InlineFileFieldSetting
+                    key="path"
+                    variant="filled"
+                    disableGutters
+                    dense={false}
+                    label="Application Path"
+                    value={attributes[token] || ''}
+                    onSave={value => onUpdate({ ...attributes, [token]: value })}
+                  />
+                ) : (
+                  <ListItem disableGutters key={token}>
+                    <TextField
+                      fullWidth
+                      label={`${token} default`}
+                      value={attributes[token] || ''}
+                      disabled={disabled}
+                      variant="filled"
+                      onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
+                    />
+                  </ListItem>
+                )
+              )}
+            </List>
           </Quote>
         ) : (
           <Notice fullWidth gutterTop>

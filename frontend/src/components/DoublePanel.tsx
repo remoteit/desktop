@@ -12,7 +12,6 @@ type Props = {
 }
 
 const MIN_WIDTH = 300
-const SIDEBAR_WIDTH = 250
 const PADDING = 9
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => {
@@ -25,19 +24,19 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
   const [grab, setGrab] = useState<boolean>(false)
   const css = useStyles()
 
-  const sidebarWidth = (layout.hideSidebar ? 0 : SIDEBAR_WIDTH) + PADDING
+  const sidePanelWidth = layout.sidePanelWidth + PADDING
 
   const onMove = (event: MouseEvent) => {
     const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
     handleRef.current += event.clientX - moveRef.current
     moveRef.current = event.clientX
-    if (handleRef.current > MIN_WIDTH && handleRef.current < fullWidth - MIN_WIDTH - sidebarWidth) {
+    if (handleRef.current > MIN_WIDTH && handleRef.current < fullWidth - MIN_WIDTH - sidePanelWidth) {
       setWidth(handleRef.current)
     }
   }
 
   const measure = () => {
-    const parent = (primaryRef.current?.parentElement?.offsetWidth || 1000) - sidebarWidth
+    const parent = (primaryRef.current?.parentElement?.offsetWidth || 1000) - sidePanelWidth
     setParentWidth(parent)
     if (width < MIN_WIDTH) setWidth(MIN_WIDTH)
     else if (width > parent - MIN_WIDTH) setWidth(parent - MIN_WIDTH)

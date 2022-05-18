@@ -1,6 +1,6 @@
 import { graphQLBasicRequest } from './graphQL'
 
-export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId: String) {
+export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
     ` mutation query($attributes: Object!, $serviceId: String) {
         setAttributes(attributes: $attributes, serviceId: $serviceId)
@@ -361,14 +361,9 @@ export async function graphQLDeleteTag(name: string, accountId: string) {
   )
 }
 
-export async function graphQLUpdateNotification(params: INotificationSetting) {
+export async function graphQLNotificationSettings(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    `  mutation UpdateUserMetadata(
-          $emailNotifications: Boolean
-          $desktopNotifications: Boolean
-          $urlNotifications: Boolean
-          $notificationUrl: String
-        ) {
+    `  mutation query($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
           setNotificationSettings(
             emailNotifications: $emailNotifications, 
             desktopNotifications: $desktopNotifications, 

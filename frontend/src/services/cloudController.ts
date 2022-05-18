@@ -193,7 +193,7 @@ class CloudController {
         platform: event.platform,
         sessionId: event.session,
         geo: event.sourceGeo,
-        metadata: state.auth.notificationSettings,
+        metadata: state.user.notificationSettings,
         quantity: event.quantity,
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,

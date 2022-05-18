@@ -201,6 +201,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           zIndex: 5,
           backgroundColor: palette.white.main,
         },
+        gutters: {
+          marginLeft: spacing.lg,
+          marginRight: spacing.xs,
+        },
       },
       MuiPaper: {
         rounded: { borderRadius: radius },
@@ -309,7 +313,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiInputBase: {
-        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs, borderRadius: radius },
+        root: {
+          '& .MuiInputBase-input': { borderRadius: 0 },
+        },
+        input: {
+          paddingTop: spacing.xxs,
+          paddingBottom: spacing.xxs,
+          borderRadius: radius,
+        },
       },
       MuiInputLabel: {
         shrink: {
@@ -337,11 +348,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiFilledInput: {
         root: {
-          backgroundColor: palette.grayLightest.main,
           borderTopLeftRadius: radius,
           borderBottomLeftRadius: radius,
           borderTopRightRadius: radius,
           borderBottomRightRadius: radius,
+          backgroundColor: palette.grayLightest.main,
           '&$focused': { backgroundColor: palette.primaryHighlight.main },
           '&.Mui-disabled': { backgroundColor: palette.grayLightest.main },
           '&:hover': { backgroundColor: palette.primaryHighlight.main },

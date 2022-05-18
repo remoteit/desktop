@@ -9,10 +9,8 @@ import {
   COGNITO_USER_POOL_ID,
   COGNITO_AUTH_DOMAIN,
   REDIRECT_URL,
-  LANGUAGES,
 } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
-import { graphQLUpdateNotification } from '../services/graphQLMutation'
 import { getToken, r3 } from '../services/remote.it'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
@@ -51,7 +49,6 @@ export interface AuthState {
   authService?: AuthService
   user?: IUser
   localUsername?: string
-  notificationSettings: INotificationSetting
   mfaMethod: string
   AWSUser: AWSUser
 }
@@ -64,7 +61,6 @@ const defaultState: AuthState = {
   user: undefined,
   authService: undefined,
   localUsername: undefined,
-  notificationSettings: {},
   mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
@@ -95,7 +91,7 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT END')
     },
     async fetchUser(_, state) {
-      const { auth } = dispatch as Dispatch
+      const { auth, user } = dispatch as Dispatch
       try {
         const result = await graphQLRequest(
           ` {
@@ -104,46 +100,19 @@ export default createModel<RootModel>()({
                 email
                 authhash
                 yoicsId
-                language
-                created
-                notificationSettings {
-                  emailNotifications
-                  desktopNotifications
-                  urlNotifications
-                  notificationEmail
-                  notificationUrl
-                }
               }
             }`
         )
         graphQLGetErrors(result)
         const data = result?.data?.data?.login
-        const user = {
-          id: data.id,
-          email: data.email,
-          authHash: data.authhash,
-          yoicsId: data.yoicsId,
-          language: data.language,
-          created: data.created,
-        }
+        const user = { ...data, authHash: data.authhash }
         auth.set({ user, signInError: undefined })
         setLocalStorage(state, USER_KEY, user)
         analyticsHelper.identify(data.id)
         if (data.authhash && data.yoicsId) {
           Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
-          auth.set({ notificationSettings: data.notificationSettings })
           auth.signedIn()
         } else console.warn('Login failed!', data)
-      } catch (error) {
-        await apiError(error)
-      }
-    },
-    async updateUserMetadata(metadata: INotificationSetting) {
-      const { auth } = dispatch as Dispatch
-      try {
-        const response = await graphQLUpdateNotification(metadata)
-        auth.set({ notificationSettings: metadata })
-        graphQLGetErrors(response)
       } catch (error) {
         await apiError(error)
       }
@@ -160,12 +129,6 @@ export default createModel<RootModel>()({
       } catch (error) {
         dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
       }
-    },
-    async changeLanguage(language: string) {
-      const { setLanguage } = dispatch.auth
-      await r3.post('/user/language/', { language })
-      dispatch.ui.set({ successMessage: `Language changed to ${LANGUAGES[language]}` })
-      setLanguage(language)
     },
     /* TODO validate and hook changeEmail up */
     async changeEmail(email: string) {
@@ -255,6 +218,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.init()
       await dispatch.connections.init()
       await dispatch.tags.fetch()
+      dispatch.user.fetch()
       dispatch.devices.fetch()
       dispatch.devices.fetchConnections()
       dispatch.contacts.fetch()
@@ -278,6 +242,7 @@ export default createModel<RootModel>()({
       removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)
       dispatch.auth.set({ user: undefined })
+      dispatch.user.reset()
       dispatch.organization.reset()
       dispatch.accounts.reset()
       dispatch.connections.reset()
@@ -313,11 +278,6 @@ export default createModel<RootModel>()({
   reducers: {
     setAWSUserEmail(state: AuthState, value: string) {
       state.AWSUser.email = value
-      return state
-    },
-    setLanguage(state: AuthState, language: string) {
-      if (!state.user) return state
-      state.user.language = language
       return state
     },
     set(state: AuthState, params: ILookup<any>) {

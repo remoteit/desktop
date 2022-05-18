@@ -60,6 +60,7 @@ export const MAX_NAME_LENGTH = 100
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
+export const ORGANIZATION_BAR_WIDTH = 70
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
@@ -101,6 +102,20 @@ export const PUBLIC_CONNECTION = {
   failover: false,
   proxyOnly: true,
   log: false,
+}
+
+export const DEFAULT_SERVICE: IService = {
+  id: '',
+  contactedAt: new Date(),
+  createdAt: new Date(),
+  name: '',
+  lastReported: new Date(),
+  state: 'inactive',
+  type: '',
+  deviceID: '',
+  access: [],
+  license: 'UNKNOWN',
+  attributes: {},
 }
 
 export const LANGUAGES: ILookup<string> = {

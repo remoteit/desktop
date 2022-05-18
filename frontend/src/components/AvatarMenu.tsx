@@ -1,6 +1,6 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/core'
+import { makeStyles, ButtonBase, Divider, Menu } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -9,7 +9,6 @@ import { ListItemSetting } from './ListItemSetting'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
-import { PortalUI } from './PortalUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
@@ -20,7 +19,7 @@ export const AvatarMenu: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { user, remoteUI, preferences, backendAuthenticated, licenseIndicator } = useSelector(
     (state: ApplicationState) => ({
-      user: state.auth.user,
+      user: state.user,
       remoteUI: isRemoteUI(state),
       preferences: state.backend.preferences,
       backendAuthenticated: state.auth.backendAuthenticated,
@@ -40,17 +39,16 @@ export const AvatarMenu: React.FC = () => {
 
   return (
     <>
-      <Tooltip title={user?.email || 'Sign in'} placement="right">
-        <ButtonBase onClick={handleOpen} ref={buttonRef}>
-          <Avatar email={user?.email || ''} button />
-        </ButtonBase>
-      </Tooltip>
+      <ButtonBase onClick={handleOpen} ref={buttonRef}>
+        <Avatar email={user.email} button tooltip></Avatar>
+      </ButtonBase>
       <Menu
         open={open}
         anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         getContentAnchorEl={null}
         disableScrollLock
         elevation={2}

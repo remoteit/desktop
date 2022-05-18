@@ -218,8 +218,10 @@ declare global {
   type IGlobalTooltip = { el?: HTMLElement; title: React.ReactElement | string; color?: string }
 
   type ILayout = {
+    showOrgs: boolean
     hideSidebar: boolean
     singlePanel: boolean
+    sidePanelWidth: number
   }
 }
 

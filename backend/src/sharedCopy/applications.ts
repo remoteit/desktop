@@ -24,6 +24,7 @@ export class Application {
   windowsCommandTemplate?: string
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
+  globalDefaults: ILookup<any> = {}
   localhost?: boolean
 
   connection?: IConnection
@@ -128,19 +129,19 @@ export class Application {
   }
 
   get launchType() {
-    return this.connection?.launchType || this.defaultLaunchType
+    return this.connection?.launchType || this.globalDefaults?.launchType || this.defaultLaunchType
   }
 
   get defaultTokens() {
     return this.defaultAppTokens
   }
 
-  get allCustomTokens() {
-    return this.allTokens.filter(token => !this.defaultTokens.includes(token))
-  }
-
   get customTokens() {
     return this.tokens.filter(token => !this.defaultTokens.includes(token))
+  }
+
+  get allCustomTokens() {
+    return this.allTokens.filter(token => !this.defaultTokens.includes(token))
   }
 
   get missingTokens() {
@@ -148,7 +149,7 @@ export class Application {
   }
 
   get lookup() {
-    let lookup: ILookup<any> = { ...this.defaultTokenData }
+    let lookup: ILookup<any> = { ...this.defaultTokenData, ...this.globalDefaults }
     if (this.service) lookup = { ...lookup, ...this.service.attributes }
     if (this.connection) lookup = { ...lookup, ...this.connection }
     return lookup
@@ -157,11 +158,16 @@ export class Application {
   private get resolvedDefaultLaunchTemplate() {
     return this.connection?.reverseProxy
       ? this.reverseProxyTemplate
-      : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
+      : this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
-    return this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
+    return (
+      this.service?.attributes.commandTemplate ||
+      this.globalDefaults.commandTemplate ||
+      this.defaultCommandTemplate ||
+      this.defaultLaunchTemplate
+    )
   }
 
   private parse(template: string = '', lookup: ILookup<string>) {
@@ -183,11 +189,13 @@ export class Application {
   }
 }
 
-export function getApplication(service?: IService, connection?: IConnection) {
-  const app = getApplicationType(service?.typeID || connection?.typeID)
+export function getApplication(service?: IService, connection?: IConnection, globalDefaults?: ILookup<any>) {
+  const typeID = service?.typeID || connection?.typeID
+  const app = getApplicationType(typeID)
 
   app.service = service
   app.connection = connection
+  app.globalDefaults = globalDefaults?.[typeID || ''] || {}
 
   return app
 }

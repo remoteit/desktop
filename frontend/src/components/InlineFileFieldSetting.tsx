@@ -19,6 +19,7 @@ type Props = {
   variant?: TextFieldProps['variant']
   disabled?: boolean
   disableGutters?: boolean
+  dense?: boolean
   onSave?: (value?: string) => void
 }
 
@@ -28,6 +29,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   variant,
   disabled,
   disableGutters,
+  dense = true,
   onSave,
 }) => {
   const { filePath } = useSelector((state: ApplicationState) => state.backend)
@@ -50,7 +52,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
       onClick={filePrompt}
       disabled={disabled}
       disableGutters={disableGutters}
-      dense
+      dense={dense}
     >
       <ListItemText>
         {label && <InputLabel shrink>{label}</InputLabel>}

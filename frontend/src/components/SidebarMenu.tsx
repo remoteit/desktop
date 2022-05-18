@@ -5,12 +5,15 @@ import { Drawer } from '@material-ui/core'
 import { Sidebar } from './Sidebar'
 
 export const SidebarMenu: React.FC = () => {
-  const open = useSelector((state: ApplicationState) => state.ui.sidebarMenu)
+  const { open, layout } = useSelector((state: ApplicationState) => ({
+    open: state.ui.sidebarMenu,
+    layout: state.ui.layout,
+  }))
   const dispatch = useDispatch<Dispatch>()
 
   return (
     <Drawer anchor="left" open={open} onClose={() => dispatch.ui.set({ sidebarMenu: false })}>
-      <Sidebar />
+      <Sidebar layout={layout} />
     </Drawer>
   )
 }

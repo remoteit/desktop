@@ -22,6 +22,7 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   1206: 'Advantech',
   1209: 'AXIS',
   1210: 'Synology',
+  33792: 'Mobile',
   65535: 'Unknown',
 }
 
@@ -86,6 +87,9 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
       break
     case 1210:
       name = 'nas'
+      break
+    case 33792:
+      name = 'mobile-android'
       break
     case 65535:
       name = 'hdd'

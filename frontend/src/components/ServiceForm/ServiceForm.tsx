@@ -12,8 +12,8 @@ import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { serviceNameValidation, validPort } from '../../shared/nameHelper'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
-import { serviceNameValidation } from '../../shared/nameHelper'
 import { AccordionMenuItem } from '../AccordionMenuItem'
 import { findType } from '../../models/applicationTypes'
 import { Gutters } from '../Gutters'
@@ -86,11 +86,6 @@ export const ServiceForm: React.FC<Props> = ({
     } else {
       backend.set({ reachablePort: false })
     }
-  }
-
-  const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    const port = Math.max(0, Math.min(+event.target.value, 65535))
-    return isNaN(port) ? 0 : port
   }
 
   const CheckIcon = () => (
@@ -267,43 +262,11 @@ export const ServiceForm: React.FC<Props> = ({
       </List>
       <AccordionMenuItem subtitle="Connection defaults" gutters>
         <List>
-          <ListItem className={css.field}>
-            <TextField
-              label="Default Local Port"
-              value={form.attributes.defaultPort || ''}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => {
-                form.attributes.defaultPort = validPort(event)
-                setForm({ ...form })
-              }}
-            />
-            <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
-          </ListItem>
-          <ListItem className={css.field}>
-            <TextField
-              label="Host Name Override"
-              value={form.attributes.targetHost || ''}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => {
-                form.attributes.targetHost = event.target.value.toString()
-                setForm({ ...form })
-              }}
-            />
-            <Typography variant="caption">
-              Override host name when accessing this service. Needed by host name dependant sites. <i>Example </i>
-              <b>webui.company.com</b>
-            </Typography>
-          </ListItem>
           <ServiceAttributesForm
-            className={css.field}
-            subClassName={css.fieldSub}
             connection={{
               ...DEFAULT_CONNECTION,
               ...form.attributes,
               typeID: form.type,
-              port: form.attributes.defaultPort,
             }}
             disabled={disabled}
             attributes={form.attributes}
@@ -321,7 +284,7 @@ export const ServiceForm: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+export const useStyles = makeStyles({
   field: {
     paddingRight: spacing.xl,
     alignItems: 'flex-start',

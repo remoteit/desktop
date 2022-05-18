@@ -1,6 +1,7 @@
 import md5 from 'md5'
 import React from 'react'
 import seedRandom from 'seedrandom'
+import classnames from 'classnames'
 import { labelLookup } from '../../models/labels'
 import { makeStyles, Avatar as MuiAvatar, Tooltip } from '@material-ui/core'
 import { spacing } from '../../styling'
@@ -11,14 +12,18 @@ export interface Props {
   button?: boolean
   tooltip?: boolean
   inline?: boolean
+  title?: string
+  active?: boolean
 }
 
-export const Avatar: React.FC<Props> = ({ email, size = 40, button, inline, tooltip, children }) => {
+export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inline, tooltip, active, children }) => {
+  if (button) size -= 4
+
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const color = Math.ceil(seedRandom(email || '')() * 12)
-  const css = useStyles({ size, color, button, inline })
+  const css = useStyles({ size, color, button, inline, active })
 
-  const Element = (
+  let Element = (
     <>
       <MuiAvatar className={css.avatar} alt={email} src={url}>
         <div>{email.substring(0, 1).toUpperCase()}</div>
@@ -27,8 +32,10 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, inline, tool
     </>
   )
 
+  if (button) Element = <span className={classnames(button && css.button)}>{Element}</span>
+
   return tooltip ? (
-    <Tooltip title={email} arrow>
+    <Tooltip title={title || email} placement="right" enterDelay={800} arrow>
       {Element}
     </Tooltip>
   ) : (
@@ -36,8 +43,10 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, inline, tool
   )
 }
 
+type StyleProps = { button?: boolean; inline?: boolean; active?: boolean; size: number; color: number }
+
 const useStyles = makeStyles(({ palette }) => ({
-  avatar: ({ size, color, button, inline }: { size: number; color: number; button?: boolean; inline?: boolean }) => ({
+  avatar: ({ size, color, inline }: StyleProps) => ({
     color: palette.alwaysWhite.main,
     fontSize: size * 0.625,
     height: size,
@@ -46,10 +55,19 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'inline-flex',
     fontFamily: 'Roboto Mono',
     backgroundColor: labelLookup[color].color,
-    borderWidth: button ? 3 : 1,
-    borderStyle: 'solid',
-    borderColor: palette.white.main,
+    border: `1px solid ${palette.white.main}`,
     marginRight: inline ? spacing.sm : 0,
-    '&:hover': { borderColor: button ? palette.primaryLight.main : undefined },
+  }),
+  button: ({ active }: StyleProps) => ({
+    backgroundColor: active ? undefined : palette.white.main,
+    borderRadius: '50%',
+    padding: 1,
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: active ? palette.primary.main : palette.grayLighter.main,
+    cursor: 'pointer',
+    position: 'relative',
+    boxShadow: active ? `0 0 10px ${palette.primaryLight.main}` : undefined,
+    '&:hover': { backgroundColor: palette.primaryLight.main, borderColor: palette.primaryLight.main },
   }),
 }))
