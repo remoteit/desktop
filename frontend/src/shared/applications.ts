@@ -228,6 +228,7 @@ function getApplicationType(typeId: number | undefined) {
     case 33:
       return new Application({
         title: 'Secure Browser',
+        windowsLaunchType: 'URL',
         defaultLaunchTemplate: 'https://[host]:[port]',
       })
     case 7:
@@ -236,6 +237,7 @@ function getApplicationType(typeId: number | undefined) {
     case 42:
       return new Application({
         title: 'Browser',
+        windowsLaunchType: 'URL',
       })
     case 34:
       return new Application({
