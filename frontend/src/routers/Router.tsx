@@ -32,6 +32,7 @@ import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
 import { BillingPage } from '../pages/BillingPage'
 import { PlansPage } from '../pages/PlansPage'
+import { SharePage } from '../pages/SharePage'
 import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { UserLogPage } from '../pages/UserLogPage'
@@ -239,7 +240,6 @@ export const Router: React.FC = () => {
           root="/organization"
         />
       </Route>
-      s
       <Route path="/organization/empty">
         <Panel layout={layout}>
           <OrganizationEmptyPage />
@@ -260,6 +260,10 @@ export const Router: React.FC = () => {
 
               <Route path="/organization/tags">
                 <TagsPage />
+              </Route>
+
+              <Route path="/organization/guests/:userID/:deviceID">
+                <SharePage />
               </Route>
 
               <Route path="/organization/guests/:userID">

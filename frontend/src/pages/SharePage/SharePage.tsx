@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
+import { selectDevice } from '../../models/devices'
 import { makeStyles, Typography, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
@@ -12,17 +13,21 @@ import { spacing, fontSizes } from '../../styling'
 import { SharingForm } from '../../components/SharingForm'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
+type IParams = { userID: string; serviceID: string; deviceID: string }
+
+export const SharePage: React.FC = () => {
+  const { userID = '', serviceID = '', deviceID = '' } = useParams<IParams>()
   const { shares } = useDispatch<Dispatch>()
-  const { contacts, user, deleting } = useSelector((state: ApplicationState) => ({
+  const { device, contacts, user, deleting } = useSelector((state: ApplicationState) => ({
+    device: selectDevice(state, deviceID),
+    user: state.contacts.all.find(c => c.id === userID),
     contacts: state.contacts.all || [],
-    user: state.contacts.all.find(c => c.email === email),
     deleting: state.shares.deleting,
   }))
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
+  const email = user?.email || ''
 
   useEffect(() => {
     analyticsHelper.page('SharePage')

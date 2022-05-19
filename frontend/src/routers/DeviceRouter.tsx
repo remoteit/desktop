@@ -64,8 +64,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/add">
             <ServiceAddPage targetDevice={targetDevice} device={device} />
           </Route>
-          <Route path={['/devices/:deviceID/users/:email', '/devices/:deviceID/share']}>
-            <SharePage device={device} />
+          <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
+            <SharePage />
           </Route>
           <Route path="/devices/:deviceID/edit">
             <DeviceEditPage targetDevice={targetDevice} device={device} />
@@ -85,11 +85,11 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route
             path={[
               '/devices/:deviceID/:serviceID/users/share',
-              '/devices/:deviceID/:serviceID/users/:email',
+              '/devices/:deviceID/:serviceID/users/:userID',
               '/devices/:deviceID/:serviceID/share',
             ]}
           >
-            <SharePage device={device} />
+            <SharePage />
           </Route>
           <Route path="/devices/:deviceID/:serviceID/users">
             <ServiceUsersPage device={device} />

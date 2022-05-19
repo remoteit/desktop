@@ -136,6 +136,7 @@ export type IOrganizationState = {
   account?: IUserRef
   licenses: ILicense[]
   limits: ILimit[]
+  contacts: IUserRef[]
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
   domain?: string
@@ -160,6 +161,7 @@ const defaultState: IOrganizationState = {
   roles: [...SYSTEM_ROLES],
   licenses: [],
   limits: [],
+  contacts: [],
 }
 
 type IOrganizationAccountState = {
@@ -189,6 +191,16 @@ export default createModel<RootModel>()({
         _${index}: account(id: "${id}") {
           ${graphQLOrganization}
           ${graphQLLicensesLimits}
+          guest {
+            user {
+              id
+              email
+            }
+            devices {
+              id
+              name
+            }
+          }
         }`
       )
       const result = await graphQLBasicRequest(
@@ -208,10 +220,11 @@ export default createModel<RootModel>()({
       const data = result?.data?.data?.login
       let orgs: IOrganizationAccountState['all'] = {}
       ids.forEach((id, index) => {
-        const { organization, licenses, limits } = data[`_${index}`]
+        const { organization, licenses, limits, contacts } = data[`_${index}`]
         orgs[id] = parseOrganization(organization)
         orgs[id].licenses = licenses?.map(l => parseLicense(l))
         orgs[id].limits = limits
+        orgs[id].contacts = contacts
       })
       return orgs
     },
