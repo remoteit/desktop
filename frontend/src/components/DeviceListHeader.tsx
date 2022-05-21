@@ -1,11 +1,10 @@
 import React, { useState, useRef } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { useMediaQuery, makeStyles, ListSubheader, ListItemIcon, LinearProgress } from '@material-ui/core'
+import { makeStyles, ListSubheader, ListItemIcon, LinearProgress } from '@material-ui/core'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
 import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
 import { Attribute } from './Attributes'
-import { spacing } from '../styling'
 
 const MIN_WIDTH = 50
 
@@ -27,7 +26,6 @@ export const DeviceListHeader: React.FC<Props> = ({
   fetching,
 }) => {
   const { ui } = useDispatch<Dispatch>()
-  const largeScreen = useMediaQuery('(min-width:600px)')
   const [resize, setResize] = useState<number>(0)
   const containerRef = useRef<HTMLLIElement>(null)
   const moveRef = useRef<[string, number, number, number, number]>(['', 0, 0, 0, 0])
@@ -69,10 +67,9 @@ export const DeviceListHeader: React.FC<Props> = ({
           <DeviceListHeaderCheckbox select={select} devices={devices} />
         </ListItemIcon>
       </DeviceListHeaderTitle>
-      {largeScreen &&
-        attributes?.map(attribute => (
-          <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
-        ))}
+      {attributes?.map(attribute => (
+        <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
+      ))}
       {fetching && <LinearProgress className={css.fetching} />}
     </ListSubheader>
   )

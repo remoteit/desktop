@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
-import { makeStyles, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
+import { makeStyles, Box, ListItemIcon, ListItem } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { RestoreButton } from '../../buttons/RestoreButton'
 import { Attribute } from '../Attributes'
@@ -30,7 +30,6 @@ export const DeviceListItem: React.FC<Props> = ({
   onSelect,
 }) => {
   const connected = connections && connections.find(c => c.enabled)
-  const largeScreen = useMediaQuery('(min-width:600px)')
   const history = useHistory()
   const offline = device?.state === 'inactive'
   const css = useStyles({ offline })
@@ -45,7 +44,6 @@ export const DeviceListItem: React.FC<Props> = ({
   return (
     <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
       <Box className={css.sticky}>
-        {/* <DeviceLabel device={device} /> */}
         <ListItemIcon>
           {select ? (
             selected ? (
@@ -62,7 +60,6 @@ export const DeviceListItem: React.FC<Props> = ({
       {restore ? (
         <RestoreButton device={device} />
       ) : (
-        largeScreen &&
         attributes?.map(attribute => (
           <Box key={attribute.id}>
             <AttributeValue device={device} connection={connected} connections={connections} attribute={attribute} />
