@@ -22,5 +22,6 @@ const useStyles = makeStyles({
     maxWidth: `calc(100% - ${layout.sidePanelWidth}px)`,
     display: 'flex',
     flexDirection: 'column',
+    contain: 'content',
   }),
 })

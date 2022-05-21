@@ -166,6 +166,7 @@ const useStyles = makeStyles(({ palette }) => ({
     zIndex: 1,
   },
   input: {
+    '-webkit-app-region': 'no-drag',
     '& .MuiFilledInput-root': { padding: 0 },
     '& .MuiFilledInput-input': { padding: '22px 12px 10px !important' },
   },

@@ -99,6 +99,7 @@ const useStyles = makeStyles(({ palette }) => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    contain: 'content',
   },
   secondary: {
     flexGrow: 1,

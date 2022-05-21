@@ -128,11 +128,11 @@ const useStyles = makeStyles({
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {
-    '-webkit-app-region': 'no-drag',
     flexGrow: 1,
     zIndex: 1,
   },
   button: {
+    '-webkit-app-region': 'no-drag',
     justifyContent: 'flex-start',
     minHeight: spacing.xxl,
   },

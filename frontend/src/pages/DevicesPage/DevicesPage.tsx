@@ -9,14 +9,14 @@ import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
-import { getDevices, getOwnDevices } from '../../models/accounts'
+import { getDevices } from '../../models/accounts'
 import { masterAttributes, deviceAttributes } from '../../components/Attributes'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
-  const { selected, devices, connections, myDevice, fetching, columnWidths, attributes, required } = useSelector(
+  const { selected, devices, connections, fetching, columnWidths, attributes, required } = useSelector(
     (state: ApplicationState) => ({
       selected: state.ui.selected,
       attributes: masterAttributes
@@ -26,7 +26,6 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
       fetching: getDeviceModel(state).fetching,
       columnWidths: state.ui.columnWidths,
       devices: getDevices(state).filter((d: IDevice) => !d.hidden),
-      myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
       connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
         if (!c.deviceID) return lookup
         if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
@@ -41,7 +40,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   }, [])
 
   return (
-    <DevicesHeader myDevice={myDevice} select={select}>
+    <DevicesHeader>
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." />
       ) : !devices.length ? (

@@ -25,7 +25,7 @@ export const AnnouncementsPage = () => {
   return (
     <Container
       bodyRef={bodyRef}
-      bodyProps={{ inset: true, flex: true }}
+      bodyProps={{ inset: true, flex: true, verticalOverflow: true }}
       header={
         <Typography variant="h1">
           <Title>Announcements</Title>

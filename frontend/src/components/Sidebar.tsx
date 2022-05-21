@@ -16,7 +16,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   return (
     <OrganizationSidebar hide={!layout.showOrgs}>
-      <Body className={css.sidebar} scrollbarBackground="grayLighter" insetShadow={false}>
+      <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
           <RegisterMenu />

@@ -26,6 +26,7 @@ export const NetworkPage: React.FC = () => {
 
   return (
     <Container
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <OutOfBand />

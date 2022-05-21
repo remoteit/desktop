@@ -56,8 +56,8 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   return (
     <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
-      {children}
       <DragAppRegion />
+      {children}
       <Dialog open={offline} maxWidth="xs" fullWidth>
         <Notice severity="warning" fullWidth>
           Network Offline

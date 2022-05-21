@@ -70,7 +70,7 @@ export const ConnectionsPage: React.FC = () => {
   }, [])
 
   return (
-    <Body gutterBottom>
+    <Body verticalOverflow gutterBottom>
       <NewSession />
       {noConnections && (
         <>

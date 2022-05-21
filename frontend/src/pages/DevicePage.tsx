@@ -52,6 +52,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
 
   return (
     <Container
+      bodyProps={{ verticalOverflow: true }}
       header={
         <List>
           <ListItemLocation
