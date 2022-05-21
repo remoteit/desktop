@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Box, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
+import { makeStyles, Box, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'
@@ -27,9 +27,9 @@ export const OrganizationMember: React.FC<Props> = ({
   onClick,
 }) => {
   const dispatch = useDispatch<Dispatch>()
-
+  const css = useStyles()
   return (
-    <ListItem key={member.user.email} dense>
+    <ListItem key={member.user.email} classes={{ container: css.highlight }} dense>
       <ListItemIcon>
         <Avatar email={member.user.email} size={28} />
       </ListItemIcon>
@@ -77,3 +77,9 @@ export const OrganizationMember: React.FC<Props> = ({
     </ListItem>
   )
 }
+
+const useStyles = makeStyles(({ palette }) => ({
+  highlight: {
+    '&:hover .MuiListItem-root': { backgroundColor: palette.primaryHighlight.main },
+  },
+}))

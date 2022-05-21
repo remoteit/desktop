@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { graphQLRemoveDevice, graphQLShareDevice } from '../services/graphQLMutation'
+import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { getPermissions } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
 import { getDevices } from './accounts'
@@ -59,7 +59,7 @@ export default createModel<RootModel>()({
       const { deviceId, email } = userDevice
       const { set } = dispatch.shares
       set({ deleting: true })
-      const result = await graphQLRemoveDevice({ deviceId, email: [email] })
+      const result = await graphQLUnShareDevice({ deviceId, email: [email] })
       if (result !== 'ERROR') {
         await dispatch.devices.fetchSingle({ id: deviceId })
         dispatch.ui.set({ successMessage: `${email} successfully removed.` })

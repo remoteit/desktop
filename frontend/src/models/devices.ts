@@ -1,6 +1,6 @@
 import {
   graphQLDeleteDevice,
-  graphQLRemoveDevice,
+  graphQLUnShareDevice,
   graphQLRename,
   graphQLSetAttributes,
   graphQLClaimDevice,
@@ -349,7 +349,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: true, silent: true })
       const result = manager
         ? await graphQLDeleteDevice(device.id)
-        : await graphQLRemoveDevice({
+        : await graphQLUnShareDevice({
             deviceId: device.id,
             email: [auth.user?.email || ''],
           })

@@ -9,27 +9,26 @@ import { spacing } from '../../styling'
 interface Props {
   user: IUser
   isConnected?: boolean
-  isUserLinked?: boolean
+  member?: boolean
 }
 
-export const UserListItem: React.FC<Props> = ({ user, isConnected, isUserLinked = false, children }) => {
+export const UserListItem: React.FC<Props> = ({ user, isConnected, member, children }) => {
   const location = useLocation()
-  const redirectTo = isUserLinked ? '/organization' : location.pathname + '/' + user.email
   return (
-    <ListItemLocation pathname={redirectTo} dense>
+    <ListItemLocation pathname={member ? '/organization' : `${location.pathname}/${user.id}`} dense>
       <ListItemIcon>
         <Avatar email={user.email} size={spacing.lg} />
       </ListItemIcon>
       {isConnected ? (
         <ListItemText
           primaryTypographyProps={{ color: 'primary' }}
-          primary={user.email}
+          primary={user.email || user.id}
           secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
         />
       ) : (
         <ListItemText primary={user.email} />
       )}
-      {!isUserLinked && children}
+      {!member && children}
     </ListItemLocation>
   )
 }

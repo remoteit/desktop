@@ -50,7 +50,7 @@ export const TagsPage: React.FC = () => {
       gutterBottom
       header={
         <>
-          <Typography variant="h1">
+          <Typography variant="h1" gutterBottom>
             <Title>Tags</Title>
             {canEdit && (
               <TagEditor

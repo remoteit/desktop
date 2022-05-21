@@ -219,7 +219,7 @@ export function graphQLAdaptor(
           port: s.port,
           host: s.host,
           protocol: s.protocol,
-          access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
+          access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
         })
       ),
       notificationSettings: {
@@ -228,7 +228,7 @@ export function graphQLAdaptor(
       },
       access: d.access.map((e: any) => ({
         id: e.user?.id,
-        email: e.user?.email,
+        email: e.user?.email || e.user?.id,
         scripting: e.scripting,
       })),
       thisDevice: d.id === thisDeviceId,

@@ -41,7 +41,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
   },
 ]
 
-export const graphQLLicensesLimits = `
+const graphQLLicensesLimits = `
   licenses {
     id
     updated
@@ -94,7 +94,7 @@ export const graphQLLicensesLimits = `
     }
   }`
 
-export const graphQLOrganization = `
+const graphQLOrganization = `
   organization {
     id
     name
@@ -136,7 +136,7 @@ export type IOrganizationState = {
   account?: IUserRef
   licenses: ILicense[]
   limits: ILimit[]
-  contacts: IUserRef[]
+  guests: IGuest[]
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
   domain?: string
@@ -161,7 +161,7 @@ const defaultState: IOrganizationState = {
   roles: [...SYSTEM_ROLES],
   licenses: [],
   limits: [],
-  contacts: [],
+  guests: [],
 }
 
 type IOrganizationAccountState = {
@@ -198,7 +198,6 @@ export default createModel<RootModel>()({
             }
             devices {
               id
-              name
             }
           }
         }`
@@ -220,11 +219,15 @@ export default createModel<RootModel>()({
       const data = result?.data?.data?.login
       let orgs: IOrganizationAccountState['all'] = {}
       ids.forEach((id, index) => {
-        const { organization, licenses, limits, contacts } = data[`_${index}`]
+        const { organization, licenses, limits, guest } = data[`_${index}`]
         orgs[id] = parseOrganization(organization)
         orgs[id].licenses = licenses?.map(l => parseLicense(l))
         orgs[id].limits = limits
-        orgs[id].contacts = contacts
+        orgs[id].guests = guest.map(g => ({
+          id: g.user.id,
+          email: g.user.email || g.user.id,
+          deviceIds: g.devices.map(d => d.id),
+        }))
       })
       return orgs
     },
