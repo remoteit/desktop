@@ -37,7 +37,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 }) => {
   const css = useStyles({ attributes, primary, columnWidths })
   const dispatch = useDispatch<Dispatch>()
-
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
@@ -99,17 +98,17 @@ type StyleProps = {
 
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, primary, columnWidths }: StyleProps) => ({
+    minWidth: '100%',
+    width: primary.width(columnWidths) + attributes?.reduce((w, a) => w + a.width(columnWidths), 0),
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      // gridTemplateColumns: `${primary.width(columnWidths)}% ${attributes?.map(a => a.width(columnWidths)).join('% ')}%`,
       gridTemplateColumns: `${primary.width(columnWidths)}px ${attributes
         ?.map(a => a.width(columnWidths))
         .join('px ')}px`,
     },
   }),
   list: {
-    minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      display: 'grid',
+      display: 'inline-grid',
       alignItems: 'center',
       '& > .MuiBox-root': {
         paddingRight: spacing.sm,

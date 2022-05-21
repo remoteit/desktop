@@ -77,6 +77,7 @@ export const DeviceListHeader: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   header: {
+    minWidth: '100%',
     boxShadow: `inset 0 -1px ${palette.grayLighter.main}`,
   },
   fetching: {

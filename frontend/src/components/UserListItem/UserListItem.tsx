@@ -15,7 +15,7 @@ interface Props {
 export const UserListItem: React.FC<Props> = ({ user, isConnected, member, children }) => {
   const location = useLocation()
   return (
-    <ListItemLocation pathname={member ? '/organization' : `${location.pathname}/${user.id}`} dense>
+    <ListItemLocation pathname={member ? '/organization/members' : `${location.pathname}/${user.id}`} dense>
       <ListItemIcon>
         <Avatar email={user.email} size={spacing.lg} />
       </ListItemIcon>

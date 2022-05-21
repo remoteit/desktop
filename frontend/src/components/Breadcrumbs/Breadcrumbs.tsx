@@ -45,6 +45,8 @@ export const Breadcrumbs: React.FC = () => {
 
   let breadcrumb: string = ''
 
+  if (!crumbs.join()) return null
+
   return (
     <span className={css.header}>
       {crumbs.reduce((result: any[], crumb, index) => {
@@ -64,7 +66,6 @@ export const Breadcrumbs: React.FC = () => {
 const useStyles = makeStyles(({ palette }) => ({
   header: {
     marginTop: spacing.xs,
-    // marginBottom: -spacing.sm,
     marginLeft: spacing.lg,
     color: palette.gray.main,
     position: 'relative',

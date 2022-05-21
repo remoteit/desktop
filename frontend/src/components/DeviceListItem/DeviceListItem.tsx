@@ -97,12 +97,4 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'visible',
     paddingLeft: spacing.md,
   },
-  button: {
-    position: 'absolute',
-    height: '100%',
-    zIndex: 0,
-  },
-  checkbox: {
-    maxWidth: 60,
-  },
 }))
