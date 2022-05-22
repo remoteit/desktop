@@ -11,6 +11,7 @@ import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_P
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { windowOpen } from '../services/Browser'
+import { Confirm } from '../components/Confirm'
 
 const Features = {
   [PERSONAL_PLAN_ID]: [
@@ -70,12 +71,14 @@ export const Plans: React.FC = () => {
       planId: plan.id,
       priceId: price?.id,
       quantity: license?.quantity || 1,
+      confirm: false
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
   const enterprise = !!license && !license.plan.billing
+  const userPlan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
-
+  
   React.useEffect(() => {
     setForm(getDefaults())
   }, [license])
@@ -83,6 +86,7 @@ export const Plans: React.FC = () => {
   React.useEffect(() => {
     if (location.pathname.includes('success')) dispatch.plans.restore()
   }, [])
+
 
   return (
     <>
@@ -108,7 +112,11 @@ export const Plans: React.FC = () => {
               button={personal ? 'Current Plan' : 'Select'}
               selected={personal}
               disabled={personal}
-              onSelect={() => setForm({ ...form, checkout: true, planId: PERSONAL_PLAN_ID })}
+              onSelect={() =>
+                userPlan.name.toUpperCase() === 'BUSINESS' && !personal
+                  ? setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
+                  : setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
+              }
               features={Features[PERSONAL_PLAN_ID]}
             />
             {plans.map(plan => {
@@ -138,8 +146,15 @@ export const Plans: React.FC = () => {
                   selected={selected}
                   loading={purchasing === plan.id}
                   onSelect={() =>
-                    setForm({
+                    userPlan.name.toUpperCase() === 'BUSINESS' && !selected ? setForm({
                       ...form,
+                      confirm: true,
+                      checkout: false,
+                      planId: plan.id,
+                      priceId,
+                    }) : setForm({
+                      ...form,
+                      confirm: false,
                       checkout: true,
                       planId: plan.id,
                       priceId,
@@ -149,6 +164,32 @@ export const Plans: React.FC = () => {
                 />
               )
             })}
+            {form.confirm ? (<Confirm
+              open={form.confirm}
+              onConfirm={() => {
+                setForm({
+                  ...form,
+                  confirm: false,
+                  checkout: true
+                })
+              }}
+              onDeny={() => setForm({
+                ...form,
+                confirm: false,
+                checkout: false
+              })}
+              title="Confirm Plan Change"
+              action={'Confirm'}
+            >
+              Some features are only available in business and will automatically change when downgrading.
+              <ul>
+                <li>Activity Log storage will be reduced</li>
+                <li>Users with custom roles will be reverted to system roles</li>
+                <li>SAML will be disabled</li>
+              </ul>
+              Do you want to proceed?
+            </Confirm>) : null
+            }
           </>
         )}
       </Gutters>
