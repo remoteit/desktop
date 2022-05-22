@@ -142,6 +142,7 @@ declare global {
     priceId?: string
     quantity: number
     accountId: string
+    confirm?: boolean
   }
 
   type LogType = 'general' | 'connectd' | 'alert'

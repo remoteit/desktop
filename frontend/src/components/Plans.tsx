@@ -71,15 +71,14 @@ export const Plans: React.FC = () => {
       planId: plan.id,
       priceId: price?.id,
       quantity: license?.quantity || 1,
+      confirm: false
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
   const enterprise = !!license && !license.plan.billing
   const userPlan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
-  const [confirm, setConfirm] = React.useState(false)
-  const [planId, setPlanId] = React.useState<string | undefined>(); 
-  const [priceId, setPriceId] = React.useState<string | undefined>(); 
+  
   React.useEffect(() => {
     setForm(getDefaults())
   }, [license])
@@ -88,11 +87,6 @@ export const Plans: React.FC = () => {
     if (location.pathname.includes('success')) dispatch.plans.restore()
   }, [])
 
-  const showConfirmation = (id, priceId) => {
-    setPlanId(id)
-    setPriceId(priceId)
-    setConfirm(true)
-  }
 
   return (
     <>
@@ -118,7 +112,11 @@ export const Plans: React.FC = () => {
               button={personal ? 'Current Plan' : 'Select'}
               selected={personal}
               disabled={personal}
-              onSelect={() => userPlan.name.toUpperCase() === 'BUSINESS' && !personal ? showConfirmation(PERSONAL_PLAN_ID, priceId) : setForm({ ...form, checkout: true, planId: PERSONAL_PLAN_ID })}
+              onSelect={() =>
+                userPlan.name.toUpperCase() === 'BUSINESS' && !personal
+                  ? setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
+                  : setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
+              }
               features={Features[PERSONAL_PLAN_ID]}
             />
             {plans.map(plan => {
@@ -148,8 +146,15 @@ export const Plans: React.FC = () => {
                   selected={selected}
                   loading={purchasing === plan.id}
                   onSelect={() =>
-                    userPlan.name.toUpperCase() === 'BUSINESS' && !selected ? showConfirmation(plan.id, priceId) : setForm({
+                    userPlan.name.toUpperCase() === 'BUSINESS' && !selected ? setForm({
                       ...form,
+                      confirm: true,
+                      checkout: false,
+                      planId: plan.id,
+                      priceId,
+                    }) : setForm({
+                      ...form,
+                      confirm: false,
                       checkout: true,
                       planId: plan.id,
                       priceId,
@@ -159,18 +164,20 @@ export const Plans: React.FC = () => {
                 />
               )
             })}
-            {confirm ? (<Confirm
-              open={confirm}
+            {form.confirm ? (<Confirm
+              open={form.confirm}
               onConfirm={() => {
-                setConfirm(false)
                 setForm({
-                    ...form,
-                    checkout: true,
-                    planId,
-                    priceId
+                  ...form,
+                  confirm: false,
+                  checkout: true
                 })
               }}
-              onDeny={() => setConfirm(false)}
+              onDeny={() => setForm({
+                ...form,
+                confirm: false,
+                checkout: false
+              })}
               title="Confirm Plan Change"
               action={'Confirm'}
             >
