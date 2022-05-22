@@ -72,6 +72,11 @@ export function launchDisabled(connection: IConnection) {
   return connection.launchType === 'COMMAND' && isPortal()
 }
 
+export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const port = Math.max(0, Math.min(+event.target.value, 65535))
+  return isNaN(port) ? 0 : port
+}
+
 export function setConnection(connection: IConnection) {
   const { auth } = store.getState()
   const { connections } = store.dispatch
