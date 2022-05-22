@@ -38,7 +38,7 @@ const useStyles = makeStyles(({ palette }) => ({
     minWidth: SIDEBAR_WIDTH,
     maxWidth: SIDEBAR_WIDTH,
     '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px`, padding: 0 },
-    '& section:first-child': { marginTop: addSpace ? spacing.xxl : spacing.md },
+    '& section:first-child': { marginTop: addSpace ? spacing.xxl : spacing.lg },
   }),
   header: {
     display: 'flex',
