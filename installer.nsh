@@ -105,6 +105,7 @@
     ${EndIf} 
 
     ; detects auto-update
+    ${GetParameters} $R0
     ${GetOptions} $R0 "--update" $R1
         ${IfNot} ${Errors}
             ; This is UPDATE
