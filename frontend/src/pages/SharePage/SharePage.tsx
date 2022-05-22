@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { makeStyles, Typography, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { spacing, fontSizes } from '../../styling'
+import { getOrganization } from '../../models/organization'
 import { ContactSelector } from '../../components/ContactSelector'
 import { selectDevice } from '../../models/devices'
 import { SharingForm } from '../../components/SharingForm'
@@ -21,16 +22,16 @@ type IParams = { userID: string; serviceID: string; deviceID: string }
 export const SharePage: React.FC = () => {
   const { userID = '', serviceID = '', deviceID = '' } = useParams<IParams>()
   const { shares } = useDispatch<Dispatch>()
-  const { device, contacts, user, deleting } = useSelector((state: ApplicationState) => ({
+  const { device, guests, deleting } = useSelector((state: ApplicationState) => ({
     device: selectDevice(state, deviceID),
-    user: state.contacts.all.find(c => c.id === userID),
-    contacts: state.contacts.all || [],
+    guests: getOrganization(state).guests,
     deleting: state.shares.deleting,
   }))
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
-  const email = user?.email || ''
+  const guest = guests.find(g => g.id === userID)
+  const email = guest?.email || ''
 
   useEffect(() => {
     analyticsHelper.page('SharePage')
@@ -71,14 +72,14 @@ export const SharePage: React.FC = () => {
           ) : (
             device && (
               <Gutters>
-                <ContactSelector contacts={contacts} onChange={handleChange} />
+                <ContactSelector contacts={guests} onChange={handleChange} />
               </Gutters>
             )
           )}
         </>
       }
     >
-      {device && <SharingForm device={device} user={user} />}
+      {device && <SharingForm device={device} user={guest} />}
     </Container>
   )
 }

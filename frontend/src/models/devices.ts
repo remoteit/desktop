@@ -467,7 +467,7 @@ export function isOffline(instance?: IDevice | IService, connection?: IConnectio
 
 export function selectDevice(state: ApplicationState, deviceId?: string) {
   const accountId = getActiveAccountId(state)
-  const device = selectDeviceByAccount(state, accountId, deviceId)
+  const device = selectDeviceByAccount(state, deviceId, accountId)
   return device || getAllDevices(state).find(d => d.id === deviceId)
 }
 

@@ -98,10 +98,8 @@ export const attributes: Attribute[] = [
       connection?.connected ? (
         <ColorChip label="Connected" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
       ) : connection?.enabled ? (
-        // <Chip label="READY" size="small" color="primary" />
         <ColorChip label="Ready" size="small" typeColor="primary" />
       ) : device?.state === 'active' ? (
-        // <Chip label="ONLINE" size="small" color="secondary" />
         <ColorChip label="Online" size="small" typeColor="secondary" />
       ) : (
         <ColorChip label="Offline" size="small" typeColor="gray" />

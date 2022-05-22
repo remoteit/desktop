@@ -11,7 +11,7 @@ import { spacing } from '../styling'
 import { Body } from './Body'
 
 export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const addSpace = isMac() && isElectron()
+  const addSpace = isMac() && isElectron() && !layout.showOrgs
   const css = useStyles({ addSpace })
 
   return (

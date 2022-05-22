@@ -87,6 +87,7 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: spacing.sm,
     marginBottom: spacing.xs,
     paddingRight: spacing.sm,
+    zIndex: 10,
     '& .MuiTypography-subtitle1': {
       marginTop: spacing.xs,
       marginBottom: spacing.xs,
