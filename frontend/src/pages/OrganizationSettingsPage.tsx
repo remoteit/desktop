@@ -98,7 +98,7 @@ export const OrganizationSettingsPage: React.FC = () => {
       <Typography variant="subtitle1">General</Typography>
       <List>
         <InlineTextFieldSetting
-          hideIcon
+          icon="industry-alt"
           value={organization.name}
           label="Organization Name"
           resetValue={organization.name}
@@ -107,7 +107,6 @@ export const OrganizationSettingsPage: React.FC = () => {
       </List>
       {isThisOrg && limits.saml && (
         <>
-          <Typography variant="subtitle1">Authentication</Typography>
           <List>
             <InlineTextFieldSetting
               icon="at"

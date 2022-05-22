@@ -69,13 +69,14 @@ function createNotification({ title, body, id }: { title: string; body: string; 
 }
 
 function showNotice(event: ICloudEvent) {
+  const state = store.getState()
   const target = event.target[0]
   let show
 
   if (typeof target?.device?.notificationSettings.desktopNotifications === 'boolean') {
     show = !!target?.device?.notificationSettings.desktopNotifications
   } else {
-    show = !!event?.metadata?.desktopNotifications
+    show = !!state.user.notificationSettings.desktopNotifications
   }
 
   return show

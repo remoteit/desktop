@@ -222,10 +222,7 @@ export function graphQLAdaptor(
           access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
         })
       ),
-      notificationSettings: {
-        emailNotifications: d.notificationSettings.emailNotifications,
-        desktopNotifications: d.notificationSettings.desktopNotifications,
-      },
+      notificationSettings: d.notificationSettings,
       access: d.access.map((e: any) => ({
         id: e.user?.id,
         email: e.user?.email || e.user?.id,

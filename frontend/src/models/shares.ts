@@ -62,6 +62,7 @@ export default createModel<RootModel>()({
       const result = await graphQLUnShareDevice({ deviceId, email: [email] })
       if (result !== 'ERROR') {
         await dispatch.devices.fetchSingle({ id: deviceId })
+        await dispatch.organization.fetch()
         dispatch.ui.set({ successMessage: `${email} successfully removed.` })
       }
       set({ deleting: false })

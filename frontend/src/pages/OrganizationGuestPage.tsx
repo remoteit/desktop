@@ -1,5 +1,5 @@
-import React from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Typography, List } from '@material-ui/core'
@@ -13,11 +13,16 @@ import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 
 export const OrganizationGuestPage: React.FC<{ device?: IDevice }> = ({ device }) => {
+  const history = useHistory()
   const { userID = '' } = useParams<{ userID: string }>()
   const { devices, guest } = useSelector((state: ApplicationState) => ({
     guest: getOrganization(state).guests.find(g => g.id === userID),
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
   }))
+
+  useEffect(() => {
+    if (!guest) history.push('/organization/guests')
+  }, [guest])
 
   return (
     <Container
