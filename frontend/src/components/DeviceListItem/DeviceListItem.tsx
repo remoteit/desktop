@@ -3,7 +3,6 @@ import { useHistory } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
 import { makeStyles, Box, ListItemIcon, ListItem } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { RestoreButton } from '../../buttons/RestoreButton'
 import { Attribute } from '../Attributes'
 import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -38,7 +37,7 @@ export const DeviceListItem: React.FC<Props> = ({
 
   const handleClick = () => {
     if (select) onSelect && onSelect(device.id)
-    else history.push(`/devices/${device.id}`)
+    else if (!restore) history.push(`/devices/${device.id}`)
   }
 
   return (
@@ -57,15 +56,11 @@ export const DeviceListItem: React.FC<Props> = ({
         </ListItemIcon>
         <AttributeValue device={device} connection={connected} attribute={primary} />
       </Box>
-      {restore ? (
-        <RestoreButton device={device} />
-      ) : (
-        attributes?.map(attribute => (
-          <Box key={attribute.id}>
-            <AttributeValue device={device} connection={connected} connections={connections} attribute={attribute} />
-          </Box>
-        ))
-      )}
+      {attributes?.map(attribute => (
+        <Box key={attribute.id}>
+          <AttributeValue device={device} connection={connected} connections={connections} attribute={attribute} />
+        </Box>
+      ))}
     </ListItem>
   )
 }

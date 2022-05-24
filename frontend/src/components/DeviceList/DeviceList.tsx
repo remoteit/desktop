@@ -67,7 +67,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 connections={connections[device.id]}
                 primary={primary}
                 attributes={attributes}
-                restore={restore && canRestore}
+                restore={canRestore}
                 select={select}
                 selected={isSelected}
                 onSelect={deviceId => {
