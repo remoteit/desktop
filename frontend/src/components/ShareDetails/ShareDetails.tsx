@@ -22,7 +22,7 @@ export const ShareDetails: React.FC<Props> = ({ user, device, connected }) => {
       {scripting && (
         <Tooltip title="Allow scripting" arrow placement="top">
           <span>
-            <Icon name="code" size="sm" type="regular" color="grayDark" />
+            <Icon name="scroll-old" size="sm" type="regular" color="grayDark" />
           </span>
         </Tooltip>
       )}

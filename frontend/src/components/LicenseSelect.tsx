@@ -2,11 +2,11 @@ import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { getLicenseChip } from './LicenseChip'
-import { makeStyles, TextField, MenuItem } from '@material-ui/core'
+import { makeStyles, TextField, TextFieldProps, MenuItem } from '@material-ui/core'
 
-type Props = { member: IOrganizationMember; disabled?: boolean }
+type Props = { member: IOrganizationMember; size?: TextFieldProps['size']; disabled?: boolean }
 
-export const LicenseSelect: React.FC<Props> = ({ member, disabled }) => {
+export const LicenseSelect: React.FC<Props> = ({ member, size = 'small', disabled }) => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ chip: getLicenseChip(member.license) })
 
@@ -17,8 +17,9 @@ export const LicenseSelect: React.FC<Props> = ({ member, disabled }) => {
   return (
     <TextField
       select
-      hiddenLabel
-      size="small"
+      hiddenLabel={size === 'small'}
+      label={size === 'small' ? undefined : 'License'}
+      size={size}
       disabled={disabled}
       value={member.license}
       variant="filled"

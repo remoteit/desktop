@@ -38,7 +38,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   const [confirm, setConfirm] = useState<boolean>(false)
   const selectedPlan = plans.find(plan => plan.id === license?.plan?.id)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
-  const enterprise = !license?.plan?.billing
+  const enterprise = !!license && !license.plan.billing
 
   const setQuantity = (value: string | number) => {
     let quantity = Math.max(Math.min(+value, 9999), 0)

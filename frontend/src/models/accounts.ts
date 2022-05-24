@@ -179,7 +179,7 @@ export function getActiveUser(state: ApplicationState): IUserRef | undefined {
     email: m.account.email || 'unknown',
     created: m.created,
   }))
-  return membershipOrganizations.find(m => m.id === id) || state.auth.user
+  return membershipOrganizations.find(m => m.id === id) || state.user
 }
 
 export function getMembership(state: ApplicationState, accountId?: string): IMembership {

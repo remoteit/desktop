@@ -38,11 +38,11 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { isPortal, getOs } from '../services/Browser'
-import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
 import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
+import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
 export const Router: React.FC = () => {
@@ -191,9 +191,9 @@ export const Router: React.FC = () => {
         </Panel>
       </Route>
       {/* Feedback */}
-      <Route path="/shareFeedback">
+      <Route path="/feedback">
         <Panel layout={layout}>
-          <ShareFeedback />
+          <FeedbackPage />
         </Panel>
       </Route>
       {/* Settings */}
@@ -247,7 +247,11 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/organization">
         <DynamicPanel
-          primary={<OrganizationPage />}
+          primary={
+            <Route path={['/organization/members/:userID?/:deviceID?', '/organization']}>
+              <OrganizationPage />
+            </Route>
+          }
           secondary={
             <Switch>
               <Route path="/organization/share">
@@ -262,11 +266,11 @@ export const Router: React.FC = () => {
                 <TagsPage />
               </Route>
 
-              <Route path="/organization/guests/:userID/:deviceID">
+              <Route path={['/organization/guests/:userID/:deviceID', '/organization/members/:userID/:deviceID']}>
                 <SharePage />
               </Route>
 
-              <Route path="/organization/guests/:userID">
+              <Route path={['/organization/guests/:userID', '/organization/members/:userID']}>
                 <OrganizationGuestPage />
               </Route>
 
@@ -274,13 +278,13 @@ export const Router: React.FC = () => {
                 <OrganizationGuestsPage />
               </Route>
 
-              <Route path="/organization">
+              <Route path={['/organization', '/organization/members']}>
                 <OrganizationMembersPage />
               </Route>
             </Switch>
           }
           layout={layout}
-          root="/organization"
+          root={['/organization']}
         />
       </Route>
       {/* Account */}
@@ -315,7 +319,7 @@ export const Router: React.FC = () => {
             </Switch>
           }
           layout={layout}
-          root={['/account']}
+          root="/account"
         />
       </Route>
     </Switch>
