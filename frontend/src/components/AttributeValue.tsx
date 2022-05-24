@@ -12,9 +12,10 @@ export const AttributeValue: React.FC<{
   const value = attribute?.value({ device, connection, connections }) || ''
   return (
     <Box
-      className={`attribute-${attribute?.id}`}
+      className={`attribute attribute-${attribute?.id}`}
       textAlign={attribute?.align}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
+      whiteSpace={attribute?.multiline ? 'normal !important' : 'nowrap'}
     >
       {value}
     </Box>

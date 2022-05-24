@@ -29,6 +29,7 @@ export class Attribute {
   defaultWidth: number = 150
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
   feature?: string
+  multiline?: boolean
   value: (options: IDataOptions) => any = () => {}
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
@@ -41,6 +42,7 @@ export class Attribute {
     column?: boolean
     defaultWidth?: number
     feature?: string
+    multiline?: boolean
     type?: Attribute['type']
     value?: Attribute['value']
   }) {
@@ -254,6 +256,7 @@ export const attributes: Attribute[] = [
         id: a.id,
         label: a.label,
         value: ({ device }) => device?.attributes[a.id],
+        multiline: true,
       })
   ),
   new ServiceAttribute({

@@ -109,17 +109,24 @@ const useStyles = makeStyles(({ palette }) => ({
   list: {
     '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'inline-grid',
-      alignItems: 'center',
+      alignItems: 'start',
       '& > .MuiBox-root': {
         paddingRight: spacing.sm,
       },
     },
     '& .MuiListItem-root': {
-      height: 42,
+      minHeight: 42,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
     },
     '& .MuiBox-root': {
+      display: 'flex',
+      alignItems: 'center',
+      minHeight: 36,
+    },
+    '& .attribute': {
+      display: 'block',
+      minHeight: 0,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
