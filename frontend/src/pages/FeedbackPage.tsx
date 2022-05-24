@@ -1,13 +1,13 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
+import { Dispatch } from '../store'
 import { makeStyles, Button, Typography, Link, TextField } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { Container } from '../../components/Container'
-import { Gutters } from '../../components/Gutters'
-import { fullVersion } from '../../helpers/versionHelper'
+import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
+import { fullVersion } from '../helpers/versionHelper'
 
-export const ShareFeedback: React.FC<{}> = () => {
+export const FeedbackPage: React.FC<{}> = () => {
   const { feedback } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -24,11 +24,11 @@ export const ShareFeedback: React.FC<{}> = () => {
   }
 
   return (
-    <Container gutterBottom header={<Typography variant="h1">Share Feedback</Typography>}>
+    <Container gutterBottom header={<Typography variant="h1">Contact</Typography>}>
       <Gutters>
-        <Typography variant="body1">How can we improve remote.it?</Typography>
+        <Typography variant="body1">Get support or provide feedback on how can we improve Remote.It.</Typography>
         <Typography variant="body2" color="textSecondary">
-          If you have a feature request, please include how you would use it and why it’s important to you?
+          If you have a feature request, please include how you would use it and why it’s important to you.
         </Typography>
       </Gutters>
       <Gutters>

@@ -76,7 +76,7 @@ else
     # curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.aarch64-win.exe --output ./bin/aarch64/demuxer.exe
     # curl -L https://${URL_MUXER}${MUXER}/muxer.aarch64-win.exe --output ./bin/aarch64/muxer.exe   
 
-  echo "Warning !!! There are no indicators defined for the system architecture to build, therefore it will be built for windows, to change the platform specify an option: npm run build --arch = 'XXX' (possible options: win, mac, linux)"
+    echo "Warning !!! There are no indicators defined for the system architecture to build, therefore it will be built for windows, to change the platform specify an option: npm run build --arch = 'XXX' (possible options: win, mac, linux)"
 
 fi
 

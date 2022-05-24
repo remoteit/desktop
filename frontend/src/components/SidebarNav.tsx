@@ -56,7 +56,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="code" dense />
+      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll-old" dense />
       <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
@@ -67,7 +67,14 @@ export const SidebarNav: React.FC = () => {
         badge={unreadAnnouncements}
         dense
       />
-      <ListItemLocation className={css.footer} title="Feedback" pathname="/shareFeedback" icon="comment-smile" dense />
+      <ListItemLocation
+        className={css.footer}
+        title="Contact"
+        subtitle="Support and Feedback"
+        pathname="/feedback"
+        icon="phone"
+        dense
+      />
     </List>
   )
 }
