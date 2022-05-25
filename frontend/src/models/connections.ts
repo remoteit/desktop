@@ -3,7 +3,7 @@ import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { graphQLConnect, graphQLDisconnect } from '../services/graphQLMutation'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectById } from '../models/devices'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { emit } from '../services/Controller'
 
 type IConnectionsState = { all: IConnection[] }

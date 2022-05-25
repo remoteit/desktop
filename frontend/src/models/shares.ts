@@ -3,7 +3,7 @@ import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMut
 import { getPermissions } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
 import { getDevices } from './accounts'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ShareParams = { [key: string]: any }
 

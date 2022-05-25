@@ -1,7 +1,7 @@
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { selectTags } from './tags'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { toLookup } from '../helpers/utilHelper'
 
 const state: ILabel[] = [

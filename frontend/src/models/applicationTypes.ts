@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type IApplicationTypeState = ILookup<IApplicationType[]> & {
   all: IApplicationType[]

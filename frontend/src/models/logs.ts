@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
 import { getActiveAccountId } from './accounts'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ILogState = {
   from: number

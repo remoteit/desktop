@@ -14,7 +14,7 @@ import { getActiveAccountId, getActiveUser, getAccountIds, getMembership, isUser
 import { selectRemoteitLicense, selectBaseLimits } from './plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 export const PERMISSION: ILookup<{ name: string; description: string; icon: string; system?: boolean }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },

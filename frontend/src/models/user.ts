@@ -5,7 +5,7 @@ import { AxiosResponse } from 'axios'
 // import { ApplicationState } from '../store'
 import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { r3 } from '../services/remote.it'
 
 type IUserState = {

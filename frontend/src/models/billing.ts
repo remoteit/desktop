@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type IBilling = {
   invoices: IInvoice[]

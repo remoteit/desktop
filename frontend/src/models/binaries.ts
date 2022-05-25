@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 export interface BinariesState {
   error?: any
@@ -23,7 +23,7 @@ const state: BinariesState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch) => ({
+  effects: dispatch => ({
     async install() {
       dispatch.binaries.clearError()
       dispatch.binaries.installing()

@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type IContactsState = {
   all: IUserRef[]

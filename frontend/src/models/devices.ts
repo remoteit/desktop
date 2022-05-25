@@ -25,7 +25,7 @@ import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 

@@ -15,7 +15,7 @@ import { getToken, r3 } from '../services/remote.it'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { Dispatch } from '../store'
 import axios from 'axios'
 

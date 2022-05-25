@@ -15,7 +15,7 @@ import { graphQLBasicRequest } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { findTagIndex } from '../helpers/utilHelper'
 import { getNextLabel } from './labels'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ITagState = {
   all: { [accountId: string]: ITag[] }

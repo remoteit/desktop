@@ -4,7 +4,7 @@ import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getAllDevices, getActiveAccountId, getAccountIds } from './accounts'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ISearchState = ILookup<any> & {
   search: ISearch[]

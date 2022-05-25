@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { Theme } from '@material-ui/core'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { selectTheme, isDarkMode } from '../styling/theme'

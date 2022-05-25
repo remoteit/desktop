@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AUTH_API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { getToken } from '../services/remote.it'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import axios from 'axios'
 
 export type IMfa = {

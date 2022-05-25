@@ -12,7 +12,7 @@ import {
 import { graphQLBasicRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getDevices, getActiveAccountId } from './accounts'
 import { getOrganization } from './organization'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
