@@ -11,7 +11,7 @@
     "build-binaries": "sh scripts/build.sh $NODE_ARCH",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
-    "copy-env": "cp .env frontend/ && cp .env backend/",
+    "copy-env": "[[ -e .env ]] && \\cp .env frontend/ && \\cp .env backend/",
     "copy-icons": "cp -R src/icons build/",
     "copy-images": "cp -R src/images build/",
     "copy-install": "cp installer.nsh build/",
