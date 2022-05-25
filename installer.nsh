@@ -2,7 +2,7 @@
 !include x64.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.7.2"
+!define PKGVERSION "3.8.0-alpha.0"
 
 !macro customInit
     Var /GLOBAL path_i
@@ -105,6 +105,7 @@
     ${EndIf} 
 
     ; detects auto-update
+    ${GetParameters} $R0
     ${GetOptions} $R0 "--update" $R1
         ${IfNot} ${Errors}
             ; This is UPDATE

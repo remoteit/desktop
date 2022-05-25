@@ -37,7 +37,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 }) => {
   const css = useStyles({ attributes, primary, columnWidths })
   const dispatch = useDispatch<Dispatch>()
-
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
@@ -68,7 +67,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 connections={connections[device.id]}
                 primary={primary}
                 attributes={attributes}
-                restore={restore && canRestore}
+                restore={canRestore}
                 select={select}
                 selected={isSelected}
                 onSelect={deviceId => {
@@ -99,40 +98,38 @@ type StyleProps = {
 
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, primary, columnWidths }: StyleProps) => ({
+    minWidth: '100%',
+    width: primary.width(columnWidths) + attributes?.reduce((w, a) => w + a.width(columnWidths), 0),
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      // gridTemplateColumns: `${primary.width(columnWidths)}% ${attributes?.map(a => a.width(columnWidths)).join('% ')}%`,
       gridTemplateColumns: `${primary.width(columnWidths)}px ${attributes
         ?.map(a => a.width(columnWidths))
         .join('px ')}px`,
     },
   }),
   list: {
-    minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      display: 'grid',
-      alignItems: 'center',
+      display: 'inline-grid',
+      alignItems: 'start',
       '& > .MuiBox-root': {
         paddingRight: spacing.sm,
       },
     },
     '& .MuiListItem-root': {
-      height: 42,
+      minHeight: 42,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
     },
     '& .MuiBox-root': {
+      display: 'flex',
+      alignItems: 'center',
+      minHeight: 36,
+    },
+    '& .attribute': {
+      display: 'block',
+      minHeight: 0,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
-    },
-    '&::before': {
-      content: '""',
-      position: 'fixed',
-      width: 50,
-      height: '100%',
-      zIndex: 5,
-      right: 0,
-      boxShadow: `inset -40px -20px 20px -15px ${palette.white.main}`,
     },
   },
 }))

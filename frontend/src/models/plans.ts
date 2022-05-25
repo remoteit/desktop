@@ -238,7 +238,6 @@ export function getFreeLicenses(state: ApplicationState) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
   const used = getOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 1)
-  console.log('purchased', purchased, 'used', used)
   return Math.max(purchased - used, 0)
 }
 

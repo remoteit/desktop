@@ -45,11 +45,10 @@ export const Breadcrumbs: React.FC = () => {
 
   let breadcrumb: string = ''
 
+  if (!crumbs.join()) return null
+
   return (
     <span className={css.header}>
-      {/* <IconButton onClick={() => history.push(parentPath)}>
-        <Icon name="chevron-left" size="md" fixedWidth />
-      </IconButton> */}
       {crumbs.reduce((result: any[], crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
@@ -67,15 +66,15 @@ export const Breadcrumbs: React.FC = () => {
 const useStyles = makeStyles(({ palette }) => ({
   header: {
     marginTop: spacing.xs,
-    marginBottom: spacing.xs,
-    color: palette.grayDark.main,
+    marginLeft: spacing.lg,
+    color: palette.gray.main,
     position: 'relative',
     zIndex: 2,
     '& .MuiTypography-root': { marginLeft: 0 },
     '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
-      fontSize: fontSizes.xs,
+      fontSize: fontSizes.xxs,
       color: palette.grayDark.main,
       padding: `${spacing.xxs}px ${spacing.xs}px`,
       marginLeft: spacing.xxs,

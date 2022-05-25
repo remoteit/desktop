@@ -109,6 +109,9 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
 
   if (!device) return null
 
+  const inapp = inAppOverridden ? inAppNotification || false : globalNotificationSystem
+  const email = emailOverridden ? emailNotification || false : globalNotificationEmail
+
   return (
     <>
       <Typography variant="subtitle1">
@@ -125,32 +128,22 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
       <List>
         <ListItem button onClick={handleInAppNotifications} dense>
           <ListItemIcon>
-            <Icon name={inAppNotification ? 'bell-on' : 'bell-slash'} size="md" />
+            <Icon name={inapp ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="System notification" />
           <ListItemSecondaryAction>
             {inAppOverridden && chipOverridden('inapp')}
-            <Switch
-              edge="end"
-              color="primary"
-              checked={inAppOverridden ? inAppNotification || false : globalNotificationSystem}
-              onClick={handleInAppNotifications}
-            />
+            <Switch edge="end" color="primary" checked={inapp} onClick={handleInAppNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem button onClick={handleEmailNotifications} dense>
           <ListItemIcon>
-            <Icon name={emailNotification ? 'bell-on' : 'bell-slash'} size="md" />
+            <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="Email" />
           <ListItemSecondaryAction>
             {emailOverridden && chipOverridden('email')}
-            <Switch
-              edge="end"
-              color="primary"
-              checked={emailOverridden ? emailNotification || false : globalNotificationEmail}
-              onClick={handleEmailNotifications}
-            />
+            <Switch edge="end" color="primary" checked={email} onClick={handleEmailNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
       </List>

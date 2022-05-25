@@ -19,6 +19,7 @@ export const UserLogPage: React.FC = () => {
 
   return (
     <Container
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <Typography variant="h1">

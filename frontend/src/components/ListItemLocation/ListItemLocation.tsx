@@ -2,16 +2,17 @@ import React from 'react'
 import classnames from 'classnames'
 import { useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
-import { Color, spacing } from '../../styling'
+import { Color, FontSize, spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 export type Props = {
   pathname: string
   title?: React.ReactElement | string
-  subtitle?: string
+  subtitle?: React.ReactElement | string
   icon?: React.ReactElement | string
   iconColor?: Color
   iconType?: IconType
+  iconSize?: FontSize
   disabled?: boolean
   showDisabled?: boolean
   disableGutters?: boolean
@@ -31,6 +32,7 @@ export const ListItemLocation: React.FC<Props> = ({
   icon,
   iconColor,
   iconType,
+  iconSize,
   disabled,
   disableIcon,
   showDisabled,
@@ -55,7 +57,7 @@ export const ListItemLocation: React.FC<Props> = ({
   }
   const iconEl =
     icon && typeof icon === 'string' ? (
-      <Icon name={icon} size="md" color={iconColor} type={iconType} fixedWidth />
+      <Icon name={icon} size={iconSize || 'md'} color={iconColor} type={iconType} fixedWidth />
     ) : (
       icon
     )

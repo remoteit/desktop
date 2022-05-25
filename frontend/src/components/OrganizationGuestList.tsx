@@ -1,56 +1,62 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { List, ListSubheader, ListItemSecondaryAction, Box, Chip } from '@material-ui/core'
 import { ListItemLocation } from './ListItemLocation'
-import { getDevices } from '../models/accounts'
+import { getOrganization } from '../models/organization'
+import { useStyles } from './SharedUsersPaginatedList'
+import { Pagination } from '@material-ui/lab'
+import { Gutters } from './Gutters'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
 export const OrganizationGuestList: React.FC = () => {
-  const { devices, user } = useSelector((state: ApplicationState) => ({
-    user: state.user,
-    devices: getDevices(state).filter((d: IDevice) => !d.hidden),
+  const css = useStyles()
+  const [page, setPage] = useState<number>(1)
+  const { guests } = useSelector((state: ApplicationState) => ({
+    guests: getOrganization(state).guests,
   }))
 
-  const guests = devices.reduce((all: IGuest[], device) => {
-    device.access.forEach(({ id, email }) => {
-      if (email === user.email) return
-      const exists = all.find(g => g.email === email)
-      if (exists) exists.devices.push(device)
-      else all.push({ id, email, devices: [device] })
-    })
-    return all
-  }, [])
+  const perPage = 20
+  const pageCount = Math.ceil(guests.length / perPage)
+  const start = (page - 1) * perPage
+  const pageGuests = guests.sort(alphaEmailSort).slice(start, start + perPage)
 
   return (
-    <List>
-      <ListSubheader>
-        Guest
-        <ListItemSecondaryAction>Access</ListItemSecondaryAction>
-      </ListSubheader>
-      {guests.sort(alphaEmailSort).map(guest => (
-        <ListItemLocation
-          dense
-          key={guest.id}
-          title={guest.email}
-          pathname={`/organization/guests/${guest.id}`}
-          icon={<Avatar email={guest.email} size={26} />}
-        >
-          <ListItemSecondaryAction>
-            <Chip
-              size="small"
-              label={
-                <Box display="flex">
-                  <Icon name="hdd" size="base" color="grayDarker" inlineLeft />
-                  {guest.devices.length}
-                </Box>
-              }
-            />
-          </ListItemSecondaryAction>
-        </ListItemLocation>
-      ))}
-    </List>
+    <>
+      <List>
+        <ListSubheader>
+          Guest
+          <ListItemSecondaryAction>Shares</ListItemSecondaryAction>
+        </ListSubheader>
+        {pageGuests.map(guest => (
+          <ListItemLocation
+            dense
+            key={guest.id}
+            title={guest.email}
+            pathname={`/organization/guests/${guest.id}`}
+            icon={<Avatar email={guest.email} size={26} />}
+          >
+            <ListItemSecondaryAction>
+              <Chip
+                size="small"
+                label={
+                  <Box display="flex">
+                    <Icon name="hdd" size="base" color="grayDarker" inlineLeft />
+                    {guest.deviceIds.length}
+                  </Box>
+                }
+              />
+            </ListItemSecondaryAction>
+          </ListItemLocation>
+        ))}
+      </List>
+      {guests.length > perPage && (
+        <Gutters className={css.center}>
+          <Pagination className={css.pagination} count={pageCount} onChange={(e, page) => setPage(page)} size="small" />
+        </Gutters>
+      )}
+    </>
   )
 }
 

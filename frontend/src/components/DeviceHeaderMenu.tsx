@@ -17,6 +17,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
   return (
     <Container
       gutterBottom
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <Typography variant="h1">

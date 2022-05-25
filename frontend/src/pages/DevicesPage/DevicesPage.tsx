@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { selectLimitsLookup } from '../../models/organization'
+import { masterAttributes, deviceAttributes, restoreAttributes } from '../../components/Attributes'
 import { getDeviceModel } from '../../models/accounts'
+import { selectLimitsLookup } from '../../models/organization'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import { DeviceActionsBar } from '../../components/DeviceActionsBar'
 import { ApplicationState } from '../../store'
@@ -9,24 +10,24 @@ import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
-import { getDevices, getOwnDevices } from '../../models/accounts'
-import { masterAttributes, deviceAttributes } from '../../components/Attributes'
+import { getDevices } from '../../models/accounts'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
-  const { selected, devices, connections, myDevice, fetching, columnWidths, attributes, required } = useSelector(
+  const { selected, devices, connections, fetching, columnWidths, attributes, required } = useSelector(
     (state: ApplicationState) => ({
       selected: state.ui.selected,
-      attributes: masterAttributes
-        .concat(deviceAttributes)
-        .filter(a => a.show(selectLimitsLookup(state)) && state.ui.columns.includes(a.id) && !a.required),
+      attributes: restore
+        ? restoreAttributes
+        : masterAttributes
+            .concat(deviceAttributes)
+            .filter(a => a.show(selectLimitsLookup(state)) && state.ui.columns.includes(a.id) && !a.required),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
       fetching: getDeviceModel(state).fetching,
       columnWidths: state.ui.columnWidths,
       devices: getDevices(state).filter((d: IDevice) => !d.hidden),
-      myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
       connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
         if (!c.deviceID) return lookup
         if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
@@ -41,7 +42,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   }, [])
 
   return (
-    <DevicesHeader myDevice={myDevice} select={select}>
+    <DevicesHeader>
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." />
       ) : !devices.length ? (

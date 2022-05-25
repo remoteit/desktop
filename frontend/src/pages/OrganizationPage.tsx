@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Redirect, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -15,6 +15,7 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
+  const { userID = '', deviceID = '' } = useParams<{ userID: string; deviceID: string }>()
   const { initialized, permissions, limits, organization, license } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
     initialized: state.organization.initialized,
@@ -53,7 +54,12 @@ export const OrganizationPage: React.FC = () => {
           title="Members"
           pathname="/organization/members"
           icon="users"
-          match={['/organization', '/organization/members']}
+          match={[
+            '/organization',
+            '/organization/members',
+            `/organization/members/${userID}`,
+            `/organization/members/${userID}/${deviceID}`,
+          ]}
           disabled={!admin}
           exactMatch
           showDisabled
@@ -67,6 +73,16 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
+        <PaywallUI limitName="roles" title="Roles are available for Business and Enterprise plans">
+          <ListItemLocation
+            title="Roles"
+            icon="user-shield"
+            pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
+            disabled={!limits.roles || !admin}
+            showDisabled
+            dense
+          />
+        </PaywallUI>
         <ListItemLocation
           title="Tags"
           pathname="/organization/tags"
@@ -83,16 +99,6 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
-        <PaywallUI limitName="roles" title="Roles are available for Business and Enterprise plans">
-          <ListItemLocation
-            title="Roles"
-            icon="user-shield"
-            pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
-            disabled={!limits.roles || !admin}
-            showDisabled
-            dense
-          />
-        </PaywallUI>
       </List>
     </Container>
   )

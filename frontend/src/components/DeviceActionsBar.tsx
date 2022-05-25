@@ -31,6 +31,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
     <Container
       integrated
       gutterBottom
+      bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <Collapse in={!!(select || selected.length)} timeout={400}>
           <Box className={css.actions}>
@@ -86,6 +87,7 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: spacing.sm,
     marginBottom: spacing.xs,
     paddingRight: spacing.sm,
+    zIndex: 10,
     '& .MuiTypography-subtitle1': {
       marginTop: spacing.xs,
       marginBottom: spacing.xs,

@@ -4,7 +4,8 @@ import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { DeviceTagEditor } from './DeviceTagEditor'
-import { ListItemText, Chip } from '@material-ui/core'
+import { ListItemText, ListItemSecondaryAction, Chip } from '@material-ui/core'
+import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
@@ -27,8 +28,9 @@ export class Attribute {
   align?: 'left' | 'right' | 'center'
   column: boolean = true
   defaultWidth: number = 150
-  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
+  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
   feature?: string
+  multiline?: boolean
   value: (options: IDataOptions) => any = () => {}
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
@@ -41,6 +43,7 @@ export class Attribute {
     column?: boolean
     defaultWidth?: number
     feature?: string
+    multiline?: boolean
     type?: Attribute['type']
     value?: Attribute['value']
   }) {
@@ -64,6 +67,10 @@ class ConnectionAttribute extends Attribute {
   type: Attribute['type'] = 'CONNECTION'
 }
 
+class RestoreAttribute extends Attribute {
+  type: Attribute['type'] = 'RESTORE'
+}
+
 const ATTRIBUTES = [
   { label: 'Category A', id: 'categoryA' },
   { label: 'Category B', id: 'categoryB' },
@@ -78,6 +85,12 @@ const ATTRIBUTES = [
 ]
 
 export const attributes: Attribute[] = [
+  new RestoreAttribute({
+    id: 'restore',
+    label: 'Restore',
+    value: ({ device }) => device && <RestoreButton device={device} />,
+    required: true,
+  }),
   new Attribute({
     id: 'deviceName',
     label: 'Name',
@@ -98,10 +111,8 @@ export const attributes: Attribute[] = [
       connection?.connected ? (
         <ColorChip label="Connected" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
       ) : connection?.enabled ? (
-        // <Chip label="READY" size="small" color="primary" />
         <ColorChip label="Ready" size="small" typeColor="primary" />
       ) : device?.state === 'active' ? (
-        // <Chip label="ONLINE" size="small" color="secondary" />
         <ColorChip label="Online" size="small" typeColor="secondary" />
       ) : (
         <ColorChip label="Offline" size="small" typeColor="gray" />
@@ -256,6 +267,7 @@ export const attributes: Attribute[] = [
         id: a.id,
         label: a.label,
         value: ({ device }) => device?.attributes[a.id],
+        multiline: true,
       })
   ),
   new ServiceAttribute({
@@ -355,6 +367,7 @@ const attributeLookup = toLookup<Attribute>(attributes, 'id')
 export const masterAttributes = attributes.filter(a => a.type === 'MASTER')
 export const deviceAttributes = attributes.filter(a => a.type === 'DEVICE')
 export const serviceAttributes = attributes.filter(a => a.type === 'SERVICE')
+export const restoreAttributes = attributes.filter(a => a.type === 'RESTORE')
 
 export function getAttribute(id: string): Attribute {
   return attributeLookup[id]

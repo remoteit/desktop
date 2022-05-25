@@ -25,7 +25,7 @@ export const OrganizationMembersPage: React.FC = () => {
       owner: selectOwner(state),
     }
   })
-  const enterprise = !license?.plan?.billing
+  const enterprise = !!license && !license.plan.billing
 
   useEffect(() => {
     analyticsHelper.page('OrganizationMembersPage')

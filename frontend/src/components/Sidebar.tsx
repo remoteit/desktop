@@ -11,12 +11,12 @@ import { spacing } from '../styling'
 import { Body } from './Body'
 
 export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const addSpace = isMac() && isElectron()
+  const addSpace = isMac() && isElectron() && !layout.showOrgs
   const css = useStyles({ addSpace })
 
   return (
     <OrganizationSidebar hide={!layout.showOrgs}>
-      <Body className={css.sidebar} scrollbarBackground="grayLighter" insetShadow={false}>
+      <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
           <RegisterMenu />
@@ -38,7 +38,7 @@ const useStyles = makeStyles(({ palette }) => ({
     minWidth: SIDEBAR_WIDTH,
     maxWidth: SIDEBAR_WIDTH,
     '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px`, padding: 0 },
-    '& section:first-child': { marginTop: addSpace ? spacing.xxl : spacing.md },
+    '& section:first-child': { marginTop: addSpace ? spacing.xxl : spacing.lg },
   }),
   header: {
     display: 'flex',

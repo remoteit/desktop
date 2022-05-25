@@ -47,68 +47,70 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   }, [navigationBack, navigationForward])
 
   return (
-    <div className={css.header}>
-      {hideSidebar && (
-        <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
-      )}
-      {!(showSearch || searched) && isElectron() && (
-        <>
-          <IconButton
-            title="Back"
-            disabled={disabledBack}
-            onClick={handleBack}
-            icon="chevron-left"
-            size="md"
-            color={disabledBack ? 'grayLight' : 'grayDarker'}
-          />
-          <IconButton
-            title="Forward"
-            disabled={disabledForward}
-            onClick={handleForward}
-            icon="chevron-right"
-            size="md"
-            color={disabledForward ? 'grayLight' : 'grayDarker'}
-          />
-        </>
-      )}
-      <RefreshButton size="base" type="regular" color="grayDarker" />
-      <Title className={css.search}>
-        {!showSearch && !searched && (
-          <IconButton
-            size="md"
-            icon="search"
-            className={css.button}
-            color="grayDarker"
-            onClick={() => {
-              setShowSearch(true)
-              setTimeout(() => inputRef.current?.focus(), 20)
-            }}
-          >
-            {device && (
-              <Typography variant="caption" color="textSecondary">
-                {attributeName(device)}
-              </Typography>
-            )}
-          </IconButton>
-        )}
-        {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
-      </Title>
+    <>
       {breadcrumbs && <Breadcrumbs />}
-      <Route path={['/devices', '/devices/select']} exact>
-        <FilterButton />
-        <ColumnsButton />
-      </Route>
-      {feature.tagging && editTags && (
-        <>
-          <Route path="/devices" exact>
-            <IconButton to="/devices/select" icon="check-square" title="Show Select" />
-          </Route>
-          <Route path="/devices/select" exact>
-            <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
-          </Route>
-        </>
-      )}
-    </div>
+      <div className={css.header}>
+        {hideSidebar && (
+          <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
+        )}
+        {!(showSearch || searched) && isElectron() && (
+          <>
+            <IconButton
+              title="Back"
+              disabled={disabledBack}
+              onClick={handleBack}
+              icon="chevron-left"
+              size="md"
+              color={disabledBack ? 'grayLight' : 'grayDarker'}
+            />
+            <IconButton
+              title="Forward"
+              disabled={disabledForward}
+              onClick={handleForward}
+              icon="chevron-right"
+              size="md"
+              color={disabledForward ? 'grayLight' : 'grayDarker'}
+            />
+          </>
+        )}
+        <RefreshButton size="base" type="regular" color="grayDarker" />
+        <Title className={css.search}>
+          {!showSearch && !searched && (
+            <IconButton
+              size="md"
+              icon="search"
+              className={css.button}
+              color="grayDarker"
+              onClick={() => {
+                setShowSearch(true)
+                setTimeout(() => inputRef.current?.focus(), 20)
+              }}
+            >
+              {device && (
+                <Typography variant="caption" color="textSecondary">
+                  {attributeName(device)}
+                </Typography>
+              )}
+            </IconButton>
+          )}
+          {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
+        </Title>
+        <Route path={['/devices', '/devices/select']} exact>
+          <FilterButton />
+          <ColumnsButton />
+        </Route>
+        {feature.tagging && editTags && (
+          <>
+            <Route path="/devices" exact>
+              <IconButton to="/devices/select" icon="check-square" title="Show Select" />
+            </Route>
+            <Route path="/devices/select" exact>
+              <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
+            </Route>
+          </>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -128,11 +130,11 @@ const useStyles = makeStyles({
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {
-    '-webkit-app-region': 'no-drag',
     flexGrow: 1,
     zIndex: 1,
   },
   button: {
+    '-webkit-app-region': 'no-drag',
     justifyContent: 'flex-start',
     minHeight: spacing.xxl,
   },

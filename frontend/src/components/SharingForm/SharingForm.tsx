@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { REGEX_LAST_PATH } from '../../shared/constants'
-import { Divider, List, ListItem, Typography } from '@material-ui/core'
+import { Divider, List, Typography, Box } from '@material-ui/core'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
 import { ShareSaveActions } from '../ShareSaveActions'
+import { TargetPlatform } from '../TargetPlatform'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { useDispatch } from 'react-redux'
+import { Gutters } from '../Gutters'
 
 export interface SharingDetails {
   access: SharingAccess
@@ -72,10 +73,8 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
     if (device && shareData) {
       await shares.updateDeviceState({ device, emails: shareData.email, scripting: script, services, isNew })
     }
-    goBack()
+    history.goBack()
   }
-
-  const goBack = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   const action = () => {
     let action = false
@@ -100,14 +99,17 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
 
   return (
     <>
-      <List>
-        <ListItem>
-          <Typography variant="body2" color="textSecondary">
-            Share this device by entering the user's email and choosing the services you'd like to provide them access
-            to.
+      <Gutters top="xl">
+        <Box display="flex" alignItems="center">
+          <TargetPlatform id={device?.targetPlatform} size="xl" inlineLeft />
+          <Typography variant="h2">
+            {device.name}
+            <Typography variant="body2" color="textSecondary">
+              Choose the services you'd like to provide access to.
+            </Typography>
           </Typography>
-        </ListItem>
-      </List>
+        </Box>
+      </Gutters>
       <Typography variant="subtitle1">Services</Typography>
       <ServiceCheckboxes
         onChange={handleChangeServices}
@@ -115,7 +117,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
         saving={saving}
         selectedServices={selectedServices}
       />
-      <Divider />
+      <Divider variant="inset" />
       <List>
         <ListItemCheckbox
           label="Allow script execution"
@@ -126,11 +128,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           onClick={handleChangeScripting}
         />
       </List>
-      <ShareSaveActions
-        onCancel={() => history.push(location.pathname.replace(user ? `/${user.email}` : '/share', ''))}
-        onSave={action}
-        disabled={disabled}
-      />
+      <ShareSaveActions onCancel={() => history.goBack()} onSave={action} disabled={disabled} />
     </>
   )
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { emit } from '../services/Controller'
-import { Button } from '@material-ui/core'
+import { Button, Box } from '@material-ui/core'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { Confirm } from '../components/Confirm'
@@ -12,9 +12,9 @@ export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> 
   const { ui } = useDispatch<Dispatch>()
 
   return (
-    <>
+    <Box>
       <Button onClick={() => setOpen(true)} color="primary" variant="contained" size="small">
-        Restore
+        RESTORE
       </Button>
       <Confirm
         open={open}
@@ -29,6 +29,6 @@ export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> 
         We will attempt to restore this device's configuration. Please note this may not completely restore services
         that have custom host information.
       </Confirm>
-    </>
+    </Box>
   )
 }

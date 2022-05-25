@@ -3,12 +3,7 @@ import { ColumnsDrawer } from './ColumnsDrawer'
 import { FilterDrawer } from './FilterDrawer'
 import { Container } from './Container'
 
-type Props = {
-  select?: boolean
-  myDevice?: IDevice
-}
-
-export const DevicesHeader: React.FC<Props> = ({ select, children }) => {
+export const DevicesHeader: React.FC = ({ children }) => {
   return (
     <Container
       sidebar={

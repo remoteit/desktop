@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
+import { Gutters } from '../Gutters'
 
 export function ShareSaveActions({
   onCancel,
@@ -14,13 +15,13 @@ export function ShareSaveActions({
 }): JSX.Element {
   const { sharing: saving } = useSelector((state: ApplicationState) => state.shares)
   return (
-    <section>
+    <Gutters>
       <Button color="primary" onClick={onSave} disabled={disabled || saving} variant="contained">
         {saving ? 'Sharing...' : 'Share'}
       </Button>
       <Button disabled={saving} onClick={onCancel}>
         Cancel
       </Button>
-    </section>
+    </Gutters>
   )
 }

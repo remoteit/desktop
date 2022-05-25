@@ -1,6 +1,6 @@
 import {
   graphQLDeleteDevice,
-  graphQLRemoveDevice,
+  graphQLUnShareDevice,
   graphQLRename,
   graphQLSetAttributes,
   graphQLClaimDevice,
@@ -349,7 +349,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: true, silent: true })
       const result = manager
         ? await graphQLDeleteDevice(device.id)
-        : await graphQLRemoveDevice({
+        : await graphQLUnShareDevice({
             deviceId: device.id,
             email: [auth.user?.email || ''],
           })
@@ -467,7 +467,7 @@ export function isOffline(instance?: IDevice | IService, connection?: IConnectio
 
 export function selectDevice(state: ApplicationState, deviceId?: string) {
   const accountId = getActiveAccountId(state)
-  const device = selectDeviceByAccount(state, accountId, deviceId)
+  const device = selectDeviceByAccount(state, deviceId, accountId)
   return device || getAllDevices(state).find(d => d.id === deviceId)
 }
 

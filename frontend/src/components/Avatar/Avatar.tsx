@@ -7,7 +7,7 @@ import { makeStyles, Avatar as MuiAvatar, Tooltip } from '@material-ui/core'
 import { spacing } from '../../styling'
 
 export interface Props {
-  email: string
+  email?: string
   size?: number
   button?: boolean
   tooltip?: boolean
@@ -26,7 +26,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inlin
   let Element = (
     <>
       <MuiAvatar className={css.avatar} alt={email} src={url}>
-        <div>{email.substring(0, 1).toUpperCase()}</div>
+        <div>{email?.substring(0, 1).toUpperCase() || '?'}</div>
       </MuiAvatar>
       {children}
     </>
@@ -35,7 +35,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inlin
   if (button) Element = <span className={classnames(button && css.button)}>{Element}</span>
 
   return tooltip ? (
-    <Tooltip title={title || email} placement="right" enterDelay={800} arrow>
+    <Tooltip title={title || email || 'deleted'} placement="right" enterDelay={800} arrow>
       {Element}
     </Tooltip>
   ) : (

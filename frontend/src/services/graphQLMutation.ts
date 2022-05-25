@@ -74,7 +74,7 @@ export async function graphQLDeleteDevice(deviceId: string) {
   )
 }
 
-export async function graphQLRemoveDevice(params: IShareProps) {
+export async function graphQLUnShareDevice(params: IShareProps) {
   return await graphQLBasicRequest(
     ` mutation query($deviceId: String!, $email: [String!]!) {
         share(deviceId: $deviceId, email: $email, action: REMOVE)

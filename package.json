@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.7.2",
+  "version": "3.8.0-alpha.0",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -20,7 +20,7 @@
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
     "install-frontend": "cd frontend && npm i",
-    "install-binaries": "sh scripts/installCli.sh ",
+    "install-binaries": "sh scripts/build.sh ",
     "postinstall": "run-s install-*",
     "version": "sh scripts/version.sh $npm_package_version",
     "start": "npm-run-all -l -n -p copy-* watch-*",

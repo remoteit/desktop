@@ -254,6 +254,7 @@ function getApplicationType(typeId: number | undefined) {
         commandIcon: 'clipboard',
         localhost: true,
         defaultLaunchTemplate: 'smb://[host]:[port]',
+        windowsCommandTemplate: '\\\\[host]:[port]',
       })
     default:
       return new Application({})

@@ -10,11 +10,19 @@ interface Props {
   title: string
   device?: IDevice
   users?: IUser[]
+  members?: boolean
   connected?: boolean
   perPage?: number
 }
 
-export const SharedUsersPaginatedList: React.FC<Props> = ({ title, device, users = [], connected, perPage = 12 }) => {
+export const SharedUsersPaginatedList: React.FC<Props> = ({
+  title,
+  device,
+  users = [],
+  members,
+  connected,
+  perPage = 12,
+}) => {
   const [page, setPage] = useState<number>(1)
   const css = useStyles()
 
@@ -34,7 +42,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({ title, device, users
       </Typography>
       <List>
         {pageUsers.map((user, i) => (
-          <UserListItem key={user.email + i} user={user} isConnected={connected}>
+          <UserListItem key={user.id} user={user} isConnected={connected} member={members}>
             <ShareDetails user={user} device={device} connected />
           </UserListItem>
         ))}
@@ -43,7 +51,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({ title, device, users
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+export const useStyles = makeStyles(({ palette }) => ({
   pagination: {
     margin: 0,
     '& .MuiPaginationItem-sizeSmall': { fontSize: fontSizes.xxs },
@@ -53,4 +61,5 @@ const useStyles = makeStyles(({ palette }) => ({
       fontWeight: 500,
     },
   },
+  center: { display: 'flex', justifyContent: 'center' },
 }))
