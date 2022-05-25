@@ -216,6 +216,7 @@ export default createModel<RootModel>()({
       await dispatch.accounts.init()
       await dispatch.organization.init()
       await dispatch.devices.init()
+      await dispatch.networks.init()
       await dispatch.connections.init()
       await dispatch.tags.fetch()
       dispatch.user.fetch()
