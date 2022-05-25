@@ -19,7 +19,6 @@ export const UserListItem: React.FC<Props> = ({ user, isConnected, member, child
       <ListItemIcon>
         <Avatar email={user.email} size={spacing.lg} />
       </ListItemIcon>
-      s
       {isConnected ? (
         <ListItemText
           primaryTypographyProps={{ color: 'primary' }}
