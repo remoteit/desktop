@@ -48,8 +48,8 @@ export const OrganizationRolesPage: React.FC = () => {
       }
     >
       {!limits.roles && (
-        <Notice severity="warning" gutterTop>
-          Upgrade to Business plan to add custom roles.
+        <Notice severity="info" gutterTop>
+          Upgrade your plan to Business to add custom roles.
         </Notice>
       )}
       <Typography variant="subtitle1">
