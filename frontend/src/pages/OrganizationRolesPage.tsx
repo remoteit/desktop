@@ -2,20 +2,23 @@ import React, { useEffect } from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@material-ui/core'
 import { selectPermissions, getOrganization } from '../models/organization'
+import { selectLimitsLookup } from '../models/organization'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
   const history = useHistory()
-  const { name, roles, members, permissions } = useSelector((state: ApplicationState) => ({
+  const { name, roles, members, limits, permissions } = useSelector((state: ApplicationState) => ({
     ...getOrganization(state),
+    limits: selectLimitsLookup(state),
     permissions: selectPermissions(state),
   }))
 
@@ -44,9 +47,14 @@ export const OrganizationRolesPage: React.FC = () => {
         </Gutters>
       }
     >
+      {!limits.roles && (
+        <Notice severity="warning" gutterTop>
+          Upgrade to Business plan to add custom roles.
+        </Notice>
+      )}
       <Typography variant="subtitle1">
         <Title>Role</Title>
-        <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />
+        {limits.roles && <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />}
       </Typography>
       <List>
         {roles.map(r => {
