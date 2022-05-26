@@ -39,7 +39,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
 
   return (
     <Body center maxHeight="85%">
-      <Typography variant="body2" align="center" color="textSecondary">
+      <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
         Register your {osName(os)} for remote access
       </Typography>
       <form
@@ -101,6 +101,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'start',
+    marginBottom: spacing.xl,
   },
   input: {
     width: 300,
