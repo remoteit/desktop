@@ -11,7 +11,7 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
   if (!connection) connection = newConnection(service)
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
-  const disabled = connection.enabled || connection.public
+  const disabled = connection.connected || connection.public
   const resetValue = service?.attributes.targetHost
 
   const save = (targetHost: string) =>
@@ -27,7 +27,7 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
       displayValue={connection.targetHost}
       modified={connection.targetHost !== resetValue}
       icon="bullseye"
-      label="Host name override"
+      label="Target Host name"
       disabled={disabled}
       resetValue={resetValue}
       onSave={value => save(value.toString())}

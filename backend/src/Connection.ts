@@ -38,7 +38,7 @@ export default class Connection {
 
   disable() {
     this.params.enabled = false
-    if (!this.params.public) cli.setConnection(this.params, this.error)
+    if (!this.params.public) cli.removeConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 

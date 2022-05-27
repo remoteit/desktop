@@ -8,7 +8,6 @@ import { DynamicButton } from '../DynamicButton'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import heartbeat from '../../services/Heartbeat'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {
@@ -40,7 +39,6 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const stopping = state === 'stopping'
 
   let clickHandler = () => {
-    heartbeat.caffeinate()
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
       connections.disconnect(connection)
@@ -76,16 +74,16 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     variant = 'text'
   }
 
-  if (state === 'ready') {
-    title = 'Connecting'
-    color = 'primary'
-  }
   if (stopping) {
-    title = 'Removing'
+    title = 'Removing...'
     color = 'grayDark'
   }
   if (connecting) {
-    title = 'Connecting'
+    title = 'Connecting...'
+    color = 'grayDark'
+  }
+  if (state === 'starting') {
+    title = 'Starting'
     color = 'grayDark'
   }
   if (state === 'offline') {
