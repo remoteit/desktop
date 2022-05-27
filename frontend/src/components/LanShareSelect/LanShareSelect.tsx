@@ -13,7 +13,7 @@ type Props = {
 export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const location = useLocation()
   const shared = lanShared(connection)
-  const disabled = connection?.enabled || connection?.public
+  const disabled = connection?.connected || connection?.public
 
   return (
     <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'} showDisabled dense>

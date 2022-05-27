@@ -1,4 +1,5 @@
 import React from 'react'
+import { Notice } from './Notice'
 import { Overlay } from './Overlay'
 import { Gutters } from './Gutters'
 import { PlanCard } from './PlanCard'
@@ -62,7 +63,7 @@ export const Plans: React.FC = () => {
     purchasing: state.plans.purchasing,
     license: selectOwnRemoteitLicense(state),
   }))
-  const getDefaults = () => {
+  function getDefaults(): IPurchase {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
     const price = plan.prices?.find(p => p.id === license?.subscription?.price?.id) || plan.prices?.[0]
     return {
@@ -71,14 +72,14 @@ export const Plans: React.FC = () => {
       planId: plan.id,
       priceId: price?.id,
       quantity: license?.quantity || 1,
-      confirm: false
+      confirm: false,
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
   const enterprise = !!license && !license.plan.billing
   const userPlan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
-  
+
   React.useEffect(() => {
     setForm(getDefaults())
   }, [license])
@@ -86,7 +87,6 @@ export const Plans: React.FC = () => {
   React.useEffect(() => {
     if (location.pathname.includes('success')) dispatch.plans.restore()
   }, [])
-
 
   return (
     <>
@@ -146,50 +146,44 @@ export const Plans: React.FC = () => {
                   selected={selected}
                   loading={purchasing === plan.id}
                   onSelect={() =>
-                    userPlan.name.toUpperCase() === 'BUSINESS' && !selected ? setForm({
-                      ...form,
-                      confirm: true,
-                      checkout: false,
-                      planId: plan.id,
-                      priceId,
-                    }) : setForm({
-                      ...form,
-                      confirm: false,
-                      checkout: true,
-                      planId: plan.id,
-                      priceId,
-                    })
+                    userPlan.name.toUpperCase() === 'BUSINESS' && !selected
+                      ? setForm({
+                          ...form,
+                          confirm: true,
+                          checkout: false,
+                          planId: plan.id,
+                          priceId,
+                        })
+                      : setForm({
+                          ...form,
+                          confirm: false,
+                          checkout: true,
+                          planId: plan.id,
+                          priceId,
+                        })
                   }
                   features={plan.id && Features[plan.id]}
                 />
               )
             })}
-            {form.confirm ? (<Confirm
-              open={form.confirm}
-              onConfirm={() => {
-                setForm({
-                  ...form,
-                  confirm: false,
-                  checkout: true
-                })
-              }}
-              onDeny={() => setForm({
-                ...form,
-                confirm: false,
-                checkout: false
-              })}
+            <Confirm
+              open={!!form.confirm}
+              onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
+              onDeny={() => setForm({ ...form, confirm: false })}
               title="Confirm Plan Change"
-              action={'Confirm'}
+              action="Downgrade"
+              maxWidth="sm"
             >
-              Some features are only available in business and will automatically change when downgrading.
+              <Notice severity="warning" fullWidth gutterBottom>
+                Features only available in business will automatically change when downgrading.
+              </Notice>
+              <i> Do you want to proceed?</i>
               <ul>
                 <li>Activity Log storage will be reduced</li>
                 <li>Users with custom roles will be reverted to system roles</li>
                 <li>SAML will be disabled</li>
               </ul>
-              Do you want to proceed?
-            </Confirm>) : null
-            }
+            </Confirm>
           </>
         )}
       </Gutters>

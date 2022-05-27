@@ -5,6 +5,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
+import heartbeat from '../services/Heartbeat'
 
 type IConnectionsState = { all: IConnection[] }
 
@@ -115,7 +116,10 @@ export default createModel<RootModel>()({
     async connect(connection: IConnection) {
       const { proxyConnect } = dispatch.connections
       if (connection.public) proxyConnect(connection)
-      else emit('service/connect', connection)
+      else {
+        emit('service/connect', connection)
+        heartbeat.caffeinate()
+      }
     },
 
     async disconnect(connection: IConnection | undefined) {
@@ -124,9 +128,13 @@ export default createModel<RootModel>()({
         return
       }
       const { proxyDisconnect } = dispatch.connections
-      if (connection.public) proxyDisconnect(connection)
-      else if (connection.connected) emit('service/disconnect', connection)
+      if (connection.public) {
+        proxyDisconnect(connection)
+        return
+      }
+      if (connection.connected) emit('service/disconnect', connection)
       else if (connection.enabled) emit('service/disable', connection)
+      heartbeat.caffeinate()
     },
 
     async forget(id: string, globalState) {

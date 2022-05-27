@@ -17,7 +17,7 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
       value={connection.name}
       label="Connection Name"
       resetValue={resetValue}
-      disabled={connection.enabled || connection.public}
+      disabled={connection.connected || connection.public}
       filter={REGEX_CONNECTION_NAME}
       maxLength={MAX_CONNECTION_NAME_LENGTH}
       onSave={name =>

@@ -9,10 +9,12 @@ import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { isPortal } from '../services/Browser'
+import heartbeat from '../services/Heartbeat'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
   if (connection) {
+    if (connection.starting) return 'starting'
     if (connection.disconnecting) return 'disconnecting'
     if ((connection.connected || connection.connecting) && !connection.enabled) return 'stopping'
     if (connection.connecting) return 'connecting'
@@ -86,7 +88,12 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
-  auth.backendAuthenticated ? emit('connection', connection) : connections.updateConnection(connection)
+  if (auth.backendAuthenticated) {
+    emit('connection', connection)
+    heartbeat.caffeinate()
+  } else {
+    connections.updateConnection(connection)
+  }
 }
 
 export function clearConnectionError(connection: IConnection) {

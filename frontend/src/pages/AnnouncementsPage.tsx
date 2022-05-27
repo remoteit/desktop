@@ -28,7 +28,7 @@ export const AnnouncementsPage = () => {
       bodyProps={{ inset: true, flex: true, verticalOverflow: true }}
       header={
         <Typography variant="h1">
-          <Title>Announcements</Title>
+          <Title>Inbox</Title>
         </Typography>
       }
     >

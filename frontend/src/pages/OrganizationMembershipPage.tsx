@@ -22,7 +22,6 @@ import { spacing } from '../styling'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
-import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembershipPage: React.FC = () => {
@@ -53,7 +52,7 @@ export const OrganizationMembershipPage: React.FC = () => {
             <>
               <ListItem key={organization.id}>
                 <ListItemIcon>
-                  <Avatar email={email} size={25} />
+                  <Avatar email={email} size={28} />
                 </ListItemIcon>
                 <ListItemText primary={organization.name} secondary="Your organization" />
                 <ListItemSecondaryAction>
@@ -72,7 +71,7 @@ export const OrganizationMembershipPage: React.FC = () => {
             return (
               <ListItem key={m.roleId}>
                 <ListItemIcon>
-                  <Icon name="industry-alt" />
+                  <Avatar email={m.account.email} size={28} />
                 </ListItemIcon>
                 <ListItemText
                   primary={mo.name}

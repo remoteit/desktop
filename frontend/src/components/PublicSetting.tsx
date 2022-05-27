@@ -19,7 +19,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
 
   return (
     <>
-      <DesktopUI>
+      {/* <DesktopUI>
         <ListItemSetting
           label="Proxy connection"
           subLabel="Publicly sharable proxy connection"
@@ -35,7 +35,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
             })
           }
         />
-      </DesktopUI>
+      </DesktopUI> */}
       <Collapse in={connection.public} timeout={400}>
         <InlineSelectSetting
           icon="lock"

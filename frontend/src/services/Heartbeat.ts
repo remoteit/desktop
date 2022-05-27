@@ -4,8 +4,8 @@ import { store } from '../store'
 import { emit } from './Controller'
 
 const HEARTBEAT_INTERVAL = 1000 * 20 // 20 SEC
-const CAFFEINATE_INTERVAL = 2000 // 2 SEC
-const CAFFEINATE_COUNT = 8
+const CAFFEINATE_INTERVAL = 1000 // 1 SEC
+const CAFFEINATE_COUNT = 12
 
 class Heartbeat {
   count = 0
@@ -23,11 +23,15 @@ class Heartbeat {
   }
 
   start = () => {
-    if (network.isActive() && !this.restInterval) this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
+    if (network.isActive() && !this.restInterval) {
+      console.log('START HEARTBEAT')
+      this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
+    }
   }
 
   stop = () => {
     if (this.restInterval) {
+      console.log('STOP HEARTBEAT')
       window.clearInterval(this.restInterval)
       this.restInterval = undefined
     }
@@ -42,6 +46,7 @@ class Heartbeat {
 
   caffeinate = () => {
     this.count = 0
+    console.log('START CAFFEINATE')
     if (this.caffeineInterval) window.clearInterval(this.caffeineInterval)
     this.caffeineInterval = window.setInterval(() => {
       if (this.count++ > CAFFEINATE_COUNT) {

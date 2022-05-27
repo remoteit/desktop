@@ -23,7 +23,7 @@ export const SharedUsersLists: React.FC<Props> = ({ device, connected = [], user
   return (
     <>
       <SharedUsersPaginatedList title="Connected" device={device} users={connected} connected />
-      <SharedUsersPaginatedList title="Shared" device={device} users={sort(disconnected)} />
+      <SharedUsersPaginatedList title="Guests" device={device} users={sort(disconnected)} />
       {manager && (
         <SharedUsersPaginatedList title="Organization members" device={device} users={sort(members)} members />
       )}

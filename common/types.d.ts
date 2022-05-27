@@ -162,6 +162,7 @@ declare global {
     restriction?: ipAddress // Restriction IP address
     reverseProxy?: boolean // if the connection is a reverse proxy
     sessionId?: string //the connection session id
+    starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
     targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
@@ -176,6 +177,7 @@ declare global {
     | 'connected'
     | 'connecting'
     | 'disconnecting'
+    | 'starting'
     | 'stopping'
     | 'ready'
 

@@ -10,7 +10,7 @@ export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnect
   if (!connection) connection = newConnection(service)
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
-  const disabled = connection.enabled || connection.public
+  const disabled = connection.connected || connection.public
   const timeout = connection.public ? PUBLIC_CONNECTION.timeout : connection.timeout
   let display = timeout === 0 ? 'Never' : `${timeout} minutes`
 

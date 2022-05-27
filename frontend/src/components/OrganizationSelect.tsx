@@ -38,7 +38,7 @@ export const OrganizationSelect: React.FC = () => {
     }
   }
 
-  options.sort((a, b) => (a.name > b.name ? 1 : -1))
+  options.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
   if (!options.length) return null
 
   return (
