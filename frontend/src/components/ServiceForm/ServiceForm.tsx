@@ -295,7 +295,9 @@ export const useStyles = makeStyles({
     padding: `0 ${spacing.xl}px 0 ${spacing.xxs}px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
+      width: 300 - spacing.lg,
       display: 'block',
+      marginRight: spacing.lg,
     },
     '& .MuiFormControl-root + .MuiFormControl-root': {
       marginTop: spacing.sm,

@@ -16,6 +16,7 @@ type Props = IService['attributes'] & {
   connection?: IConnection
   disabled: boolean
   customTokens?: string[]
+  customTokensNote?: ILookup<React.ReactElement>
   attributes: IService['attributes']
   globalDefaults?: boolean
   onUpdate: (attributes: IService['attributes']) => void
@@ -25,6 +26,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   disabled,
   connection,
   customTokens = [],
+  customTokensNote = {},
   attributes,
   globalDefaults,
   onUpdate,
@@ -167,6 +169,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                       variant="filled"
                       onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
                     />
+                    <Typography variant="caption">Found in {customTokensNote[token]}</Typography>
                   </ListItem>
                 )
               )}

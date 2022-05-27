@@ -206,7 +206,7 @@ export const Router: React.FC = () => {
                 <NotificationsPage />
               </Route>
 
-              <Route path="/settings/defaults">
+              <Route path="/settings/defaults/:applicationID?">
                 <ConnectionDefaultsPage />
               </Route>
 
