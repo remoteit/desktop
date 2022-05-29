@@ -120,7 +120,7 @@ export const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350, organization: 350 },
+  panelWidth: { devices: 400, networks: 500, settings: 350, account: 350, organization: 350 },
   navigation: {},
   navigationBack: [],
   navigationForward: [],

@@ -30,7 +30,8 @@ export const InitiatorPlatform: React.FC<{
   connected?: boolean
   user?: boolean
   thisDevice?: boolean
-}> = ({ id, connected, user, thisDevice }) => {
+  className?: string
+}> = ({ id, connected, user, thisDevice, className }) => {
   let name: string
   let type: IconType = 'regular'
   let color: Color | undefined = connected ? 'primary' : undefined
@@ -90,9 +91,9 @@ export const InitiatorPlatform: React.FC<{
 
   return connected && id ? (
     <Tooltip title={`Connected by ${INITIATOR_PLATFORMS[id]}`}>
-      <Icon {...{ name, type, size, color }} />
+      <Icon {...{ name, type, size, color, className }} />
     </Tooltip>
   ) : (
-    <Icon {...{ name, type, size, color }} />
+    <Icon {...{ name, type, size, color, className }} />
   )
 }

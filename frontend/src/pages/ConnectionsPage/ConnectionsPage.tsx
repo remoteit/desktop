@@ -1,23 +1,22 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import { makeStyles, Typography, Link } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
+import { selectNetworks } from '../../models/networks'
 import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
+import { IconButton } from '../../buttons/IconButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
-import { NewSession } from '../../components/NewSession'
-import { spacing } from '../../styling'
+import { NetworkAdd } from '../../components/NetworkAdd'
+import { Network } from '../../components/Network'
 import { Body } from '../../components/Body'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 
 export const ConnectionsPage: React.FC = () => {
-  const css = useStyles()
-  const history = useHistory()
-  const { local, proxy, other, recent } = useSelector((state: ApplicationState) => {
+  const { local, proxy, other, recent, networks } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
+    const networks = selectNetworks(state)
 
     let local: ISession[] = []
     let proxy: ISession[] = []
@@ -59,10 +58,8 @@ export const ConnectionsPage: React.FC = () => {
       } else recent.push(session)
     }
 
-    return { local, proxy, other, recent }
+    return { local, proxy, other, recent, networks }
   })
-
-  const noConnections = !local.length && !other.length && !recent.length && !proxy.length
 
   useEffect(() => {
     heartbeat.beat()
@@ -71,22 +68,17 @@ export const ConnectionsPage: React.FC = () => {
 
   return (
     <Body verticalOverflow gutterBottom>
-      <NewSession />
-      {noConnections && (
-        <>
-          <Typography className={css.message} variant="h2" align="center">
-            Connections will appear here
-          </Typography>
-          <Typography variant="body2" align="center" color="textSecondary">
-            Once you've added connections from the<Link onClick={() => history.push('/devices')}>Devices</Link>tab,{' '}
-            <br />
-            active and recent connections will appear here.
-          </Typography>
-        </>
-      )}
-      <SessionsList title="Proxy" sessions={proxy} />
-      <SessionsList title="Network" sessions={local} />
-      <SessionsList title="Other Connections" sessions={other} other />
+      <NetworkAdd networks={networks} />
+      <SessionsList
+        title="Local Network"
+        sessions={local}
+        action={<IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth />}
+      />
+      {networks?.map(n => (
+        <Network key={n.id} network={n} />
+      ))}
+      <SessionsList title="Cloud Proxy Connections" sessions={proxy} />
+      <SessionsList title="Outside Connections" sessions={other} other />
       <SessionsList
         title="Recent"
         sessions={recent}
@@ -96,7 +88,3 @@ export const ConnectionsPage: React.FC = () => {
     </Body>
   )
 }
-
-const useStyles = makeStyles({
-  message: { marginBottom: spacing.xl, marginTop: '5vw' },
-})

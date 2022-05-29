@@ -124,10 +124,18 @@ declare global {
     deviceName: string
     serviceId: string
     serviceName: string
-    ownerEmail: string
+    ownerEmail: strings
     targetPlatform: number
     offline: boolean
   }
+
+  export type INetwork = {
+    id: string
+    name: string
+    enabled: boolean
+    serviceIds: string[]
+  }
+
   interface IConnection {
     autoLaunch?: boolean
     commandTemplate?: string // command line launch template

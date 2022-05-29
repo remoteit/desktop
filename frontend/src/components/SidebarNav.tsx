@@ -30,7 +30,7 @@ export const SidebarNav: React.FC = () => {
 
   return (
     <List className={css.list}>
-      <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
+      <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
         <ListItemSecondaryAction>
           {!!connections && (
             <Tooltip title="Active" placement="top" arrow>

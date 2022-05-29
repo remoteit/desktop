@@ -1,5 +1,4 @@
 import React from 'react'
-import { Body } from '../components/Body'
 import { makeStyles, Typography, Box } from '@material-ui/core'
 import { spacing } from '../styling'
 import { Icon } from '../components/Icon'
@@ -20,7 +19,7 @@ export const NoConnectionPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     display: 'flex',
     justifyContent: 'center',

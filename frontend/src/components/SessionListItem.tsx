@@ -25,7 +25,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
   const connected = session.state === 'connected'
   const css = useStyles({ state: session.state, offline })
 
-  let pathname = `/connections/${session.target.id}`
+  let pathname = `/networks/${session.target.id}`
   if (session.id) pathname += `/${session.id}`
   if (other) pathname += '/other'
 

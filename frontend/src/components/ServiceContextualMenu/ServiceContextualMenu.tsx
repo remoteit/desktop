@@ -67,7 +67,7 @@ export const ServiceContextualMenu: React.FC = () => {
         </ListItem>
       )}
       {connection?.enabled && (
-        <MenuItem dense disableGutters onClick={() => handleGo(`/connections/${service?.id}`)}>
+        <MenuItem dense disableGutters onClick={() => handleGo(`/networks/${service?.id}`)}>
           <ListItemIcon>
             <Icon name="chart-network" size="md" color="primary" />
           </ListItemIcon>

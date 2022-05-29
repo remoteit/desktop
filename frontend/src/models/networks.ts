@@ -1,18 +1,11 @@
 import { createModel } from '@rematch/core'
 import { getAccountIds, getActiveAccountId } from './accounts'
 // import { graphQLBasicRequest } from '../services/graphQL'
-// import { ApplicationState } from '../store'
 // import { AxiosResponse } from 'axios'
+import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
-export type INetworksState = {
-  id: string
-  name: string
-  enabled: boolean
-  serviceIds: string[]
-}
-
-const defaultState: INetworksState = {
+const defaultState: INetwork = {
   id: '',
   name: '',
   enabled: false,
@@ -20,7 +13,7 @@ const defaultState: INetworksState = {
 }
 
 type INetworksAccountState = {
-  all: ILookup<INetworksState>
+  all: ILookup<INetwork[]>
   initialized: boolean
 }
 
@@ -39,14 +32,21 @@ export default createModel<RootModel>()({
     async fetch(_, state) {
       const ids: string[] = getAccountIds(state)
       const all = {}
-      ids.forEach(id => (all[id] = { ...defaultState }))
+      ids.forEach(id => (all[id] = []))
       await dispatch.networks.set({ all })
     },
-    async setActive(params: ILookup<any>, state) {
+    async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
-      let network = state.networks.all[id]
-      Object.keys(params).forEach(key => (network[key] = params[key]))
-      dispatch.networks.set({ all: { ...state.networks.all, [id]: network } })
+      let networks = state.networks.all[id]
+      if (params.id) {
+        const index = networks.findIndex(network => network.id === params.id)
+        if (index >= 0) networks[index] = { ...networks[index], ...params }
+      } else {
+        const id = Math.floor(Math.random() * 1000000).toString()
+        networks.push({ ...params, id })
+        dispatch.ui.set({ redirect: `/networks/view/${id}` })
+      }
+      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },
   }),
   reducers: {
@@ -60,3 +60,11 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectNetworks(state: ApplicationState): INetwork[] {
+  return state.networks.all[getActiveAccountId(state)]
+}
+
+export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
+  return selectNetworks(state)?.find(n => n.id === networkId) || defaultState
+}

@@ -13,7 +13,7 @@ export interface Props {
 }
 
 export const SessionsList: React.FC<Props> = ({ sessions, title, action, ...props }) => {
-  if (!sessions.length && !action) return null
+  if (!sessions.length && !action && !props.isNew) return null
   let prev: string | undefined
 
   return (

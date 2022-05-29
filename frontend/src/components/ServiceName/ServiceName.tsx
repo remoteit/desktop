@@ -29,7 +29,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
     if (device) name += ' - '
     name += attributeName(service)
   }
-  if (connection?.name && menu && menu[0] === '/connections') name = connection.name
+  if (connection?.name && menu && menu[0] === '/networks') name = connection.name
 
   return (
     <Title inline={inline}>

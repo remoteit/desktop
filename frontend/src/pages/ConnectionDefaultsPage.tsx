@@ -53,7 +53,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
     const a = getApplication(undefined, c)
     const el = (
       <>
-        connection <Link to={`/connections/${c.id}`}>{c.name}</Link>
+        connection <Link to={`/networks/${c.id}`}>{c.name}</Link>
       </>
     )
     addCustomAttributes(a.allCustomTokens, c.typeID || 0, el)
