@@ -52,7 +52,7 @@ export const OrganizationMembershipPage: React.FC = () => {
             <>
               <ListItem key={organization.id}>
                 <ListItemIcon>
-                  <Avatar email={email} size={28} />
+                  <Avatar email={email} title={organization.name} size={28} />
                 </ListItemIcon>
                 <ListItemText primary={organization.name} secondary="Your organization" />
                 <ListItemSecondaryAction>
@@ -71,7 +71,7 @@ export const OrganizationMembershipPage: React.FC = () => {
             return (
               <ListItem key={m.roleId}>
                 <ListItemIcon>
-                  <Avatar email={m.account.email} size={28} />
+                  <Avatar email={m.account.email} title={mo.name} size={28} />
                 </ListItemIcon>
                 <ListItemText
                   primary={mo.name}

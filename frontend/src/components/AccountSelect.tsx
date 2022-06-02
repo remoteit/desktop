@@ -59,7 +59,7 @@ export const AccountSelect: React.FC = () => {
           </MenuItem>
         ))}
         <Divider className={css.divider} />
-        <MenuItem onClick={() => history.push('/devices/membership')}>Manage memberships...</MenuItem>
+        <MenuItem onClick={() => history.push('/organization/memberships')}>Manage memberships...</MenuItem>
       </TextField>
     </ListItem>
   )

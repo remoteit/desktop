@@ -141,11 +141,6 @@ export const Router: React.FC = () => {
           </Panel>
         )}
       </Route>
-      <Route path="/devices/membership">
-        <Panel layout={layout}>
-          <OrganizationMembershipPage />
-        </Panel>
-      </Route>
       <Route path="/devices/setupWaiting">
         <Panel layout={layout}>
           <SetupWaiting os={os} targetDevice={targetDevice} />
@@ -228,6 +223,11 @@ export const Router: React.FC = () => {
         />
       </Route>
       {/* Organization */}
+      <Route path="/organization/memberships">
+        <Panel layout={layout}>
+          <OrganizationMembershipPage />
+        </Panel>
+      </Route>
       <Route path={['/organization/roles', '/organization/roles/:roleID']}>
         <DynamicPanel
           primary={<OrganizationRolesPage />}
