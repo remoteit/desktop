@@ -222,10 +222,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateShareDevice(device: IDevice) {
-      dispatch.accounts.setDevice({ id: device.id, device })
-    },
-
     async renameService(service: IService, state) {
       let device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return

@@ -21,7 +21,7 @@ type IParams = { userID: string; serviceID: string; deviceID: string }
 
 export const SharePage: React.FC = () => {
   const { userID = '', serviceID = '', deviceID = '' } = useParams<IParams>()
-  const { shares } = useDispatch<Dispatch>()
+  const { shares, organization } = useDispatch<Dispatch>()
   const { device, guests, deleting } = useSelector((state: ApplicationState) => ({
     device: selectDevice(state, deviceID),
     guests: getOrganization(state).guests,
@@ -34,8 +34,11 @@ export const SharePage: React.FC = () => {
   const email = guest?.email || ''
 
   useEffect(() => {
+    ;(async () => {
+      if (!guest && userID) await organization.fetch()
+      await shares.fetch({ email, serviceID, device })
+    })()
     analyticsHelper.page('SharePage')
-    shares.fetch({ email, serviceID, device })
   }, [])
 
   if (!device) return null
@@ -52,31 +55,33 @@ export const SharePage: React.FC = () => {
   return (
     <Container
       header={
-        <>
-          {email ? (
-            <Typography variant="h1" gutterBottom>
-              <Title>
-                <Avatar email={email} inline />
-                {email}
-              </Title>
-              {deleting ? (
-                <CircularProgress className={css.loading} size={fontSizes.md} />
-              ) : (
-                <Tooltip title={`Remove ${email}`}>
-                  <IconButton onClick={handleUnshare} disabled={deleting}>
-                    <Icon name="trash" size="md" fixedWidth />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Typography>
-          ) : (
-            device && (
-              <Gutters>
-                <ContactSelector contacts={guests} onChange={handleChange} />
-              </Gutters>
-            )
-          )}
-        </>
+        email ? (
+          <Typography variant="h1" gutterBottom>
+            <Title>
+              <Avatar email={email} inline />
+              {email}
+            </Title>
+            {deleting ? (
+              <CircularProgress className={css.loading} size={fontSizes.md} />
+            ) : (
+              <Tooltip title={`Remove ${email}`}>
+                <IconButton onClick={handleUnshare} disabled={deleting}>
+                  <Icon name="trash" size="md" fixedWidth />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Typography>
+        ) : !guest && userID ? (
+          <Typography variant="h1" gutterBottom>
+            <Icon name="spinner-third" type="solid" size="lg" color="gray" spin inlineLeft /> Loading...
+          </Typography>
+        ) : (
+          device && (
+            <Gutters>
+              <ContactSelector contacts={guests} onChange={handleChange} />
+            </Gutters>
+          )
+        )
       }
     >
       {device && <SharingForm device={device} user={guest} />}
