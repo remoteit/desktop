@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-ui/core'
 import { getAttributes } from './Attributes'
+import { NetworksJoined } from './NetworksJoined'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { DataDisplay } from './DataDisplay'
@@ -15,9 +16,10 @@ type Props = {
   session?: ISession
   showTitle?: string
   show?: boolean
+  permissions?: IPermission[]
 }
 
-export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
+export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session, permissions }) => {
   const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
@@ -213,6 +215,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
           <Gutters bottom="xs">
             <DataDisplay attributes={attributes} connection={connection} session={session} width={100} disablePadding />
           </Gutters>
+          <NetworksJoined service={service} permissions={permissions} />
         </Paper>
       </Gutters>
     </Collapse>

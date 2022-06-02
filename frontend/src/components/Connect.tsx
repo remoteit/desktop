@@ -68,7 +68,13 @@ export const Connect: React.FC = () => {
 
   return (
     <>
-      <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
+      <ConnectionDetails
+        connection={connection}
+        service={service}
+        session={session}
+        show={connection?.enabled}
+        permissions={device.permissions}
+      />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       <GuideStep
         guide="guideAWS"

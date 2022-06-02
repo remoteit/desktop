@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
-import { newConnection, setConnection } from '../helpers/connectionHelper'
+import { newConnection, setConnection, sanitizeName } from '../helpers/connectionHelper'
+import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import { graphQLConnect, graphQLDisconnect } from '../services/graphQLMutation'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
@@ -115,6 +115,10 @@ export default createModel<RootModel>()({
 
     async connect(connection: IConnection) {
       const { proxyConnect } = dispatch.connections
+      if (connection.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+      connection.name = sanitizeName(connection?.name || '')
+      connection.host = ''
+      connection.public = isPortal()
       if (connection.public) proxyConnect(connection)
       else {
         emit('service/connect', connection)

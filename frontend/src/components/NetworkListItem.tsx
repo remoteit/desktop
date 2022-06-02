@@ -1,9 +1,10 @@
 import React from 'react'
 import { makeStyles, Tooltip, ListItemText, ListItemIcon } from '@material-ui/core'
 import { InitiatorPlatform } from './InitiatorPlatform'
+import { selectConnection } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
-import { TargetPlatform } from './TargetPlatform'
 import { ApplicationState } from '../store'
+import { TargetPlatform } from './TargetPlatform'
 import { attributeName } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
@@ -18,17 +19,18 @@ export interface Props {
 }
 
 export const NetworkListItem: React.FC<Props> = ({ network, serviceId, title, children }) => {
-  const { service, device, session } = useSelector((state: ApplicationState) => {
+  const { service, device, session, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceId)
     return {
       service,
       device,
       session: state.sessions.all.find(s => s.id === serviceId),
+      connection: state.connections.all.find(c => c.id === serviceId),
     }
   })
   const connected = session?.state === 'connected'
   const offline = service?.state !== 'active'
-  const css = useStyles({ state: session?.state, offline })
+  const css = useStyles({ state: session?.state, offline, enabled: network?.enabled })
 
   let icon: React.ReactElement | null = null
   if (connected) icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
@@ -36,11 +38,13 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, title, ch
   if (title)
     return (
       <ListItemLocation
-        icon={<InitiatorPlatform className={css.mergeIcon} id={session?.platform} connected={!offline} />}
+        icon={<Icon className={css.mergeIcon} name={network?.icon} color={network?.enabled ? 'primary' : undefined} />}
         pathname={`/networks/view/${network?.id}`}
-        title={<Title enabled={!offline}>{network?.name}</Title>}
+        title={<Title enabled={network?.enabled}>{network?.name}</Title>}
         dense
-      />
+      >
+        {children}
+      </ListItemLocation>
     )
 
   return (
@@ -52,24 +56,18 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, title, ch
         </ListItemIcon>
       </Tooltip>
       <ListItemIcon className={css.platform + ' ' + css.title}>
-        <TargetPlatform
-          id={session?.target.platform}
-          size="md"
-          color={offline ? 'gray' : 'primary'}
-          fullColor
-          tooltip
-        />
+        <TargetPlatform id={device?.targetPlatform} size="md" color={offline ? 'gray' : 'primary'} fullColor tooltip />
       </ListItemIcon>
       <ListItemText
         className={css.title}
         primary={
-          <Title>
+          <Title enabled={connection?.enabled}>
             {service ? (
               <>
                 {attributeName(service)} - <span className={css.name}>{attributeName(device)}</span>
               </>
             ) : (
-              session?.target.name
+              connection?.name
             )}
           </Title>
         }
@@ -80,28 +78,30 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, title, ch
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  title: ({ state, offline }: any) => ({
+  title: ({ state }: any) => ({
     opacity: state === 'offline' ? 0.5 : 1,
     '& > span': {
       fontWeight: 500,
       overflow: 'hidden',
       whiteSpace: 'nowrap',
-      color: offline ? palette.grayDarker.main : palette.primary.main,
     },
   }),
-  connection: ({ offline, state }: any) => ({
-    borderColor: offline ? palette.grayLight.main : palette.primary.main,
-    borderWidth: '0 0 1px 1px',
-    borderBottomWidth: 1,
-    borderBottomColor:
-      state === 'connected' ? palette.primary.main : offline ? palette.grayLight.main : palette.primary.main,
-    borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
-    borderStyle: 'solid',
-    height: '2.6em',
-    marginTop: '-2.6em',
-    width: '1.5em',
-    marginRight: '-1.5em',
-  }),
+  connection: ({ offline, enabled, state }: any) => {
+    let color = palette.grayDark.main
+    if (enabled) color = palette.primary.main
+    return {
+      borderColor: color,
+      borderWidth: '0 0 1px 1px',
+      borderBottomWidth: 1,
+      borderBottomColor: offline ? palette.white.main : color,
+      borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
+      borderStyle: 'solid',
+      height: '2.6em',
+      width: '1.5em',
+      marginTop: '-2.6em',
+      marginRight: '-1.5em',
+    }
+  },
   name: {
     fontWeight: 400,
     opacity: 0.8,
@@ -117,6 +117,9 @@ const useStyles = makeStyles(({ palette }) => ({
   platform: {
     minWidth: 48,
   },
-  mergeIcon: { zIndex: 2, backgroundColor: palette.white.main },
+  mergeIcon: {
+    zIndex: 2,
+    backgroundImage: `radial-gradient(${palette.white.main}, transparent)`,
+  },
   icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
 }))

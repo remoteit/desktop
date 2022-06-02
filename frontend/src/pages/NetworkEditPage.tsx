@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Typography, List } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 import { selectNetwork } from '../models/networks'
 import { ApplicationState } from '../store'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
-import { NetworkName } from '../components/NetworkName'
+import { NetworkSettings } from '../components/NetworkSettings'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
@@ -29,11 +29,8 @@ export const NetworkEditPage: React.FC = () => {
         </Typography>
       }
     >
-      <Gutters>Network details here</Gutters>
       <AccordionMenuItem gutters subtitle="Configuration" defaultExpanded elevation={0}>
-        <List disablePadding>
-          <NetworkName network={network} />
-        </List>
+        <NetworkSettings network={network} />
       </AccordionMenuItem>
     </Container>
   )

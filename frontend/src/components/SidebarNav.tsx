@@ -64,9 +64,9 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation
         className={css.footer}
         title="Contact"
-        subtitle="Support and Feedback"
+        // subtitle="Support and Feedback"
         pathname="/feedback"
-        icon="phone"
+        icon="envelope-open-text"
         dense
       />
     </List>

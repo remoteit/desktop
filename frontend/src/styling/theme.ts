@@ -196,6 +196,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           textTransform: 'uppercase',
           letterSpacing: 2,
           fontWeight: 500,
+          paddingLeft: spacing.md,
+          paddingRight: spacing.md,
         },
         sticky: {
           zIndex: 5,

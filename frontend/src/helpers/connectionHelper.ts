@@ -118,7 +118,7 @@ export function selectConnections(state: ApplicationState) {
 
 export function selectConnection(state: ApplicationState, service?: IService) {
   let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
-  if (!state.auth.backendAuthenticated) connection.public = true
+  if (isPortal()) connection.public = true
   return connection
 }
 

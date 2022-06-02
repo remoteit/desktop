@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@material-ui/core'
-import { Icon, IconProps } from '../components/Icon/Icon'
+import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 import classnames from 'classnames'
 

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Typography } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
 import { selectNetworks } from '../../models/networks'
@@ -9,6 +10,7 @@ import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
 import { NetworkAdd } from '../../components/NetworkAdd'
 import { Network } from '../../components/Network'
+import { Title } from '../../components/Title'
 import { Body } from '../../components/Body'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
@@ -69,16 +71,18 @@ export const ConnectionsPage: React.FC = () => {
   return (
     <Body verticalOverflow gutterBottom>
       <NetworkAdd networks={networks} />
-      <SessionsList
-        title="Local Network"
-        sessions={local}
-        action={<IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth />}
-      />
-      {networks?.map(n => (
-        <Network key={n.id} network={n} />
-      ))}
-      <SessionsList title="Cloud Proxy Connections" sessions={proxy} />
-      <SessionsList title="Outside Connections" sessions={other} other />
+      {!!networks?.length && (
+        <>
+          <Typography variant="subtitle1">
+            <Title>Networks</Title>
+            <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth />
+          </Typography>
+          {networks.map(n => (
+            <Network key={n.id} network={n} />
+          ))}
+        </>
+      )}
+      <SessionsList title="External Connections" sessions={other} other />
       <SessionsList
         title="Recent"
         sessions={recent}

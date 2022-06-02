@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from '../Icon'
-import { IconProps } from '../Icon/Icon'
+import { IconProps } from '../Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'

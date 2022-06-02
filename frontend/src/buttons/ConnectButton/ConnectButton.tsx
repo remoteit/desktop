@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
-import { newConnection, launchDisabled } from '../../helpers/connectionHelper'
+import { connectionState, newConnection, launchDisabled } from '../../helpers/connectionHelper'
+import { DynamicButtonMenu } from '../DynamicButtonMenu'
+import { selectNetworks } from '../../models/networks'
 import { getLicenseChip } from '../../components/LicenseChip'
-import { DynamicButton } from '../DynamicButton'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
@@ -15,6 +15,7 @@ export type ConnectButtonProps = {
   service?: IService
   permissions?: IPermission[]
   size?: 'icon' | 'medium' | 'small' | 'large'
+  icon?: string
   color?: Color
   fullWidth?: boolean
   onClick?: () => void
@@ -28,9 +29,13 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   color = 'primary',
   fullWidth,
   onClick,
+  icon,
 }) => {
-  const autoConnect = useSelector((state: ApplicationState) => state.ui.autoConnect)
-  const { connections, ui } = useDispatch<Dispatch>()
+  const { autoConnect, networks } = useSelector((state: ApplicationState) => ({
+    autoConnect: state.ui.autoConnect,
+    networks: selectNetworks(state),
+  }))
+  const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
@@ -38,25 +43,23 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const connecting = state === 'connecting'
   const stopping = state === 'stopping'
 
-  let clickHandler = () => {
+  let clickHandler = networkId => {
+    if (service) dispatch.networks.add({ serviceId: service.id, networkId })
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
-      connections.disconnect(connection)
+      dispatch.connections.disconnect(connection)
     } else {
       onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
-      if (connection.autoLaunch) ui.set({ autoLaunch: true })
-      connection.name = sanitizeName(connection?.name || '')
-      connection.host = ''
-      connections.connect(connection)
+      dispatch.connections.connect(connection)
     }
   }
 
   useEffect(() => {
     if (autoConnect && service) {
-      ui.set({ autoConnect: false })
-      clickHandler()
+      dispatch.ui.set({ autoConnect: false })
+      clickHandler('default')
     }
   }, [autoConnect, service])
 
@@ -97,12 +100,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   return (
     <Fade in={visible} timeout={600}>
       <div>
-        <DynamicButton
+        <DynamicButtonMenu
           title={title}
           variant={variant}
+          options={networks.map(n => ({ value: n.id, label: n.name }))}
           loading={connecting || stopping}
           color={color}
           size={size}
+          icon={icon}
           onClick={clickHandler}
           disabled={disabled}
           fullWidth={fullWidth}

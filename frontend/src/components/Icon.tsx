@@ -1,14 +1,14 @@
 import React from 'react'
-import { fontSizes, spacing, Color, FontSize } from '../../styling'
+import { fontSizes, spacing, Color, FontSize } from '../styling'
 import { fal, IconName, IconPrefix } from '@fortawesome/pro-light-svg-icons'
 import { makeStyles, Badge } from '@material-ui/core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ColorIcon } from '../ColorIcon'
+import { ColorIcon } from './ColorIcon'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
-import { R3 } from '../../assets/R3'
+import { R3 } from '../assets/R3'
 import classnames from 'classnames'
 
 const COLOR_ICONS = [
