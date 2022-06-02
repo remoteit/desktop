@@ -38,7 +38,7 @@ type IExec = {
 type IConnectionStatus = {
   id: string
   isDisabled?: boolean
-  state?: 'offline' | 'connecting' | 'connected' | 'disconnecting'
+  state?: 'offline' | 'starting' | 'connecting' | 'connected' | 'disconnecting'
   isP2P?: boolean
   error?: ISimpleError
   reachable: boolean
@@ -182,6 +182,7 @@ export default class CLI {
         createdTime: Date.parse(c.createdAt),
         startTime: c.startedAt ? Date.parse(c.startedAt) : undefined,
         endTime: c.stoppedAt ? Date.parse(c.stoppedAt) : undefined,
+        starting: c.state === 'starting',
         connected: c.state === 'connected',
         connecting: c.state === 'connecting',
         disconnecting: c.state === 'disconnecting',

@@ -1,4 +1,4 @@
-import { Slide, Button, Dialog, DialogTitle, DialogActions, DialogContent } from '@material-ui/core'
+import { Slide, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogProps } from '@material-ui/core'
 import { TransitionProps } from '@material-ui/core/transitions'
 import React from 'react'
 
@@ -6,12 +6,13 @@ export const Confirm: React.FC<{
   title?: string
   action?: string
   open: boolean
+  maxWidth?: DialogProps['maxWidth']
   onConfirm: (e: React.MouseEvent) => void
   onDeny: () => void
-}> = ({ title, action = 'Ok', open, onConfirm, onDeny, children }) => (
+}> = ({ title, action = 'Ok', open, onConfirm, onDeny, maxWidth = 'xs', children }) => (
   <Dialog
     open={open}
-    maxWidth="xs"
+    maxWidth={maxWidth}
     TransitionComponent={Transition}
     transitionDuration={200}
     onClose={onDeny}

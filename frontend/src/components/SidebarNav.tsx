@@ -60,13 +60,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
-      <ListItemLocation
-        title="Announcements"
-        pathname="/announcements"
-        icon="megaphone"
-        badge={unreadAnnouncements}
-        dense
-      />
+      <ListItemLocation title="Inbox" pathname="/announcements" icon="envelope" badge={unreadAnnouncements} dense />
       <ListItemLocation
         className={css.footer}
         title="Contact"

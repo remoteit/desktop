@@ -176,19 +176,21 @@ export function graphQLAdaptor(
   hidden: boolean = false
 ): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
-  const thisDeviceId = store.getState().backend.device.uid
+  const state = store.getState()
+  const thisDeviceId = state.backend.device.uid
   let metaData = { customAttributes: new Array<string>() }
-  let data: IDevice[] = gqlDevices?.map(
-    (d: any): IDevice => ({
+  let data: IDevice[] = gqlDevices?.map((d: any): IDevice => {
+    const owner = d.owner || state.auth.user
+    return {
       id: d.id,
       name: d.name,
-      owner: d.owner,
+      owner: owner,
       state: d.state,
       configurable: d.configurable,
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),
-      shared: loginId !== d.owner.id,
+      shared: loginId !== owner.id,
       lastReported: d.lastReported && new Date(d.lastReported),
       externalAddress: d.endpoint?.externalAddress,
       internalAddress: d.endpoint?.internalAddress,
@@ -231,8 +233,8 @@ export function graphQLAdaptor(
       thisDevice: d.id === thisDeviceId,
       accountId,
       hidden,
-    })
-  )
+    }
+  })
   store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
   return data
 }

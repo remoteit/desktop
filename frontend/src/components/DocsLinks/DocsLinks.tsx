@@ -1,6 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Typography, Link } from '@material-ui/core'
+import { spacing } from '../../styling'
 import { Icon } from '../../components/Icon'
 
 export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
@@ -31,6 +32,7 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    marginBottom: spacing.xl,
     '& svg': { paddingLeft: 5, marginLeft: 3 },
   },
 })

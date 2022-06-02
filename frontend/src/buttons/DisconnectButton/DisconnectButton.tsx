@@ -32,10 +32,11 @@ export const DisconnectButton: React.FC<Props> = ({
 
   let title = 'Stop Connection'
   if (state === 'ready') title = size === 'small' ? 'Remove' : 'Remove from Network'
-  if (state === 'stopping') title = 'Removing'
-  if (state === 'connecting') title = 'Connecting'
+  if (state === 'starting') title = 'Starting...'
+  if (state === 'stopping') title = 'Removing...'
+  if (state === 'connecting') title = 'Connecting...'
   if (state === 'offline') title = 'Offline'
-  if (state === 'disconnecting') title = 'Disconnecting'
+  if (state === 'disconnecting') title = 'Disconnecting...'
 
   return (
     <Fade in={visible} timeout={600}>

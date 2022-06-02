@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
 import { getAllDevices } from '../models/accounts'
 import { newConnection } from '../helpers/connectionHelper'
+import { Link, useParams, useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '../shared/constants'
 import { List, MenuItem, TextField, Typography, Button } from '@material-ui/core'
 import { ServiceAttributesForm } from '../components/ServiceAttributesForm'
@@ -14,10 +15,15 @@ import { Title } from '../components/Title'
 
 export const ConnectionDefaultsPage: React.FC = () => {
   let customAttributes: ILookup<Set<string>> = {}
+  let customAttributesNote: ILookup<ILookup<React.ReactElement>> = {}
 
-  function addCustomAttributes(tokens: string[], id: number) {
+  function addCustomAttributes(tokens: string[], id: number, el: React.ReactElement) {
     customAttributes[id] = customAttributes[id] || new Set()
-    tokens.forEach(item => customAttributes[id].add(item))
+    customAttributesNote[id] = customAttributesNote[id] || {}
+    tokens.forEach(item => {
+      customAttributes[id].add(item)
+      customAttributesNote[id][item] = el
+    })
   }
 
   const dispatch = useDispatch<Dispatch>()
@@ -27,41 +33,52 @@ export const ConnectionDefaultsPage: React.FC = () => {
     connections: state.connections.all,
     devices: getAllDevices(state),
   }))
-
-  const [id, setId] = useState<number>(Number(applicationTypes[0]?.id))
+  const history = useHistory()
+  const { applicationID } = useParams<{ applicationID: string | undefined }>()
   const [form, setForm] = useState<ILookup<any>>({})
   const [saving, setSaving] = useState<boolean>(false)
 
+  const id = Number(applicationID)
   const data = connectionDefaults?.[id] || {}
   const changed = !isEqual(form, data)
   const app = getApplication(undefined, { ...form, enabled: false, id: '', typeID: id })
-  addCustomAttributes(app.allCustomTokens, id)
+  addCustomAttributes(app.allCustomTokens, id, <>the application type defaults</>)
 
   applicationTypes.forEach(t => {
     const a = getApplication(undefined, { ...DEFAULT_CONNECTION, typeID: t.id })
-    addCustomAttributes(a.allCustomTokens, t.id)
+    const el = <>application type {t.name}</>
+    addCustomAttributes(a.allCustomTokens, t.id, el)
   })
   connections.forEach(c => {
     const a = getApplication(undefined, c)
-    addCustomAttributes(a.allCustomTokens, c.typeID || 0)
+    const el = (
+      <>
+        connection <Link to={`/connections/${c.id}`}>{c.name}</Link>
+      </>
+    )
+    addCustomAttributes(a.allCustomTokens, c.typeID || 0, el)
   })
   devices.forEach(device =>
     device.services.forEach(service => {
       const a = getApplication(service)
-      addCustomAttributes(a.allCustomTokens, service.typeID || 0)
+      const el = (
+        <>
+          service
+          <Link to={`/devices/${device.id}/${service.id}`}>
+            <strong> {service.name}</strong> - {device.name}
+          </Link>
+        </>
+      )
+      addCustomAttributes(a.allCustomTokens, service.typeID || 0, el)
     })
   )
 
   const connection = newConnection({ ...DEFAULT_SERVICE, ...form, typeID: id })
 
   useEffect(() => {
-    setId(Number(applicationTypes[0]?.id))
+    if (!applicationID) history.push(`/settings/defaults/${applicationTypes[0]?.id}`)
   }, [applicationTypes])
 
-  useEffect(() => {
-    setForm(data)
-  }, [id])
-  console.log('ALL DEFAULTS', connectionDefaults)
   return (
     <Container
       gutterBottom
@@ -80,7 +97,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
               label="Service Type"
               value={id || ''}
               variant="filled"
-              onChange={e => setId(Number(e.target.value))}
+              onChange={e => history.push(`/settings/defaults/${e.target.value}`)}
             >
               {applicationTypes.map(a => (
                 <MenuItem key={a.id} value={a.id}>
@@ -101,6 +118,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
             disabled={false}
             attributes={form}
             customTokens={[...customAttributes[id]]}
+            customTokensNote={customAttributesNote[id]}
             onUpdate={attributes => setForm({ ...form, ...attributes })}
           />
         </List>

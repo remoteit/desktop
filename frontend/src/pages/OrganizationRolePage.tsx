@@ -187,11 +187,10 @@ export const OrganizationRolePage: React.FC = () => {
         {Object.keys(PERMISSION).map(p => {
           const permission = p as IPermission
           const allowed = form.permissions.includes(permission)
-          if ((systemRole || PERMISSION[p].system) && !allowed) return null
           return (
             <ListItemSetting
               key={p}
-              toggle={systemRole || PERMISSION[p].system ? undefined : allowed}
+              toggle={allowed}
               disabled={disabled}
               icon={PERMISSION[p].icon}
               label={PERMISSION[p].name}

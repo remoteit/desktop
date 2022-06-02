@@ -16,6 +16,7 @@ type Props = IService['attributes'] & {
   connection?: IConnection
   disabled: boolean
   customTokens?: string[]
+  customTokensNote?: ILookup<React.ReactElement>
   attributes: IService['attributes']
   globalDefaults?: boolean
   onUpdate: (attributes: IService['attributes']) => void
@@ -25,6 +26,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   disabled,
   connection,
   customTokens = [],
+  customTokensNote = {},
   attributes,
   globalDefaults,
   onUpdate,
@@ -38,31 +40,16 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   return (
     <>
       {!globalDefaults && (
-        <>
-          <ListItem className={css.field}>
-            <TextField
-              label="Default Local Port"
-              value={attributes.defaultPort || ''}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
-            />
-            <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
-          </ListItem>
-          <ListItem className={css.field}>
-            <TextField
-              label="Host Name Override"
-              value={attributes.targetHost || ''}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
-            />
-            <Typography variant="caption">
-              Override host name when accessing this service. Needed by host name dependant sites. <i>Example </i>
-              <b>webui.company.com</b>
-            </Typography>
-          </ListItem>
-        </>
+        <ListItem className={css.field}>
+          <TextField
+            label="Default Local Port"
+            value={attributes.defaultPort || ''}
+            disabled={disabled}
+            variant="filled"
+            onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
+          />
+          <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
+        </ListItem>
       )}
       <ListItem className={css.field}>
         <TextField
@@ -88,6 +75,24 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           <b> Routing is only available on desktop.</b>
         </Typography>
       </ListItem>
+      {!globalDefaults && (
+        <ListItem className={css.field}>
+          <TextField
+            label="Target Host Name"
+            value={attributes.targetHost || ''}
+            disabled={disabled}
+            variant="filled"
+            onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
+          />
+          <Typography variant="caption">
+            Override the target host name when accessing this service. Needed by host name dependant web sites.{' '}
+            <i>
+              Example
+              <b> webui.company.com</b> or <b>google.com</b>
+            </i>
+          </Typography>
+        </ListItem>
+      )}
       {globalDefaults && (
         <>
           <ListItem className={css.field}>
@@ -167,6 +172,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                       variant="filled"
                       onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
                     />
+                    <Typography variant="caption">Found in {customTokensNote[token]}</Typography>
                   </ListItem>
                 )
               )}

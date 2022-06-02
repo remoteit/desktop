@@ -17,7 +17,6 @@ export const PortSetting: React.FC<{ service: IService; connection: IConnection 
 
   if (!service) return null
 
-  const disabled = connection.enabled || connection.public
   const save = (port?: number) =>
     connection &&
     setConnection({
@@ -30,7 +29,7 @@ export const PortSetting: React.FC<{ service: IService; connection: IConnection 
       icon="port"
       value={connection.port || defaultPort}
       label="Local Port"
-      disabled={disabled}
+      disabled={connection.connected || connection.public}
       filter={REGEX_PORT_SAFE}
       resetValue={defaultPort}
       onSave={port => save(+port)}
