@@ -21,12 +21,13 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inlin
 
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const color = Math.ceil(seedRandom(email || '')() * 12)
+  const fallback = (title || email || '?').substring(0, 1).toUpperCase()
   const css = useStyles({ size, color, button, inline, active })
 
   let Element = (
     <>
       <MuiAvatar className={css.avatar} alt={email} src={url}>
-        <div>{email?.substring(0, 1).toUpperCase() || '?'}</div>
+        <div>{fallback}</div>
       </MuiAvatar>
       {children}
     </>
