@@ -7,10 +7,7 @@ import { attributeName } from '../../shared/nameHelper'
 import { safeHostname } from '../../shared/nameHelper'
 import { getDevices } from '../../models/accounts'
 
-export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITargetDevice }> = ({
-  device,
-  targetDevice,
-}) => {
+export const DeviceNameSetting: React.FC<{ device: IDevice }> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
   const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
@@ -22,7 +19,7 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
   if (!device) return null
 
   const name = attributeName(device)
-  const defaultValue = device.id === targetDevice.uid ? safeHostname(hostname, nameBlacklist) : device.name
+  const defaultValue = device.thisDevice ? safeHostname(hostname, nameBlacklist) : device.name
 
   return (
     <InlineTextFieldSetting

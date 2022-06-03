@@ -52,7 +52,7 @@ type UIState = {
   scanTimestamp: { [interfaceName: string]: number }
   scanInterface: string
   setupBusy: boolean
-  setupAdded?: ITarget
+  setupAdded?: IService
   setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean

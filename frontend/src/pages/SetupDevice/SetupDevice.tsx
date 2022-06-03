@@ -26,7 +26,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist) || '')
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
-  const [selected, setSelected] = useState<ITarget[]>([])
+  const [selected, setSelected] = useState<IService[]>([])
 
   useEffect(() => {
     setName(safeHostname(hostname, nameBlacklist))
@@ -46,7 +46,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
         onSubmit={event => {
           if (!name) return
           event.preventDefault()
-          backend.registerDevice({ targets: selected, name })
+          backend.registerDevice({ services: selected, name })
           history.push('/devices/setupWaiting')
         }}
       >

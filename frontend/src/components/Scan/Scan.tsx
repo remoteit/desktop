@@ -12,11 +12,11 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Props = {
   data: IScanData
   interfaces: IInterface[]
-  targets: ITarget[]
+  services: IService[]
   privateIP: string
 }
 
-export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) => {
+export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: ApplicationState) => state.ui)
@@ -98,7 +98,12 @@ export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) 
           )}
         </Button>
       </section>
-      <ScanNetwork data={selected.data || []} targets={targets} interfaceType={interfaceType()} privateIP={privateIP} />
+      <ScanNetwork
+        data={selected.data || []}
+        services={services}
+        interfaceType={interfaceType()}
+        privateIP={privateIP}
+      />
       <section className={css.loading}>{noResults && 'No results'}</section>
     </>
   )

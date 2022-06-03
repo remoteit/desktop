@@ -15,7 +15,7 @@ import {
   graphQLFetchDevices,
   graphQLFetchDevice,
   graphQLFetchConnections,
-  graphQLCreateRegistration,
+  graphQLRegistration,
   graphQLAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
@@ -331,11 +331,12 @@ export default createModel<RootModel>()({
     },
 
     async createRegistration({ services, accountId }: { services: IApplicationType['id'][]; accountId: string }) {
-      const result = await graphQLCreateRegistration(services, accountId)
+      const result = await graphQLRegistration(services, accountId)
       if (result !== 'ERROR') {
-        const { registrationCommand } = result?.data?.data?.login?.account
+        const { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         console.log('CREATE REGISTRATION', registrationCommand)
         dispatch.ui.set({ registrationCommand })
+        return registrationCode
       }
     },
 

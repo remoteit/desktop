@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import {
-  DEFAULT_TARGET,
   REGEX_VALID_IP,
   REGEX_VALID_HOSTNAME,
   DEFAULT_CONNECTION,
@@ -25,21 +24,13 @@ import { Icon } from '../Icon'
 
 type Props = {
   service?: IService
-  target?: ITarget
   thisDevice: boolean
   editable: boolean
   onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({
-  service,
-  target = DEFAULT_TARGET,
-  thisDevice,
-  editable,
-  onSubmit,
-  onCancel,
-}) => {
+export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, onSubmit, onCancel }) => {
   const { backend, ui } = useDispatch<Dispatch>()
   const { applicationTypes, disabled, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
@@ -49,22 +40,20 @@ export const ServiceForm: React.FC<Props> = ({
   }))
   const initForm = () => {
     setError(undefined)
-    const defaultAppType = findType(applicationTypes, target.type)
+    const defaultAppType = findType(applicationTypes, service?.typeID)
     return {
-      hostname: service?.host || target.hostname,
-      hardwareID: target.hardwareID,
-      uid: service?.id || target.uid,
-      secret: target.secret,
-      port: service?.port || target.port,
-      type: service?.typeID || target.type,
-      disabled: service?.enabled === undefined ? target.disabled : !service?.enabled,
+      hostname: service?.host,
+      id: service?.id,
+      port: service?.port,
+      type: service?.typeID,
+      disabled: service && !service.enabled,
       name: service?.name || serviceNameValidation(defaultAppType.name).value,
       attributes: service?.attributes || {},
       ...setupAdded,
     }
   }
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IServiceForm>(initForm)
+  const [form, setForm] = useState<IServiceForm>(initForm)
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 

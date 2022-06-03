@@ -17,34 +17,38 @@ export default {
   },
 
   status() {
-    return `-j status -e --skipCloud --authhash ${user.authHash}`
+    return `-j status --connections --authhash ${user.authHash}`
   },
 
   agentStatus() {
     return `-j agent status --authhash ${user.authHash}`
   },
 
-  setup(device: ITargetDevice) {
-    return `-j --manufacture-id ${environment.appCode} setup --name "${device.name}" --authhash ${user.authHash}`
+  register({ code, name }: IRegistration) {
+    return `-j --manufacture-id ${environment.appCode} register --name ${name} --registrationCode "${code}" --authhash ${user.authHash}`
   },
 
-  add(t: ITarget) {
-    return `-j --manufacture-id ${environment.appCode} add --enable ${!t.disabled} --name "${t.name}" --port ${
-      t.port
-    } --type ${t.type} --hostname ${t.hostname || '127.0.0.1'} --authhash ${user.authHash}`
-  },
+  // add(t: ITarget) {
+  //   return `-j --manufacture-id ${environment.appCode} add --enable ${!t.disabled} --name "${t.name}" --port ${
+  //     t.port
+  //   } --type ${t.type} --hostname ${t.hostname || '127.0.0.1'} --authhash ${user.authHash}`
+  // },
 
-  setDevice(d: ITargetDevice) {
-    return `-j --manufacture-id ${environment.appCode} modify --id ${d.uid} --enable ${!d.disabled} --name "${
-      d.name
-    }" --authhash ${user.authHash}`
-  },
+  // remove(t: ITarget) {
+  //   return `-j remove --id ${t.uid} --authhash ${user.authHash}`
+  // },
 
-  setTarget(t: ITarget) {
-    return `-j --manufacture-id ${environment.appCode} modify --id ${t.uid} --enable ${!t.disabled} --name "${
-      t.name
-    }" --port ${t.port} --type ${t.type} --hostname ${t.hostname} --authhash ${user.authHash}`
-  },
+  // setDevice(d: ITargetDevice) {
+  //   return `-j --manufacture-id ${environment.appCode} modify --id ${d.uid} --enable ${!d.disabled} --name "${
+  //     d.name
+  //   }" --authhash ${user.authHash}`
+  // },
+
+  // setTarget(t: ITarget) {
+  //   return `-j --manufacture-id ${environment.appCode} modify --id ${t.uid} --enable ${!t.disabled} --name "${
+  //     t.name
+  //   }" --port ${t.port} --type ${t.type} --hostname ${t.hostname} --authhash ${user.authHash}`
+  // },
 
   unregister() {
     return `-j unregister --yes --authhash ${user.authHash}`
@@ -52,10 +56,6 @@ export default {
 
   restore(deviceId: string) {
     return `-j restore --id ${deviceId}`
-  },
-
-  remove(t: ITarget) {
-    return `-j remove --id ${t.uid} --authhash ${user.authHash}`
   },
 
   connect(c: IConnection) {

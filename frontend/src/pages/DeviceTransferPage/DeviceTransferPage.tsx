@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { getDeviceModel } from '../../models/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Typography, Button } from '@material-ui/core'
@@ -10,12 +9,9 @@ import { Gutters } from '../../components/Gutters'
 import { Confirm } from '../../components/Confirm'
 import { Notice } from '../../components/Notice'
 
-type Props = {
-  targetDevice: ITargetDevice
-  device?: IDevice
-}
+type Props = { device?: IDevice }
 
-export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) => {
+export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
   const { contacts = [], transferring } = useSelector((state: ApplicationState) => ({
     contacts: state.contacts.all,
     transferring: state.ui.transferring,

@@ -66,17 +66,6 @@ export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
 
-export const DEFAULT_TARGET: ITarget | ITargetDevice = {
-  hardwareID: '',
-  hostname: IP_PRIVATE,
-  disabled: false,
-  name: '',
-  port: 0,
-  secret: '',
-  type: 1,
-  uid: '',
-}
-
 export const DEFAULT_CONNECTION: IConnection = {
   id: '',
   name: '',
@@ -112,6 +101,7 @@ export const DEFAULT_SERVICE: IService = {
   lastReported: new Date(),
   state: 'inactive',
   type: '',
+  typeID: 1,
   deviceID: '',
   access: [],
   license: 'UNKNOWN',

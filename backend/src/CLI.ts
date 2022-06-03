@@ -210,39 +210,39 @@ export default class CLI {
     return (data?.connections || []) as IConnectionStatus[]
   }
 
-  async addTarget(t: ITarget) {
-    await this.exec({ cmds: [strings.add(t)], checkAuthHash: true })
-    this.readTargets()
-  }
+  // async addTarget(t: ITarget) {
+  //   await this.exec({ cmds: [strings.add(t)], checkAuthHash: true })
+  //   this.readTargets()
+  // }
 
-  async removeTarget(t: ITarget) {
-    await this.exec({ cmds: [strings.remove(t)], checkAuthHash: true })
-    this.readTargets()
-  }
+  // async removeTarget(t: ITarget) {
+  //   await this.exec({ cmds: [strings.remove(t)], checkAuthHash: true })
+  //   this.readTargets()
+  // }
 
-  async register(device: ITargetDevice) {
-    await this.exec({ cmds: [strings.setup(device)], checkAuthHash: true })
+  async register(params: IRegistration) {
+    await this.exec({ cmds: [strings.register(params)], checkAuthHash: true })
     this.read()
   }
 
-  async registerAll(registration: IRegistration) {
-    let cmds = [strings.setup(registration.device)]
-    registration.targets.forEach((t: ITarget) => {
-      cmds.push(strings.add(t))
-    })
-    await this.exec({ cmds, checkAuthHash: true })
-    this.read()
-  }
+  // async registerAll(registration: IRegistration) {
+  //   let cmds = [strings.register(registration.device)]
+  //   registration.targets.forEach((t: ITarget) => {
+  //     cmds.push(strings.add(t))
+  //   })
+  //   await this.exec({ cmds, checkAuthHash: true })
+  //   this.read()
+  // }
 
-  async setDevice(d: ITargetDevice) {
-    await this.exec({ cmds: [strings.setDevice(d)], checkAuthHash: true })
-    this.readDevice()
-  }
+  // async setDevice(d: ITargetDevice) {
+  //   await this.exec({ cmds: [strings.setDevice(d)], checkAuthHash: true })
+  //   this.readDevice()
+  // }
 
-  async setTarget(d: ITarget) {
-    await this.exec({ cmds: [strings.setTarget(d)], checkAuthHash: true })
-    this.readTargets()
-  }
+  // async setTarget(d: ITarget) {
+  //   await this.exec({ cmds: [strings.setTarget(d)], checkAuthHash: true })
+  //   this.readTargets()
+  // }
 
   async unregister() {
     if (!this.data.device.uid) return

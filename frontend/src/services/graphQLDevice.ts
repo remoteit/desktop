@@ -177,7 +177,7 @@ export function graphQLAdaptor(
 ): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
-  const thisDeviceId = state.backend.device.uid
+  const thisId = state.backend.thisId
   let metaData = { customAttributes: new Array<string>() }
   let data: IDevice[] = gqlDevices?.map((d: any): IDevice => {
     const owner = d.owner || state.auth.user
@@ -230,7 +230,7 @@ export function graphQLAdaptor(
         email: e.user?.email || e.user?.id,
         scripting: e.scripting,
       })),
-      thisDevice: d.id === thisDeviceId,
+      thisDevice: d.id === thisId,
       accountId,
       hidden,
     }
@@ -257,11 +257,12 @@ function processAttributes(response: any): ILookup<any> {
   return result
 }
 
-export async function graphQLCreateRegistration(services: IApplicationType['id'][], account: string) {
+export async function graphQLRegistration(services: IApplicationType['id'][], account: string) {
   return await graphQLBasicRequest(
     ` query($account: String, $services: [ServiceInput!]) {
         login {
           account(id: $account) {
+            registrationCode(services: $services)
             registrationCommand(services: $services)
           }
         }

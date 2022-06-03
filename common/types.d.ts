@@ -206,18 +206,18 @@ declare global {
 
   type IStrategy = 'failover' | 'p2p' | 'proxy'
 
-  interface ITarget {
-    hostname: string //     proxy_dest_ip      service ip to forward
-    hardwareID?: string
-    uid: string //          UID
-    name?: string
-    secret?: string //      password
-    port: number //         proxy_dest_port    service port
-    type: number //         application_type   service type
-    disabled: boolean //    service enabled / disabled
-  }
+  // interface ITarget {
+  //   hostname: string //     proxy_dest_ip      service ip to forward
+  //   hardwareID?: string
+  //   uid: string //          UID
+  //   name?: string
+  //   secret?: string //      password
+  //   port: number //         proxy_dest_port    service port
+  //   type: number //         application_type   service type
+  //   disabled: boolean //    service enabled / disabled
+  // }
 
-  interface ITargetDevice extends ITarget {}
+  type IRegistration = { code: string; name: string }
 
   interface IDevice {
     id: string
@@ -274,7 +274,7 @@ declare global {
     type: string
     deviceID: string
     connection?: IConnection
-    typeID?: number
+    typeID: number
     port?: number
     host?: ipAddress
     protocol?: string
@@ -505,11 +505,6 @@ declare global {
     sort?: string
     name?: string
     platform?: number[]
-  }
-
-  interface IRegistration {
-    device: ITargetDevice
-    targets: ITarget[]
   }
 
   interface IAppValidation {

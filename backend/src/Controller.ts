@@ -69,7 +69,7 @@ class Controller {
     socket.on('binaries/install', this.installBinaries)
     socket.on('launch/app', launch)
     socket.on('connection', this.connection)
-    socket.on('targets', this.targets)
+    // socket.on('targets', this.targets)
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('restore', this.restore)
@@ -124,27 +124,27 @@ class Controller {
     this.freePort()
   }
 
-  targets = async (result: ITarget[]) => {
-    await cli.set('targets', result)
-    this.io.emit('targets', cli.data.targets)
-  }
+  // targets = async (result: ITarget[]) => {
+  //   await cli.set('targets', result)
+  //   this.io.emit('targets', cli.data.targets)
+  // }
 
-  device = async (result: ITargetDevice) => {
-    await cli.set('device', result)
-    this.io.emit('device', cli.data.device)
-    this.io.emit('targets', cli.data.targets)
+  device = async () => {
+    await cli.set('device')
+    this.io.emit('device', cli.data.device.uid)
+    // this.io.emit('targets', cli.data.targets)
   }
 
   registration = async (result: IRegistration) => {
     await cli.set('registration', result)
-    this.io.emit('device', cli.data.device)
-    this.io.emit('targets', cli.data.targets)
+    this.io.emit('device', cli.data.device.uid)
+    // this.io.emit('targets', cli.data.targets)
   }
 
   restore = async (deviceId: string) => {
     await cli.restore(deviceId)
-    this.io.emit('device', cli.data.device)
-    this.io.emit('targets', cli.data.targets)
+    this.io.emit('device', cli.data.device.uid)
+    // this.io.emit('targets', cli.data.targets)
   }
 
   interfaces = async () => {
@@ -176,8 +176,8 @@ class Controller {
     cli.read()
     this.pool.init()
     this.freePort()
-    this.io.emit('targets', cli.data.targets)
-    this.io.emit('device', cli.data.device)
+    // this.io.emit('targets', cli.data.targets)
+    this.io.emit('device', cli.data.device.uid)
     this.io.emit('scan', lan.data)
     this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())

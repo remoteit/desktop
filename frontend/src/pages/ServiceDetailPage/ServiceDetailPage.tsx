@@ -4,10 +4,9 @@ import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
+export const ServiceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
   const service = device?.services.find(s => s.id === serviceID)
-  const target = targets.find(t => t.uid === serviceID)
 
   useEffect(() => {
     analyticsHelper.page('ServiceDetailPage')
@@ -16,7 +15,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   if (!service || !device) return null
 
   return (
-    <ServiceHeaderMenu device={device} service={service} target={target}>
+    <ServiceHeaderMenu device={device} service={service}>
       <ServiceAttributes service={service} />
     </ServiceHeaderMenu>
   )
