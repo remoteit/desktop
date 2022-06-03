@@ -66,7 +66,7 @@ export const SidebarNav: React.FC = () => {
         title="Contact"
         subtitle="Support and Feedback"
         pathname="/feedback"
-        icon="phone"
+        icon="envelope-open-text"
         dense
       />
     </List>

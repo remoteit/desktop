@@ -68,11 +68,8 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
   }
   const handleShare = async (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
-    const { script, services } = share.access
-    if (shareData) await shares.share(shareData)
-    if (device && shareData) {
-      await shares.updateDeviceState({ device, emails: shareData.email, scripting: script, services, isNew })
-    }
+    if (!shareData) return
+    await shares.share(shareData)
     history.goBack()
   }
 

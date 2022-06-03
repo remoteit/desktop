@@ -45,7 +45,7 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
     >
       <AccordionSummary className={css.item}>
         <Button>
-          <ListSubheader>
+          <ListSubheader disableGutters>
             {subtitle}
             <ExpandIcon open={expanded} />
           </ListSubheader>

@@ -73,7 +73,7 @@ export const OrganizationSelect: React.FC = () => {
             className={css.button}
             title="Memberships"
             icon="ellipsis-h"
-            to="/devices/membership"
+            to="/organization/memberships"
             placement="right"
           />
         </ListItem>
