@@ -1,10 +1,11 @@
 import React, { useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
-import { makeStyles, Button, TextField, MenuItem, Typography } from '@material-ui/core'
+import { makeStyles, Button, TextField, MenuItem } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, fontSizes } from '../../styling'
 import { ScanNetwork } from '../ScanNetwork'
+import { Gutters } from '../Gutters'
 import { Icon } from '../Icon'
 import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -64,7 +65,7 @@ export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) 
 
   return (
     <>
-      <section className={css.controls}>
+      <Gutters className={css.controls}>
         <div>
           <TextField
             select
@@ -86,7 +87,6 @@ export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) 
             )}
           </TextField>
         </div>
-        <Typography variant="caption">Scan your system and network for open ports to host</Typography>
         <Button color="primary" variant="contained" onClick={() => scan(scanInterface)} disabled={selectedLoading}>
           {selectedLoading ? (
             <>
@@ -97,7 +97,7 @@ export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) 
             'Scan'
           )}
         </Button>
-      </section>
+      </Gutters>
       <ScanNetwork data={selected.data || []} targets={targets} interfaceType={interfaceType()} privateIP={privateIP} />
       <section className={css.loading}>{noResults && 'No results'}</section>
     </>
