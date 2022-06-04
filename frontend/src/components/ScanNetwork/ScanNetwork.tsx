@@ -79,7 +79,6 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
 
   return (
     <>
-      <Divider />
       <div className={css.caption}>
         <Typography variant="subtitle1" gutterBottom>
           Add a service

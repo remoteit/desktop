@@ -25,7 +25,7 @@ export const SetupLinuxPage: React.FC = () => {
   let accountName = thisOrganization.name
 
   useEffect(() => {
-    dispatch.devices.createRegistration({ services: [28], accountId }) // ssh
+    dispatch.devices.createRegistration({ serviceIds: [28], accountId }) // ssh
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }

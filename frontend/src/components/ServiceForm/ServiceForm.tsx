@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {
+  DEFAULT_SERVICE,
   REGEX_VALID_IP,
   REGEX_VALID_HOSTNAME,
   DEFAULT_CONNECTION,
@@ -40,22 +41,26 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
   }))
   const initForm = () => {
     setError(undefined)
-    const defaultAppType = findType(applicationTypes, service?.typeID)
+    const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
     return {
-      hostname: service?.host,
-      id: service?.id,
+      ...DEFAULT_SERVICE,
+      host: service?.host,
+      id: service?.id || '',
       port: service?.port,
-      type: service?.typeID,
-      disabled: service && !service.enabled,
-      name: service?.name || serviceNameValidation(defaultAppType.name).value,
+      type: defaultType.name,
+      typeID: defaultType.id,
+      enabled: !service || service.enabled,
+      name: service?.name || serviceNameValidation(defaultType.name).value,
       attributes: service?.attributes || {},
       ...setupAdded,
     }
   }
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IServiceForm>(initForm)
-  const appType = findType(applicationTypes, form.type)
+  const appType = findType(applicationTypes, form.typeID)
   const css = useStyles()
+
+  console.log({ setupAdded, form })
 
   useEffect(() => {
     setForm(initForm())
@@ -64,15 +69,12 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
   useEffect(() => {
     checkPort()
     if (setupAdded) ui.set({ setupAdded: undefined })
-  }, [form?.port, form?.hostname])
+  }, [form?.port, form?.host])
 
   const checkPort = () => {
-    if (
-      REGEX_VALID_IP.test(`${form.hostname}:${form.port}`) ||
-      REGEX_VALID_HOSTNAME.test(`${form.hostname}:${form.port}`)
-    ) {
+    if (REGEX_VALID_IP.test(`${form.host}:${form.port}`) || REGEX_VALID_HOSTNAME.test(`${form.host}:${form.port}`)) {
       backend.set({ reachablePortLoading: true })
-      emit('reachablePort', { port: form.port, host: form.hostname })
+      emit('reachablePort', { port: form.port, host: form.host })
     } else {
       backend.set({ reachablePort: false })
     }
@@ -100,16 +102,16 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
             <TextField
               select
               label="Service Type"
-              value={form.type}
+              value={form.typeID}
               disabled={disabled}
               variant="filled"
               onChange={event => {
-                const type = Number(event.target.value)
-                const updatedAppType = findType(applicationTypes, type)
+                const typeID = Number(event.target.value)
+                const updatedAppType = findType(applicationTypes, typeID)
                 setForm({
                   ...form,
-                  type,
-                  port: findType(applicationTypes, type).port || 0,
+                  typeID: typeID,
+                  port: findType(applicationTypes, typeID).port || 0,
                   name: serviceNameValidation(updatedAppType.name).value,
                   attributes: {
                     ...form.attributes,
@@ -188,10 +190,10 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
               <TextField
                 required
                 label="Service Host Address"
-                value={form.hostname}
+                value={form.host}
                 disabled={disabled}
                 variant="filled"
-                onChange={event => setForm({ ...form, hostname: event.target.value })}
+                onChange={event => setForm({ ...form, host: event.target.value })}
                 InputProps={{
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
@@ -232,20 +234,20 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
         )}
         {editable && (
           <ListItemCheckbox
-            checked={!form.disabled}
+            checked={form.enabled}
             label="Enable service"
             subLabel={
               <>
                 Disabling your service will take it offline.{' '}
                 <i>
                   Service is
-                  {form.disabled ? ' disabled' : ' enabled'}
+                  {form.enabled ? ' enabled' : ' disabled'}
                 </i>
               </>
             }
             disabled={disabled}
             onClick={() => {
-              setForm({ ...form, disabled: !form.disabled })
+              setForm({ ...form, enabled: !form.enabled })
             }}
           />
         )}
@@ -256,7 +258,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
             connection={{
               ...DEFAULT_CONNECTION,
               ...form.attributes,
-              typeID: form.type,
+              typeID: form.typeID,
             }}
             disabled={disabled}
             attributes={form.attributes}

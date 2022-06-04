@@ -33,7 +33,6 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   }, [hostname])
 
   useEffect(() => {
-    // Refresh target device data
     emit('device')
   }, [])
 

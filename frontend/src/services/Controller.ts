@@ -150,17 +150,9 @@ function getEventHandlers() {
       connections.updateConnection(result)
     },
 
-    // targets: (result: ITarget[]) => {
-    //   controller.log('event: socket targets', result)
-    //   if (result) {
-    //     backend.set({ targets: result })
-    //     backend.targetUpdated(result)
-    //   }
-    // },
-
     device: (result: string) => {
       controller.log('event: socket device', result)
-      if (result) backend.targetDeviceUpdated(result)
+      backend.targetDeviceUpdated(result)
     },
 
     scan: (result: IScanData) => {

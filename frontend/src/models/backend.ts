@@ -98,7 +98,9 @@ export default createModel<RootModel>()({
           await devices.fetchConnections()
 
           ui.set({
+            silent: true,
             setupDeletingDevice: false,
+            setupBusy: false,
             successMessage: 'Device unregistered successfully!',
           })
 
@@ -114,13 +116,14 @@ export default createModel<RootModel>()({
       backend.set({ thisId: newId })
     },
     async registerDevice({ services, name }: { services: IService[]; name: string }, state) {
+      dispatch.ui.set({ setupRegisteringDevice: true })
       const thisId = state.backend.thisId
       const code = await dispatch.devices.createRegistration({
-        services: services.map(t => t.typeID),
+        name,
+        serviceIds: services.map(t => t.typeID),
         accountId: state.user.id,
       })
       emit('registration', { code, name })
-      dispatch.ui.set({ setupRegisteringDevice: true, silent: true })
       analyticsHelper.track('deviceCreated', { id: thisId })
     },
     async setUpdateNotice(updateVersion: string | undefined, globalState) {

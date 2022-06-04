@@ -257,7 +257,11 @@ function processAttributes(response: any): ILookup<any> {
   return result
 }
 
-export async function graphQLRegistration(services: IApplicationType['id'][], account: string) {
+export async function graphQLRegistration(props: {
+  name?: string
+  serviceIds: IApplicationType['id'][]
+  account: string
+}) {
   return await graphQLBasicRequest(
     ` query($account: String, $services: [ServiceInput!]) {
         login {
@@ -268,8 +272,8 @@ export async function graphQLRegistration(services: IApplicationType['id'][], ac
         }
       }`,
     {
-      account,
-      services: services.map(s => ({ application: s })),
+      ...props,
+      services: props.serviceIds.map(s => ({ application: s })),
     }
   )
 }

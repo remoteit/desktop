@@ -206,16 +206,18 @@ declare global {
 
   type IStrategy = 'failover' | 'p2p' | 'proxy'
 
-  // interface ITarget {
-  //   hostname: string //     proxy_dest_ip      service ip to forward
-  //   hardwareID?: string
-  //   uid: string //          UID
-  //   name?: string
-  //   secret?: string //      password
-  //   port: number //         proxy_dest_port    service port
-  //   type: number //         application_type   service type
-  //   disabled: boolean //    service enabled / disabled
-  // }
+  type CLIDeviceProps =
+    | {
+        hostname: string //     proxy_dest_ip      service ip to forward
+        hardwareID?: string
+        uid: string //          UID
+        name?: string
+        secret?: string //      password
+        port: number //         proxy_dest_port    service port
+        type: number //         application_type   service type
+        disabled: boolean //    service enabled / disabled
+      }
+    | undefined
 
   type IRegistration = { code: string; name: string }
 
@@ -540,7 +542,7 @@ declare global {
     protocol: string
   }
 
-  type IServiceForm = ITarget & {
+  type IServiceForm = IService & {
     name: string
     attributes: IService['attributes']
   }

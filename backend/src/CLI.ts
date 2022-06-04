@@ -1,5 +1,4 @@
 import { REACHABLE_ERROR_CODE } from './constants'
-import { DEFAULT_TARGET } from './sharedCopy/constants'
 import { cliBinary } from './Binary'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
@@ -19,8 +18,7 @@ type IData = {
   configVersion?: number
   user?: UserCredentials
   admin?: UserCredentials
-  device: ITargetDevice
-  targets: ITarget[]
+  device: CLIDeviceProps
   connectionDefaults: IConnectionDefaults
   errorCodes: number[]
 }
@@ -66,8 +64,7 @@ export default class CLI {
     configVersion: undefined,
     user: undefined,
     admin: undefined,
-    device: DEFAULT_TARGET,
-    targets: [DEFAULT_TARGET],
+    device: undefined,
     connectionDefaults: {},
     errorCodes: [],
   }
@@ -110,7 +107,6 @@ export default class CLI {
   read() {
     this.readUser()
     this.readDevice()
-    this.readTargets()
     this.readSettings()
   }
 
@@ -124,21 +120,11 @@ export default class CLI {
   readDevice() {
     const config = this.readFile()
     d('READ DEVICE', config.device)
-    const device = config.device || DEFAULT_TARGET
+    const device = config.device || {}
     this.data.device = {
       ...device,
       hostname: device.hostname || '',
     }
-  }
-
-  readTargets() {
-    const config = this.readFile()
-    const targets = config.services || []
-    d('READ TARGETS', targets)
-    this.data.targets = targets.map(service => ({
-      ...service,
-      hostname: service.hostname || '',
-    }))
   }
 
   readSettings() {
@@ -210,42 +196,13 @@ export default class CLI {
     return (data?.connections || []) as IConnectionStatus[]
   }
 
-  // async addTarget(t: ITarget) {
-  //   await this.exec({ cmds: [strings.add(t)], checkAuthHash: true })
-  //   this.readTargets()
-  // }
-
-  // async removeTarget(t: ITarget) {
-  //   await this.exec({ cmds: [strings.remove(t)], checkAuthHash: true })
-  //   this.readTargets()
-  // }
-
   async register(params: IRegistration) {
     await this.exec({ cmds: [strings.register(params)], checkAuthHash: true })
     this.read()
   }
 
-  // async registerAll(registration: IRegistration) {
-  //   let cmds = [strings.register(registration.device)]
-  //   registration.targets.forEach((t: ITarget) => {
-  //     cmds.push(strings.add(t))
-  //   })
-  //   await this.exec({ cmds, checkAuthHash: true })
-  //   this.read()
-  // }
-
-  // async setDevice(d: ITargetDevice) {
-  //   await this.exec({ cmds: [strings.setDevice(d)], checkAuthHash: true })
-  //   this.readDevice()
-  // }
-
-  // async setTarget(d: ITarget) {
-  //   await this.exec({ cmds: [strings.setTarget(d)], checkAuthHash: true })
-  //   this.readTargets()
-  // }
-
   async unregister() {
-    if (!this.data.device.uid) return
+    if (!this.data.device?.uid) return
     await this.exec({ cmds: [strings.unregister()], checkAuthHash: true })
     this.read()
   }
