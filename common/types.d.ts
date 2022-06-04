@@ -221,6 +221,14 @@ declare global {
 
   type IRegistration = { code: string; name: string }
 
+  type IServiceRegistration = {
+    name?: string
+    application: number
+    host?: string
+    port?: number
+    enabled?: boolean
+  }
+
   interface IDevice {
     id: string
     name: string

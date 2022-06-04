@@ -85,6 +85,7 @@ export default createModel<RootModel>()({
             await devices.fetch()
           }
           ui.set({
+            silent: true,
             setupRegisteringDevice: false,
             successMessage: 'Device registered successfully!',
           })
@@ -98,7 +99,6 @@ export default createModel<RootModel>()({
           await devices.fetchConnections()
 
           ui.set({
-            silent: true,
             setupDeletingDevice: false,
             setupBusy: false,
             successMessage: 'Device unregistered successfully!',
@@ -120,7 +120,12 @@ export default createModel<RootModel>()({
       const thisId = state.backend.thisId
       const code = await dispatch.devices.createRegistration({
         name,
-        serviceIds: services.map(t => t.typeID),
+        services: services.map(t => ({
+          name: t.name,
+          application: t.typeID,
+          port: t.port,
+          host: t.host,
+        })),
         accountId: state.user.id,
       })
       emit('registration', { code, name })
