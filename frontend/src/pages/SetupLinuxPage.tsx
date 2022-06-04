@@ -8,21 +8,19 @@ import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import { Help } from '../components/Help'
+import { spacing } from '../styling'
 
 export const SetupLinuxPage: React.FC = () => {
-  const { thisOrganization, organization, registrationCommand, permissions } = useSelector(
-    (state: ApplicationState) => ({
-      organization: getOrganization(state),
-      thisOrganization: getOwnOrganization(state),
-      registrationCommand: state.ui.registrationCommand,
-      permissions: selectPermissions(state),
-    })
-  )
+  const { organization, registrationCommand, permissions } = useSelector((state: ApplicationState) => ({
+    organization: getOrganization(state),
+    registrationCommand: state.ui.registrationCommand,
+    permissions: selectPermissions(state),
+  }))
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
-  let accountId = thisOrganization.id
-  let accountName = thisOrganization.name
+  let accountId = organization.id
+  let accountName = organization.name
 
   useEffect(() => {
     dispatch.devices.createRegistration({ services: [28], accountId }) // ssh
@@ -75,6 +73,8 @@ export const SetupLinuxPage: React.FC = () => {
 
 const useStyles = makeStyles(({ palette }) => ({
   section: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
