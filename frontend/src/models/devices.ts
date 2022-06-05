@@ -222,10 +222,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateShareDevice(device: IDevice) {
-      dispatch.accounts.setDevice({ id: device.id, device })
-    },
-
     async renameService(service: IService, state) {
       let device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return
@@ -337,7 +333,7 @@ export default createModel<RootModel>()({
     async createRegistration({ services, accountId }: { services: IApplicationType['id'][]; accountId: string }) {
       const result = await graphQLCreateRegistration(services, accountId)
       if (result !== 'ERROR') {
-        const { registrationCommand } = result?.data?.data?.login?.account
+        const registrationCommand = result?.data?.data?.login?.account?.registrationCommand
         console.log('CREATE REGISTRATION', registrationCommand)
         dispatch.ui.set({ registrationCommand })
       }

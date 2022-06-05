@@ -74,6 +74,8 @@ export default createModel<RootModel>()({
       const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
       const result = await graphQLShareDevice(data)
       if (result !== 'ERROR') {
+        await dispatch.devices.fetchSingle({ id: data.deviceId })
+        await dispatch.contacts.fetch()
         dispatch.ui.set({
           successMessage:
             data.email.length > 1
@@ -201,43 +203,6 @@ export default createModel<RootModel>()({
           selectedServices,
         },
       })
-    },
-
-    async updateDeviceState(infoUpdate: {
-      device: IDevice
-      emails: string[]
-      scripting: boolean
-      services: string[]
-      isNew?: boolean
-    }) {
-      const { device, emails, scripting, services, isNew } = infoUpdate
-
-      const sharedUsers = device.access.map(item => item.email)
-      const newUsers: IUser[] = emails
-        .map(email => ({ email, id: '', scripting }))
-        .filter(item => !sharedUsers.includes(item.email) && item)
-      if (isNew) {
-        const access = device.access.filter(i => emails.includes(i.email))
-        device.access =
-          access.length === 0
-            ? device.access.concat(newUsers)
-            : device.access.map(_ac => (access.find(i => i.email === _ac.email) ? { ..._ac, scripting } : { ..._ac }))
-      } else {
-        device.access = device.access.map(_ac => ({ ..._ac, scripting }))
-      }
-
-      device.services.map(service => {
-        if (!service.access) {
-          service.access = []
-        }
-        service.access = services.includes(service.id)
-          ? service.access.concat(newUsers)
-          : service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
-        return service
-      })
-      await dispatch.devices.updateShareDevice(device)
-      dispatch.devices.fetchSingle({ id: device.id })
-      dispatch.contacts.fetch()
     },
   }),
   reducers: {

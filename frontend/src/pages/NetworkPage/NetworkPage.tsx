@@ -4,6 +4,7 @@ import { ApplicationState } from '../../store'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Scan } from '../../components/Scan'
 import { Container } from '../../components/Container'
+import { Gutters } from '../../components/Gutters'
 import { Typography } from '@material-ui/core'
 import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -27,10 +28,18 @@ export const NetworkPage: React.FC = () => {
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
+      integrated
       header={
         <>
           <OutOfBand />
-          <Typography variant="h1">Add from Network</Typography>
+          <Gutters>
+            <Typography variant="h1" gutterBottom>
+              Network Scan
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Scan your system and local network for available ports to host.
+            </Typography>
+          </Gutters>
         </>
       }
     >

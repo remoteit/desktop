@@ -30,10 +30,10 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
     <Body center={true}>
       <CircularProgress thickness={1.5} size={60} />
       <section>
-        <Typography className={css.title} variant="h3" align="center">
+        <Typography className={css.title} variant="h3" align="center" gutterBottom>
           Your {osName(os)} is being registered with remote.it
         </Typography>
-        <Typography variant="body2" align="center" color="textSecondary">
+        <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
           This may take up to a minute to complete.
         </Typography>
       </section>
@@ -46,6 +46,6 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
 }
 
 const useStyles = makeStyles({
-  title: { marginBottom: spacing.sm },
-  divider: { width: 400 },
+  title: { marginTop: spacing.xl },
+  divider: { width: 400, marginBottom: spacing.xl, marginTop: spacing.md },
 })
