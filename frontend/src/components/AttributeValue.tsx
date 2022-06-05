@@ -15,7 +15,7 @@ export const AttributeValue: React.FC<{
       className={`attribute attribute-${attribute?.id}`}
       textAlign={attribute?.align}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
-      whiteSpace={attribute?.multiline ? 'normal !important' : 'nowrap'}
+      whiteSpace={attribute?.multiline ? 'pre-line !important' : 'nowrap'}
     >
       {value}
     </Box>
