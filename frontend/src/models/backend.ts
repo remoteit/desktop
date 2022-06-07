@@ -99,8 +99,10 @@ export default createModel<RootModel>()({
           await devices.fetchConnections()
 
           ui.set({
-            setupDeletingDevice: false,
+            silent: true,
             setupBusy: false,
+            setupDeletingDevice: false,
+            redirect: '/devices',
             successMessage: 'Device unregistered successfully!',
           })
 
@@ -128,7 +130,7 @@ export default createModel<RootModel>()({
         })),
         accountId: state.user.id,
       })
-      emit('registration', { code, name })
+      emit('registration', code)
       analyticsHelper.track('deviceCreated', { id: thisId })
     },
     async setUpdateNotice(updateVersion: string | undefined, globalState) {

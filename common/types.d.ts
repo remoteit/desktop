@@ -219,8 +219,6 @@ declare global {
       }
     | undefined
 
-  type IRegistration = { code: string; name: string }
-
   type IServiceRegistration = {
     name?: string
     application: number

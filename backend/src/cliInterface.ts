@@ -11,10 +11,10 @@ class CLIInterface extends CLI {
       case 'registration':
         if (value === 'DELETE') {
           await this.unregister()
-          Logger.info('UNREGISTER ', this.data)
+          Logger.info('UNREGISTER', this.data)
         } else {
           await this.register(value)
-          Logger.info('REGISTER ' + value.name, { code: value.code })
+          Logger.info('REGISTER', { code: value.code })
         }
         break
     }

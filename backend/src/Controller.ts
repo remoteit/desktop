@@ -128,8 +128,8 @@ class Controller {
     this.io.emit('device', cli.data.device?.uid)
   }
 
-  registration = async (result: IRegistration) => {
-    await cli.set('registration', result)
+  registration = async (code: string) => {
+    await cli.set('registration', code)
     this.io.emit('device', cli.data.device?.uid)
   }
 

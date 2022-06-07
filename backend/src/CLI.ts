@@ -196,8 +196,8 @@ export default class CLI {
     return (data?.connections || []) as IConnectionStatus[]
   }
 
-  async register(params: IRegistration) {
-    await this.exec({ cmds: [strings.register(params)], checkAuthHash: true })
+  async register(code: string) {
+    await this.exec({ cmds: [strings.register(code)], checkAuthHash: true })
     this.read()
   }
 
