@@ -7,7 +7,7 @@ export default async function systemInfo() {
   await lan.getInterfaces()
 
   return {
-    id: cli.data.device.uid,
+    id: cli.data.device?.uid,
     os: environment.simpleOS,
     arch: os.arch(),
     platform: os.platform(),

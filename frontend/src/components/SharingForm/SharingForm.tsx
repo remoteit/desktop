@@ -6,8 +6,7 @@ import { ShareSaveActions } from '../ShareSaveActions'
 import { TargetPlatform } from '../TargetPlatform'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../../store'
-import { useSelector } from '../../hooks/reactReduxHooks'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Gutters } from '../Gutters'
 
 export interface SharingDetails {
@@ -24,7 +23,7 @@ export interface SharingAccess {
 export function SharingForm({ device, user }: { device: IDevice; user?: IUser }): JSX.Element {
   const saving = useSelector((state: ApplicationState) => state.shares.sharing)
   const { script, scriptIndeterminate, users, selectedServices } = useSelector(
-    (state: ApplicationState) => state.shares.currentDevice || {}
+    (state: ApplicationState) => state.shares.currentDevice || { script, scriptIndeterminate, users, selectedServices }
   )
   const history = useHistory()
   const location = useLocation()

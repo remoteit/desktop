@@ -15,7 +15,7 @@ import {
   graphQLFetchDevices,
   graphQLFetchDevice,
   graphQLFetchConnections,
-  graphQLCreateRegistration,
+  graphQLRegistration,
   graphQLAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
@@ -267,14 +267,15 @@ export default createModel<RootModel>()({
     },
 
     async cloudAddService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
-      dispatch.ui.set({ setupServiceBusy: form.uid, setupAddingService: true })
+      if (!form.host || !form.port) return
+      dispatch.ui.set({ setupServiceBusy: form.id, setupAddingService: true })
       const result = await graphQLAddService({
         deviceId,
         name: form.name,
-        application: form.type,
-        host: form.hostname,
+        application: form.typeID,
+        host: form.host,
         port: form.port,
-        enabled: !form.disabled,
+        enabled: !!form.enabled,
       })
       if (result !== 'ERROR') {
         const id = result?.data?.data?.addService?.id
@@ -287,16 +288,17 @@ export default createModel<RootModel>()({
     },
 
     async cloudUpdateService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
-      dispatch.ui.set({ setupServiceBusy: form.uid })
+      if (!form.host || !form.port) return
+      dispatch.ui.set({ setupServiceBusy: form.id })
       await graphQLUpdateService({
-        id: form.uid,
+        id: form.id,
         name: form.name,
-        application: form.type,
-        host: form.hostname,
+        application: form.typeID,
+        host: form.host,
         port: form.port,
-        enabled: !form.disabled,
+        enabled: !!form.enabled,
       })
-      await graphQLSetAttributes(form.attributes, form.uid)
+      await graphQLSetAttributes(form.attributes, form.id)
       await dispatch.devices.fetchSingle({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
@@ -330,12 +332,21 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
-    async createRegistration({ services, accountId }: { services: IApplicationType['id'][]; accountId: string }) {
-      const result = await graphQLCreateRegistration(services, accountId)
+    async createRegistration({
+      name,
+      services,
+      accountId,
+    }: {
+      name?: string
+      services: IServiceRegistration[]
+      accountId: string
+    }) {
+      const result = await graphQLRegistration({ name, services, account: accountId })
       if (result !== 'ERROR') {
-        const registrationCommand = result?.data?.data?.login?.account?.registrationCommand
+        const { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         console.log('CREATE REGISTRATION', registrationCommand)
         dispatch.ui.set({ registrationCommand })
+        return registrationCode
       }
     },
 

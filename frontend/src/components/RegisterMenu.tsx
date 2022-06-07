@@ -32,7 +32,7 @@ export const RegisterMenu: React.FC = () => {
   const { claiming, hasDemo, hasThisDevice, permissions } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.user.id) !== undefined,
-    hasThisDevice: !!state.backend.device.uid,
+    hasThisDevice: !!state.backend.thisId,
     permissions: selectPermissions(state),
   }))
 

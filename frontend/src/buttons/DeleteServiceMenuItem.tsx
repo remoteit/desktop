@@ -8,16 +8,14 @@ import { Icon } from '../components/Icon'
 type Props = {
   device?: IDevice
   service?: IService
-  target?: ITarget
 }
 
-export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service, target }) => {
+export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
   const [open, setOpen] = useState<boolean>(false)
-  const { devices, backend } = useDispatch<Dispatch>()
+  const { devices } = useDispatch<Dispatch>()
   const { deleting, setupBusy } = useSelector((state: ApplicationState) => ({
     setupBusy: state.ui.setupBusy,
-    deleting:
-      (service && state.ui.setupDeletingService === service.id) || (target && state.ui.setupServiceBusy === target.uid),
+    deleting: service && state.ui.setupDeletingService === service.id,
   }))
 
   let disabled = deleting || setupBusy
@@ -28,7 +26,7 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service, target
   let title = 'Delete Service'
   let message = "Deleting services can't be undone."
 
-  if (target) {
+  if (device?.thisDevice) {
     title = 'Unregister Service'
     message =
       "Deleting services can't be undone. If this service is providing you remote access, you may have to physically connect to the device to recover it."
@@ -50,8 +48,7 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service, target
       <Confirm
         open={open}
         onConfirm={() => {
-          if (target) backend.removeTargetService(target)
-          else if (device && service) devices.cloudRemoveService({ serviceId: service.id, deviceId: device.id })
+          if (device && service) devices.cloudRemoveService({ serviceId: service.id, deviceId: device.id })
           setOpen(false)
         }}
         onDeny={() => setOpen(false)}

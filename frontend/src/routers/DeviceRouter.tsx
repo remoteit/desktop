@@ -24,12 +24,11 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { remoteUI, device, targetDevice, targets, fetching, silent } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, device, thisId, fetching, silent } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     fetching: getDeviceModel(state).fetching,
     device: selectDevice(state, deviceID),
-    targetDevice: state.backend.device,
-    targets: state.backend.targets,
+    thisId: state.backend.thisId,
     silent: state.ui.silent,
   }))
 
@@ -40,7 +39,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   useEffect(() => {
     if (deviceID && !device && !fetching) {
       // check that target device is registered and don't redirect
-      if (loaded && !(remoteUI && targetDevice.uid)) {
+      if (loaded && !(remoteUI && thisId)) {
         if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
         else dispatch.ui.set({ silent: false })
         history.push('/devices')
@@ -49,7 +48,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         setLoaded(true)
       }
     }
-  }, [fetching, device, targetDevice, history])
+  }, [fetching, device, thisId, history])
 
   if (fetching && !device) return <LoadingMessage message="Fetching device..." />
 
@@ -62,16 +61,16 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <NetworkPage />
           </Route>
           <Route path="/devices/:deviceID/add">
-            <ServiceAddPage targetDevice={targetDevice} device={device} />
+            <ServiceAddPage device={device} />
           </Route>
           <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
             <SharePage />
           </Route>
           <Route path="/devices/:deviceID/edit">
-            <DeviceEditPage targetDevice={targetDevice} device={device} />
+            <DeviceEditPage device={device} />
           </Route>
           <Route path="/devices/:deviceID/transfer">
-            <DeviceTransferPage targetDevice={targetDevice} device={device} />
+            <DeviceTransferPage device={device} />
           </Route>
           <Route path="/devices/:deviceID/users">
             <DeviceUsersPage device={device} />
@@ -95,16 +94,16 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <ServiceUsersPage device={device} />
           </Route>
           <Route path="/devices/:deviceID/:serviceID/edit">
-            <ServiceEditPage targetDevice={targetDevice} targets={targets} device={device} />
+            <ServiceEditPage device={device} />
           </Route>
           <Route path="/devices/:deviceID/:serviceID/details">
-            <ServiceDetailPage targets={targets} device={device} />
+            <ServiceDetailPage device={device} />
           </Route>
           <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
             <LanSharePage />
           </Route>
           <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
-            <ServiceConnectPage targets={targets} device={device} />
+            <ServiceConnectPage device={device} />
           </Route>
         </Switch>
       }

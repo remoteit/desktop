@@ -14,13 +14,13 @@ import { osName } from '../../shared/nameHelper'
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
   const history = useHistory()
-  const { ownDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
-    ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.auth.user?.id),
-    targetDevice: state.backend.device,
+  const { ownDevice, thisId, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+    ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),
+    thisId: state.backend.thisId,
     os: state.backend.environment.os,
     restoring: state.ui.restoring,
     canRestore:
-      !state.backend.device.uid &&
+      !state.backend.thisId &&
       (getDeviceModel(state).total > getDeviceModel(state).size ||
         !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
   }))
@@ -32,13 +32,13 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
       </ListItem>
     )
 
-  const registered = !!targetDevice.uid
+  const registered = !!thisId
   let title = 'Set up this device'
   let subtitle = `Add remote access to this ${osName(os)} or any service on the local network.`
 
   if (registered) {
     if (ownDevice) {
-      title = attributeName(ownDevice) || targetDevice.name || ''
+      title = attributeName(ownDevice) || ''
       subtitle = `Configure this system.`
     } else {
       return <Notice>This system is not registered to you.</Notice>

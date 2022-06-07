@@ -23,7 +23,7 @@ export const SetupLinuxPage: React.FC = () => {
   let accountName = organization.name
 
   useEffect(() => {
-    dispatch.devices.createRegistration({ services: [28], accountId }) // ssh
+    dispatch.devices.createRegistration({ services: [{ application: 28 }], accountId }) // ssh
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
@@ -44,7 +44,7 @@ export const SetupLinuxPage: React.FC = () => {
 
   return (
     <Body center>
-      <Box margin={`-100px 0 -160px 0 `}>
+      <Box margin="-100px 0 -160px 0">
         <Icon name="linux" fontSize={260} color="grayLightest" type="brands" />
       </Box>
       <Typography variant="caption" align="center" gutterBottom>

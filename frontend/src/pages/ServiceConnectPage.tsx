@@ -7,13 +7,12 @@ import { selectConnection } from '../helpers/connectionHelper'
 import { Connect } from '../components/Connect'
 import analyticsHelper from '../helpers/analyticsHelper'
 
-export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
+export const ServiceConnectPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
   const service = device?.services.find(s => s.id === serviceID)
   const { connection } = useSelector((state: ApplicationState) => ({
     connection: selectConnection(state, service),
   }))
-  const target = targets.find(t => t.uid === serviceID)
 
   useEffect(() => {
     analyticsHelper.page('ServiceDetailPage')
@@ -25,7 +24,6 @@ export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[]
     <ServiceHeaderMenu
       device={device}
       service={service}
-      target={target}
       backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
     >
       <Connect />

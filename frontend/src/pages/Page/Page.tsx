@@ -28,7 +28,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     layout,
     label,
   } = useSelector((state: ApplicationState) => {
-    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    const device = getOwnDevices(state).find(d => d.thisDevice)
     return {
       device,
       connected: state.ui.connected,

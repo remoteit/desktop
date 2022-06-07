@@ -3,21 +3,18 @@ import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-type Props = {
-  targets: ITarget[]
-  targetDevice: ITargetDevice
-  device?: IDevice
-}
-export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device }) => {
-  const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
+type Props = { device?: IDevice }
+
+export const ServiceEditPage: React.FC<Props> = ({ device }) => {
+  const { thisId } = useSelector((state: ApplicationState) => state.backend)
+  const { devices, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID } = useParams<{ serviceID?: string }>()
   const service = device?.services.find(s => s.id === serviceID)
-  const target = targets?.find(t => t.uid === serviceID)
-  const thisDevice = service?.deviceID === targetDevice.uid
+  const thisDevice = service?.deviceID === thisId
   const location = useLocation()
   const history = useHistory()
 
@@ -26,7 +23,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
     analyticsHelper.page('ServiceEditPage')
   }, [])
 
-  if (!service || (thisDevice && !target)) {
+  if (!service) {
     history.push(`/devices/${device?.id}`)
     return null
   }
@@ -34,27 +31,14 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
   const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
-    <ServiceHeaderMenu device={device} service={service} target={target}>
+    <ServiceHeaderMenu device={device} service={service}>
       <ServiceForm
         service={service}
-        target={target}
         thisDevice={thisDevice}
         editable={thisDevice || !!device?.configurable}
         onCancel={exit}
         onSubmit={async form => {
-          if (device?.configurable) {
-            // CloudShift
-            await devices.cloudUpdateService({ form, deviceId: device?.id })
-          } else {
-            // for local cli config update
-            backend.updateTargetService(form)
-            // for rest api name change
-            service.name = form.name || ''
-            await devices.rename(service)
-            // for cloud route attribute change
-            service.attributes = { ...service.attributes, ...form.attributes }
-            await devices.setServiceAttributes(service)
-          }
+          if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
           history.push(`/devices/${device?.id}/${service.id}`)
         }}
       />

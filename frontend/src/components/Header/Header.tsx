@@ -28,7 +28,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
       searched: getDeviceModel(state).searched,
       navigationBack: state.ui.navigationBack,
       navigationForward: state.ui.navigationForward,
-      device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+      device: getOwnDevices(state).find(d => d.thisDevice),
       editTags: canEditTags(state, getActiveAccountId(state)),
     })
   )

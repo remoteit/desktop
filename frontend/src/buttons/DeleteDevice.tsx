@@ -41,7 +41,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
   const destroy = () => {
     if (device.thisDevice && device.owner.id === userId) {
       ui.set({ setupDeletingDevice: true, setupBusy: true })
-      emit('device', 'DELETE')
+      emit('registration', 'DELETE')
     } else {
       devices.destroy(device)
     }

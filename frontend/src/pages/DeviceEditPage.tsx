@@ -1,36 +1,23 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
-import { isRemoteUI } from '../helpers/uiHelper'
 import { List } from '@material-ui/core'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { NotificationSettings } from '../components/NotificationSettings'
 
-type Props = {
-  targetDevice: ITargetDevice
-  device?: IDevice
-}
+type Props = { device?: IDevice }
 
-export const DeviceEditPage: React.FC<Props> = ({ targetDevice, device }) => {
-  const history = useHistory()
-  const remoteUI = useSelector((state: ApplicationState) => isRemoteUI(state))
-
+export const DeviceEditPage: React.FC<Props> = ({ device }) => {
   useEffect(() => {
     analyticsHelper.page('DeviceEditPage')
-    // check that target device is registered and don't redirect
-    if (!device && !(remoteUI && targetDevice.uid)) history.push('/devices')
-  }, [device, targetDevice, history])
+  }, [])
 
   if (!device) return null
 
   return (
     <DeviceHeaderMenu device={device}>
       <List>
-        <DeviceNameSetting device={device} targetDevice={targetDevice} />
-        {/* <TagList device={device} /> */}
+        <DeviceNameSetting device={device} />
       </List>
       <NotificationSettings device={device} />
     </DeviceHeaderMenu>
