@@ -1,6 +1,7 @@
 import React from 'react'
+import platforms from '..'
 
-export const HddColor = ({ darkMode, ...props }) => {
+export const Index = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -60 576 570" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -14,3 +15,10 @@ export const HddColor = ({ darkMode, ...props }) => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'unknown',
+  name: 'Unknown',
+  component: Index,
+  types: { 65535: 'Unknown' },
+})

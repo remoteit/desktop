@@ -1,6 +1,7 @@
 import React from 'react'
+import platforms from '..'
 
-export const RaspberryPiColor = props => {
+const Icon = props => {
   const berry = '#cd2355'
   const leaf = '#75A928'
   return (
@@ -68,3 +69,10 @@ export const RaspberryPiColor = props => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'raspberrypi',
+  name: 'Raspberry Pi',
+  component: Icon,
+  types: { 1072: 'Raspberry Pi', 1075: 'Remote.It Pi', 1076: 'Remote.It Pi Lite', 1077: 'Remote.It Pi 64' },
+})

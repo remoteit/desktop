@@ -1,6 +1,7 @@
 import React from 'react'
+import platforms from '..'
 
-export const OpenWRTColor = ({ darkMode, ...props }) => {
+const Icon = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 0 242 291" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g>
@@ -28,3 +29,10 @@ export const OpenWRTColor = ({ darkMode, ...props }) => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'openwrt',
+  name: 'OpenWrt',
+  component: Icon,
+  types: { 1205: 'OpenWrt' },
+})

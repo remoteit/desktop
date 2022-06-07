@@ -95,7 +95,7 @@ export const RegisterMenu: React.FC = () => {
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <List className={css.list} disablePadding dense>
-          <ListSubheader>Add a device</ListSubheader>
+          <ListSubheader disableGutters>Add a device</ListSubheader>
           <ListItem
             button
             disableGutters
@@ -105,12 +105,38 @@ export const RegisterMenu: React.FC = () => {
             component={Link}
           >
             <ListItemIcon>
-              <Icon name="laptop" size="sm" fixedWidth />
+              <Icon name="this" fixedWidth fullColor />
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
           <ListItemLocation
-            icon="raspberry-pi"
+            iconFullColor
+            icon="aws"
+            pathname="/add/aws"
+            title="AWS jumpbox"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            iconFullColor
+            icon="gcp"
+            pathname="/add/gcp"
+            title="Google Cloud"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            iconFullColor
+            icon="azure"
+            iconType="brands"
+            pathname="/add/azure"
+            title="Microsoft Azure"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            iconFullColor
+            icon="raspberrypi"
             iconType="brands"
             pathname="/add/linux"
             title="Linux & Raspberry Pi"
@@ -119,6 +145,7 @@ export const RegisterMenu: React.FC = () => {
             disableGutters
           />
           <ListItemLocation
+            iconFullColor
             icon="windows"
             iconType="brands"
             pathname="/add/windows"
@@ -127,6 +154,7 @@ export const RegisterMenu: React.FC = () => {
             disableGutters
           />
           <ListItemLocation
+            iconFullColor
             icon="apple"
             iconType="brands"
             pathname="/add/apple"
@@ -144,7 +172,7 @@ export const RegisterMenu: React.FC = () => {
             }}
           >
             <ListItemIcon>
-              <Icon name="aws" size="md" type="brands" fixedWidth />
+              <Icon name="remoteit" size="md" fullColor fixedWidth />
             </ListItemIcon>
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>

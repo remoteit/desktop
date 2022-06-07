@@ -13,6 +13,7 @@ export type Props = {
   iconColor?: Color
   iconType?: IconType
   iconSize?: FontSize
+  iconFullColor?: boolean
   disabled?: boolean
   showDisabled?: boolean
   disableGutters?: boolean
@@ -33,6 +34,7 @@ export const ListItemLocation: React.FC<Props> = ({
   iconColor,
   iconType,
   iconSize,
+  iconFullColor,
   disabled,
   disableIcon,
   showDisabled,
@@ -57,7 +59,14 @@ export const ListItemLocation: React.FC<Props> = ({
   }
   const iconEl =
     icon && typeof icon === 'string' ? (
-      <Icon name={icon} size={iconSize || 'md'} color={iconColor} type={iconType} fixedWidth />
+      <Icon
+        name={icon}
+        size={iconSize || 'md'}
+        color={iconColor}
+        type={iconType}
+        fullColor={iconFullColor}
+        fixedWidth
+      />
     ) : (
       icon
     )

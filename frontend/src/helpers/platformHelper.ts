@@ -16,6 +16,8 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   1120: 'Debian Linux',
   1121: 'RedHat Linux',
   1185: 'AWS',
+  1186: 'Azure',
+  1187: 'Google Cloud',
   1200: 'Linux ARM',
   1201: 'NVIDIA Jetson',
   1205: 'OpenWrt',
@@ -32,7 +34,7 @@ export function getTargetPlatform(targetPlatformId = -1) {
 
 export function getTargetPlatformIcon(id?: number): { name: string; type: IconType; size: FontSize } {
   let type: IconType = 'regular'
-  let name: string = 'hdd'
+  let name: string = 'unknown'
   let size: FontSize = 'xxs'
 
   switch (id) {
@@ -60,7 +62,7 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
     case 1075:
     case 1076:
     case 1077:
-      name = 'raspberry-pi'
+      name = 'raspberrypi'
       type = 'brands'
       size = 'xs'
       break
@@ -92,7 +94,7 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
       name = 'mobile-android'
       break
     case 65535:
-      name = 'hdd'
+      name = 'unknown'
       break
   }
 

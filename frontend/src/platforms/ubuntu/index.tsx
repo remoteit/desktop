@@ -1,6 +1,7 @@
 import React from 'react'
+import platforms from '..'
 
-export const UbuntuColor = props => {
+const Icon = props => {
   return (
     <svg viewBox="0 0 285 285" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fillRule="nonzero">
@@ -16,3 +17,10 @@ export const UbuntuColor = props => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'ubuntu',
+  name: 'Debian Linux',
+  component: Icon,
+  types: { 1120: 'Debian Linux' },
+})
