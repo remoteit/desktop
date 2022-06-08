@@ -18,6 +18,7 @@ import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
+import { TestUI } from './TestUI'
 import { Link } from 'react-router-dom'
 import { Icon } from './Icon'
 
@@ -109,36 +110,38 @@ export const RegisterMenu: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
-          <ListItemLocation
-            iconFullColor
-            icon="aws"
-            pathname="/add/aws"
-            title="AWS jumpbox"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconFullColor
-            icon="gcp"
-            pathname="/add/gcp"
-            title="Google Cloud"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconFullColor
-            icon="azure"
-            iconType="brands"
-            pathname="/add/azure"
-            title="Microsoft Azure"
-            onClick={handleClose}
-            disableGutters
-          />
+          <TestUI>
+            <ListItemLocation
+              iconFullColor
+              icon="aws"
+              pathname="/add/aws"
+              title="AWS jumpbox"
+              onClick={handleClose}
+              disableGutters
+            />
+            <ListItemLocation
+              iconFullColor
+              icon="gcp"
+              pathname="/add/gcp"
+              title="Google Cloud"
+              onClick={handleClose}
+              disableGutters
+            />
+            <ListItemLocation
+              iconFullColor
+              icon="azure"
+              iconType="brands"
+              pathname="/add/azure"
+              title="Microsoft Azure"
+              onClick={handleClose}
+              disableGutters
+            />
+          </TestUI>
           <ListItemLocation
             iconFullColor
             icon="raspberrypi"
             iconType="brands"
-            pathname="/add/linux"
+            pathname="/add/raspberrypi"
             title="Linux & Raspberry Pi"
             subtitle="Including Jetson and OpenWRT"
             onClick={handleClose}
