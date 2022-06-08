@@ -23,7 +23,7 @@ export default createModel<RootModel>()({
       const { user } = state.auth
       try {
         await createTicketZendesk({
-          subject: `${fullVersion()} Feedback`,
+          subject: `${fullVersion()} Support and Feedback`,
           body,
           name: user?.email,
           email: user?.email,

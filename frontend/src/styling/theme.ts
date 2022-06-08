@@ -2,8 +2,6 @@ import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, ThemeOptions } from '@material-ui/core'
 import { ApplicationState } from '../store'
 
-const gutters = 32
-
 export const jssTheme = (isDark: boolean): ThemeOptions => {
   const colors = isDark ? darkColors : lightColors
 
@@ -229,7 +227,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           width: `calc(100% - ${spacing.md * 2}px)`,
           paddingLeft: spacing.xxs,
           paddingRight: spacing.xxs,
-          marginLeft: spacing.md,
+          marginLeft: spacing.md + spacing.xxs,
           marginRight: spacing.md,
         },
         button: {
@@ -254,7 +252,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemSecondaryAction: {
         root: {
-          right: gutters,
+          right: spacing.xl,
           zIndex: 2,
           '& .MuiTextField-root': { verticalAlign: 'middle' },
         },
@@ -293,7 +291,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           color: palette.grayDarkest.main,
           fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
-          '&.MuiMenuItem-gutters': {
+          '&.MuiMenuItem-spacing.xl': {
             paddingLeft: spacing.sm,
             paddingRight: spacing.sm,
             marginLeft: spacing.sm,
@@ -419,7 +417,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           display: 'flex',
           alignItems: 'center',
           minHeight: spacing.xl,
-          padding: `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`,
+          padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
           textTransform: 'uppercase',
           letterSpacing: 2,
           marginTop: spacing.lg,
@@ -440,12 +438,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
         },
       },
-      MuiDialogTitle: { root: { margin: `${spacing.lg}px ${gutters}px 0`, padding: 0 } },
-      MuiDialogContent: { root: { margin: `${spacing.sm}px ${gutters}px`, padding: 0 } },
+      MuiDialogTitle: { root: { margin: `${spacing.lg}px ${spacing.xl}px 0`, padding: 0 } },
+      MuiDialogContent: { root: { margin: `${spacing.sm}px ${spacing.xl}px`, padding: 0 } },
       MuiDialogActions: { root: { margin: `${spacing.sm}px ${spacing.md}px`, padding: 0 } },
       MuiTooltip: { tooltip: { '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 } } },
       MuiTableCell: {
-        root: { padding: `${spacing.xs}px ${gutters}px`, borderBottom: `1px solid ${palette.grayLighter.main}` },
+        root: { padding: `${spacing.xs}px ${spacing.xl}px`, borderBottom: `1px solid ${palette.grayLighter.main}` },
       },
     },
   }

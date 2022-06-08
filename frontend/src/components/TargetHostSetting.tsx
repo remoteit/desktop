@@ -1,7 +1,9 @@
 import React from 'react'
+import { Tooltip } from '@material-ui/core'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
+import { Icon } from './Icon'
 
 export const TargetHostSetting: React.FC<{ service: IService; connection?: IConnection }> = ({
   service,
@@ -27,7 +29,16 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
       displayValue={connection.targetHost}
       modified={connection.targetHost !== resetValue}
       icon="bullseye"
-      label="Target Host name"
+      label={
+        <>
+          Target Host name
+          <Tooltip title="If a website expects a specific host name, enter it here." placement="top" arrow>
+            <span style={{ zIndex: 10 }}>
+              <Icon name="question-circle" size="sm" inline />
+            </span>
+          </Tooltip>
+        </>
+      }
       disabled={disabled}
       resetValue={resetValue}
       onSave={value => save(value.toString())}

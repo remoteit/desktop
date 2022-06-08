@@ -49,72 +49,70 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise) return null
 
   return (
-    <>
-      <List>
-        <InlineSetting
-          hideIcon
-          disabled={purchasing}
-          loading={purchasing}
-          label="User Licenses"
-          warning="This will change your billing."
-          value={form.quantity}
-          resetValue={getDefaults().quantity}
-          onResetClick={() => setForm(getDefaults())}
-          onSubmit={async () => {
-            if (form.quantity === getDefaults().quantity) return
-            setConfirm(true)
-          }}
-          onCancel={() => setForm(getDefaults())}
-          onShowEdit={() => setForm(getDefaults())}
-        >
-          <div className={css.group}>
-            <Button size="small" variant="contained" color="primary" onClick={() => setQuantity(form.quantity - 1)}>
-              <Icon name="minus" size="sm" />
-            </Button>
-            <TextField
-              value={form.quantity}
-              inputRef={fieldRef}
-              hiddenLabel
-              color="primary"
-              onChange={e => setQuantity(e.target.value)}
-              className={css.quantity}
-            />
-            <Button size="small" variant="contained" color="primary" onClick={() => setQuantity(form.quantity + 1)}>
-              <Icon name="plus" size="sm" />
-            </Button>
-          </div>
-          {selectedPrice?.amount && (
-            <>
-              {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
-              &nbsp;/&nbsp;
-              {selectedPrice?.interval.toLowerCase()}
-            </>
-          )}
-        </InlineSetting>
-        {confirm && (
-          <Confirm
-            open={confirm}
-            title="Confirm Billing Change"
-            onConfirm={() => {
-              dispatch.plans.updateSubscription(form)
-              setConfirm(false)
-            }}
-            onDeny={() => {
-              setForm(getDefaults())
-              setConfirm(false)
-            }}
-          >
-            Please confirm that you want to change your billing to &nbsp;
-            <b>
-              {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
-              &nbsp;/&nbsp;
-              {selectedPrice?.interval.toLowerCase()}
-            </b>
-            &nbsp; for {form.quantity} user license{form.quantity > 1 ? 's' : ''}.
-          </Confirm>
+    <List>
+      <InlineSetting
+        hideIcon
+        disabled={purchasing}
+        loading={purchasing}
+        label="User Licenses"
+        warning="This will change your billing."
+        value={form.quantity}
+        resetValue={getDefaults().quantity}
+        onResetClick={() => setForm(getDefaults())}
+        onSubmit={async () => {
+          if (form.quantity === getDefaults().quantity) return
+          setConfirm(true)
+        }}
+        onCancel={() => setForm(getDefaults())}
+        onShowEdit={() => setForm(getDefaults())}
+      >
+        <div className={css.group}>
+          <Button size="small" variant="contained" color="primary" onClick={() => setQuantity(form.quantity - 1)}>
+            <Icon name="minus" size="sm" />
+          </Button>
+          <TextField
+            value={form.quantity}
+            inputRef={fieldRef}
+            hiddenLabel
+            color="primary"
+            onChange={e => setQuantity(e.target.value)}
+            className={css.quantity}
+          />
+          <Button size="small" variant="contained" color="primary" onClick={() => setQuantity(form.quantity + 1)}>
+            <Icon name="plus" size="sm" />
+          </Button>
+        </div>
+        {selectedPrice?.amount && (
+          <>
+            {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
+            &nbsp;/&nbsp;
+            {selectedPrice?.interval.toLowerCase()}
+          </>
         )}
-      </List>
-    </>
+      </InlineSetting>
+      {confirm && (
+        <Confirm
+          open={confirm}
+          title="Confirm Billing Change"
+          onConfirm={() => {
+            dispatch.plans.updateSubscription(form)
+            setConfirm(false)
+          }}
+          onDeny={() => {
+            setForm(getDefaults())
+            setConfirm(false)
+          }}
+        >
+          Please confirm that you want to change your billing to &nbsp;
+          <b>
+            {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
+            &nbsp;/&nbsp;
+            {selectedPrice?.interval.toLowerCase()}
+          </b>
+          &nbsp; for {form.quantity} user license{form.quantity > 1 ? 's' : ''}.
+        </Confirm>
+      )}
+    </List>
   )
 }
 

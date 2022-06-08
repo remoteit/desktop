@@ -131,8 +131,8 @@ export const Connect: React.FC = () => {
             </DesktopUI>
             <PublicSetting connection={connection} service={service} />
             <DesktopUI>
-              <ConnectionLogSetting connection={connection} service={service} />
               <TargetHostSetting connection={connection} service={service} />
+              <ConnectionLogSetting connection={connection} service={service} />
             </DesktopUI>
           </List>
         </AccordionMenuItem>
