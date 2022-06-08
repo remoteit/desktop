@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 0 242 291" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g>
@@ -33,6 +33,6 @@ const Icon = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'openwrt',
   name: 'OpenWrt',
-  component: Icon,
+  component: Component,
   types: { 1205: 'OpenWrt' },
 })

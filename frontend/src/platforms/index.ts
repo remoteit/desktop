@@ -45,19 +45,21 @@ class Platforms {
     console.log('REGISTER PLATFORM', platform.id)
   }
 
-  type(type: string) {
+  type(type: number): IPlatform {
     return this.get(this.lookup[type] || 'unknown')
   }
 
-  get(id: string): IPlatform {
+  get(id: string = 'unknown'): IPlatform {
     return this.platforms[id] || {}
   }
 
-  component(id: string): IPlatform['component'] {
-    return this.platforms[id]?.component || (() => null)
+  component(id?: string): IPlatform['component'] {
+    return this.get(id).component || (() => null)
+  }
+
+  componentByType(type: number): IPlatform['component'] {
+    return this.component(this.type(type).id)
   }
 }
-
-console.log('INIT PLATFORMS')
 
 export default new Platforms()

@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Component = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -12 71 72" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fillRule="nonzero">

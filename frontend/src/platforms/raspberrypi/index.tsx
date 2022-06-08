@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = props => {
+const Component = ({ darkMode, ...props }) => {
   const berry = '#cd2355'
   const leaf = '#75A928'
   return (
@@ -73,6 +73,6 @@ const Icon = props => {
 platforms.register({
   id: 'raspberrypi',
   name: 'Raspberry Pi',
-  component: Icon,
+  component: Component,
   types: { 1072: 'Raspberry Pi', 1075: 'Remote.It Pi', 1076: 'Remote.It Pi Lite', 1077: 'Remote.It Pi 64' },
 })

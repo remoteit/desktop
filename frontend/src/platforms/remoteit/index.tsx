@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   const wifi = darkMode ? '#034B9C' : '#034B9C'
   const r3 = '#1699D6'
   return (
@@ -35,5 +35,5 @@ const Icon = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'remoteit',
   name: 'Remote.It',
-  component: Icon,
+  component: Component,
 })

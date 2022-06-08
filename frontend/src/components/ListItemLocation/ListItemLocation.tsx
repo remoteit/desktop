@@ -64,7 +64,7 @@ export const ListItemLocation: React.FC<Props> = ({
         size={iconSize || 'md'}
         color={iconColor}
         type={iconType}
-        fullColor={iconFullColor}
+        platformIcon={iconFullColor}
         fixedWidth
       />
     ) : (

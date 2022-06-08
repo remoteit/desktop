@@ -105,7 +105,7 @@ export const RegisterMenu: React.FC = () => {
             component={Link}
           >
             <ListItemIcon>
-              <Icon name="this" fixedWidth fullColor />
+              <Icon name="this" fixedWidth platformIcon />
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
@@ -172,7 +172,7 @@ export const RegisterMenu: React.FC = () => {
             }}
           >
             <ListItemIcon>
-              <Icon name="remoteit" size="md" fullColor fixedWidth />
+              <Icon name="remoteit" size="md" platformIcon fixedWidth />
             </ListItemIcon>
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>

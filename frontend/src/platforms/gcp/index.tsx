@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -2 76 68" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -31,6 +31,6 @@ const Icon = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'gcp',
   name: 'Google Cloud',
-  component: Icon,
+  component: Component,
   types: { 1187: 'Google Cloud' },
 })

@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-export const Index = ({ darkMode, ...props }) => {
+const Index = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -60 576 570" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path

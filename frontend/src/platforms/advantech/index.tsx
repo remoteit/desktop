@@ -2,7 +2,7 @@ import React from 'react'
 import logo from './advantech-color.png'
 import platforms from '..'
 
-const Component = props => {
+const Component = ({ darkMode, ...props }) => {
   return <img src={logo} alt="Advantech" {...props} />
 }
 

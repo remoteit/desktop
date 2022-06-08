@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -10 88 100" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fill="#0078D6" fillRule="nonzero">
@@ -17,6 +17,6 @@ const Icon = props => {
 platforms.register({
   id: 'windows',
   name: 'Windows',
-  component: Icon,
+  component: Component,
   types: { 0: 'Windows', 5: 'Windows Desktop', 10: 'Windows Server' },
 })

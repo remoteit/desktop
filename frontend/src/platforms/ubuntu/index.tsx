@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 0 285 285" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fillRule="nonzero">
@@ -21,6 +21,6 @@ const Icon = props => {
 platforms.register({
   id: 'ubuntu',
   name: 'Debian Linux',
-  component: Icon,
+  component: Component,
   types: { 1120: 'Debian Linux' },
 })

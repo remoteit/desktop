@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-const Icon = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   const light = darkMode ? '#444' : '#bbb'
   const dark = '#808080'
   return (
@@ -39,6 +39,6 @@ const Icon = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'nas',
   name: 'Synology',
-  component: Icon,
+  component: Component,
   types: { 1210: 'Synology' },
 })

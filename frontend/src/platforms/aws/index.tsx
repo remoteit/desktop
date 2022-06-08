@@ -1,7 +1,7 @@
 import React from 'react'
 import platforms from '..'
 
-export const Component = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -60 302 240" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g>

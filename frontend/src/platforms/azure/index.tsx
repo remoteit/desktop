@@ -6,19 +6,19 @@ const Component = ({ darkMode, ...props }) => {
     <svg viewBox="0 -10 78 80" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <defs>
         <linearGradient x1="58.9730016%" y1="7.41201144%" x2="37.1918451%" y2="103.760174%" id="linearGradient-1">
-          <stop stop-color="#114A8B" offset="0%"></stop>
-          <stop stop-color="#0669BC" offset="100%"></stop>
+          <stop stopColor="#114A8B" offset="0%"></stop>
+          <stop stopColor="#0669BC" offset="100%"></stop>
         </linearGradient>
         <linearGradient x1="59.7172053%" y1="52.3076564%" x2="52.6903358%" y2="54.8597388%" id="linearGradient-2">
-          <stop stop-color="#000000" stop-opacity="0.3" offset="0%"></stop>
-          <stop stop-color="#000000" stop-opacity="0.2" offset="7.1%"></stop>
-          <stop stop-color="#000000" stop-opacity="0.1" offset="32.1%"></stop>
-          <stop stop-color="#000000" stop-opacity="0.05" offset="62.3%"></stop>
-          <stop stop-color="#000000" stop-opacity="0" offset="100%"></stop>
+          <stop stopColor="#000000" stopOpacity="0.3" offset="0%"></stop>
+          <stop stopColor="#000000" stopOpacity="0.2" offset="7.1%"></stop>
+          <stop stopColor="#000000" stopOpacity="0.1" offset="32.1%"></stop>
+          <stop stopColor="#000000" stopOpacity="0.05" offset="62.3%"></stop>
+          <stop stopColor="#000000" stopOpacity="0" offset="100%"></stop>
         </linearGradient>
         <linearGradient x1="37.4439271%" y1="4.5125%" x2="62.6371997%" y2="99.8901042%" id="linearGradient-3">
-          <stop stop-color="#3CCBF4" offset="0%"></stop>
-          <stop stop-color="#2892DF" offset="100%"></stop>
+          <stop stopColor="#3CCBF4" offset="0%"></stop>
+          <stop stopColor="#2892DF" offset="100%"></stop>
         </linearGradient>
       </defs>
       <path
