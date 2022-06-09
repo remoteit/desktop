@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   const wifi = darkMode ? '#034B9C' : '#034B9C'

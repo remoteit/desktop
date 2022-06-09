@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   return (
@@ -28,4 +28,9 @@ platforms.register({
   name: 'AWS',
   component: Component,
   types: { 1185: 'AWS' },
+  installation: {
+    command: true,
+    qualifier: 'For any Linux based AWS virtual machine',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

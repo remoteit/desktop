@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Index = ({ darkMode, ...props }) => {
   return (

@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   const light = darkMode ? '#444' : '#bbb'
@@ -41,4 +41,9 @@ platforms.register({
   name: 'Synology',
   component: Component,
   types: { 1210: 'Synology' },
+  installation: {
+    instructions: 'Download the package file and install it through your NAS web interface.',
+    qualifier: 'Synology manual installation',
+    link: 'https://link.remote.it/download',
+  },
 })

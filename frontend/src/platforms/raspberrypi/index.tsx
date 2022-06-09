@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   const berry = '#cd2355'
@@ -75,4 +75,9 @@ platforms.register({
   name: 'Raspberry Pi',
   component: Component,
   types: { 1072: 'Raspberry Pi', 1075: 'Remote.It Pi', 1076: 'Remote.It Pi Lite', 1077: 'Remote.It Pi 64' },
+  installation: {
+    command: true,
+    qualifier: 'For any Raspberry Pi or Linux based system',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

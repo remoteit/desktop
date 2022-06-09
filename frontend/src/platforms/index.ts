@@ -1,11 +1,17 @@
 // import {TARGET_PLATFORMS} from '../helpers/platformHelper'
 
-interface IPlatform {
+export interface IPlatform {
   id: string
   name: string
   component: (props: any) => React.ReactElement
   types?: INumberLookup<string>
   services?: IServiceRegistration[]
+  installation?: {
+    command?: boolean
+    instructions?: string
+    qualifier: string
+    link: string
+  }
 }
 
 class Platforms {
@@ -67,4 +73,4 @@ class Platforms {
   }
 }
 
-export default new Platforms()
+export const platforms = new Platforms()

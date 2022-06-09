@@ -3,12 +3,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getOrganization, selectPermissions } from '../models/organization'
 import { Box, Typography, Link } from '@material-ui/core'
+import { platforms, IPlatform } from '../platforms'
 import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
-import { Help } from '../components/Help'
-import platforms from '../platforms'
 
-export const AddDevice: React.FC<{ platformName: string }> = ({ platformName }) => {
+export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
   const { organization, registrationCommand, permissions } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
     registrationCommand: state.ui.registrationCommand,
@@ -19,12 +18,12 @@ export const AddDevice: React.FC<{ platformName: string }> = ({ platformName }) 
   let accountName = organization.name
 
   useEffect(() => {
-    const platformType = platforms.findType(platformName)
+    const platformType = platforms.findType(platform.name)
     dispatch.devices.createRegistration({ services: [{ application: 28 }], accountId, platform: platformType }) // ssh
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
-  }, [accountId, platformName])
+  }, [accountId, platform])
 
   if (permissions?.includes('MANAGE')) {
     accountId = organization.id
@@ -39,26 +38,21 @@ export const AddDevice: React.FC<{ platformName: string }> = ({ platformName }) 
 
   return (
     <>
-      <Typography variant="caption" gutterBottom>
-        For any Raspberry Pi or Linux based system
+      <Typography variant="body2" color="textSecondary">
+        {platform.installation?.qualifier}
       </Typography>
       <Typography variant="h3">
-        Run this command to register the device{' '}
-        {accountName && (
-          <>
-            with <Help message="You can register to any organization you are an Admin">{accountName}</Help>
-          </>
-        )}
+        Run this terminal command on your device to register it {accountName && <>with {accountName}</>}
       </Typography>
-      <section>
-        <DataCopy showBackground value={registrationCommand ? registrationCommand : '...generating command...'} />
-      </section>
+      <DataCopy showBackground value={registrationCommand ? registrationCommand : '...generating command...'} />
       <Typography variant="body2" color="textSecondary">
         This page will automatically update when complete.
-        <Link href="https://link.remote.it/support/streamline-install" target="_blank">
-          Troubleshooting & instructions.
-        </Link>
-      </Typography>{' '}
+        {platform.installation?.link && (
+          <Link href={platform.installation?.link} target="_blank">
+            Troubleshooting & instructions.
+          </Link>
+        )}
+      </Typography>
     </>
   )
 }

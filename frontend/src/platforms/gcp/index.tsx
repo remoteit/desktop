@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   return (
@@ -33,4 +33,9 @@ platforms.register({
   name: 'Google Cloud',
   component: Component,
   types: { 1187: 'Google Cloud' },
+  installation: {
+    command: true,
+    qualifier: 'For any Linux based Google Cloud instance',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

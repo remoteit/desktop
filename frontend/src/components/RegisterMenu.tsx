@@ -112,7 +112,7 @@ export const RegisterMenu: React.FC = () => {
           </ListItem>
           <TestUI>
             <ListItemLocation
-              iconFullColor
+              iconPlatform
               icon="aws"
               pathname="/add/aws"
               title="AWS jumpbox"
@@ -120,7 +120,7 @@ export const RegisterMenu: React.FC = () => {
               disableGutters
             />
             <ListItemLocation
-              iconFullColor
+              iconPlatform
               icon="gcp"
               pathname="/add/gcp"
               title="Google Cloud"
@@ -128,9 +128,8 @@ export const RegisterMenu: React.FC = () => {
               disableGutters
             />
             <ListItemLocation
-              iconFullColor
+              iconPlatform
               icon="azure"
-              iconType="brands"
               pathname="/add/azure"
               title="Microsoft Azure"
               onClick={handleClose}
@@ -138,28 +137,35 @@ export const RegisterMenu: React.FC = () => {
             />
           </TestUI>
           <ListItemLocation
-            iconFullColor
+            iconPlatform
             icon="raspberrypi"
-            iconType="brands"
             pathname="/add/raspberrypi"
             title="Linux & Raspberry Pi"
             subtitle="Including Jetson and OpenWRT"
             onClick={handleClose}
             disableGutters
           />
+          <TestUI>
+            <ListItemLocation
+              iconPlatform
+              icon="nas"
+              pathname="/add/nas"
+              title="Synology"
+              onClick={handleClose}
+              disableGutters
+            />
+          </TestUI>
           <ListItemLocation
-            iconFullColor
+            iconPlatform
             icon="windows"
-            iconType="brands"
             pathname="/add/windows"
             title="Windows"
             onClick={handleClose}
             disableGutters
           />
           <ListItemLocation
-            iconFullColor
+            iconPlatform
             icon="apple"
-            iconType="brands"
             pathname="/add/apple"
             title="Mac"
             onClick={handleClose}

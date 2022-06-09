@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   return (
@@ -46,4 +46,9 @@ platforms.register({
   name: 'Azure',
   component: Component,
   types: { 1209: 'Azure' },
+  installation: {
+    command: true,
+    qualifier: 'For any Linux based Azure Cloud virtual machine',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

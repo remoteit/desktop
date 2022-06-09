@@ -1,5 +1,5 @@
 import React from 'react'
-import platforms from '..'
+import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
   return (
@@ -16,4 +16,9 @@ platforms.register({
   name: 'Mac',
   component: Component,
   types: { 256: 'Mac' },
+  installation: {
+    instructions: 'Install the Desktop or CLI to enable remote access.',
+    qualifier: 'Macintosh installation',
+    link: 'https://link.remote.it/download',
+  },
 })
