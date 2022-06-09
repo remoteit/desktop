@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { getOwnOrganization, memberOrganization } from '../models/organization'
-import { selectRemoteitLicense } from '../models/plans'
+import { selectOwnRemoteitLicense } from '../models/plans'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -29,7 +29,7 @@ export const OrganizationMembershipPage: React.FC = () => {
     membership: state.accounts.membership,
     organizations: state.organization.all,
     organization: getOwnOrganization(state),
-    license: selectRemoteitLicense(state),
+    license: selectOwnRemoteitLicense(state),
     email: state.auth.user?.email || '',
   }))
   const { accounts } = useDispatch<Dispatch>()
