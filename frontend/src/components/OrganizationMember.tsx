@@ -12,18 +12,18 @@ import { Avatar } from './Avatar'
 type Props = {
   member: IOrganizationMember
   roles?: IOrganizationRole[]
-  freeLicenses?: boolean
-  enterprise?: boolean
   disabled?: boolean
+  enterprise?: boolean
+  link?: boolean
 }
 
-export const OrganizationMember: React.FC<Props> = ({ member, roles = [], freeLicenses, enterprise, disabled }) => {
+export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabled, enterprise, link = true }) => {
   const hideActions = useMediaQuery(`(max-width:400px)`)
   const dispatch = useDispatch<Dispatch>()
   return (
     <ListItemLocation
       dense
-      disabled={disabled}
+      disabled={!link}
       key={member.user.id}
       pathname={`/organization/members/${member.user.id}`}
       icon={<Avatar email={member.user.email} size={28} />}
@@ -44,7 +44,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, roles = [], freeLi
           />
           {!enterprise && (
             <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
-              <LicenseSelect member={member} disabled={!freeLicenses} />
+              <LicenseSelect member={member} disabled={disabled} />
             </Box>
           )}
         </ListItemSecondaryAction>

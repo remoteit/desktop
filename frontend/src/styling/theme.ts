@@ -274,10 +274,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
           '& > .MuiList-padding': { padding: 0 },
           '& .MuiListItemIcon-root': { minWidth: 50 },
-          '& .MuiListItem-root': {
-            paddingLeft: 0,
-            paddingRight: spacing.md,
-          },
           '& .MuiDivider-root': {
             marginTop: 10,
             marginBottom: 10,
@@ -286,8 +282,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiMenuItem: {
         root: {
-          paddingLeft: 0,
-          paddingRight: spacing.md,
           color: palette.grayDarkest.main,
           fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
@@ -298,6 +292,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginRight: spacing.sm,
             maxWidth: `calc(100% - ${spacing.sm * 2}px)`,
           },
+        },
+        gutters: {
+          paddingLeft: spacing.sm,
+          paddingRight: spacing.md,
         },
       },
       MuiInput: {
@@ -341,8 +339,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: 10,
             fontSize: fontSizes.xxs,
             '&:hover:not(.Mui-disabled)': { backgroundColor: palette.primaryHighlight.main },
-            '& .Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: spacing.xxs },
+          },
+          '& .MuiFilledInput-root.Mui-disabled': {
+            '& .MuiSelect-root': { paddingRight: spacing.sm },
+            '& svg': { display: 'none' },
           },
         },
       },
