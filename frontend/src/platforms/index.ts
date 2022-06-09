@@ -53,6 +53,11 @@ class Platforms {
     return this.platforms[id] || {}
   }
 
+  findType(id?: string): number | undefined {
+    const typeIds = Object.keys(this.get(id).types || {})
+    return Number(typeIds[0])
+  }
+
   component(id?: string): IPlatform['component'] {
     return this.get(id).component || (() => null)
   }
