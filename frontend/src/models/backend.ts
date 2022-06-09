@@ -22,8 +22,6 @@ type IBackendState = {
     osVersion?: string
     arch?: string
     manufacturerDetails?: ManufacturerDetails
-    adminUsername?: string
-    isElevated: boolean
     privateIP: ipAddress
     hostname: string
     oobAvailable: boolean
@@ -50,8 +48,6 @@ const defaultState: IBackendState = {
     osVersion: '',
     arch: '',
     manufacturerDetails: undefined,
-    adminUsername: undefined,
-    isElevated: false,
     privateIP: '',
     hostname: '',
     oobAvailable: false,
@@ -71,6 +67,15 @@ const defaultState: IBackendState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
+    async environment(_, state) {
+      let result: string = ''
+      const keys = ['os', 'osVersion', 'arch', 'manufacturerDetails']
+      keys.forEach(key => {
+        if (result) result += '\n'
+        result += `${key}: ${JSON.stringify(state.backend.environment[key], null, 2)}`
+      })
+      return result
+    },
     async targetDeviceUpdated(newId: string, state) {
       const { ui, backend, devices } = dispatch
       const { thisId } = state.backend
