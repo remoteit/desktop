@@ -24,7 +24,7 @@ export const AddDevice: React.FC<{ platformName: string }> = ({ platformName }) 
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
-  }, [accountId])
+  }, [accountId, platformName])
 
   if (permissions?.includes('MANAGE')) {
     accountId = organization.id

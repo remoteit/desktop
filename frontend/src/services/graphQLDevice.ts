@@ -264,7 +264,7 @@ export async function graphQLRegistration(props: {
   account: string
 }) {
   return await graphQLBasicRequest(
-    ` query($account: String, $name: String, $services: [ServiceInput!]) {
+    ` query($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
         login {
           account(id: $account) {
             registrationCode(name: $name, platform: $platform, services: $services)

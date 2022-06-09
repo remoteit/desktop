@@ -18,9 +18,10 @@ import { RootModel } from './rootModel'
 
 export const PERMISSION: ILookup<{ name: string; description: string; icon: string; system?: boolean }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
-  CONNECT: { name: 'Connect', description: 'Connect to devices', icon: 'arrow-right' },
+  CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'code' },
-  MANAGE: { name: 'Manage', description: 'Manage devices', icon: 'pencil' },
+  MANAGE: { name: 'Manage', description: 'Edit, delete, transfer and share devices', icon: 'pencil' },
+  REGISTER: { name: 'Register', description: 'Register new devices', icon: 'plus' },
   ADMIN: { name: 'Administer', description: 'Manage organization users', icon: 'user-hard-hat' },
 }
 
@@ -36,7 +37,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     id: 'OWNER',
     name: 'Owner',
     system: true,
-    permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
+    permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'REGISTER', 'ADMIN'],
     disabled: true,
   },
 ]
