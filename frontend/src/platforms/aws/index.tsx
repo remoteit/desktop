@@ -1,6 +1,7 @@
 import React from 'react'
+import { platforms } from '..'
 
-export const AWSColor = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -60 302 240" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g>
@@ -21,3 +22,15 @@ export const AWSColor = ({ darkMode, ...props }) => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'aws',
+  name: 'AWS',
+  component: Component,
+  types: { 1185: 'AWS' },
+  installation: {
+    command: true,
+    qualifier: 'For any Linux based AWS virtual machine',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
+})

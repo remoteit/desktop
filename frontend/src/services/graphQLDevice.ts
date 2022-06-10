@@ -257,13 +257,18 @@ function processAttributes(response: any): ILookup<any> {
   return result
 }
 
-export async function graphQLRegistration(props: { name?: string; services: IServiceRegistration[]; account: string }) {
+export async function graphQLRegistration(props: {
+  name?: string
+  services: IServiceRegistration[]
+  platform?: number
+  account: string
+}) {
   return await graphQLBasicRequest(
-    ` query($account: String, $name: String, $services: [ServiceInput!]) {
+    ` query($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
         login {
           account(id: $account) {
-            registrationCode(name: $name, services: $services)
-            registrationCommand(name: $name, services: $services)
+            registrationCode(name: $name, platform: $platform, services: $services)
+            registrationCommand(name: $name, platform: $platform, services: $services)
           }
         }
       }`,

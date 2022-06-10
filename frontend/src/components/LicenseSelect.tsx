@@ -38,6 +38,7 @@ export const LicenseSelect: React.FC<Props> = ({ member, size = 'small', disable
 
 const useStyles = makeStyles(({ palette }) => ({
   licensed: ({ chip }: { chip: ILicenseChip }) => ({
+    '& .MuiFormLabel-root': { color: palette[chip.colorName].main },
     '& .MuiFilledInput-root': {
       color: palette[chip.colorName].main,
       backgroundColor: chip.background && palette[chip.background].main,

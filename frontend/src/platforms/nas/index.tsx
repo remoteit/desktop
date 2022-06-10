@@ -1,6 +1,7 @@
 import React from 'react'
+import { platforms } from '..'
 
-export const NAS = ({ darkMode, ...props }) => {
+const Component = ({ darkMode, ...props }) => {
   const light = darkMode ? '#444' : '#bbb'
   const dark = '#808080'
   return (
@@ -34,3 +35,15 @@ export const NAS = ({ darkMode, ...props }) => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'nas',
+  name: 'Synology',
+  component: Component,
+  types: { 1210: 'Synology' },
+  installation: {
+    instructions: 'Download the package file and install it through your NAS web interface.',
+    qualifier: 'Synology manual installation',
+    link: 'https://link.remote.it/download',
+  },
+})

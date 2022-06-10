@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Box, ListItemSecondaryAction } from '@material-ui/core'
+import { Box, useMediaQuery, ListItemSecondaryAction } from '@material-ui/core'
 import { ListItemLocation } from './ListItemLocation'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'
@@ -12,17 +12,18 @@ import { Avatar } from './Avatar'
 type Props = {
   member: IOrganizationMember
   roles?: IOrganizationRole[]
-  freeLicenses?: boolean
-  enterprise?: boolean
   disabled?: boolean
+  enterprise?: boolean
+  link?: boolean
 }
 
-export const OrganizationMember: React.FC<Props> = ({ member, roles = [], freeLicenses, enterprise, disabled }) => {
+export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabled, enterprise, link = true }) => {
+  const hideActions = useMediaQuery(`(max-width:400px)`)
   const dispatch = useDispatch<Dispatch>()
   return (
     <ListItemLocation
       dense
-      disabled={disabled}
+      disabled={!link}
       key={member.user.id}
       pathname={`/organization/members/${member.user.id}`}
       icon={<Avatar email={member.user.email} size={28} />}
@@ -33,19 +34,21 @@ export const OrganizationMember: React.FC<Props> = ({ member, roles = [], freeLi
         </>
       }
     >
-      <ListItemSecondaryAction>
-        <RoleSelect
-          roles={roles}
-          roleId={member.roleId}
-          license={member.license}
-          onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
-        />
-        {!enterprise && (
-          <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
-            <LicenseSelect member={member} disabled={!freeLicenses} />
-          </Box>
-        )}
-      </ListItemSecondaryAction>
+      {hideActions || (
+        <ListItemSecondaryAction>
+          <RoleSelect
+            roles={roles}
+            roleId={member.roleId}
+            license={member.license}
+            onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
+          />
+          {!enterprise && (
+            <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
+              <LicenseSelect member={member} disabled={disabled} />
+            </Box>
+          )}
+        </ListItemSecondaryAction>
+      )}
     </ListItemLocation>
   )
 }

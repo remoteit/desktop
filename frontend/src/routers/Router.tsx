@@ -8,11 +8,10 @@ import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
+import { AddPage } from '../pages/AddPage'
+import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
-import { SetupLinuxPage } from '../pages/SetupLinuxPage'
-import { DownloadDesktopPage } from '../pages/DownloadDesktopPage'
-import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
@@ -119,14 +118,9 @@ export const Router: React.FC = () => {
         />
       </Route>
       {/* Add */}
-      <Route path="/add/linux">
+      <Route path="/add/:platform">
         <Panel layout={layout}>
-          <SetupLinuxPage />
-        </Panel>
-      </Route>
-      <Route path="/add/:icon">
-        <Panel layout={layout}>
-          <DownloadDesktopPage />
+          <AddPage />
         </Panel>
       </Route>
       {/* Devices */}

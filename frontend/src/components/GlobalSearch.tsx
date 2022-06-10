@@ -66,6 +66,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   return (
     <div className={css.container}>
       <Autocomplete
+        open
         freeSolo
         fullWidth
         autoSelect
@@ -132,7 +133,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         renderGroup={option => {
           const props = option.children && option.children[0].props.children.props
           return [
-            <ListSubheader disableGutters className="MuiAutocomplete-groupLabel" key={option.key}>
+            <ListSubheader disableGutters className={css.subhead} key={option.key}>
               <ButtonBase
                 className={css.group}
                 onClick={() => {
@@ -173,13 +174,14 @@ const useStyles = makeStyles(({ palette }) => ({
   button: { marginBottom: -spacing.sm },
   enabled: { color: palette.primary.main },
   offline: { opacity: 0.3 },
+  subhead: { padding: 0, top: -8 },
   group: {
     display: 'flex',
     justifyContent: 'space-between',
     padding: `${spacing.sm}px ${spacing.md}px`,
     fontSize: fontSizes.base,
     color: palette.grayDarker.main,
-    backgroundColor: palette.white.main,
+    backgroundColor: palette.grayLightest.main,
     width: '100%',
     borderRadius: 0,
     '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
@@ -192,9 +194,9 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingLeft: spacing.xxs,
     fontSize: fontSizes.base,
     color: palette.grayDarker.main,
-    '&[data-focus="true"]': { backgroundColor: palette.grayLightest.main },
+    '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
   },
-  listbox: { maxHeight: '60vh' },
+  listbox: { maxHeight: '60vh', backgroundColor: palette.grayLightest.main },
   indent: {
     display: 'inline-block',
     marginLeft: spacing.lg,

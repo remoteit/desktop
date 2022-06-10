@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {
+  IP_PRIVATE,
   DEFAULT_SERVICE,
   REGEX_VALID_IP,
   REGEX_VALID_HOSTNAME,
@@ -44,7 +45,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
     return {
       ...DEFAULT_SERVICE,
-      host: service?.host,
+      host: service?.host || IP_PRIVATE,
       id: service?.id || '',
       port: service?.port,
       type: defaultType.name,

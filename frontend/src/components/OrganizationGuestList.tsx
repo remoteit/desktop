@@ -65,21 +65,3 @@ function alphaEmailSort(a, b) {
   const bb = b.email.toLowerCase()
   return aa > bb ? 1 : aa < bb ? -1 : 0
 }
-
-/*
-To display by platform:
-
-type IPlatformCount = { id: number; name: string; type: IconType; count: number }
-
-.reduce((platforms: IPlatformCount[], device: IDevice) => {
-  const exists = platforms.find(p => p.id === device.targetPlatform)
-  if (exists) exists.count++
-  else
-    platforms.push({
-      id: device.targetPlatform,
-      count: 1,
-      ...getTargetPlatformIcon(device.targetPlatform),
-    })
-  return platforms
-}, [])
- */

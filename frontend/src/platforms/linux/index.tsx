@@ -1,6 +1,7 @@
 import React from 'react'
+import { platforms } from '..'
 
-export const LinuxColor = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 0 32 38" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fillRule="nonzero">
@@ -51,3 +52,10 @@ export const LinuxColor = props => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'linux',
+  name: 'Linux',
+  component: Component,
+  types: { 769: 'Linux', 1121: 'RedHat Linux', 1200: 'Linux ARM' },
+})

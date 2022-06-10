@@ -109,7 +109,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   showScroll: {
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: `${palette.primaryLight.main} !important`,
+      backgroundColor: `${palette.grayLight.main} !important`,
     },
   },
   flex: {

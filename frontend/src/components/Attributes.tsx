@@ -4,7 +4,7 @@ import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { DeviceTagEditor } from './DeviceTagEditor'
-import { ListItemText, ListItemSecondaryAction, Chip } from '@material-ui/core'
+import { ListItemText, Chip, Typography } from '@material-ui/core'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
@@ -14,6 +14,7 @@ import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
 import { ColorChip } from './ColorChip'
 import { lanShared } from '../helpers/lanSharing'
+import { Timestamp } from './Timestamp'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
@@ -190,7 +191,17 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'lastReported',
     label: 'Last reported',
-    value: ({ device }) => (device?.state !== 'active' ? <Duration startDate={device?.lastReported} ago /> : undefined),
+    defaultWidth: 175,
+    value: ({ device }) => (
+      <>
+        <Timestamp startDate={device?.lastReported} /> &nbsp;
+        {device?.state === 'active' && (
+          <Typography variant="caption" component="div">
+            since refresh
+          </Typography>
+        )}
+      </>
+    ),
   }),
   new DeviceAttribute({ id: 'isp', label: 'ISP', value: ({ device }) => device?.geo?.isp }),
   new DeviceAttribute({

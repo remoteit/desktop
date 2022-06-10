@@ -1,6 +1,7 @@
 import React from 'react'
+import { platforms } from '..'
 
-export const NvidiaColor = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -60 300 230" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fillRule="evenodd">
@@ -13,3 +14,10 @@ export const NvidiaColor = props => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'nvidia',
+  name: 'NVIDIA Jetson',
+  component: Component,
+  types: { 1201: 'NVIDIA Jetson' },
+})

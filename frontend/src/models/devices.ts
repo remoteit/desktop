@@ -335,13 +335,15 @@ export default createModel<RootModel>()({
     async createRegistration({
       name,
       services,
+      platform,
       accountId,
     }: {
       name?: string
       services: IServiceRegistration[]
+      platform?: number
       accountId: string
     }) {
-      const result = await graphQLRegistration({ name, services, account: accountId })
+      const result = await graphQLRegistration({ name, services, platform, account: accountId })
       if (result !== 'ERROR') {
         const { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         console.log('CREATE REGISTRATION', registrationCommand)

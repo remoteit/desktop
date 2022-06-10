@@ -3,33 +3,21 @@ import { fontSizes, spacing, Color, FontSize } from '../../styling'
 import { fal, IconName, IconPrefix } from '@fortawesome/pro-light-svg-icons'
 import { makeStyles, Badge } from '@material-ui/core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ColorIcon } from '../ColorIcon'
+import { PlatformIcon } from '../PlatformIcon'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
-import { R3 } from '../../assets/R3'
+import { R3gray } from '../../assets/R3gray'
 import classnames from 'classnames'
 
-const COLOR_ICONS = [
-  'raspberry-pi',
-  'windows',
-  'aws',
-  'openwrt',
-  'ubuntu',
-  'nvidia',
-  'linux',
-  'hdd',
-  'advantech',
-  'axis',
-  'nas',
-]
-
 library.add(fal, fab, far, fas)
+
 export interface IconProps {
   name?: string
   color?: Color | string
-  fullColor?: boolean
+  platformIcon?: boolean
+  platform?: number
   className?: string
   title?: string
   fixedWidth?: boolean
@@ -50,7 +38,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
   (
     {
       color,
-      fullColor,
+      platformIcon,
       fixedWidth,
       name,
       size = 'base',
@@ -75,13 +63,15 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     }
 
     const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize })
+
+    // Platform icons
+    if (props.platform || platformIcon) return <PlatformIcon name={name} className={css.icon} {...props} />
+
+    // No icon
     if (!name) return null
 
-    // Custom color icons
-    if (fullColor && COLOR_ICONS.includes(name)) return <ColorIcon name={name} className={css.icon} {...props} />
-
     // Special Icon Handling
-    if (name === 'r3') return <R3 className={css.icon} {...props} />
+    if (name === 'r3') return <R3gray className={css.icon} {...props} />
 
     let fontType: IconPrefix = 'far'
 

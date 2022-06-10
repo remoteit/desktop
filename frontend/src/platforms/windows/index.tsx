@@ -1,6 +1,7 @@
 import React from 'react'
+import { platforms } from '..'
 
-export const WindowsColor = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -10 88 100" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fill="#0078D6" fillRule="nonzero">
@@ -12,3 +13,15 @@ export const WindowsColor = props => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'windows',
+  name: 'Windows',
+  component: Component,
+  types: { 0: 'Windows', 5: 'Windows Desktop', 10: 'Windows Server' },
+  installation: {
+    instructions: 'Install the Desktop or CLI to enable remote access.',
+    qualifier: 'Windows installation',
+    link: 'https://link.remote.it/download',
+  },
+})

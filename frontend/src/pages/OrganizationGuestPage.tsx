@@ -87,14 +87,17 @@ export const OrganizationGuestPage: React.FC = () => {
               />
               {!enterprise && (
                 <Box marginLeft={2}>
-                  <LicenseSelect size="medium" member={member} disabled={!freeLicenses} />
+                  <LicenseSelect
+                    size="medium"
+                    member={member}
+                    disabled={!freeLicenses && member.license !== 'LICENSED'}
+                  />
                 </Box>
               )}
             </Box>
           </Gutters>
         </>
       )}
-
       {guest && (
         <>
           <Typography variant="subtitle1">Devices</Typography>

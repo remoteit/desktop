@@ -21,10 +21,12 @@ export default createModel<RootModel>()({
     async sendFeedback(_, state) {
       const { body } = state.feedback
       const { user } = state.auth
+      if (body.trim().length === 0) return
       try {
+        const env = await dispatch.backend.environment()
         await createTicketZendesk({
-          subject: `${fullVersion()} Feedback`,
-          body,
+          subject: `${fullVersion()} Support and Feedback`,
+          body: body + '\n\n--\n\n' + env + '\n\n' + navigator.userAgent,
           name: user?.email,
           email: user?.email,
         })
@@ -44,29 +46,26 @@ export default createModel<RootModel>()({
 })
 
 async function createTicketZendesk(params: FeedbackParams) {
-  const bodyVersion = ` \n\n\n ================ \n ${fullVersion()}`
-  if (params.body.trim().length > 0) {
-    const result = await axios.post(
-      `${ZENDESK_URL}requests.json`,
-      {
-        request: {
-          subject: params.subject,
-          comment: {
-            body: params.body + bodyVersion,
-          },
-          requester: {
-            name: params.name,
-            email: params.email,
-          },
-          custom_fields: [{ version: fullVersion() }],
+  const result = await axios.post(
+    `${ZENDESK_URL}requests.json`,
+    {
+      request: {
+        subject: params.subject,
+        comment: {
+          body: params.body,
         },
+        requester: {
+          name: params.name,
+          email: params.email,
+        },
+        custom_fields: [{ version: fullVersion() }],
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-    console.log('FEEDBACK RESULT', result)
-  }
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+  console.log('FEEDBACK RESULT', result)
 }
