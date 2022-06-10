@@ -8,10 +8,12 @@ import { fullVersion } from '../helpers/versionHelper'
 type FeedbackParams = { [key: string]: any }
 
 export type IFeedbackState = {
+  subject: string
   body: string
 }
 
 const defaultState: IFeedbackState = {
+  subject: '',
   body: '',
 }
 
@@ -19,14 +21,14 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
     async sendFeedback(_, state) {
-      const { body } = state.feedback
+      const { subject, body } = state.feedback
       const { user } = state.auth
       if (body.trim().length === 0) return
       try {
         const env = await dispatch.backend.environment()
         await createTicketZendesk({
-          subject: `${fullVersion()} Support and Feedback`,
-          body: body + '\n\n--\n\n' + env + '\n\n' + navigator.userAgent,
+          subject,
+          body: body + '\n\n--\n\n' + fullVersion() + '\n\n' + env + '\n\n' + navigator.userAgent,
           name: user?.email,
           email: user?.email,
         })
