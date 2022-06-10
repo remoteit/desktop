@@ -11,10 +11,11 @@ export const FeedbackPage: React.FC<{}> = () => {
   const { feedback } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const [text, setText] = React.useState('')
+  const [subject, setSubject] = React.useState('')
+  const [body, setBody] = React.useState('')
 
   const sendFeedback = () => {
-    feedback.set({ body: text })
+    feedback.set({ subject, body })
     feedback.sendFeedback()
     history.goBack()
   }
@@ -32,18 +33,18 @@ export const FeedbackPage: React.FC<{}> = () => {
         </Typography>
       </Gutters>
       <Gutters>
+        <TextField autoFocus fullWidth label="Subject" variant="filled" onChange={e => setSubject(e.target.value)} />
         <TextField
-          autoFocus
           multiline
           fullWidth
           label="Message"
           variant="filled"
           className={css.input}
-          onChange={e => setText(e.target.value)}
+          onChange={e => setBody(e.target.value)}
         />
       </Gutters>
       <Gutters className={css.flex}>
-        <Button disabled={text.length === 0} onClick={sendFeedback} color="primary" variant="contained">
+        <Button disabled={body.length === 0} onClick={sendFeedback} color="primary" variant="contained">
           Send
         </Button>
         <Typography variant="caption">

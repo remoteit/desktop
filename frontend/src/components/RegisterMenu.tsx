@@ -18,7 +18,6 @@ import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
-import { TestUI } from './TestUI'
 import { Link } from 'react-router-dom'
 import { Icon } from './Icon'
 
@@ -110,32 +109,30 @@ export const RegisterMenu: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
-          <TestUI>
-            <ListItemLocation
-              iconPlatform
-              icon="aws"
-              pathname="/add/aws"
-              title="AWS jumpbox"
-              onClick={handleClose}
-              disableGutters
-            />
-            <ListItemLocation
-              iconPlatform
-              icon="gcp"
-              pathname="/add/gcp"
-              title="Google Cloud"
-              onClick={handleClose}
-              disableGutters
-            />
-            <ListItemLocation
-              iconPlatform
-              icon="azure"
-              pathname="/add/azure"
-              title="Microsoft Azure"
-              onClick={handleClose}
-              disableGutters
-            />
-          </TestUI>
+          <ListItemLocation
+            iconPlatform
+            icon="aws"
+            pathname="/add/aws"
+            title="AWS jumpbox"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            iconPlatform
+            icon="gcp"
+            pathname="/add/gcp"
+            title="Google Cloud"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            iconPlatform
+            icon="azure"
+            pathname="/add/azure"
+            title="Microsoft Azure"
+            onClick={handleClose}
+            disableGutters
+          />
           <ListItemLocation
             iconPlatform
             icon="raspberrypi"
@@ -145,16 +142,14 @@ export const RegisterMenu: React.FC = () => {
             onClick={handleClose}
             disableGutters
           />
-          <TestUI>
-            <ListItemLocation
-              iconPlatform
-              icon="nas"
-              pathname="/add/nas"
-              title="Synology"
-              onClick={handleClose}
-              disableGutters
-            />
-          </TestUI>
+          <ListItemLocation
+            iconPlatform
+            icon="nas"
+            pathname="/add/nas"
+            title="Synology"
+            onClick={handleClose}
+            disableGutters
+          />
           <ListItemLocation
             iconPlatform
             icon="windows"
