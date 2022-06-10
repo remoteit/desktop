@@ -131,6 +131,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   menu: {
     '& .MuiMenu-list': {
+      minWidth: 200,
       backgroundColor: palette.white.main,
     },
   },

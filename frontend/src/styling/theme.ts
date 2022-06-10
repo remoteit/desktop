@@ -267,8 +267,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         list: {
           backgroundColor: palette.grayLightest.main,
           '& .MuiListItem-dense': {
-            marginLeft: spacing.xs,
             width: `calc(100% - ${spacing.xs * 2}px)`,
+            marginLeft: spacing.xs,
+            paddingRight: spacing.sm,
+            marginRight: spacing.xs,
             whiteSpace: 'nowrap',
           },
           '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
