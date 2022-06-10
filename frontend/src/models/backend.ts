@@ -1,6 +1,4 @@
 import { createModel } from '@rematch/core'
-import { selectById } from '../models/devices'
-import { DEFAULT_TARGET } from '../shared/constants'
 import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
@@ -13,8 +11,7 @@ const NOTICE_VERSION_ID = 'notice-version'
 
 type IBackendState = {
   initialized: boolean
-  device: ITargetDevice
-  targets: ITarget[]
+  thisId: string
   scanData: IScanData
   interfaces: IInterface[]
   error: boolean
@@ -25,8 +22,6 @@ type IBackendState = {
     osVersion?: string
     arch?: string
     manufacturerDetails?: ManufacturerDetails
-    adminUsername?: string
-    isElevated: boolean
     privateIP: ipAddress
     hostname: string
     oobAvailable: boolean
@@ -42,8 +37,7 @@ type IBackendState = {
 
 const defaultState: IBackendState = {
   initialized: false,
-  device: DEFAULT_TARGET,
-  targets: [],
+  thisId: '',
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
   error: false,
@@ -54,8 +48,6 @@ const defaultState: IBackendState = {
     osVersion: '',
     arch: '',
     manufacturerDetails: undefined,
-    adminUsername: undefined,
-    isElevated: false,
     privateIP: '',
     hostname: '',
     oobAvailable: false,
@@ -75,39 +67,52 @@ const defaultState: IBackendState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async targetDeviceUpdated(targetDevice: ITargetDevice, globalState) {
+    async environment(_, state) {
+      let result: string = ''
+      const keys = ['os', 'osVersion', 'arch', 'manufacturerDetails']
+      keys.forEach(key => {
+        if (result) result += '\n'
+        result += `${key}: ${JSON.stringify(state.backend.environment[key], null, 2)}`
+      })
+      return result
+    },
+    async targetDeviceUpdated(newId: string, state) {
       const { ui, backend, devices } = dispatch
-      const { device } = globalState.backend
+      const { thisId } = state.backend
 
-      if (targetDevice?.uid !== device.uid) {
-        // register
-        if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
-          const result = await devices.fetchSingle({ id: targetDevice.uid, thisDevice: true })
+      if (newId !== thisId) {
+        // registered
+        if (newId && state.ui.setupRegisteringDevice) {
+          const result = await devices.fetchSingle({ id: newId, thisDevice: true })
           if (!result) {
             // Instances were reported where a device wasn't returned
             await sleep(2000)
             await devices.fetch()
           }
           ui.set({
+            silent: true,
             setupRegisteringDevice: false,
             successMessage: 'Device registered successfully!',
           })
 
-          // deleting
-        } else if (globalState.ui.setupDeletingDevice) {
-          console.log('DELETE THIS DEVICE', device.uid)
-          await dispatch.connections.clearByDevice(device.uid)
+          // deleted
+        } else if (state.ui.setupDeletingDevice) {
+          console.log('DELETE THIS DEVICE', thisId)
+          await dispatch.connections.clearByDevice(thisId)
           await sleep(2000)
           await devices.fetch()
           await devices.fetchConnections()
 
           ui.set({
+            silent: true,
+            setupBusy: false,
             setupDeletingDevice: false,
+            redirect: '/devices',
             successMessage: 'Device unregistered successfully!',
           })
 
-          // restoring
-        } else if (globalState.ui.restoring) {
+          // restored
+        } else if (state.ui.restoring) {
           ui.set({
             restoring: false,
             successMessage: 'Device restored successfully!',
@@ -115,59 +120,23 @@ export default createModel<RootModel>()({
         }
       }
 
-      backend.set({ device: targetDevice })
+      backend.set({ thisId: newId })
     },
-    async targetUpdated(_: ITarget[], globalState) {
-      const { user } = globalState.auth
-      const { fetch } = dispatch.devices as any
-      if (globalState.ui.setupBusy) {
-        await fetch(user?.id)
-        await dispatch.backend.updateDeferredAttributes()
-        dispatch.ui.updated()
-      }
-    },
-    async updateDeferredAttributes(_, globalState) {
-      const { deferredAttributes, targets } = globalState.backend
-      if (deferredAttributes) {
-        const last = targets[targets.length - 1]
-        if (last) {
-          let [service] = selectById(globalState, last.uid)
-          if (service) {
-            service.attributes = { ...service.attributes, ...deferredAttributes }
-            dispatch.devices.setServiceAttributes(service)
-            dispatch.devices.set({ deferredAttributes: undefined })
-          }
-        }
-      }
-    },
-    async registerDevice({ targets, name }: { targets: ITarget[]; name: string }, globalState) {
-      const targetDevice = globalState.backend.device
-      emit('registration', { device: { ...targetDevice, name }, targets })
+    async registerDevice({ services, name }: { services: IService[]; name: string }, state) {
       dispatch.ui.set({ setupRegisteringDevice: true })
-      analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
-      targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, name, id: t.uid }))
-    },
-    async addTargetService(target: ITarget, globalState) {
-      analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
-      dispatch.ui.set({ setupBusy: true, setupAddingService: true })
-      emit('targets', [...globalState.backend.targets, target])
-    },
-    async removeTargetService(target: ITarget, globalState) {
-      const targets = globalState.backend.targets
-      const index = targets?.findIndex(t => t.uid === target.uid)
-      analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
-      let copy = [...globalState.backend.targets]
-      copy.splice(index, 1)
-      dispatch.ui.set({ setupBusy: true, setupServiceBusy: target.uid })
-      emit('targets', copy)
-    },
-    async updateTargetService(target: ITarget, globalState) {
-      const targets = globalState.backend.targets
-      analyticsHelper.track('serviceUpdated', { ...target, id: target.uid })
-      dispatch.ui.set({ setupBusy: true, setupServiceBusy: true })
-      const tIndex = targets?.findIndex(t => t.uid === target.uid)
-      targets[tIndex] = target
-      emit('targets', targets)
+      const thisId = state.backend.thisId
+      const code = await dispatch.devices.createRegistration({
+        name,
+        services: services.map(t => ({
+          name: t.name,
+          application: t.typeID,
+          port: t.port,
+          host: t.host,
+        })),
+        accountId: state.user.id,
+      })
+      emit('registration', code)
+      analyticsHelper.track('deviceCreated', { id: thisId })
     },
     async setUpdateNotice(updateVersion: string | undefined, globalState) {
       setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)

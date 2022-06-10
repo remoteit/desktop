@@ -1,6 +1,7 @@
 import React from 'react'
+import { platforms } from '..'
 
-export const AxisColor = props => {
+const Component = ({ darkMode, ...props }) => {
   return (
     <svg viewBox="0 -12 71 72" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g fillRule="nonzero">
@@ -11,3 +12,10 @@ export const AxisColor = props => {
     </svg>
   )
 }
+
+platforms.register({
+  id: 'axis',
+  name: 'AXIS',
+  component: Component,
+  types: { 1209: 'AXIS' },
+})

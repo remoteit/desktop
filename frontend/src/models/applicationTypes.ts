@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { DEFAULT_TARGET } from '../shared/constants'
+import { DEFAULT_SERVICE } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { RootModel } from '.'
 
@@ -50,7 +50,7 @@ export function findType(all: IApplicationType[], typeId?: number) {
 
 export function getTypeId(all: IApplicationType[], port: number) {
   const type = all?.find(t => t.port === port)
-  return type ? type.id : DEFAULT_TARGET.type
+  return type ? type.id : DEFAULT_SERVICE.typeID
 }
 
 const emptyServiceType = {

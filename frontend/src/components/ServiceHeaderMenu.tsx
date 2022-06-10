@@ -18,10 +18,9 @@ import { Color } from '../styling'
 export const ServiceHeaderMenu: React.FC<{
   device?: IDevice
   service?: IService
-  target?: ITarget
   footer?: React.ReactNode
   backgroundColor?: Color
-}> = ({ device, service, target, footer, backgroundColor, children }) => {
+}> = ({ device, service, footer, backgroundColor, children }) => {
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
 
   if (!service || !device) return <UnauthorizedPage />
@@ -41,7 +40,7 @@ export const ServiceHeaderMenu: React.FC<{
               to={`/devices/${device.id}/${service.id}/share`}
               hide={!device.permissions.includes('MANAGE')}
             />
-            <DeviceOptionMenu device={device} service={service} target={target} />
+            <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
             <Gutters top={null}>

@@ -16,10 +16,10 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, e
       {owner && (
         <OrganizationMember
           key={owner.user.id}
-          disabled
+          link={false}
           member={owner}
           roles={organization?.roles}
-          freeLicenses={false}
+          disabled={false}
           enterprise={enterprise}
         />
       )}
@@ -31,7 +31,7 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, e
               key={member.user.id}
               member={member}
               roles={organization?.roles}
-              freeLicenses={!!licenses || member.license === 'LICENSED'}
+              disabled={!licenses && member.license !== 'LICENSED'}
               enterprise={enterprise}
             />
           ))}

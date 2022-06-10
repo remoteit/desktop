@@ -15,7 +15,7 @@ import {
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { getTypeId } from '../../models/applicationTypes'
-import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
+import { DEFAULT_SERVICE, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -23,7 +23,7 @@ import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   data: IScan[]
-  targets: ITarget[]
+  services: IService[]
   interfaceType: IInterfaceType
   privateIP: string
 }
@@ -39,7 +39,7 @@ const InterfaceIcon: IInterfaceIcon = {
   Other: <Icon name="usb" type="brands" />,
 }
 
-export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
+export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, privateIP }) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -50,7 +50,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
     setupServicesLimit: state.ui.setupServicesLimit,
   }))
   const allClosed = open.length === 0
-  const disabled = targets.length + 1 > setupServicesLimit
+  const disabled = services.length + 1 > setupServicesLimit
 
   function toggle(row: number) {
     const index = open.indexOf(row)
@@ -72,14 +72,13 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
   }
 
   function isAdded(ip: string, port: number) {
-    return targets.find(
-      target => (target.hostname === ip || (IP_PRIVATE === target.hostname && privateIP === ip)) && target.port === port
+    return services.find(
+      service => (service.host === ip || (IP_PRIVATE === service.host && privateIP === ip)) && service.port === port
     )
   }
 
   return (
     <>
-      <Divider />
       <div className={css.caption}>
         <Typography variant="subtitle1" gutterBottom>
           Add a service
@@ -130,9 +129,9 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                         onClick={() => {
                           ui.set({
                             setupAdded: {
-                              ...DEFAULT_TARGET,
-                              type: getTypeId(applicationTypes, port[0]),
-                              hostname: ip[0] === privateIP ? IP_PRIVATE : ip[0],
+                              ...DEFAULT_SERVICE,
+                              typeID: getTypeId(applicationTypes, port[0]),
+                              host: ip[0] === privateIP ? IP_PRIVATE : ip[0],
                               port: port[0],
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
                             },

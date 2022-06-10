@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { getOwnDevices } from '../../models/accounts'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Scan } from '../../components/Scan'
 import { Container } from '../../components/Container'
@@ -10,9 +11,9 @@ import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const NetworkPage: React.FC = () => {
-  const { interfaces, targets, scanData, privateIP } = useSelector((state: ApplicationState) => ({
+  const { interfaces, services, scanData, privateIP } = useSelector((state: ApplicationState) => ({
     interfaces: state.backend.interfaces,
-    targets: state.backend.targets,
+    services: getOwnDevices(state).find(d => d.thisDevice)?.services || [],
     scanData: state.backend.scanData,
     privateIP: state.backend.environment.privateIP,
   }))
@@ -27,7 +28,6 @@ export const NetworkPage: React.FC = () => {
 
   return (
     <Container
-      bodyProps={{ verticalOverflow: true }}
       integrated
       header={
         <>
@@ -43,7 +43,7 @@ export const NetworkPage: React.FC = () => {
         </>
       }
     >
-      <Scan data={scanData} targets={targets} interfaces={interfaces} privateIP={privateIP} />
+      <Scan data={scanData} services={services} interfaces={interfaces} privateIP={privateIP} />
     </Container>
   )
 }

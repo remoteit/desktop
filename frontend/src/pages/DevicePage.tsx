@@ -67,15 +67,13 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             icon={<ConnectionStateIcon device={device} connection={connection} size="lg" />}
             exactMatch
             dense
-          >
-            <ListItemText
-              primary={
-                <Typography variant="h3">
-                  <ServiceName device={device} connection={connection} />
-                </Typography>
-              }
-            />
-          </ListItemLocation>
+            title={
+              <Typography variant="h3">
+                <ServiceName device={device} connection={connection} />
+              </Typography>
+            }
+            subtitle={device.thisDevice ? 'This device' : undefined}
+          />
         </List>
       }
     >

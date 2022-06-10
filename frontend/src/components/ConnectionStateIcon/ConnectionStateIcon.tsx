@@ -4,7 +4,6 @@ import { IconProps } from '../Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
-import { getTargetPlatformIcon } from '../../helpers/platformHelper'
 import { spacing, FontSize } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
@@ -26,19 +25,18 @@ export function ConnectionStateIcon({
   const history = useHistory()
   const instance = device || service
 
-  let { name, type } = getTargetPlatformIcon(device?.targetPlatform)
-
+  let name
   let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
   let element: any
   let quality: any
   let spin = false
 
-  if (connection?.connecting) {
+  if (connection?.connecting || connection?.starting) {
     name = 'spinner-third'
-    type = 'regular'
     showQuality = false
     spin = true
   }
+
   if (instance?.state === 'inactive') {
     showQuality = false
   }
@@ -52,7 +50,7 @@ export function ConnectionStateIcon({
       </span>
     )
   else {
-    element = <Icon {...props} size={size} name={name} spin={spin} type={type} color="black" fullColor fixedWidth />
+    element = <Icon {...props} size={size} name={name} spin={spin} platform={device?.targetPlatform} platformIcon />
   }
 
   if (showQuality && device) {

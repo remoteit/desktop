@@ -10,12 +10,12 @@ import { osName } from '../../shared/nameHelper'
 import { Body } from '../../components/Body'
 import { spacing } from '../../styling'
 
-type Props = { os?: Ios; targetDevice: ITargetDevice }
+type Props = { os?: Ios }
 
-export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
+export const SetupWaiting: React.FC<Props> = ({ os }) => {
   const { errorMessage, device } = useSelector((state: ApplicationState) => ({
     errorMessage: state.ui.errorMessage,
-    device: getDevices(state).find(d => d.id === targetDevice.uid),
+    device: getDevices(state).find(d => d.thisDevice),
   }))
   const history = useHistory()
   const css = useStyles()

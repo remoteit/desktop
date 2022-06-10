@@ -18,14 +18,14 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OptionsPage: React.FC = () => {
-  const { os, installing, cliVersion, preferences, targetDevice, notOwner, themeMode, remoteUI } = useSelector(
+  const { os, installing, cliVersion, preferences, thisDevice, notOwner, themeMode, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       os: state.backend.environment.os,
       installing: state.binaries.installing,
       cliVersion: state.binaries.installedVersion || '(loading...)',
       preferences: state.backend.preferences,
-      targetDevice: state.backend.device,
-      notOwner: !!state.backend.device.uid && !getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+      thisDevice: getOwnDevices(state).find(d => d.thisDevice),
+      notOwner: !!state.backend.thisId && !getOwnDevices(state).find(d => d.thisDevice),
       themeMode: state.ui.themeMode,
       remoteUI: isRemoteUI(state),
     })
@@ -68,7 +68,7 @@ export const OptionsPage: React.FC = () => {
             toggle={!!preferences.remoteUIOverride}
             confirmTitle="Are you sure?"
             confirmMessage={`New connections will be from ${
-              targetDevice.name || 'this device'
+              thisDevice?.name || 'this device'
             } and not your local machine.`}
             onClick={() => {
               analyticsHelper.track('enabledRemoteConnectUI')

@@ -18,7 +18,7 @@ import {
 
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { ListItemSetting } from '../components/ListItemSetting'
+import { PermissionsList } from '../components/PermissionsList'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
 import { Container } from '../components/Container'
@@ -54,6 +54,14 @@ export const OrganizationRolePage: React.FC = () => {
     setCount(undefined)
     const result = await dispatch.devices.fetchCount(changedForm)
     setCount(result)
+  }
+
+  const handlePermissionChange = (toggle, permission) => {
+    if (toggle) {
+      setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })
+    } else {
+      setForm({ ...form, permissions: [...form.permissions, permission] })
+    }
   }
 
   useEffect(() => {
@@ -182,34 +190,22 @@ export const OrganizationRolePage: React.FC = () => {
           </ListItem>
         )}
       </List>
-      <Typography variant="subtitle1">Permissions</Typography>
-      <List>
-        {Object.keys(PERMISSION).map(p => {
-          const permission = p as IPermission
-          const allowed = form.permissions.includes(permission)
-          return (
-            <ListItemSetting
-              key={p}
-              toggle={allowed}
-              disabled={disabled}
-              icon={PERMISSION[p].icon}
-              label={PERMISSION[p].name}
-              subLabel={PERMISSION[p].description}
-              onClick={
-                systemRole || PERMISSION[p].system
-                  ? undefined
-                  : () => {
-                      if (allowed) {
-                        setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })
-                      } else {
-                        setForm({ ...form, permissions: [...form.permissions, permission] })
-                      }
-                    }
-              }
-            />
-          )
-        })}
-      </List>
+      <PermissionsList
+        title="Device Permissions"
+        locked={systemRole}
+        disabled={disabled}
+        allowed={form.permissions}
+        permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user)}
+        onChange={handlePermissionChange}
+      />
+      <PermissionsList
+        title="User Permissions"
+        locked={systemRole}
+        disabled={disabled}
+        allowed={form.permissions}
+        permissions={Object.keys(PERMISSION).filter(p => PERMISSION[p].user)}
+        onChange={handlePermissionChange}
+      />
       {!systemRole && (
         <Gutters top="lg">
           <Button

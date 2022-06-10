@@ -18,6 +18,7 @@ import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
+import { TestUI } from './TestUI'
 import { Link } from 'react-router-dom'
 import { Icon } from './Icon'
 
@@ -32,7 +33,7 @@ export const RegisterMenu: React.FC = () => {
   const { claiming, hasDemo, hasThisDevice, permissions } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.user.id) !== undefined,
-    hasThisDevice: !!state.backend.device.uid,
+    hasThisDevice: !!state.backend.thisId,
     permissions: selectPermissions(state),
   }))
 
@@ -95,7 +96,7 @@ export const RegisterMenu: React.FC = () => {
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <List className={css.list} disablePadding dense>
-          <ListSubheader>Add a device</ListSubheader>
+          <ListSubheader disableGutters>Add a device</ListSubheader>
           <ListItem
             button
             disableGutters
@@ -105,30 +106,66 @@ export const RegisterMenu: React.FC = () => {
             component={Link}
           >
             <ListItemIcon>
-              <Icon name="laptop" size="sm" fixedWidth />
+              <Icon name="this" fixedWidth platformIcon />
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
+          <TestUI>
+            <ListItemLocation
+              iconPlatform
+              icon="aws"
+              pathname="/add/aws"
+              title="AWS jumpbox"
+              onClick={handleClose}
+              disableGutters
+            />
+            <ListItemLocation
+              iconPlatform
+              icon="gcp"
+              pathname="/add/gcp"
+              title="Google Cloud"
+              onClick={handleClose}
+              disableGutters
+            />
+            <ListItemLocation
+              iconPlatform
+              icon="azure"
+              pathname="/add/azure"
+              title="Microsoft Azure"
+              onClick={handleClose}
+              disableGutters
+            />
+          </TestUI>
           <ListItemLocation
-            icon="raspberry-pi"
-            iconType="brands"
-            pathname="/add/linux"
+            iconPlatform
+            icon="raspberrypi"
+            pathname="/add/raspberrypi"
             title="Linux & Raspberry Pi"
             subtitle="Including Jetson and OpenWRT"
             onClick={handleClose}
             disableGutters
           />
+          <TestUI>
+            <ListItemLocation
+              iconPlatform
+              icon="nas"
+              pathname="/add/nas"
+              title="Synology"
+              onClick={handleClose}
+              disableGutters
+            />
+          </TestUI>
           <ListItemLocation
+            iconPlatform
             icon="windows"
-            iconType="brands"
             pathname="/add/windows"
             title="Windows"
             onClick={handleClose}
             disableGutters
           />
           <ListItemLocation
+            iconPlatform
             icon="apple"
-            iconType="brands"
             pathname="/add/apple"
             title="Mac"
             onClick={handleClose}
@@ -144,7 +181,7 @@ export const RegisterMenu: React.FC = () => {
             }}
           >
             <ListItemIcon>
-              <Icon name="aws" size="md" type="brands" fixedWidth />
+              <Icon name="remoteit" size="md" platformIcon fixedWidth />
             </ListItemIcon>
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>

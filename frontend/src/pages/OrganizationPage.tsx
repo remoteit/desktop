@@ -3,7 +3,7 @@ import { Redirect, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { List, Typography, ListSubheader } from '@material-ui/core'
+import { List, Typography } from '@material-ui/core'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectRemoteitLicense } from '../models/plans'
 import { selectLimitsLookup } from '../models/organization'
@@ -35,12 +35,14 @@ export const OrganizationPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Gutters top="sm">
-          {license && <ListSubheader disableGutters>{license?.plan.description} Plan</ListSubheader>}
-          <Typography variant="h2" gutterBottom>
-            <Title>{organization.name || '...'}</Title>
-          </Typography>
-        </Gutters>
+        <>
+          {license && <Typography variant="subtitle1">{license?.plan.description} Plan</Typography>}
+          <Gutters top={null}>
+            <Typography variant="h2" gutterBottom>
+              <Title>{organization.name || '...'}</Title>
+            </Typography>
+          </Gutters>
+        </>
       }
     >
       {!admin && (

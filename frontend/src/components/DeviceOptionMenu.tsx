@@ -9,9 +9,9 @@ import { DeleteDevice } from '../buttons/DeleteDevice'
 import { CopyMenuItem } from './CopyMenuItem'
 import { Icon } from './Icon'
 
-type Props = { device?: IDevice; service?: IService; target?: ITarget }
+type Props = { device?: IDevice; service?: IService }
 
-export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) => {
+export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const userId = useSelector((state: ApplicationState) => state.auth.user?.id)
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
@@ -59,7 +59,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) =
             <ListItemText primary="Transfer Device" />
           </MenuItem>,
           <Divider key="divider" />,
-          <DeleteServiceMenuItem key="deleteService" device={device} service={service} target={target} />,
+          <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
           <DeleteDevice key="deleteDevice" device={device} menuItem />,
         ]}
       </Menu>

@@ -18,7 +18,7 @@ export const RemoteManagement: React.FC = () => {
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
 
   const { name, remoteUI } = useSelector((state: ApplicationState) => {
-    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    const device = getOwnDevices(state).find(d => d.thisDevice)
     return {
       label: state.labels.find(l => l.id === device?.attributes.color),
       name: attributeName(device),

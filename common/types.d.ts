@@ -215,18 +215,26 @@ declare global {
 
   type IStrategy = 'failover' | 'p2p' | 'proxy'
 
-  interface ITarget {
-    hostname: string //     proxy_dest_ip      service ip to forward
-    hardwareID?: string
-    uid: string //          UID
-    name?: string
-    secret?: string //      password
-    port: number //         proxy_dest_port    service port
-    type: number //         application_type   service type
-    disabled: boolean //    service enabled / disabled
-  }
+  type CLIDeviceProps =
+    | {
+        hostname: string //     proxy_dest_ip      service ip to forward
+        hardwareID?: string
+        uid: string //          UID
+        name?: string
+        secret?: string //      password
+        port: number //         proxy_dest_port    service port
+        type: number //         application_type   service type
+        disabled: boolean //    service enabled / disabled
+      }
+    | undefined
 
-  interface ITargetDevice extends ITarget {}
+  type IServiceRegistration = {
+    name?: string
+    application: number
+    host?: string
+    port?: number
+    enabled?: boolean
+  }
 
   interface IDevice {
     id: string
@@ -283,7 +291,7 @@ declare global {
     type: string
     deviceID: string
     connection?: IConnection
-    typeID?: number
+    typeID: number
     port?: number
     host?: ipAddress
     protocol?: string
@@ -322,7 +330,7 @@ declare global {
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string
 
-  type IPermission = 'VIEW' | 'CONNECT' | 'SCRIPTING' | 'MANAGE' | 'ADMIN'
+  type IPermission = 'VIEW' | 'CONNECT' | 'SCRIPTING' | 'MANAGE' | 'REGISTER' | 'ADMIN'
 
   type IUser = {
     id: string
@@ -516,11 +524,6 @@ declare global {
     platform?: number[]
   }
 
-  interface IRegistration {
-    device: ITargetDevice
-    targets: ITarget[]
-  }
-
   interface IAppValidation {
     install: string
     loading: boolean
@@ -554,7 +557,7 @@ declare global {
     protocol: string
   }
 
-  type IServiceForm = ITarget & {
+  type IServiceForm = IService & {
     name: string
     attributes: IService['attributes']
   }

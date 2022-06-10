@@ -5,6 +5,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, fontSizes } from '../../styling'
 import { ScanNetwork } from '../ScanNetwork'
+import { Container } from '../Container'
 import { Gutters } from '../Gutters'
 import { Icon } from '../Icon'
 import { emit } from '../../services/Controller'
@@ -13,11 +14,11 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Props = {
   data: IScanData
   interfaces: IInterface[]
-  targets: ITarget[]
+  services: IService[]
   privateIP: string
 }
 
-export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) => {
+export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: ApplicationState) => state.ui)
@@ -64,43 +65,52 @@ export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) 
   }
 
   return (
-    <>
-      <Gutters className={css.controls}>
-        <div>
-          <TextField
-            select
-            hiddenLabel
-            value={scanInterface}
-            variant="filled"
-            onChange={event => ui.set({ scanInterface: event.target.value as string })}
-          >
-            {interfaces.length ? (
-              interfaces.map((i: IInterface) => (
-                <MenuItem key={i.name} value={i.name}>
-                  {i.type}
+    <Container
+      gutterBottom
+      header={
+        <Gutters className={css.controls}>
+          <div>
+            <TextField
+              select
+              hiddenLabel
+              value={scanInterface}
+              variant="filled"
+              onChange={event => ui.set({ scanInterface: event.target.value as string })}
+            >
+              {interfaces.length ? (
+                interfaces.map((i: IInterface) => (
+                  <MenuItem key={i.name} value={i.name}>
+                    {i.type}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem key={0} value={DEFAULT_INTERFACE}>
+                  Finding Network...
                 </MenuItem>
-              ))
+              )}
+            </TextField>
+          </div>
+          <Button color="primary" variant="contained" onClick={() => scan(scanInterface)} disabled={selectedLoading}>
+            {selectedLoading ? (
+              <>
+                Scanning
+                <Icon name="spinner-third" type="solid" spin inline />
+              </>
             ) : (
-              <MenuItem key={0} value={DEFAULT_INTERFACE}>
-                Finding Network...
-              </MenuItem>
+              'Scan'
             )}
-          </TextField>
-        </div>
-        <Button color="primary" variant="contained" onClick={() => scan(scanInterface)} disabled={selectedLoading}>
-          {selectedLoading ? (
-            <>
-              Scanning
-              <Icon name="spinner-third" type="solid" spin inline />
-            </>
-          ) : (
-            'Scan'
-          )}
-        </Button>
-      </Gutters>
-      <ScanNetwork data={selected.data || []} targets={targets} interfaceType={interfaceType()} privateIP={privateIP} />
+          </Button>
+        </Gutters>
+      }
+    >
+      <ScanNetwork
+        data={selected.data || []}
+        services={services}
+        interfaceType={interfaceType()}
+        privateIP={privateIP}
+      />
       <section className={css.loading}>{noResults && 'No results'}</section>
-    </>
+    </Container>
   )
 }
 
@@ -112,10 +122,10 @@ const useStyles = makeStyles(({ palette }) => ({
     fontSize: fontSizes.xl,
   },
   controls: {
-    paddingBottom: spacing.md,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 0,
     '& > div': { flexGrow: 1 },
     '& .MuiCircularProgress-root': { marginLeft: spacing.md },
     '& .MuiButton-contained': { marginRight: 0 },

@@ -9,11 +9,10 @@ import { ConnectionPage } from '../pages/ConnectionPage'
 import { NetworkEditPage } from '../pages/NetworkEditPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
+import { AddPage } from '../pages/AddPage'
+import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
-import { SetupLinuxPage } from '../pages/SetupLinuxPage'
-import { DownloadDesktopPage } from '../pages/DownloadDesktopPage'
-import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
@@ -49,11 +48,11 @@ import { AccessKeyPage } from '../pages/AccessKeyPage'
 export const Router: React.FC = () => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
-  const { remoteUI, redirect, targetDevice, registered, os, layout } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, redirect, thisId, registered, os, layout } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     redirect: state.ui.redirect,
-    targetDevice: state.backend.device,
-    registered: !!state.backend.device.uid,
+    thisId: state.backend.thisId,
+    registered: !!state.backend.thisId,
     os: state.backend.environment.os || getOs(),
     layout: state.ui.layout,
   }))
@@ -125,22 +124,16 @@ export const Router: React.FC = () => {
       </Route>
 
       {/* Add */}
-      <Route path="/add/linux">
+      <Route path="/add/:platform">
         <Panel layout={layout}>
-          <SetupLinuxPage />
-        </Panel>
-      </Route>
-
-      <Route path="/add/:icon">
-        <Panel layout={layout}>
-          <DownloadDesktopPage />
+          <AddPage />
         </Panel>
       </Route>
 
       {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
-          <Redirect to={`/devices/${targetDevice.uid}`} />
+          <Redirect to={`/devices/${thisId}`} />
         ) : isPortal() ? (
           <Redirect to={`/add/${os}`} />
         ) : (
@@ -158,7 +151,7 @@ export const Router: React.FC = () => {
 
       <Route path="/devices/setupWaiting">
         <Panel layout={layout}>
-          <SetupWaiting os={os} targetDevice={targetDevice} />
+          <SetupWaiting os={os} />
         </Panel>
       </Route>
 
@@ -177,7 +170,7 @@ export const Router: React.FC = () => {
       <Route path={['/devices', '/devices/welcome']} exact>
         {remoteUI ? (
           registered ? (
-            <Redirect to={`/devices/${targetDevice.uid}`} />
+            <Redirect to={`/devices/${thisId}`} />
           ) : (
             <Panel layout={layout}>
               <SetupDevice os={os} />
