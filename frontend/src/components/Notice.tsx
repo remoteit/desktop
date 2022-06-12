@@ -73,5 +73,6 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiIconButton-root': { marginLeft: spacing.sm },
     '& > svg': { marginLeft: spacing.xxs, marginRight: spacing.md, width: 21 },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
+    '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
   }),
 }))
