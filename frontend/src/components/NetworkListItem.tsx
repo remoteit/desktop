@@ -56,7 +56,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, title, ch
         </ListItemIcon>
       </Tooltip>
       <ListItemIcon className={css.platform + ' ' + css.title}>
-        <TargetPlatform id={device?.targetPlatform} size="md" color={offline ? 'gray' : 'primary'} fullColor tooltip />
+        <TargetPlatform id={device?.targetPlatform} size="md" tooltip />
       </ListItemIcon>
       <ListItemText
         className={css.title}
