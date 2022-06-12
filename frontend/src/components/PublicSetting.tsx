@@ -1,12 +1,12 @@
 import React from 'react'
-import { Collapse, ListItemText } from '@material-ui/core'
+import { ListItemText } from '@material-ui/core'
 import { setConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { InlineSelectSetting } from './InlineSelectSetting'
 import { Gutters } from './Gutters'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  if (!connection) return null
+  if (!connection || !connection.public) return null
 
   const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =
@@ -15,7 +15,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
       : 'Any device will be able to connect while the connection is active.'
 
   return (
-    <Collapse in={connection.public} timeout={400}>
+    <>
       <InlineSelectSetting
         icon="lock"
         label="Security"
@@ -36,6 +36,6 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
       <Gutters inset="icon" top={null}>
         <ListItemText secondary={subLabel} />
       </Gutters>
-    </Collapse>
+    </>
   )
 }

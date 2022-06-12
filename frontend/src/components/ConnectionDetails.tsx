@@ -5,6 +5,7 @@ import { getAttributes } from './Attributes'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { DataDisplay } from './DataDisplay'
+import { IconButton } from '../buttons/IconButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
@@ -192,9 +193,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     </>
                   )}
                 </span>
-                {app.canLaunch && (
-                  <span>
-                    <InputLabel shrink>Launch</InputLabel>
+                <span>
+                  <InputLabel shrink>Launch</InputLabel>
+                  {app.canLaunch ? (
                     <LaunchButton
                       color="alwaysWhite"
                       type="solid"
@@ -203,8 +204,10 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       onMouseEnter={() => setHover('launch')}
                       onMouseLeave={() => setHover(undefined)}
                     />
-                  </span>
-                )}
+                  ) : (
+                    <IconButton size="lg" title="Command launch in Desktop" name="ban" fixedWidth />
+                  )}
+                </span>
               </Gutters>
             </>
           )}

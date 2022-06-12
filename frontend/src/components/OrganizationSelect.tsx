@@ -92,6 +92,7 @@ const useStyles = makeStyles(({ palette }) => ({
   active: {
     border: `2px solid ${palette.primary.main}`,
     boxShadow: `0 0 10px ${palette.primaryLight.main}`,
+    background: palette.grayLightest.main,
   },
   name: {
     transform: 'rotate(270deg)',
