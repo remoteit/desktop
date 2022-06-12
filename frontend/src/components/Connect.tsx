@@ -143,6 +143,7 @@ export const Connect: React.FC = () => {
             <PortalUI>
               <PublicSetting connection={connection} service={service} />
               <Notice
+                gutterBottom
                 severity="info"
                 button={
                   <Button
@@ -155,7 +156,7 @@ export const Connect: React.FC = () => {
                   </Button>
                 }
               >
-                Additional features and connection options are available in the Desktop application.
+                <strong>Get Desktop for additional features and control.</strong>
                 <em>
                   Peer-to-peer and on demand connections with persistent URLs and LAN sharing. Remote system and network
                   access. Improved launch commands and the Remote.It CLI.
