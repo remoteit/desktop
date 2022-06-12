@@ -344,9 +344,9 @@ export const attributes: Attribute[] = [
     label: 'Connection',
     value: ({ connection, session }) =>
       connection?.reverseProxy
-        ? 'Public Reverse Proxy'
+        ? 'Cloud Reverse Proxy'
         : connection?.public
-        ? 'Public Proxy'
+        ? 'Cloud Proxy'
         : !connection?.connected && !session
         ? 'Idle'
         : connection?.isP2P || session?.isP2P

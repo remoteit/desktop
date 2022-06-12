@@ -9,9 +9,8 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
 
   const defaults = newConnection(service)
   const disabled = connection.connected || connection.public
-  const connectionRoute: IRouteType =
-    connection.proxyOnly || connection.public ? 'proxy' : connection.failover ? 'failover' : 'p2p'
-  const defaultRoute = defaults.proxyOnly || defaults.public ? 'proxy' : defaults.failover ? 'failover' : 'p2p'
+  const connectionRoute: IRouteType = connection.proxyOnly ? 'proxy' : connection.failover ? 'failover' : 'p2p'
+  const defaultRoute = defaults.proxyOnly ? 'proxy' : defaults.failover ? 'failover' : 'p2p'
 
   const route = ROUTES.find(r => r.key === connectionRoute)
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
+import { windowOpen } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -10,8 +11,8 @@ import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
-import { makeStyles, List } from '@material-ui/core'
 import { ConnectionDetails } from './ConnectionDetails'
+import { makeStyles, List, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
@@ -26,8 +27,10 @@ import { ComboButton } from '../buttons/ComboButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
 import { GuideStep } from './GuideStep'
+import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
+import { Notice } from './Notice'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
@@ -134,12 +137,31 @@ export const Connect: React.FC = () => {
               <TimeoutSetting connection={connection} service={service} />
               <ProxySetting connection={connection} service={service} />
               <LanShareSelect connection={connection} service={service} />
-            </DesktopUI>
-            <PublicSetting connection={connection} service={service} />
-            <DesktopUI>
               <TargetHostSetting connection={connection} service={service} />
               <ConnectionLogSetting connection={connection} service={service} />
             </DesktopUI>
+            <PortalUI>
+              <PublicSetting connection={connection} service={service} />
+              <Notice
+                severity="info"
+                button={
+                  <Button
+                    size="small"
+                    color="primary"
+                    variant="contained"
+                    onClick={() => windowOpen('https://link.remote.it/download')}
+                  >
+                    Download
+                  </Button>
+                }
+              >
+                Additional features and connection options are available in the Desktop application.
+                <em>
+                  Peer-to-peer and on demand connections with persistent URLs and LAN sharing. Remote system and network
+                  access. Improved launch commands and the Remote.It CLI.
+                </em>
+              </Notice>
+            </PortalUI>
           </List>
         </AccordionMenuItem>
       </Gutters>

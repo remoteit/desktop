@@ -284,7 +284,7 @@ class CloudController {
               isP2P: event.isP2P,
               user: event.actor,
               geo: event.geo,
-              public: !!target.connection?.public,
+              public: !!target.connection?.public, // TODO remove this and query for connection data
               target: {
                 id: target.id,
                 deviceId: target.deviceId,

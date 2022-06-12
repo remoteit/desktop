@@ -19,7 +19,7 @@ export const AvatarMenu: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { user, remoteUI, preferences, backendAuthenticated, licenseIndicator } = useSelector(
     (state: ApplicationState) => ({
-      user: state.user,
+      user: state.auth.user,
       remoteUI: isRemoteUI(state),
       preferences: state.backend.preferences,
       backendAuthenticated: state.auth.backendAuthenticated,
@@ -40,7 +40,7 @@ export const AvatarMenu: React.FC = () => {
   return (
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef}>
-        <Avatar email={user.email} button tooltip></Avatar>
+        <Avatar email={user?.email} button tooltip></Avatar>
       </ButtonBase>
       <Menu
         open={open}
@@ -131,6 +131,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   menu: {
     '& .MuiMenu-list': {
+      minWidth: 200,
       backgroundColor: palette.white.main,
     },
   },

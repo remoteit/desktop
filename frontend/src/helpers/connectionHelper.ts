@@ -52,7 +52,7 @@ export function newConnection(service?: IService | null) {
     proxyOnly: cd?.route ? cd.route === 'proxy' : service?.attributes.route === 'proxy',
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
-    public: state.auth.backendAuthenticated ? undefined : true,
+    public: isPortal() ? true : undefined,
   }
 
   if (service) {
@@ -111,14 +111,11 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.connections.all.filter(
-    c => (!!c.createdTime || c.enabled) && (state.auth.backendAuthenticated || c.public)
-  )
+  return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public))
 }
 
 export function selectConnection(state: ApplicationState, service?: IService) {
   let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
-  if (isPortal()) connection.public = true
   return connection
 }
 
