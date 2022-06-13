@@ -45,7 +45,7 @@ platforms.register({
   id: 'azure',
   name: 'Azure',
   component: Component,
-  types: { 1209: 'Azure' },
+  types: { 1186: 'Azure' },
   installation: {
     command: true,
     qualifier: 'For any Linux based Azure Cloud virtual machine',
