@@ -65,12 +65,7 @@ export const RegisterMenu: React.FC = () => {
   }
 
   let thisLink = '/devices/setup'
-  if (isPortal()) {
-    thisLink = '/add/'
-    const os = getOs()
-    if (os === 'mac') thisLink += 'apple'
-    else thisLink += os
-  }
+  if (isPortal()) thisLink = `/add/${getOs().replace('mac', 'apple')}`
 
   return (
     <>
