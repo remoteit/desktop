@@ -110,7 +110,7 @@ export const RegisterMenu: React.FC = () => {
             iconPlatform
             icon="aws"
             pathname="/add/aws"
-            title="AWS jumpbox"
+            title="AWS"
             onClick={handleClose}
             disableGutters
           />
