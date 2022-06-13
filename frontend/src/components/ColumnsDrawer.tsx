@@ -48,6 +48,7 @@ export const ColumnsDrawer: React.FC = () => {
             <ListItem
               dense
               button
+              disableGutters
               disabled={data.required}
               key={data.id}
               onClick={() => (checked >= 0 ? remove(checked) : add(data.id))}

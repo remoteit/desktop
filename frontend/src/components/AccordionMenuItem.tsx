@@ -12,6 +12,7 @@ type IAccordionMenu = {
   square?: boolean
   onClear?: () => void
   onClick?: (expanded: boolean) => void
+  action?: React.ReactElement
   children?: React.ReactElement
 }
 
@@ -24,6 +25,7 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   square,
   onClear,
   onClick,
+  action,
   children,
 }) => {
   const css = useStyles({ gutters })
@@ -62,6 +64,7 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
             Clear
           </Button>
         )}
+        {action && action}
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
@@ -74,6 +77,10 @@ const useStyles = makeStyles({
     marginBottom: spacing.xxs,
     marginLeft: gutters && spacing.md,
     marginRight: gutters && spacing.md,
+    '& .MuiIconButton-root': {
+      marginTop: -spacing.xxs,
+      marginBottom: -spacing.xxs,
+    },
     '& .MuiButton-root:first-child': {
       width: '100%',
       textAlign: 'left',

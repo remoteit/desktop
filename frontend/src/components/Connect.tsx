@@ -8,12 +8,14 @@ import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { ProxySetting } from './ProxySetting'
 import { PublicSetting } from './PublicSetting'
+import { NetworksJoined } from './NetworksJoined'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
 import { makeStyles, List, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
+import { selectNetworkByService } from '../models/networks'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { TargetHostSetting } from './TargetHostSetting'
@@ -21,6 +23,7 @@ import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { LanShareSelect } from './LanShareSelect'
 import { LoadingMessage } from './LoadingMessage'
+import { ConnectButton } from '../buttons/ConnectButton'
 import { ForgetButton } from '../buttons/ForgetButton'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
@@ -39,17 +42,20 @@ export const Connect: React.FC = () => {
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices, ui } = useDispatch<Dispatch>()
-  const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceID)
-    return {
-      service,
-      device,
-      connection: selectConnection(state, service),
-      session: state.sessions.all.find(s => s.id === sessionID),
-      fetching: getDeviceModel(state).fetching,
-      accordion: state.ui.accordion,
+  const { service, device, connection, session, networks, fetching, accordion } = useSelector(
+    (state: ApplicationState) => {
+      const [service, device] = selectById(state, serviceID)
+      return {
+        service,
+        device,
+        connection: selectConnection(state, service),
+        session: state.sessions.all.find(s => s.id === sessionID),
+        networks: selectNetworkByService(state, serviceID),
+        fetching: getDeviceModel(state).fetching,
+        accordion: state.ui.accordion,
+      }
     }
-  })
+  )
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
 
   useEffect(() => {
@@ -71,13 +77,7 @@ export const Connect: React.FC = () => {
 
   return (
     <>
-      <ConnectionDetails
-        connection={connection}
-        service={service}
-        session={session}
-        show={connection?.enabled}
-        permissions={device.permissions}
-      />
+      <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       <GuideStep
         guide="guideAWS"
@@ -101,6 +101,18 @@ export const Connect: React.FC = () => {
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
       <Gutters>
+        {!!networks.length && (
+          <AccordionMenuItem
+            gutters
+            subtitle="Networks"
+            expanded={accordion.networks}
+            action={<ConnectButton service={service} permissions={device.permissions} size="icon" icon="plus" />}
+            onClick={() => ui.accordion({ networks: !accordion.networks })}
+            elevation={0}
+          >
+            <NetworksJoined service={service} networks={networks} />
+          </AccordionMenuItem>
+        )}
         <AccordionMenuItem
           gutters
           subtitle="Configuration"
