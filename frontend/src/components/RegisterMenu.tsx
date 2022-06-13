@@ -12,6 +12,7 @@ import {
   Divider,
 } from '@material-ui/core'
 import { selectDeviceByAccount } from '../models/devices'
+import { isPortal, getOs } from '../services/Browser'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { selectPermissions } from '../models/organization'
@@ -63,6 +64,9 @@ export const RegisterMenu: React.FC = () => {
     setCode(value.toUpperCase())
   }
 
+  let thisLink = '/devices/setup'
+  if (isPortal()) thisLink = `/add/${getOs().replace('mac', 'apple')}`
+
   return (
     <>
       <IconButton
@@ -96,14 +100,7 @@ export const RegisterMenu: React.FC = () => {
       >
         <List className={css.list} disablePadding dense>
           <ListSubheader disableGutters>Add a device</ListSubheader>
-          <ListItem
-            button
-            disableGutters
-            disabled={hasThisDevice}
-            onClick={handleClose}
-            to="/devices/setup"
-            component={Link}
-          >
+          <ListItem button disableGutters disabled={hasThisDevice} onClick={handleClose} to={thisLink} component={Link}>
             <ListItemIcon>
               <Icon name="this" fixedWidth platformIcon />
             </ListItemIcon>
