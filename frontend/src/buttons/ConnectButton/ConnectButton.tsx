@@ -70,9 +70,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
   if (disabled) title = 'Unauthorized'
 
-  if (networks.length /* &&  Connection in a network */) {
-    title = 'Resume Connection'
-  }
+  // if (networks.length /* &&  Connection in a network */) {
+  //   title = 'Resume Connection'
+  // }
 
   if (chip && chip.show) {
     color = chip.colorName

@@ -101,18 +101,6 @@ export const Connect: React.FC = () => {
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
       <Gutters>
-        {!!networks.length && (
-          <AccordionMenuItem
-            gutters
-            subtitle="Networks"
-            expanded={accordion.networks}
-            action={<ConnectButton service={service} permissions={device.permissions} size="icon" icon="plus" />}
-            onClick={() => ui.accordion({ networks: !accordion.networks })}
-            elevation={0}
-          >
-            <NetworksJoined service={service} networks={networks} />
-          </AccordionMenuItem>
-        )}
         <AccordionMenuItem
           gutters
           subtitle="Configuration"
@@ -136,6 +124,16 @@ export const Connect: React.FC = () => {
               <LaunchSelect connection={connection} service={service} />
             </GuideStep>
           </List>
+        </AccordionMenuItem>
+        <AccordionMenuItem
+          gutters
+          subtitle="Networks"
+          expanded={accordion.networks}
+          action={<ConnectButton service={service} permissions={device.permissions} size="icon" icon="plus" />}
+          onClick={() => ui.accordion({ networks: !accordion.networks })}
+          elevation={0}
+        >
+          <NetworksJoined service={service} networks={networks} />
         </AccordionMenuItem>
         <AccordionMenuItem
           gutters
