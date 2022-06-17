@@ -70,6 +70,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
   if (disabled) title = 'Unauthorized'
 
+  if (networks.length /* &&  Connection in a network */) {
+    title = 'Resume Connection'
+  }
+
   if (chip && chip.show) {
     color = chip.colorName
     title = chip.disabled ? chip.name : title
@@ -103,7 +107,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
         <DynamicButtonMenu
           title={title}
           variant={variant}
-          options={networks.map(n => ({ value: n.id, label: n.name }))}
+          options={/* if not in a network &&  */ networks.map(n => ({ value: n.id, label: n.name }))}
           loading={connecting || stopping}
           color={color}
           size={size}

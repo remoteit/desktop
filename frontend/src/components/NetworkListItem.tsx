@@ -1,7 +1,5 @@
 import React from 'react'
 import { makeStyles, Tooltip, ListItemText, ListItemIcon } from '@material-ui/core'
-import { InitiatorPlatform } from './InitiatorPlatform'
-import { selectConnection } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
 import { TargetPlatform } from './TargetPlatform'

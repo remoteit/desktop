@@ -3,14 +3,11 @@ import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles, List, ListItemSecondaryAction } from '@material-ui/core'
 import { NetworkListItem } from './NetworkListItem'
-import { IconButton } from '../buttons/IconButton'
+import { ClearButton } from '../buttons/ClearButton'
+
 import { spacing } from '../styling'
 
-export const NetworksJoined: React.FC<{ service?: IService; permissions?: IPermission[]; networks: INetwork[] }> = ({
-  service,
-  permissions,
-  networks,
-}) => {
+export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[] }> = ({ service, networks }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
 
@@ -20,10 +17,9 @@ export const NetworksJoined: React.FC<{ service?: IService; permissions?: IPermi
     <>
       <List className={css.list}>
         {networks.map(network => (
-          <NetworkListItem title network={network}>
+          <NetworkListItem key={network.id} title network={network}>
             <ListItemSecondaryAction>
-              <IconButton
-                icon="trash"
+              <ClearButton
                 onClick={() => dispatch.networks.remove({ serviceId: service?.id, networkId: network.id })}
               />
             </ListItemSecondaryAction>
@@ -38,8 +34,7 @@ const useStyles = makeStyles(({ palette }) => ({
   list: {
     paddingTop: spacing.xs,
     paddingBottom: 0,
-    '& .MuiListSubheader-root': {
-      display: 'flex',
-    },
+    '& .MuiListSubheader-root': { display: 'flex' },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.md },
   },
 }))

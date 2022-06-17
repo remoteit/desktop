@@ -1,14 +1,14 @@
 import React from 'react'
 import { makeStyles, Tooltip, ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { InitiatorPlatform } from './InitiatorPlatform'
 import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
-import { spacing } from '../styling'
-import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'
 import { ClearButton } from '../buttons/ClearButton'
-import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
+import { spacing } from '../styling'
 import { Title } from './Title'
 import { Icon } from './Icon'
 
@@ -21,6 +21,7 @@ export interface Props {
 }
 
 export const SessionListItem: React.FC<Props> = ({ session, merge, other, offline, isNew }) => {
+  const dispatch = useDispatch<Dispatch>()
   const [service, device] = useSelector((state: ApplicationState) => selectById(state, session.target.id))
   const connected = session.state === 'connected'
   const css = useStyles({ state: session.state, offline })
@@ -77,7 +78,9 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
             </Title>
           }
         />
-        {offline && <ClearButton id={session.target.id} />}
+        {offline && (
+          <ClearButton id={session.target.id} onClick={() => dispatch.connections.clear(session.target.id)} />
+        )}
       </ListItemLocation>
     </>
   )

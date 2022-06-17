@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
 import { Typography } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
-import { ApplicationState } from '../../store'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectNetworks } from '../../models/networks'
 import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
 import { IconButton } from '../../buttons/IconButton'
-import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
 import { NetworkAdd } from '../../components/NetworkAdd'
 import { Network } from '../../components/Network'
@@ -16,6 +16,10 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 
 export const ConnectionsPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
+  /* 
+    FIXME remove and account for the local and proxy connection info 
+  */
   const { local, proxy, other, recent, networks } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const networks = selectNetworks(state)
@@ -86,7 +90,7 @@ export const ConnectionsPage: React.FC = () => {
       <SessionsList
         title="Recent"
         sessions={recent}
-        action={!!recent.length ? <ClearButton all /> : undefined}
+        action={!!recent.length ? <ClearButton all onClick={() => dispatch.connections.clearRecent()} /> : undefined}
         offline
       />
     </Body>
