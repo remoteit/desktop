@@ -53,7 +53,7 @@ export const OrganizationSelect: React.FC = () => {
             title="Personal Account"
             icon="home-lg-alt"
             size="md"
-            color={ownOrgId === activeOrg.id ? 'black' : 'grayDark'}
+            color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
             placement="right"
           />
         </ListItem>

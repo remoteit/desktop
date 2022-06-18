@@ -23,7 +23,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
-  const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
+  const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | 'copyLaunch' | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const app = useApplication(service, connection)
   const css = useStyles()
@@ -64,7 +64,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>Address</InputLabel>
+      <InputLabel shrink>Local Address</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name}
         {port && (
@@ -105,7 +105,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const copyDisplay = (
     <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Address</InputLabel>
+      <InputLabel shrink>Copy Local Address</InputLabel>
       <Typography variant="h3" className={css.h3}>
         <span className={css.active}>
           {name}
@@ -117,10 +117,13 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   )
 
   const launchDisplay = (
-    <div ref={launchRef} className={hover === 'launch' ? css.show : css.hide}>
-      <InputLabel shrink>{app.contextTitle}</InputLabel>
+    <div ref={launchRef} className={hover === 'launch' || hover === 'copyLaunch' ? css.show : css.hide}>
+      <InputLabel shrink>
+        {hover === 'copyLaunch' ? 'Copy ' : 'Launch '}
+        {app.contextTitle}
+      </InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={css.active}>{app.string}</span>
+        <span className={hover === 'copyLaunch' ? css.active : ''}>{app.string}</span>
       </Typography>
     </div>
   )
@@ -187,7 +190,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                         size="md"
                         app={app}
                         value={app.string}
-                        onMouseEnter={() => setHover('launch')}
+                        onMouseEnter={() => setHover('copyLaunch')}
                         onMouseLeave={() => setHover(undefined)}
                       />
                     </>
@@ -226,19 +229,20 @@ const useStyles = makeStyles(({ palette }) => ({
   show: {
     opacity: 1,
     position: 'absolute',
-    transition: 'opacity 200ms',
+    transition: 'opacity 300ms',
   },
   hide: {
     opacity: 0,
     position: 'absolute',
     transitionProperty: 'opacity',
-    transitionDuration: '200ms',
-    transitionDelay: '50ms',
+    transitionDuration: '300ms',
+    transitionDelay: '150ms',
   },
   active: {
     display: 'inline-block',
     backgroundColor: palette.screen.main,
-    borderBottom: `1px solid ${palette.alwaysWhite.main}`,
+    borderRadius: spacing.xs,
+    textDecoration: `underline 2px`,
   },
   h3: {
     wordBreak: 'break-word',
