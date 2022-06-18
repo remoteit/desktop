@@ -31,6 +31,7 @@ class Platforms {
     'raspberrypi',
     'remoteit',
     'this',
+    'tinkerboard',
     'ubuntu',
     'unknown',
     'windows',
