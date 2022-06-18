@@ -25,13 +25,13 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
     }
   }, [accountId, platform])
 
-  if (permissions?.includes('MANAGE')) {
+  if (permissions?.includes('REGISTER')) {
     accountId = organization.id
     accountName = organization.name
   } else {
     return (
       <Box>
-        <Notice>You must have the manage permission to add a device to this organization.</Notice>
+        <Notice>You must have the register permission to add a device to this organization.</Notice>
       </Box>
     )
   }

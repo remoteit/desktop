@@ -37,7 +37,7 @@ export const RegisterMenu: React.FC = () => {
     permissions: selectPermissions(state),
   }))
 
-  const disabled = !permissions?.includes('MANAGE')
+  const disabled = !permissions?.includes('REGISTER')
 
   const handleClose = () => {
     setEl(null)
@@ -73,7 +73,7 @@ export const RegisterMenu: React.FC = () => {
         title={
           disabled ? (
             <>
-              Manage permission required to <br />
+              Register permission required to <br />
               add a device to this organization.
             </>
           ) : (
