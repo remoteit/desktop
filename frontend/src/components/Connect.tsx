@@ -15,15 +15,15 @@ import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
 import { makeStyles, List, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
-import { selectNetworkByService } from '../models/networks'
+import { selectNetworks, selectNetworkByService } from '../models/networks'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
+import { DynamicButtonMenu } from '../buttons/DynamicButtonMenu'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { LanShareSelect } from './LanShareSelect'
 import { LoadingMessage } from './LoadingMessage'
-import { ConnectButton } from '../buttons/ConnectButton'
 import { ForgetButton } from '../buttons/ForgetButton'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
@@ -41,8 +41,8 @@ export const Connect: React.FC = () => {
   const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { devices, ui } = useDispatch<Dispatch>()
-  const { service, device, connection, session, networks, fetching, accordion } = useSelector(
+  const dispatch = useDispatch<Dispatch>()
+  const { service, device, connection, session, networks, joinedNetworks, fetching, accordion } = useSelector(
     (state: ApplicationState) => {
       const [service, device] = selectById(state, serviceID)
       return {
@@ -50,7 +50,8 @@ export const Connect: React.FC = () => {
         device,
         connection: selectConnection(state, service),
         session: state.sessions.all.find(s => s.id === sessionID),
-        networks: selectNetworkByService(state, serviceID),
+        networks: selectNetworks(state),
+        joinedNetworks: selectNetworkByService(state, serviceID),
         fetching: getDeviceModel(state).fetching,
         accordion: state.ui.accordion,
       }
@@ -62,14 +63,14 @@ export const Connect: React.FC = () => {
     analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
 
-    if (!device && id) devices.fetchSingle({ id, hidden: true })
+    if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
   useEffect(() => {
     if (!location.state) return
-    if (location.state.autoConnect) ui.set({ autoConnect: true })
-    if (location.state.autoLaunch) ui.set({ autoLaunch: true })
-    if (location.state.autoCopy) ui.set({ autoCopy: true })
+    if (location.state.autoConnect) dispatch.ui.set({ autoConnect: true })
+    if (location.state.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+    if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
@@ -92,7 +93,7 @@ export const Connect: React.FC = () => {
             permissions={device.permissions}
             size="large"
             fullWidth
-            onClick={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+            onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 0, done: true })}
           />
           <ForgetButton connection={connection} inline />
         </Gutters>
@@ -105,7 +106,7 @@ export const Connect: React.FC = () => {
           gutters
           subtitle="Configuration"
           expanded={accordion[accordionConfig]}
-          onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
+          onClick={() => dispatch.ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
           elevation={0}
         >
           <List disablePadding>
@@ -129,17 +130,25 @@ export const Connect: React.FC = () => {
           gutters
           subtitle="Networks"
           expanded={accordion.networks}
-          action={<ConnectButton service={service} permissions={device.permissions} size="icon" icon="plus" />}
-          onClick={() => ui.accordion({ networks: !accordion.networks })}
+          action={
+            <DynamicButtonMenu
+              options={/* if not in a network &&  */ networks.map(n => ({ value: n.id, label: n.name }))}
+              title="Add to network"
+              size="icon"
+              icon="plus"
+              onClick={networkId => service && dispatch.networks.add({ serviceId: service.id, networkId })}
+            />
+          }
+          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
           elevation={0}
         >
-          <NetworksJoined service={service} networks={networks} />
+          <NetworksJoined service={service} networks={joinedNetworks} />
         </AccordionMenuItem>
         <AccordionMenuItem
           gutters
           subtitle="Options"
           expanded={accordion.options}
-          onClick={() => ui.accordion({ options: !accordion.options })}
+          onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
           elevation={0}
         >
           <List disablePadding>

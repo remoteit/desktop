@@ -2,8 +2,8 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { connectionState, newConnection, launchDisabled } from '../../helpers/connectionHelper'
-import { DynamicButtonMenu } from '../DynamicButtonMenu'
-import { selectNetworks } from '../../models/networks'
+import { DynamicButton } from '../DynamicButton'
+import { DEFAULT_ID } from '../../models/networks'
 import { getLicenseChip } from '../../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
@@ -31,10 +31,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
   icon,
 }) => {
-  const { autoConnect, networks } = useSelector((state: ApplicationState) => ({
-    autoConnect: state.ui.autoConnect,
-    networks: selectNetworks(state),
-  }))
+  const { autoConnect } = useSelector((state: ApplicationState) => state.ui)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
@@ -43,8 +40,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const connecting = state === 'connecting'
   const stopping = state === 'stopping'
 
-  let clickHandler = networkId => {
-    if (service) dispatch.networks.add({ serviceId: service.id, networkId })
+  let clickHandler = () => {
+    if (service) dispatch.networks.add({ serviceId: service.id, networkId: DEFAULT_ID })
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
       dispatch.connections.disconnect(connection)
@@ -59,7 +56,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   useEffect(() => {
     if (autoConnect && service) {
       dispatch.ui.set({ autoConnect: false })
-      clickHandler('default')
+      clickHandler()
     }
   }, [autoConnect, service])
 
@@ -70,7 +67,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
   if (disabled) title = 'Unauthorized'
 
-  // if (networks.length /* &&  Connection in a network */) {
+  // if (!connection?.enabled && /* connection in an active network? */ ) {
   //   title = 'Resume Connection'
   // }
 
@@ -104,10 +101,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   return (
     <Fade in={visible} timeout={600}>
       <div>
-        <DynamicButtonMenu
+        <DynamicButton
           title={title}
           variant={variant}
-          options={/* if not in a network &&  */ networks.map(n => ({ value: n.id, label: n.name }))}
           loading={connecting || stopping}
           color={color}
           size={size}

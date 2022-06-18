@@ -13,6 +13,7 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props 
   const css = useStyles(props)
 
   const clickHandler = event => {
+    event.stopPropagation()
     setAnchorEl(event.currentTarget)
     setMenuWidth(event.currentTarget.offsetWidth)
   }
@@ -21,7 +22,8 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props 
     setAnchorEl(null)
   }
 
-  const selectHandler = (value?: string) => {
+  const selectHandler = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, value?: string) => {
+    event.stopPropagation()
     closeHandler()
     onClick(value)
   }
@@ -39,7 +41,7 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props 
       <Menu
         keepMounted
         elevation={2}
-        classes={{ paper: css.menu }}
+        classes={{ paper: props.color === 'primary' ? css.menu : undefined }}
         anchorEl={anchorEl}
         open={!!anchorEl}
         onClose={closeHandler}
@@ -56,7 +58,7 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props 
         TransitionComponent={Fade}
       >
         {options.map(option => (
-          <MenuItem onClick={event => selectHandler(option.value)} value={option.value}>
+          <MenuItem key={option.value} onClick={event => selectHandler(event, option.value)} value={option.value}>
             {option.label}
           </MenuItem>
         ))}

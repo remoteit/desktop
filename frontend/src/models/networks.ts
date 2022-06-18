@@ -7,6 +7,8 @@ import { selectConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
+export const DEFAULT_ID = 'local'
+
 const defaultState: INetwork = {
   id: '',
   name: '',
@@ -16,7 +18,7 @@ const defaultState: INetwork = {
 }
 
 const defaultLocalNetwork: INetwork = {
-  id: 'default',
+  id: DEFAULT_ID,
   name: 'Local Network',
   enabled: true,
   serviceIds: [],
@@ -24,7 +26,7 @@ const defaultLocalNetwork: INetwork = {
 }
 
 const defaultCloudNetwork: INetwork = {
-  id: 'default',
+  id: DEFAULT_ID,
   name: 'Cloud',
   enabled: true,
   serviceIds: [],
@@ -39,8 +41,8 @@ type INetworksAccountState = {
 
 const defaultAccountState: INetworksAccountState = {
   initialized: false,
-  all: {},
   default: isPortal() ? defaultCloudNetwork : defaultLocalNetwork,
+  all: {},
 }
 
 export default createModel<RootModel>()({
@@ -52,7 +54,7 @@ export default createModel<RootModel>()({
     },
     async fetch(_, state) {
       const ids: string[] = getAccountIds(state)
-      const all = { [state.auth.user?.id || '']: [state.networks.default] }
+      let all = {}
       ids.forEach(id => (all[id] = all[id] || []))
       await dispatch.networks.set({ all })
       dispatch.networks.handleOrphanedConnections()
@@ -77,7 +79,7 @@ export default createModel<RootModel>()({
       {
         serviceId = '',
         serviceIds,
-        networkId = 'default',
+        networkId = DEFAULT_ID,
       }: { serviceId?: string; serviceIds?: string[]; networkId?: string },
       state
     ) {
@@ -87,7 +89,7 @@ export default createModel<RootModel>()({
       network.serviceIds = Array.from(unique)
       dispatch.networks.setNetwork(network)
     },
-    async remove({ serviceId = '', networkId = 'default' }: { serviceId?: string; networkId?: string }, state) {
+    async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
       let network = selectNetwork(state, networkId)
       const index = network.serviceIds.indexOf(serviceId)
       network.serviceIds.splice(index, 1)
@@ -95,6 +97,12 @@ export default createModel<RootModel>()({
     },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
+
+      if (params.id === DEFAULT_ID) {
+        dispatch.networks.set({ default: params })
+        return
+      }
+
       let networks = selectNetworks(state)
       if (params.id) {
         const index = networks.findIndex(network => network.id === params.id)
@@ -102,7 +110,7 @@ export default createModel<RootModel>()({
       } else {
         const id = Math.floor(Math.random() * 1000000).toString()
         networks.push({ ...params, id })
-        dispatch.ui.set({ redirect: `/networks/view/${id}` })
+        // dispatch.ui.set({ redirect: `/networks/view/${id}` })
       }
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },
@@ -120,13 +128,14 @@ export default createModel<RootModel>()({
 })
 
 export function selectNetworks(state: ApplicationState): INetwork[] {
-  return state.networks.all[getActiveAccountId(state)] || []
+  let all = state.networks.all[getActiveAccountId(state)] || []
+  return [state.networks.default, ...all]
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
   return selectNetworks(state).find(n => n.id === networkId) || defaultState
 }
 
-export function selectNetworkByService(state: ApplicationState, serviceId: string = 'default'): INetwork[] {
+export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
   return selectNetworks(state).filter(network => network.serviceIds.includes(serviceId))
 }
