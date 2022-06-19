@@ -7,7 +7,6 @@ import { ApplicationState } from '../store'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NetworkSettings } from '../components/NetworkSettings'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 

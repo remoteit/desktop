@@ -58,6 +58,7 @@ export const Connect: React.FC = () => {
     }
   )
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
+  const availableNetworks = networks.filter(n => !joinedNetworks.find(j => j.id === n.id))
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
@@ -132,10 +133,11 @@ export const Connect: React.FC = () => {
           expanded={accordion.networks}
           action={
             <DynamicButtonMenu
-              options={/* if not in a network &&  */ networks.map(n => ({ value: n.id, label: n.name }))}
-              title="Add to network"
+              options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
+              title={availableNetworks.length === 1 ? `Add to ${availableNetworks[0].name}` : 'Add to network'}
               size="icon"
               icon="plus"
+              disabled={!availableNetworks.length}
               onClick={networkId => service && dispatch.networks.add({ serviceId: service.id, networkId })}
             />
           }

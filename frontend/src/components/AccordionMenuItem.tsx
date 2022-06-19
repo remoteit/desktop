@@ -30,23 +30,17 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
 }) => {
   const css = useStyles({ gutters })
   const [open, setOpen] = useState<boolean>(!!defaultExpanded)
-  const clickHandler = state => {
-    onClick && onClick(state)
+  const clickHandler = () => {
+    onClick && onClick(!open)
     setOpen(!open)
   }
 
   expanded = expanded === undefined ? open : expanded
 
   return (
-    <Accordion
-      square={square}
-      elevation={elevation}
-      expanded={expanded}
-      defaultExpanded={defaultExpanded}
-      onChange={(_, state) => clickHandler(state)}
-    >
+    <Accordion square={square} elevation={elevation} expanded={expanded} defaultExpanded={defaultExpanded}>
       <AccordionSummary className={css.item}>
-        <Button>
+        <Button onClick={clickHandler}>
           <ListSubheader disableGutters>
             {subtitle}
             <ExpandIcon open={expanded} />

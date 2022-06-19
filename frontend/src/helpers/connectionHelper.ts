@@ -88,11 +88,11 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
-  if (auth.backendAuthenticated) {
+  if (isPortal()) {
+    connections.updateConnection(connection)
+  } else if (auth.backendAuthenticated) {
     emit('connection', connection)
     heartbeat.caffeinate()
-  } else {
-    connections.updateConnection(connection)
   }
 }
 

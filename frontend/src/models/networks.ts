@@ -1,10 +1,11 @@
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { getAccountIds, getActiveAccountId } from './accounts'
-import { selectConnections } from '../helpers/connectionHelper'
+import { selectConnections, selectConnection } from '../helpers/connectionHelper'
+import { ApplicationState } from '../store'
+import { selectById } from '../models/devices'
 // import { graphQLBasicRequest } from '../services/graphQL'
 // import { AxiosResponse } from 'axios'
-import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
 export const DEFAULT_ID = 'local'
@@ -38,6 +39,8 @@ type INetworksAccountState = {
   all: ILookup<INetwork[]>
   default: INetwork
 }
+
+type addProps = { serviceId?: string; serviceIds?: string[]; networkId?: string; disableConnect?: boolean }
 
 const defaultAccountState: INetworksAccountState = {
   initialized: false,
@@ -73,44 +76,67 @@ export default createModel<RootModel>()({
         .map(c => c.id)
       const orphaned = connectionIds.filter(id => !assigned.has(id))
       console.log('ORPHANED CONNECTIONS', orphaned)
-      dispatch.networks.add({ serviceIds: orphaned })
+      dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
     },
-    async add(
-      {
-        serviceId = '',
-        serviceIds,
-        networkId = DEFAULT_ID,
-      }: { serviceId?: string; serviceIds?: string[]; networkId?: string },
-      state
-    ) {
+    async start(serviceId: string, state) {
+      const joined = selectNetworkByService(state, serviceId)
+      if (!joined.length) dispatch.networks.add({ serviceId })
+    },
+    async add({ serviceId = '', serviceIds, networkId = DEFAULT_ID, disableConnect }: addProps, state) {
       serviceIds = serviceIds || [serviceId]
       let network = selectNetwork(state, networkId)
       const unique = new Set(network.serviceIds.concat(serviceIds))
       network.serviceIds = Array.from(unique)
       dispatch.networks.setNetwork(network)
+      if (network.enabled && !disableConnect) {
+        serviceIds.forEach(serviceId => {
+          const [service] = selectById(state, serviceId)
+          const connection = selectConnection(state, service)
+          dispatch.connections.connect(connection)
+        })
+      }
     },
     async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
+      const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
       const index = network.serviceIds.indexOf(serviceId)
       network.serviceIds.splice(index, 1)
       dispatch.networks.setNetwork(network)
+      if (joined.length <= 1) {
+        const [service] = selectById(state, serviceId)
+        const connection = selectConnection(state, service)
+        dispatch.connections.disconnect(connection)
+      }
+    },
+    async enable(params: INetwork, state) {
+      const allConnections = selectConnections(state)
+      params.serviceIds.forEach(async id => {
+        const connection = allConnections.find(c => c.id === id)
+        console.log(id, allConnections)
+        if (connection) {
+          console.log('SET ENABLE', connection, params.enabled)
+          if (params.enabled) await dispatch.connections.connect(connection)
+          else await dispatch.connections.disconnect(connection)
+        }
+      })
+      dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
     },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
 
       if (params.id === DEFAULT_ID) {
-        dispatch.networks.set({ default: params })
+        dispatch.networks.set({ default: { ...params } })
         return
       }
 
-      let networks = selectNetworks(state)
+      let networks = state.networks.all[id] || []
       if (params.id) {
         const index = networks.findIndex(network => network.id === params.id)
         if (index >= 0) networks[index] = { ...networks[index], ...params }
       } else {
         const id = Math.floor(Math.random() * 1000000).toString()
         networks.push({ ...params, id })
-        // dispatch.ui.set({ redirect: `/networks/view/${id}` })
+        dispatch.ui.set({ redirect: `/networks/view/${id}` })
       }
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },

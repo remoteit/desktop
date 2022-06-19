@@ -25,10 +25,11 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
         </Typography>
         <Gutters bottom={null}>
           <form
-            onSubmit={event => {
+            onSubmit={async event => {
               event.preventDefault()
-              dispatch.networks.setNetwork({ ...network, name })
+              await dispatch.networks.setNetwork({ ...network, name })
               setName('')
+              // history.push(`/networks/view/${id}`)
             }}
           >
             <Box display="flex" alignItems="center" marginRight={-1}>

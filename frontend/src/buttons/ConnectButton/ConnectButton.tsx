@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { connectionState, newConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
-import { DEFAULT_ID } from '../../models/networks'
 import { getLicenseChip } from '../../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
@@ -31,6 +30,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
   icon,
 }) => {
+  const instanceId = service?.id || connection?.id || ''
   const { autoConnect } = useSelector((state: ApplicationState) => state.ui)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -41,7 +41,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const stopping = state === 'stopping'
 
   let clickHandler = () => {
-    if (service) dispatch.networks.add({ serviceId: service.id, networkId: DEFAULT_ID })
+    dispatch.networks.start(instanceId)
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
       dispatch.connections.disconnect(connection)
@@ -60,16 +60,12 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoConnect, service])
 
-  let title = connection?.public ? 'Connect' : 'Add to Network'
+  let title = connection?.public ? 'Connect' : 'Start'
   let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
   if (disabled) title = 'Unauthorized'
-
-  // if (!connection?.enabled && /* connection in an active network? */ ) {
-  //   title = 'Resume Connection'
-  // }
 
   if (chip && chip.show) {
     color = chip.colorName

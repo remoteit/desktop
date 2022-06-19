@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux'
 import { makeStyles, List, ListItemSecondaryAction } from '@material-ui/core'
 import { NetworkListItem } from './NetworkListItem'
 import { ClearButton } from '../buttons/ClearButton'
-
 import { spacing } from '../styling'
 
 export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[] }> = ({ service, networks }) => {
