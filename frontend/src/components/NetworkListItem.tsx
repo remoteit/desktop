@@ -22,7 +22,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, title, ch
     return {
       service,
       device,
-      session: state.sessions.all.find(s => s.id === serviceId),
+      session: state.sessions.all.find(s => s.target.id === serviceId),
       connection: state.connections.all.find(c => c.id === serviceId),
     }
   })

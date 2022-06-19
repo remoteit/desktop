@@ -28,7 +28,7 @@ const defaultLocalNetwork: INetwork = {
 
 const defaultCloudNetwork: INetwork = {
   id: DEFAULT_ID,
-  name: 'Cloud',
+  name: 'Cloud Proxy',
   enabled: true,
   serviceIds: [],
   icon: 'cloud',
@@ -109,15 +109,12 @@ export default createModel<RootModel>()({
       }
     },
     async enable(params: INetwork, state) {
-      const allConnections = selectConnections(state)
       params.serviceIds.forEach(async id => {
-        const connection = allConnections.find(c => c.id === id)
-        console.log(id, allConnections)
-        if (connection) {
-          console.log('SET ENABLE', connection, params.enabled)
-          if (params.enabled) await dispatch.connections.connect(connection)
-          else await dispatch.connections.disconnect(connection)
-        }
+        const [service] = selectById(state, id)
+        const connection = selectConnection(state, service)
+        console.log('SET ENABLE', id, connection, params.enabled)
+        if (params.enabled) await dispatch.connections.connect(connection)
+        else await dispatch.connections.disconnect(connection)
       })
       dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
     },

@@ -138,7 +138,11 @@ export const Connect: React.FC = () => {
               size="icon"
               icon="plus"
               disabled={!availableNetworks.length}
-              onClick={networkId => service && dispatch.networks.add({ serviceId: service.id, networkId })}
+              onClick={networkId => {
+                if (!service) return
+                dispatch.networks.add({ serviceId: service.id, networkId })
+                dispatch.ui.accordion({ networks: true })
+              }}
             />
           }
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
