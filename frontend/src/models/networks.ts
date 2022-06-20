@@ -118,6 +118,13 @@ export default createModel<RootModel>()({
       })
       dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
     },
+    async deleteNetwork(params: INetwork, state) {
+      const id = getActiveAccountId(state)
+      let networks = state.networks.all[id] || []
+      const index = networks.findIndex(network => network.id === params.id)
+      networks.splice(index, 1)
+      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
+    },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
 

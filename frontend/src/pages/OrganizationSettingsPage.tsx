@@ -45,7 +45,6 @@ export const OrganizationSettingsPage: React.FC = () => {
       }
     }
   )
-  const [removing, setRemoving] = useState<boolean>(false)
   const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<{ samlEnabled?: boolean; metadata?: string }>({
     samlEnabled: organization.samlEnabled,
@@ -77,7 +76,6 @@ export const OrganizationSettingsPage: React.FC = () => {
           {isThisOrg && (
             <DeleteButton
               title="Delete Organization"
-              destroying={removing}
               warning={
                 <>
                   <Notice severity="danger" fullWidth gutterBottom>
@@ -86,10 +84,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   This will remove all your members and their access to your devices.
                 </>
               }
-              onDelete={() => {
-                setRemoving(true)
-                dispatch.organization.removeOrganization()
-              }}
+              onDelete={async () => await dispatch.organization.removeOrganization()}
             />
           )}
         </Typography>

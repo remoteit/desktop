@@ -84,7 +84,7 @@ export const OrganizationRolePage: React.FC = () => {
                   Any members with this role will lose access until they have been set to another role.
                 </>
               }
-              onDelete={() => dispatch.organization.removeRole(form)}
+              onDelete={async () => await dispatch.organization.removeRole(form)}
             />
           )}
         </Typography>

@@ -83,7 +83,7 @@ export const OrganizationGuestPage: React.FC = () => {
                 roles={organization.roles}
                 roleId={member.roleId}
                 license={member.license}
-                onSelect={(roleId: string) => /* dispatch.organization.setMembers([{ ...member, roleId }]) */ {}}
+                onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
               />
               {!enterprise && (
                 <Box marginLeft={2}>
