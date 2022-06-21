@@ -15,7 +15,7 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const { accounts, devices, tags, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrgId } = useSelector((state: ApplicationState) => ({
+  const { options, activeOrg, ownOrg, userId } = useSelector((state: ApplicationState) => ({
     activeOrg: getOrganization(state),
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
@@ -24,9 +24,11 @@ export const OrganizationSelect: React.FC = () => {
       roleId: m.roleId,
       roleName: m.roleName,
     })),
-    ownOrgId: getOwnOrganization(state).id || state.user.id,
+    ownOrg: getOwnOrganization(state),
+    userId: state.user.id,
   }))
 
+  const ownOrgId = ownOrg?.id || userId
   const onSelect = async id => {
     const menu = location.pathname.match(REGEX_FIRST_PATH)
     if (id) {
@@ -47,13 +49,13 @@ export const OrganizationSelect: React.FC = () => {
         <Typography variant="h4">{activeOrg.name}</Typography>
       </Box>
       <List dense>
-        <ListItem onClick={() => onSelect(ownOrgId)} disableGutters>
+        <ListItem onClick={() => onSelect(ownOrgId || userId)} disableGutters>
           <IconButton
             className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
-            title="Personal Account"
+            title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
             icon="home-lg-alt"
             size="md"
-            color={ownOrgId === activeOrg.id ? 'black' : 'grayDark'}
+            color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
             placement="right"
           />
         </ListItem>
