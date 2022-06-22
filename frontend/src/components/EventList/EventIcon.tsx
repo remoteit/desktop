@@ -13,6 +13,7 @@ export function EventIcon(item: IEvent): JSX.Element {
     case EventType.login_attempt_state:
     case EventType.login_password_change:
     case EventType.login_password_reset:
+    case EventType.login_password_reset_confirmed:
     case EventType.login_phone_change:
     case EventType.login_mfa_enabled:
     case EventType.login_mfa_disabled:

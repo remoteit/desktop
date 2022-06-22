@@ -6,10 +6,10 @@
 */
 const env = process.env
 export const CLIENT_ID = env.REACT_APP_CLIENT_ID
-export const COGNITO_USER_POOL_ID = env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
-export const COGNITO_AUTH_DOMAIN = env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
+export const COGNITO_USER_POOL_ID = env.REACT_APP_COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
+export const COGNITO_AUTH_DOMAIN = env.REACT_APP_COGNITO_AUTH_DOMAIN || 'auth.remote.it'
 export const API_URL = env.REACT_APP_API_URL || env.API_URL || 'https://api.remote.it/apv/v27'
-export const AUTH_API_URL = env.REACT_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
+export const AUTH_API_URL = env.REACT_APP_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const GRAPHQL_API = env.REACT_APP_GRAPHQL_API
 export const GRAPHQL_BETA_API = env.REACT_APP_GRAPHQL_BETA_API
 export const DEVELOPER_KEY =
