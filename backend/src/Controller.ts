@@ -35,7 +35,6 @@ class Controller {
     let eventNames = [
       ...Object.values(User.EVENTS),
       ...Object.values(Binary.EVENTS),
-      ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
       ...Object.values(cli.EVENTS),

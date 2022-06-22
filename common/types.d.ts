@@ -70,22 +70,6 @@ declare global {
     // connection update
     | 'connection'
 
-    // connection events
-    | 'service/started'
-    | 'service/connected'
-    | 'service/disconnected'
-    | 'service/error'
-    | 'service/status'
-    | 'service/uptime'
-    | 'service/request'
-    | 'service/tunnel/opened'
-    | 'service/tunnel/closed'
-    | 'service/throughput'
-    | 'service/version'
-    | 'service/unknown-event'
-    | 'service/putty/required'
-    | 'service/error/command'
-
     // binary
     | 'binary/install/start'
     | 'binary/install/progress'

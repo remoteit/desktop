@@ -198,18 +198,6 @@ function getEventHandlers() {
       ui.updated()
     },
 
-    // Connections --- TODO validate we need these three channels
-    'service/connected': (msg: ConnectionMessage) => {
-      connections.updateConnection(msg.connection)
-    },
-    'service/disconnected': (msg: ConnectionMessage) => {
-      connections.updateConnection(msg.connection)
-    },
-    'service/error': (msg: ConnectionErrorMessage) => {
-      connections.updateConnection(msg.connection)
-      analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
-    },
-
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => controller.log('event: binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),

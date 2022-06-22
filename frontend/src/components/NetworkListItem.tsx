@@ -29,8 +29,6 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, children 
   const offline = service?.state !== 'active'
   const css = useStyles({ state: session?.state, offline, enabled: network?.enabled })
 
-  if (!connection && !service) return null
-
   let icon: React.ReactElement | null = null
   if (connected) icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
 

@@ -22,6 +22,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds, updateConnections } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
+import { getNetworkServiceIds } from './networks'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
@@ -143,7 +144,7 @@ export default createModel<RootModel>()({
     async fetchConnections(_, state) {
       const userId = state.auth.user?.id
       if (!userId) return
-      const options = { account: userId, ids: getConnectionIds(state) }
+      const options = { account: userId, ids: getConnectionIds(state).concat(getNetworkServiceIds(state)) }
       const gqlResponse = await graphQLFetchConnections(options)
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
@@ -392,7 +393,7 @@ export default createModel<RootModel>()({
 
     async cleanup(deviceId: string) {
       await dispatch.connections.clearByDevice(deviceId)
-      await dispatch.networks.removeByDevice(deviceId)
+      await dispatch.networks.removeById(deviceId)
       await dispatch.devices.fetch()
       await dispatch.devices.fetchConnections()
     },

@@ -68,20 +68,20 @@ export default createModel<RootModel>()({
       dispatch.networks.handleOrphanedConnections()
     },
     async handleOrphanedConnections(_, state) {
-      const assigned = new Set()
-      Object.keys(state.networks.all).forEach(key => {
-        state.networks.all[key].forEach(network => {
-          network.serviceIds.forEach(id => {
-            assigned.add(id)
-          })
-        })
-      })
-      const connectionIds = selectConnections(state)
-        .filter(c => c.enabled)
-        .map(c => c.id)
-      const orphaned = connectionIds.filter(id => !assigned.has(id))
-      console.log('ORPHANED CONNECTIONS', orphaned)
-      dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
+      // const assigned = new Set()
+      // Object.keys(state.networks.all).forEach(key => {
+      //   state.networks.all[key].forEach(network => {
+      //     network.serviceIds.forEach(id => {
+      //       assigned.add(id)
+      //     })
+      //   })
+      // })
+      // const connectionIds = selectConnections(state)
+      //   .filter(c => c.enabled)
+      //   .map(c => c.id)
+      // const orphaned = connectionIds.filter(id => !assigned.has(id))
+      // console.log('ORPHANED CONNECTIONS', orphaned)
+      // dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
     },
     async start(serviceId: string, state) {
       const joined = selectNetworkByService(state, serviceId)
@@ -115,7 +115,7 @@ export default createModel<RootModel>()({
     },
     async enable(params: INetwork) {
       const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
-      dispatch.connections.queueEnabled(queue)
+      dispatch.connections.queueEnable(queue)
       dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
     },
     async deleteNetwork(params: INetwork, state) {
@@ -125,13 +125,14 @@ export default createModel<RootModel>()({
       networks.splice(index, 1)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },
-    async removeByDevice(deviceId: string, state) {
-      const { all } = state.networks
-      const [_, device] = selectById(state, deviceId)
-      const serviceIds = device?.services.map(s => s.id) || []
+    async removeById(id: string, state) {
+      let { all } = state.networks
+      all[DEFAULT_ID] = [state.networks.default]
+      const [_, device] = selectById(state, id)
+      const serviceIds = id === device?.id ? device?.services.map(s => s.id) : [id]
       Object.keys(all).forEach(key => {
         all[key].forEach(network => {
-          const match = network.serviceIds.find(id => serviceIds.includes(id))
+          const match = network.serviceIds.find(serviceId => serviceIds.includes(serviceId))
           if (match) dispatch.networks.remove({ serviceId: match, networkId: network.id })
         })
       })
@@ -181,4 +182,11 @@ export function selectNetwork(state: ApplicationState, networkId?: string): INet
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
   return selectNetworks(state).filter(network => network.serviceIds.includes(serviceId))
+}
+
+export function getNetworkServiceIds(state: ApplicationState): string[] {
+  const networks = selectNetworks(state)
+  let serviceIds: string[] = []
+  networks.forEach(network => (serviceIds = serviceIds.concat(network.serviceIds)))
+  return serviceIds
 }

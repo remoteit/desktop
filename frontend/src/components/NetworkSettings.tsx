@@ -20,7 +20,8 @@ export const NetworkSettings: React.FC<{ network: INetwork }> = ({ network }) =>
       />
       <ListItemSetting
         icon="power-off"
-        label="Active"
+        label="Enable"
+        subLabel={`Start or stop all services. ${network.enabled ? 'New services will auto-start.' : ''}`}
         toggle={network.enabled}
         onClick={() => dispatch.networks.enable({ ...network, enabled: !network.enabled })}
       />

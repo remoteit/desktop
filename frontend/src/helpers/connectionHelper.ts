@@ -152,10 +152,11 @@ export function cleanOrphanConnections(ids?: string[]) {
     .map(d => d.services.map(s => s.id))
     .flat()
   if (!state.ui.offline && services.length) {
-    state.connections.all.forEach(c => {
-      if (ids.includes(c.id) && !services.includes(c.id)) {
-        store.dispatch.connections.forget(c.id)
-        console.log('FORGET ORPHANED CONNECTION', c)
+    ids.forEach(id => {
+      if (!services.includes(id)) {
+        store.dispatch.connections.forget(id)
+        store.dispatch.networks.removeById(id)
+        console.log('FORGET ORPHANED CONNECTION', id)
       }
     })
   }

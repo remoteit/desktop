@@ -61,7 +61,7 @@ export default createModel<RootModel>()({
       dispatch.connections.setAll(connections)
     },
 
-    async queueEnabled(queue: IConnection[], state) {
+    async queueEnable(queue: IConnection[], state) {
       dispatch.connections.set({ queue })
       dispatch.connections.checkQueue(true)
     },
@@ -79,7 +79,10 @@ export default createModel<RootModel>()({
 
       let different = false
       Object.keys(trigger).forEach(key => {
-        if (trigger[key] !== connection[key]) different = true
+        if (trigger[key] !== connection[key]) {
+          different = true
+          console.log('DIFFERENT', key, trigger[key], connection[key])
+        }
       })
       console.log('QUEUE', trigger, connection)
       console.log('NEXT', different, start)
@@ -87,9 +90,11 @@ export default createModel<RootModel>()({
       if (different || start) {
         if (trigger.enabled) dispatch.connections.connect({ ...connection, ...trigger })
         else dispatch.connections.disconnect({ ...connection, ...trigger })
+        return
       }
 
-      if (!different) dispatch.connections.set({ queue })
+      dispatch.connections.set({ queue })
+      setTimeout(() => dispatch.connections.checkQueue(false), 500)
     },
 
     async proxyConnect(connection: IConnection): Promise<any> {
