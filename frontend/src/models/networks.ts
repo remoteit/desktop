@@ -125,6 +125,17 @@ export default createModel<RootModel>()({
       networks.splice(index, 1)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },
+    async removeByDevice(deviceId: string, state) {
+      const { all } = state.networks
+      const [_, device] = selectById(state, deviceId)
+      const serviceIds = device?.services.map(s => s.id) || []
+      Object.keys(all).forEach(key => {
+        all[key].forEach(network => {
+          const match = network.serviceIds.find(id => serviceIds.includes(id))
+          if (match) dispatch.networks.remove({ serviceId: match, networkId: network.id })
+        })
+      })
+    },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
 

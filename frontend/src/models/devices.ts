@@ -363,9 +363,7 @@ export default createModel<RootModel>()({
             email: [auth.user?.email || ''],
           })
       if (result !== 'ERROR') {
-        await dispatch.connections.clearByDevice(device.id)
-        await dispatch.devices.fetch()
-        await dispatch.devices.fetchConnections()
+        await dispatch.devices.cleanup(device.id)
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully ${manager ? 'deleted' : 'removed'}.`,
         })
@@ -383,17 +381,22 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ transferring: true, silent: true })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
-          await dispatch.connections.clearByDevice(data.device.id)
-          await dispatch.devices.fetch()
-          await dispatch.devices.fetchConnections()
+          await dispatch.devices.cleanup(data.device.id)
           dispatch.ui.set({
             successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
         }
-        await dispatch.connections.clearByDevice(data.device.id)
         dispatch.ui.set({ transferring: false })
       }
     },
+
+    async cleanup(deviceId: string) {
+      await dispatch.connections.clearByDevice(deviceId)
+      await dispatch.networks.removeByDevice(deviceId)
+      await dispatch.devices.fetch()
+      await dispatch.devices.fetchConnections()
+    },
+
     async setPersistent(params: ILookup<any>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       Object.keys(params).forEach(key => {
@@ -401,6 +404,7 @@ export default createModel<RootModel>()({
       })
       dispatch.devices.set(params)
     },
+
     async set(params: { accountId?: string } & ILookup<any>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       const deviceState = { ...getDeviceModel(state, accountId) }

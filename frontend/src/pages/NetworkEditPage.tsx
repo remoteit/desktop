@@ -58,6 +58,7 @@ export const NetworkEditPage: React.FC = () => {
               icon="pen"
               iconColor="grayDarker"
               pathname={`/networks/${network.id}/edit`}
+              match={[`/networks/${network.id}`, `/networks/${network.id}/edit`]}
               dense
             />
             {/* <UsersSelect device={device} /> */}

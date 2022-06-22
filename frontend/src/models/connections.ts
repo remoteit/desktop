@@ -196,7 +196,7 @@ export default createModel<RootModel>()({
       const { all } = state.connections
       all.forEach(async c => {
         if (c.deviceID === deviceId) {
-          if (c.enabled) await disconnect(c)
+          if (c.connected) await disconnect(c)
           await clear(c.id)
         }
       })
