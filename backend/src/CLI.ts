@@ -214,8 +214,8 @@ export default class CLI {
   }
 
   async removeConnection(c: IConnection, onError: (error: Error) => void) {
-    d('REMOVE CONNECTION', strings.disconnect(c))
-    await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
+    d('REMOVE CONNECTION', strings.remove(c))
+    await this.exec({ cmds: [strings.remove(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 

@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { getAccountIds, getActiveAccountId } from './accounts'
 import { selectConnections, selectConnection } from '../helpers/connectionHelper'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
 // import { graphQLBasicRequest } from '../services/graphQL'
@@ -51,13 +52,17 @@ const defaultAccountState: INetworksAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init() {
+    async init(_, state) {
+      const all = getLocalStorage(state, 'networks') || {}
+      const defaultNetwork = getLocalStorage(state, 'networks-default')
+      if (defaultNetwork) dispatch.networks.set({ default: defaultNetwork })
+      dispatch.networks.set({ all })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
     async fetch(_, state) {
       const ids: string[] = getAccountIds(state)
-      let all = {}
+      let all = state.networks.all
       ids.forEach(id => (all[id] = all[id] || []))
       await dispatch.networks.set({ all })
       dispatch.networks.handleOrphanedConnections()
@@ -108,14 +113,9 @@ export default createModel<RootModel>()({
         dispatch.connections.disconnect(connection)
       }
     },
-    async enable(params: INetwork, state) {
-      params.serviceIds.forEach(async id => {
-        const [service] = selectById(state, id)
-        const connection = selectConnection(state, service)
-        console.log('SET ENABLE', id, connection, params.enabled)
-        if (params.enabled) await dispatch.connections.connect(connection)
-        else await dispatch.connections.disconnect(connection)
-      })
+    async enable(params: INetwork) {
+      const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
+      dispatch.connections.queueEnabled(queue)
       dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
     },
     async deleteNetwork(params: INetwork, state) {
@@ -130,6 +130,7 @@ export default createModel<RootModel>()({
 
       if (params.id === DEFAULT_ID) {
         dispatch.networks.set({ default: { ...params } })
+        setLocalStorage(state, 'networks-default', params)
         return
       }
 
@@ -143,6 +144,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ redirect: `/networks/view/${id}` })
       }
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
+      setLocalStorage(state, 'networks', state.networks.all)
     },
   }),
   reducers: {

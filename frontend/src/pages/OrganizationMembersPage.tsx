@@ -43,6 +43,7 @@ export const OrganizationMembersPage: React.FC = () => {
   return (
     <Container
       gutterBottom
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <Typography variant="h1">

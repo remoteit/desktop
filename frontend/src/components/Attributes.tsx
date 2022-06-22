@@ -348,7 +348,7 @@ export const attributes: Attribute[] = [
         : connection?.public
         ? 'Cloud Proxy'
         : !connection?.connected && !session
-        ? 'Idle - will connect on demand'
+        ? 'Idle - Connect on demand'
         : connection?.isP2P || session?.isP2P
         ? 'Peer to peer'
         : 'Proxy',

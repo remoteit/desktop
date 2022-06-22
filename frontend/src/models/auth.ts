@@ -17,13 +17,8 @@ import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Dispatch } from '../store'
+import sleep from '../services/sleep'
 import axios from 'axios'
-
-function sleep(ms) {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-}
 
 const USER_KEY = 'user'
 const HOSTED_UI_KEY = 'amplify-signin-with-hostedUI'
