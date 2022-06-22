@@ -68,5 +68,6 @@ const useStyles = makeStyles(({ palette }) => ({
     color: palette.grayDarker.main,
     margin: 0,
     whiteSpace: 'pre-wrap',
+    overflowWrap: 'break-word',
   },
 }))

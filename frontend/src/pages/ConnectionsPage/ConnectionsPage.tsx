@@ -91,7 +91,7 @@ export const ConnectionsPage: React.FC = () => {
         title="Recent"
         sessions={recent}
         action={!!recent.length ? <ClearButton all onClick={() => dispatch.connections.clearRecent()} /> : undefined}
-        offline
+        inactive
       />
     </Body>
   )

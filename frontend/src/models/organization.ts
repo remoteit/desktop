@@ -342,7 +342,7 @@ export default createModel<RootModel>()({
       })
 
       await dispatch.organization.setActive({ roles })
-      return role.id
+      // return role.id
     },
 
     async removeRole(role: IOrganizationRole, state) {

@@ -2,7 +2,7 @@ import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles, Typography, List, ListItemSecondaryAction } from '@material-ui/core'
-import { NetworkListItem } from './NetworkListItem'
+import { NetworkListTitle } from './NetworkListTitle'
 import { ClearButton } from '../buttons/ClearButton'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
@@ -23,11 +23,11 @@ export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[]
   return (
     <List className={css.list}>
       {networks.map(network => (
-        <NetworkListItem key={network.id} title network={network}>
+        <NetworkListTitle key={network.id} network={network}>
           <ListItemSecondaryAction>
             <ClearButton onClick={() => dispatch.networks.remove({ serviceId: service?.id, networkId: network.id })} />
           </ListItemSecondaryAction>
-        </NetworkListItem>
+        </NetworkListTitle>
       ))}
     </List>
   )

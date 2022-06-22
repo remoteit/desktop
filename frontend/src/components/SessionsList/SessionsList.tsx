@@ -1,14 +1,14 @@
 import React from 'react'
 import { Title } from '../Title'
 import { SessionListItem } from '../SessionListItem'
-import { Typography } from '@material-ui/core'
+import { Typography, Box } from '@material-ui/core'
 
 export interface Props {
   sessions: ISession[]
   title: string
   action?: React.ReactElement
   other?: boolean
-  offline?: boolean
+  inactive?: boolean
   isNew?: boolean
 }
 
@@ -20,7 +20,7 @@ export const SessionsList: React.FC<Props> = ({ sessions, title, action, ...prop
     <>
       <Typography variant="subtitle1">
         <Title>{title}</Title>
-        {action}
+        {action && <Box>{action}</Box>}
       </Typography>
       {sessions.map((s, i) => {
         const merge = prev === s.user?.id

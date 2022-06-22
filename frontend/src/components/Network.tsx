@@ -1,5 +1,6 @@
 import React from 'react'
 import { NetworkListItem } from './NetworkListItem'
+import { NetworkListTitle } from './NetworkListTitle'
 import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
 
 export interface Props {
@@ -11,7 +12,7 @@ export const Network: React.FC<Props> = props => {
 
   return (
     <List>
-      <NetworkListItem title {...props} />
+      <NetworkListTitle {...props} />
       {props.network?.serviceIds.map(id => (
         <NetworkListItem serviceId={id} key={id} {...props} />
       ))}

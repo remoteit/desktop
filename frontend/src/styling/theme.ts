@@ -420,7 +420,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           display: 'flex',
           alignItems: 'center',
           minHeight: spacing.xl,
-          padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
+          padding: `${spacing.xxs}px ${spacing.md}px ${spacing.xxs}px ${spacing.xl}px`,
           textTransform: 'uppercase',
           letterSpacing: 2,
           marginTop: spacing.lg,

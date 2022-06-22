@@ -14,7 +14,7 @@ export const ClearButton: React.FC<Props> = ({ disabled, all, onClick }) => {
   const css = useStyles()
   return all ? (
     <Button disabled={disabled} onClick={onClick} size="small">
-      Clear all
+      Clear
     </Button>
   ) : (
     <IconButton className={css.button} onClick={onClick} disabled={disabled} size="sm" type="light" icon="times" />
