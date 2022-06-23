@@ -162,7 +162,7 @@ export const attributes: Attribute[] = [
     label: 'Permissions',
     defaultWidth: 210,
     value: ({ device }) => {
-      return device?.permissions.map(p => <Chip label={PERMISSION[p].name} size="small" variant="outlined" key={p} />)
+      return device?.permissions.map(p => <Chip label={PERMISSION[p]?.name} size="small" variant="outlined" key={p} />)
     },
   }),
   new DeviceAttribute({

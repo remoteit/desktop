@@ -49,7 +49,6 @@ class Platforms {
     platform.types = platform.types || {}
     this.platforms[platform.id] = platform
     Object.keys(platform.types).forEach(type => (this.lookup[type] = platform.id))
-    console.log('REGISTER PLATFORM', platform.id)
   }
 
   type(type: number): IPlatform {

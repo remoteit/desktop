@@ -37,7 +37,7 @@ export const RegisterMenu: React.FC = () => {
     permissions: selectPermissions(state),
   }))
 
-  const disabled = !permissions?.includes('REGISTER')
+  const disabled = !permissions?.includes('MANAGE')
 
   const handleClose = () => {
     setEl(null)
