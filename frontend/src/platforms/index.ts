@@ -3,6 +3,7 @@
 export interface IPlatform {
   id: string
   name: string
+  subtitle?: string
   component: (props: any) => React.ReactElement
   types?: INumberLookup<string>
   services?: IServiceRegistration[]
