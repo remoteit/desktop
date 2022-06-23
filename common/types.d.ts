@@ -476,7 +476,7 @@ declare global {
     lastUsed: Date
   }
 
-  type IRouteType = 'failover' | 'p2p' | 'proxy'
+  type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'
 
   interface IEvent {
     shared: any

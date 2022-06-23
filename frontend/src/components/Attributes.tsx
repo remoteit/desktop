@@ -344,13 +344,13 @@ export const attributes: Attribute[] = [
     label: 'Connection',
     value: ({ connection, session }) =>
       connection?.reverseProxy
-        ? 'Cloud Reverse Proxy'
+        ? 'Public Reverse Proxy'
         : connection?.public
-        ? 'Cloud Proxy'
+        ? 'Public Proxy'
         : !connection?.connected && !session
-        ? 'Idle'
+        ? 'Idle - Connect on demand'
         : connection?.isP2P || session?.isP2P
-        ? 'Peer to peer'
+        ? 'Peer to Peer'
         : 'Proxy',
   }),
   new ConnectionAttribute({
