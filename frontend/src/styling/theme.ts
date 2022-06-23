@@ -290,12 +290,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           '&.MuiMenuItem-spacing.xl': {
             paddingLeft: spacing.sm,
             paddingRight: spacing.sm,
-            marginLeft: spacing.sm,
-            marginRight: spacing.sm,
-            maxWidth: `calc(100% - ${spacing.sm * 2}px)`,
           },
         },
         gutters: {
+          maxWidth: `calc(100% - ${spacing.sm * 2}px)`,
+          marginLeft: spacing.sm,
+          marginRight: spacing.sm,
           paddingLeft: spacing.sm,
           paddingRight: spacing.md,
         },
