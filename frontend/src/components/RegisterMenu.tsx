@@ -132,8 +132,9 @@ export const RegisterMenu: React.FC = () => {
           />
           <ListItemLocation
             iconPlatform
-            icon="raspberrypi"
-            pathname="/add/raspberrypi"
+            icon="linux"
+            iconSize="lg"
+            pathname="/add/linux"
             title="Linux & Raspberry Pi"
             subtitle="Including Jetson and OpenWRT"
             onClick={handleClose}
