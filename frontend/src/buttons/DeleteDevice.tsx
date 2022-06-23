@@ -9,10 +9,11 @@ import { Notice } from '../components/Notice'
 type Props = {
   device?: IDevice
   menuItem?: boolean
+  hide?: boolean
   onClick?: () => void
 }
 
-export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => {
+export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick }) => {
   const { devices, ui } = useDispatch<Dispatch>()
   const { destroying, userId, setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({
     userId: state.auth.user?.id,
@@ -36,7 +37,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
     </>
   )
 
-  if (!device || (device.accountId !== userId && !device.permissions.includes('MANAGE'))) return null
+  if (!device || hide || (device.accountId !== userId && !device.permissions.includes('MANAGE'))) return null
 
   const destroy = () => {
     if (device.thisDevice && device.owner.id === userId) {
