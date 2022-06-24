@@ -79,6 +79,10 @@ export const ConnectionDefaultsPage: React.FC = () => {
     if (!applicationID) history.push(`/settings/defaults/${applicationTypes[0]?.id}`)
   }, [applicationTypes])
 
+  useEffect(() => {
+    setForm(data)
+  }, [id])
+
   return (
     <Container
       gutterBottom
