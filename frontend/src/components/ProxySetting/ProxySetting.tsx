@@ -22,7 +22,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
   const connectionRoute = getRoute(connection)
   const defaultRoute = getRoute(defaults)
   const route = ROUTES.find(r => r.key === connectionRoute)
-  console.log('ROUTE CONNECTION, DEFAULT', connectionRoute, defaultRoute)
+
   return (
     <ListItem dense onClick={() => setOpen(!open)} button>
       <ListItemIcon>
