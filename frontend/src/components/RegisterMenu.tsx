@@ -18,6 +18,7 @@ import { Dispatch, ApplicationState } from '../store'
 import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
+import { platforms } from '../platforms'
 import { spacing } from '../styling'
 import { Link } from 'react-router-dom'
 import { Icon } from './Icon'
@@ -37,7 +38,7 @@ export const RegisterMenu: React.FC = () => {
     permissions: selectPermissions(state),
   }))
 
-  const disabled = !permissions?.includes('REGISTER')
+  const disabled = !permissions?.includes('MANAGE')
 
   const handleClose = () => {
     setEl(null)
@@ -106,64 +107,21 @@ export const RegisterMenu: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
-          <ListItemLocation
-            iconPlatform
-            icon="aws"
-            pathname="/add/aws"
-            title="AWS"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconPlatform
-            icon="gcp"
-            pathname="/add/gcp"
-            title="Google Cloud"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconPlatform
-            icon="azure"
-            pathname="/add/azure"
-            title="Microsoft Azure"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconPlatform
-            icon="linux"
-            iconSize="lg"
-            pathname="/add/linux"
-            title="Linux & Raspberry Pi"
-            subtitle="Including Jetson and OpenWRT"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconPlatform
-            icon="nas"
-            pathname="/add/nas"
-            title="Synology"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconPlatform
-            icon="windows"
-            pathname="/add/windows"
-            title="Windows"
-            onClick={handleClose}
-            disableGutters
-          />
-          <ListItemLocation
-            iconPlatform
-            icon="apple"
-            pathname="/add/apple"
-            title="Mac"
-            onClick={handleClose}
-            disableGutters
-          />
+          {['aws', 'gcp', 'azure', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
+            const platform = platforms.get(p)
+            return (
+              <ListItemLocation
+                iconPlatform
+                key={p}
+                icon={platform.id}
+                pathname={`/add/${platform.id}`}
+                title={platform.name}
+                subtitle={platform.subtitle}
+                onClick={handleClose}
+                disableGutters
+              />
+            )
+          })}
           <ListItem
             button
             disableGutters

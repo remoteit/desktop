@@ -25,7 +25,7 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
     }
   }, [accountId, platform])
 
-  if (permissions?.includes('REGISTER')) {
+  if (permissions?.includes('MANAGE')) {
     accountId = organization.id
     accountName = organization.name
   } else {
