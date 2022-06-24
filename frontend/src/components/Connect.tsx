@@ -13,7 +13,7 @@ import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
-import { makeStyles, List, Button } from '@material-ui/core'
+import { makeStyles, List, Button, Chip, Box } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { selectNetworks, selectNetworkByService } from '../models/networks'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
@@ -132,18 +132,21 @@ export const Connect: React.FC = () => {
           subtitle="Networks"
           expanded={accordion.networks}
           action={
-            <DynamicButtonMenu
-              options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
-              title={availableNetworks.length === 1 ? `Add to ${availableNetworks[0].name}` : 'Add to network'}
-              size="icon"
-              icon="plus"
-              disabled={!availableNetworks.length}
-              onClick={networkId => {
-                if (!service) return
-                dispatch.networks.add({ serviceId: service.id, networkId })
-                dispatch.ui.accordion({ networks: true })
-              }}
-            />
+            <Box display="flex" alignItems="center">
+              {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
+              <DynamicButtonMenu
+                options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
+                title={availableNetworks.length === 1 ? `Add to ${availableNetworks[0].name}` : 'Add to network'}
+                size="icon"
+                icon="plus"
+                disabled={!availableNetworks.length}
+                onClick={networkId => {
+                  if (!service) return
+                  dispatch.networks.add({ serviceId: service.id, networkId })
+                  dispatch.ui.accordion({ networks: true })
+                }}
+              />
+            </Box>
           }
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
           elevation={0}
