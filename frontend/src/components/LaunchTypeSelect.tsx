@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Application } from '../shared/applications'
-import { ListItem, ListItemIcon, makeStyles, MenuItem, TextField } from '@material-ui/core'
+import { ListItem, ListItemIcon, MenuItem, TextField } from '@material-ui/core'
 import { newConnection } from '../helpers/connectionHelper'
 import { Icon } from './Icon'
 
@@ -14,13 +14,11 @@ type Props = {
 export const LaunchTypeSelect: React.FC<Props> = ({ app, service, connection, onChange }) => {
   if (!connection) connection = newConnection(service)
 
-  const [open, setOpen] = React.useState<boolean>(false)
-  const css = useStyles()
-
+  const [open, setOpen] = useState<boolean>(false)
   const handleClick = () => setOpen(!open)
 
   return (
-    <ListItem dense className={css.field} onClick={handleClick} button>
+    <ListItem dense onClick={handleClick} button>
       <ListItemIcon>
         <Icon name={app.icon} size="md" modified={app.template !== app.defaultTemplate} fixedWidth />
       </ListItemIcon>
@@ -41,9 +39,3 @@ export const LaunchTypeSelect: React.FC<Props> = ({ app, service, connection, on
     </ListItem>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  field: {
-    '&:hover': { backgroundColor: palette.primaryHighlight.main },
-  },
-}))

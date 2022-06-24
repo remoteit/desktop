@@ -31,7 +31,7 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
   } else {
     return (
       <Box>
-        <Notice>You must have the manage permission to add a device to this organization.</Notice>
+        <Notice>You must have the register permission to add a device to this organization.</Notice>
       </Box>
     )
   }

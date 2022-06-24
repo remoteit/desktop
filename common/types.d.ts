@@ -314,7 +314,7 @@ declare global {
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string
 
-  type IPermission = 'VIEW' | 'CONNECT' | 'SCRIPTING' | 'MANAGE' | 'REGISTER' | 'ADMIN'
+  type IPermission = 'VIEW' | 'CONNECT' | 'SCRIPTING' | 'MANAGE' | 'ADMIN'
 
   type IUser = {
     id: string
@@ -469,7 +469,7 @@ declare global {
     lastUsed: Date
   }
 
-  type IRouteType = 'failover' | 'p2p' | 'proxy'
+  type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'
 
   interface IEvent {
     shared: any

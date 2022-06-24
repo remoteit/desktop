@@ -7,6 +7,7 @@ export const EventType = {
   login_attempt_state: 'AUTH_LOGIN_ATTEMPT',
   login_password_change: 'AUTH_PASSWORD_CHANGE',
   login_password_reset: 'AUTH_PASSWORD_RESET',
+  login_password_reset_confirmed: 'AUTH_PASSWORD_RESET_CONFIRMED',
   login_phone_change: 'AUTH_PHONE_CHANGE',
   login_mfa_enabled: 'AUTH_MFA_ENABLED',
   login_mfa_disabled: 'AUTH_MFA_DISABLED',
@@ -45,7 +46,10 @@ export function EventMessage({
       message = 'Password changed'
       break
     case EventType.login_password_reset:
-      message = 'Password reset'
+      message = 'Password reset started'
+      break
+    case EventType.login_password_reset_confirmed:
+      message = 'Password reset confirmed'
       break
     case EventType.login_phone_change:
       message = 'Phone number changed'
