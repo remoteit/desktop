@@ -3,8 +3,8 @@ import { ROUTES } from '../../models/devices'
 import { IP_OPEN } from '../../shared/constants'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
-import { makeStyles, ListItem, ListItemIcon, TextField, MenuItem, Typography } from '@material-ui/core'
-import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { makeStyles, ListItem, ListItemIcon, TextField, MenuItem, Typography, Chip, Box } from '@material-ui/core'
+import { newConnection, setConnection, getRoute } from '../../helpers/connectionHelper'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -19,16 +19,10 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
   const defaults = newConnection(service)
   const disabled =
     connection.connected || connection.public || (service.attributes.route && service.attributes.route !== 'failover')
-  const connectionRoute: IRouteType = connection.public
-    ? 'public'
-    : connection.proxyOnly
-    ? 'proxy'
-    : connection.failover
-    ? 'failover'
-    : 'p2p'
-  const defaultRoute = defaults.proxyOnly ? 'proxy' : defaults.failover ? 'failover' : 'p2p'
+  const connectionRoute = getRoute(connection)
+  const defaultRoute = getRoute(defaults)
   const route = ROUTES.find(r => r.key === connectionRoute)
-
+  console.log('ROUTE CONNECTION, DEFAULT', connectionRoute, defaultRoute)
   return (
     <ListItem dense onClick={() => setOpen(!open)} button>
       <ListItemIcon>
@@ -64,7 +58,9 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
       >
         {ROUTES.map(r => (
           <MenuItem key={r.key} value={r.key}>
-            {r.name}
+            <Box display="flex" justifyContent="space-between">
+              {r.name} {r.key === defaultRoute && <Chip size="small" label="default" />}
+            </Box>
             <Typography variant="caption" component="div">
               {r.description}
             </Typography>

@@ -227,7 +227,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           width: `calc(100% - ${spacing.md * 2}px)`,
           paddingLeft: spacing.xxs,
           paddingRight: spacing.xxs,
-          marginLeft: spacing.md + spacing.xxs,
+          marginLeft: spacing.md,
           marginRight: spacing.md,
         },
         button: {

@@ -48,11 +48,11 @@ export function newConnection(service?: IService | null) {
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: cd?.route ? cd.route !== 'p2p' : service?.attributes.route !== 'p2p',
+    failover: cd?.route ? cd.route === 'failover' : service?.attributes.route === 'failover',
     proxyOnly: cd?.route ? cd.route === 'proxy' : service?.attributes.route === 'proxy',
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
-    public: isPortal() ? true : undefined,
+    public: isPortal() || cd?.route === 'public' || service?.attributes.route === 'public' ? true : undefined,
   }
 
   if (service) {
@@ -117,6 +117,10 @@ export function selectConnections(state: ApplicationState) {
 export function selectConnection(state: ApplicationState, service?: IService) {
   let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
   return connection
+}
+
+export function getRoute(connection: IConnection): IRouteType {
+  return connection.public ? 'public' : connection.proxyOnly ? 'proxy' : connection.failover ? 'failover' : 'p2p'
 }
 
 export function getConnectionSessionIds() {
