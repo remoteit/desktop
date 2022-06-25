@@ -1,7 +1,6 @@
 import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL } from '../shared/constants'
+import { version } from './versionHelper'
 import { store } from '../store'
-import { version } from '../../package.json'
-
 export function getGraphQLApi(): string | undefined {
   if (!store) return GRAPHQL_API
 
