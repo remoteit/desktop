@@ -56,6 +56,7 @@ export default class ConnectionPool {
     let update = false
     if (!binaryInstaller.ready || binaryInstaller.inProgress || !user.signedIn) return
     const cliData = await cli.readConnections()
+    if (!cliData) return
 
     // move connections: cli -> desktop
     cliData.forEach(cliConnection => {
