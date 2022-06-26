@@ -6,7 +6,7 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
 import axios from 'axios'
-import { r3 } from './remote.it'
+// import { r3 } from './remote.it'
 
 const d = debug('r3:backend:User')
 
@@ -21,6 +21,7 @@ export class User {
   username: string = ''
   authHash: string = ''
   signedIn: boolean = false
+  token: string = ''
 
   get hasCredentials() {
     return this.authHash && this.username
@@ -52,8 +53,7 @@ export class User {
       const authHash = credentials.authHash
       
       const user = await axios.post('/user/login/authhash', { userName, authHash })
-                              .then(resp => r3.user.process(resp, authHash))
-                              .then(r3.user.updateCredentials)
+                              .then(resp => this.process(resp, authHash))
 
       Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
 
@@ -66,6 +66,7 @@ export class User {
       this.username = user.username
       this.authHash = user.authHash
       this.id = user.id
+      this.token = user.token
 
       Logger.info('CHECK CLI SIGN IN')
       await cli.checkSignIn()
@@ -76,6 +77,15 @@ export class User {
     } catch (error) {
       Logger.warn('LOGIN AUTH FAILURE', { username: credentials.username, error })
       return false
+    }
+  }
+
+  process(user: IRawUser, username: string) {
+    return {
+      id: user.guid,
+      username,
+      token: user.token || user.auth_token,
+      authHash: user.service_authhash
     }
   }
 
@@ -95,5 +105,14 @@ export class User {
     }
   }
 }
-
 export default new User()
+
+export interface IRawUser {
+  guid: string,
+  auth_token: string,
+  token: string,
+  authHash: string,
+  service_authhash: string
+}
+
+

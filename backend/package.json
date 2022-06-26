@@ -37,7 +37,6 @@
     "plist": "^3.0.5",
     "portfinder": "^1.0.28",
     "realpath-native": "^3.0.0",
-    "remote.it": "^0.47.1",
     "rimraf": "^3.0.2",
     "semver": "^7.3.4",
     "socket.io": "^2.3.0",
