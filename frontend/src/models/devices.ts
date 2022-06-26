@@ -433,20 +433,25 @@ export const ROUTES: IRoute[] = [
     key: 'failover',
     icon: 'code-branch',
     name: 'Peer to peer with proxy failover',
-    description:
-      'Default is to prioritize peer to peer connections over proxy connections, but use proxy if peer to peer fails. Also allows overriding at time of connection.',
+    description: 'A direct connection to this service that fails over to a private proxy.',
   },
   {
     key: 'p2p',
     icon: 'arrows-h',
-    name: 'Peer to peer only',
-    description: 'Only connect using peer to peer. Does not allow overriding.',
+    name: 'Peer to peer',
+    description: 'A direct connection to this service.',
   },
   {
     key: 'proxy',
     icon: 'cloud',
-    name: 'Proxy only',
-    description: 'Only allow proxy connections. Does not allow overriding.',
+    name: 'Proxy',
+    description: 'A private proxy connection routed through the cloud.',
+  },
+  {
+    key: 'public',
+    icon: 'globe',
+    name: 'Public Proxy',
+    description: 'A proxy connection with a temporary public URL.',
   },
 ]
 

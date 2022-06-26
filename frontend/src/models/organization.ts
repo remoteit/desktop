@@ -26,8 +26,7 @@ export const PERMISSION: ILookup<{
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll-old' },
-  MANAGE: { name: 'Manage', description: 'Edit, delete, transfer and share devices', icon: 'pencil' },
-  REGISTER: { name: 'Register', description: 'Register new devices', icon: 'plus', user: true },
+  MANAGE: { name: 'Manage', description: 'Edit, delete, register, transfer and share devices', icon: 'pencil' },
   ADMIN: { name: 'Administer', description: 'Manage organization users', icon: 'user-hard-hat', user: true },
 }
 
@@ -43,7 +42,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     id: 'OWNER',
     name: 'Owner',
     system: true,
-    permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'REGISTER', 'ADMIN'],
+    permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
     disabled: true,
   },
 ]

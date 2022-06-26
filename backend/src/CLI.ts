@@ -70,6 +70,7 @@ export default class CLI {
   }
 
   configFile: JSONFile<ConfigFile>
+  processing: boolean = false
 
   EVENTS = {
     error: 'cli/error',
@@ -141,6 +142,7 @@ export default class CLI {
   }
 
   async readConnections() {
+    if (this.processing) return
     const connections = await this.connectionStatus()
     return connections.map((c, i) => {
       let error: ISimpleError | undefined
@@ -210,25 +212,21 @@ export default class CLI {
   async addConnection(c: IConnection, onError: (error: Error) => void) {
     d('ADD CONNECTION', strings.connect(c))
     await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
-    await this.readConnections()
   }
 
   async removeConnection(c: IConnection, onError: (error: Error) => void) {
     d('REMOVE CONNECTION', strings.disconnect(c))
     await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
-    await this.readConnections()
   }
 
   async stopConnection(c: IConnection, onError: (error: Error) => void) {
     d('STOP CONNECTION', strings.stop(c))
     await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError })
-    await this.readConnections()
   }
 
   async setConnection(c: IConnection, onError: (error: Error) => void) {
     d('SET CONNECTION', strings.setConnect(c))
     await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
-    await this.readConnections()
   }
 
   async restore(deviceId: string) {
@@ -308,6 +306,8 @@ export default class CLI {
       return ''
     }
 
+    this.processing = true
+
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
@@ -321,6 +321,8 @@ export default class CLI {
       }
 
     const result = await commands.exec()
+
+    this.processing = false
 
     if (result) {
       try {
