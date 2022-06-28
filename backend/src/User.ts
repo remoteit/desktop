@@ -6,7 +6,6 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
 import axios from 'axios'
-// import { r3 } from './remote.it'
 
 const d = debug('r3:backend:User')
 
@@ -52,8 +51,8 @@ export class User {
       const userName = credentials.username
       const authHash = credentials.authHash
       
-      const user = await axios.post('/user/login/authhash', { userName, authHash })
-                              .then(resp => this.process(resp, authHash))
+      const resp = await axios.post('/user/login/authhash', { userName, authHash })
+      const user = this.process(resp, authHash)
 
       Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
 
