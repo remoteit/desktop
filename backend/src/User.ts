@@ -7,8 +7,6 @@ import EventBus from './EventBus'
 import path from 'path'
 import axios from 'axios'
 
-const d = debug('r3:backend:User')
-
 export class User {
   static EVENTS = {
     signInError: 'unauthorized',
@@ -50,8 +48,8 @@ export class User {
     try {
       const userName = credentials.username
       const authHash = credentials.authHash
-      
-      const resp = await axios.post('/user/login/authhash', { userName, authHash })
+
+      const resp: IRawUser = await axios.post('/user/login/authhash', { userName, authHash })
       const user = this.process(resp, authHash)
 
       Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
@@ -84,12 +82,13 @@ export class User {
       id: user.guid,
       username,
       token: user.token || user.auth_token,
-      authHash: user.service_authhash
+      authHash: user.service_authhash,
     }
   }
 
   signOut = () => {
     this.id = ''
+    this.token = ''
     this.username = ''
     this.authHash = ''
     this.signedIn = false
@@ -104,14 +103,5 @@ export class User {
     }
   }
 }
+
 export default new User()
-
-export interface IRawUser {
-  guid: string,
-  auth_token: string,
-  token: string,
-  authHash: string,
-  service_authhash: string
-}
-
-
