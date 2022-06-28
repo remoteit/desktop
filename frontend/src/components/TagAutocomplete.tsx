@@ -72,7 +72,7 @@ export const TagAutocomplete: React.FC<Props> = ({
     : items
 
   return (
-    <Popper anchorEl={targetEl} open={true /* open */} placement="bottom-start">
+    <Popper anchorEl={targetEl} open={open} placement="bottom-start">
       <Paper className={css.container} elevation={1}>
         <Autocomplete
           fullWidth

@@ -16,6 +16,7 @@ export const ColorSelect: React.FC<{ tag: ITag; onSelect: (color: number) => voi
     <Tooltip title={`Change ${selected.name}`} open={tooltip}>
       <Select
         disableUnderline
+        variant="standard"
         value={selected.id.toString()}
         classes={{ icon: css.icon, select: css.menu }}
         MenuProps={{ classes: { paper: css.menuPaper } }}

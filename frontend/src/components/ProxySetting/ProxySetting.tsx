@@ -32,6 +32,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
       <TextField
         select
         fullWidth
+        variant="standard"
         disabled={disabled}
         label="Routing"
         value={connectionRoute}

@@ -15,7 +15,8 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'sm
   return (
     <TextField
       select
-      size={size}
+      // size={size}
+      size="small"
       label={size === 'small' ? undefined : 'Role'}
       hiddenLabel={size === 'small'}
       disabled={disabled}

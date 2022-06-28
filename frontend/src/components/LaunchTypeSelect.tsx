@@ -25,6 +25,7 @@ export const LaunchTypeSelect: React.FC<Props> = ({ app, service, connection, on
       <TextField
         select
         fullWidth
+        variant="standard"
         SelectProps={{ open }}
         label="Launch type"
         value={app.launchType}

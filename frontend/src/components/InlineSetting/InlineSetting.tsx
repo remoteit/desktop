@@ -73,7 +73,7 @@ export const InlineSetting: React.FC<Props> = ({
     if (edit) {
       fieldRef.current.focus()
       fieldRef.current.onblur = () => {
-        if (!canceled.current && !debug) setTimeout(() => setEdit(false), 200)
+        // if (!canceled.current && !debug) setTimeout(() => setEdit(false), 200)
         canceled.current = false
       }
     }
@@ -100,12 +100,12 @@ export const InlineSetting: React.FC<Props> = ({
               title="Reset"
               icon="undo"
               type="solid"
+              size="base"
               onMouseDown={cancelBlur}
               onClick={() => {
                 onResetClick()
                 fieldRef?.current?.focus()
               }}
-              size="lg"
             />
           )}
           <IconButton

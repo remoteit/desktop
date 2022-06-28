@@ -51,7 +51,7 @@ export const jssTheme = (isDark: boolean): DeprecatedThemeOptions => {
     },
     overrides: {
       MuiDivider: {
-        root: { backgroundColor: palette.grayLighter.main, '&.MuiDivider-flexItem': { height: 1 } },
+        root: { backgroundColor: palette.grayLightest.main, '&.MuiDivider-flexItem': { height: 1 } },
         inset: { marginRight: spacing.md, marginLeft: spacing.md },
       },
       MuiAccordion: {
@@ -76,7 +76,7 @@ export const jssTheme = (isDark: boolean): DeprecatedThemeOptions => {
       },
       MuiFormHelperText: { root: { fontSize: 10 } },
       MuiIconButton: {
-        root: { borderRadius: radius },
+        root: { borderRadius: radius, padding: spacing.sm },
       },
       MuiButton: {
         root: {
@@ -334,6 +334,7 @@ export const jssTheme = (isDark: boolean): DeprecatedThemeOptions => {
           letterSpacing: 0.5,
           fontWeight: 500,
           textTransform: 'uppercase',
+          lineHeight: 1,
         },
       },
       MuiTextField: {
@@ -341,14 +342,14 @@ export const jssTheme = (isDark: boolean): DeprecatedThemeOptions => {
           marginTop: spacing.xxs,
           marginBottom: spacing.xxs,
           '& label + .MuiInput-formControl': { marginTop: 9 },
-          '& .MuiInputBase-marginDense': {
+          '& .MuiInputBase-sizeSmall': {
             height: 20,
             borderRadius: 10,
             fontSize: fontSizes.xxs,
             '&:hover:not(.Mui-disabled)': { backgroundColor: palette.primaryHighlight.main },
             '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: spacing.xxs },
           },
-          '& .MuiFilledInput-root.Mui-disabled': {
+          '& .Mui-disabled': {
             '& .MuiSelect-root': { paddingRight: spacing.sm },
             '& svg': { display: 'none' },
           },
@@ -356,6 +357,7 @@ export const jssTheme = (isDark: boolean): DeprecatedThemeOptions => {
       },
       MuiFilledInput: {
         root: {
+          padding: 0,
           borderTopLeftRadius: radius,
           borderBottomLeftRadius: radius,
           borderTopRightRadius: radius,
