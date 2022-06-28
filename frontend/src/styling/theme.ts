@@ -1,12 +1,17 @@
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
-import { createTheme, ThemeOptions } from '@material-ui/core'
+import { adaptV4Theme, Theme } from '@mui/material/styles'
+import { createTheme, DeprecatedThemeOptions } from '@mui/material'
 import { ApplicationState } from '../store'
 
-export const jssTheme = (isDark: boolean): ThemeOptions => {
+declare module '@mui/styles' {
+  interface DefaultTheme extends Theme {}
+}
+
+export const jssTheme = (isDark: boolean): DeprecatedThemeOptions => {
   const colors = isDark ? darkColors : lightColors
 
   const palette = {
-    type: isDark ? 'dark' : 'light',
+    mode: isDark ? 'dark' : 'light',
     primary: { main: colors.primary, dark: darkColors.primary },
     secondary: { main: colors.secondary, contrastText: colors.white, dark: darkColors.secondary },
     error: { main: colors.danger, dark: darkColors.danger },
@@ -40,7 +45,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   }
 
   return {
-    palette: palette as ThemeOptions['palette'],
+    palette: palette as DeprecatedThemeOptions['palette'],
     typography: {
       fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     },
@@ -436,10 +441,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           lineHeight: '1.5em',
           '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
         },
-        colorTextSecondary: {
-          color: palette.grayDark.main,
-          '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
-        },
+        // colorTextSecondary: {
+        //   color: palette.grayDark.main,
+        //   '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
+        // },
       },
       MuiDialogTitle: { root: { margin: `${spacing.lg}px ${spacing.xl}px 0`, padding: 0 } },
       MuiDialogContent: { root: { margin: `${spacing.sm}px ${spacing.xl}px`, padding: 0 } },
@@ -455,7 +460,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
 export function selectTheme(themeMode?: ApplicationState['ui']['themeMode']) {
   const darkMode = isDarkMode(themeMode)
   console.log('SELECT THEME. DARK MODE:', darkMode)
-  const theme = createTheme(jssTheme(darkMode))
+  const theme = createTheme(adaptV4Theme(jssTheme(darkMode)))
   return theme
 }
 

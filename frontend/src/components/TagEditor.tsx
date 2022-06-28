@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
-import { makeStyles, Chip, Tooltip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Chip, Tooltip } from '@mui/material'
 import { TagAutocomplete } from './TagAutocomplete'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { useLabel } from '../hooks/useLabel'
@@ -52,7 +53,7 @@ export const TagEditor: React.FC<Props> = ({
     <>
       {button ? (
         <div ref={addRef}>
-          <IconButton {...buttonProps} icon={button} onClick={handleOpen} disabled={open} />
+          <IconButton {...buttonProps} icon={button} onClick={handleOpen} disabled={open} size="lg" />
         </div>
       ) : (
         <Chip

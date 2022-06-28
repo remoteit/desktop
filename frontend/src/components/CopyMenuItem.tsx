@@ -1,6 +1,6 @@
 import React from 'react'
 import { useClipboard } from 'use-clipboard-copy'
-import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon } from './Icon'
 
 export interface CopyButtonProps {

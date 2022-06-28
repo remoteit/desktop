@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
-import { makeStyles, Typography, Box, ButtonBase, Paper } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, Box, ButtonBase, Paper } from '@mui/material'
 import { useDropzone } from 'react-dropzone'
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'

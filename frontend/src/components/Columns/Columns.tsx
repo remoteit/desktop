@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 
 export const Columns: React.FC<{ count?: 1 | 2; inset?: boolean; center?: boolean }> = ({

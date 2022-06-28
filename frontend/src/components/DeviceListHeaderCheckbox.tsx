@@ -2,7 +2,7 @@ import React from 'react'
 import { getDeviceModel } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Checkbox } from '@material-ui/core'
+import { Checkbox } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = { select?: boolean; devices: IDevice[] }

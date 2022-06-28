@@ -1,11 +1,12 @@
 import React from 'react'
 import { Icon } from '../Icon'
-import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch } from '@material-ui/core'
+import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch } from '@mui/material'
 
 type Props = {
   keyProp?: string | number
   label: string | React.ReactNode
   checked?: boolean
+  children?: React.ReactNode
   onClick: (checked: boolean) => void
 }
 

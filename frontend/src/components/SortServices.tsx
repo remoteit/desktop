@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
 import { getDeviceModel } from '../models/accounts'
-import { IconButton, Menu, MenuItem } from '@material-ui/core'
+import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { fontSize } from '@remote.it/components/lib/styles/variables'
 import { Icon } from './Icon'
 
@@ -78,7 +78,7 @@ export const SortServices: React.FC = () => {
 
   return (
     <>
-      <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>
+      <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick} size="large">
         <Icon name={option.icon} size="md" />
       </IconButton>
       <Menu id="long-menu" anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>

@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Divider } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Divider } from '@mui/material'
 import { ListItemSetting } from './ListItemSetting'
 import { spacing } from '../styling'
 

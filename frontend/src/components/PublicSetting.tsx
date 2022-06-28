@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItemText } from '@material-ui/core'
+import { ListItemText } from '@mui/material'
 import { setConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { InlineSelectSetting } from './InlineSelectSetting'

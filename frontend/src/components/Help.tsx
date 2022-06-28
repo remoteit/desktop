@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Tooltip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip } from '@mui/material'
 import { radius, spacing } from '../styling'
 
 type Props = React.HTMLAttributes<HTMLDivElement> & { message: string; children: any }

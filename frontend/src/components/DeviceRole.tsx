@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { memberOrganization } from '../models/organization'
 import { accountFromDevice, getMembership } from '../models/accounts'
-import { Chip } from '@material-ui/core'
+import { Chip } from '@mui/material'
 
 type Props = {
   device?: IDevice

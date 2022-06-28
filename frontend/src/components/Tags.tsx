@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Chip, Box } from '@material-ui/core'
+import { Chip, Box } from '@mui/material'
 import { Tag } from './Tag'
 
 type Props = {

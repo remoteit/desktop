@@ -6,7 +6,7 @@ import { DynamicButton } from '../DynamicButton'
 import { getLicenseChip } from '../../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
-import { Fade } from '@material-ui/core'
+import { Fade } from '@mui/material'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {

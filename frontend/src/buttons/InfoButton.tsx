@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { Tooltip, IconButton } from '@material-ui/core'
+import { Tooltip, IconButton } from '@mui/material'
 import { Icon } from '../components/Icon'
 
 type Props = {
@@ -26,7 +26,7 @@ export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
 
   return (
     <Tooltip title={title}>
-      <IconButton onClick={() => onClick && onClick()}>
+      <IconButton onClick={() => onClick && onClick()} size="large">
         {/* <Icon name="neuter" size="md" rotate={90} fixedWidth /> */}
         <Icon name="hdd" size="md" fixedWidth />
       </IconButton>

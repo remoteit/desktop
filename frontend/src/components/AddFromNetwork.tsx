@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { IconButton, Tooltip, Link } from '@material-ui/core'
+import { IconButton, Tooltip, Link } from '@mui/material'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { Icon } from './Icon'
@@ -19,7 +19,7 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
 
   return button ? (
     <Tooltip title="Scan for Services">
-      <IconButton onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>
+      <IconButton onClick={() => history.push(`/devices/${deviceID}/add/scan`)} size="large">
         <Icon name="radar" size="md" />
       </IconButton>
     </Tooltip>

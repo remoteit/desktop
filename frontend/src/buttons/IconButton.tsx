@@ -1,12 +1,13 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 import classnames from 'classnames'
 
 export type ButtonProps = Omit<IconProps, 'title'> & {
-  title?: string | React.ReactElement
+  title?: React.ReactNode
   forceTitle?: boolean
   icon?: string
   name?: string
@@ -20,6 +21,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   submit?: boolean
   inline?: boolean
   placement?: TooltipProps['placement']
+  children?: React.ReactNode
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void

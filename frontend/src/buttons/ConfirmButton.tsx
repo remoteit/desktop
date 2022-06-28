@@ -5,7 +5,7 @@ import { Confirm } from '../components/Confirm'
 type Props = ButtonProps & {
   confirm?: boolean
   confirmTitle?: string
-  confirmMessage?: string | React.ReactElement
+  confirmMessage?: React.ReactNode
 }
 
 export const ConfirmButton: React.FC<Props> = ({
@@ -29,7 +29,7 @@ export const ConfirmButton: React.FC<Props> = ({
 
   return (
     <>
-      <IconButton {...props} onClick={handleClick} />
+      <IconButton {...props} onClick={handleClick} size="lg" />
       {confirm && onClick && (
         <Confirm open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)} title={confirmTitle}>
           {confirmMessage}

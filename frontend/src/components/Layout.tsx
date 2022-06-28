@@ -1,7 +1,12 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { ThemeProvider } from '@material-ui/core'
+import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles'
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
 
 export interface Props {
   children: React.ReactNode
@@ -9,5 +14,9 @@ export interface Props {
 
 export const Layout = ({ children }: Props) => {
   const theme = useSelector((state: ApplicationState) => state.ui.theme)
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>
+  return (
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    </StyledEngineProvider>
+  )
 }

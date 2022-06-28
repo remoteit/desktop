@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles, TextField, TextFieldProps, Input } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { TextField, TextFieldProps, Input } from '@mui/material'
 import { InlineSetting } from './InlineSetting'
 import { spacing } from '../styling'
 
 type Props = {
   value?: string | number
-  label?: React.ReactElement | string
-  icon?: React.ReactElement | string
-  actionIcon?: React.ReactElement
+  label?: React.ReactNode
+  icon?: React.ReactNode
+  actionIcon?: React.ReactNode
   displayValue?: string | number
   filter?: RegExp
   color?: string
@@ -16,7 +17,7 @@ type Props = {
   resetValue?: string | number
   maxLength?: number
   hideIcon?: boolean
-  warning?: React.ReactElement | string
+  warning?: React.ReactNode
   modified?: boolean
   disableGutters?: boolean
   debug?: boolean

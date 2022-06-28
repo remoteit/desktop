@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
-import { Button, makeStyles, TextField, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Button, TextField, Typography } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { Gutters } from '../Gutters'
@@ -38,9 +39,7 @@ export const ChangePassword = () => {
           <Button variant="contained" color="primary" type="submit" size="small">
             Save
           </Button>
-          <Button color="default" size="small">
-            Cancel
-          </Button>
+          <Button size="small">Cancel</Button>
         </Gutters>
       </form>
     </>

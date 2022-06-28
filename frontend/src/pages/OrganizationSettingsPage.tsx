@@ -14,7 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-} from '@material-ui/core'
+} from '@mui/material'
 import { getMembership } from '../models/accounts'
 import { memberOrganization, selectPermissions, selectLimitsLookup } from '../models/organization'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -201,7 +201,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                       }
                     />
                     <ListItemSecondaryAction>
-                      <Button variant="contained" color="default" disabled={updating} onClick={disable} size="small">
+                      <Button variant="contained" disabled={updating} onClick={disable} size="small">
                         {updating ? 'Updating...' : 'Disable'}
                       </Button>
                     </ListItemSecondaryAction>
@@ -260,5 +260,5 @@ export const OrganizationSettingsPage: React.FC = () => {
         </>
       )}
     </Container>
-  )
+  );
 }

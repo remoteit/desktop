@@ -55,7 +55,7 @@ export function SignInForm() {
       onClickCheckboxRemember={onClickCheckboxRemember}
       onSignInSuccess={onSignInSuccess}
       segmentSettings={segmentSettings}
-      themeOverride={theme}
+      // themeOverride={theme} // MUI V4 theme
     />
   )
 }

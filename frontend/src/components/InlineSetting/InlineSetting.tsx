@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { IconButton } from '../../buttons/IconButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
-  label?: React.ReactElement | string
-  icon?: React.ReactElement | string
-  actionIcon?: React.ReactElement
+  label?: React.ReactNode
+  icon?: React.ReactNode
+  actionIcon?: React.ReactNode
   displayValue?: string | number
   disabled?: boolean
   loading?: boolean
@@ -21,9 +21,10 @@ type Props = {
   hideIcon?: boolean
   fieldRef?: React.RefObject<HTMLInputElement>
   debug?: boolean
-  warning?: React.ReactElement | string
+  warning?: React.ReactNode
   modified?: boolean
   disableGutters?: boolean
+  children?: React.ReactNode
   onSubmit: () => void
   onResetClick: () => void
   onCancel: () => void
@@ -104,6 +105,7 @@ export const InlineSetting: React.FC<Props> = ({
                 onResetClick()
                 fieldRef?.current?.focus()
               }}
+              size="lg"
             />
           )}
           <IconButton

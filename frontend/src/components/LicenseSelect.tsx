@@ -2,7 +2,8 @@ import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { getLicenseChip } from './LicenseChip'
-import { makeStyles, TextField, TextFieldProps, MenuItem } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { TextField, TextFieldProps, MenuItem } from '@mui/material'
 
 type Props = { member: IOrganizationMember; size?: TextFieldProps['size']; disabled?: boolean }
 

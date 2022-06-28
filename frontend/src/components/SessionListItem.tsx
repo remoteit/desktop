@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
+import { ListItem, ListItemText, ListItemIcon } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { InitiatorPlatform } from './InitiatorPlatform'
@@ -32,7 +32,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, inacti
 
   if (!session) return null
 
-  let icon: React.ReactElement | null = null
+  let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
 
   return (

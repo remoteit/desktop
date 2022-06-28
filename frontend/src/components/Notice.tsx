@@ -1,16 +1,18 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { spacing, fontSizes } from '../styling'
-import { makeStyles, alpha, Paper, Box } from '@material-ui/core'
+import { alpha, Paper, Box } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import classnames from 'classnames'
 
 type Props = {
   severity?: 'info' | 'warning' | 'danger' | 'success'
-  button?: React.ReactElement
+  button?: React.ReactNode
   gutterTop?: boolean
   gutterBottom?: boolean
   fullWidth?: boolean
   loading?: boolean
+  children?: React.ReactNode
 }
 
 export const Notice: React.FC<Props> = ({

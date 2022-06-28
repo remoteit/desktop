@@ -3,7 +3,8 @@ import { REGEX_LAST_PATH } from '../../shared/constants'
 import { useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { makeStyles, Typography, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
 import { getOrganization } from '../../models/organization'
 import { ContactSelector } from '../../components/ContactSelector'
@@ -65,7 +66,7 @@ export const SharePage: React.FC = () => {
               <CircularProgress className={css.loading} size={fontSizes.md} />
             ) : (
               <Tooltip title={`Remove ${email}`}>
-                <IconButton onClick={handleUnshare} disabled={deleting}>
+                <IconButton onClick={handleUnshare} disabled={deleting} size="large">
                   <Icon name="trash" size="md" fixedWidth />
                 </IconButton>
               </Tooltip>

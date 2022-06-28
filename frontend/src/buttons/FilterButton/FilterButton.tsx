@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, Tooltip, IconButton, Badge } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, IconButton, Badge } from '@mui/material'
 import { selectIsFiltered } from '../../models/devices'
 import { ApplicationState, Dispatch } from '../../store'
 import { Icon } from '../../components/Icon'
@@ -15,7 +16,7 @@ export const FilterButton: React.FC = () => {
   const icon = open ? 'times' : 'filter'
   return (
     <Tooltip title={open ? 'Hide Filters' : 'Show Filters'} className={css.button}>
-      <IconButton onMouseDown={() => ui.setPersistent({ drawerMenu: open ? null : 'FILTER' })}>
+      <IconButton onMouseDown={() => ui.setPersistent({ drawerMenu: open ? null : 'FILTER' })} size="large">
         {changed ? (
           <Badge variant="dot" color="primary">
             <Icon name={icon} size="base" type="regular" fixedWidth />

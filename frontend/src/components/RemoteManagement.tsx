@@ -1,6 +1,7 @@
 import React from 'react'
 import { IP_PRIVATE } from '../shared/constants'
-import { makeStyles, Typography, List, ListItem, ListItemText, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, List, ListItem, ListItemText, Box } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'

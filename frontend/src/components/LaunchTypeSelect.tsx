@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Application } from '../shared/applications'
-import { ListItem, ListItemIcon, MenuItem, TextField } from '@material-ui/core'
+import { ListItem, ListItemIcon, MenuItem, TextField } from '@mui/material'
 import { newConnection } from '../helpers/connectionHelper'
 import { Icon } from './Icon'
 

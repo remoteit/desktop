@@ -1,16 +1,17 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
-import { Autocomplete } from '@material-ui/lab'
+import { makeStyles } from '@mui/styles'
 import {
-  makeStyles,
   Box,
+  ListItem,
   ListItemIcon,
   ListItemText,
   Paper,
   Popper,
   TextField,
   TextFieldProps,
-} from '@material-ui/core'
+  Autocomplete,
+} from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
 import { REGEX_TAG_SAFE } from '../shared/constants'
 import { tagsInclude } from '../helpers/utilHelper'
@@ -71,7 +72,7 @@ export const TagAutocomplete: React.FC<Props> = ({
     : items
 
   return (
-    <Popper anchorEl={targetEl} open={open} placement="bottom-start">
+    <Popper anchorEl={targetEl} open={true /* open */} placement="bottom-start">
       <Paper className={css.container} elevation={1}>
         <Autocomplete
           fullWidth
@@ -85,8 +86,8 @@ export const TagAutocomplete: React.FC<Props> = ({
             listbox: css.listbox,
             option: css.option,
             input: css.input,
-            popperDisablePortal: css.popperDisablePortal,
-            noOptions: css.empty,
+            // popperDisablePortal: css.popperDisablePortal,
+            // noOptions: css.empty,
           }}
           onClose={onClose}
           onChange={(event, value, reason) => {
@@ -94,7 +95,7 @@ export const TagAutocomplete: React.FC<Props> = ({
             if (!value.created) onSelect('new', { name: inputValue, color: value.color, created: new Date() })
             else onSelect('add', value)
           }}
-          PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
+          // PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
           noOptionsText={false}
           getOptionLabel={option => option.name}
           onInputChange={(event, newValue) => {
@@ -102,8 +103,8 @@ export const TagAutocomplete: React.FC<Props> = ({
             setInputValue(result)
             if (onChange) onChange(result)
           }}
-          renderOption={option => (
-            <>
+          renderOption={(props, option) => (
+            <ListItem {...props}>
               <ListItemIcon>
                 <Icon
                   name={!option.name ? 'plus' : indicator || 'circle'}
@@ -119,7 +120,7 @@ export const TagAutocomplete: React.FC<Props> = ({
                   </span>
                 ))}
               />
-            </>
+            </ListItem>
           )}
           renderInput={params => (
             <TextField
@@ -140,7 +141,7 @@ export const TagAutocomplete: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   container: { width: 200 },
-  listbox: { shadow: 'none', paddingTop: 0 },
+  listbox: { shadow: 'none', paddingTop: 0, border: '1px solid red' },
   textField: { width: '100%', padding: `${spacing.xs}px ${spacing.xs}px 0` },
   input: {
     width: '100%',

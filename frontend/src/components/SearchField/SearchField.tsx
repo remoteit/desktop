@@ -1,9 +1,9 @@
 import React from 'react'
 import { getDeviceModel } from '../../models/accounts'
-import { TextField, IconButton, Tooltip, Typography } from '@material-ui/core'
+import { TextField, IconButton, Tooltip, Typography } from '@mui/material'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -56,6 +56,7 @@ export const SearchField: React.FC = () => {
                 devices.set({ query: '', searched: false, from: 0 })
                 devices.fetch()
               }}
+              size="large"
             >
               <Icon name="times" size="md" color="grayDarker" fixedWidth />
             </IconButton>
@@ -63,7 +64,7 @@ export const SearchField: React.FC = () => {
         )}
         <Tooltip title="Search">
           <span>
-            <IconButton type="submit" disabled={disabled}>
+            <IconButton type="submit" disabled={disabled} size="large">
               <Icon name="search" size="md" type="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
             </IconButton>
           </span>

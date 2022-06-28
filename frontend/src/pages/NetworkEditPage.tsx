@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { DEFAULT_ID } from '../models/networks'
 import { selectNetwork } from '../models/networks'
 import { useParams, useHistory } from 'react-router-dom'

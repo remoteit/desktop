@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip, IconButton } from '@material-ui/core'
+import { Tooltip, IconButton } from '@mui/material'
 import { Icon } from '../../components/Icon'
 
 type Props = { connection?: IConnection; onClick?: () => void; visible: boolean; className?: string }
@@ -14,6 +14,7 @@ export const ErrorButton: React.FC<Props> = ({ connection, onClick, visible, cla
           event.stopPropagation()
           onClick && onClick()
         }}
+        size="large"
       >
         <Icon name="exclamation-triangle" color="danger" size="md" fixedWidth />
       </IconButton>

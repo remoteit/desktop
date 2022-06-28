@@ -10,7 +10,7 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
-} from '@material-ui/core'
+} from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { getOwnOrganization, memberOrganization } from '../models/organization'
 import { selectOwnRemoteitLicense } from '../models/plans'
@@ -60,7 +60,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                   <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                     <LicenseChip license={license?.valid ? 'LICENSED' : 'UNLICENSED'} />
                   </Box>
-                  <IconButton icon="pencil" title="Edit Organization" to="/organization" />
+                  <IconButton icon="pencil" title="Edit Organization" to="/organization" size="lg" />
                 </ListItemSecondaryAction>
               </ListItem>
               <Divider variant="inset" />
@@ -91,6 +91,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                     icon="sign-out"
                     title="Leave Account"
                     onClick={() => accounts.leaveMembership(m.account.id)}
+                    size="lg"
                   />
                 </ListItemSecondaryAction>
               </ListItem>

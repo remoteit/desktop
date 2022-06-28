@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { emit } from '../services/Controller'
-import { Button, Box } from '@material-ui/core'
+import { Button, Box } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { Confirm } from '../components/Confirm'

@@ -4,7 +4,7 @@ import { Title } from '../Title'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '../../shared/nameHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 
 type Props = {
   connection?: IConnection

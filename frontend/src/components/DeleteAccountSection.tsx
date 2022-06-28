@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Box, Button } from '@material-ui/core'
+import { Typography, Box, Button } from '@mui/material'
 import { Gutters } from '../components/Gutters'
 import { Icon } from '../components/Icon'
 

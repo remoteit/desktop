@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { ApplicationState } from '../../store'
 import { ListItemSetting } from '../ListItemSetting'
 import { emit } from '../../services/Controller'
@@ -33,6 +33,6 @@ export const SettingsDisableNetworkItem: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   span: { color: palette.warning.main },
 }))

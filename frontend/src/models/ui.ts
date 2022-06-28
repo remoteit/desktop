@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { Theme } from '@material-ui/core'
+import { Theme } from '@mui/material'
 import { RootModel } from '.'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'

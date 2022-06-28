@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import useResizeObserver from 'use-resize-observer'
-import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, InputLabel, Collapse, Paper } from '@mui/material'
 import { getAttributes } from './Attributes'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'

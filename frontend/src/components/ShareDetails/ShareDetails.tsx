@@ -1,7 +1,8 @@
 import React from 'react'
 import { getPermissions } from '../../helpers/userHelper'
-import { ListItemSecondaryAction, Tooltip, makeStyles } from '@material-ui/core'
+import { ListItemSecondaryAction, Tooltip } from '@mui/material'
 import { ServiceMiniState } from '../ServiceMiniState'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 

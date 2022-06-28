@@ -1,7 +1,7 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
-import { Tooltip, Link } from '@material-ui/core'
+import { Tooltip, Link } from '@mui/material'
 import { ApplicationState } from '../../store'
 import { spacing, fontSizes } from '../../styling'
 
@@ -28,7 +28,7 @@ export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     top: spacing.xs,
     right: spacing.lg,

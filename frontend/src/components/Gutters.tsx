@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { spacing, Spacing } from '../styling'
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
   bottom?: Spacing | null
   top?: Spacing | null
   className?: string
+  children?: React.ReactNode
 }
 
 export const Gutters: React.FC<Props> = ({ inset, size, className, bottom, top, children, ...props }) => {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSidebar } from './OrganizationSidebar'

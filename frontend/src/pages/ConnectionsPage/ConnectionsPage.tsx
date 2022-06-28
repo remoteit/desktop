@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -79,7 +79,7 @@ export const ConnectionsPage: React.FC = () => {
         <>
           <Typography variant="subtitle1">
             <Title>Networks</Title>
-            <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth />
+            <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth size="lg" />
           </Typography>
           {networks.map(n => (
             <Network key={n.id} network={n} />

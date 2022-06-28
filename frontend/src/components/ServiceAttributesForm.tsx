@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Typography, TextField, List, ListItem, MenuItem } from '@material-ui/core'
+import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
 import { useStyles } from './ServiceForm/ServiceForm'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
@@ -16,7 +16,7 @@ type Props = IService['attributes'] & {
   connection?: IConnection
   disabled: boolean
   customTokens?: string[]
-  customTokensNote?: ILookup<React.ReactElement>
+  customTokensNote?: ILookup<React.ReactNode>
   attributes: IService['attributes']
   globalDefaults?: boolean
   onUpdate: (attributes: IService['attributes']) => void

@@ -1,5 +1,5 @@
-import { Slide, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogProps } from '@material-ui/core'
-import { TransitionProps } from '@material-ui/core/transitions'
+import { Slide, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogProps } from '@mui/material'
+import { TransitionProps } from '@mui/material/transitions'
 import React from 'react'
 
 export const Confirm: React.FC<{
@@ -7,6 +7,7 @@ export const Confirm: React.FC<{
   action?: string
   open: boolean
   maxWidth?: DialogProps['maxWidth']
+  children?: React.ReactNode
   onConfirm: (e: React.MouseEvent) => void
   onDeny: () => void
 }> = ({ title, action = 'Ok', open, onConfirm, onDeny, maxWidth = 'xs', children }) => (
@@ -32,7 +33,7 @@ export const Confirm: React.FC<{
 )
 
 const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & { children?: React.ReactElement<any, any> },
+  props: TransitionProps & { children: React.ReactElement<any, any> },
   ref: React.Ref<unknown>
 ) {
   return <Slide direction="down" ref={ref} {...props} />

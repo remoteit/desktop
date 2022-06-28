@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItem, ListItemIcon } from '@material-ui/core'
+import { ListItem, ListItemIcon } from '@mui/material'
 import { EventIcon } from './EventIcon'
 import { EventMessage } from './EventMessage'
 

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { Icon } from './Icon'
-import { ListItem, ListItemText, ListItemIcon, Radio } from '@material-ui/core'
+import { ListItem, ListItemText, ListItemIcon, Radio } from '@mui/material'
 
 type Props = {
   keyProp?: string | number
@@ -8,6 +8,7 @@ type Props = {
   subLabel?: string | React.ReactNode
   disabled?: boolean
   checked?: boolean
+  children?: React.ReactNode
   onClick: (checked: boolean) => void
 }
 

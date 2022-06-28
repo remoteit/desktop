@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { makeStyles, Button, ListSubheader, Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Button, ListSubheader, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
 import { ExpandIcon } from './ExpandIcon'
 import { spacing } from '../styling'
 
@@ -12,8 +13,8 @@ type IAccordionMenu = {
   square?: boolean
   onClear?: () => void
   onClick?: (expanded: boolean) => void
-  action?: React.ReactElement
-  children?: React.ReactElement
+  action?: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const AccordionMenuItem: React.FC<IAccordionMenu> = ({

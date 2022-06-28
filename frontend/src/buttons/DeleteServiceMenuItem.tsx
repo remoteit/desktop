@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Confirm } from '../components/Confirm'

@@ -6,12 +6,12 @@ import { getDeviceModel } from '../models/accounts'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TextField, Typography, ListSubheader, ButtonBase } from '@material-ui/core'
-import { Autocomplete, createFilterOptions } from '@material-ui/lab'
+import { TextField, Typography, ListSubheader, ButtonBase } from '@mui/material'
+import { Autocomplete } from '@mui/lab'
 import { spacing, fontSizes } from '../styling'
 import { connectionName } from '../helpers/connectionHelper'
 import { TargetPlatform } from './TargetPlatform'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { Icon } from './Icon'
 
@@ -67,7 +67,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     <div className={css.container}>
       <Autocomplete
         open
-        freeSolo
+        // freeSolo
         fullWidth
         autoSelect
         autoComplete
@@ -88,10 +88,10 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           if (reason === 'input') change(newQuery)
           if (reason === 'clear') clear()
         }}
-        getOptionLabel={option => connectionName({ name: option.serviceName }, { name: option.deviceName })}
-        getOptionSelected={(option, value) => option.serviceId === value.serviceId}
-        filterOptions={createFilterOptions({ stringify: option => option.serviceName + ' ' + option.deviceName })}
-        closeIcon={
+        // getOptionLabel={option => option connectionName({ name: option.serviceName }, { name: option.deviceName })}
+        isOptionEqualToValue={(option, value) => option.serviceId === value.serviceId}
+        // filterOptions={({ stringify: option => option.serviceName + ' ' + option.deviceName })}
+        clearIcon={
           <>
             {fetching && <Icon name="sync" size="sm" type="solid" spin fixedWidth inlineLeft />}
             <Icon name="times" size="md" fixedWidth />
@@ -111,25 +111,25 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             }}
           />
         )}
-        renderOption={(option: ISearch) => {
-          const parts = reactStringReplace(option.serviceName, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
-            <span key={i} className={css.highlight}>
-              {match}
-            </span>
-          ))
-          const enabled = enabledIds.includes(option.serviceId)
-          return (
-            <span
-              className={classnames(enabled && css.enabled, option.offline && css.offline, css.indent)}
-              data-email={option.ownerEmail}
-              data-platform={option.targetPlatform}
-              data-offline={option.offline.toString()}
-              data-id={option.deviceId}
-            >
-              {parts}
-            </span>
-          )
-        }}
+        // renderOption={(option: ISearch) => {
+        //   const parts = reactStringReplace(option.serviceName, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
+        //     <span key={i} className={css.highlight}>
+        //       {match}
+        //     </span>
+        //   ))
+        //   const enabled = enabledIds.includes(option.serviceId)
+        //   return (
+        //     <span
+        //       className={classnames(enabled && css.enabled, option.offline && css.offline, css.indent)}
+        //       data-email={option.ownerEmail}
+        //       data-platform={option.targetPlatform}
+        //       data-offline={option.offline.toString()}
+        //       data-id={option.deviceId}
+        //     >
+        //       {parts}
+        //     </span>
+        //   )
+        // }}
         renderGroup={option => {
           const props = option.children && option.children[0].props.children.props
           return [

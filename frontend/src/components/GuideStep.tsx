@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Box, Tooltip, Typography, TooltipProps, BoxProps } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, Tooltip, Typography, TooltipProps, BoxProps } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { IconButton } from '../buttons/IconButton'
@@ -9,7 +10,7 @@ type Props = {
   guide: string
   step: number
   placement?: TooltipProps['placement']
-  instructions: React.ReactElement | string
+  instructions: React.ReactNode
   component?: BoxProps['component']
   autoNext?: boolean
   autoStart?: boolean
@@ -20,6 +21,7 @@ type Props = {
   showStart?: boolean
   show?: boolean
   hide?: boolean
+  children?: React.ReactNode
 }
 
 export const GuideStep: React.FC<Props> = ({
@@ -56,7 +58,7 @@ export const GuideStep: React.FC<Props> = ({
       classes={{ tooltip: css.tip, arrow: css.arrow }}
       open={open}
       arrow={!hideArrow}
-      interactive
+      // interactive
       placement={placement || 'top'}
       title={
         <>
@@ -66,6 +68,7 @@ export const GuideStep: React.FC<Props> = ({
             color="white"
             onClick={() => ui.guide({ guide, step: 0, done: true })}
             className={css.close}
+            size="lg"
           />
           <Typography variant="body1">{instructions}</Typography>
           {showNavigation && (
@@ -77,6 +80,7 @@ export const GuideStep: React.FC<Props> = ({
                 type="light"
                 disabled={step <= 1}
                 onClick={() => ui.guide({ guide, step: step - 1, back: true })}
+                size="lg"
               />
               <IconButton
                 icon="angle-right"
@@ -85,6 +89,7 @@ export const GuideStep: React.FC<Props> = ({
                 type="light"
                 disabled={step >= state.total}
                 onClick={() => ui.guide({ guide, step: step + 1 })}
+                size="lg"
               />
             </Box>
           )}
@@ -106,6 +111,7 @@ export const GuideStep: React.FC<Props> = ({
             onClick={start}
             color={state.done || step === 1 ? 'grayLight' : 'guide'}
             className={css.icon}
+            size="lg"
           />
         )}
         {children}

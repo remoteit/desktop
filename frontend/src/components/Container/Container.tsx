@@ -1,6 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
-import { makeStyles, Divider } from '@material-ui/core'
+import { Divider } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { spacing, Color } from '../../styling'
 import { Body, BodyProps } from '../Body'
 
@@ -14,6 +15,7 @@ type Props = {
   gutterBottom?: boolean
   backgroundColor?: Color
   className?: string
+  children?: React.ReactNode
 }
 
 export const Container: React.FC<Props> = ({

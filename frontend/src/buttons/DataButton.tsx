@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, ListItemText, IconButton, InputLabel, Tooltip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItemText, IconButton, InputLabel, Tooltip } from '@mui/material'
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -7,7 +8,7 @@ export type DataButtonProps = {
   title: string
   value?: string
   label?: string
-  icon: string | React.ReactElement
+  icon: React.ReactNode
   iconColor?: Color
   gutterBottom?: boolean
   fullWidth?: boolean
@@ -30,7 +31,7 @@ export const DataButton: React.FC<DataButtonProps> = ({
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
-      <IconButton className={css.box} onClick={onClick}>
+      <IconButton className={css.box} onClick={onClick} size="large">
         {typeof icon === 'string' ? <Icon name={icon} color={iconColor} size="md" fixedWidth /> : icon}
         <ListItemText>
           <InputLabel shrink>{label}</InputLabel>

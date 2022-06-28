@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
-import { List } from '@material-ui/core'
+import { List } from '@mui/material'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = { device?: IDevice }

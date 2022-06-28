@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItemText, ListItemIcon } from '@material-ui/core'
+import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from '../ListItemLocation'
 import { Avatar } from '../Avatar'
 import { Duration } from '../Duration'
@@ -10,6 +10,7 @@ interface Props {
   user: IUser
   isConnected?: boolean
   member?: boolean
+  children?: React.ReactNode
 }
 
 export const UserListItem: React.FC<Props> = ({ user, isConnected, member, children }) => {

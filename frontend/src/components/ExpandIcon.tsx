@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from './Icon'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
 type Props = { open?: boolean }

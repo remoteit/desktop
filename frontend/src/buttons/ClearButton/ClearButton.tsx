@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Button } from '@material-ui/core'
+import { Button } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { IconButton } from '../IconButton'
 import { spacing } from '../../styling'
 

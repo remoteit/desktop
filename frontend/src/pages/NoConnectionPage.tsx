@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Typography, Box } from '@material-ui/core'
+import { Typography, Box } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 import { Icon } from '../components/Icon'
 

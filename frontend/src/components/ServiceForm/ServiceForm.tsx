@@ -7,7 +7,8 @@ import {
   DEFAULT_CONNECTION,
   MAX_DESCRIPTION_LENGTH,
 } from '../../shared/constants'
-import { makeStyles, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'

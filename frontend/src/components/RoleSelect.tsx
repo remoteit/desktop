@@ -1,5 +1,5 @@
 import React from 'react'
-import { TextField, TextFieldProps, MenuItem } from '@material-ui/core'
+import { TextField, TextFieldProps, MenuItem } from '@mui/material'
 
 type Props = {
   size?: TextFieldProps['size']

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { DeleteDevice } from '../buttons/DeleteDevice'
 import { CopyMenuItem } from './CopyMenuItem'
@@ -23,7 +23,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick}>
+      <IconButton onClick={handleClick} size="large">
         <Icon name="ellipsis-v" size="md" fixedWidth />
       </IconButton>
       <Menu
@@ -31,7 +31,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        getContentAnchorEl={null}
+        // getContentAnchorEl={null}
         disableScrollLock
         autoFocus={false}
         elevation={2}

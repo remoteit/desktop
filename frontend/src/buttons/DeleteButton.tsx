@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { Tooltip, IconButton, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { Tooltip, IconButton, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Confirm } from '../components/Confirm'
 import { Icon } from '../components/Icon'
 
 type Props = {
   title?: string
-  warning?: string | React.ReactElement
+  warning?: React.ReactNode
   icon?: string
   disabled?: boolean
   destroying?: boolean
@@ -44,7 +44,7 @@ export const DeleteButton: React.FC<Props> = ({
       ) : (
         <Tooltip title={title}>
           <span>
-            <IconButton disabled={disabled} onClick={() => setOpen(true)}>
+            <IconButton disabled={disabled} onClick={() => setOpen(true)} size="large">
               {DeleteIcon}
             </IconButton>
           </span>

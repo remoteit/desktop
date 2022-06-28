@@ -1,5 +1,6 @@
 import React from 'react'
-import { List, ListItem, makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { List, ListItem } from '@mui/material'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { MAX_NAME_LENGTH } from '../shared/constants'
 import { matchPath, useLocation, useHistory, Link } from 'react-router-dom'
-import { Collapse, Typography, TextField, Box } from '@material-ui/core'
+import { Collapse, Typography, TextField, Box } from '@mui/material'
 import { selectNetwork } from '../models/networks'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -46,8 +46,8 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
                   setName(name)
                 }}
               />
-              <IconButton icon="times" color="grayDark" onClick={() => history.goBack()} inline fixedWidth />
-              <IconButton icon="check" color="primary" submit fixedWidth />
+              <IconButton icon="times" color="grayDark" onClick={() => history.goBack()} inline fixedWidth size="lg" />
+              <IconButton icon="check" color="primary" submit fixedWidth size="lg" />
             </Box>
           </form>
         </Gutters>

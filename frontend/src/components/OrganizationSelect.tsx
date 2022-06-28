@@ -4,7 +4,8 @@ import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, Typography, Box, List, ListItem } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, Box, List, ListItem } from '@mui/material'
 import { getOwnOrganization, getOrganization, memberOrganization } from '../models/organization'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
@@ -77,6 +78,7 @@ export const OrganizationSelect: React.FC = () => {
             icon="ellipsis-h"
             to="/organization/memberships"
             placement="right"
+            size="lg"
           />
         </ListItem>
       </List>

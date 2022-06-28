@@ -1,7 +1,7 @@
 import React from 'react'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
-import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
+import { Typography, List, ListItem, ListItemIcon } from '@mui/material'
 
 export interface Props {
   network?: INetwork

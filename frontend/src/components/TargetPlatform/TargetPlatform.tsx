@@ -1,6 +1,6 @@
 import React from 'react'
 import { getTargetPlatform } from '../../helpers/platformHelper'
-import { Tooltip, Box } from '@material-ui/core'
+import { Tooltip, Box } from '@mui/material'
 import { FontSize } from '../../styling'
 import { Icon } from '../Icon'
 

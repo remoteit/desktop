@@ -1,6 +1,6 @@
 import React from 'react'
 import { DynamicButton } from '../DynamicButton'
-import { Fade } from '@material-ui/core'
+import { Fade } from '@mui/material'
 
 type Props = {
   service?: IService

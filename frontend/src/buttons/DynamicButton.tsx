@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, IconButton, Tooltip, Button, alpha, darken } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
 import { Color } from '../styling'
 import { Icon, IconProps } from '../components/Icon'
 
@@ -74,7 +75,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
   return (
     <Tooltip title={title}>
       <span>
-        <IconButton disabled={disabled} onClick={onClick}>
+        <IconButton disabled={disabled} onClick={onClick} size="large">
           {IconComponent}
         </IconButton>
       </span>

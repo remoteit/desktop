@@ -1,12 +1,12 @@
 import React from 'react'
 import { Title } from '../Title'
 import { SessionListItem } from '../SessionListItem'
-import { Typography, Box } from '@material-ui/core'
+import { Typography, Box } from '@mui/material'
 
 export interface Props {
   sessions: ISession[]
   title: string
-  action?: React.ReactElement
+  action?: React.ReactNode
   other?: boolean
   inactive?: boolean
   isNew?: boolean

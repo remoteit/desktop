@@ -1,5 +1,5 @@
 import React from 'react'
-import { Fade } from '@material-ui/core'
+import { Fade } from '@mui/material'
 import { Color } from '../../styling'
 import { DynamicButton } from '../DynamicButton'
 import { useDispatch } from 'react-redux'

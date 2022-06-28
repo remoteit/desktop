@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Box, useMediaQuery, ListItemSecondaryAction } from '@material-ui/core'
+import { Box, useMediaQuery, ListItemSecondaryAction } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'

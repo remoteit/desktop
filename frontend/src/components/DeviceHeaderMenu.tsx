@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
@@ -11,7 +11,11 @@ import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
 
-export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
+export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any; children?: React.ReactNode }> = ({
+  device,
+  header,
+  children,
+}) => {
   if (!device) return <UnauthorizedPage />
 
   return (

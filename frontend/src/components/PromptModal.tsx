@@ -8,7 +8,7 @@ import {
   DialogTitle,
   TextField,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 import React, { useState, useEffect } from 'react'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { Application } from '../shared/applications'

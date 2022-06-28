@@ -1,9 +1,9 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import classnames from 'classnames'
 
-type Props = { inline?: boolean; enabled?: boolean; className?: string }
+type Props = { inline?: boolean; enabled?: boolean; className?: string; children?: React.ReactNode }
 
 export const Title: React.FC<Props> = ({ children, inline, enabled, className }) => {
   const css = useStyles({ inline, enabled })

@@ -1,6 +1,7 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { makeStyles, ButtonBase, Divider, Menu } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -49,7 +50,7 @@ export const AvatarMenu: React.FC = () => {
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        getContentAnchorEl={null}
+        // getContentAnchorEl={null}
         disableScrollLock
         elevation={2}
       >

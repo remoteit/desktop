@@ -1,5 +1,6 @@
 import React from 'react'
-import { Box, LinearProgress, makeStyles, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, LinearProgress, Typography } from '@mui/material'
 
 export interface Props {
   description?: string
@@ -22,5 +23,5 @@ const useStyles = makeStyles({
   progress: {
     height: 8,
     borderRadius: 3,
-  }
+  },
 })

@@ -1,13 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { spacing } from '../styling'
 import { usePanelWidth } from '../hooks/usePanelWidth'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
 import classnames from 'classnames'
 
 type Props = {
-  primary: React.ReactElement
-  secondary?: React.ReactElement
+  primary: React.ReactNode
+  secondary?: React.ReactNode
   layout: ILayout
 }
 

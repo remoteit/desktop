@@ -1,6 +1,7 @@
 import React from 'react'
 import { humanizeDays } from '../models/plans'
-import { makeStyles, LinearProgress, Typography, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { LinearProgress, Typography, Box } from '@mui/material'
 import { spacing } from '../styling'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
@@ -9,7 +10,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const overLimit = limit.value !== null && limit.actual > limit.value ? limit.actual - limit.value : 0
 
   let template: 'value' | 'text' | undefined
-  let message: React.ReactElement | string | undefined
+  let message: React.ReactNode | undefined
 
   if (limit.value === 0 && limit.actual === 0) return null
 

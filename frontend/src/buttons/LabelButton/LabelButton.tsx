@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Tooltip, Select, MenuItem, makeStyles } from '@material-ui/core'
+import { Tooltip, Select, MenuItem } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 
 export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
@@ -24,7 +25,7 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
         onMouseLeave={() => setTooltip(false)}
         style={{ backgroundColor: label.color }}
         className={css.all}
-        classes={{ icon: css.icon, selectMenu: css.menu }}
+        classes={{ icon: css.icon, select: css.menu }}
         value={label.id}
         onOpen={() => setTooltip(false)}
         onChange={event => handleUpdate(Number(event.target.value))}
@@ -42,7 +43,7 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
     </Tooltip>
   )
 }
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   all: {
     border: `3px solid ${palette.grayLighter.main}`,
     width: 30,

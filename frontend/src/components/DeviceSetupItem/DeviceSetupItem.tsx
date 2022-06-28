@@ -3,7 +3,8 @@ import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
 import { ApplicationState } from '../../store'
-import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@mui/material'
 import { ListItemLocation } from '../ListItemLocation'
 import { getAllDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
@@ -57,7 +58,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
                 <Link onClick={() => history.push('/devices')}>cancel</Link>
               </Typography>
             ) : (
-              <Chip label="Restore" variant="default" size="small" onClick={() => history.push('/devices/restore')} />
+              <Chip label="Restore" size="small" onClick={() => history.push('/devices/restore')} />
             )}
           </ListItemSecondaryAction>
         )}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { makeStyles, Menu, MenuItem, Fade, darken } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Menu, MenuItem, Fade, darken } from '@mui/material'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 
 type Props = DynamicButtonProps & {
@@ -51,7 +52,7 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props 
           horizontal: 'right',
         }}
         PaperProps={{ style: { minWidth: menuWidth } }}
-        getContentAnchorEl={null}
+        // getContentAnchorEl={null}
         TransitionComponent={Fade}
         disableAutoFocusItem
       >

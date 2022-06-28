@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import {
-  makeStyles,
-  Popover,
-  List,
-  ListItem,
-  ListSubheader,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-  Divider,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Popover, List, ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
 import { selectDeviceByAccount } from '../models/devices'
 import { isPortal, getOs } from '../services/Browser'
 import { useDispatch, useSelector } from 'react-redux'

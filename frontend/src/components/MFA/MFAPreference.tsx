@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { ApplicationState, Dispatch } from '../../store'
-import { makeStyles, Box, Button, Typography, Chip, Divider } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, Button, Typography, Chip, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'

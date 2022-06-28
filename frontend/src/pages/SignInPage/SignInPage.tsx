@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
-import { makeStyles, Link, Typography } from '@material-ui/core'
+import { Link, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { SignInForm } from '../../components/SignInForm'
 import { IP_PRIVATE } from '../../shared/constants'
 import { isElectron } from '../../services/Browser'

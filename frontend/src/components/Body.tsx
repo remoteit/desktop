@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import classnames from 'classnames'
 import { spacing, Color } from '../styling'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 
 const SCROLLBAR_WIDTH = 15
 
@@ -17,6 +17,7 @@ export type BodyProps = {
   verticalOverflow?: boolean
   horizontalOverflow?: boolean
   scrollbarBackground?: Color
+  children?: React.ReactNode
 }
 
 export const Body: React.FC<BodyProps> = ({

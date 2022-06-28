@@ -1,4 +1,4 @@
-import { IconButton, Tooltip } from '@material-ui/core'
+import { IconButton, Tooltip } from '@mui/material'
 import React, { useState } from 'react'
 import { Icon } from '../../components/Icon'
 import { Dispatch } from '../../store'
@@ -18,7 +18,7 @@ export function CSVDownloadButton() {
 
   return (
     <Tooltip title="Download CSV">
-      <IconButton disabled={fetching} onClick={download}>
+      <IconButton disabled={fetching} onClick={download} size="large">
         <Icon name={fetching ? 'spinner-third' : 'arrow-to-bottom'} size="md" fixedWidth spin={fetching} />
       </IconButton>
     </Tooltip>

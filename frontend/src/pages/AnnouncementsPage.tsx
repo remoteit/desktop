@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectAnnouncements } from '../models/announcements'
 import { AnnouncementCard } from '../components/AnnouncementCard'
 import { Container } from '../components/Container'

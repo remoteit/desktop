@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, Tooltip, IconButton, Badge } from '@material-ui/core'
+import { Tooltip, IconButton, Badge } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { ApplicationState, Dispatch } from '../store'
 import { defaultState } from '../models/ui'
 import { Icon } from '../components/Icon'
@@ -15,7 +16,7 @@ export const ColumnsButton: React.FC = () => {
   const icon = open ? 'times' : 'line-columns'
   return (
     <Tooltip title={open ? 'Hide Columns' : 'Show Columns'} className={css.button}>
-      <IconButton onClick={() => ui.setPersistent({ drawerMenu: open ? null : 'COLUMNS' })}>
+      <IconButton onClick={() => ui.setPersistent({ drawerMenu: open ? null : 'COLUMNS' })} size="large">
         {changed ? (
           <Badge variant="dot" color="primary">
             <Icon name={icon} size="base" type="regular" fixedWidth />

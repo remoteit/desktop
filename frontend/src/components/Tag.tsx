@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Tooltip, Chip, IconButton } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, Chip, IconButton } from '@mui/material'
 import { spacing, FontSize } from '../styling'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from '../components/Icon'
@@ -51,7 +52,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
       size="small"
       style={{ color }}
       deleteIcon={
-        <IconButton>
+        <IconButton size="large">
           <Icon name="times" size="xs" />
         </IconButton>
       }

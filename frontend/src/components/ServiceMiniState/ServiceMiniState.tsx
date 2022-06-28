@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Box, alpha } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, alpha } from '@mui/material'
 import { spacing, fontSizes, Color, radius } from '../../styling'
 import { connectionState } from '../../helpers/connectionHelper'
 import { getLicenseChip } from '../LicenseChip'

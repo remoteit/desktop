@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, ListItemText, ListItemIcon } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
 import { TargetPlatform } from './TargetPlatform'
@@ -13,6 +14,7 @@ import { Icon } from './Icon'
 export interface Props {
   serviceId?: string
   network?: INetwork
+  children?: React.ReactNode
 }
 
 export const NetworkListItem: React.FC<Props> = ({ network, serviceId, children }) => {
@@ -29,7 +31,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, children 
   const offline = service?.state !== 'active'
   const css = useStyles({ state: session?.state, offline, enabled: network?.enabled })
 
-  let icon: React.ReactElement | null = null
+  let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
 
   return (

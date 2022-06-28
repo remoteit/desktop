@@ -1,6 +1,6 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
-import { AvatarGroup } from '@material-ui/lab'
+import { makeStyles } from '@mui/styles'
+import { AvatarGroup } from '@mui/lab'
 import { Avatar } from './Avatar'
 
 export interface Props {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { makeStyles, Tooltip, IconButton } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, IconButton } from '@mui/material'
 import { isMac, isRemote } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing } from '../../styling'
@@ -36,7 +37,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
         <div className={css.remote}>
           {fullscreenEnabled && (
             <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'} arrow>
-              <IconButton onClick={toggleFullscreen}>
+              <IconButton onClick={toggleFullscreen} size="large">
                 <Icon name={fullscreen ? 'compress' : 'expand'} size="md" />
               </IconButton>
             </Tooltip>

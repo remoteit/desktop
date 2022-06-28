@@ -1,14 +1,6 @@
 import React, { useState, useRef } from 'react'
-import {
-  makeStyles,
-  Tooltip,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Switch,
-  Button,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@mui/material'
 import { Confirm } from '../Confirm'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
@@ -18,15 +10,15 @@ type Props = {
   icon?: string
   iconColor?: Color
   hideIcon?: boolean
-  label: string | React.ReactElement
-  subLabel?: string | React.ReactElement
+  label: React.ReactNode
+  subLabel?: React.ReactNode
   size?: 'small' | 'medium'
   button?: string
   toggle?: boolean
   tooltip?: string
   disabled?: boolean
   confirm?: boolean
-  confirmMessage?: string | React.ReactElement
+  confirmMessage?: React.ReactNode
   confirmTitle?: string
   quote?: boolean
   modified?: boolean

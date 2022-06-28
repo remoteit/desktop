@@ -7,6 +7,7 @@ import { Icon } from './Icon'
 export interface Props {
   serviceId?: string
   network?: INetwork
+  children?: React.ReactNode
 }
 
 export const NetworkListTitle: React.FC<Props> = ({ network, serviceId, children }) => {

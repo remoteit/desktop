@@ -1,5 +1,6 @@
 import React from 'react'
-import { Chip, makeStyles } from '@material-ui/core'
+import { Chip } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 const licenseChipLookup: ILookup<ILicenseChip> = {
   UNKNOWN: { name: 'Unknown', colorName: 'grayDarker' },

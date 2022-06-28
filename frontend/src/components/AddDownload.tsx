@@ -1,6 +1,6 @@
 import React from 'react'
 import { windowOpen } from '../services/Browser'
-import { Button, Typography } from '@material-ui/core'
+import { Button, Typography } from '@mui/material'
 import { IPlatform } from '../platforms'
 import { Icon } from './Icon'
 
