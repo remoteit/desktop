@@ -116,17 +116,21 @@ Windows  C:\Users\%username%\AppData\Local\temp\remoteit.log
 
 ## Development
 
+- Create your .env file
+- cd into the backend directory and run `npm run build` to create the backend module
+- Start the frontend server
+
+```shell
+cd frontend
+npm start
+```
+
+- Start the app
+
 ```shell
 nvm install
 nvm use
 npm install
-npm start
-```
-
-Start the frontend react dev server
-
-```shell
-cd frontend
 npm start
 ```
 
@@ -150,16 +154,20 @@ npm config set "//npm.fontawesome.com/:_authToken" [FONT_AWESOME_TOKEN]
 ```
 
 ### Building
+
 On windows:
 Will need to Install:
-  - NodeJS 11.6 or higher
-  - Git Bash
-  - VS Code (recommended)
+
+- NodeJS 11.6 or higher
+- Git Bash
+- VS Code (recommended)
 
 To build the whole app for production: `npm run build --arch = 'XXX' ` (possible options: win, mac, linux, armv7l, arm64)
+
 - But this requires the physical signing key.
-To build without signing you must remove the signing credentials from `package.json`
-  - Remove these two attributes under Build > Win: `certificateSubjectName` and  `certificateSha1`
+  To build without signing you must remove the signing credentials from `package.json`
+
+  - Remove these two attributes under Build > Win: `certificateSubjectName` and `certificateSha1`
   - Then run `npm run build --arch = 'XXX'`
 
 - Example
@@ -170,7 +178,6 @@ To build without signing you must remove the signing credentials from `package.j
 
 To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
 The final build will be produced in the `dist` directory
-
 
 ### Packaging
 
@@ -201,6 +208,7 @@ sudo snap install my-snap-name_0.1_amd64.snap --dangerous --devmode
 ```
 
 To install and uninstall a deb package:
+
 ```
 sudo dpkg -i /home/jamie/Code/desktop/dist/remoteit-amd64-installer.deb
 sudo dpkg -r remoteit-desktop
