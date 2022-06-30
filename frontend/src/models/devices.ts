@@ -298,7 +298,6 @@ export default createModel<RootModel>()({
         port: form.port,
         enabled: !!form.enabled,
       })
-      await graphQLSetAttributes(form.attributes, form.id)
       await dispatch.devices.fetchSingle({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
@@ -438,13 +437,13 @@ export const ROUTES: IRoute[] = [
   {
     key: 'p2p',
     icon: 'arrows-h',
-    name: 'Peer to peer',
+    name: 'Peer to peer only',
     description: 'A direct connection to this service.',
   },
   {
     key: 'proxy',
     icon: 'cloud',
-    name: 'Proxy',
+    name: 'Proxy only',
     description: 'A private proxy connection routed through the cloud.',
   },
   {
