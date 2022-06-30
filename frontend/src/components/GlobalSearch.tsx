@@ -15,9 +15,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useHistory } from 'react-router-dom'
 import { Icon } from './Icon'
 
-type Props = { inputRef?: React.RefObject<HTMLInputElement>; open?: boolean; onClose?: () => void }
+type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => void }
 
-export const GlobalSearch: React.FC<Props> = ({ inputRef, open, onClose }) => {
+export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   const { userEmail, enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
     userEmail: state.auth.user?.email,
     enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
