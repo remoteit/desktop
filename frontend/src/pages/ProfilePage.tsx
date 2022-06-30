@@ -15,7 +15,7 @@ import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ProfilePage: React.FC = () => {
-  const { user } = useSelector((state: ApplicationState) => state.auth)
+  const user = useSelector((state: ApplicationState) => state.user)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
