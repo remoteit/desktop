@@ -24,7 +24,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
   const route = ROUTES.find(r => r.key === connectionRoute)
 
   return (
-    <ListItem dense onClick={() => setOpen(!open)} button>
+    <ListItem dense onClick={() => setOpen(!open)} disabled={disabled} button>
       <ListItemIcon>
         <Icon name={route?.icon} size="md" modified={connectionRoute !== defaultRoute} fixedWidth />
       </ListItemIcon>
@@ -71,10 +71,10 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles({
   menu: {
     '& .MuiMenuItem-root': { display: 'block', paddingTop: spacing.sm, paddingBottom: spacing.sm },
     '& .MuiListSubheader-root': { background: 'none' },
     '& .MuiTypography-caption': { lineHeight: '1em' },
   },
-}))
+})
