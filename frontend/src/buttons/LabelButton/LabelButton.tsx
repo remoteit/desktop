@@ -49,7 +49,7 @@ const useStyles = makeStyles(({ palette }) => ({
     width: 30,
     height: 30,
     borderRadius: '50%',
-    '& .MuiSelect-select:focus': { background: 'none' },
+    '& .MuiSelect-select:focus': { background: 'inherit' },
     '&:hover': { borderColor: palette.primaryLight.main },
   },
   item: {

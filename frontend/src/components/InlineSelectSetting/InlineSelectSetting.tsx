@@ -42,6 +42,7 @@ export const InlineSelectSetting: React.FC<Props> = ({
         <Select
           native
           autoFocus
+          variant="standard"
           inputRef={fieldRef}
           disableUnderline
           value={editValue}

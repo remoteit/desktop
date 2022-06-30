@@ -76,7 +76,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
 const useStyles = makeStyles(({ palette }) => ({
   menu: {
     '& .MuiMenuItem-root': { display: 'block', paddingTop: spacing.sm, paddingBottom: spacing.sm },
-    '& .MuiListSubheader-root': { background: 'none' },
+    '& .MuiListSubheader-root': { background: 'inherit' },
     '& .MuiTypography-caption': { lineHeight: '1em' },
   },
 }))

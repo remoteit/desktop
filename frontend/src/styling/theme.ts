@@ -51,7 +51,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     components: {
       MuiDivider: {
         styleOverrides: {
-          root: { backgroundColor: palette.grayLightest.main, '&.MuiDivider-flexItem': { height: 1 } },
+          root: { borderColor: palette.screen.main, '&.MuiDivider-flexItem': { height: 1 } },
           inset: { marginRight: spacing.md, marginLeft: spacing.md },
         },
       },
@@ -106,7 +106,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           contained: {
             color: palette.alwaysWhite.main,
-            backgroundColor: palette.grayDark.main,
             '&:hover': { backgroundColor: palette.grayDarker.main },
             '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
             boxShadow: 'none',
@@ -127,12 +126,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiButtonBase: {
         styleOverrides: {
-          root: { borderRadius: radius },
-        },
-      },
-      MuiTouchRipple: {
-        styleOverrides: {
-          ripple: { color: palette.primary.main || undefined },
+          root: {
+            borderRadius: radius,
+            '& .MuiTouchRipple-root': {
+              color: palette.primary.main,
+            },
+          },
         },
       },
       MuiChip: {
@@ -313,7 +312,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiListItemText: {
         styleOverrides: {
           root: { zIndex: 1 },
-          primary: { lineHeight: 1.4 },
+          primary: { lineHeight: 1 },
           secondary: { fontSize: fontSizes.xs },
         },
       },
@@ -401,7 +400,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             marginTop: spacing.xxs,
             marginBottom: spacing.xxs,
-            '& label + .MuiInput-formControl': { marginTop: 9 },
+            '& label + .MuiInputBase-formControl': { marginTop: 7 },
             '& .MuiInputBase-sizeSmall': {
               height: 20,
               borderRadius: 10,
@@ -425,7 +424,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderTopRightRadius: radius,
             borderBottomRightRadius: radius,
             backgroundColor: palette.grayLightest.main,
-            '&$focused': { backgroundColor: palette.primaryHighlight.main },
+            '&.Mui-focused': { backgroundColor: palette.primaryHighlight.main },
             '&.Mui-disabled': { backgroundColor: palette.grayLightest.main },
             '&:hover': { backgroundColor: palette.primaryHighlight.main },
             '&:focused': { backgroundColor: palette.primaryHighlight.main },

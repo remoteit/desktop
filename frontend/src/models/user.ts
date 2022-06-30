@@ -12,6 +12,7 @@ type IUserState = {
   id: string
   email: string
   notificationSettings: INotificationSetting
+  language: string
   attributes: ILookup<any>
 }
 
@@ -19,6 +20,7 @@ const defaultState: IUserState = {
   id: '',
   email: '',
   notificationSettings: {},
+  language: 'en',
   attributes: {},
 }
 

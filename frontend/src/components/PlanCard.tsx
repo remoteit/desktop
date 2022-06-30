@@ -109,7 +109,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderRadius: radius,
     overflow: 'hidden',
     position: 'relative',
-    '& .MuiDivider-root': { backgroundColor: palette.primaryLighter.main },
+    '& .MuiDivider-root': { borderColor: palette.primaryLight.main },
     '& header': {
       width: '100%',
       position: 'absolute',

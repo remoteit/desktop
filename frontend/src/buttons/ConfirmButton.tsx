@@ -29,7 +29,7 @@ export const ConfirmButton: React.FC<Props> = ({
 
   return (
     <>
-      <IconButton {...props} onClick={handleClick} size="lg" />
+      <IconButton {...props} onClick={handleClick} />
       {confirm && onClick && (
         <Confirm open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)} title={confirmTitle}>
           {confirmMessage}

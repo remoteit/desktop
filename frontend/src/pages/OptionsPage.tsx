@@ -42,7 +42,7 @@ export const OptionsPage: React.FC = () => {
       gutterBottom
       bodyProps={{ gutterTop: true }}
       header={
-        <Typography variant="h1">
+        <Typography variant="h1" gutterBottom>
           <Title>Application</Title>
         </Typography>
       }
