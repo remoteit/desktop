@@ -6,7 +6,6 @@ import { DynamicButton } from '../DynamicButton'
 import { getLicenseChip } from '../../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
-import { Fade } from '@mui/material'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {
@@ -60,6 +59,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoConnect, service])
 
+  if (!visible) return null
+
   let title = connection?.public ? 'Connect' : 'Start'
   let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
@@ -95,20 +96,16 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   return (
-    <Fade in={visible} timeout={600}>
-      <div>
-        <DynamicButton
-          title={title}
-          variant={variant}
-          loading={connecting || stopping}
-          color={color}
-          size={size}
-          icon={icon}
-          onClick={clickHandler}
-          disabled={disabled}
-          fullWidth={fullWidth}
-        />
-      </div>
-    </Fade>
+    <DynamicButton
+      title={title}
+      variant={variant}
+      loading={connecting || stopping}
+      color={color}
+      size={size}
+      icon={icon}
+      onClick={clickHandler}
+      disabled={disabled}
+      fullWidth={fullWidth}
+    />
   )
 }

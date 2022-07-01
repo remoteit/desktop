@@ -1,5 +1,4 @@
 import React from 'react'
-import { Fade } from '@mui/material'
 import { Color } from '../../styling'
 import { DynamicButton } from '../DynamicButton'
 import { useDispatch } from 'react-redux'
@@ -28,6 +27,8 @@ export const DisconnectButton: React.FC<Props> = ({
   const visible = !!connection?.enabled
   const disabled = state === 'stopping' || state === 'disconnecting'
 
+  if (!visible) return null
+
   if (connecting || disabled) color = 'grayDark'
 
   let title = 'Stop Connection'
@@ -39,21 +40,17 @@ export const DisconnectButton: React.FC<Props> = ({
   if (state === 'disconnecting') title = 'Disconnecting...'
 
   return (
-    <Fade in={visible} timeout={600}>
-      <div>
-        <DynamicButton
-          title={title}
-          variant="text"
-          loading={disabled || connecting}
-          color={color}
-          size={size}
-          fullWidth={fullWidth}
-          onClick={() => {
-            analyticsHelper.trackConnect('connectionClosed', service)
-            connections.disconnect(connection)
-          }}
-        />
-      </div>
-    </Fade>
+    <DynamicButton
+      title={title}
+      variant="text"
+      loading={disabled || connecting}
+      color={color}
+      size={size}
+      fullWidth={fullWidth}
+      onClick={() => {
+        analyticsHelper.trackConnect('connectionClosed', service)
+        connections.disconnect(connection)
+      }}
+    />
   )
 }

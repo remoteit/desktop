@@ -70,7 +70,7 @@ export default class CLI {
   }
 
   configFile: JSONFile<ConfigFile>
-  processing: boolean = false
+  processing: number = 0
 
   EVENTS = {
     error: 'cli/error',
@@ -144,6 +144,8 @@ export default class CLI {
   async readConnections() {
     if (this.processing) return
     const connections = await this.connectionStatus()
+    if (this.processing) return
+
     return connections.map((c, i) => {
       let error: ISimpleError | undefined
 
@@ -306,12 +308,11 @@ export default class CLI {
       return ''
     }
 
-    this.processing = true
-
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
-    if (!quiet)
+    if (!quiet) {
+      this.processing++
       commands.onError = (e: Error) => {
         if (typeof onError === 'function') onError(e)
         // @TODO detect signing or service not started error and don't display,
@@ -319,10 +320,11 @@ export default class CLI {
         EventBus.emit(this.EVENTS.error, e.toString())
         binaryInstaller.check()
       }
+    }
 
     const result = await commands.exec()
 
-    this.processing = false
+    if (!quiet) setTimeout(() => this.processing--, 400)
 
     if (result) {
       try {

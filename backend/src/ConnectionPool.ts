@@ -129,7 +129,7 @@ export default class ConnectionPool {
     ]
     return props.some(prop => {
       if (c1[prop] !== c2[prop]) {
-        Logger.info('CONNECTION CHANGED', { prop, conn: c1[prop], cli: c2[prop] })
+        Logger.info('CONNECTION CHANGED', { prop, fromConn: c1[prop], toCLI: c2[prop] })
         return true
       }
     })

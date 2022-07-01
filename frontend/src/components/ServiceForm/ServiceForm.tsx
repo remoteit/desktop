@@ -29,15 +29,16 @@ type Props = {
   service?: IService
   thisDevice: boolean
   editable: boolean
+  disabled?: boolean
   onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, onSubmit, onCancel }) => {
+export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, disabled, onSubmit, onCancel }) => {
   const { backend, ui } = useDispatch<Dispatch>()
-  const { applicationTypes, disabled, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
+  const { applicationTypes, saving, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
-    disabled: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,
     isValid: state.backend.reachablePort,
   }))
@@ -62,7 +63,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
   const appType = findType(applicationTypes, form.typeID)
   const css = useStyles()
 
-  console.log({ setupAdded, form })
+  disabled = disabled || saving
 
   useEffect(() => {
     setForm(initForm())
@@ -270,7 +271,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, on
       </AccordionMenuItem>
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
-          {disabled ? 'Saving...' : 'Save'}
+          {saving ? 'Saving...' : 'Save'}
         </Button>
         <Button onClick={onCancel}>Cancel</Button>
       </Gutters>

@@ -1,8 +1,6 @@
 import { LANGUAGES } from '../shared/constants'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-// import { getActiveAccountId } from './accounts'
-// import { ApplicationState } from '../store'
 import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from '.'
@@ -28,7 +26,7 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async fetch(_, state) {
-      const account = state.auth.user?.id //getActiveAccountId(state)
+      const account = state.auth.user?.id
       const result = await graphQLBasicRequest(
         ` query($account: String) {
             login {

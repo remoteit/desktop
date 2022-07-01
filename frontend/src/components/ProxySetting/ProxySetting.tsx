@@ -18,14 +18,13 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
   if (!connection) connection = newConnection(service)
 
   const defaults = newConnection(service)
-  const disabled =
-    connection.connected || connection.public || (service.attributes.route && service.attributes.route !== 'failover')
+  const disabled = connection.connected || ['p2p', 'proxy'].includes(service.attributes.route || '')
   const connectionRoute = getRoute(connection)
   const defaultRoute = getRoute(defaults)
   const route = ROUTES.find(r => r.key === connectionRoute)
 
   return (
-    <ListItem dense onClick={() => setOpen(!open)} button>
+    <ListItem dense onClick={() => setOpen(!open)} disabled={disabled} button>
       <ListItemIcon>
         <Icon name={route?.icon} size="md" modified={connectionRoute !== defaultRoute} fixedWidth />
       </ListItemIcon>
@@ -73,10 +72,10 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles({
   menu: {
     '& .MuiMenuItem-root': { display: 'block', paddingTop: spacing.sm, paddingBottom: spacing.sm },
     '& .MuiListSubheader-root': { background: 'inherit' },
     '& .MuiTypography-caption': { lineHeight: '1em' },
   },
-}))
+})

@@ -12,7 +12,7 @@ export class Preferences {
     autoUpdate: false,
     openAtLogin: true,
     remoteUIOverride: false,
-    disableLocalNetwork: false,
+    disableLocalNetwork: !environment.isHeadless,
     allowPrerelease: false,
     useCertificate: true,
     switchApi: false,
