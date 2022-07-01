@@ -48,6 +48,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
         <ServiceForm
           thisDevice={!!device?.thisDevice}
           editable={device?.configurable || !!device?.thisDevice}
+          disabled={!device?.permissions.includes('MANAGE')}
           onSubmit={async form => {
             if (device?.configurable) devices.cloudAddService({ form, deviceId: device?.id })
             history.push(`/devices/${device?.id}`)
