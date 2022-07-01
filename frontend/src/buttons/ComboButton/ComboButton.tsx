@@ -57,7 +57,5 @@ const useStyles = fullWidth =>
       width: fullWidth ? 'inherit' : 121,
       position: 'relative',
       flexGrow: 1,
-      '& > div': { position: 'absolute', width: '100%' },
-      '& > div:last-child': { position: 'relative' },
     },
   })

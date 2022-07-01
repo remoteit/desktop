@@ -35,10 +35,15 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
       <ServiceForm
         service={service}
         thisDevice={thisDevice}
-        editable={thisDevice || !!device?.configurable}
+        editable={!!device?.configurable || thisDevice}
+        disabled={!device?.permissions.includes('MANAGE')}
         onCancel={exit}
         onSubmit={async form => {
-          if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
+          if (device?.permissions.includes('MANAGE')) {
+            service.attributes = { ...service.attributes, ...form.attributes }
+            await devices.setServiceAttributes(service)
+            if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
+          }
           history.push(`/devices/${device?.id}/${service.id}`)
         }}
       />

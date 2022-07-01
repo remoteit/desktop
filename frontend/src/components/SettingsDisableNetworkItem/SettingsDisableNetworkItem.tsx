@@ -9,10 +9,10 @@ export const SettingsDisableNetworkItem: React.FC = () => {
   const css = useStyles()
   const { preferences } = useSelector((state: ApplicationState) => state.backend)
   const [toggleChange, setToggleChange] = React.useState(false)
-  const subLevelTextValue = toggleChange ? (
+  const subLabelText = toggleChange ? (
     <span className={css.span}>Please restart for changes to take effect.</span>
   ) : (
-    'This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it'
+    'This will allow network access to the desktop UI on ports 29999 and 29998 in addition to sharing through remote.it'
   )
 
   if (!preferences) return null
@@ -24,15 +24,15 @@ export const SettingsDisableNetworkItem: React.FC = () => {
 
   return (
     <ListItemSetting
-      label="Disable local network discovery"
-      subLabel={subLevelTextValue}
+      label="Enable local network discovery"
+      subLabel={subLabelText}
       icon={preferences.disableLocalNetwork ? 'wifi-slash' : 'wifi'}
-      toggle={!!preferences.disableLocalNetwork}
+      toggle={!preferences.disableLocalNetwork}
       onClick={handleClick}
     />
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   span: { color: palette.warning.main },
 }))
