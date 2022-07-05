@@ -5,9 +5,7 @@ import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
-import axios, { AxiosResponse } from 'axios'
-
-const d = debug('r3:backend:User')
+import axios from 'axios'
 
 export class User {
   static EVENTS = {
@@ -86,12 +84,13 @@ export class User {
       id: user.guid,
       username,
       token: user.token || user.auth_token,
-      authHash: user.service_authhash
+      authHash: user.service_authhash,
     }
   }
 
   signOut = () => {
     this.id = ''
+    this.token = ''
     this.username = ''
     this.authHash = ''
     this.signedIn = false
@@ -106,14 +105,5 @@ export class User {
     }
   }
 }
+
 export default new User()
-
-export interface IRawUser {
-  guid: string,
-  auth_token: string,
-  token: string,
-  authHash: string,
-  service_authhash: string
-}
-
-

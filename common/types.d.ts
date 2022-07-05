@@ -119,6 +119,14 @@ declare global {
     guid: string
   }
 
+  interface IRawUser {
+    guid: string
+    auth_token: string
+    authHash: string
+    token: string
+    service_authhash: string
+  }
+
   interface ISearch {
     deviceId: string
     deviceName: string
