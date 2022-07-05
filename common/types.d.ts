@@ -110,6 +110,7 @@ declare global {
     serviceName: string
     ownerEmail: strings
     targetPlatform: number
+    combinedName: string
     offline: boolean
   }
 

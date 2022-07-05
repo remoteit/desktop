@@ -107,7 +107,7 @@ const useStyles = makeStyles({
   field: {
     flexGrow: 1,
     margin: `0 ${spacing.md}px -1px -${spacing.sm}px`,
-    '& .MuiInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
-    '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
+    '& .MuiFilledInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
+    // '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
   },
 })

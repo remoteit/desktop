@@ -73,7 +73,7 @@ export const InlineSetting: React.FC<Props> = ({
     if (edit) {
       fieldRef.current.focus()
       fieldRef.current.onblur = () => {
-        // if (!canceled.current && !debug) setTimeout(() => setEdit(false), 200)
+        if (!canceled.current && !debug) setTimeout(() => setEdit(false), 200)
         canceled.current = false
       }
     }
@@ -126,13 +126,18 @@ export const InlineSetting: React.FC<Props> = ({
   const viewForm = (
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
-      <ListItem button onClick={triggerEdit} disabled={disabled} disableGutters={disableGutters} dense>
+      <ListItem
+        button
+        className={css.view}
+        onClick={triggerEdit}
+        disabled={disabled}
+        disableGutters={disableGutters}
+        dense
+      >
         {icon}
         <Title>
-          <ListItemText style={{ color }}>
-            {label && <InputLabel shrink>{label}</InputLabel>}
-            {(displayValue === undefined ? value : displayValue) || '–'}
-          </ListItemText>
+          {label && <InputLabel shrink>{label}</InputLabel>}
+          <ListItemText style={{ color }}>{(displayValue === undefined ? value : displayValue) || '–'}</ListItemText>
         </Title>
         {!disabled && (
           <ListItemSecondaryAction className="hidden">
@@ -153,6 +158,11 @@ export const InlineSetting: React.FC<Props> = ({
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  view: {
+    paddingTop: 9,
+    '& .MuiInputLabel-root': { position: 'absolute' },
+    '& .MuiListItemText-root': { marginTop: 14 },
+  },
   form: {
     display: 'flex',
     width: '100%',
@@ -163,7 +173,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.xs },
   },
   active: {
     paddingTop: 0,

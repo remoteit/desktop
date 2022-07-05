@@ -6,6 +6,8 @@ import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getAllDevices, getActiveAccountId, getAccountIds } from './accounts'
 import { RootModel } from '.'
 
+const MAX_RESULTS = 30
+
 type ISearchState = ILookup<any> & {
   search: ISearch[]
   devices: ISearch[]
@@ -35,6 +37,7 @@ export default createModel<RootModel>()({
     async fetch(name: string, state) {
       if (!state.auth.user) return
       if (!state.search.cloudSearch) return
+      console.log('SEARCH', name)
 
       dispatch.search.set({ fetching: true })
 
@@ -90,15 +93,19 @@ export default createModel<RootModel>()({
           const devices = data[`_${index}`].devices.items
           return devices
             .map(device =>
-              device.services.map(service => ({
-                deviceName: device.name,
-                serviceName: removeDeviceName(device.name, service.name),
-                deviceId: device.id,
-                serviceId: service.id,
-                ownerEmail: device.owner.email,
-                targetPlatform: device.platform,
-                offline: service.state === 'inactive',
-              }))
+              device.services.map(service => {
+                const serviceName = removeDeviceName(device.name, service.name)
+                return {
+                  serviceName,
+                  deviceName: device.name,
+                  combinedName: serviceName + ' ' + device.name,
+                  deviceId: device.id,
+                  serviceId: service.id,
+                  ownerEmail: device.owner.email,
+                  targetPlatform: device.platform,
+                  offline: service.state === 'inactive',
+                }
+              })
             )
             .flat()
         })
@@ -114,6 +121,7 @@ export default createModel<RootModel>()({
             .map(service => ({
               deviceName: device.name,
               serviceName: service.name,
+              combinedName: service.name + ' ' + device.name,
               deviceId: device.id,
               serviceId: service.id,
               ownerEmail: device.owner.email,
@@ -138,14 +146,27 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectAllSearch(state: ApplicationState) {
+export function selectAllSearch(state: ApplicationState): ISearch[] {
   const { search, devices } = state.search
-  const searchIds = search.map(s => s.serviceId)
-  const all = search.concat(devices.filter(item => !searchIds.includes(item.serviceId)))
-  const sorted = all.sort((a, b) => {
+  // const searchIds = search.map(s => s.serviceId)
+  // let all: ISearch[] = []
+
+  // if (search.length < MAX_RESULTS) {
+  //   all = search.concat(devices.filter(item => !searchIds.includes(item.serviceId)))
+  // } else {
+  //   all = search
+  // }
+
+  const sorted = search.sort((a, b) => {
     if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
     if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
     return 0
   })
+
+  // if (sorted.length > MAX_RESULTS) sorted.length = MAX_RESULTS
+  // console.log(
+  //   'SEARCH',
+  //   sorted.map(s => s.combinedName)
+  // )
   return sorted || []
 }

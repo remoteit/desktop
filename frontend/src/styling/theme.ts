@@ -49,6 +49,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     },
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            fontSize: '0.875rem',
+            lineHeight: 1.43,
+          },
+        },
+      },
       MuiDivider: {
         styleOverrides: {
           root: { borderColor: palette.screen.main, '&.MuiDivider-flexItem': { height: 1 } },
@@ -223,6 +231,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             minWidth: 16,
             padding: spacing.xxs,
           },
+          dot: {
+            padding: 0,
+            height: 8,
+            minWidth: 8,
+          },
         },
       },
       MuiListSubheader: {
@@ -312,8 +325,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiListItemText: {
         styleOverrides: {
           root: { zIndex: 1 },
-          primary: { lineHeight: 1 },
-          secondary: { fontSize: fontSizes.xs },
+          primary: { lineHeight: 1.4 },
+          secondary: {
+            fontSize: fontSizes.xs,
+            color: palette.grayDark.main,
+            '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
+          },
         },
       },
       MuiMenu: {
@@ -360,6 +377,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiInput: {
         styleOverrides: {
           root: {
+            'label+&': { marginTop: 10 },
             '&.Mui-disabled': {
               color: palette.grayDarker.main,
               '& svg': { display: 'none' },
@@ -372,9 +390,17 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiInputBase: {
+        defaultProps: {
+          // to keep from re-injecting styles in the head - slowing performance
+          disableInjectingGlobalStyles: true,
+        },
         styleOverrides: {
           root: {
-            '& .MuiInputBase-input': { borderRadius: 0 },
+            '& .MuiInputBase-input': {
+              borderRadius: 0,
+              height: '1.1876em',
+              // '&.MuiFilledInput-input'
+            },
           },
           input: {
             paddingTop: spacing.xxs,
@@ -391,7 +417,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             letterSpacing: 0.5,
             fontWeight: 500,
             textTransform: 'uppercase',
-            lineHeight: 1,
           },
         },
       },
@@ -400,7 +425,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             marginTop: spacing.xxs,
             marginBottom: spacing.xxs,
-            '& label + .MuiInputBase-formControl': { marginTop: 7 },
             '& .MuiInputBase-sizeSmall': {
               height: 20,
               borderRadius: 10,
@@ -444,8 +468,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiSelect: {
         styleOverrides: {
-          // root: { borderRadius: radius, padding: `${spacing.sm}px ${spacing.md}px` },
-          select: { '&:focus': { backgroundColor: 'none' } },
+          select: {
+            '&:focus': { backgroundColor: 'none' },
+          },
         },
       },
       MuiFormControl: {
@@ -470,7 +495,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiTypography: {
         styleOverrides: {
-          gutterBottom: { marginBottom: spacing.md },
           h1: {
             fontSize: fontSizes.xl,
             fontWeight: 400,
@@ -514,10 +538,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             lineHeight: '1.5em',
             '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
           },
-          // colorTextSecondary: {
-          //   color: palette.grayDark.main,
-          //   '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
-          // },
+          gutterBottom: { marginBottom: spacing.md },
         },
       },
       MuiDialogTitle: {

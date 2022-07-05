@@ -2,7 +2,7 @@ import React from 'react'
 import { ListItemText } from '@mui/material'
 import { setConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '../shared/constants'
-import { InlineSelectSetting } from './InlineSelectSetting'
+import { SelectSetting } from './SelectSetting'
 import { Gutters } from './Gutters'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
@@ -16,16 +16,17 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
 
   return (
     <>
-      <InlineSelectSetting
+      <SelectSetting
         icon="lock"
         label="Security"
         disabled={disabled || !connection.public}
+        modified={connection.publicRestriction !== IP_LATCH}
         value={connection.publicRestriction || IP_LATCH}
         values={[
           { name: 'IP Latching', key: IP_LATCH },
           { name: 'None', key: IP_OPEN },
         ]}
-        onSave={key => {
+        onChange={key => {
           connection &&
             setConnection({
               ...connection,

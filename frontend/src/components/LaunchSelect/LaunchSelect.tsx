@@ -31,7 +31,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   return (
     <>
-      <LaunchTypeSelect app={app} service={service} connection={connection} onChange={handleChange} />
+      <LaunchTypeSelect app={app} onChange={handleChange} />
       <ListItem dense>
         <Quote margin={null} noInset listItem>
           <List className={css.indent} disablePadding>
