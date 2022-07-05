@@ -129,7 +129,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             </span>
           ))
           const enabled = enabledIds.includes(option.serviceId)
-          console.log('RENDER OPTION', props, option, state)
+          // console.log('RENDER OPTION', props, option, state)
           return (
             <ListItem {...props} key={props.id}>
               <span

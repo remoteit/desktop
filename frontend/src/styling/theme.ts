@@ -116,7 +116,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             color: palette.alwaysWhite.main,
             '&:hover': { backgroundColor: palette.grayDarker.main },
             '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
-            boxShadow: 'none',
+            // boxShadow: 'none',
           },
           text: { padding: `${spacing.sm}px ${spacing.md}px` },
           outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },

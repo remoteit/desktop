@@ -137,7 +137,13 @@ export const Connect: React.FC = () => {
               {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
               <DynamicButtonMenu
                 options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
-                title={availableNetworks.length === 1 ? `Add to ${availableNetworks[0].name}` : 'Add to network'}
+                title={
+                  availableNetworks.length === 1
+                    ? `Add to ${availableNetworks[0].name}`
+                    : !availableNetworks.length
+                    ? 'No available networks'
+                    : 'Add to network'
+                }
                 size="icon"
                 icon="plus"
                 disabled={!availableNetworks.length}

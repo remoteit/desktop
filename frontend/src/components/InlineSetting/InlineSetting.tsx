@@ -159,16 +159,17 @@ export const InlineSetting: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   view: {
-    paddingTop: 9,
-    '& .MuiInputLabel-root': { position: 'absolute' },
-    '& .MuiListItemText-root': { marginTop: 14 },
+    paddingTop: 7,
+    paddingBottom: 7,
+    '& .MuiInputLabel-root': { position: 'absolute', marginTop: 1 },
+    '& .MuiInputLabel-root + .MuiListItemText-root': { marginTop: 15, marginBottom: 3 },
   },
   form: {
     display: 'flex',
     width: '100%',
     marginRight: 120,
     alignItems: 'center',
-    '& .MuiInput-input': { paddingTop: 9, paddingBottom: 10.5, marginLeft: spacing.sm },
+    '& .MuiInput-input': { paddingTop: 13, paddingBottom: 13, marginLeft: spacing.sm },
     '& .MuiFilledInput-input': { paddingTop: 21, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },

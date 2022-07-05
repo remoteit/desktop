@@ -3,11 +3,12 @@ import reactStringReplace from 'react-string-replace'
 import { makeStyles } from '@mui/styles'
 import {
   Box,
-  ListItem,
+  MenuItem,
   ListItemIcon,
   ListItemText,
   Paper,
   Popper,
+  PopperProps,
   TextField,
   TextFieldProps,
   Autocomplete,
@@ -86,8 +87,8 @@ export const TagAutocomplete: React.FC<Props> = ({
             listbox: css.listbox,
             option: css.option,
             input: css.input,
-            // popperDisablePortal: css.popperDisablePortal,
-            // noOptions: css.empty,
+            popperDisablePortal: css.popperDisablePortal,
+            noOptions: css.empty,
           }}
           onClose={onClose}
           onChange={(event, value, reason) => {
@@ -95,7 +96,8 @@ export const TagAutocomplete: React.FC<Props> = ({
             if (!value.created) onSelect('new', { name: inputValue, color: value.color, created: new Date() })
             else onSelect('add', value)
           }}
-          // PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
+          PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
+          PopperComponent={Box as React.ComponentType<PopperProps>}
           noOptionsText={false}
           getOptionLabel={option => option.name}
           onInputChange={(event, newValue) => {
@@ -103,8 +105,8 @@ export const TagAutocomplete: React.FC<Props> = ({
             setInputValue(result)
             if (onChange) onChange(result)
           }}
-          renderOption={(props, option) => (
-            <ListItem {...props}>
+          renderOption={(props, option, state) => (
+            <MenuItem {...props} disableGutters>
               <ListItemIcon>
                 <Icon
                   name={!option.name ? 'plus' : indicator || 'circle'}
@@ -120,16 +122,17 @@ export const TagAutocomplete: React.FC<Props> = ({
                   </span>
                 ))}
               />
-            </ListItem>
+            </MenuItem>
           )}
           renderInput={params => (
             <TextField
+              autoFocus
+              fullWidth
+              variant="filled"
               ref={params.InputProps.ref}
               inputProps={params.inputProps}
               className={css.textField}
               InputProps={InputProps}
-              autoFocus
-              variant="filled"
               placeholder={placeholder}
             />
           )}
@@ -140,14 +143,18 @@ export const TagAutocomplete: React.FC<Props> = ({
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  container: { width: 200 },
-  listbox: { shadow: 'none', paddingTop: 0, border: '1px solid red' },
-  textField: { width: '100%', padding: `${spacing.xs}px ${spacing.xs}px 0` },
+  container: {
+    width: 200,
+    '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
+  },
+  listbox: { paddingTop: 0 },
+  textField: { padding: `${spacing.xs}px ${spacing.xs}px 0` },
   input: {
-    width: '100%',
-    padding: `${spacing.xs}px ${spacing.sm}px`,
-    fontSize: fontSizes.base,
-    color: palette.grayDarkest.main,
+    '&.MuiFilledInput-input.MuiAutocomplete-input': {
+      padding: `${spacing.xs}px ${spacing.sm}px`,
+      fontSize: fontSizes.base,
+      color: palette.grayDarkest.main,
+    },
   },
   popperDisablePortal: {
     position: 'relative',
@@ -160,15 +167,18 @@ const useStyles = makeStyles(({ palette }) => ({
     fontWeight: 500,
   },
   option: {
-    borderRadius: radius,
-    marginLeft: spacing.xs,
-    marginRight: spacing.xs,
-    marginBottom: 1,
-    padding: `2px ${spacing.xxs}px`,
-    color: palette.grayDarker.main,
-    '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
-    '&[aria-selected="true"]': { backgroundColor: palette.primaryHighlight.main },
-    '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
-    '& .MuiListItemIcon-root': { minWidth: 40 },
+    '&.MuiAutocomplete-option': {
+      borderRadius: radius,
+      marginLeft: spacing.xs,
+      marginRight: spacing.xs,
+      marginBottom: 1,
+      paddingLeft: 2,
+      paddingRight: 2,
+      color: palette.grayDarker.main,
+      '&.Mui-focused': { backgroundColor: palette.primaryHighlight.main },
+      '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
+      '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
+      '& .MuiListItemIcon-root': { minWidth: 40 },
+    },
   },
 }))
