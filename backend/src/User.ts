@@ -5,7 +5,7 @@ import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 const d = debug('r3:backend:User')
 
@@ -51,8 +51,10 @@ export class User {
       const userName = credentials.username
       const authHash = credentials.authHash
       
-      const resp = await axios.post('/user/login/authhash', { userName, authHash })
-      const user = this.process(resp, authHash)
+      const user = await axios.post<IRawUser>('/user/login/authhash', { userName, authHash }).then(response => {
+        return this.process(response.data, authHash)
+      })
+      
 
       Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
 
