@@ -32,9 +32,13 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
 
   const fetch = React.useMemo(
     () =>
-      debounce(value => {
-        search.fetch(value)
-      }, 400),
+      debounce(
+        value => {
+          search.fetch(value)
+        },
+        800,
+        { trailing: true }
+      ),
     []
   )
 
@@ -66,10 +70,10 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   return (
     <div className={css.container}>
       <Autocomplete
-        open
         freeSolo
         fullWidth
         autoSelect
+        openOnFocus
         autoComplete
         clearOnBlur={false}
         clearOnEscape={false}
