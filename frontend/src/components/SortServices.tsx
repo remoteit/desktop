@@ -3,8 +3,6 @@ import { getDeviceModel } from '../models/accounts'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles } from '@mui/styles'
-import { fontSize } from '@remote.it/components/lib/styles/variables'
 import { Icon } from './Icon'
 
 export interface ISortService {
@@ -55,7 +53,6 @@ export const SortServices: React.FC = () => {
   const sortService = useSelector((state: ApplicationState) => getDeviceModel(state).sortServiceOption)
   const option = getSortOptions(sortService)
   const open = Boolean(anchorEl)
-  const css = useStyles()
 
   useEffect(() => {
     servicesSort(sortService)
@@ -78,12 +75,12 @@ export const SortServices: React.FC = () => {
 
   return (
     <>
-      <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick} size="large">
+      <IconButton onClick={handleClick}>
         <Icon name={option.icon} size="md" />
       </IconButton>
-      <Menu id="long-menu" anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
+      <Menu anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
         {Object.keys(optionSortServices).map(key => (
-          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key)} className={css.list}>
+          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key)} dense>
             {optionSortServices[key].name}
           </MenuItem>
         ))}
@@ -91,9 +88,3 @@ export const SortServices: React.FC = () => {
     </>
   )
 }
-
-const useStyles = makeStyles({
-  list: {
-    fontSize: fontSize.sm,
-  },
-})

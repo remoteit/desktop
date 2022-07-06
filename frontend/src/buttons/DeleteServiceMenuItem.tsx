@@ -34,7 +34,7 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
 
   return (
     <>
-      <MenuItem dense disableGutters onClick={() => setOpen(true)} disabled={disabled}>
+      <MenuItem dense onClick={() => setOpen(true)} disabled={disabled}>
         <ListItemIcon>
           <Icon
             size="md"

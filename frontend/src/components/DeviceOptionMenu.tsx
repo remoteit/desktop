@@ -23,7 +23,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick} size="large">
+      <IconButton onClick={handleClick}>
         <Icon name="ellipsis-v" size="md" fixedWidth />
       </IconButton>
       <Menu
@@ -31,7 +31,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        // getContentAnchorEl={null}
         disableScrollLock
         autoFocus={false}
         elevation={2}
@@ -51,7 +50,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             component={Link}
             autoFocus={false}
             disabled={!device.permissions.includes('MANAGE')}
-            disableGutters
           >
             <ListItemIcon>
               <Icon name="share" size="md" />

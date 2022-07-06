@@ -40,12 +40,12 @@ export const LicenseSelect: React.FC<Props> = ({ member, size = 'small', disable
 const useStyles = makeStyles(({ palette }) => ({
   licensed: ({ chip }: { chip: ILicenseChip }) => ({
     '& .MuiFormLabel-root': { color: palette[chip.colorName].main },
-    '& .MuiFilledInput-root': {
+    '& .MuiInputBase-root': {
       color: palette[chip.colorName].main,
       backgroundColor: chip.background && palette[chip.background].main,
       fontWeight: 500,
       letterSpacing: 0.2,
-      '&:hover:not(.Mui-disabled)': { backgroundColor: chip.hoverColor },
+      '&:hover:not(.Mui-disabled)': { backgroundColor: chip.hoverColor && palette[chip.hoverColor].main },
     },
     '& .MuiSelect-icon': { color: palette[chip.colorName].main },
   }),

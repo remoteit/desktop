@@ -13,7 +13,7 @@ export const CopyMenuItem: React.FC<CopyButtonProps> = ({ icon, value, title }) 
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   return (
     <>
-      <MenuItem dense disableGutters onClick={clipboard.copy}>
+      <MenuItem dense onClick={clipboard.copy}>
         <ListItemIcon>
           <Icon name={clipboard.copied ? 'check' : icon} color={clipboard.copied ? 'success' : undefined} size="md" />
         </ListItemIcon>

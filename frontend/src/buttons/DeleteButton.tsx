@@ -37,7 +37,7 @@ export const DeleteButton: React.FC<Props> = ({
   return (
     <>
       {menuItem ? (
-        <MenuItem dense disableGutters onClick={() => setOpen(true)} disabled={disabled}>
+        <MenuItem dense onClick={() => setOpen(true)} disabled={disabled}>
           <ListItemIcon>{DeleteIcon}</ListItemIcon>
           <ListItemText primary={title} />
         </MenuItem>
