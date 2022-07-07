@@ -44,7 +44,6 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
   const initForm = () => {
     setError(undefined)
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
-    console.log('defaultType', defaultType)
     return {
       ...DEFAULT_SERVICE,
       host: service?.host || IP_PRIVATE,
