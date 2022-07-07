@@ -48,7 +48,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
       ...DEFAULT_SERVICE,
       host: service?.host || IP_PRIVATE,
       id: service?.id || '',
-      port: service?.port,
+      port: service?.port || defaultType.port,
       type: defaultType.name,
       typeID: defaultType.id,
       enabled: !service || service.enabled,
