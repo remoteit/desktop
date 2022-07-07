@@ -1,3 +1,4 @@
+import { autoUpdater } from 'electron-updater'
 import Controller from './Controller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
@@ -28,9 +29,9 @@ export default class Application {
     if (this.electron) this.electron.app.quit()
   }
 
-  async restart() {
-    if (this.electron && (environment.isMac || environment.isWindows)) {
-      this.electron.autoUpdater.restart()
+  installAndRestart() {
+    if (environment.isMac || environment.isWindows) {
+      autoUpdater.quitAndInstall()
     }
   }
 

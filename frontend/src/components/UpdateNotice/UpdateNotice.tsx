@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { emit } from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, Button, IconButton } from '@material-ui/core'
@@ -8,7 +7,6 @@ import { isElectron, isRemote } from '../../services/Browser'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
 import { Icon } from '../Icon'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
   const updateReady = useSelector((state: ApplicationState) => selectUpdateNotice(state))
@@ -17,17 +15,12 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
 
   const [confirm, setConfirm] = useState<boolean>(false)
 
-  const restart = () => {
-    analyticsHelper.track('update')
-    emit('restart')
-  }
-
   const handleClick = () => {
     setConfirm(true)
   }
 
   const handleConfirm = () => {
-    restart()
+    backend.restart()
     setConfirm(false)
   }
 

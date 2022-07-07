@@ -28,7 +28,7 @@ type UIState = {
   selected: IDevice['id'][]
   connected: boolean
   offline: boolean
-  uninstalling: boolean
+  waitMessage?: string
   claiming: boolean
   fetching: boolean
   destroying: boolean
@@ -83,7 +83,7 @@ export const defaultState: UIState = {
   selected: [],
   connected: false,
   offline: !navigator.onLine,
-  uninstalling: false,
+  waitMessage: undefined,
   claiming: false,
   fetching: false,
   destroying: false,

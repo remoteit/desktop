@@ -78,7 +78,7 @@ class Controller {
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
     socket.on('preferences', preferences.set)
-    socket.on('restart', this.restart)
+    socket.on('restart', this.installAndRestart)
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
@@ -191,10 +191,10 @@ class Controller {
     app.quit()
   }
 
-  restart = async () => {
+  installAndRestart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
     await cli.serviceUninstall()
-    app.restart()
+    app.installAndRestart()
   }
 
   signOut = async () => {
