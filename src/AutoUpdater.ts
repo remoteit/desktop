@@ -11,11 +11,6 @@ export default class AppUpdater {
   constructor() {
     autoUpdater.logger = Logger
 
-    autoUpdater.on('update-available', info => {
-      Logger.info('Update available', { info })
-      EventBus.emit(EVENTS.available, info.version)
-    })
-
     autoUpdater.on('update-downloaded', info => {
       EventBus.emit(EVENTS.downloaded, info.version)
     })
@@ -48,8 +43,7 @@ export default class AppUpdater {
     }
   }
 
-  async restart() {
+  async update() {
     autoUpdater.quitAndInstall()
-    electron.app.quit()
   }
 }

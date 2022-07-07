@@ -194,7 +194,7 @@ class Controller {
   installAndRestart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
     await cli.serviceUninstall()
-    app.installAndRestart()
+    EventBus.emit(electronInterface.EVENTS.update)
   }
 
   signOut = async () => {

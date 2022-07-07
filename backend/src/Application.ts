@@ -26,13 +26,7 @@ export default class Application {
   }
 
   quit() {
-    if (this.electron) this.electron.app.quit()
-  }
-
-  installAndRestart() {
-    if (environment.isMac || environment.isWindows) {
-      autoUpdater.quitAndInstall()
-    }
+    this.electron && this.electron.app.quit()
   }
 
   recapitate(head: any) {
