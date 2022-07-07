@@ -44,11 +44,12 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
   const initForm = () => {
     setError(undefined)
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
+    console.log('defaultType', defaultType)
     return {
       ...DEFAULT_SERVICE,
       host: service?.host || IP_PRIVATE,
       id: service?.id || '',
-      port: service?.port,
+      port: service?.port || defaultType.port,
       type: defaultType.name,
       typeID: defaultType.id,
       enabled: !service || service.enabled,
