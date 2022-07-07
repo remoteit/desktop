@@ -13,7 +13,6 @@ type Props = {
   component?: BoxProps['component']
   autoNext?: boolean
   autoStart?: boolean
-  last?: boolean
   highlight?: boolean
   hideArrow?: boolean
   showNavigation?: boolean
@@ -30,7 +29,6 @@ export const GuideStep: React.FC<Props> = ({
   component = 'div',
   autoNext,
   autoStart,
-  last,
   highlight,
   hideArrow,
   showNavigation,
@@ -41,9 +39,10 @@ export const GuideStep: React.FC<Props> = ({
 }) => {
   const { ui } = useDispatch<Dispatch>()
   const state: IGuide = useSelector((state: ApplicationState) => state.ui[guide])
-  const open = !hide && (state.step === step || !!show) && state.active
+  const open: boolean = !!(!hide && (state.step === step || !!show) && state.active)
   const css = useStyles({ highlight: highlight && open })
   const start = () => ui.guide({ guide, step, active: true, done: false })
+  const last = step === state.total
 
   React.useEffect(() => {
     if (!state.done && autoStart) start()
@@ -102,7 +101,6 @@ export const GuideStep: React.FC<Props> = ({
         {showStart && (
           <IconButton
             icon="sparkles"
-            title={state.title || 'Start guide'}
             onClick={start}
             color={state.done || step === 1 ? 'grayLight' : 'guide'}
             className={css.icon}
