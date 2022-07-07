@@ -76,7 +76,10 @@ export const Connect: React.FC = () => {
       <GuideStep
         guide="guideAWS"
         step={5}
-        instructions="Enable the connect on demand listener by adding the service to your network. The connection will auto launch."
+        instructions={
+          'Enable the connect on demand listener by adding the service to your network.' +
+          (connection.autoLaunch ? ' The connection will auto launch.' : '')
+        }
       >
         <Gutters className={css.gutters} top="lg">
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
@@ -86,7 +89,7 @@ export const Connect: React.FC = () => {
             permissions={device.permissions}
             size="large"
             fullWidth
-            onClick={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+            onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
           />
           <ForgetButton connection={connection} inline />
         </Gutters>
@@ -107,16 +110,7 @@ export const Connect: React.FC = () => {
               <NameSetting connection={connection} service={service} device={device} />
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
-            <GuideStep
-              step={1}
-              highlight
-              placement="left"
-              guide="guideLaunch"
-              hide={!accordion[accordionConfig]}
-              instructions="You can now launch services by deep link URL or terminal command."
-            >
-              <LaunchSelect connection={connection} service={service} />
-            </GuideStep>
+            <LaunchSelect connection={connection} service={service} />
           </List>
         </AccordionMenuItem>
         <AccordionMenuItem
