@@ -6,14 +6,7 @@ import { ApplicationState } from '../../store'
 import { REGEX_PORT_SAFE } from '../../shared/constants'
 
 export const PortSetting: React.FC<{ service: IService; connection: IConnection }> = ({ service, connection }) => {
-  const defaultPort = useSelector((state: ApplicationState) => {
-    let port = state.backend.freePort
-    const usedPorts = state.connections.all.map(c => c.port).sort()
-    if (service.attributes?.defaultPort && !usedPorts.includes(service.attributes.defaultPort)) {
-      port = service.attributes.defaultPort
-    }
-    return port
-  })
+  const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
 
   if (!service) return null
 
@@ -27,11 +20,11 @@ export const PortSetting: React.FC<{ service: IService; connection: IConnection 
   return (
     <InlineTextFieldSetting
       icon="port"
-      value={connection.port || defaultPort}
+      value={connection.port || freePort}
       label="Local Port"
       disabled={connection.connected || connection.public}
       filter={REGEX_PORT_SAFE}
-      resetValue={defaultPort}
+      resetValue={freePort}
       onSave={port => save(+port)}
     />
   )
