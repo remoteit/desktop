@@ -64,10 +64,17 @@ export function newConnection(service?: IService | null) {
     connection.typeID = service.typeID
     connection.targetHost = service.attributes.targetHost
     connection.description = service.attributes.description
+    if (service.attributes.defaultPort && !usedPorts(state).includes(service.attributes.defaultPort)) {
+      connection.port = service.attributes.defaultPort
+    }
     if (device) connection.name = connectionName(service, device)
   }
 
   return connection
+}
+
+export function usedPorts(state: ApplicationState) {
+  return state.connections.all.map(c => c.port)
 }
 
 export function launchDisabled(connection: IConnection) {
