@@ -1,4 +1,3 @@
-import electron from 'electron'
 import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 
@@ -6,10 +5,10 @@ const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 
 export default class AppUpdater {
   nextCheck: number = 0
-  autoUpdate: boolean
 
   constructor() {
     autoUpdater.logger = Logger
+    autoUpdater.autoInstallOnAppQuit = true
 
     autoUpdater.on('update-downloaded', info => {
       EventBus.emit(EVENTS.downloaded, info.version)
@@ -21,11 +20,8 @@ export default class AppUpdater {
 
     EventBus.on(EVENTS.preferences, ({ autoUpdate }: IPreferences) => {
       autoUpdater.allowPrerelease = preferences.get().allowPrerelease || false
-      this.autoUpdate = !!autoUpdate
-      if (this.autoUpdate) this.check(true)
+      if (autoUpdate) this.check(true)
     })
-
-    this.autoUpdate = !!preferences.get().autoUpdate
   }
 
   async check(force?: boolean) {
@@ -44,6 +40,7 @@ export default class AppUpdater {
   }
 
   async update() {
+    Logger.info('QUIT AND INSTALL UPDATE')
     autoUpdater.quitAndInstall()
   }
 }

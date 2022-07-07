@@ -30,7 +30,6 @@ class Controller {
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOut)
-    EventBus.on(electronInterface.EVENTS.filePath, path => this.io.emit('filePath', path))
 
     let eventNames = [
       ...Object.values(User.EVENTS),
