@@ -82,3 +82,11 @@ export function windowOpen(url?: string, target?: string) {
     ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
   }
 }
+
+export function insertScript(name: string, id: string) {
+  const script = document.createElement('script')
+  script.type = 'text/javascript'
+  script.src = name
+  script.id = id
+  document.head.appendChild(script)
+}
