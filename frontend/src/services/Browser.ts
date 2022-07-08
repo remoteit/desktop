@@ -84,9 +84,13 @@ export function windowOpen(url?: string, target?: string) {
 }
 
 export function insertScript(name: string, id: string) {
-  const script = document.createElement('script')
-  script.type = 'text/javascript'
-  script.src = name
-  script.id = id
-  document.head.appendChild(script)
+  return new Promise<any>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.type = 'text/javascript'
+    script.src = name
+    script.id = id
+    document.head.appendChild(script)
+    script.onload = resolve
+    script.onerror = reject
+  })
 }

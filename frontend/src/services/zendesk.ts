@@ -1,29 +1,55 @@
 import { insertScript } from './Browser'
 import { ZENDESK_KEY } from '../shared/constants'
+import sleep from '../services/sleep'
 
-export default function loadChat() {
-  const url = `https://static.zdassets.com/ekr/snippet.js?key=${ZENDESK_KEY}`
-  insertScript(url, 'ze-snippet')
+declare const window: Window & {
+  zE?: any
+  zESettings?: any
+}
 
-  // @ts-ignore
-  window.zESettings = {
-    webWidget: {
-      launcher: {
-        offset: '50px',
-        chatLabel: { '*': 'Online' },
-        desktop: {
-          labelVisible: false,
+class Zendesk {
+  async initChat(user?: IUser) {
+    if (!window.zE) await this.loadChat()
+
+    if (user)
+      window.zE?.('webWidget', 'identify', {
+        name: user.email.split('@')[0],
+        email: user.email,
+      })
+
+    window.zE?.('webWidget', 'show')
+  }
+
+  async loadChat() {
+    window.zESettings = {
+      webWidget: {
+        launcher: {
+          chatLabel: { '*': 'Online' },
+          mobile: {
+            labelVisible: false,
+          },
+        },
+        chat: {
+          suppress: false,
+        },
+        contactForm: {
+          suppress: true,
+        },
+        helpCenter: {
+          suppress: true,
         },
       },
-      chat: {
-        suppress: false,
-      },
-      contactForm: {
-        suppress: true,
-      },
-      helpCenter: {
-        suppress: true,
-      },
-    },
+    }
+
+    const url = `https://static.zdassets.com/ekr/snippet.js?key=${ZENDESK_KEY}`
+    await insertScript(url, 'ze-snippet')
+    await sleep(5000)
+  }
+
+  endChat() {
+    window.zE?.('webWidget', 'logout')
+    window.zE?.('webWidget', 'hide')
   }
 }
+
+export default new Zendesk()
