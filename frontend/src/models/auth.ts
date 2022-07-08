@@ -17,6 +17,7 @@ import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
+import zendesk from '../services/zendesk'
 import axios from 'axios'
 
 function sleep(ms) {
@@ -91,7 +92,7 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT END')
     },
     async fetchUser(_, state) {
-      const { auth, user } = dispatch as Dispatch
+      const { auth } = dispatch as Dispatch
       try {
         const result = await graphQLRequest(
           ` {
@@ -210,6 +211,8 @@ export default createModel<RootModel>()({
         console.warn('DATA ALREADY INITIALIZED')
         return
       }
+
+      zendesk.initChat(state.auth.user)
       dispatch.backend.set({ initialized: true })
       dispatch.plans.init()
       await cloudController.init()
@@ -260,6 +263,7 @@ export default createModel<RootModel>()({
       dispatch.ui.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
+      zendesk.endChat()
       emit('user/sign-out-complete')
       dispatch.auth.set({ authenticated: false })
       analyticsHelper.clearIdentity()
