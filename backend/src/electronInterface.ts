@@ -6,7 +6,7 @@ export const EVENTS = {
   maximize: 'app/maximize',
   preferences: 'preferences',
   downloaded: 'update/downloaded',
-  available: 'update/available',
+  update: 'update',
   recapitate: 'recapitate',
   signOut: 'sign-out',
   filePrompt: 'app/filePrompt',

@@ -105,7 +105,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
           {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
           <ListItemSecondaryAction>
             {showButton && (
-              <Button onClick={onButtonClick} size="small">
+              <Button onClick={onButtonClick} color="primary" size="small">
                 {button}
               </Button>
             )}

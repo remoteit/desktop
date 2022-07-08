@@ -6,15 +6,10 @@ const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 
 export default class AppUpdater {
   nextCheck: number = 0
-  autoUpdate: boolean
 
   constructor() {
     autoUpdater.logger = Logger
-
-    autoUpdater.on('update-available', info => {
-      Logger.info('Update available', { info })
-      EventBus.emit(EVENTS.available, info.version)
-    })
+    autoUpdater.autoInstallOnAppQuit = true
 
     autoUpdater.on('update-downloaded', info => {
       EventBus.emit(EVENTS.downloaded, info.version)
@@ -26,11 +21,8 @@ export default class AppUpdater {
 
     EventBus.on(EVENTS.preferences, ({ autoUpdate }: IPreferences) => {
       autoUpdater.allowPrerelease = preferences.get().allowPrerelease || false
-      this.autoUpdate = !!autoUpdate
-      if (this.autoUpdate) this.check(true)
+      if (autoUpdate) this.check(true)
     })
-
-    this.autoUpdate = !!preferences.get().autoUpdate
   }
 
   async check(force?: boolean) {
@@ -48,8 +40,9 @@ export default class AppUpdater {
     }
   }
 
-  async restart() {
-    autoUpdater.quitAndInstall()
+  async update() {
+    Logger.info('QUIT AND INSTALL UPDATE')
+    await autoUpdater.quitAndInstall()
     electron.app.quit()
   }
 }
