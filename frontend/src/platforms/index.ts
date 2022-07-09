@@ -20,11 +20,13 @@ class Platforms {
   lookup: INumberLookup<string> = {}
   installed: string[] = [
     'advantech',
+    'android',
     'apple',
     'aws',
     'axis',
     'azure',
     'gcp',
+    'ios',
     'linux',
     'nas',
     'nvidia',

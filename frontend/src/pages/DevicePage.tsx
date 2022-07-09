@@ -64,7 +64,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
               `/devices/${device.id}/logs`,
               `/devices/${device.id}`,
             ]}
-            icon={<ConnectionStateIcon device={device} connection={connection} size="lg" />}
+            icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
             exactMatch
             dense
             title={
