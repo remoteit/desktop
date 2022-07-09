@@ -1,5 +1,5 @@
 import { DEVICE_TYPE } from '../shared/applications'
-import { getTargetPlatform } from '../helpers/platformHelper'
+import { platforms } from '../platforms'
 import { isPortal } from '../services/Browser'
 import { store } from '../store'
 import icon from '../assets/noticeIcon.png'
@@ -40,7 +40,7 @@ function stateNotification(event: ICloudEvent) {
       createNotification({
         title: `${target.name} ${actions[event.state]}`,
         body:
-          getTargetPlatform(target.platform) +
+          platforms.nameLookup[target.platform] +
           (event.authUserId === target.owner?.id ? '' : ' - ' + target.owner?.email),
         id: target.deviceId,
       })

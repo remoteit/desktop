@@ -194,7 +194,7 @@ export function graphQLAdaptor(
       lastReported: d.lastReported && new Date(d.lastReported),
       externalAddress: d.endpoint?.externalAddress,
       internalAddress: d.endpoint?.internalAddress,
-      targetPlatform: d.platform,
+      targetPlatform: d.platform, // || 1214,
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       quality: d.endpoint?.quality,
