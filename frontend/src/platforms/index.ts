@@ -18,13 +18,16 @@ export interface IPlatform {
 class Platforms {
   platforms: ILookup<IPlatform> = {}
   lookup: INumberLookup<string> = {}
+  nameLookup: INumberLookup<string> = {}
   installed: string[] = [
     'advantech',
+    'android',
     'apple',
     'aws',
     'axis',
     'azure',
     'gcp',
+    'ios',
     'linux',
     'nas',
     'nvidia',
@@ -49,7 +52,10 @@ class Platforms {
   register(platform: IPlatform) {
     platform.types = platform.types || {}
     this.platforms[platform.id] = platform
-    Object.keys(platform.types).forEach(type => (this.lookup[type] = platform.id))
+    Object.keys(platform.types).forEach(type => {
+      this.lookup[type] = platform.id
+      this.nameLookup[type] = platform.types?.[type]
+    })
   }
 
   type(type: number): IPlatform {

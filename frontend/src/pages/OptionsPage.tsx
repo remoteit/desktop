@@ -149,7 +149,7 @@ export const OptionsPage: React.FC = () => {
                   confirmMessage="You will remove this system as a host, your connections and command line utilities."
                   onClick={() => {
                     emit('uninstall')
-                    ui.set({ uninstalling: true })
+                    ui.set({ waitMessage: 'uninstalling' })
                     analyticsHelper.track('uninstall')
                   }}
                 />

@@ -10,7 +10,6 @@ export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
   'guideAWS',
-  'guideLaunch',
   'themeMode',
   'accordion',
   'drawerMenu',
@@ -29,7 +28,7 @@ type UIState = {
   selected: IDevice['id'][]
   connected: boolean
   offline: boolean
-  uninstalling: boolean
+  waitMessage?: string
   claiming: boolean
   fetching: boolean
   destroying: boolean
@@ -69,7 +68,6 @@ type UIState = {
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
-  guideLaunch: IGuide
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -85,7 +83,7 @@ export const defaultState: UIState = {
   selected: [],
   connected: false,
   offline: !navigator.onLine,
-  uninstalling: false,
+  waitMessage: undefined,
   claiming: false,
   fetching: false,
   destroying: false,
@@ -124,8 +122,7 @@ export const defaultState: UIState = {
   navigation: {},
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
-  guideLaunch: { title: 'Launch Guide', active: false, step: 1, total: 1 },
+  guideAWS: { title: 'AWS Guide', step: 1, total: 6 },
   accordion: { config: true, configConnected: false, options: false, service: false, networks: true },
   autoConnect: false,
   autoLaunch: false,

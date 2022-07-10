@@ -1,9 +1,10 @@
 import React from 'react'
+import { IP_LATCH } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
+import { DeviceTagEditor } from './DeviceTagEditor'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListItemText, Chip, Typography } from '@mui/material'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
@@ -19,6 +20,7 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
+import { Icon } from './Icon'
 import { Tags } from './Tags'
 
 export class Attribute {
@@ -352,6 +354,23 @@ export const attributes: Attribute[] = [
         : connection?.isP2P || session?.isP2P
         ? 'Peer to Peer'
         : 'Proxy',
+  }),
+  new ConnectionAttribute({
+    id: 'security',
+    label: 'Security',
+    value: ({ connection, session }) => {
+      if (!connection) return undefined
+
+      if (connection.public)
+        return connection.publicRestriction === IP_LATCH ? 'IP Restriction' : 'None - Public endpoint'
+
+      return (
+        <>
+          <Icon name="shield-alt" type="solid" size="xxs" inlineLeft />
+          {lanShared(connection) ? 'Zero Trust (LAN shared)' : 'Zero Trust'}
+        </>
+      )
+    },
   }),
   new ConnectionAttribute({
     id: 'local',

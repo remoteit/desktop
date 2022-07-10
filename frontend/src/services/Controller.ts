@@ -185,7 +185,7 @@ function getEventHandlers() {
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
-    filePath: (filePath: string) => backend.set({ filePath }),
+    'app/filePath': (filePath: string) => backend.set({ filePath }),
 
     // AutoUpdate
     'update/downloaded': (version: string) => {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { getTargetPlatform } from '../../helpers/platformHelper'
+import { platforms } from '../../platforms'
 import { Tooltip, Box } from '@mui/material'
 import { FontSize } from '../../styling'
 import { Icon } from '../Icon'
@@ -10,12 +10,12 @@ export const TargetPlatform: React.FC<{
   tooltip?: boolean
   label?: boolean
   inlineLeft?: boolean
-}> = ({ id, size, tooltip, label, inlineLeft }) => {
+}> = ({ id = -1, size, tooltip, label, inlineLeft }) => {
   const icon = <Icon size={size} inlineLeft={inlineLeft || !!label} platform={id} platformIcon />
 
   if (tooltip)
     return (
-      <Tooltip title={getTargetPlatform(id)} placement="top" arrow>
+      <Tooltip title={platforms.nameLookup[id]} placement="top" arrow>
         <span>{icon}</span>
       </Tooltip>
     )
@@ -24,7 +24,7 @@ export const TargetPlatform: React.FC<{
     return (
       <Box display="flex" alignItems="center">
         {icon}
-        {getTargetPlatform(id)}
+        {platforms.nameLookup[id]}
       </Box>
     )
 

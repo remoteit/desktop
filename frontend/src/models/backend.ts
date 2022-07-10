@@ -141,6 +141,11 @@ export default createModel<RootModel>()({
     async setUpdateNotice(updateVersion: string | undefined, globalState) {
       setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
     },
+    async restart() {
+      dispatch.ui.set({ waitMessage: 'updating' })
+      analyticsHelper.track('update')
+      emit('restart')
+    },
   }),
 
   reducers: {

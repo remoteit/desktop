@@ -7,6 +7,7 @@ import { RemoteManagement } from './RemoteManagement'
 import { RegisterMenu } from './RegisterMenu'
 import { SidebarNav } from './SidebarNav'
 import { AvatarMenu } from './AvatarMenu'
+import { GuideStep } from './GuideStep'
 import { spacing } from '../styling'
 import { Body } from './Body'
 
@@ -19,7 +20,9 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
-          <RegisterMenu />
+          <GuideStep guide="guideAWS" step={6} instructions="Now add your own first device!" autoNext>
+            <RegisterMenu />
+          </GuideStep>
         </section>
         <SidebarNav />
         <RemoteManagement />

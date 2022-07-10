@@ -88,8 +88,8 @@ export const LanSharePage: React.FC = () => {
     history.goBack()
   }
 
-  const handleLocalNetworkSecurity = event => {
-    setSelection(parseInt(event.target.value as string))
+  const handleLocalNetworkSecurity = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelection(parseInt(event.target.value))
     setDisabled(false)
   }
 
@@ -107,8 +107,9 @@ export const LanSharePage: React.FC = () => {
   }
 
   const handleEnableLocalSharing = () => {
-    setCurrentIp(enabledLocalSharing ? IP_PRIVATE : IP_OPEN)
-    setEnabledLocalSharing(!enabledLocalSharing)
+    const setSharing = !enabledLocalSharing
+    setCurrentIp(setSharing ? IP_OPEN : IP_PRIVATE)
+    setEnabledLocalSharing(setSharing)
     setDisabled(false)
   }
 
@@ -119,7 +120,7 @@ export const LanSharePage: React.FC = () => {
           icon="network-wired"
           toggle={enabledLocalSharing}
           onClick={handleEnableLocalSharing}
-          label="Enable local sharing"
+          label="Enable LAN sharing"
         />
       </List>
 
