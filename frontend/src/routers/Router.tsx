@@ -95,6 +95,8 @@ export const Router: React.FC = () => {
         }}
       />
 
+      <Redirect from="/connections" to="/networks" />
+
       {/* Connections */}
       <Route path="/networks">
         <DynamicPanel
