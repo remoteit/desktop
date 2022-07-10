@@ -124,7 +124,7 @@ export const Connect: React.FC = () => {
             <DesktopUI>
               <TimeoutSetting connection={connection} service={service} />
               <ProxySetting connection={connection} service={service} />
-              <LanShareSelect connection={connection} service={service} />
+              <LanShareSelect connection={connection} />
               <TargetHostSetting connection={connection} service={service} />
               <ConnectionLogSetting connection={connection} service={service} />
             </DesktopUI>

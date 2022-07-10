@@ -6,11 +6,10 @@ import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
 
 type Props = {
-  service: IService
   connection?: IConnection
 }
 
-export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
+export const LanShareSelect: React.FC<Props> = ({ connection }) => {
   const location = useLocation()
   const shared = lanShared(connection)
   const disabled = connection?.connected || connection?.public
