@@ -28,7 +28,7 @@ export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
     <Tooltip title={title}>
       <IconButton onClick={() => onClick && onClick()} size="large">
         {/* <Icon name="neuter" size="md" rotate={90} fixedWidth /> */}
-        <Icon name="hdd" size="md" fixedWidth />
+        <Icon name="router" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

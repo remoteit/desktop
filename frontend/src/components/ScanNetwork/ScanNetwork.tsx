@@ -100,7 +100,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
           <span key={row}>
             <ListItem button onClick={() => toggle(row)}>
               <ListItemIcon>
-                {ip[0] === privateIP ? <Icon name="hdd" type="regular" /> : InterfaceIcon[interfaceType]}
+                {ip[0] === privateIP ? <Icon name="router" type="regular" /> : InterfaceIcon[interfaceType]}
               </ListItemIcon>
               <ListItemText primary={ip[0]} secondary={ip[0] === privateIP ? 'This system' : null} />
               <ListItemSecondaryAction>

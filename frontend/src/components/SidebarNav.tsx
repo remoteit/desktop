@@ -24,7 +24,13 @@ export const SidebarNav: React.FC = () => {
   if (remoteUI)
     return (
       <List className={css.list}>
-        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
+        <ListItemLocation
+          title="This Device"
+          pathname="/devices"
+          match="/devices/:any?/:any?/:any?"
+          icon="laptop"
+          dense
+        />
         <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       </List>
     )
@@ -45,7 +51,7 @@ export const SidebarNav: React.FC = () => {
           )}
         </ListItemSecondaryAction>
       </ListItemLocation>
-      <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
+      <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" exactMatch dense>
         {!!devices && (
           <ListItemSecondaryAction>
             <Tooltip title="Total" placement="top" arrow>
@@ -57,7 +63,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll-old" dense />
+      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
       <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />

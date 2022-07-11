@@ -42,7 +42,7 @@ export const OrganizationGuestList: React.FC = () => {
                 size="small"
                 label={
                   <Box display="flex">
-                    <Icon name="hdd" size="base" color="grayDarker" inlineLeft />
+                    <Icon name="router" size="base" color="grayDarker" inlineLeft />
                     {guest.deviceIds.length}
                   </Box>
                 }

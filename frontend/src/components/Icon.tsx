@@ -1,12 +1,12 @@
 import React from 'react'
-import { fontSizes, spacing, Color, FontSize } from '../styling'
-import { fal, IconName, IconPrefix } from '@fortawesome/pro-light-svg-icons'
 import { makeStyles } from '@mui/styles'
 import { Badge } from '@mui/material'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlatformIcon } from './PlatformIcon'
-import { library } from '@fortawesome/fontawesome-svg-core'
+import { fontSizes, spacing, Color, FontSize } from '../styling'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { library, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
+import { fal } from '@fortawesome/pro-light-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { R3gray } from '../assets/R3gray'
@@ -32,8 +32,6 @@ export interface IconProps {
   inlineLeft?: boolean
   modified?: boolean
 }
-
-export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
   (
@@ -98,7 +96,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     let icon = (
       <FontAwesomeIcon
         {...props}
-        forwardedRef={ref}
+        ref={ref as React.Ref<SVGSVGElement>}
         icon={[fontType, name as IconName]}
         spin={spin}
         fixedWidth={fixedWidth}

@@ -85,7 +85,7 @@ export const InitiatorPlatform: React.FC<{
     case 17:
     case 18:
     default:
-      name = user ? 'user' : thisDevice ? 'laptop' : 'hdd'
+      name = user ? 'user' : thisDevice ? 'laptop' : 'router'
       break
   }
 

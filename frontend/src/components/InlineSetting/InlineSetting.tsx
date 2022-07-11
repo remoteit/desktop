@@ -100,7 +100,7 @@ export const InlineSetting: React.FC<Props> = ({
               title="Reset"
               icon="undo"
               type="solid"
-              size="base"
+              size="md"
               onMouseDown={cancelBlur}
               onClick={() => {
                 onResetClick()
@@ -111,13 +111,22 @@ export const InlineSetting: React.FC<Props> = ({
           <IconButton
             title="Cancel"
             icon="times"
+            type="solid"
             size="md"
             onClick={() => {
               !fieldRef && setEdit(false)
               onCancel()
             }}
           />
-          <IconButton title="Save" icon="check" color="primary" size="md" onMouseDown={cancelBlur} submit />
+          <IconButton
+            title="Save"
+            icon="check"
+            color="primary"
+            type="solid"
+            size="md"
+            onMouseDown={cancelBlur}
+            submit
+          />
         </ListItemSecondaryAction>
       </form>
     </ListItem>
