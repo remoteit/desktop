@@ -362,10 +362,10 @@ export const attributes: Attribute[] = [
       if (!connection) return undefined
 
       if (connection.public)
-        return connection.reverseProxy
-          ? 'Public randomized url'
-          : connection.publicRestriction === IP_LATCH
-          ? 'This IP address only'
+        return connection.publicRestriction === IP_LATCH
+          ? connection.reverseProxy
+            ? 'Public randomized url'
+            : 'This IP address only'
           : 'Public'
 
       return (
