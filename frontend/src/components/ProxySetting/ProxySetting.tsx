@@ -43,11 +43,11 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
           setOpen(!open)
           const updated = {
             ...connection,
-            failover: route !== 'p2p',
+            failover: route === 'failover',
             proxyOnly: route === 'proxy',
             public: route === 'public',
             enabled: route === 'public' ? false : connection.enabled,
-            publicRestriction: IP_OPEN,
+            publicRestriction: route === 'public' ? IP_OPEN : undefined,
           }
           if (updated.public && connection.enabled) {
             dispatch.connections.disconnect(connection)
