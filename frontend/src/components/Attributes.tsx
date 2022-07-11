@@ -358,11 +358,15 @@ export const attributes: Attribute[] = [
   new ConnectionAttribute({
     id: 'security',
     label: 'Security',
-    value: ({ connection, session }) => {
+    value: ({ connection }) => {
       if (!connection) return undefined
 
       if (connection.public)
-        return connection.publicRestriction === IP_LATCH ? 'IP Restriction' : 'None - Public endpoint'
+        return connection.reverseProxy
+          ? 'Public randomized url'
+          : connection.publicRestriction === IP_LATCH
+          ? 'This IP address only'
+          : 'Public'
 
       return (
         <>
