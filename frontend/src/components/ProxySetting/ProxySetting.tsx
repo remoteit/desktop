@@ -50,6 +50,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
             public: route === 'public',
             enabled: route === 'public' ? false : connection.enabled,
             publicRestriction: route === 'public' ? IP_OPEN : undefined,
+            reverseProxy: route !== 'public' ? undefined : connection.reverseProxy,
           }
           if (updated.public && connection.enabled) {
             dispatch.connections.disconnect(connection)

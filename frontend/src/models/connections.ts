@@ -156,6 +156,7 @@ export default createModel<RootModel>()({
       if (connection.autoLaunch) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
+      connection.reverseProxy = undefined
       connection.public = connection.public || isPortal()
 
       if (connection.public) {
