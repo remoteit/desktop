@@ -2,11 +2,10 @@ import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { getAccountIds, getActiveAccountId } from './accounts'
 import { selectConnections, selectConnection } from '../helpers/connectionHelper'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
-// import { graphQLBasicRequest } from '../services/graphQL'
-// import { AxiosResponse } from 'axios'
+import { graphQLBasicRequest } from '../services/graphQL'
+import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
 export const DEFAULT_ID = 'local'
@@ -53,19 +52,70 @@ export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
     async init(_, state) {
-      const all = getLocalStorage(state, 'networks') || {}
-      const defaultNetwork = getLocalStorage(state, 'networks-default')
-      if (defaultNetwork) dispatch.networks.set({ default: defaultNetwork })
-      dispatch.networks.set({ all })
+      // const all = getLocalStorage(state, 'networks') || {}
+      // const defaultNetwork = getLocalStorage(state, 'networks-default')
+      // if (defaultNetwork) dispatch.networks.set({ default: defaultNetwork })
+      // dispatch.networks.set({ all })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
     async fetch(_, state) {
-      const ids: string[] = getAccountIds(state)
-      let all = state.networks.all
-      ids.forEach(id => (all[id] = all[id] || []))
-      await dispatch.networks.set({ all })
-      dispatch.networks.handleOrphanedConnections()
+      const accountId = getActiveAccountId(state)
+      const result = await graphQLBasicRequest(
+        ` query($account: String) {
+            login {
+              account(id: $account) {
+                networks {
+                  id
+                  name
+                  enabled
+                  created
+                  tags {
+                    name
+                    color
+                    created
+                  }
+                  connections {
+                    service {
+                      id
+                      name
+                    }
+                    name
+                    port
+                    enabled
+                    created
+                  }
+                  shares {
+                    user {
+                      email
+                    }
+                    created
+                  }
+                }
+              }
+            }
+          }`,
+        {
+          account: accountId,
+        }
+      )
+      if (result === 'ERROR') return
+      const networks = await dispatch.networks.parse(result)
+      if (networks) await dispatch.networks.setNetworks(networks)
+      // dispatch.networks.handleOrphanedConnections()
+    },
+    async parse(result: AxiosResponse<any> | undefined) {
+      const all = result?.data?.data?.login?.account?.networks
+      if (!all) return
+      const parsed: INetwork[] = all.map(n => ({
+        ...n,
+        created: new Date(n.created),
+        connections: n.connections.map(c => ({
+          ...c,
+          created: new Date(c.created),
+        })),
+      }))
+      return parsed
     },
     async handleOrphanedConnections(_, state) {
       // const assigned = new Set()
@@ -142,7 +192,7 @@ export default createModel<RootModel>()({
 
       if (params.id === DEFAULT_ID) {
         dispatch.networks.set({ default: { ...params } })
-        setLocalStorage(state, 'networks-default', params)
+        // setLocalStorage(state, 'networks-default', params)
         return
       }
 
@@ -155,8 +205,12 @@ export default createModel<RootModel>()({
         networks.push({ ...params, id })
         dispatch.ui.set({ redirect: `/networks/view/${id}` })
       }
+      dispatch.networks.setNetworks(networks)
+      // setLocalStorage(state, 'networks', state.networks.all)
+    },
+    async setNetworks(networks: INetwork[], state) {
+      const id = getActiveAccountId(state)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
-      setLocalStorage(state, 'networks', state.networks.all)
     },
   }),
   reducers: {
