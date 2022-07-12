@@ -19,7 +19,7 @@ type Props = {
 }
 
 export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform', 'security'])
+  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
