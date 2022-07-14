@@ -34,10 +34,6 @@ export const ChangePassword = () => {
             onChange={e => evaluateCurrentPassword(e)}
           />
           <PasswordStrengthInput onChange={(password: string, isValid: boolean) => {
-            console.log('PASSWORD:')
-            console.log(password)
-            console.log('isvalid:')
-            console.log(isValid)
             setPassword(password)
             setValid(isValid)
           }
