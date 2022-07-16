@@ -20,7 +20,7 @@ type Props = {
 }
 
 export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform', 'security'])
+  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -155,8 +155,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   <CopyButton
                     color="alwaysWhite"
                     icon="copy"
-                    type="regular"
-                    size="lg"
                     value={name + (port ? p + port : '')}
                     onMouseEnter={() => setHover('copy')}
                     onMouseLeave={() => setHover(undefined)}
@@ -168,8 +166,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                           <CopyButton
                             color="alwaysWhite"
                             icon="i-cursor"
-                            type="solid"
-                            size="md"
                             value={connection.host}
                             onMouseEnter={() => setHover('name')}
                             onMouseLeave={() => setHover(undefined)}
@@ -177,8 +173,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                           <CopyButton
                             color="alwaysWhite"
                             icon="port"
-                            type="solid"
-                            size="md"
                             value={connection.port}
                             onMouseEnter={() => setHover('port')}
                             onMouseLeave={() => setHover(undefined)}
@@ -188,7 +182,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       <CopyButton
                         color="alwaysWhite"
                         icon={app.launchType === 'URL' ? 'link' : 'terminal'}
-                        size="md"
                         app={app}
                         value={app.string}
                         onMouseEnter={() => setHover('copyLaunch')}
@@ -202,14 +195,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   {app.canLaunch ? (
                     <LaunchButton
                       color="alwaysWhite"
-                      type="solid"
-                      size="md"
                       app={app}
                       onMouseEnter={() => setHover('launch')}
                       onMouseLeave={() => setHover(undefined)}
                     />
                   ) : (
-                    <IconButton size="lg" title="Command launch in Desktop" name="ban" fixedWidth />
+                    <IconButton title="Command launch in Desktop" name="ban" fixedWidth />
                   )}
                 </span>
               </Gutters>
@@ -230,14 +221,14 @@ const useStyles = makeStyles(({ palette }) => ({
   show: {
     opacity: 1,
     position: 'absolute',
-    transition: 'opacity 300ms',
+    // transition: 'opacity 300ms',
   },
   hide: {
     opacity: 0,
     position: 'absolute',
-    transitionProperty: 'opacity',
-    transitionDuration: '300ms',
-    transitionDelay: '150ms',
+    // transitionProperty: 'opacity',
+    // transitionDuration: '300ms',
+    // transitionDelay: '150ms',
   },
   active: {
     display: 'inline-block',

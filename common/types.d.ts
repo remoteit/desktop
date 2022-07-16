@@ -119,6 +119,7 @@ declare global {
     name: string
     enabled: boolean
     serviceIds: string[]
+    sessions?: ISession[]
     icon?: string
   }
 

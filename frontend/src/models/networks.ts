@@ -1,9 +1,11 @@
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
-import { getAccountIds, getActiveAccountId } from './accounts'
-import { selectConnections, selectConnection } from '../helpers/connectionHelper'
+import { getActiveAccountId } from './accounts'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { selectConnection } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
+import { graphQLAddNetwork, graphQLDeleteNetwork, graphQLAddConnection } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
@@ -34,13 +36,27 @@ const defaultCloudNetwork: INetwork = {
   icon: 'cloud',
 }
 
+export const recentNetwork: INetwork = {
+  id: 'recent',
+  name: 'This system',
+  enabled: false,
+  serviceIds: [],
+  icon: 'laptop',
+}
+
 type INetworksAccountState = {
   initialized: boolean
   all: ILookup<INetwork[]>
   default: INetwork
 }
 
-type addProps = { serviceId?: string; serviceIds?: string[]; networkId?: string; disableConnect?: boolean }
+export type addConnectionProps = {
+  serviceId: string
+  networkId: string
+  port?: number
+  name?: string
+  enabled?: boolean
+}
 
 const defaultAccountState: INetworksAccountState = {
   initialized: false,
@@ -52,10 +68,8 @@ export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
     async init(_, state) {
-      // const all = getLocalStorage(state, 'networks') || {}
-      // const defaultNetwork = getLocalStorage(state, 'networks-default')
-      // if (defaultNetwork) dispatch.networks.set({ default: defaultNetwork })
-      // dispatch.networks.set({ all })
+      const defaultNetwork = getLocalStorage(state, 'networks-default')
+      if (defaultNetwork) dispatch.networks.set({ default: defaultNetwork })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
@@ -110,10 +124,8 @@ export default createModel<RootModel>()({
       const parsed: INetwork[] = all.map(n => ({
         ...n,
         created: new Date(n.created),
-        connections: n.connections.map(c => ({
-          ...c,
-          created: new Date(c.created),
-        })),
+        serviceIds: n.connections.map(c => c.service.id),
+        icon: 'chart-network',
       }))
       return parsed
     },
@@ -133,23 +145,27 @@ export default createModel<RootModel>()({
       // console.log('ORPHANED CONNECTIONS', orphaned)
       // dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
     },
+    async enable(params: INetwork) {
+      const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
+      dispatch.connections.queueEnable(queue)
+      dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
+    },
     async start(serviceId: string, state) {
       const joined = selectNetworkByService(state, serviceId)
-      if (!joined.length) dispatch.networks.add({ serviceId })
+      if (!joined.length) dispatch.networks.add({ serviceId, networkId: DEFAULT_ID })
     },
-    async add({ serviceId = '', serviceIds, networkId = DEFAULT_ID, disableConnect }: addProps, state) {
-      serviceIds = serviceIds || [serviceId]
-      let network = selectNetwork(state, networkId)
-      const unique = new Set(network.serviceIds.concat(serviceIds))
+    async add(props: addConnectionProps, state) {
+      let network = selectNetwork(state, props.networkId)
+      const result = await graphQLAddConnection(props)
+      if (result === 'ERROR') return
+      const success = result?.data?.data?.addNetworkConnection
+      if (!success) {
+        dispatch.ui.set({ errorMessage: 'Failed to add connection, perhaps you’re not a device admin.' })
+      }
+      const unique = new Set(network.serviceIds.concat(props.serviceId))
       network.serviceIds = Array.from(unique)
       dispatch.networks.setNetwork(network)
-      if (network.enabled && !disableConnect) {
-        serviceIds.forEach(serviceId => {
-          const [service] = selectById(state, serviceId)
-          const connection = selectConnection(state, service)
-          dispatch.connections.connect(connection)
-        })
-      }
+      if (network.enabled && props.enabled) dispatch.networks.enable(network)
     },
     async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
@@ -163,18 +179,6 @@ export default createModel<RootModel>()({
         dispatch.connections.disconnect(connection)
       }
     },
-    async enable(params: INetwork) {
-      const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
-      dispatch.connections.queueEnable(queue)
-      dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
-    },
-    async deleteNetwork(params: INetwork, state) {
-      const id = getActiveAccountId(state)
-      let networks = state.networks.all[id] || []
-      const index = networks.findIndex(network => network.id === params.id)
-      networks.splice(index, 1)
-      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
-    },
     async removeById(id: string, state) {
       let { all } = state.networks
       all[DEFAULT_ID] = [state.networks.default]
@@ -187,26 +191,39 @@ export default createModel<RootModel>()({
         })
       })
     },
+    async deleteNetwork(params: INetwork, state) {
+      const id = getActiveAccountId(state)
+      const response = await graphQLDeleteNetwork(params.id)
+      if (response === 'ERROR') return
+      let networks = state.networks.all[id] || []
+      const index = networks.findIndex(network => network.id === params.id)
+      networks.splice(index, 1)
+      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
+    },
+    async addNetwork(params: INetwork, state) {
+      const id = getActiveAccountId(state)
+      const response = await graphQLAddNetwork(params, id)
+      if (response === 'ERROR') return
+      params.id = response?.data?.data?.createNetwork?.id
+      console.log('ADDING NETWORK', params)
+      await dispatch.networks.setNetwork(params)
+      dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
+    },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
 
       if (params.id === DEFAULT_ID) {
         dispatch.networks.set({ default: { ...params } })
-        // setLocalStorage(state, 'networks-default', params)
+        setLocalStorage(state, 'networks-default', params)
         return
       }
 
       let networks = state.networks.all[id] || []
-      if (params.id) {
-        const index = networks.findIndex(network => network.id === params.id)
-        if (index >= 0) networks[index] = { ...networks[index], ...params }
-      } else {
-        const id = Math.floor(Math.random() * 1000000).toString()
-        networks.push({ ...params, id })
-        dispatch.ui.set({ redirect: `/networks/view/${id}` })
-      }
+      const index = networks.findIndex(network => network.id === params.id)
+      if (index >= 0) networks[index] = { ...networks[index], ...params }
+      else networks.push(params)
+
       dispatch.networks.setNetworks(networks)
-      // setLocalStorage(state, 'networks', state.networks.all)
     },
     async setNetworks(networks: INetwork[], state) {
       const id = getActiveAccountId(state)

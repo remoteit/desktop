@@ -8,8 +8,6 @@ export interface Props {
 }
 
 export const Network: React.FC<Props> = props => {
-  // if (!sessions.length && !action && !props.isNew) return null
-
   return (
     <List>
       <NetworkListTitle {...props} />

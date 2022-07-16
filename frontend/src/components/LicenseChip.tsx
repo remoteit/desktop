@@ -14,7 +14,7 @@ const licenseChipLookup: ILookup<ILicenseChip> = {
     name: 'Licensed',
     background: 'primary',
     colorName: 'alwaysWhite',
-    hoverColor: 'grayDarker',
+    hoverColor: 'primaryLight',
   },
   UNLICENSED: {
     name: 'Unlicensed',

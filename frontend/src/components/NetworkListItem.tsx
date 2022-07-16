@@ -12,47 +12,55 @@ import { Title } from './Title'
 import { Icon } from './Icon'
 
 export interface Props {
-  serviceId?: string
+  serviceId: string
+  session?: ISession
   network?: INetwork
   children?: React.ReactNode
+  external?: boolean
 }
 
-export const NetworkListItem: React.FC<Props> = ({ network, serviceId, children }) => {
-  const { service, device, session, connection } = useSelector((state: ApplicationState) => {
+export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, external, children }) => {
+  const { service, device, foundSession, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceId)
     return {
       service,
       device,
-      session: state.sessions.all.find(s => s.target.id === serviceId),
+      foundSession: state.sessions.all.find(s => s.target.id === serviceId),
       connection: state.connections.all.find(c => c.id === serviceId),
     }
   })
-  const connected = session?.state === 'connected'
-  const offline = service?.state !== 'active'
-  const css = useStyles({ state: session?.state, offline, enabled: network?.enabled })
+  session = session || foundSession
+  const connected = external || session?.state === 'connected'
+  const offline = service?.state !== 'active' && !external
+  const platform = device?.targetPlatform || session?.target.platform
+  const css = useStyles({ state: session?.state, offline, enabled: network?.enabled, connected })
+
+  let pathname = `/networks/${serviceId}`
+  if (session) pathname += `/${session.id}`
+  if (external) pathname += '/other'
 
   let icon: React.ReactNode | null = null
-  if (connected) icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
+  if (connected) icon = <Icon color="primary" name="chevron-right" size="md" />
 
   return (
-    <ListItemLocation className={css.item} pathname={`/networks/${serviceId}`} exactMatch dense>
+    <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>
       <ListItemIcon className={css.connectIcon}>
         <div className={css.connection} />
         {icon}
       </ListItemIcon>
       <ListItemIcon className={css.platform + ' ' + css.text}>
-        <TargetPlatform id={device?.targetPlatform} size="md" tooltip />
+        <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
       <ListItemText
         className={css.text}
         primary={
-          <Title enabled={connection?.enabled}>
+          <Title enabled={external || connection?.enabled}>
             {service ? (
               <>
                 {attributeName(service)} - <span className={css.name}>{attributeName(device)}</span>
               </>
             ) : (
-              connection?.name
+              connection?.name || session?.target.name
             )}
           </Title>
         }
@@ -71,11 +79,12 @@ export const useStyles = makeStyles(({ palette }) => ({
       whiteSpace: 'nowrap',
     },
   }),
-  connection: ({ offline, enabled, state }: any) => {
+  connection: ({ offline, enabled, connected, state }: any) => {
     let color = palette.grayDark.main
-    if (enabled) color = palette.primary.main
+    if (enabled || connected) color = palette.primary.main
     return {
       borderColor: color,
+      borderBottomColor: color,
       borderWidth: '0 0 1px 1px',
       borderBottomWidth: offline ? 0 : 1,
       borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',

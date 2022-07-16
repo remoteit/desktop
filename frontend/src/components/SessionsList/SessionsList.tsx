@@ -1,32 +1,33 @@
 import React from 'react'
 import { Title } from '../Title'
-import { SessionListItem } from '../SessionListItem'
-import { Typography, Box } from '@mui/material'
+import { NetworkListItem } from '../NetworkListItem'
+import { NetworkListTitle } from '../NetworkListTitle'
+import { Typography, List, Box } from '@mui/material'
 
 export interface Props {
-  sessions: ISession[]
+  networks: ILookup<INetwork>
   title: string
   action?: React.ReactNode
-  other?: boolean
-  inactive?: boolean
-  isNew?: boolean
+  forceConnected?: boolean
 }
 
-export const SessionsList: React.FC<Props> = ({ sessions, title, action, ...props }) => {
-  if (!sessions.length && !props.isNew) return null
-  let prev: string | undefined
-
+export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
+  const networkKeys = Object.keys(networks)
+  if (!networkKeys.length) return null
   return (
     <>
       <Typography variant="subtitle1">
         <Title>{title}</Title>
         {action && <Box>{action}</Box>}
       </Typography>
-      {sessions.map((s, i) => {
-        const merge = prev === s.user?.id
-        prev = s.user?.id
-        return <SessionListItem session={s} key={i} merge={merge} {...props} />
-      })}
+      {networkKeys.map(k => (
+        <List key={k}>
+          <NetworkListTitle network={networks[k]} />
+          {networks[k].sessions?.map((s, i) => (
+            <NetworkListItem key={i} network={networks[k]} session={s} serviceId={s.target.id} external />
+          ))}
+        </List>
+      ))}
     </>
   )
 }

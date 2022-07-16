@@ -7,6 +7,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Gutters } from './Gutters'
+import sleep from '../services/sleep'
 
 export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => {
   const history = useHistory()
@@ -14,8 +15,15 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
   const dispatch = useDispatch<Dispatch>()
   const show = !!matchPath(location.pathname, { path: '/networks/new' })
   const [name, setName] = useState<string>('')
+  const [adding, setAdding] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement>()
   const network = useSelector((state: ApplicationState) => selectNetwork(state))
+
+  const reset = async () => {
+    await sleep(1000)
+    setAdding(false)
+    setName('')
+  }
 
   return (
     <>
@@ -27,9 +35,9 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
           <form
             onSubmit={async event => {
               event.preventDefault()
-              await dispatch.networks.setNetwork({ ...network, name })
-              setName('')
-              // history.push(`/networks/view/${id}`)
+              setAdding(true)
+              await dispatch.networks.addNetwork({ ...network, name })
+              reset()
             }}
           >
             <Box display="flex" alignItems="center" marginRight={-1}>
@@ -38,6 +46,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
                 fullWidth
                 label="Name"
                 value={name}
+                disabled={adding}
                 variant="filled"
                 inputRef={inputRef}
                 onChange={event => {
@@ -46,8 +55,18 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
                   setName(name)
                 }}
               />
-              <IconButton icon="times" color="grayDark" onClick={() => history.goBack()} inline fixedWidth size="lg" />
-              <IconButton icon="check" color="primary" submit fixedWidth size="lg" />
+              <IconButton
+                icon="times"
+                color="grayDark"
+                onClick={() => {
+                  history.goBack()
+                  reset()
+                }}
+                inline
+                fixedWidth
+                size="lg"
+              />
+              <IconButton icon="check" color="primary" submit fixedWidth loading={adding} size="lg" />
             </Box>
           </form>
         </Gutters>

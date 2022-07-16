@@ -1,4 +1,5 @@
 import { graphQLBasicRequest } from './graphQL'
+import { addConnectionProps } from '../models/networks'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
@@ -388,5 +389,45 @@ export async function graphQLTransferDevice(params: ITransferProps) {
       deviceId: params.device?.id,
       email: params.email,
     }
+  )
+}
+
+export async function graphQLAddNetwork(params: INetwork, accountId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($accountId: String, $name: String, $enabled: Boolean) {
+        createNetwork(accountId: $accountId, name: $name, enabled: $enabled) {
+          id
+        }
+      }`,
+    {
+      ...params,
+      accountId,
+    }
+  )
+}
+
+export async function graphQLDeleteNetwork(networkId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!) {
+        deleteNetwork(id: $networkId) 
+      }`,
+    {
+      networkId,
+    }
+  )
+}
+
+export async function graphQLAddConnection(props: addConnectionProps) {
+  return await graphQLBasicRequest(
+    ` mutation query(
+        $networkId: String!,
+        $serviceId: String!,
+        $port: Int,
+        $name: String,
+        $enabled: Boolean
+      ) {
+        addNetworkConnection(networkId: $networkId, serviceId: $serviceId, port: $port, name: $name, enabled: $enabled)
+      }`,
+    props
   )
 }

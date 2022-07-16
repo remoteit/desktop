@@ -46,7 +46,13 @@ export const SidebarNav: React.FC = () => {
           )}
           {!!sessions && (
             <Tooltip title="Connected" placement="top" arrow>
-              <Chip size="small" label={sessions.toLocaleString()} className={css.sessions} color="primary" />
+              <Chip
+                size="small"
+                label={sessions.toLocaleString()}
+                className={css.sessions}
+                variant="filled"
+                color="primary"
+              />
             </Tooltip>
           )}
         </ListItemSecondaryAction>

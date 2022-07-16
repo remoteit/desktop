@@ -112,9 +112,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
             '& + .MuiButton-root': { marginLeft: spacing.sm },
           },
+          containedPrimary: {
+            '&:hover': { backgroundColor: palette.primaryLight.main },
+          },
           contained: {
             color: palette.alwaysWhite.main,
-            '&:hover': { backgroundColor: palette.grayDarker.main },
+            '&:hover': { backgroundColor: palette.grayDarkest.main },
             '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
           },
           text: { padding: `${spacing.sm}px ${spacing.md}px` },
@@ -262,7 +265,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiPaper: {
         styleOverrides: {
           rounded: { borderRadius: radius },
-          root: { backgroundColor: palette.white.main },
+          root: { backgroundColor: palette.white.main, backgroundImage: 'none' },
         },
       },
       MuiListItem: {

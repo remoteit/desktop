@@ -28,6 +28,7 @@ export class Environment {
   binPath: string
   symlinkPath: string
   logPath: string
+  cliLogPath: string = ''
   connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
@@ -89,6 +90,7 @@ export class Environment {
     }
 
     this.logPath = path.resolve(this.userPath, 'log')
+    if (!this.isWindows) this.cliLogPath = path.resolve('/var/log/remoteit')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()

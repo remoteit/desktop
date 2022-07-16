@@ -122,38 +122,46 @@ export const Connect: React.FC = () => {
             <LaunchSelect connection={connection} service={service} />
           </List>
         </AccordionMenuItem>
-        <AccordionMenuItem
-          gutters
-          subtitle="Networks"
-          expanded={accordion.networks}
-          action={
-            <Box display="flex" alignItems="center">
-              {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
-              <DynamicButtonMenu
-                options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
-                title={
-                  availableNetworks.length === 1
-                    ? `Add to ${availableNetworks[0].name}`
-                    : !availableNetworks.length
-                    ? 'No available networks'
-                    : 'Add to network'
-                }
-                size="icon"
-                icon="plus"
-                disabled={!availableNetworks.length}
-                onClick={networkId => {
-                  if (!service) return
-                  dispatch.networks.add({ serviceId: service.id, networkId })
-                  dispatch.ui.accordion({ networks: true })
-                }}
-              />
-            </Box>
-          }
-          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
-          elevation={0}
-        >
-          <NetworksJoined service={service} networks={joinedNetworks} />
-        </AccordionMenuItem>
+        {device.permissions.includes('ADMIN') && (
+          <AccordionMenuItem
+            gutters
+            subtitle="Networks"
+            expanded={accordion.networks}
+            action={
+              <Box display="flex" alignItems="center">
+                {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
+                <DynamicButtonMenu
+                  options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
+                  title={
+                    availableNetworks.length === 1
+                      ? `Add to ${availableNetworks[0].name}`
+                      : !availableNetworks.length
+                      ? 'No available networks'
+                      : 'Add to network'
+                  }
+                  size="icon"
+                  icon="plus"
+                  disabled={!availableNetworks.length}
+                  onClick={networkId => {
+                    if (!service) return
+                    dispatch.networks.add({
+                      serviceId: service.id,
+                      networkId,
+                      name: connection.name,
+                      port: connection.port,
+                      enabled: connection.enabled,
+                    })
+                    dispatch.ui.accordion({ networks: true })
+                  }}
+                />
+              </Box>
+            }
+            onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
+            elevation={0}
+          >
+            <NetworksJoined service={service} networks={joinedNetworks} />
+          </AccordionMenuItem>
+        )}
         <AccordionMenuItem
           gutters
           subtitle="Options"

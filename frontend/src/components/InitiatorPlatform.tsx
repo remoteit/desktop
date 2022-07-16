@@ -25,18 +25,15 @@ export const INITIATOR_PLATFORMS = [
   'BSD',
 ]
 
-export const InitiatorPlatform: React.FC<{
+type Props = {
   id?: number
-  connected?: boolean
   user?: boolean
   thisDevice?: boolean
-  className?: string
-}> = ({ id, connected, user, thisDevice, className }) => {
-  let name: string
-  let type: IconType = 'regular'
-  let color: Color | undefined = connected ? 'primary' : undefined
-  const size: FontSize = 'md'
+}
 
+export function initiatorPlatformIcon({ id, user, thisDevice }: Props): [string, IconType | undefined] {
+  let name: string
+  let type: IconType | undefined
   switch (id) {
     case 1:
     case 2:
@@ -88,6 +85,19 @@ export const InitiatorPlatform: React.FC<{
       name = user ? 'user' : thisDevice ? 'laptop' : 'router'
       break
   }
+
+  return [name, type]
+}
+
+export const InitiatorPlatform: React.FC<
+  Props & {
+    connected?: boolean
+    className?: string
+  }
+> = ({ id, connected, user, thisDevice, className }) => {
+  let color: Color | undefined = connected ? 'primary' : undefined
+  const size: FontSize = 'md'
+  const [name, type] = initiatorPlatformIcon({ id, user, thisDevice })
 
   return connected && id ? (
     <Tooltip title={`Connected by ${INITIATOR_PLATFORMS[id]}`}>

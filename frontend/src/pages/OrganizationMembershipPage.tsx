@@ -60,7 +60,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                   <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                     <LicenseChip license={license?.valid ? 'LICENSED' : 'UNLICENSED'} />
                   </Box>
-                  <IconButton icon="pencil" title="Edit Organization" to="/organization" size="lg" />
+                  <IconButton icon="pencil" title="Edit Organization" to="/organization" />
                 </ListItemSecondaryAction>
               </ListItem>
               <Divider variant="inset" />
@@ -91,7 +91,6 @@ export const OrganizationMembershipPage: React.FC = () => {
                     icon="sign-out"
                     title="Leave Account"
                     onClick={() => accounts.leaveMembership(m.account.id)}
-                    size="lg"
                   />
                 </ListItemSecondaryAction>
               </ListItem>

@@ -15,7 +15,7 @@ export const TargetPlatform: React.FC<{
 
   if (tooltip)
     return (
-      <Tooltip title={platforms.nameLookup[id]} placement="top" arrow>
+      <Tooltip title={platforms.nameLookup[id] || ''} placement="top" arrow>
         <span>{icon}</span>
       </Tooltip>
     )

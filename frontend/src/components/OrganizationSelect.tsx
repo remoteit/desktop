@@ -54,7 +54,7 @@ export const OrganizationSelect: React.FC = () => {
           <IconButton
             className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
             title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
-            icon="home-lg-alt"
+            icon="house"
             size="md"
             color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
             placement="right"
