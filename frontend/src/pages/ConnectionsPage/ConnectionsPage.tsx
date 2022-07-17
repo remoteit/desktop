@@ -81,7 +81,7 @@ export const ConnectionsPage: React.FC = () => {
             <Title>Recent</Title>
             <ClearButton all onClick={() => dispatch.connections.clearRecent()} />
           </Typography>
-          <Network network={recent} />
+          <Network network={recent} clear />
         </>
       )}
     </Container>

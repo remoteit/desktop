@@ -5,7 +5,12 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
-import { graphQLAddNetwork, graphQLDeleteNetwork, graphQLAddConnection } from '../services/graphQLMutation'
+import {
+  graphQLAddNetwork,
+  graphQLDeleteNetwork,
+  graphQLAddConnection,
+  graphQLRemoveConnection,
+} from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
@@ -127,24 +132,26 @@ export default createModel<RootModel>()({
         serviceIds: n.connections.map(c => c.service.id),
         icon: 'chart-network',
       }))
+      // TODO load connection data and merge into connections
+      console.log('LOAD NETWORKS', parsed)
       return parsed
     },
-    async handleOrphanedConnections(_, state) {
-      // const assigned = new Set()
-      // Object.keys(state.networks.all).forEach(key => {
-      //   state.networks.all[key].forEach(network => {
-      //     network.serviceIds.forEach(id => {
-      //       assigned.add(id)
-      //     })
-      //   })
-      // })
-      // const connectionIds = selectConnections(state)
-      //   .filter(c => c.enabled)
-      //   .map(c => c.id)
-      // const orphaned = connectionIds.filter(id => !assigned.has(id))
-      // console.log('ORPHANED CONNECTIONS', orphaned)
-      // dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
-    },
+    // async handleOrphanedConnections(_, state) {
+    // const assigned = new Set()
+    // Object.keys(state.networks.all).forEach(key => {
+    //   state.networks.all[key].forEach(network => {
+    //     network.serviceIds.forEach(id => {
+    //       assigned.add(id)
+    //     })
+    //   })
+    // })
+    // const connectionIds = selectConnections(state)
+    //   .filter(c => c.enabled)
+    //   .map(c => c.id)
+    // const orphaned = connectionIds.filter(id => !assigned.has(id))
+    // console.log('ORPHANED CONNECTIONS', orphaned)
+    // dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
+    // },
     async enable(params: INetwork) {
       const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
       dispatch.connections.queueEnable(queue)
@@ -160,7 +167,8 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const success = result?.data?.data?.addNetworkConnection
       if (!success) {
-        dispatch.ui.set({ errorMessage: 'Failed to add connection, perhaps you’re not a device admin.' })
+        dispatch.ui.set({ errorMessage: 'Failed to add connection. Please contact support.' })
+        return
       }
       const unique = new Set(network.serviceIds.concat(props.serviceId))
       network.serviceIds = Array.from(unique)
@@ -170,6 +178,13 @@ export default createModel<RootModel>()({
     async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
+      const result = await graphQLRemoveConnection(networkId, serviceId)
+      if (result === 'ERROR') return
+      const success = result?.data?.data?.graphQLRemoveConnection
+      if (!success) {
+        dispatch.ui.set({ errorMessage: 'Failed to remove connection. Please contact support.' })
+        return
+      }
       const index = network.serviceIds.indexOf(serviceId)
       network.serviceIds.splice(index, 1)
       dispatch.networks.setNetwork(network)
@@ -185,9 +200,9 @@ export default createModel<RootModel>()({
       const [_, device] = selectById(state, id)
       const serviceIds = id === device?.id ? device?.services.map(s => s.id) : [id]
       Object.keys(all).forEach(key => {
-        all[key].forEach(network => {
+        all[key].forEach(async network => {
           const match = network.serviceIds.find(serviceId => serviceIds.includes(serviceId))
-          if (match) dispatch.networks.remove({ serviceId: match, networkId: network.id })
+          if (match) await dispatch.networks.remove({ serviceId: match, networkId: network.id })
         })
       })
     },

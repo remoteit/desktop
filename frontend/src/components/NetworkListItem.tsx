@@ -100,6 +100,11 @@ export const useStyles = makeStyles(({ palette }) => ({
     opacity: 0.8,
   },
   item: {
+    '& .MuiButtonBase-root': {
+      padding: spacing.xs,
+      marginRight: spacing.xs,
+      color: palette.grayDark.main,
+    },
     '& .MuiIconButton-root': { visibility: 'hidden' },
     '&:hover .MuiIconButton-root': { visibility: 'visible' },
   },
@@ -113,7 +118,4 @@ export const useStyles = makeStyles(({ palette }) => ({
     backgroundImage: `radial-gradient(${palette.white.main}, transparent)`,
   },
   icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
-  title: {
-    // position: 'sticky',
-  },
 }))

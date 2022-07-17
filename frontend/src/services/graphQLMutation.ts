@@ -431,3 +431,15 @@ export async function graphQLAddConnection(props: addConnectionProps) {
     props
   )
 }
+
+export async function graphQLRemoveConnection(networkId: string, serviceId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $serviceId: String!) {
+        removeNetworkConnection(
+          networkId: String!
+          serviceId: String!
+        )
+      }`,
+    { networkId, serviceId }
+  )
+}
