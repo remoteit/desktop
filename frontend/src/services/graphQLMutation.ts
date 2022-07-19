@@ -317,7 +317,7 @@ export async function graphQLSetTag(tag: { name: string; color: number }, accoun
   )
 }
 
-export async function graphQLAddTag(serviceId: string | string[], name: string, accountId: string) {
+export async function graphQLAddDeviceTag(serviceId: string | string[], name: string | string[], accountId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
         addTag(serviceId: $serviceId, name: $name, accountId: $accountId)
@@ -326,12 +326,30 @@ export async function graphQLAddTag(serviceId: string | string[], name: string, 
   )
 }
 
-export async function graphQLRemoveTag(serviceId: string | string[], name: string, accountId: string) {
+export async function graphQLAddNetworkTag(networkId: string, name: string | string[]) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $name: [String!]!) {
+        addNetworkTag(networkId: $networkId, name: $name)
+    }`,
+    { networkId, name }
+  )
+}
+
+export async function graphQLRemoveDeviceTag(serviceId: string | string[], name: string, accountId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
         removeTag(serviceId: $serviceId, name: $name, accountId: $accountId)
     }`,
     { serviceId, name, accountId }
+  )
+}
+
+export async function graphQLRemoveNetworkTag(networkId: string | string[], name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: [String!]!, $name: [String!]!) {
+        removeNetworkTag(networkId: $networkId, name: $name)
+    }`,
+    { networkId, name }
   )
 }
 

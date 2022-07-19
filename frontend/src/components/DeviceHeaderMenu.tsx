@@ -4,6 +4,7 @@ import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
@@ -30,6 +31,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any; childr
             <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
+          <DeviceTagEditor device={device} />
           <ListHorizontal>
             <ListItemLocation
               title="Details"

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Typography } from '@mui/material'
-import { recentNetwork } from '../../models/networks'
+import { defaultNetwork, recentNetwork } from '../../models/networks'
 import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
 import { selectConnections } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
@@ -28,11 +28,10 @@ export const ConnectionsPage: React.FC = () => {
       const id = s.user?.id || 'default'
       if (!other[id]) {
         other[id] = {
+          ...defaultNetwork,
           id: 'other',
           enabled: true,
           name: s.user?.email || 'Unknown',
-          serviceIds: [],
-          sessions: [],
           icon: initiatorPlatformIcon({ id: s.platform })[0],
         }
       }

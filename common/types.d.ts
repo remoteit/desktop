@@ -121,6 +121,7 @@ declare global {
     serviceIds: string[]
     sessions?: ISession[]
     icon?: string
+    tags: ITag[]
   }
 
   interface IConnection {

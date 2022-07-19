@@ -109,7 +109,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
-            <Collapse in={open.includes(row)} timeout="auto">
+            <Collapse in={open.includes(row)}>
               {ip[1].map((port, key) => (
                 <ListItem key={key} dense className={css.port}>
                   <ListItemText primary={port[0]} />

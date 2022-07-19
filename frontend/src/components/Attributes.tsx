@@ -2,7 +2,6 @@ import React from 'react'
 import { IP_LATCH } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
-import { DeviceTagEditor } from './DeviceTagEditor'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { ListItemText, Chip, Typography } from '@mui/material'
@@ -139,13 +138,6 @@ export const attributes: Attribute[] = [
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
     defaultWidth: 350,
-  }),
-  new DeviceAttribute({
-    id: 'tagEditor',
-    label: 'Tags',
-    value: ({ device }) => <DeviceTagEditor device={device} />,
-    column: false,
-    feature: 'tagging',
   }),
   new DeviceAttribute({
     id: 'targetPlatform',

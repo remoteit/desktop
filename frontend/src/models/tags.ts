@@ -5,8 +5,10 @@ import { getActiveAccountId } from './accounts'
 import { selectPermissions } from './organization'
 import {
   graphQLSetTag,
-  graphQLAddTag,
-  graphQLRemoveTag,
+  graphQLAddDeviceTag,
+  graphQLAddNetworkTag,
+  graphQLRemoveDeviceTag,
+  graphQLRemoveNetworkTag,
   graphQLDeleteTag,
   graphQLRenameTag,
   graphQLMergeTag,
@@ -24,6 +26,13 @@ type ITagState = {
   removing?: boolean
   deleting?: string
   updating?: string
+}
+
+type ApplyTagProps<T> = {
+  tag: ITag
+  subject: T
+  accountId: string
+  apply: (subject: T) => void
 }
 
 const defaultState: ITagState = {
@@ -72,14 +81,25 @@ export default createModel<RootModel>()({
       return parsed
     },
 
-    async add({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
+    async addDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
       if (!device) return
-      const original = { ...device }
-      device.tags.push(tag)
-      dispatch.accounts.setDevice({ id: device.id, device })
-      const result = await graphQLAddTag(device.id, tag.name, accountId)
+      const copy = { ...device }
+      copy.tags.push(tag)
+      dispatch.accounts.setDevice({ id: copy.id, device: copy })
+      const result = await graphQLAddDeviceTag(copy.id, tag.name, accountId)
       if (result === 'ERROR' || !result?.data?.data?.addTag) {
-        dispatch.accounts.setDevice({ id: device.id, device: original })
+        dispatch.accounts.setDevice({ id: device.id, device })
+      }
+    },
+
+    async addNetwork({ tag, network }: { tag: ITag; network: INetwork }) {
+      if (!network) return
+      const copy = { ...network }
+      copy.tags.push(tag)
+      dispatch.networks.setNetwork(copy)
+      const result = await graphQLAddNetworkTag(copy.id, tag.name)
+      if (result === 'ERROR' || !result?.data?.data?.addTag) {
+        dispatch.networks.setNetwork(network)
       }
     },
 
@@ -94,7 +114,7 @@ export default createModel<RootModel>()({
           dispatch.accounts.setDevice({ id: device.id, device })
         }
       })
-      const result = await graphQLAddTag(add, tag.name, getActiveAccountId(state))
+      const result = await graphQLAddDeviceTag(add, tag.name, getActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} added to ${add.length} device${add.length === 1 ? '' : 's'}.`,
@@ -102,14 +122,21 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ adding: false })
     },
 
-    async remove({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
-      const original = { ...device }
-      const index = findTagIndex(device.tags, tag.name)
-      device.tags.splice(index, 1)
-      dispatch.accounts.setDevice({ id: device.id, device })
-      const result = await graphQLRemoveTag(device.id, tag.name, accountId)
-      if (result === 'ERROR') {
-        dispatch.accounts.setDevice({ id: device.id, device: original })
+    async removeDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
+      const copy: IDevice = removeTag(device, tag)
+      dispatch.accounts.setDevice({ id: copy.id, device: copy })
+      const result = await graphQLRemoveDeviceTag(device.id, tag.name, accountId)
+      if (result === 'ERROR' || !result?.data?.data?.removeTag) {
+        dispatch.accounts.setDevice({ id: device.id, device })
+      }
+    },
+
+    async removeNetwork({ tag, network }: { tag: ITag; network: INetwork }) {
+      const copy = removeTag(network, tag)
+      dispatch.networks.setNetwork(copy)
+      const result = await graphQLRemoveNetworkTag(copy.id, tag.name)
+      if (result === 'ERROR' || !result?.data?.data?.removeNetworkTag) {
+        dispatch.networks.setNetwork(network)
       }
     },
 
@@ -124,7 +151,7 @@ export default createModel<RootModel>()({
           dispatch.accounts.setDevice({ id: device.id, device })
         }
       })
-      const result = await graphQLRemoveTag(selected, tag.name, getActiveAccountId(state))
+      const result = await graphQLRemoveDeviceTag(selected, tag.name, getActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} removed from ${count} device${count > 1 ? 's' : ''}.`,
@@ -205,6 +232,13 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function removeTag<T extends INetwork | IDevice>(original: T, tag: ITag): T {
+  const copy = { ...original }
+  const index = findTagIndex(copy.tags, tag.name)
+  copy.tags.splice(index, 1)
+  return copy
+}
 
 export function selectTags(state: ApplicationState, accountId?: string) {
   accountId = accountId || getActiveAccountId(state)

@@ -34,7 +34,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
       gutterBottom
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
-        <Collapse in={!!(select || selected.length)} timeout={400}>
+        <Collapse in={!!(select || selected.length)}>
           <Box className={css.actions}>
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>

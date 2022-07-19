@@ -145,6 +145,7 @@ export const TagAutocomplete: React.FC<Props> = ({
 const useStyles = makeStyles(({ palette }) => ({
   container: {
     width: 200,
+    backgroundColor: palette.grayLightest.main,
     '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
   },
   listbox: { paddingTop: 0 },

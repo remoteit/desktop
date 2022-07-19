@@ -7,10 +7,12 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ListItemLocation } from '../components/ListItemLocation'
+import { NetworkTagEditor } from '../components/NetworkTagEditor'
 import { NetworkSettings } from '../components/NetworkSettings'
 import { ListHorizontal } from '../components/ListHorizontal'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -32,7 +34,7 @@ export const NetworkEditPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <>
-          <Typography variant="h1" gutterBottom>
+          <Typography variant="h1">
             <Title>{network.name || 'Unknown Network'}</Title>
             {/* <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} /> */}
             <DeleteButton
@@ -52,6 +54,7 @@ export const NetworkEditPage: React.FC = () => {
               }}
             />
           </Typography>
+          <NetworkTagEditor network={network} />
           <ListHorizontal>
             <ListItemLocation
               title="Edit"

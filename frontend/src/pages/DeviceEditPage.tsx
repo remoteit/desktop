@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
+import { Gutters } from '../components/Gutters'
 import { List } from '@mui/material'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -16,9 +17,11 @@ export const DeviceEditPage: React.FC<Props> = ({ device }) => {
 
   return (
     <DeviceHeaderMenu device={device}>
-      <List>
-        <DeviceNameSetting device={device} />
-      </List>
+      <Gutters size={null}>
+        <List>
+          <DeviceNameSetting device={device} />
+        </List>
+      </Gutters>
       <NotificationSettings device={device} />
     </DeviceHeaderMenu>
   )

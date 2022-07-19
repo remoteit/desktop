@@ -130,7 +130,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   )
 
   return (
-    <Collapse in={show} timeout={800}>
+    <Collapse in={show}>
       <Gutters top="lg" bottom={null}>
         <Paper className={css.address} elevation={0}>
           {!!showTitle ? (

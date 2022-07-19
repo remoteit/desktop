@@ -1,7 +1,7 @@
 import React from 'react'
+import { List } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { List } from '@mui/material'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { MAX_NAME_LENGTH } from '../shared/constants'

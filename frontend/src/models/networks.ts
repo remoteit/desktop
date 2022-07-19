@@ -17,35 +17,36 @@ import { RootModel } from '.'
 
 export const DEFAULT_ID = 'local'
 
-const defaultState: INetwork = {
+export const defaultNetwork: INetwork = {
   id: '',
   name: '',
   enabled: false,
   serviceIds: [],
+  tags: [],
   icon: 'chart-network',
 }
 
 const defaultLocalNetwork: INetwork = {
+  ...defaultNetwork,
   id: DEFAULT_ID,
   name: 'Local Network',
   enabled: true,
-  serviceIds: [],
   icon: 'network-wired',
 }
 
 const defaultCloudNetwork: INetwork = {
+  ...defaultNetwork,
   id: DEFAULT_ID,
   name: 'Cloud Proxy',
   enabled: true,
-  serviceIds: [],
   icon: 'cloud',
 }
 
 export const recentNetwork: INetwork = {
+  ...defaultNetwork,
   id: 'recent',
   name: 'This system',
   enabled: false,
-  serviceIds: [],
   icon: 'laptop',
 }
 
@@ -130,6 +131,7 @@ export default createModel<RootModel>()({
         ...n,
         created: new Date(n.created),
         serviceIds: n.connections.map(c => c.service.id),
+        tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
         icon: 'chart-network',
       }))
       // TODO load connection data and merge into connections
@@ -263,7 +265,7 @@ export function selectNetworks(state: ApplicationState): INetwork[] {
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
-  return selectNetworks(state).find(n => n.id === networkId) || defaultState
+  return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {

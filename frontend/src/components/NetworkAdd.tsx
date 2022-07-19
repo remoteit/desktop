@@ -27,7 +27,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
 
   return (
     <>
-      <Collapse in={show} timeout={400} onEntered={() => inputRef.current?.focus()}>
+      <Collapse in={show} onEntered={() => inputRef.current?.focus()}>
         <Typography variant="subtitle1" color="primary">
           New Network
         </Typography>
@@ -71,7 +71,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
           </form>
         </Gutters>
       </Collapse>
-      <Collapse in={!show && !networks?.length} timeout={400}>
+      <Collapse in={!show && !networks?.length}>
         <Gutters top="xxl">
           <Typography variant="h3" align="center" gutterBottom>
             Networks appear here

@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles'
 import { spacing, Spacing } from '../styling'
 
 type Props = {
-  inset?: Spacing | 'icon'
+  inset?: Spacing | 'icon' | null
   size?: Spacing | null
   bottom?: Spacing | null
   top?: Spacing | null

@@ -5,7 +5,7 @@ import { IconButton } from '../buttons/IconButton'
 import { ClearButton } from '../buttons/ClearButton'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
-import { Typography, Collapse, List, ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
 
 export interface Props {
   network?: INetwork
@@ -17,7 +17,7 @@ export const Network: React.FC<Props> = ({ clear, ...props }) => {
   const [expanded, setExpanded] = useState<boolean>(true)
   return (
     <List>
-      <NetworkListTitle {...props}>
+      <NetworkListTitle {...props} expanded={expanded}>
         <IconButton
           icon={expanded ? 'caret-down' : 'caret-up'}
           onClick={() => setExpanded(!expanded)}
@@ -25,10 +25,10 @@ export const Network: React.FC<Props> = ({ clear, ...props }) => {
           size="sm"
         />
       </NetworkListTitle>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
+      <Collapse in={expanded}>
         {props.network?.serviceIds.map(id => (
           <NetworkListItem serviceId={id} key={id} {...props}>
-            <ClearButton id={id} onClick={() => dispatch.connections.clear(id)} />
+            {clear && <ClearButton id={id} onClick={() => dispatch.connections.clear(id)} />}
           </NetworkListItem>
         ))}
         {!props.network?.serviceIds.length && (

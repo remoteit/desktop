@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
@@ -43,7 +44,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   if (connected) icon = <Icon color="primary" name="chevron-right" size="md" />
 
   return (
-    <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>
+    <ListItemLocation className={classnames(css.item, css.hoverIcon)} pathname={pathname} exactMatch dense>
       <ListItemIcon className={css.connectIcon}>
         <div className={css.connection} />
         {icon}
@@ -105,6 +106,8 @@ export const useStyles = makeStyles(({ palette }) => ({
       marginRight: spacing.xs,
       color: palette.grayDark.main,
     },
+  },
+  hoverIcon: {
     '& .MuiIconButton-root': { visibility: 'hidden' },
     '&:hover .MuiIconButton-root': { visibility: 'visible' },
   },
