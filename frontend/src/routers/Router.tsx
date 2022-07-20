@@ -68,7 +68,6 @@ export const Router: React.FC = () => {
     <Switch>
       {/* Start */}
       <Redirect from="/" to="/devices" exact />
-      <Redirect from="/sign-in" to="/devices" exact />
 
       {/* Deep links */}
       <Redirect
@@ -318,6 +317,9 @@ export const Router: React.FC = () => {
           root="/account"
         />
       </Route>
+
+      {/* Not found */}
+      <Redirect from="*" to="/devices" exact />
     </Switch>
   )
 }
