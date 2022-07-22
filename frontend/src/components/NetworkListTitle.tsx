@@ -10,7 +10,7 @@ export interface Props {
   children?: React.ReactNode
 }
 
-export const NetworkListTitle: React.FC<Props> = ({ network, expanded, children }) => {
+export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, children }) => {
   const css = useStyles({ enabled: network?.enabled })
 
   return (

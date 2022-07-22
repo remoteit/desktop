@@ -147,7 +147,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'quality',
-    label: 'Connectivity',
+    label: 'Stability',
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
   }),

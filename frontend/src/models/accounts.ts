@@ -172,7 +172,7 @@ export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
-export function getActiveUser(state: ApplicationState): IUserRef | undefined {
+export function getActiveUser(state: ApplicationState): IUserRef {
   const id = getActiveAccountId(state)
   const membershipOrganizations = state.accounts.membership.map(m => ({
     id: m.account.id || '',

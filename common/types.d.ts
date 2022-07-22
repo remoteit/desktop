@@ -118,8 +118,11 @@ declare global {
     id: string
     name: string
     enabled: boolean
+    owner: IUserRef
+    permissions: IPermission[]
     serviceIds: string[]
     sessions?: ISession[]
+    access: IUserRef[]
     icon?: string
     tags: ITag[]
   }
@@ -252,7 +255,7 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
-    access: IUser[]
+    access: IUserRef[]
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -282,7 +285,7 @@ declare global {
     port?: number
     host?: ipAddress
     protocol?: string
-    access: IUser[]
+    access: IUserRef[]
     license: ILicenseTypes
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
@@ -349,6 +352,7 @@ declare global {
     id: string
     email: string
     created?: Date
+    scripting?: boolean
   }
 
   type IOrganizationMember = {

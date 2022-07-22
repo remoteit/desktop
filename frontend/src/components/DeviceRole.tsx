@@ -18,10 +18,8 @@ export const DeviceRole: React.FC<Props> = ({ device }) => {
     }
   })
 
-  if (device?.shared) return null
-
-  const roleId = membership?.roleId || 'OWNER'
-  const label = roles?.find(r => r.id === roleId)?.name
+  const roleId = membership.roleId || (device?.shared ? 'GUEST' : 'OWNER')
+  let label = roles.find(r => r.id === roleId)?.name || 'Unknown'
 
   return <Chip size="small" label={label} variant="outlined" />
 }

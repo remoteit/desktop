@@ -28,7 +28,7 @@ export const ConnectionsPage: React.FC = () => {
       const id = s.user?.id || 'default'
       if (!other[id]) {
         other[id] = {
-          ...defaultNetwork,
+          ...defaultNetwork(),
           id: 'other',
           enabled: true,
           name: s.user?.email || 'Unknown',

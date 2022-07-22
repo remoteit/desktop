@@ -34,7 +34,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const connected = external || session?.state === 'connected'
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
-  const css = useStyles({ state: session?.state, offline, enabled: network?.enabled, connected })
+  const css = useStyles({ offline, enabled: network?.enabled, connected })
 
   let pathname = `/networks/${serviceId}`
   if (session) pathname += `/${session.id}`
@@ -72,23 +72,23 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
-  text: ({ state }: any) => ({
-    opacity: state === 'offline' ? 0.5 : 1,
+  text: ({ offline }: any) => ({
+    opacity: offline ? 0.3 : 1,
     '& > span': {
       fontWeight: 500,
       overflow: 'hidden',
       whiteSpace: 'nowrap',
     },
   }),
-  connection: ({ offline, enabled, connected, state }: any) => {
+  connection: ({ offline, enabled, connected }: any) => {
     let color = palette.grayDark.main
     if (enabled || connected) color = palette.primary.main
     return {
       borderColor: color,
-      borderBottomColor: color,
+      borderBottomColor: offline ? palette.gray.main : color,
       borderWidth: '0 0 1px 1px',
-      borderBottomWidth: offline ? 0 : 1,
-      borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
+      borderBottomWidth: 1,
+      borderBottomStyle: connected ? 'solid' : 'dashed',
       borderStyle: 'solid',
       height: '2.7em',
       width: '1.5em',
@@ -101,6 +101,8 @@ export const useStyles = makeStyles(({ palette }) => ({
     opacity: 0.8,
   },
   item: {
+    marginTop: 0,
+    marginBottom: 0,
     '& .MuiButtonBase-root': {
       padding: spacing.xs,
       marginRight: spacing.xs,

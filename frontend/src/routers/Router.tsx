@@ -6,6 +6,8 @@ import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
+import { NetworkUsersPage } from '../pages/NetworkUsersPage'
+import { NetworkSharePage } from '../pages/NetworkSharePage'
 import { NetworkEditPage } from '../pages/NetworkEditPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
@@ -103,6 +105,14 @@ export const Router: React.FC = () => {
           primary={<ConnectionsPage />}
           secondary={
             <Switch>
+              <Route path="/networks/view/:networkID/share">
+                <NetworkSharePage />
+              </Route>
+
+              <Route path="/networks/view/:networkID/users">
+                <NetworkUsersPage />
+              </Route>
+
               <Route path="/networks/view/:networkID">
                 <NetworkEditPage />
               </Route>

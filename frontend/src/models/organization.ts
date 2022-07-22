@@ -45,6 +45,13 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
     disabled: true,
   },
+  {
+    id: 'GUEST',
+    name: 'Guest',
+    system: true,
+    permissions: ['VIEW', 'CONNECT'],
+    disabled: true,
+  },
 ]
 
 const graphQLLicensesLimits = `

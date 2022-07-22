@@ -6,20 +6,18 @@ import { windowOpen } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
+import { makeStyles } from '@mui/styles'
+import { List, Button } from '@mui/material'
 import { ProxySetting } from './ProxySetting'
 import { PublicSetting } from './PublicSetting'
-import { NetworksJoined } from './NetworksJoined'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
-import { makeStyles } from '@mui/styles'
-import { List, Button, Chip, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
-import { selectNetworks, selectNetworkByService } from '../models/networks'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
-import { DynamicButtonMenu } from '../buttons/DynamicButtonMenu'
+import { NetworksAccordion } from './NetworksAccordion'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
@@ -43,23 +41,18 @@ export const Connect: React.FC = () => {
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { service, device, connection, session, networks, joinedNetworks, fetching, accordion } = useSelector(
-    (state: ApplicationState) => {
-      const [service, device] = selectById(state, serviceID)
-      return {
-        service,
-        device,
-        connection: selectConnection(state, service),
-        session: state.sessions.all.find(s => s.id === sessionID),
-        networks: selectNetworks(state),
-        joinedNetworks: selectNetworkByService(state, serviceID),
-        fetching: getDeviceModel(state).fetching,
-        accordion: state.ui.accordion,
-      }
+  const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
+    const [service, device] = selectById(state, serviceID)
+    return {
+      service,
+      device,
+      connection: selectConnection(state, service),
+      session: state.sessions.all.find(s => s.id === sessionID),
+      fetching: getDeviceModel(state).fetching,
+      accordion: state.ui.accordion,
     }
-  )
+  })
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
-  const availableNetworks = networks.filter(n => !joinedNetworks.find(j => j.id === n.id))
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
@@ -122,46 +115,13 @@ export const Connect: React.FC = () => {
             <LaunchSelect connection={connection} service={service} />
           </List>
         </AccordionMenuItem>
-        {device.permissions.includes('ADMIN') && (
-          <AccordionMenuItem
-            gutters
-            subtitle="Networks"
-            expanded={accordion.networks}
-            action={
-              <Box display="flex" alignItems="center">
-                {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
-                <DynamicButtonMenu
-                  options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
-                  title={
-                    availableNetworks.length === 1
-                      ? `Add to ${availableNetworks[0].name}`
-                      : !availableNetworks.length
-                      ? 'No available networks'
-                      : 'Add to network'
-                  }
-                  size="icon"
-                  icon="plus"
-                  disabled={!availableNetworks.length}
-                  onClick={networkId => {
-                    if (!service) return
-                    dispatch.networks.add({
-                      serviceId: service.id,
-                      networkId,
-                      name: connection.name,
-                      port: connection.port,
-                      enabled: connection.enabled,
-                    })
-                    dispatch.ui.accordion({ networks: true })
-                  }}
-                />
-              </Box>
-            }
-            onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
-            elevation={0}
-          >
-            <NetworksJoined service={service} networks={joinedNetworks} />
-          </AccordionMenuItem>
-        )}
+        <NetworksAccordion
+          device={device}
+          service={service}
+          connection={connection}
+          expanded={accordion.networks}
+          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
+        />
         <AccordionMenuItem
           gutters
           subtitle="Options"

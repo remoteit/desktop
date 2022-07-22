@@ -100,6 +100,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiButton: {
+        defaultProps: {
+          disableElevation: true,
+        },
         styleOverrides: {
           root: {
             color: palette.grayDark.main,
@@ -433,6 +436,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               fontSize: fontSizes.xxs,
               '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: 0 },
             },
+            '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
           },

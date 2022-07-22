@@ -161,6 +161,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.fetch()
       await dispatch.devices.fetchConnections()
       await Promise.all([
+        dispatch.networks.fetch(),
         dispatch.sessions.fetch(),
         dispatch.user.fetch(),
         dispatch.tags.fetch(),

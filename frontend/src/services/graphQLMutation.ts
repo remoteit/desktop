@@ -346,7 +346,7 @@ export async function graphQLRemoveDeviceTag(serviceId: string | string[], name:
 
 export async function graphQLRemoveNetworkTag(networkId: string | string[], name: string) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: [String!]!, $name: [String!]!) {
+    ` mutation query($networkId: String!, $name: [String!]!) {
         removeNetworkTag(networkId: $networkId, name: $name)
     }`,
     { networkId, name }
@@ -453,11 +453,26 @@ export async function graphQLAddConnection(props: addConnectionProps) {
 export async function graphQLRemoveConnection(networkId: string, serviceId: string) {
   return await graphQLBasicRequest(
     ` mutation query($networkId: String!, $serviceId: String!) {
-        removeNetworkConnection(
-          networkId: String!
-          serviceId: String!
-        )
+        removeNetworkConnection(networkId: $networkId, serviceId: $serviceId)
       }`,
     { networkId, serviceId }
+  )
+}
+
+export async function graphQLAddNetworkShare(networkId: string, email: string[] | string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $email: [String!]!) {
+        addNetworkShare(networkId: $networkId, email: $email)
+      }`,
+    { networkId, email }
+  )
+}
+
+export async function graphQLRemoveNetworkShare(networkId: string, email: string[] | string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $email: [String!]!) {
+        removeNetworkShare(networkId: $networkId, email: $email)
+      }`,
+    { networkId, email }
   )
 }

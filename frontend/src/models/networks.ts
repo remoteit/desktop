@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
-import { getActiveAccountId } from './accounts'
+import { getActiveAccountId, getActiveUser } from './accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
@@ -10,6 +10,8 @@ import {
   graphQLDeleteNetwork,
   graphQLAddConnection,
   graphQLRemoveConnection,
+  graphQLAddNetworkShare,
+  graphQLRemoveNetworkShare,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
@@ -17,35 +19,29 @@ import { RootModel } from '.'
 
 export const DEFAULT_ID = 'local'
 
-export const defaultNetwork: INetwork = {
-  id: '',
-  name: '',
-  enabled: false,
-  serviceIds: [],
-  tags: [],
-  icon: 'chart-network',
-}
-
 const defaultLocalNetwork: INetwork = {
-  ...defaultNetwork,
+  ...defaultNetwork(),
   id: DEFAULT_ID,
   name: 'Local Network',
+  permissions: [],
   enabled: true,
   icon: 'network-wired',
 }
 
 const defaultCloudNetwork: INetwork = {
-  ...defaultNetwork,
+  ...defaultNetwork(),
   id: DEFAULT_ID,
   name: 'Cloud Proxy',
+  permissions: [],
   enabled: true,
   icon: 'cloud',
 }
 
 export const recentNetwork: INetwork = {
-  ...defaultNetwork,
+  ...defaultNetwork(),
   id: 'recent',
   name: 'This system',
+  permissions: [],
   enabled: false,
   icon: 'laptop',
 }
@@ -74,8 +70,8 @@ export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
     async init(_, state) {
-      const defaultNetwork = getLocalStorage(state, 'networks-default')
-      if (defaultNetwork) dispatch.networks.set({ default: defaultNetwork })
+      const storedNetwork = getLocalStorage(state, 'networks-default')
+      dispatch.networks.set({ default: storedNetwork ? storedNetwork : defaultNetwork(state) })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
@@ -90,10 +86,10 @@ export default createModel<RootModel>()({
                   name
                   enabled
                   created
-                  tags {
-                    name
-                    color
-                    created
+                  permissions
+                  owner {
+                    id
+                    email
                   }
                   connections {
                     service {
@@ -105,11 +101,16 @@ export default createModel<RootModel>()({
                     enabled
                     created
                   }
-                  shares {
+                  tags {
+                    name
+                    color
+                    created
+                  }
+                  access {
                     user {
+                      id
                       email
                     }
-                    created
                   }
                 }
               }
@@ -124,6 +125,12 @@ export default createModel<RootModel>()({
       if (networks) await dispatch.networks.setNetworks(networks)
       // dispatch.networks.handleOrphanedConnections()
     },
+
+    async fetchIfEmpty(_, state) {
+      const accountId = getActiveAccountId(state)
+      if (!state.networks.all[accountId]) dispatch.networks.fetch()
+    },
+
     async parse(result: AxiosResponse<any> | undefined) {
       const all = result?.data?.data?.login?.account?.networks
       if (!all) return
@@ -131,10 +138,12 @@ export default createModel<RootModel>()({
         ...n,
         created: new Date(n.created),
         serviceIds: n.connections.map(c => c.service.id),
+        access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
         tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
         icon: 'chart-network',
       }))
       // TODO load connection data and merge into connections
+      //      don't load all data if in portal mode
       console.log('LOAD NETWORKS', parsed)
       return parsed
     },
@@ -164,32 +173,36 @@ export default createModel<RootModel>()({
       if (!joined.length) dispatch.networks.add({ serviceId, networkId: DEFAULT_ID })
     },
     async add(props: addConnectionProps, state) {
-      let network = selectNetwork(state, props.networkId)
-      const result = await graphQLAddConnection(props)
-      if (result === 'ERROR') return
-      const success = result?.data?.data?.addNetworkConnection
-      if (!success) {
-        dispatch.ui.set({ errorMessage: 'Failed to add connection. Please contact support.' })
-        return
+      const network = selectNetwork(state, props.networkId)
+      let copy = { ...network }
+      const unique = new Set(copy.serviceIds.concat(props.serviceId))
+      copy.serviceIds = Array.from(unique)
+      dispatch.networks.setNetwork(copy)
+      if (props.networkId !== DEFAULT_ID) {
+        const result = await graphQLAddConnection(props)
+        if (result === 'ERROR' || !result?.data?.data?.addNetworkConnection) {
+          dispatch.ui.set({ errorMessage: `Adding network failed. Please contact support.` })
+          dispatch.networks.setNetwork(network)
+          return
+        }
       }
-      const unique = new Set(network.serviceIds.concat(props.serviceId))
-      network.serviceIds = Array.from(unique)
-      dispatch.networks.setNetwork(network)
-      if (network.enabled && props.enabled) dispatch.networks.enable(network)
+      if (copy.enabled && props.enabled) dispatch.networks.enable(copy)
     },
     async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
-      const result = await graphQLRemoveConnection(networkId, serviceId)
-      if (result === 'ERROR') return
-      const success = result?.data?.data?.graphQLRemoveConnection
-      if (!success) {
-        dispatch.ui.set({ errorMessage: 'Failed to remove connection. Please contact support.' })
-        return
+      let copy = { ...network }
+      const index = copy.serviceIds.indexOf(serviceId)
+      copy.serviceIds.splice(index, 1)
+      dispatch.networks.setNetwork(copy)
+      if (networkId !== DEFAULT_ID) {
+        const result = await graphQLRemoveConnection(networkId, serviceId)
+        if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
+          dispatch.ui.set({ errorMessage: 'Failed to remove connection. Please contact support.' })
+          dispatch.networks.setNetwork(network)
+          return
+        }
       }
-      const index = network.serviceIds.indexOf(serviceId)
-      network.serviceIds.splice(index, 1)
-      dispatch.networks.setNetwork(network)
       if (joined.length <= 1) {
         const [service] = selectById(state, serviceId)
         const connection = selectConnection(state, service)
@@ -226,6 +239,28 @@ export default createModel<RootModel>()({
       await dispatch.networks.setNetwork(params)
       dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
     },
+    async shareNetwork({ id, emails }: { id: string; emails: string[] }, state) {
+      const response = await graphQLAddNetworkShare(id, emails)
+      if (response === 'ERROR' || !response?.data?.data?.addNetworkShare) return
+      const network = selectNetwork(state, id)
+      network.access.concat(emails.map(e => ({ email: e, id: '' })))
+      await dispatch.networks.setNetwork(network)
+      await dispatch.networks.fetch()
+      dispatch.ui.set({
+        successMessage:
+          emails.length > 1
+            ? `${emails.length} accounts successfully shared to ${network.name}.`
+            : `${network.name} successfully shared to ${emails[0]}.`,
+      })
+    },
+    async unshareNetwork({ id, email }: { id: string; email: string }, state) {
+      const response = await graphQLRemoveNetworkShare(id, email)
+      if (response === 'ERROR' || !response?.data?.data?.removeNetworkShare) return
+      const network = selectNetwork(state, id)
+      const index = network.access.findIndex(a => a.email === email)
+      network.access.splice(index, 1)
+      await dispatch.networks.setNetwork(network)
+    },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
 
@@ -259,13 +294,32 @@ export default createModel<RootModel>()({
   },
 })
 
+export function defaultNetwork(state?: ApplicationState): INetwork {
+  if (state) {
+    state.networks.default.owner = getActiveUser(state)
+    return state.networks.default
+  }
+
+  return {
+    id: '',
+    name: '',
+    enabled: false,
+    owner: { id: '', email: '' },
+    permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
+    serviceIds: [],
+    access: [],
+    tags: [],
+    icon: 'chart-network',
+  }
+}
+
 export function selectNetworks(state: ApplicationState): INetwork[] {
   let all = state.networks.all[getActiveAccountId(state)] || []
   return [state.networks.default, ...all]
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
-  return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork
+  return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {

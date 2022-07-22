@@ -77,7 +77,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        <RefreshButton size="base" type="regular" color="grayDarker" />
+        <RefreshButton size="md" color="grayDarker" />
         <Title className={css.search}>
           {!showSearch && !searched && (
             <IconButton

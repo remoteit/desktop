@@ -35,7 +35,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           console.log('FETCHING', value)
           search.fetch(value)
         },
-        1000,
+        400,
         { trailing: true }
       ),
     []
@@ -63,15 +63,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     if (query) fetch(query)
   }, [query])
 
-  useEffect(
-    () => () => {
-      // on page exit
-      console.log('UNLOAD', query)
-      // devices.set({ query })
-    },
-    []
-  )
-
   return (
     <div className={css.container}>
       <Autocomplete
@@ -88,7 +79,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         inputValue={query || ''}
         options={data}
         loading={fetching}
-        classes={{ option: css.option, listbox: css.listbox }}
+        classes={{ listbox: css.listbox }}
         onChange={(event, newValue: any | ISearch | null, reason: string) => {
           if (reason === 'selectOption') select(newValue)
           if (reason === 'createOption') submit()
@@ -111,7 +102,8 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           <TextField
             {...params}
             autoFocus
-            label="Search"
+            hiddenLabel
+            placeholder="Search"
             variant="filled"
             inputRef={inputRef}
             className={css.input}
@@ -183,7 +175,7 @@ const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'space-between',
     padding: `${spacing.sm}px ${spacing.md}px`,
     fontSize: fontSizes.base,
-    color: palette.grayDarker.main,
+    color: palette.grayDarkest.main,
     backgroundColor: palette.grayLightest.main,
     width: '100%',
     borderRadius: 0,
@@ -191,20 +183,23 @@ const useStyles = makeStyles(({ palette }) => ({
     letterSpacing: 'inherit',
     '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
   },
-  option: {
-    display: 'block',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    padding: 0,
-    paddingLeft: spacing.xxs,
-    fontSize: fontSizes.base,
-    color: palette.grayDarker.main,
-    '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
+  listbox: {
+    maxHeight: '60vh',
+    backgroundColor: palette.grayLightest.main,
+    '& .MuiAutocomplete-option': {
+      display: 'block',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      padding: 0,
+      paddingLeft: spacing.xxs,
+      fontSize: fontSizes.base,
+      color: palette.grayDarker.main,
+      '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
+    },
   },
-  listbox: { maxHeight: '60vh', backgroundColor: palette.grayLightest.main },
   indent: {
     display: 'inline-block',
-    marginLeft: spacing.lg,
+    marginLeft: spacing.xs,
     padding: `${spacing.xs}px ${spacing.lg}px`,
     borderLeft: `1px solid ${palette.grayLight.main}`,
   },

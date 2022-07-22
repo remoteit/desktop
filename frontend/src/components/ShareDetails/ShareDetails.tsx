@@ -1,5 +1,5 @@
 import React from 'react'
-import { getPermissions } from '../../helpers/userHelper'
+import { getAccess } from '../../helpers/userHelper'
 import { ListItemSecondaryAction, Tooltip } from '@mui/material'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { makeStyles } from '@mui/styles'
@@ -17,7 +17,7 @@ export const ShareDetails: React.FC<Props> = ({ user, device, connected }) => {
 
   if (!device) return null
 
-  const { services, scripting } = getPermissions(device, user.email)
+  const { services, scripting } = getAccess(device, user.email)
   return (
     <ListItemSecondaryAction className={css.indicators}>
       {scripting && (

@@ -10,6 +10,7 @@ import { fontSizes } from '../styling'
 interface Props {
   title: string
   device?: IDevice
+  remove?: string
   users?: IUser[]
   members?: boolean
   connected?: boolean
@@ -19,6 +20,7 @@ interface Props {
 export const SharedUsersPaginatedList: React.FC<Props> = ({
   title,
   device,
+  remove,
   users = [],
   members,
   connected,
@@ -43,7 +45,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
       </Typography>
       <List>
         {pageUsers.map((user, i) => (
-          <UserListItem key={user.id} user={user} isConnected={connected} member={members}>
+          <UserListItem key={user.id} user={user} isConnected={connected} member={members} remove={remove}>
             <ShareDetails user={user} device={device} connected />
           </UserListItem>
         ))}
