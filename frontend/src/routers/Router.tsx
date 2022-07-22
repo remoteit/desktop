@@ -354,6 +354,9 @@ export const Router: React.FC = () => {
           root="/account"
         />
       </Route>
+
+      {/* Not found */}
+      <Redirect from="*" to="/devices" exact />
     </Switch>
   )
 }

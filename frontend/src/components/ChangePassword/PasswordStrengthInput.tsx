@@ -115,7 +115,7 @@ export function PasswordStrengthInput({ onChange }: Props) {
         </div>
       </div>
 
-      <TextField variant="filled" type="password" label="Confirm new password" />
+      <TextField variant="filled" type="password" label="Confirm new password" onChange={e => checkPasswordConfirmation(e)}/>
     </>
   )
 }
