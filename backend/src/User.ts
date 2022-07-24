@@ -6,6 +6,59 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
 import axios from 'axios'
+import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
+
+const defaults = {
+  apiURL: 'https://api.remot3.it/apv/v27',
+  successURL: 'https://app.remote.it', // 'https://' + window.location.host
+  taskQueue: 'WeavedTaskQueue',
+  jobQueue: 'WeavedJobQueue',
+}
+
+const instance = setupAxios({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
+instance.interceptors.request.use(
+  (request) => requestHandler(request)
+);
+
+instance.interceptors.response.use(
+  (response) => responseHandler(response)
+);
+
+const requestHandler = (request:any) => {
+  return request;
+};
+
+const responseHandler = (response:any) => {
+  return response;
+};
+
+export function pickBy(object: { [key: string]: any }): any {
+  const obj: { [key: string]: any } = {}
+  for (const key in object) {
+    if (object[key] !== null && object[key] !== false && object[key] !== undefined) {
+      obj[key] = object[key]
+    }
+  }
+  return obj
+}
+
+export function setupAxios(config: IConfig = {}, newGetToken?: () => Promise<string>) {
+  const options: IConfig = { ...defaults, ...config }
+  console.log('options', options)
+  return axios.create({
+    baseURL: options.apiURL,
+    // timeout: 1000,
+    headers: pickBy({
+      'content-type': 'application/json',
+      accessKey: options.accessKey,
+      apiKey: options.apiKey,
+      developerKey: options.developerKey,
+      taskQueue: options.taskQueue,
+      jobQueue: options.jobQueue,
+      token: options.token,
+    }),
+  })
+}
 
 export class User {
   static EVENTS = {
@@ -20,6 +73,8 @@ export class User {
   signedIn: boolean = false
   token: string = ''
 
+  
+  
   get hasCredentials() {
     return this.authHash && this.username
   }
@@ -37,6 +92,21 @@ export class User {
     EventBus.emit(User.EVENTS.signedIn, this.credentials)
   }
 
+  async authHashLogin(username: string, authhash: string): Promise<any> {
+    return instance
+      .post<IRawUser>('/user/login/authhash', { username, authhash })
+      .then((resp:any) => this.process(resp, username))
+  }
+
+  process(user: IRawUser, username: string) {
+    return {
+      id: user.guid,
+      username,
+      token: user.token || user.auth_token,
+      authHash: user.service_authhash,
+    }
+  }
+
   checkSignIn = async (credentials?: UserCredentials) => {
     if (!credentials) {
       Logger.warn('No user, sign in failed')
@@ -48,13 +118,7 @@ export class User {
     try {
       const userName = credentials.username
       const authHash = credentials.authHash
-      
-      const user = await axios.post<IRawUser>('/user/login/authhash', { userName, authHash }).then(response => {
-        return this.process(response.data, authHash)
-      })
-      
-
-      Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
+      const user = await this.authHashLogin(credentials.username, credentials.authHash)
 
       if (!user) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
@@ -79,15 +143,6 @@ export class User {
     }
   }
 
-  process(user: IRawUser, username: string) {
-    return {
-      id: user.guid,
-      username,
-      token: user.token || user.auth_token,
-      authHash: user.service_authhash,
-    }
-  }
-
   signOut = () => {
     this.id = ''
     this.token = ''
@@ -107,3 +162,16 @@ export class User {
 }
 
 export default new User()
+
+export interface IConfig {
+  accessKey?: string
+  apiURL?: string
+  apiKey?: string
+  authHash?: string
+  developerKey?: string
+  successURL?: string
+  taskQueue?: string
+  jobQueue?: string
+  token?: string
+}
+
