@@ -9,8 +9,8 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { graphQLBasicRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { getDevices, getActiveAccountId } from './accounts'
+import { graphQLBasicRequest } from '../services/graphQL'
+import { getDevices } from './accounts'
 import { getOrganization } from './organization'
 import { RootModel } from '.'
 import humanize from 'humanize-duration'
@@ -247,7 +247,7 @@ function isEnterprise(state: ApplicationState) {
 
 export function isPersonal(state: ApplicationState) {
   const license = selectOwnRemoteitLicense(state)
-  return !license?.plan.billing
+  return license?.plan.id === PERSONAL_PLAN_ID
 }
 
 export function selectBaseLimits(state: ApplicationState, accountId?: string) {
