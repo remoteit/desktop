@@ -2,11 +2,12 @@ import React from 'react'
 import { List } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { FormDisplay } from './FormDisplay'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { MAX_NAME_LENGTH } from '../shared/constants'
 
-export const NetworkSettings: React.FC<{ network: INetwork }> = ({ network }) => {
+export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = ({ network, owner }) => {
   const dispatch = useDispatch<Dispatch>()
   return (
     <List disablePadding>
@@ -25,6 +26,7 @@ export const NetworkSettings: React.FC<{ network: INetwork }> = ({ network }) =>
         toggle={network.enabled}
         onClick={() => dispatch.networks.enable({ ...network, enabled: !network.enabled })}
       />
+      <FormDisplay icon="user" label="Owner" value={owner} displayOnly />
     </List>
   )
 }

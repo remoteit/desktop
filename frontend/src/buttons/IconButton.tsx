@@ -14,6 +14,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   disabled?: boolean
   hideDisableFade?: boolean
   to?: string
+  buttonBaseSize?: 'small' | 'medium' | 'large'
   variant?: 'text' | 'contained'
   className?: string
   shiftDown?: boolean
@@ -40,6 +41,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   variant,
   shiftDown,
   size = 'base',
+  buttonBaseSize,
   inline,
   className,
   loading,
@@ -71,6 +73,7 @@ export const IconButton: React.FC<ButtonProps> = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       disabled={disabled}
+      size={buttonBaseSize}
       className={classnames(className, contained && css.contained)}
       type={submit ? 'submit' : undefined}
       style={{

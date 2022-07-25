@@ -396,13 +396,17 @@ export function getOwnOrganization(state: ApplicationState) {
   return memberOrganization(state.organization.all, id)
 }
 
-export function getOrganization(state: ApplicationState, accountId?: string) {
+export function getOrganization(state: ApplicationState, accountId?: string): IOrganizationState {
   accountId = accountId || getActiveAccountId(state)
   return memberOrganization(state.organization.all, accountId)
 }
 
 export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
   return organization[accountId || ''] || { ...defaultState }
+}
+
+export function getOrganizationName(state: ApplicationState, accountId?: string): string {
+  return memberOrganization(state.organization.all, accountId).name || 'Personal'
 }
 
 export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {

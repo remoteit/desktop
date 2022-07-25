@@ -1,6 +1,7 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { makeStyles } from '@mui/styles'
+import { spacing } from '../styling'
 import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -41,8 +42,9 @@ export const AvatarMenu: React.FC = () => {
   return (
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef}>
-        <Avatar email={user?.email} button tooltip></Avatar>
+        <Avatar email={user?.email} size={42} button tooltip></Avatar>
       </ButtonBase>
+      <span className={css.email}>{user?.email}</span>
       <Menu
         open={open}
         anchorEl={buttonRef.current}
@@ -136,4 +138,5 @@ const useStyles = makeStyles(({ palette }) => ({
       backgroundColor: palette.white.main,
     },
   },
+  email: { color: palette.grayDark.main, marginLeft: spacing.sm },
 }))

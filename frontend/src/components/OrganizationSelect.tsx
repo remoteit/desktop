@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { makeStyles } from '@mui/styles'
 import { Typography, Box, List, ListItem } from '@mui/material'
-import { getOwnOrganization, getOrganization, memberOrganization } from '../models/organization'
+import { getOwnOrganization, getOrganization, getOrganizationName } from '../models/organization'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
@@ -21,7 +21,7 @@ export const OrganizationSelect: React.FC = () => {
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
       email: m.account.email,
-      name: memberOrganization(state.organization.all, m.account.id).name || 'Personal',
+      name: getOrganizationName(state, m.account.id),
       roleId: m.roleId,
       roleName: m.roleName,
     })),

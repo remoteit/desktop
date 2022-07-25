@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@mui/material'
-import { spacing, fontSizes } from '../../styling'
-import { EditButton } from '../../buttons/EditButton'
-import { IconButton } from '../../buttons/IconButton'
-import { DeleteButton } from '../../buttons/DeleteButton'
+import { ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import { spacing, fontSizes } from '../styling'
+import { IconButton } from '../buttons/IconButton'
+import { FormDisplay } from './FormDisplay'
 import { makeStyles } from '@mui/styles'
-import { Title } from '../Title'
-import { Icon } from '../Icon'
+import { Icon } from './Icon'
 
 type Props = {
   value?: string | number
@@ -33,27 +31,19 @@ type Props = {
 }
 
 export const InlineSetting: React.FC<Props> = ({
-  label,
   icon,
-  value = '',
-  actionIcon,
-  displayValue,
-  disabled,
-  loading,
-  color,
   debug,
-  warning,
   resetValue,
   onSubmit,
   fieldRef,
   onResetClick,
   onCancel,
   onShowEdit,
-  onDelete,
   hideIcon,
   modified,
   disableGutters,
   children,
+  ...viewFormProps
 }) => {
   const css = useStyles()
   const [edit, setEdit] = useState<boolean>(false)
@@ -133,40 +123,20 @@ export const InlineSetting: React.FC<Props> = ({
   )
 
   const viewForm = (
-    <>
-      {actionIcon && <span className={css.action}> {actionIcon}</span>}
-      <ListItem
-        button
-        className={css.view}
-        onClick={triggerEdit}
-        disabled={disabled}
-        disableGutters={disableGutters}
-        dense
-      >
-        {icon}
-        <Title>
-          {label && <InputLabel shrink>{label}</InputLabel>}
-          <ListItemText style={{ color }}>{(displayValue === undefined ? value : displayValue) || '–'}</ListItemText>
-        </Title>
-        {!disabled && (
-          <ListItemSecondaryAction className="hidden">
-            <EditButton onClick={triggerEdit} />
-            {onDelete && <DeleteButton onDelete={onDelete} warning={warning} />}
-          </ListItemSecondaryAction>
-        )}
-        {loading && (
-          <ListItemSecondaryAction>
-            <Icon spin type="solid" name="spinner-third" color="primary" inlineLeft />
-          </ListItemSecondaryAction>
-        )}
-      </ListItem>
-    </>
+    <FormDisplay
+      {...viewFormProps}
+      icon={icon}
+      hideIcon={hideIcon}
+      modified={modified}
+      disableGutters={disableGutters}
+      onClick={triggerEdit}
+    />
   )
 
   return edit ? editForm : viewForm
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+export const useStyles = makeStyles(({ palette }) => ({
   view: {
     paddingTop: 7,
     paddingBottom: 7,
