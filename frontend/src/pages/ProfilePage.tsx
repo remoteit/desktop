@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { LANGUAGES } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles } from '@mui/styles'
+import { isPersonal } from '../models/plans'
 import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon, Link } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -16,7 +17,10 @@ import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ProfilePage: React.FC = () => {
-  const user = useSelector((state: ApplicationState) => state.user)
+  const { paidPlan, user } = useSelector((state: ApplicationState) => ({
+    user: state.user,
+    paidPlan: !isPersonal(state),
+  }))
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -62,9 +66,8 @@ export const ProfilePage: React.FC = () => {
             <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>
           </TextField>
         </ListItem>
-        <AccordionMenuItem subtitle="Account deletion" gutters>
-          <DeleteAccountSection email={user.email} paidPlan={false} />
-        </AccordionMenuItem>
+        <Typography variant="subtitle1">Account deletion</Typography>
+        <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
       </List>
     </Container>
   )

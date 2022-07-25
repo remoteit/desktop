@@ -19,7 +19,7 @@ export const Confirm: React.FC<{
     onClose={onDeny}
     fullWidth
   >
-    {title && <DialogTitle>{title}</DialogTitle>}
+    <DialogTitle>{title}</DialogTitle>
     <DialogContent>{children}</DialogContent>
     <DialogActions>
       <Button color="primary" onClick={onDeny}>

@@ -42,7 +42,7 @@ export const AccountPage: React.FC = () => {
           title="Profile"
           pathname="/account/overview"
           match={['/account', '/account/overview']}
-          icon="user"
+          icon="user-large"
           exactMatch
           dense
         />

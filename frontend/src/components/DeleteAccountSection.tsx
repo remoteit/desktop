@@ -1,6 +1,7 @@
 import React from 'react'
 import { Typography, Box, Button } from '@mui/material'
 import { Gutters } from '../components/Gutters'
+import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
 interface DeleteAccountSectionProps {
@@ -23,13 +24,10 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ emai
         is processed, all your account information is removed permanently.
       </Typography>
       {paidPlan ? (
-        <div>
-          <Icon name="exclamation-triangle" />
-          <strong>
-            You have a paid subscription plan. Please delete or transfer your devices before making an account deletion
-            request.
-          </strong>
-        </div>
+        <Notice severity="danger" fullWidth gutterBottom>
+          You have a paid subscription plan. Please delete or transfer your devices before making an account deletion
+          request.
+        </Notice>
       ) : (
         <Box pb={2}>
           <Button style={{ color: 'red', borderColor: 'red' }} size="small" variant="outlined" onClick={deleteAccount}>

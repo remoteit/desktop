@@ -245,6 +245,11 @@ function isEnterprise(state: ApplicationState) {
   return getLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
 }
 
+export function isPersonal(state: ApplicationState) {
+  const license = selectOwnRemoteitLicense(state)
+  return !license?.plan.billing
+}
+
 export function selectBaseLimits(state: ApplicationState, accountId?: string) {
   if (state.plans.tests.limit) return state.plans.tests.limits
   else return getOrganization(state, accountId).limits

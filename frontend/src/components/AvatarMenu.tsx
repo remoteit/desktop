@@ -44,7 +44,6 @@ export const AvatarMenu: React.FC = () => {
       <ButtonBase onClick={handleOpen} ref={buttonRef}>
         <Avatar email={user?.email} size={42} button tooltip></Avatar>
       </ButtonBase>
-      <span className={css.email}>{user?.email}</span>
       <Menu
         open={open}
         anchorEl={buttonRef.current}
