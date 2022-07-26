@@ -2,7 +2,6 @@ import React from 'react'
 import { Typography, Box, Button } from '@mui/material'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { Icon } from '../components/Icon'
 
 interface DeleteAccountSectionProps {
   email?: string
@@ -19,18 +18,18 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ emai
   }
   return (
     <Gutters>
-      <Typography variant="body2" gutterBottom>
+      <Typography variant="body2" color="GrayText" gutterBottom>
         If you no longer want/need your remote.it account, you can request an account deletion. Once your delete request
         is processed, all your account information is removed permanently.
       </Typography>
       {paidPlan ? (
-        <Notice severity="danger" fullWidth gutterBottom>
+        <Notice severity="warning" fullWidth gutterBottom>
           You have a paid subscription plan. Please delete or transfer your devices before making an account deletion
           request.
         </Notice>
       ) : (
         <Box pb={2}>
-          <Button style={{ color: 'red', borderColor: 'red' }} size="small" variant="outlined" onClick={deleteAccount}>
+          <Button color="error" size="small" variant="contained" onClick={deleteAccount}>
             Delete my account
           </Button>
         </Box>

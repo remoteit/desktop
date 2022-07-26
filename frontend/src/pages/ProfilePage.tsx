@@ -7,7 +7,6 @@ import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon, Link } f
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
-import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Avatar } from '../components/Avatar'

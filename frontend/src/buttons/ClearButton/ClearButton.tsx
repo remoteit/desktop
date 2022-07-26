@@ -26,7 +26,6 @@ export const ClearButton: React.FC<Props> = ({ disabled, all, onClick }) => {
       disabled={disabled}
       onClick={handleClick}
       size="sm"
-      type="light"
       buttonBaseSize="small"
       color={deleting ? 'danger' : undefined}
       loading={deleting}

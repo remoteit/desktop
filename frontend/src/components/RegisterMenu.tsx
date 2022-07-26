@@ -79,8 +79,7 @@ export const RegisterMenu: React.FC = () => {
         onClick={handleOpen}
         color="primary"
         icon="plus"
-        size="sm"
-        type="regular"
+        type="solid"
         fixedWidth
       />
       <Popover

@@ -44,7 +44,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   if (connected) icon = <Icon color="primary" name="chevron-right" size="md" />
 
   return (
-    <ListItemLocation className={classnames(css.item, css.hoverIcon)} pathname={pathname} exactMatch dense>
+    <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>
       <ListItemIcon className={css.connectIcon}>
         <div className={css.connection} />
         {icon}
@@ -103,15 +103,6 @@ export const useStyles = makeStyles(({ palette }) => ({
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .MuiButtonBase-root': {
-      padding: spacing.xs,
-      marginRight: spacing.xs,
-      color: palette.grayDark.main,
-    },
-  },
-  hoverIcon: {
-    '& .MuiIconButton-root': { visibility: 'hidden' },
-    '&:hover .MuiIconButton-root': { visibility: 'visible' },
   },
   connectIcon: {
     position: 'relative',

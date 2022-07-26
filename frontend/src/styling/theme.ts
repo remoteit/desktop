@@ -97,6 +97,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiIconButton: {
         styleOverrides: {
           root: { borderRadius: radius, padding: spacing.sm },
+          sizeSmall: { padding: spacing.xs },
         },
       },
       MuiButton: {
@@ -294,6 +295,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           button: {
             '&:hover': { backgroundColor: palette.primaryHighlight.main },
+            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, visibility: 'hidden' },
+            '&:hover .MuiIconButton-sizeSmall': { visibility: 'visible' },
           },
           secondaryAction: {
             paddingRight: 60,
