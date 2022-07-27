@@ -14,7 +14,7 @@ export interface Props {
 export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
   const networkKeys = Object.keys(networks)
   // @ts-ignore
-  if (!networkKeys.length || (networkKeys.length && !networks[networkKeys[0]].sessions.length)) return null
+  if (!networkKeys.length || (networkKeys.length && !networks[networkKeys[0]]?.sessions.length)) return null
   return (
     <>
       <Typography variant="subtitle1">
