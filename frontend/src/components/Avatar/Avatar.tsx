@@ -3,7 +3,8 @@ import React from 'react'
 import seedRandom from 'seedrandom'
 import classnames from 'classnames'
 import { labelLookup } from '../../models/labels'
-import { makeStyles, Avatar as MuiAvatar, Tooltip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Avatar as MuiAvatar, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
 export interface Props {
@@ -14,6 +15,7 @@ export interface Props {
   inline?: boolean
   title?: string
   active?: boolean
+  children?: React.ReactNode
 }
 
 export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inline, tooltip, active, children }) => {

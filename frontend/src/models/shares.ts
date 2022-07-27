@@ -1,9 +1,9 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
-import { getPermissions } from '../helpers/userHelper'
+import { getAccess } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
 import { getDevices } from './accounts'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ShareParams = { [key: string]: any }
 
@@ -40,7 +40,7 @@ export default createModel<RootModel>()({
     async fetch(data: { email?: string; serviceID: string; device?: IDevice }, globalState) {
       const { set } = dispatch.shares
       const user = globalState.contacts.all.find(c => c.email === data.email)
-      const permissions = data.device && getPermissions(data.device, data.email)
+      const permissions = data.device && getAccess(data.device, data.email)
 
       set({
         currentDevice: {
@@ -149,11 +149,11 @@ export default createModel<RootModel>()({
       const contacts = globalState.contacts.all
 
       let userSelectedServices: string[][] = emails.map(email => {
-        return device ? getPermissions(device, email, true).services.map(s => s.id) : []
+        return device ? getAccess(device, email, true).services.map(s => s.id) : []
       })
 
       let userSelectedScript: boolean[] = emails.map(email => {
-        return device ? getPermissions(device, email).scripting : false
+        return device ? getAccess(device, email).scripting : false
       })
 
       const match = userSelectedServices.map((services, index) => {

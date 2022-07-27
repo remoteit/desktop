@@ -1,6 +1,6 @@
 import React from 'react'
 import { platforms } from '../../platforms'
-import { Tooltip, Box } from '@material-ui/core'
+import { Tooltip, Box } from '@mui/material'
 import { FontSize } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -15,7 +15,7 @@ export const TargetPlatform: React.FC<{
 
   if (tooltip)
     return (
-      <Tooltip title={platforms.nameLookup[id]} placement="top" arrow>
+      <Tooltip title={platforms.nameLookup[id] || ''} placement="top" arrow>
         <span>{icon}</span>
       </Tooltip>
     )

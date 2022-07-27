@@ -2,14 +2,14 @@ import React from 'react'
 import { Application } from '../../shared/applications'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 import { Icon } from '../Icon'
 
 type Props = {
   app: Application
   service: IService
   connection?: IConnection
-  actionIcon?: React.ReactElement
+  actionIcon?: React.ReactNode
   disabled?: boolean
   disableGutters?: boolean
 }

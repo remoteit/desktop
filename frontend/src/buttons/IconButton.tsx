@@ -1,18 +1,20 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@material-ui/core'
-import { Icon, IconProps } from '../components/Icon/Icon'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
+import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 import classnames from 'classnames'
 
 export type ButtonProps = Omit<IconProps, 'title'> & {
-  title?: string | React.ReactElement
+  title?: React.ReactNode
   forceTitle?: boolean
   icon?: string
   name?: string
   disabled?: boolean
   hideDisableFade?: boolean
   to?: string
+  buttonBaseSize?: 'small' | 'medium' | 'large'
   variant?: 'text' | 'contained'
   className?: string
   shiftDown?: boolean
@@ -20,6 +22,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   submit?: boolean
   inline?: boolean
   placement?: TooltipProps['placement']
+  children?: React.ReactNode
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void
@@ -38,6 +41,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   variant,
   shiftDown,
   size = 'base',
+  buttonBaseSize,
   inline,
   className,
   loading,
@@ -69,6 +73,7 @@ export const IconButton: React.FC<ButtonProps> = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       disabled={disabled}
+      size={buttonBaseSize}
       className={classnames(className, contained && css.contained)}
       type={submit ? 'submit' : undefined}
       style={{

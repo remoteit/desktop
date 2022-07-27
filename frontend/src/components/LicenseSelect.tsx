@@ -2,7 +2,8 @@ import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { getLicenseChip } from './LicenseChip'
-import { makeStyles, TextField, TextFieldProps, MenuItem } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { TextField, TextFieldProps, MenuItem } from '@mui/material'
 
 type Props = { member: IOrganizationMember; size?: TextFieldProps['size']; disabled?: boolean }
 
@@ -39,12 +40,12 @@ export const LicenseSelect: React.FC<Props> = ({ member, size = 'small', disable
 const useStyles = makeStyles(({ palette }) => ({
   licensed: ({ chip }: { chip: ILicenseChip }) => ({
     '& .MuiFormLabel-root': { color: palette[chip.colorName].main },
-    '& .MuiFilledInput-root': {
+    '& .MuiInputBase-root': {
       color: palette[chip.colorName].main,
       backgroundColor: chip.background && palette[chip.background].main,
       fontWeight: 500,
       letterSpacing: 0.2,
-      '&:hover:not(.Mui-disabled)': { backgroundColor: chip.hoverColor },
+      '&:hover:not(.Mui-disabled)': { backgroundColor: chip.hoverColor && palette[chip.hoverColor].main },
     },
     '& .MuiSelect-icon': { color: palette[chip.colorName].main },
   }),

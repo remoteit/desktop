@@ -1,37 +1,35 @@
-import React from 'react'
-import { makeStyles, Button } from '@material-ui/core'
+import React, { useState } from 'react'
+import { Button } from '@mui/material'
 import { IconButton } from '../IconButton'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
-import { spacing } from '../../styling'
 
 type Props = {
   id?: string
   all?: boolean
   disabled?: boolean
+  onClick?: () => void
 }
 
-export const ClearButton: React.FC<Props> = ({ disabled, id, all }) => {
-  const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
+export const ClearButton: React.FC<Props> = ({ disabled, all, onClick }) => {
+  const [deleting, setDeleting] = useState<boolean>(false)
 
-  if (!all && !id) return null
-
-  const forget = () => {
-    // @TODO add confirm to clear all
-    if (id) dispatch.connections.clear(id)
-    else dispatch.connections.clearRecent()
+  const handleClick = () => {
+    setDeleting(true)
+    onClick?.()
   }
 
   return all ? (
-    <Button disabled={disabled} onClick={forget} size="small">
-      Clear all
+    <Button disabled={disabled} onClick={handleClick} size="small">
+      Clear
     </Button>
   ) : (
-    <IconButton className={css.button} onClick={forget} disabled={disabled} size="sm" type="light" icon="times" />
+    <IconButton
+      disabled={disabled}
+      onClick={handleClick}
+      size="sm"
+      buttonBaseSize="small"
+      color={deleting ? 'danger' : undefined}
+      loading={deleting}
+      icon="times"
+    />
   )
 }
-
-const useStyles = makeStyles(theme => ({
-  button: { padding: spacing.xs, marginRight: spacing.xs, color: theme.palette.gray.main },
-}))

@@ -2,7 +2,8 @@ import React from 'react'
 import { getDeviceModel } from '../../models/accounts'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { makeStyles, Box, Button } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, Button } from '@mui/material'
 import { spacing } from '../../styling'
 
 export const LoadMore: React.FC = () => {

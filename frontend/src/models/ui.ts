@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
-import { Theme } from '@material-ui/core'
-import { RootModel } from './rootModel'
+import { Theme } from '@mui/material'
+import { RootModel } from '.'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { selectTheme, isDarkMode } from '../styling/theme'
@@ -118,12 +118,12 @@ export const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350, organization: 350 },
+  panelWidth: { devices: 400, networks: 450, settings: 350, account: 350, organization: 350 },
   navigation: {},
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 1, total: 6 },
-  accordion: { config: true, configConnected: false, options: false, service: false },
+  accordion: { config: true, configConnected: false, options: false, service: false, networks: true },
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,
@@ -161,6 +161,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.fetch()
       await dispatch.devices.fetchConnections()
       await Promise.all([
+        dispatch.networks.fetch(),
         dispatch.sessions.fetch(),
         dispatch.user.fetch(),
         dispatch.tags.fetch(),

@@ -1,11 +1,13 @@
 import React from 'react'
-import { makeStyles, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = {
   value: string | number | string[] | number[]
   icon: string
   filterList: { value: string | number; name: string; color?: string }[]
+  children?: React.ReactNode
   onSelect: (value: any) => void
 }
 

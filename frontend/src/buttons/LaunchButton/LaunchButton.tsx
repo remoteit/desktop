@@ -1,5 +1,5 @@
 import React from 'react'
-import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -80,7 +80,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
           onClick={clickHandler}
         />
       ) : (
-        <IconButton {...props} onClick={clickHandler} disabled={disabled} icon="launch" />
+        <IconButton {...props} onClick={clickHandler} disabled={disabled} icon="launch" size="lg" />
       )}
       <PromptModal app={app} open={prompt} onClose={close} onSubmit={onSubmit} />
     </>

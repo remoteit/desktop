@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
-import { Divider, Typography } from '@material-ui/core'
+import { Divider, Typography } from '@mui/material'
 import { LicensingSetting } from '../components/LicensingSetting'
 import { memberOrganization } from '../models/organization'
 import { selectOwnLicenses } from '../models/plans'

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { makeStyles } from '@mui/styles'
 import {
-  makeStyles,
   Dialog,
   Button,
   List,
@@ -10,7 +10,7 @@ import {
   ListItemSecondaryAction,
   Typography,
   Switch,
-} from '@material-ui/core'
+} from '@mui/material'
 import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'

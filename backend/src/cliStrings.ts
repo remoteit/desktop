@@ -59,7 +59,7 @@ export default {
     return `-j connection disconnect --id ${c.id} --authhash ${user.authHash}`
   },
 
-  disconnect(c: IConnection) {
+  remove(c: IConnection) {
     return `-j connection remove --id ${c.id} --authhash ${user.authHash}`
   },
 

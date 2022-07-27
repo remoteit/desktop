@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectById } from '../models/devices'
 import { getDeviceModel } from '../models/accounts'
 import { selectConnection } from '../helpers/connectionHelper'

@@ -5,7 +5,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 const ACCOUNT_KEY = 'account'
 
@@ -172,7 +172,7 @@ export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
-export function getActiveUser(state: ApplicationState): IUserRef | undefined {
+export function getActiveUser(state: ApplicationState): IUserRef {
   const id = getActiveAccountId(state)
   const membershipOrganizations = state.accounts.membership.map(m => ({
     id: m.account.id || '',

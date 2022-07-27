@@ -1,6 +1,7 @@
 import React from 'react'
 import { ServiceMiniState } from './ServiceMiniState'
-import { Chip, Box, makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Chip, Box } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 

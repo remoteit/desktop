@@ -1,8 +1,8 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
 
-type Props = { layout: ILayout }
+type Props = { layout: ILayout; children?: React.ReactNode }
 
 export const Panel: React.FC<Props> = ({ layout, children }) => {
   const css = useStyles({ layout })

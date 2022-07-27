@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
-import Button from '@material-ui/core/Button'
 import { Icon } from '../Icon'
-import Paper from '@material-ui/core/Paper'
-import Grid from '@material-ui/core/Grid'
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
+import { Button, Paper, Grid, Box, Typography, Theme } from '@mui/material'
+import { makeStyles, createStyles } from '@mui/styles'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
-import { Box, Typography } from '@material-ui/core'
 
 export function CreateAccessKey(props) {
   const classes = useStyles()
@@ -119,7 +116,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 3),
     },
     paper: {
-      margin: `${theme.spacing(1)}px auto`,
+      margin: `${theme.spacing(1)} auto`,
       padding: theme.spacing(2),
       fontSize: '10px',
     },

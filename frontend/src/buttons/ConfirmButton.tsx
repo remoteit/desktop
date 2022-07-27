@@ -5,7 +5,7 @@ import { Confirm } from '../components/Confirm'
 type Props = ButtonProps & {
   confirm?: boolean
   confirmTitle?: string
-  confirmMessage?: string | React.ReactElement
+  confirmMessage?: React.ReactNode
 }
 
 export const ConfirmButton: React.FC<Props> = ({

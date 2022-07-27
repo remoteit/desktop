@@ -1,6 +1,6 @@
 import React from 'react'
 import { PROTOCOL } from '../../shared/constants'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'

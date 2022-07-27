@@ -1,5 +1,5 @@
 import React from 'react'
-import { fullVersion, packageVersion } from '../../helpers/versionHelper'
+import { fullVersion, version } from '../../helpers/versionHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../ListItemSetting'
 import { ApplicationState, Dispatch } from '../../store'
@@ -7,7 +7,7 @@ import { ApplicationState, Dispatch } from '../../store'
 export const UpdateSetting: React.FC = () => {
   const update = useSelector((state: ApplicationState) => state.backend.updateReady)
   const dispatch = useDispatch<Dispatch>()
-  const updateAvailable = update && update !== packageVersion
+  const updateAvailable = update && update !== version
   return (
     <ListItemSetting
       label={updateAvailable ? 'New version available' : 'About'}

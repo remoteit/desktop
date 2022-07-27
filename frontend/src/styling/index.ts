@@ -104,7 +104,7 @@ export const darkColors: { [key in Color]: string } = {
   white: '#202124',
   alwaysWhite: '#fff',
   darken: 'rgba(255,255,255,0.3)',
-  screen: 'rgba(255,255,255,0.15)',
+  screen: 'rgba(255,255,255,0.06)',
   rpi: '#C51A4A',
   guide: '#ebe985',
   test: '#2B2926',

@@ -1,8 +1,8 @@
 import { createModel } from '@rematch/core'
 import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
-import { packageVersion } from '../helpers/versionHelper'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
+import { version } from '../helpers/versionHelper'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -162,7 +162,7 @@ export default createModel<RootModel>()({
 
 export function selectUpdateNotice(state: ApplicationState) {
   const { updateReady } = state.backend
-  if (updateReady && updateReady !== packageVersion) {
+  if (updateReady && updateReady !== version) {
     let notifiedVersion = getLocalStorage(state, NOTICE_VERSION_ID)
     if (notifiedVersion !== updateReady) return updateReady
   }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItemIcon, ListItemText } from '@material-ui/core'
+import { List, ListItemIcon, ListItemText } from '@mui/material'
 import { useLocation } from 'react-router-dom'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'

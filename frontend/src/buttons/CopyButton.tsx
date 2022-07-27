@@ -55,7 +55,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, onCopy
 
   return (
     <>
-      <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : icon} />
+      <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : icon} size="lg" />
       <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
       {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
     </>

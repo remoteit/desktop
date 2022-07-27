@@ -8,7 +8,7 @@ import { ITimeSeriesData } from '../../models/analytics'
 // import { scaleBand, scaleLinear } from '@visx/scale'
 import { spacing } from '../../styling'
 import { format as formatDate } from 'date-fns'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { lightColors } from '../../styling'
 
 // accessors

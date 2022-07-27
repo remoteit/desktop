@@ -1,28 +1,29 @@
 import { createModel } from '@rematch/core'
-import { newConnection, setConnection, sanitizeName } from '../helpers/connectionHelper'
-import { graphQLConnect, graphQLDisconnect } from '../services/graphQLMutation'
+import { newConnection, setConnection, sanitizeName, selectConnection } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
+import { graphQLConnect, graphQLDisconnect } from '../services/graphQLMutation'
 import { selectById } from '../models/devices'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
 
-type IConnectionsState = { all: IConnection[] }
+type IConnectionsState = { all: IConnection[]; queue: IConnection[] }
 
 const defaultState: IConnectionsState = {
   all: [],
+  queue: [],
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_, globalState) {
-      let item = getLocalStorage(globalState, 'connections')
+    async init(_, state) {
+      let item = getLocalStorage(state, 'connections')
       if (item) dispatch.connections.setAll(item)
     },
 
-    async updateConnection(connection: IConnection, globalState) {
-      const { all } = globalState.connections
+    async updateConnection(connection: IConnection, state) {
+      const { all } = state.connections
 
       let exists = false
       all.some((c, index) => {
@@ -41,11 +42,11 @@ export default createModel<RootModel>()({
       }
     },
 
-    async restoreConnections(connections: IConnection[], globalState) {
+    async restoreConnections(connections: IConnection[], state) {
       connections.forEach(async connection => {
         // data missing from cli if our connections file is lost
         if (!connection.owner || !connection.name) {
-          const [service] = selectById(globalState, connection.id)
+          const [service] = selectById(state, connection.id)
           if (service) {
             connection = { ...newConnection(service), ...connection }
             setConnection(connection)
@@ -58,6 +59,42 @@ export default createModel<RootModel>()({
         }
       })
       dispatch.connections.setAll(connections)
+    },
+
+    async queueEnable(queue: IConnection[], state) {
+      dispatch.connections.set({ queue })
+      dispatch.connections.checkQueue(true)
+    },
+
+    async checkQueue(start: boolean, state) {
+      if (!state.connections.queue.length) return
+
+      const queue = [...state.connections.queue]
+      const trigger = queue.shift()
+
+      if (!trigger) return
+      console.log('TRIGGER', trigger)
+      const [service] = selectById(state, trigger.id)
+      const connection = selectConnection(state, service)
+
+      let different = false
+      Object.keys(trigger).forEach(key => {
+        if (trigger[key] !== connection[key]) {
+          different = true
+          console.log('DIFFERENT', key, trigger[key], connection[key])
+        }
+      })
+      console.log('QUEUE', trigger, connection)
+      console.log('NEXT', different, start)
+
+      if (different || start) {
+        if (trigger.enabled) dispatch.connections.connect({ ...connection, ...trigger })
+        else dispatch.connections.disconnect({ ...connection, ...trigger })
+        return
+      }
+
+      dispatch.connections.set({ queue })
+      setTimeout(() => dispatch.connections.checkQueue(false), 500)
     },
 
     async proxyConnect(connection: IConnection): Promise<any> {
@@ -116,17 +153,19 @@ export default createModel<RootModel>()({
 
     async connect(connection: IConnection) {
       const { proxyConnect } = dispatch.connections
-
+      if (connection.autoLaunch) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
       connection.reverseProxy = undefined
       connection.public = connection.public || isPortal()
 
-      if (connection.public) proxyConnect(connection)
-      else {
-        emit('service/connect', connection)
-        heartbeat.caffeinate()
+      if (connection.public) {
+        proxyConnect(connection)
+        return
       }
+
+      emit('service/connect', connection)
+      heartbeat.caffeinate()
     },
 
     async disconnect(connection: IConnection | undefined) {
@@ -139,46 +178,48 @@ export default createModel<RootModel>()({
         proxyDisconnect(connection)
         return
       }
+
       if (connection.connected) emit('service/disconnect', connection)
-      else if (connection.enabled) emit('service/disable', connection)
+      else emit('service/disable', connection)
       heartbeat.caffeinate()
     },
 
-    async forget(id: string, globalState) {
+    async forget(id: string, state) {
       const { set } = dispatch.connections
-      const { all } = globalState.connections
-      if (globalState.auth.backendAuthenticated) emit('service/forget', { id })
+      const { all } = state.connections
+      if (state.auth.backendAuthenticated) emit('service/forget', { id })
       else set({ all: all.filter(c => c.id !== id) })
     },
 
-    async clear(id: string, globalState) {
+    async clear(id: string, state) {
       const { set } = dispatch.connections
-      const { all } = globalState.connections
-      if (globalState.auth.backendAuthenticated) emit('service/clear', { id })
+      const { all } = state.connections
+      if (state.auth.backendAuthenticated) emit('service/clear', { id })
       else set({ all: all.filter(c => c.id !== id) })
     },
 
-    async clearByDevice(deviceId: string, globalState) {
+    async clearByDevice(deviceId: string, state) {
       const { clear, disconnect } = dispatch.connections
-      const { all } = globalState.connections
+      const { all } = state.connections
       all.forEach(async c => {
         if (c.deviceID === deviceId) {
-          if (c.enabled) await disconnect(c)
+          if (c.connected) await disconnect(c)
           await clear(c.id)
         }
       })
     },
 
-    async clearRecent(_, globalState) {
+    async clearRecent(_, state) {
       const { set } = dispatch.connections
-      const { all } = globalState.connections
-      if (globalState.auth.backendAuthenticated) emit('service/clear-recent')
+      const { all } = state.connections
+      if (state.auth.backendAuthenticated) emit('service/clear-recent')
       else set({ all: all.filter(c => c.enabled && c.online) })
     },
 
-    async setAll(all: IConnection[], globalState) {
-      setLocalStorage(globalState, 'connections', all)
+    async setAll(all: IConnection[], state) {
+      setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
+      dispatch.connections.checkQueue(false)
     },
   }),
   reducers: {

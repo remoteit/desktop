@@ -143,9 +143,7 @@ export default class CLI {
 
   async readConnections() {
     if (this.processing) return
-
     const connections = await this.connectionStatus()
-
     if (this.processing) return
 
     return connections.map((c, i) => {
@@ -219,8 +217,8 @@ export default class CLI {
   }
 
   async removeConnection(c: IConnection, onError: (error: Error) => void) {
-    d('REMOVE CONNECTION', strings.disconnect(c))
-    await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
+    d('REMOVE CONNECTION', strings.remove(c))
+    await this.exec({ cmds: [strings.remove(c)], checkAuthHash: true, onError })
   }
 
   async stopConnection(c: IConnection, onError: (error: Error) => void) {

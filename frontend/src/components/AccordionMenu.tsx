@@ -2,14 +2,14 @@ import React from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { AccordionMenuItem } from './AccordionMenuItem'
-import { Divider } from '@material-ui/core'
+import { Divider } from '@mui/material'
 
 type IAccordionMenu = {
   key: number | string
   disabled?: boolean
   subtitle: string
   onClear?: () => void
-  children: React.ReactElement
+  children: React.ReactNode
 }
 
 type Props = { menus: IAccordionMenu[] }

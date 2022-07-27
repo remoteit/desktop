@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID } from '../models/plans'
-import { makeStyles, List, TextField, Button } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { List, TextField, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'

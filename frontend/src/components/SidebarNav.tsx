@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
-import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
 import { selectConnections } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
@@ -23,14 +24,20 @@ export const SidebarNav: React.FC = () => {
   if (remoteUI)
     return (
       <List className={css.list}>
-        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
+        <ListItemLocation
+          title="This Device"
+          pathname="/devices"
+          match="/devices/:any?/:any?/:any?"
+          icon="laptop"
+          dense
+        />
         <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       </List>
     )
 
   return (
     <List className={css.list}>
-      <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
+      <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
         <ListItemSecondaryAction>
           {!!connections && (
             <Tooltip title="Active" placement="top" arrow>
@@ -39,12 +46,18 @@ export const SidebarNav: React.FC = () => {
           )}
           {!!sessions && (
             <Tooltip title="Connected" placement="top" arrow>
-              <Chip size="small" label={sessions.toLocaleString()} className={css.sessions} color="primary" />
+              <Chip
+                size="small"
+                label={sessions.toLocaleString()}
+                className={css.sessions}
+                variant="filled"
+                color="primary"
+              />
             </Tooltip>
           )}
         </ListItemSecondaryAction>
       </ListItemLocation>
-      <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
+      <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" exactMatch dense>
         {!!devices && (
           <ListItemSecondaryAction>
             <Tooltip title="Total" placement="top" arrow>
@@ -56,7 +69,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll-old" dense />
+      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
       <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
@@ -64,7 +77,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation
         className={css.footer}
         title="Contact"
-        subtitle="Support and Feedback"
+        // subtitle="Support and Feedback"
         pathname="/feedback"
         icon="envelope-open-text"
         dense
@@ -80,7 +93,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemText-primary': { color: palette.grayDark.main },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
-    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, backgroundColor: palette.grayLight.main },
+    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px` },
     '& .Mui-selected': {
       backgroundColor: palette.white.main,
       '& .MuiListItemText-primary': {

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { getFreeLicenses, selectRemoteitLicense } from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography, List, Box } from '@material-ui/core'
+import { Typography, List, Box } from '@mui/material'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
@@ -53,47 +53,45 @@ export const OrganizationGuestPage: React.FC = () => {
     >
       {member && (
         <>
-          <Typography variant="subtitle1">
-            <Title>Member</Title>
-            <ConfirmButton
-              confirm
-              confirmMessage={
-                <>
-                  This will remove <b>{member.user.email}’s </b>
-                  access to all the organization’s devices
-                </>
-              }
-              confirmTitle="Are you sure?"
-              title="Remove Member"
-              icon="trash"
-              color={removing ? 'danger' : undefined}
-              loading={removing}
-              disabled={removing}
-              onClick={async () => {
-                setRemoving(true)
-                await dispatch.organization.removeMember(member)
-                setRemoving(false)
-              }}
-            />
-          </Typography>
+          <Typography variant="subtitle1">Member</Typography>
           <Gutters>
-            <Box display="flex" alignItems="center">
-              <RoleSelect
-                size="medium"
-                roles={organization.roles}
-                roleId={member.roleId}
-                license={member.license}
-                onSelect={(roleId: string) => /* dispatch.organization.setMembers([{ ...member, roleId }]) */ {}}
-              />
-              {!enterprise && (
-                <Box marginLeft={2}>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box display="flex" marginRight={2} gap={2}>
+                <RoleSelect
+                  size="medium"
+                  roles={organization.roles}
+                  roleId={member.roleId}
+                  license={member.license}
+                  onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
+                />
+                {!enterprise && (
                   <LicenseSelect
                     size="medium"
                     member={member}
                     disabled={!freeLicenses && member.license !== 'LICENSED'}
                   />
-                </Box>
-              )}
+                )}
+              </Box>
+              <ConfirmButton
+                confirm
+                confirmMessage={
+                  <>
+                    This will remove <b>{member.user.email}’s </b>
+                    access to all the organization’s devices
+                  </>
+                }
+                confirmTitle="Are you sure?"
+                title="Remove Member"
+                icon="trash"
+                color={removing ? 'danger' : undefined}
+                loading={removing}
+                disabled={removing}
+                onClick={async () => {
+                  setRemoving(true)
+                  await dispatch.organization.removeMember(member)
+                  setRemoving(false)
+                }}
+              />
             </Box>
           </Gutters>
         </>

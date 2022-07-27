@@ -10,7 +10,7 @@ import {
   ListItemText,
   Switch,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 import { IconButton } from '../../buttons/IconButton'
 import { Title } from '../Title'
 import { Icon } from '../Icon'

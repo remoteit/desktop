@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Tooltip, Select, MenuItem, makeStyles } from '@material-ui/core'
+import { Tooltip, Select, MenuItem } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -15,8 +16,9 @@ export const ColorSelect: React.FC<{ tag: ITag; onSelect: (color: number) => voi
     <Tooltip title={`Change ${selected.name}`} open={tooltip}>
       <Select
         disableUnderline
+        variant="standard"
         value={selected.id.toString()}
-        classes={{ icon: css.icon, selectMenu: css.menu }}
+        classes={{ icon: css.icon, select: css.menu }}
         MenuProps={{ classes: { paper: css.menuPaper } }}
         onMouseEnter={() => setTooltip(true)}
         onMouseLeave={() => setTooltip(false)}

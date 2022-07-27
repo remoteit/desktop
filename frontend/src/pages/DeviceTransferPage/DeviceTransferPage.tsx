@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { Typography, Button } from '@material-ui/core'
+import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../../components/ContactSelector'
 import { useHistory } from 'react-router-dom'
 import { Container } from '../../components/Container'

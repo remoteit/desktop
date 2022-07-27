@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { List, Typography } from '@material-ui/core'
+import { List, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../../components/ListItemLocation'

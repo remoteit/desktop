@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItemIcon, ListItemText } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'

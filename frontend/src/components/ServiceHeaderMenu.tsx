@@ -5,7 +5,7 @@ import { OutOfBand } from './OutOfBand'
 import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { RefreshButton } from '../buttons/RefreshButton'
@@ -20,6 +20,7 @@ export const ServiceHeaderMenu: React.FC<{
   service?: IService
   footer?: React.ReactNode
   backgroundColor?: Color
+  children?: React.ReactNode
 }> = ({ device, service, footer, backgroundColor, children }) => {
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
 

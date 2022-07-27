@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { DEFAULT_SERVICE, REGEX_NAME_SAFE } from '../../shared/constants'
-import { List, Chip, Typography } from '@material-ui/core'
+import { List, Chip, Typography } from '@mui/material'
 import { getTypeId, findType } from '../../models/applicationTypes'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { LoadingMessage } from '../LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Title } from '../Title'
 import { emit } from '../../services/Controller'
@@ -78,7 +78,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
     <>
       <Typography className={css.body} variant="body2" color="textSecondary">
         <Title>Services</Title>
-        <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" />
+        <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" size="lg" />
       </Typography>
       <List className="collapseList">
         {scanData.map((row, key) => (

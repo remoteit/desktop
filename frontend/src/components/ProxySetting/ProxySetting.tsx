@@ -3,7 +3,8 @@ import { ROUTES } from '../../models/devices'
 import { IP_OPEN } from '../../shared/constants'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
-import { makeStyles, ListItem, ListItemIcon, TextField, MenuItem, Typography, Chip, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItem, ListItemIcon, TextField, MenuItem, Typography, Chip, Box } from '@mui/material'
 import { newConnection, setConnection, getRoute } from '../../helpers/connectionHelper'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -30,6 +31,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
       <TextField
         select
         fullWidth
+        variant="standard"
         disabled={disabled}
         label="Routing"
         value={connectionRoute}
@@ -74,7 +76,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
 const useStyles = makeStyles({
   menu: {
     '& .MuiMenuItem-root': { display: 'block', paddingTop: spacing.sm, paddingBottom: spacing.sm },
-    '& .MuiListSubheader-root': { background: 'none' },
+    '& .MuiListSubheader-root': { background: 'inherit' },
     '& .MuiTypography-caption': { lineHeight: '1em' },
   },
 })

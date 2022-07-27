@@ -1,10 +1,10 @@
 import React from 'react'
 import CreatableSelect from 'react-select/creatable'
 import { Theme } from 'react-select'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { contactOptions } from '../models/contacts'
 import { spacing, fontSizes } from '../styling'
-import { Typography, Link } from '@material-ui/core'
+import { Typography, Link } from '@mui/material'
 import isEmail from 'validator/lib/isEmail'
 
 type Props = {

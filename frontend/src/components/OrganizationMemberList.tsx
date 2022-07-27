@@ -4,7 +4,7 @@ import { ApplicationState } from '../store'
 import { getFreeLicenses } from '../models/plans'
 import { OrganizationMember } from '../components/OrganizationMember'
 import { IOrganizationState } from '../models/organization'
-import { List } from '@material-ui/core'
+import { List } from '@mui/material'
 
 type Props = { organization?: IOrganizationState; owner?: IOrganizationMember; enterprise?: boolean }
 

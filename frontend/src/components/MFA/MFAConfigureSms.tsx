@@ -1,7 +1,8 @@
 import React from 'react'
 import { Notice } from '../Notice'
 import { MFAPhoneForm } from './MFAPhoneForm'
-import { makeStyles, Box, Button, TextField, Link, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, Button, TextField, Link, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 

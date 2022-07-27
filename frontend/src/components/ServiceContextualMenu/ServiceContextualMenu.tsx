@@ -11,7 +11,8 @@ import { useApplication } from '../../hooks/useApplication'
 import { selectConnection } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import { CopyMenuItem } from '../CopyMenuItem'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -49,6 +50,7 @@ export const ServiceContextualMenu: React.FC = () => {
       anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
       disableScrollLock
       elevation={2}
+      keepMounted
     >
       <ListItem className={css.name}>
         <Typography variant="caption" align="center" display="block">
@@ -67,7 +69,7 @@ export const ServiceContextualMenu: React.FC = () => {
         </ListItem>
       )}
       {connection?.enabled && (
-        <MenuItem dense disableGutters onClick={() => handleGo(`/connections/${service?.id}`)}>
+        <MenuItem dense onClick={() => handleGo(`/networks/${service?.id}`)}>
           <ListItemIcon>
             <Icon name="chart-network" size="md" color="primary" />
           </ListItemIcon>
@@ -75,7 +77,7 @@ export const ServiceContextualMenu: React.FC = () => {
         </MenuItem>
       )}
       {!device?.shared && (
-        <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/users/share`)}>
+        <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
             <Icon name="user-plus" size="md" />
           </ListItemIcon>
@@ -84,14 +86,14 @@ export const ServiceContextualMenu: React.FC = () => {
       )}
       <CopyMenuItem icon="share-alt" title="Copy Sharable Link" value={`${PROTOCOL}connect/${service?.id}`} />
       {!device?.shared && (
-        <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>
+        <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>
           <ListItemIcon>
             <Icon name="pen" size="md" />
           </ListItemIcon>
           <ListItemText primary="Edit Service" />
         </MenuItem>
       )}
-      <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/details`)}>
+      <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/details`)}>
         <ListItemIcon>
           <Icon name="info-circle" size="md" />
         </ListItemIcon>

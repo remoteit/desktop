@@ -1,11 +1,12 @@
 import React from 'react'
-import { makeStyles, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box } from '@mui/material'
 import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
 import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSelect } from './OrganizationSelect'
 import { spacing } from '../styling'
 
-export const OrganizationSidebar: React.FC<{ hide?: boolean }> = ({ hide, children }) => {
+export const OrganizationSidebar: React.FC<{ hide?: boolean; children?: React.ReactNode }> = ({ hide, children }) => {
   const css = useStyles({ addSpace: isMac() && isElectron() })
 
   return hide ? (

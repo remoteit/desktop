@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { List, ListSubheader, ListItemSecondaryAction, Box, Chip } from '@material-ui/core'
+import { List, ListSubheader, ListItemSecondaryAction, Box, Chip } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { getOrganization } from '../models/organization'
 import { useStyles } from './SharedUsersPaginatedList'
-import { Pagination } from '@material-ui/lab'
+import { Pagination } from '@mui/lab'
 import { Gutters } from './Gutters'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
@@ -42,7 +42,7 @@ export const OrganizationGuestList: React.FC = () => {
                 size="small"
                 label={
                   <Box display="flex">
-                    <Icon name="hdd" size="base" color="grayDarker" inlineLeft />
+                    <Icon name="router" size="base" color="grayDarker" inlineLeft />
                     {guest.deviceIds.length}
                   </Box>
                 }

@@ -1,4 +1,4 @@
-import { version } from '../../package.json'
+import { version } from './versionHelper'
 import { isPortal } from '../services/Browser'
 import { SEGMENT_PROJECT_KEY, SEGMENT_PROJECT_PORTAL_KEY } from '../shared/constants'
 

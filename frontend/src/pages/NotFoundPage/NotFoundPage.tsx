@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from '../../components/Icon'
-import { Link } from '@material-ui/core'
+import { Link } from '@mui/material'
 
 export function NotFoundPage() {
   return (
@@ -8,8 +8,7 @@ export function NotFoundPage() {
       <Icon name="thumbs-down" size="xxxl" color="danger" />
       <h2 className="mt-md">Page Not Found</h2>
       <p className="lh-md gray-dark">
-        Sorry, but we could not find the page you are looking for. Please try
-        again or contact support{' '}
+        Sorry, but we could not find the page you are looking for. Please try again or contact support{' '}
         <Link href="mailto:support@remote.it">support@remote.it</Link>.
       </p>
     </div>

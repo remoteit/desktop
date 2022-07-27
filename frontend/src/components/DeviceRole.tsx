@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { memberOrganization } from '../models/organization'
 import { accountFromDevice, getMembership } from '../models/accounts'
-import { Chip } from '@material-ui/core'
+import { Chip } from '@mui/material'
 
 type Props = {
   device?: IDevice
@@ -18,10 +18,8 @@ export const DeviceRole: React.FC<Props> = ({ device }) => {
     }
   })
 
-  if (device?.shared) return null
-
-  const roleId = membership?.roleId || 'OWNER'
-  const label = roles?.find(r => r.id === roleId)?.name
+  const roleId = membership.roleId || (device?.shared ? 'GUEST' : 'OWNER')
+  let label = roles.find(r => r.id === roleId)?.name || 'Unknown'
 
   return <Chip size="small" label={label} variant="outlined" />
 }

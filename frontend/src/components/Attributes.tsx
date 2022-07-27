@@ -2,10 +2,9 @@ import React from 'react'
 import { IP_LATCH } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
-import { DeviceTagEditor } from './DeviceTagEditor'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { ListItemText, Chip, Typography } from '@material-ui/core'
+import { ListItemText, Chip, Typography } from '@mui/material'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
@@ -141,13 +140,6 @@ export const attributes: Attribute[] = [
     defaultWidth: 350,
   }),
   new DeviceAttribute({
-    id: 'tagEditor',
-    label: 'Tags',
-    value: ({ device }) => <DeviceTagEditor device={device} />,
-    column: false,
-    feature: 'tagging',
-  }),
-  new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
     defaultWidth: 180,
@@ -155,7 +147,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'quality',
-    label: 'Connectivity',
+    label: 'Stability',
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
   }),

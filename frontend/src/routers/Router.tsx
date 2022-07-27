@@ -6,6 +6,9 @@ import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
+import { NetworkUsersPage } from '../pages/NetworkUsersPage'
+import { NetworkSharePage } from '../pages/NetworkSharePage'
+import { NetworkEditPage } from '../pages/NetworkEditPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
@@ -73,57 +76,72 @@ export const Router: React.FC = () => {
       <Redirect
         from="/connect/:serviceID"
         to={{
-          pathname: '/connections/:serviceID',
+          pathname: '/networks/:serviceID',
           state: { autoConnect: true },
         }}
       />
+
       <Redirect
         from="/launch/:serviceID"
         to={{
-          pathname: '/connections/:serviceID',
+          pathname: '/networks/:serviceID',
           state: { autoLaunch: true },
         }}
       />
+
       <Redirect
         from="/copy/:serviceID"
         to={{
-          pathname: '/connections/:serviceID',
+          pathname: '/networks/:serviceID',
           state: { autoCopy: true },
         }}
       />
+
+      <Redirect from="/connections" to="/networks" />
+
       {/* Connections */}
-      <Route path={['/connections/new/:deviceID/:serviceID', '/connections']}>
+      <Route path="/networks">
         <DynamicPanel
           primary={<ConnectionsPage />}
           secondary={
             <Switch>
-              <Route path={['/connections/:serviceID/lan', '/connections/new/:deviceID/:serviceID/lan']}>
+              <Route path="/networks/view/:networkID/share">
+                <NetworkSharePage />
+              </Route>
+
+              <Route path="/networks/view/:networkID/users">
+                <NetworkUsersPage />
+              </Route>
+
+              <Route path="/networks/view/:networkID">
+                <NetworkEditPage />
+              </Route>
+
+              <Route path="/networks/:serviceID/lan">
                 <LanSharePage />
               </Route>
-              <Route path="/connections/:serviceID/:sessionID/other">
+
+              <Route path="/networks/:serviceID/:sessionID/other">
                 <ConnectionOtherPage />
               </Route>
-              <Route
-                path={[
-                  '/connections/new/:deviceID?/:serviceID?',
-                  '/connections/:serviceID/:sessionID',
-                  '/connections/:serviceID?',
-                ]}
-              >
+
+              <Route path={['/networks/:serviceID/:sessionID', '/networks/:serviceID?']}>
                 <ConnectionPage />
               </Route>
             </Switch>
           }
           layout={layout}
-          root={['/connections', '/connections/new']}
+          root="/networks"
         />
       </Route>
+
       {/* Add */}
       <Route path="/add/:platform">
         <Panel layout={layout}>
           <AddPage />
         </Panel>
       </Route>
+
       {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
@@ -136,21 +154,31 @@ export const Router: React.FC = () => {
           </Panel>
         )}
       </Route>
+
+      <Route path="/devices/membership">
+        <Panel layout={layout}>
+          <OrganizationMembershipPage />
+        </Panel>
+      </Route>
+
       <Route path="/devices/setupWaiting">
         <Panel layout={layout}>
           <SetupWaiting os={os} />
         </Panel>
       </Route>
+
       <Route path="/devices/restore">
         <Panel layout={layout}>
           <DevicesPage restore />
         </Panel>
       </Route>
+
       <Route path="/devices/select">
         <Panel layout={layout}>
           <DevicesPage select />
         </Panel>
       </Route>
+
       <Route path={['/devices', '/devices/welcome']} exact>
         {remoteUI ? (
           registered ? (
@@ -166,26 +194,31 @@ export const Router: React.FC = () => {
           </Panel>
         )}
       </Route>
+
       <Route path="/devices/:deviceID/:serviceID?">
         <DeviceRouter layout={layout} />
       </Route>
+
       <Route path="/logs">
         <Panel layout={layout}>
           <UserLogPage />
         </Panel>
       </Route>
+
       {/* Announcements */}
       <Route path="/announcements">
         <Panel layout={layout}>
           <AnnouncementsPage />
         </Panel>
       </Route>
+
       {/* Feedback */}
       <Route path="/feedback">
         <Panel layout={layout}>
           <FeedbackPage />
         </Panel>
       </Route>
+
       {/* Settings */}
       <Route path="/settings">
         <DynamicPanel
@@ -217,6 +250,7 @@ export const Router: React.FC = () => {
           root="/settings"
         />
       </Route>
+
       {/* Organization */}
       <Route path="/organization/memberships">
         <Panel layout={layout}>
@@ -235,11 +269,13 @@ export const Router: React.FC = () => {
           root="/organization"
         />
       </Route>
+
       <Route path="/organization/empty">
         <Panel layout={layout}>
           <OrganizationEmptyPage />
         </Panel>
       </Route>
+
       <Route path="/organization">
         <DynamicPanel
           primary={
@@ -282,6 +318,7 @@ export const Router: React.FC = () => {
           root={['/organization']}
         />
       </Route>
+
       {/* Account */}
       <Route path="/account">
         <DynamicPanel

@@ -4,8 +4,8 @@ import { DoublePanel } from './DoublePanel'
 import { Panel } from './Panel'
 
 type Props = {
-  primary: React.ReactElement
-  secondary?: React.ReactElement
+  primary: React.ReactNode
+  secondary?: React.ReactNode
   layout: ILayout
   root?: string | string[]
 }

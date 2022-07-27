@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useInterval } from '../../hooks/useInterval'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 
 export const ConnectingAnimation: React.FC<{ word: string }> = ({ word, ...props }) => {
   const css = useStyles()

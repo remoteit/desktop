@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { emit } from '../services/Controller'
-import { List, Typography } from '@material-ui/core'
+import { List, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { SettingsDisableNetworkItem } from '../components/SettingsDisableNetworkItem'
@@ -42,7 +42,7 @@ export const OptionsPage: React.FC = () => {
       gutterBottom
       bodyProps={{ gutterTop: true }}
       header={
-        <Typography variant="h1">
+        <Typography variant="h1" gutterBottom>
           <Title>Application</Title>
         </Typography>
       }

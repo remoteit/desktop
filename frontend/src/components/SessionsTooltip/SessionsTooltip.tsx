@@ -1,6 +1,6 @@
 import React from 'react'
 import { attributeName } from '../../shared/nameHelper'
-import { Tooltip, TooltipProps, Divider } from '@material-ui/core'
+import { Tooltip, TooltipProps, Divider } from '@mui/material'
 
 const MAX_SESSIONS_DISPLAY = 3
 
@@ -13,6 +13,7 @@ interface Props {
   open?: boolean
   arrow?: boolean
   disabled?: boolean
+  children?: React.ReactNode
 }
 
 export const SessionsTooltip: React.FC<Props> = ({

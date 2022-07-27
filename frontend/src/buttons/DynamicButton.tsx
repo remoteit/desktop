@@ -1,37 +1,44 @@
 import React from 'react'
-import { makeStyles, IconButton, Tooltip, Button, alpha, darken } from '@material-ui/core'
-import { Color } from '../../styling'
-import { Icon } from '../../components/Icon'
+import { makeStyles } from '@mui/styles'
+import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
+import { Color } from '../styling'
+import { Icon, IconProps } from '../components/Icon'
 
-type Props = {
+export type DynamicButtonProps = {
   icon?: string
+  iconType?: IconProps['type']
   title: string
   color?: Color
+  options?: { label: string; value: string }[]
   size?: 'icon' | 'medium' | 'small' | 'large'
   disabled?: boolean
   loading?: boolean
   variant?: 'text' | 'outlined' | 'contained'
-  onClick: () => void
+  onClick: React.MouseEventHandler<HTMLButtonElement>
   fullWidth?: boolean
 }
 
-export const DynamicButton: React.FC<Props> = props => {
+export const DynamicButton: React.FC<DynamicButtonProps> = props => {
   const css = useStyles(props)
-  let { title, icon, onClick, color, size = 'icon', variant = 'contained', disabled, loading, fullWidth }: Props = props
-  let styles = {}
-
-  const clickHandler = (event: React.MouseEvent) => {
-    event.stopPropagation()
-    event.preventDefault()
-    onClick()
-  }
+  let {
+    title,
+    icon,
+    iconType = 'regular',
+    onClick,
+    color,
+    size = 'icon',
+    variant = 'contained',
+    disabled,
+    loading,
+    fullWidth,
+  }: DynamicButtonProps = props
 
   if (loading) icon = 'spinner-third'
 
   const IconComponent = icon ? (
     <Icon
       name={icon}
-      type="regular"
+      type={iconType}
       size={size === 'small' ? 'sm' : 'md'}
       color={size === 'icon' ? color : undefined}
       inline={size !== 'icon'}
@@ -42,7 +49,7 @@ export const DynamicButton: React.FC<Props> = props => {
 
   if (size === 'small') {
     return (
-      <Button variant={variant} onClick={clickHandler} disabled={disabled} size={size} className={css.button} fullWidth>
+      <Button variant={variant} onClick={onClick} disabled={disabled} size={size} className={css.button} fullWidth>
         {title}
         {loading && IconComponent}
       </Button>
@@ -52,9 +59,8 @@ export const DynamicButton: React.FC<Props> = props => {
   if (size === 'medium' || size === 'large') {
     return (
       <Button
-        style={styles}
         variant={variant}
-        onClick={clickHandler}
+        onClick={onClick}
         disabled={disabled}
         size={size}
         className={css.button}
@@ -68,15 +74,17 @@ export const DynamicButton: React.FC<Props> = props => {
 
   return (
     <Tooltip title={title}>
-      <IconButton disabled={disabled} onClick={clickHandler}>
-        {IconComponent}
-      </IconButton>
+      <span>
+        <IconButton disabled={disabled} onClick={onClick} size="large">
+          {IconComponent}
+        </IconButton>
+      </span>
     </Tooltip>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  button: (props: Props) => {
+  button: (props: DynamicButtonProps) => {
     let background = props.color ? palette[props.color].main : undefined
     let hover = background ? darken(background, 0.25) : undefined
     let foreground = palette.alwaysWhite.main

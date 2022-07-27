@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { FormControl, InputLabel, Select } from '@material-ui/core'
+import { FormControl, InputLabel, Select } from '@mui/material'
 import { InlineSetting } from '../InlineSetting'
 
 type Props = {
@@ -42,6 +42,7 @@ export const InlineSelectSetting: React.FC<Props> = ({
         <Select
           native
           autoFocus
+          variant="standard"
           inputRef={fieldRef}
           disableUnderline
           value={editValue}

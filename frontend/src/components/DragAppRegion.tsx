@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { isElectron, isMac } from '../services/Browser'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'

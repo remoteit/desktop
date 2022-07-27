@@ -70,22 +70,6 @@ declare global {
     // connection update
     | 'connection'
 
-    // connection events
-    | 'service/started'
-    | 'service/connected'
-    | 'service/disconnected'
-    | 'service/error'
-    | 'service/status'
-    | 'service/uptime'
-    | 'service/request'
-    | 'service/tunnel/opened'
-    | 'service/tunnel/closed'
-    | 'service/throughput'
-    | 'service/version'
-    | 'service/unknown-event'
-    | 'service/putty/required'
-    | 'service/error/command'
-
     // binary
     | 'binary/install/start'
     | 'binary/install/progress'
@@ -124,10 +108,25 @@ declare global {
     deviceName: string
     serviceId: string
     serviceName: string
-    ownerEmail: string
+    ownerEmail: strings
     targetPlatform: number
+    combinedName: string
     offline: boolean
   }
+
+  export type INetwork = {
+    id: string
+    name: string
+    enabled: boolean
+    owner: IUserRef
+    permissions: IPermission[]
+    serviceIds: string[]
+    sessions?: ISession[]
+    access: IUserRef[]
+    icon?: string
+    tags: ITag[]
+  }
+
   interface IConnection {
     autoLaunch?: boolean
     commandTemplate?: string // command line launch template
@@ -256,7 +255,7 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
-    access: IUser[]
+    access: IUserRef[]
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -286,7 +285,7 @@ declare global {
     port?: number
     host?: ipAddress
     protocol?: string
-    access: IUser[]
+    access: IUserRef[]
     license: ILicenseTypes
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
@@ -353,6 +352,7 @@ declare global {
     id: string
     email: string
     created?: Date
+    scripting?: boolean
   }
 
   type IOrganizationMember = {

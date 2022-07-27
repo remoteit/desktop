@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Drawer } from '@material-ui/core'
+import { Drawer } from '@mui/material'
 import { Sidebar } from './Sidebar'
 
 export const SidebarMenu: React.FC = () => {

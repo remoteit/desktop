@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@material-ui/core'
+import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@mui/material'
 import { dateOptions } from './Duration/Duration'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'

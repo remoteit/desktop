@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { graphQLCreateAccessKey, graphQLDeleteAccessKeys, graphQLToggleAccessKeys } from '../services/graphQLAccessKeys'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type IKeysState = {
   init: boolean

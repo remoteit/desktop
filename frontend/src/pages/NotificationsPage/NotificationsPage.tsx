@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container } from '../../components/Container'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { Title } from '../../components/Title'
 import { NotificationMode } from './NotificationsMode'
 
@@ -9,7 +9,7 @@ export const NotificationsPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Typography variant="h1">
+        <Typography variant="h1" gutterBottom>
           <Title>Notifications</Title>
         </Typography>
       }

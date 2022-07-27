@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { makeStyles, Button, ListSubheader, Accordion, AccordionSummary, AccordionDetails } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Button, ListSubheader, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
 import { ExpandIcon } from './ExpandIcon'
 import { spacing } from '../styling'
 
@@ -12,7 +13,8 @@ type IAccordionMenu = {
   square?: boolean
   onClear?: () => void
   onClick?: (expanded: boolean) => void
-  children?: React.ReactElement
+  action?: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
@@ -24,27 +26,22 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   square,
   onClear,
   onClick,
+  action,
   children,
 }) => {
   const css = useStyles({ gutters })
   const [open, setOpen] = useState<boolean>(!!defaultExpanded)
-  const clickHandler = state => {
-    onClick && onClick(state)
+  const clickHandler = () => {
+    onClick && onClick(!open)
     setOpen(!open)
   }
 
   expanded = expanded === undefined ? open : expanded
 
   return (
-    <Accordion
-      square={square}
-      elevation={elevation}
-      expanded={expanded}
-      defaultExpanded={defaultExpanded}
-      onChange={(_, state) => clickHandler(state)}
-    >
+    <Accordion square={square} elevation={elevation} expanded={expanded} defaultExpanded={defaultExpanded}>
       <AccordionSummary className={css.item}>
-        <Button>
+        <Button onClick={clickHandler}>
           <ListSubheader disableGutters>
             {subtitle}
             <ExpandIcon open={expanded} />
@@ -62,6 +59,7 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
             Clear
           </Button>
         )}
+        {action && action}
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
@@ -74,6 +72,10 @@ const useStyles = makeStyles({
     marginBottom: spacing.xxs,
     marginLeft: gutters && spacing.md,
     marginRight: gutters && spacing.md,
+    '& .MuiIconButton-root': {
+      marginTop: -spacing.xxs,
+      marginBottom: -spacing.xxs,
+    },
     '& .MuiButton-root:first-child': {
       width: '100%',
       textAlign: 'left',

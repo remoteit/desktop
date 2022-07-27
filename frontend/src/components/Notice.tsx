@@ -1,16 +1,19 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { spacing, fontSizes } from '../styling'
-import { makeStyles, alpha, Paper, Box } from '@material-ui/core'
+import { alpha, Paper, Box } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import classnames from 'classnames'
 
 type Props = {
   severity?: 'info' | 'warning' | 'danger' | 'success'
-  button?: React.ReactElement
+  button?: React.ReactNode
   gutterTop?: boolean
   gutterBottom?: boolean
   fullWidth?: boolean
   loading?: boolean
+  className?: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const Notice: React.FC<Props> = ({
@@ -20,6 +23,7 @@ export const Notice: React.FC<Props> = ({
   gutterTop,
   gutterBottom,
   loading,
+  className,
   children,
 }) => {
   const css = useStyles({ fullWidth, gutterBottom, gutterTop })
@@ -41,7 +45,7 @@ export const Notice: React.FC<Props> = ({
   }
 
   return (
-    <Paper elevation={0} className={classnames(css.notice, css[severity])}>
+    <Paper elevation={0} className={classnames(className, css.notice, css[severity])}>
       {loading ? (
         <Icon name="spinner-third" spin size="md" fixedWidth />
       ) : (

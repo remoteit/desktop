@@ -22,10 +22,11 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds, updateConnections } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
+import { getNetworkServiceIds } from './networks'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
@@ -143,7 +144,7 @@ export default createModel<RootModel>()({
     async fetchConnections(_, state) {
       const userId = state.auth.user?.id
       if (!userId) return
-      const options = { account: userId, ids: getConnectionIds(state) }
+      const options = { account: userId, ids: getConnectionIds(state).concat(getNetworkServiceIds(state)) }
       const gqlResponse = await graphQLFetchConnections(options)
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
@@ -362,9 +363,7 @@ export default createModel<RootModel>()({
             email: [auth.user?.email || ''],
           })
       if (result !== 'ERROR') {
-        await dispatch.connections.clearByDevice(device.id)
-        await dispatch.devices.fetch()
-        await dispatch.devices.fetchConnections()
+        await dispatch.devices.cleanup(device.id)
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully ${manager ? 'deleted' : 'removed'}.`,
         })
@@ -382,17 +381,22 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ transferring: true, silent: true })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
-          await dispatch.connections.clearByDevice(data.device.id)
-          await dispatch.devices.fetch()
-          await dispatch.devices.fetchConnections()
+          await dispatch.devices.cleanup(data.device.id)
           dispatch.ui.set({
             successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
         }
-        await dispatch.connections.clearByDevice(data.device.id)
         dispatch.ui.set({ transferring: false })
       }
     },
+
+    async cleanup(deviceId: string) {
+      await dispatch.connections.clearByDevice(deviceId)
+      await dispatch.networks.removeById(deviceId)
+      await dispatch.devices.fetch()
+      await dispatch.devices.fetchConnections()
+    },
+
     async setPersistent(params: ILookup<any>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       Object.keys(params).forEach(key => {
@@ -400,6 +404,7 @@ export default createModel<RootModel>()({
       })
       dispatch.devices.set(params)
     },
+
     async set(params: { accountId?: string } & ILookup<any>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       const deviceState = { ...getDeviceModel(state, accountId) }

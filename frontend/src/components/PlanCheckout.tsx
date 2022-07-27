@@ -1,15 +1,7 @@
 import React from 'react'
 import { PERSONAL_PLAN_ID } from '../models/plans'
-import {
-  makeStyles,
-  Divider,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  Typography,
-  TextField,
-  Button,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Divider, List, ListItem, ListItemSecondaryAction, Typography, TextField, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'

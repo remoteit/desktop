@@ -1,68 +1,52 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import { makeStyles, Typography, Link } from '@material-ui/core'
-import { selectConnections, connectionState } from '../../helpers/connectionHelper'
-import { ApplicationState } from '../../store'
+import { Typography } from '@mui/material'
+import { defaultNetwork, recentNetwork, DEFAULT_ID } from '../../models/networks'
+import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
+import { selectConnections } from '../../helpers/connectionHelper'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectNetworks } from '../../models/networks'
 import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
-import { useSelector } from 'react-redux'
-import { selectById } from '../../models/devices'
-import { NewSession } from '../../components/NewSession'
-import { spacing } from '../../styling'
-import { Body } from '../../components/Body'
+import { IconButton } from '../../buttons/IconButton'
+import { NetworkAdd } from '../../components/NetworkAdd'
+import { Container } from '../../components/Container'
+import { Network } from '../../components/Network'
+import { Title } from '../../components/Title'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 
 export const ConnectionsPage: React.FC = () => {
-  const css = useStyles()
-  const history = useHistory()
-  const { local, proxy, other, recent } = useSelector((state: ApplicationState) => {
+  const dispatch = useDispatch<Dispatch>()
+  const { other, recent, networks } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
+    const activeSessionIds = allConnections.map(c => c.sessionId)
+    const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
+    let other: ILookup<INetwork> = {}
 
-    let local: ISession[] = []
-    let proxy: ISession[] = []
-    let other: ISession[] = []
-    let recent: ISession[] = []
-
-    for (const session of state.sessions.all) {
-      const index = allConnections.findIndex(c => c.sessionId === session.id) // @TODO assign the connection id to the session if available on parsing
-      if (index > -1) {
-        session.state = connectionState(undefined, allConnections[index])
-        if (session.public) proxy.push(session)
-        else local.push(session)
-        allConnections.splice(index, 1)
-      } else {
-        session.state = 'connected'
-        other.push(session)
+    otherSessions.forEach(s => {
+      const id = s.user?.id || 'default'
+      if (!other[id]) {
+        other[id] = {
+          ...defaultNetwork(),
+          id: 'other',
+          enabled: true,
+          name: s.user?.email || 'Unknown',
+          icon: initiatorPlatformIcon({ id: s.platform })[0],
+        }
       }
-    }
+      other[id].sessions?.push(s)
+    })
 
-    for (const connection of allConnections) {
-      const [service, device] = selectById(state, connection.id)
-      const session: ISession = {
-        state: connectionState(service, connection),
-        timestamp: new Date(connection.createdTime || 0),
-        platform: 0,
-        user: state.auth.user,
-        geo: undefined,
-        public: connection.public,
-        target: {
-          id: connection.id,
-          deviceId: device?.id || '',
-          platform: device?.targetPlatform,
-          name: connection.name || service?.name || '',
-        },
-      }
-      if (connection.enabled) {
-        if (session.public) proxy.push(session)
-        else local.push(session)
-      } else recent.push(session)
+    return {
+      other,
+      recent: {
+        ...recentNetwork,
+        serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
+      },
+      networks: selectNetworks(state),
     }
-
-    return { local, proxy, other, recent }
   })
-
-  const noConnections = !local.length && !other.length && !recent.length && !proxy.length
 
   useEffect(() => {
     heartbeat.beat()
@@ -70,33 +54,27 @@ export const ConnectionsPage: React.FC = () => {
   }, [])
 
   return (
-    <Body verticalOverflow gutterBottom>
-      <NewSession />
-      {noConnections && (
+    <Container
+      bodyProps={{ verticalOverflow: true }}
+      gutterBottom
+      integrated
+      header={
         <>
-          <Typography className={css.message} variant="h2" align="center">
-            Connections will appear here
-          </Typography>
-          <Typography variant="body2" align="center" color="textSecondary">
-            Once you've added connections from the<Link onClick={() => history.push('/devices')}>Devices</Link>tab,{' '}
-            <br />
-            active and recent connections will appear here.
-          </Typography>
+          <NetworkAdd networks={networks} />
+          {!!networks?.length && (
+            <Typography variant="subtitle1">
+              <Title>Networks</Title>
+              <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth size="lg" />
+            </Typography>
+          )}
         </>
-      )}
-      <SessionsList title="Proxy" sessions={proxy} />
-      <SessionsList title="Network" sessions={local} />
-      <SessionsList title="Other Connections" sessions={other} other />
-      <SessionsList
-        title="Recent"
-        sessions={recent}
-        action={!!recent.length ? <ClearButton all /> : undefined}
-        offline
-      />
-    </Body>
+      }
+    >
+      {networks.map(n => (
+        <Network key={n.id} network={n} noLink={n.id === DEFAULT_ID} highlight={n.id === DEFAULT_ID} />
+      ))}
+      <SessionsList title="Outside Connections" networks={other} />
+      {!!recent.serviceIds.length && <Network network={recent} recent noLink collapse />}
+    </Container>
   )
 }
-
-const useStyles = makeStyles({
-  message: { marginBottom: spacing.xl, marginTop: '5vw' },
-})

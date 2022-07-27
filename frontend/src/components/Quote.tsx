@@ -1,8 +1,9 @@
 import React from 'react'
 import { spacing, Spacing } from '../styling'
-import { makeStyles, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box } from '@mui/material'
 
-type Props = { margin?: Spacing | null; listItem?: boolean; noInset?: boolean }
+type Props = { margin?: Spacing | null; listItem?: boolean; noInset?: boolean; children?: React.ReactNode }
 
 export const Quote: React.FC<Props> = ({ margin = 'lg', listItem, noInset, children }) => {
   const css = useStyles({ margin, noInset, listItem })

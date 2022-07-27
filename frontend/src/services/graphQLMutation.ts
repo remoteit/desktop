@@ -1,4 +1,5 @@
 import { graphQLBasicRequest } from './graphQL'
+import { addConnectionProps } from '../models/networks'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
@@ -316,7 +317,7 @@ export async function graphQLSetTag(tag: { name: string; color: number }, accoun
   )
 }
 
-export async function graphQLAddTag(serviceId: string | string[], name: string, accountId: string) {
+export async function graphQLAddDeviceTag(serviceId: string | string[], name: string | string[], accountId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
         addTag(serviceId: $serviceId, name: $name, accountId: $accountId)
@@ -325,12 +326,30 @@ export async function graphQLAddTag(serviceId: string | string[], name: string, 
   )
 }
 
-export async function graphQLRemoveTag(serviceId: string | string[], name: string, accountId: string) {
+export async function graphQLAddNetworkTag(networkId: string, name: string | string[]) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $name: [String!]!) {
+        addNetworkTag(networkId: $networkId, name: $name)
+    }`,
+    { networkId, name }
+  )
+}
+
+export async function graphQLRemoveDeviceTag(serviceId: string | string[], name: string, accountId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
         removeTag(serviceId: $serviceId, name: $name, accountId: $accountId)
     }`,
     { serviceId, name, accountId }
+  )
+}
+
+export async function graphQLRemoveNetworkTag(networkId: string | string[], name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $name: [String!]!) {
+        removeNetworkTag(networkId: $networkId, name: $name)
+    }`,
+    { networkId, name }
   )
 }
 
@@ -388,5 +407,72 @@ export async function graphQLTransferDevice(params: ITransferProps) {
       deviceId: params.device?.id,
       email: params.email,
     }
+  )
+}
+
+export async function graphQLAddNetwork(params: INetwork, accountId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($accountId: String, $name: String, $enabled: Boolean) {
+        createNetwork(accountId: $accountId, name: $name, enabled: $enabled) {
+          id
+        }
+      }`,
+    {
+      ...params,
+      accountId,
+    }
+  )
+}
+
+export async function graphQLDeleteNetwork(networkId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!) {
+        deleteNetwork(id: $networkId) 
+      }`,
+    {
+      networkId,
+    }
+  )
+}
+
+export async function graphQLAddConnection(props: addConnectionProps) {
+  return await graphQLBasicRequest(
+    ` mutation query(
+        $networkId: String!,
+        $serviceId: String!,
+        $port: Int,
+        $name: String,
+        $enabled: Boolean
+      ) {
+        addNetworkConnection(networkId: $networkId, serviceId: $serviceId, port: $port, name: $name, enabled: $enabled)
+      }`,
+    props
+  )
+}
+
+export async function graphQLRemoveConnection(networkId: string, serviceId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $serviceId: String!) {
+        removeNetworkConnection(networkId: $networkId, serviceId: $serviceId)
+      }`,
+    { networkId, serviceId }
+  )
+}
+
+export async function graphQLAddNetworkShare(networkId: string, email: string[] | string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $email: [String!]!) {
+        addNetworkShare(networkId: $networkId, email: $email)
+      }`,
+    { networkId, email }
+  )
+}
+
+export async function graphQLRemoveNetworkShare(networkId: string, email: string[] | string) {
+  return await graphQLBasicRequest(
+    ` mutation query($networkId: String!, $email: [String!]!) {
+        removeNetworkShare(networkId: $networkId, email: $email)
+      }`,
+    { networkId, email }
   )
 }

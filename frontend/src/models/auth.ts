@@ -15,16 +15,11 @@ import { getToken, r3 } from '../services/remote.it'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { Dispatch } from '../store'
+import sleep from '../services/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
-
-function sleep(ms) {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-}
 
 const USER_KEY = 'user'
 const HOSTED_UI_KEY = 'amplify-signin-with-hostedUI'
@@ -218,12 +213,13 @@ export default createModel<RootModel>()({
       await cloudController.init()
       await dispatch.accounts.init()
       await dispatch.organization.init()
-      await dispatch.devices.init()
       await dispatch.connections.init()
+      await dispatch.networks.init()
+      await dispatch.devices.init()
       await dispatch.tags.fetch()
       dispatch.user.fetch()
       dispatch.devices.fetch()
-      dispatch.devices.fetchConnections()
+      dispatch.devices.fetchConnections() // change to connections.fetch()
       dispatch.contacts.fetch()
       dispatch.sessions.fetch()
       dispatch.announcements.fetch()

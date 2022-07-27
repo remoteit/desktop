@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
-import { Typography, Divider } from '@material-ui/core'
+import { Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'

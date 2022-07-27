@@ -1,8 +1,8 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { clearConnectionError } from '../../helpers/connectionHelper'
-import { ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@material-ui/core'
-import { IconButton } from '@material-ui/core'
+import { ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@mui/material'
+import { IconButton } from '@mui/material'
 import { Icon } from '../Icon'
 import { spacing } from '../../styling'
 
@@ -23,7 +23,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
         />
         <ListItemSecondaryAction>
           <Tooltip title="clear">
-            <IconButton onClick={() => clearConnectionError(connection)}>
+            <IconButton onClick={() => clearConnectionError(connection)} size="large">
               <Icon name="times" color="alwaysWhite" size="md" fixedWidth />
             </IconButton>
           </Tooltip>

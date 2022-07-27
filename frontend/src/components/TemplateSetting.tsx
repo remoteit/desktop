@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItem, TextField, TextFieldProps, Typography } from '@material-ui/core'
+import { ListItem, TextField, TextFieldProps, Typography } from '@mui/material'
 
 type Props = TextFieldProps & {
   onChange: (value: string) => void

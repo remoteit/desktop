@@ -6,7 +6,6 @@ import rimraf from 'rimraf'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
 import showFolder from './showFolder'
-import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
@@ -34,7 +33,6 @@ class Controller {
     let eventNames = [
       ...Object.values(User.EVENTS),
       ...Object.values(Binary.EVENTS),
-      ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
       ...Object.values(cli.EVENTS),

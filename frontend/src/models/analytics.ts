@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { set as setDate, eachDayOfInterval, isEqual } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'

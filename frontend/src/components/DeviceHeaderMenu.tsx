@@ -1,9 +1,10 @@
 import React from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
@@ -11,7 +12,11 @@ import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
 
-export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
+export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any; children?: React.ReactNode }> = ({
+  device,
+  header,
+  children,
+}) => {
   if (!device) return <UnauthorizedPage />
 
   return (
@@ -26,6 +31,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
             <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
+          <DeviceTagEditor device={device} />
           <ListHorizontal>
             <ListItemLocation
               title="Details"

@@ -1,14 +1,8 @@
 import React, { useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  makeStyles,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  InputLabel,
-  TextFieldProps,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'

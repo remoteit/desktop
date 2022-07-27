@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Box, Divider, Typography, InputLabel, Collapse } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
@@ -12,7 +13,7 @@ import { Container } from './Container'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, radius } from '../styling'
 
-type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] }
+type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[]; children?: React.ReactNode }
 
 export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
   const { accountId, tags, adding, removing } = useSelector((state: ApplicationState) => ({
@@ -33,7 +34,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
       gutterBottom
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
-        <Collapse in={!!(select || selected.length)} timeout={400}>
+        <Collapse in={!!(select || selected.length)}>
           <Box className={css.actions}>
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>
@@ -63,6 +64,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
                 dispatch.ui.set({ selected: [] })
                 history.push('/devices')
               }}
+              size="lg"
             />
           </Box>
         </Collapse>

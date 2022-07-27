@@ -1,5 +1,6 @@
 import React from 'react'
-import { List, ListItem, makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { List, ListItem } from '@mui/material'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
@@ -30,7 +31,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   return (
     <>
-      <LaunchTypeSelect app={app} service={service} connection={connection} onChange={handleChange} />
+      <LaunchTypeSelect app={app} onChange={handleChange} />
       <ListItem dense>
         <Quote margin={null} noInset listItem>
           <List className={css.indent} disablePadding>

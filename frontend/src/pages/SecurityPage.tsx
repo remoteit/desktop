@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Button, Typography, Divider } from '@material-ui/core'
+import { Button, Typography, Divider } from '@mui/material'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Gutters } from '../components/Gutters'

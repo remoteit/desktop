@@ -10,7 +10,7 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
-} from '@material-ui/core'
+} from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { getOwnOrganization, memberOrganization } from '../models/organization'
 import { selectOwnRemoteitLicense } from '../models/plans'

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectPermissions } from '../models/organization'
 import { OrganizationGuestList } from '../components/OrganizationGuestList'
 import { Container } from '../components/Container'

@@ -8,38 +8,30 @@ const d = debug('r3:backend:Connection')
 export default class Connection {
   params!: IConnection
 
-  static EVENTS: { [name: string]: SocketEvent } = {
-    connected: 'service/connected',
-    disconnected: 'service/disconnected',
-    error: 'service/error',
-  }
-
   constructor(connection: IConnection) {
     this.set(connection)
   }
 
-  set({ ip = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
+  async set({ ip = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { ip, restriction, failover, ...connection }
     d('SET CONNECTION', { params: this.params })
-    if (setCLI && !this.params.public) cli.setConnection(this.params, this.error)
+    if (setCLI && !this.params.public) await cli.setConnection(this.params, this.error)
   }
 
-  start() {
+  async start() {
     this.params.enabled = true
     this.params.error = undefined
-    if (!this.params.public) cli.addConnection(this.params, this.error)
+    if (!this.params.public) await cli.addConnection(this.params, this.error)
   }
 
-  stop() {
+  async stop() {
     this.params.disconnecting = true
-    cli.stopConnection(this.params, this.error)
-    EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
+    await cli.stopConnection(this.params, this.error)
   }
 
-  disable() {
+  async disable() {
     this.params.enabled = false
-    if (!this.params.public) cli.removeConnection(this.params, this.error)
-    EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
+    if (!this.params.public) await cli.removeConnection(this.params, this.error)
   }
 
   async clear() {
@@ -53,6 +45,5 @@ export default class Connection {
 
   error = (e: Error) => {
     this.params.error = { message: e.message }
-    EventBus.emit(Connection.EVENTS.error, { ...this.params.error, connection: this.params } as ConnectionErrorMessage)
   }
 }

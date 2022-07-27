@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
-import { makeStyles, useMediaQuery, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { useMediaQuery, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
@@ -22,15 +23,18 @@ import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
   const { searched, navigationBack, navigationForward, feature, device, editTags } = useSelector(
-    (state: ApplicationState) => ({
-      feature: selectLimitsLookup(state),
-      selected: state.ui.selected,
-      searched: getDeviceModel(state).searched,
-      navigationBack: state.ui.navigationBack,
-      navigationForward: state.ui.navigationForward,
-      device: getOwnDevices(state).find(d => d.thisDevice),
-      editTags: canEditTags(state, getActiveAccountId(state)),
-    })
+    (state: ApplicationState) => {
+      const deviceModel = getDeviceModel(state)
+      return {
+        feature: selectLimitsLookup(state),
+        selected: state.ui.selected,
+        searched: deviceModel.searched,
+        navigationBack: state.ui.navigationBack,
+        navigationForward: state.ui.navigationForward,
+        device: getOwnDevices(state).find(d => d.thisDevice),
+        editTags: canEditTags(state, getActiveAccountId(state)),
+      }
+    }
   )
   const { handleBack, handleForward } = useNavigation()
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
@@ -73,7 +77,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        <RefreshButton size="base" type="regular" color="grayDarker" />
+        <RefreshButton size="md" color="grayDarker" />
         <Title className={css.search}>
           {!showSearch && !searched && (
             <IconButton
@@ -125,8 +129,6 @@ const useStyles = makeStyles({
     maxHeight: 45,
     width: '100%',
     zIndex: 8,
-    // pointerEvents: 'none',
-    // '-webkit-text-selection': 'none',
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {

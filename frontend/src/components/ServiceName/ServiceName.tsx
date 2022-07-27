@@ -4,7 +4,7 @@ import { Title } from '../Title'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '../../shared/nameHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 
 type Props = {
   connection?: IConnection
@@ -29,7 +29,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
     if (device) name += ' - '
     name += attributeName(service)
   }
-  if (connection?.name && menu && menu[0] === '/connections') name = connection.name
+  if (connection?.name && menu && menu[0] === '/networks') name = connection.name
 
   return (
     <Title inline={inline} offline={service?.state === 'inactive'}>

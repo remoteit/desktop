@@ -1,18 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
-import { spacing, fontSizes } from '../../styling'
-import { EditButton } from '../../buttons/EditButton'
-import { IconButton } from '../../buttons/IconButton'
-import { DeleteButton } from '../../buttons/DeleteButton'
-import { makeStyles } from '@material-ui/core/styles'
-import { Title } from '../Title'
-import { Icon } from '../Icon'
+import { ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import { spacing, fontSizes } from '../styling'
+import { IconButton } from '../buttons/IconButton'
+import { FormDisplay } from './FormDisplay'
+import { makeStyles } from '@mui/styles'
+import { Icon } from './Icon'
 
 type Props = {
   value?: string | number
-  label?: React.ReactElement | string
-  icon?: React.ReactElement | string
-  actionIcon?: React.ReactElement
+  label?: React.ReactNode
+  icon?: React.ReactNode
+  actionIcon?: React.ReactNode
   displayValue?: string | number
   disabled?: boolean
   loading?: boolean
@@ -21,9 +19,10 @@ type Props = {
   hideIcon?: boolean
   fieldRef?: React.RefObject<HTMLInputElement>
   debug?: boolean
-  warning?: React.ReactElement | string
+  warning?: React.ReactNode
   modified?: boolean
   disableGutters?: boolean
+  children?: React.ReactNode
   onSubmit: () => void
   onResetClick: () => void
   onCancel: () => void
@@ -32,27 +31,19 @@ type Props = {
 }
 
 export const InlineSetting: React.FC<Props> = ({
-  label,
   icon,
-  value = '',
-  actionIcon,
-  displayValue,
-  disabled,
-  loading,
-  color,
   debug,
-  warning,
   resetValue,
   onSubmit,
   fieldRef,
   onResetClick,
   onCancel,
   onShowEdit,
-  onDelete,
   hideIcon,
   modified,
   disableGutters,
   children,
+  ...viewFormProps
 }) => {
   const css = useStyles()
   const [edit, setEdit] = useState<boolean>(false)
@@ -99,6 +90,7 @@ export const InlineSetting: React.FC<Props> = ({
               title="Reset"
               icon="undo"
               type="solid"
+              size="md"
               onMouseDown={cancelBlur}
               onClick={() => {
                 onResetClick()
@@ -109,59 +101,59 @@ export const InlineSetting: React.FC<Props> = ({
           <IconButton
             title="Cancel"
             icon="times"
+            type="solid"
             size="md"
             onClick={() => {
               !fieldRef && setEdit(false)
               onCancel()
             }}
           />
-          <IconButton title="Save" icon="check" color="primary" size="md" onMouseDown={cancelBlur} submit />
+          <IconButton
+            title="Save"
+            icon="check"
+            color="primary"
+            type="solid"
+            size="md"
+            onMouseDown={cancelBlur}
+            submit
+          />
         </ListItemSecondaryAction>
       </form>
     </ListItem>
   )
 
   const viewForm = (
-    <>
-      {actionIcon && <span className={css.action}> {actionIcon}</span>}
-      <ListItem button onClick={triggerEdit} disabled={disabled} disableGutters={disableGutters} dense>
-        {icon}
-        <Title>
-          <ListItemText style={{ color }}>
-            {label && <InputLabel shrink>{label}</InputLabel>}
-            {(displayValue === undefined ? value : displayValue) || '–'}
-          </ListItemText>
-        </Title>
-        {!disabled && (
-          <ListItemSecondaryAction className="hidden">
-            <EditButton onClick={triggerEdit} />
-            {onDelete && <DeleteButton onDelete={onDelete} warning={warning} />}
-          </ListItemSecondaryAction>
-        )}
-        {loading && (
-          <ListItemSecondaryAction>
-            <Icon spin type="solid" name="spinner-third" color="primary" inlineLeft />
-          </ListItemSecondaryAction>
-        )}
-      </ListItem>
-    </>
+    <FormDisplay
+      {...viewFormProps}
+      icon={icon}
+      hideIcon={hideIcon}
+      modified={modified}
+      disableGutters={disableGutters}
+      onClick={triggerEdit}
+    />
   )
 
   return edit ? editForm : viewForm
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+export const useStyles = makeStyles(({ palette }) => ({
+  view: {
+    paddingTop: 7,
+    paddingBottom: 7,
+    '& .MuiInputLabel-root': { position: 'absolute', marginTop: 1 },
+    '& .MuiInputLabel-root + .MuiListItemText-root': { marginTop: 15, marginBottom: 3 },
+  },
   form: {
     display: 'flex',
     width: '100%',
     marginRight: 120,
     alignItems: 'center',
-    '& .MuiInput-input': { paddingTop: 9, paddingBottom: 10.5, marginLeft: spacing.sm },
+    '& .MuiInput-input': { paddingTop: 13, paddingBottom: 13, marginLeft: spacing.sm },
     '& .MuiFilledInput-input': { paddingTop: 21, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.xs },
   },
   active: {
     paddingTop: 0,

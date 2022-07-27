@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from '../../components/Icon'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 
 export const NextButton: React.FC = () => {

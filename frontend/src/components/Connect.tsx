@@ -6,16 +6,18 @@ import { windowOpen } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
+import { makeStyles } from '@mui/styles'
+import { List, Button } from '@mui/material'
 import { ProxySetting } from './ProxySetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
-import { makeStyles, List, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
+import { NetworksAccordion } from './NetworksAccordion'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
@@ -38,7 +40,7 @@ export const Connect: React.FC = () => {
   const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { devices, ui } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     return {
@@ -56,14 +58,14 @@ export const Connect: React.FC = () => {
     analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
 
-    if (!device && id) devices.fetchSingle({ id, hidden: true })
+    if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
   useEffect(() => {
     if (!location.state) return
-    if (location.state.autoConnect) ui.set({ autoConnect: true })
-    if (location.state.autoLaunch) ui.set({ autoLaunch: true })
-    if (location.state.autoCopy) ui.set({ autoCopy: true })
+    if (location.state.autoConnect) dispatch.ui.set({ autoConnect: true })
+    if (location.state.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+    if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
@@ -89,7 +91,7 @@ export const Connect: React.FC = () => {
             permissions={device.permissions}
             size="large"
             fullWidth
-            onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
+            onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
           />
           <ForgetButton connection={connection} inline />
         </Gutters>
@@ -102,7 +104,7 @@ export const Connect: React.FC = () => {
           gutters
           subtitle="Configuration"
           expanded={accordion[accordionConfig]}
-          onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
+          onClick={() => dispatch.ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
           elevation={0}
         >
           <List disablePadding>
@@ -113,11 +115,18 @@ export const Connect: React.FC = () => {
             <LaunchSelect connection={connection} service={service} />
           </List>
         </AccordionMenuItem>
+        <NetworksAccordion
+          device={device}
+          service={service}
+          connection={connection}
+          expanded={accordion.networks}
+          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
+        />
         <AccordionMenuItem
           gutters
           subtitle="Options"
           expanded={accordion.options}
-          onClick={() => ui.accordion({ options: !accordion.options })}
+          onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
           elevation={0}
         >
           <List disablePadding>

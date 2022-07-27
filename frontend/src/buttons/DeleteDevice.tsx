@@ -2,7 +2,7 @@ import React from 'react'
 import { emit } from '../services/Controller'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { DeleteButton } from './DeleteButton'
 import { Notice } from '../components/Notice'
 
@@ -25,7 +25,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
   let disabled: boolean = false
   let icon: string = 'trash'
   let title: string = 'Delete Device'
-  let warning: string | React.ReactElement = (
+  let warning: React.ReactNode = (
     <>
       <Notice severity="danger" gutterBottom fullWidth>
         Deleting devices can't be undone so may require you to physically access the device if you wish to recover it.

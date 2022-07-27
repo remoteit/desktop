@@ -1,13 +1,13 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
-export const Overlay: React.FC = ({ children }) => {
+export const Overlay: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const css = useStyles()
   return <section className={css.overlay}>{children}</section>
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   overlay: {
     backgroundColor: palette.white.main,
     padding: spacing.md,

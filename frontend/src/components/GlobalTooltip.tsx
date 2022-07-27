@@ -1,7 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { makeStyles, Tooltip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip } from '@mui/material'
 
 export const GlobalTooltip: React.FC = () => {
   const props = useSelector((state: ApplicationState) => state.ui.globalTooltip)

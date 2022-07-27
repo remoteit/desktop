@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { Icon } from '../Icon'
-import { ListItem, ListItemText, ListItemIcon, Checkbox } from '@material-ui/core'
+import { ListItem, ListItemText, ListItemIcon, Checkbox } from '@mui/material'
 
 type Props = {
   keyProp?: string | number
@@ -10,6 +10,7 @@ type Props = {
   checked?: boolean
   indeterminate?: boolean
   disableGutters?: boolean
+  children?: React.ReactNode
   onClick: (checked: boolean) => void
 }
 

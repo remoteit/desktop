@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Button, MenuItem, TextField, Typography } from '@material-ui/core'
+import { Box, Button, MenuItem, TextField, Typography } from '@mui/material'
 
 type Props = {
   verificationMethod: string

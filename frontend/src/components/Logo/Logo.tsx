@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Box, BoxProps } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, BoxProps } from '@mui/material'
 
 type Props = BoxProps & {
   white?: boolean

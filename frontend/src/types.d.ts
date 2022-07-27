@@ -216,7 +216,12 @@ declare global {
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 
-  type IGlobalTooltip = { el?: HTMLElement; title: React.ReactElement | string; color?: string }
+  type IGlobalTooltip = {
+    el?: HTMLElement
+    title: React.ReactElement | string
+    color?: string
+    children?: React.ReactNode
+  }
 
   type ILayout = {
     showOrgs: boolean
@@ -228,7 +233,7 @@ declare global {
 
 declare module 'remote.it' {}
 
-declare module '@material-ui/core/styles/createPalette' {
+declare module '@mui/material/styles' {
   interface Palette {
     primaryLight: Palette['primary']
     primaryLighter: Palette['primary']

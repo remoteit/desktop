@@ -1,7 +1,7 @@
 import React from 'react'
-import { Typography, Box } from '@material-ui/core'
+import { Typography, Box } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { Icon } from '../Icon'
 
 export interface ReportSummaryBoxProps {

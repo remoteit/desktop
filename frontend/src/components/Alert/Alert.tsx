@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { IconButton } from '@material-ui/core'
+import { IconButton } from '@mui/material'
 import { Icon } from '../Icon'
 
 export interface AlertProps {
@@ -35,6 +35,7 @@ export function Alert({ closable = true, onClose, className = '', children, type
               setClosed(true)
               if (onClose) onClose()
             }}
+            size="large"
           >
             <Icon name="times" size="sm" />
           </IconButton>

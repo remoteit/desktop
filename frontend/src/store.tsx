@@ -1,5 +1,5 @@
 import { init, RematchRootState } from '@rematch/core'
-import { models, RootModel } from './models/rootModel'
+import { models, RootModel } from './models'
 import { createLogger } from 'redux-logger'
 import immer from '@rematch/immer'
 

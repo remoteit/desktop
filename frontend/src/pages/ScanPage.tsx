@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { getOwnDevices } from '../../models/accounts'
-import { OutOfBand } from '../../components/OutOfBand'
-import { Scan } from '../../components/Scan'
-import { Container } from '../../components/Container'
-import { Gutters } from '../../components/Gutters'
-import { Typography } from '@material-ui/core'
-import { emit } from '../../services/Controller'
-import analyticsHelper from '../../helpers/analyticsHelper'
+import { ApplicationState } from '../store'
+import { getOwnDevices } from '../models/accounts'
+import { Typography } from '@mui/material'
+import { OutOfBand } from '../components/OutOfBand'
+import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
+import { Scan } from '../components/Scan'
+import { emit } from '../services/Controller'
+import analyticsHelper from '../helpers/analyticsHelper'
 
-export const NetworkPage: React.FC = () => {
+export const ScanPage: React.FC = () => {
   const { interfaces, services, scanData, privateIP } = useSelector((state: ApplicationState) => ({
     interfaces: state.backend.interfaces,
     services: getOwnDevices(state).find(d => d.thisDevice)?.services || [],

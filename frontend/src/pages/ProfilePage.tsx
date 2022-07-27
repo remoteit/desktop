@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
 import { LANGUAGES } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
-import { makeStyles, Typography, List, TextField, MenuItem, ListItem, ListItemIcon, Link } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { isPersonal } from '../models/plans'
+import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon, Link } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
-import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Avatar } from '../components/Avatar'
@@ -15,7 +16,10 @@ import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ProfilePage: React.FC = () => {
-  const user = useSelector((state: ApplicationState) => state.user)
+  const { paidPlan, user } = useSelector((state: ApplicationState) => ({
+    user: state.user,
+    paidPlan: !isPersonal(state),
+  }))
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -52,6 +56,7 @@ export const ProfilePage: React.FC = () => {
           <TextField
             select
             fullWidth
+            variant="standard"
             label="Email Language"
             value={user?.language}
             onChange={e => dispatch.user.changeLanguage(e.target.value)}
@@ -60,9 +65,8 @@ export const ProfilePage: React.FC = () => {
             <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>
           </TextField>
         </ListItem>
-        <AccordionMenuItem subtitle="Account deletion" gutters>
-          <DeleteAccountSection email={user.email} paidPlan={false} />
-        </AccordionMenuItem>
+        <Typography variant="subtitle1">Account deletion</Typography>
+        <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
       </List>
     </Container>
   )

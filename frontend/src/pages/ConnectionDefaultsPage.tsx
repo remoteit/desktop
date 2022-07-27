@@ -6,7 +6,7 @@ import { Link, useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '../shared/constants'
-import { List, MenuItem, TextField, Typography, Button } from '@material-ui/core'
+import { List, MenuItem, TextField, Typography, Button } from '@mui/material'
 import { ServiceAttributesForm } from '../components/ServiceAttributesForm'
 import { getApplication } from '../shared/applications'
 import { Container } from '../components/Container'
@@ -15,9 +15,9 @@ import { Title } from '../components/Title'
 
 export const ConnectionDefaultsPage: React.FC = () => {
   let customAttributes: ILookup<Set<string>> = {}
-  let customAttributesNote: ILookup<ILookup<React.ReactElement>> = {}
+  let customAttributesNote: ILookup<ILookup<React.ReactNode>> = {}
 
-  function addCustomAttributes(tokens: string[], id: number, el: React.ReactElement) {
+  function addCustomAttributes(tokens: string[], id: number, el: React.ReactNode) {
     customAttributes[id] = customAttributes[id] || new Set()
     customAttributesNote[id] = customAttributesNote[id] || {}
     tokens.forEach(item => {
@@ -53,7 +53,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
     const a = getApplication(undefined, c)
     const el = (
       <>
-        connection <Link to={`/connections/${c.id}`}>{c.name}</Link>
+        connection <Link to={`/networks/${c.id}`}>{c.name}</Link>
       </>
     )
     addCustomAttributes(a.allCustomTokens, c.typeID || 0, el)
