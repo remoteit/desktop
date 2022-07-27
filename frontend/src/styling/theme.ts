@@ -283,8 +283,13 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginTop: 1,
             marginBottom: 1,
             borderRadius: radius,
-            '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
+            '&.Mui-selected': {
+              backgroundColor: palette.primaryHighlight.main,
+              '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs },
+            },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
+            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, visibility: 'hidden' },
+            '&:hover .MuiIconButton-sizeSmall': { visibility: 'visible' },
           },
           gutters: {
             width: `calc(100% - ${spacing.md * 2}px)`,
@@ -295,8 +300,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           button: {
             '&:hover': { backgroundColor: palette.primaryHighlight.main },
-            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, visibility: 'hidden' },
-            '&:hover .MuiIconButton-sizeSmall': { visibility: 'visible' },
           },
           secondaryAction: {
             paddingRight: 60,

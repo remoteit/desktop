@@ -7,20 +7,22 @@ import { Icon } from './Icon'
 export interface Props {
   network?: INetwork
   expanded?: boolean
+  offline?: boolean
+  noLink?: boolean
   children?: React.ReactNode
 }
 
-export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, children }) => {
-  const css = useStyles({ enabled: network?.enabled })
+export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, offline, noLink, children }) => {
+  const css = useStyles({ enabled: network?.enabled, offline })
 
   return (
     <ListItemLocation
       className={css.item}
       icon={<Icon className={css.mergeIcon} name={network?.icon} color={network?.enabled ? 'primary' : undefined} />}
-      pathname={`/networks/view/${network?.id}`}
+      pathname={noLink ? undefined : `/networks/view/${network?.id}`}
       title={
-        <Title enabled={network?.enabled}>
-          {network?.name}
+        <Title className={css.text} enabled={network?.enabled}>
+          <b>{network?.name}</b>
           {expanded ? '' : ' ...'}
         </Title>
       }

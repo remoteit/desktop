@@ -40,10 +40,10 @@ const defaultCloudNetwork: INetwork = {
 export const recentNetwork: INetwork = {
   ...defaultNetwork(),
   id: 'recent',
-  name: 'This system',
+  name: 'Recent services',
   permissions: [],
   enabled: false,
-  icon: 'laptop',
+  icon: 'clock-rotate-left',
 }
 
 type INetworksAccountState = {

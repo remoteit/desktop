@@ -48,7 +48,7 @@ export const OrganizationSelect: React.FC = () => {
   return (
     <>
       <Box className={css.name}>
-        <Typography variant="h4">{activeOrg.name || 'Select an organization'}</Typography>
+        <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
       <List dense>
         <ListItem onClick={() => onSelect(ownOrgId || userId)} disableGutters>

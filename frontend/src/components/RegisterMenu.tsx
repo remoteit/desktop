@@ -97,7 +97,7 @@ export const RegisterMenu: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
-          {['aws', 'gcp', 'azure', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
+          {['aws', 'azure', 'gcp', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation

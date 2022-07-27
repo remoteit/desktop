@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Typography } from '@mui/material'
-import { defaultNetwork, recentNetwork } from '../../models/networks'
+import { defaultNetwork, recentNetwork, DEFAULT_ID } from '../../models/networks'
 import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
 import { selectConnections } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
@@ -71,18 +71,10 @@ export const ConnectionsPage: React.FC = () => {
       }
     >
       {networks.map(n => (
-        <Network key={n.id} network={n} />
+        <Network key={n.id} network={n} noLink={n.id === DEFAULT_ID} highlight={n.id === DEFAULT_ID} />
       ))}
-      <SessionsList title="Other Connections" networks={other} />
-      {!!recent.serviceIds.length && (
-        <>
-          <Typography variant="subtitle1">
-            <Title>Recent</Title>
-            <ClearButton all onClick={() => dispatch.connections.clearRecent()} />
-          </Typography>
-          <Network network={recent} clear />
-        </>
-      )}
+      <SessionsList title="Outside Connections" networks={other} />
+      {!!recent.serviceIds.length && <Network network={recent} recent noLink collapse />}
     </Container>
   )
 }
