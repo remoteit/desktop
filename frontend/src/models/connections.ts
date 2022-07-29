@@ -17,7 +17,7 @@ const defaultState: IConnectionsState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_, state) {
+    async init(_: void, state) {
       let item = getLocalStorage(state, 'connections')
       if (item) dispatch.connections.setAll(item)
     },
@@ -209,7 +209,7 @@ export default createModel<RootModel>()({
       })
     },
 
-    async clearRecent(_, state) {
+    async clearRecent(_: void, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
       if (state.auth.backendAuthenticated) emit('service/clear-recent')

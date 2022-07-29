@@ -1,1 +1,1 @@
-export { Auth, AuthProps } from './Auth'
+export { Auth } from './Auth'

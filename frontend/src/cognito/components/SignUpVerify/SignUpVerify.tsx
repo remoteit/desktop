@@ -6,7 +6,6 @@ import { Button } from '../Button'
 import { Icon } from '../Icon'
 // import { Auth } from '@aws-amplify/auth'
 import { Link } from '../Link'
-import { colors } from '../../styles/variables'
 import { ResendFunc } from '../../types'
 export type SignUpVerifyProps = {
   email: string

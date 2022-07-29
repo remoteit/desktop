@@ -1,6 +1,5 @@
 import { Box, Typography, Container } from '@mui/material'
 import React from 'react'
-import airbrake from '../../services/airbrake'
 import { Link } from '../Link'
 import { Center } from '../Center'
 
@@ -19,7 +18,6 @@ export class ErrorHandler extends React.Component<Props, State> {
     if (process.env.NODE_ENV === 'test') throw error
     console.error('[CAUGHT ERROR]:', error)
     this.setState({ error })
-    airbrake.notify({ error, params: { info } })
   }
 
   render() {

@@ -25,7 +25,7 @@ const searchState: ISearchState = {
 export default createModel<RootModel>()({
   state: searchState,
   effects: dispatch => ({
-    async updateSearch(_, state) {
+    async updateSearch(_: void, state) {
       const { total, size } = getDeviceModel(state)
       const { membership: member } = state.accounts
 
@@ -111,7 +111,7 @@ export default createModel<RootModel>()({
         })
         .flat()
     },
-    async parseDevices(_, state): Promise<ISearch[]> {
+    async parseDevices(_: void, state): Promise<ISearch[]> {
       const id = getActiveAccountId(state)
       if (!id) return []
       return getAllDevices(state)

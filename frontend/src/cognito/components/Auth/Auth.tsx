@@ -18,7 +18,6 @@ import {
   OktaSignInFunc,
   CognitoUserResult,
 } from '../../types'
-import { Theme } from '@mui/material'
 import { AccountRecovery } from '../AccountRecovery'
 import { ForgotPassword } from '../ForgotPassword'
 import { MFACode } from '../MFACode'
@@ -44,7 +43,6 @@ export type AuthProps = {
   onVerifyPasswordChange: VerifyPasswordChangeFunc
   onVerifyRecoveryCode: VerifyRecoveryCodeFunc
   cognitoUser?: CognitoUser
-  themeOverride?: Theme
   showLogo?: boolean
   errorMessage?: string
   hideCaptcha?: boolean
@@ -59,7 +57,7 @@ export type AuthProps = {
 export function Auth(props: AuthProps): JSX.Element {
   console.log('AUTH WRAPPER render')
   return (
-    <Wrapper themeOverride={props.themeOverride}>
+    <Wrapper>
       <Routes {...props} />
     </Wrapper>
   )
@@ -157,11 +155,7 @@ function Routes({
           )}
           path="/update-password"
         />
-        <Route
-          component={() => <SignUpVerify email={email} onResend={onResend} />}
-          fullWidth={fullWidth}
-          path="/sign-up/verify"
-        />
+        <Route component={() => <SignUpVerify email={email} onResend={onResend} />} path="/sign-up/verify" />
         <Route
           component={() => (
             <SignUp

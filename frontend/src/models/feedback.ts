@@ -20,7 +20,7 @@ const defaultState: IFeedbackState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async sendFeedback(_, state) {
+    async sendFeedback(_: void, state) {
       const { subject, body } = state.feedback
       const { user } = state.auth
       if (body.trim().length === 0) return

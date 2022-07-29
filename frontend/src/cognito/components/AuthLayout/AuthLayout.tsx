@@ -30,7 +30,7 @@ export function AuthLayout({
   const history = useHistory()
   const css = useStyles()
 
-  let logo = null
+  let logo: null | React.ReactElement = null
   if (showLogo) {
     logo = <SplashScreen />
   }

@@ -140,8 +140,8 @@ export type Currency = 'USD'
 
 declare global {
   interface Window {
+    MSStream?: boolean
     isEnterprise?: boolean
     opera?: string
   }
 }
-

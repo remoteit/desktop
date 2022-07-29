@@ -25,7 +25,7 @@ const defaultState: IKeysState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_, globalState) {
+    async init(_: void, globalState) {
       if (globalState.keys.init) return
       await dispatch.keys.fetch()
       dispatch.keys.set({ init: true })

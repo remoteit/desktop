@@ -22,7 +22,7 @@ const accountsState: IAccountsState = {
 export default createModel<RootModel>()({
   state: accountsState,
   effects: dispatch => ({
-    async init(_, globalState) {
+    async init(_: void, globalState) {
       let activeId = getLocalStorage(globalState, ACCOUNT_KEY)
       if (activeId) dispatch.accounts.setActive(activeId)
       await dispatch.accounts.fetch()

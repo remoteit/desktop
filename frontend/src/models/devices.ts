@@ -87,7 +87,7 @@ const defaultAccountState: IDeviceAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init(_, state) {
+    async init(_: void, state) {
       const accountId = getActiveAccountId(state)
       let states = { accountId }
       SAVED_STATES.forEach(key => {
@@ -99,7 +99,7 @@ export default createModel<RootModel>()({
     /* 
       GraphQL search query for all device data
     */
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
       if (!deviceModel.initialized) await dispatch.devices.init()
@@ -136,12 +136,12 @@ export default createModel<RootModel>()({
       set({ fetching: false, append: false, initialized: true })
     },
 
-    async fetchIfEmpty(_, state) {
+    async fetchIfEmpty(_: void, state) {
       const deviceModel = getDeviceModel(state)
       if (!deviceModel.initialized) await dispatch.devices.fetch()
     },
 
-    async fetchConnections(_, state) {
+    async fetchConnections(_: void, state) {
       const userId = state.auth.user?.id
       if (!userId) return
       const options = { account: userId, ids: getConnectionIds(state).concat(getNetworkServiceIds(state)) }

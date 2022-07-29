@@ -2,7 +2,6 @@ import { Box, TextField } from '@mui/material'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import getParamFromURL from '../../utils/getParamFromQueryString'
 import { Alert } from '../Alert'
 import { AuthLayout } from '../AuthLayout'
 import { Button } from '../Button'
@@ -28,8 +27,8 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
 
   // Get the email from the URL bar
   const { search } = location
-  const localEmail = email ? email : '' //getParamFromURL(search, 'email')
-  const resetPasswordNeeded = getParamFromURL(search, 'resetRequired') === 'true'
+  const localEmail = email ? email : ''
+  const resetPasswordNeeded = search.includes('resetRequired=true')
 
   function handlePasswordValidation(password: string, validation: boolean): void {
     setPassword(password)

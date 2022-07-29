@@ -45,11 +45,11 @@
     "electron-builder": "^23.0.3",
     "electron-notarize": "^1.2.1",
     "electron-osx-sign": "^0.6.0",
+    "eslint": "^8.20.0",
     "npm-run-all": "4.1.5",
     "onchange": "^7.1.0",
     "rimraf": "^3.0.2",
-    "tslint": "^6.1.3",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.4"
   },
   "homepage": "https://remote.it",
   "repository": {

@@ -197,7 +197,7 @@ export default createModel<RootModel>()({
       dispatch.organization.set({ initialized: true })
     },
 
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
       const accountQueries = ids.map(
         (id, index) => `
@@ -307,7 +307,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async removeOrganization(_, state) {
+    async removeOrganization(_: void, state) {
       const result = await graphQLRemoveOrganization()
       if (result !== 'ERROR') {
         dispatch.organization.clearActive()

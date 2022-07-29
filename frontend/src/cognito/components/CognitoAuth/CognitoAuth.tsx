@@ -1,6 +1,5 @@
 import React from 'react'
 import { CognitoUser, ChallengeOption, SignInSuccessFunc, CognitoUserResult, SamlOrgResult } from '../../types'
-import { Theme } from '@mui/material'
 import { SplashScreen } from '../SplashScreen'
 import { AuthService } from '../../services/auth'
 import { Auth } from '../Auth'
@@ -14,7 +13,6 @@ export type ISegmentSettings = {
 export type CognitoAuthProps = {
   onSignInSuccess: SignInSuccessFunc
   clientId?: string
-  themeOverride?: Theme
   showLogo?: boolean
   errorMessage?: string
   redirectURL?: string
@@ -33,7 +31,6 @@ export type CognitoAuthProps = {
 export function CognitoAuth({
   onSignInSuccess,
   clientId,
-  themeOverride,
   showLogo,
   errorMessage,
   redirectURL,
@@ -204,7 +201,6 @@ export function CognitoAuth({
       segmentSettings={segmentSettings}
       showCheckboxRemember={showCheckboxRemember}
       showLogo={showLogo}
-      themeOverride={themeOverride}
     />
   )
 }

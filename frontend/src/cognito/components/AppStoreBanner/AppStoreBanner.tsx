@@ -1,4 +1,5 @@
 import { Box, IconButton } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import cookies from 'js-cookie'
 import React, { useState } from 'react'
 import { Icon } from '../Icon'
@@ -13,6 +14,7 @@ export const HIDE_APP_BADGE_COOKIE = 'remoteit.hide-app-badge'
 
 export function AppStoreBanner(): JSX.Element {
   const [hidden, setHidden] = useState(isAppBannerHidden())
+  const { t } = useTranslation()
 
   // Return nothing if they've opted to close the banner
   if (hidden) return <></>

@@ -69,13 +69,13 @@ const defaultAccountState: INetworksAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init(_, state) {
+    async init(_: void, state) {
       const storedNetwork = getLocalStorage(state, 'networks-default')
       dispatch.networks.set({ default: storedNetwork ? storedNetwork : defaultNetwork(state) })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
         ` query($account: String) {
@@ -126,7 +126,7 @@ export default createModel<RootModel>()({
       // dispatch.networks.handleOrphanedConnections()
     },
 
-    async fetchIfEmpty(_, state) {
+    async fetchIfEmpty(_: void, state) {
       const accountId = getActiveAccountId(state)
       if (!state.networks.all[accountId]) dispatch.networks.fetch()
     },
@@ -147,7 +147,7 @@ export default createModel<RootModel>()({
       console.log('LOAD NETWORKS', parsed)
       return parsed
     },
-    // async handleOrphanedConnections(_, state) {
+    // async handleOrphanedConnections(_:void, state) {
     // const assigned = new Set()
     // Object.keys(state.networks.all).forEach(key => {
     //   state.networks.all[key].forEach(network => {

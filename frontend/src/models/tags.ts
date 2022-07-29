@@ -42,7 +42,7 @@ const defaultState: ITagState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
         ` query($account: String) {
@@ -65,7 +65,7 @@ export default createModel<RootModel>()({
       if (tags) dispatch.tags.setTags({ tags, accountId })
     },
 
-    async fetchIfEmpty(_, state) {
+    async fetchIfEmpty(_: void, state) {
       const accountId = getActiveAccountId(state)
       if (!state.tags.all[accountId]) dispatch.tags.fetch()
     },
