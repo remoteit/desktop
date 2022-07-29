@@ -1,0 +1,1 @@
+export { AndroidBadge } from './AndroidBadge'

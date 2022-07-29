@@ -1,0 +1,1 @@
+export { BannerNotices } from './BannerNotices'

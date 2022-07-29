@@ -11,8 +11,7 @@ import { ReportTimeSeriesVis } from '../../components/ReportTimeSeriesVis'
 import { ReportDeviceQualityList } from '../../components/ReportDeviceQualityList'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import { format } from 'date-fns'
-
-import { LoadingScreen } from '@remote.it/components'
+import { LoadingScreen } from '../../cognito/components/LoadingScreen'
 
 export const ReportsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
