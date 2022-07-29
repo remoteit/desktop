@@ -16,7 +16,7 @@ import { Icon } from '../Icon'
 import { makeStyles } from '@mui/styles'
 import { getTypeId } from '../../models/applicationTypes'
 import { DEFAULT_SERVICE, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { spacing, fontSizes } from '../../styling'
@@ -41,7 +41,7 @@ const InterfaceIcon: IInterfaceIcon = {
 
 export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, privateIP }) => {
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const [open, setOpen] = useState<number[]>([])
@@ -136,7 +136,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
                             },
                           })
-                          history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
+                          navigate(location.pathname.replace(REGEX_LAST_PATH, ''))
                         }}
                       >
                         Add

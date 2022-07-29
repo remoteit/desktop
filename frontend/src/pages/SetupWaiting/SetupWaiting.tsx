@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Typography, CircularProgress, Divider } from '@mui/material'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getDevices } from '../../models/accounts'
 import { makeStyles } from '@mui/styles'
 import { DocsLinks } from '../../components/DocsLinks'
@@ -17,14 +17,14 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
     errorMessage: state.ui.errorMessage,
     device: getDevices(state).find(d => d.thisDevice),
   }))
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
 
   useEffect(() => {
-    if (device) history.push(`/devices/${device.id}`)
+    if (device) navigate(`/devices/${device.id}`)
   }, [device])
 
-  if (errorMessage) history.push('/devices/setup')
+  if (errorMessage) navigate('/devices/setup')
 
   return (
     <Body center={true}>

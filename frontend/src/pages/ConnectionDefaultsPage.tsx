@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
 import { getAllDevices } from '../models/accounts'
 import { newConnection } from '../helpers/connectionHelper'
-import { Link, useParams, useHistory } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '../shared/constants'
@@ -33,7 +33,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
     connections: state.connections.all,
     devices: getAllDevices(state),
   }))
-  const history = useHistory()
+  const navigate = useNavigate()
   const { applicationID } = useParams<{ applicationID: string | undefined }>()
   const [form, setForm] = useState<ILookup<any>>({})
   const [saving, setSaving] = useState<boolean>(false)
@@ -76,7 +76,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
   const connection = newConnection({ ...DEFAULT_SERVICE, ...form, typeID: id })
 
   useEffect(() => {
-    if (!applicationID) history.push(`/settings/defaults/${applicationTypes[0]?.id}`)
+    if (!applicationID) navigate(`/settings/defaults/${applicationTypes[0]?.id}`)
   }, [applicationTypes])
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
               label="Service Type"
               value={id || ''}
               variant="filled"
-              onChange={e => history.push(`/settings/defaults/${e.target.value}`)}
+              onChange={e => navigate(`/settings/defaults/${e.target.value}`)}
             >
               {applicationTypes.map(a => (
                 <MenuItem key={a.id} value={a.id}>

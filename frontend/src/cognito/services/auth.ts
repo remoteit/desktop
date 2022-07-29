@@ -416,7 +416,7 @@ export class AuthService {
       },
     })
 
-    const oauth = {
+    let oauth = {
       domain: config.cognitoAuthDomain,
       scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
       redirectSignIn: config.callbackURL,

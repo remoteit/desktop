@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box, Tooltip, IconButton } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SplashScreen } from '../SplashScreen'
 import { PageHeading } from '../PageHeading'
@@ -27,7 +27,7 @@ export function AuthLayout({
   fullWidth,
 }: AuthLayoutProps): JSX.Element {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
 
   let logo: null | React.ReactElement = null
@@ -45,10 +45,7 @@ export function AuthLayout({
             <PageHeading>
               {!!back && (
                 <Tooltip title="back">
-                  <IconButton
-                    className={css.back}
-                    onClick={() => (backLink ? history.push(backLink) : history.goBack())}
-                  >
+                  <IconButton className={css.back} onClick={() => (backLink ? navigate(backLink) : navigate(-1))}>
                     <Icon fixedWidth name="chevron-left" size="sm" />
                   </IconButton>
                 </Tooltip>

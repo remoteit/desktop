@@ -4,7 +4,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { connectionState, newConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { getLicenseChip } from '../../components/LicenseChip'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Color } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -32,7 +32,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const instanceId = service?.id || connection?.id || ''
   const { autoConnect } = useSelector((state: ApplicationState) => state.ui)
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
   const visible = !connection?.enabled
@@ -71,7 +71,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (chip && chip.show) {
     color = chip.colorName
     title = chip.disabled ? chip.name : title
-    if (chip.disabled) clickHandler = () => history.push('/account/plans')
+    if (chip.disabled) clickHandler = () => navigate('/account/plans')
     variant = 'text'
   }
 

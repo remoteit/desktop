@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
@@ -16,7 +16,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   const service = device?.services.find(s => s.id === serviceID)
   const thisDevice = service?.deviceID === thisId
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   useEffect(() => {
     applicationTypes.fetch()
@@ -24,11 +24,11 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   }, [])
 
   if (!service) {
-    history.push(`/devices/${device?.id}`)
+    navigate(`/devices/${device?.id}`)
     return null
   }
 
-  const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
+  const exit = () => navigate(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
     <ServiceHeaderMenu device={device} service={service}>
@@ -44,7 +44,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
             await devices.setServiceAttributes(service)
             if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
           }
-          history.push(`/devices/${device?.id}/${service.id}`)
+          navigate(`/devices/${device?.id}/${service.id}`)
         }}
       />
     </ServiceHeaderMenu>

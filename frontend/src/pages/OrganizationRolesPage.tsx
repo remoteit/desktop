@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Redirect, useHistory } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@mui/material'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectLimitsLookup } from '../models/organization'
@@ -15,7 +15,7 @@ import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { name, roles, members, limits, permissions } = useSelector((state: ApplicationState) => ({
     ...getOrganization(state),
     limits: selectLimitsLookup(state),
@@ -26,7 +26,7 @@ export const OrganizationRolesPage: React.FC = () => {
     analyticsHelper.page('OrganizationRolesPage')
   }, [])
 
-  if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
+  if (!permissions?.includes('ADMIN')) return <Navigate to={'/organization'} />
 
   return (
     <Container
@@ -41,7 +41,7 @@ export const OrganizationRolesPage: React.FC = () => {
               label={name}
               size="small"
               icon={<Icon name="chevron-left" size="xxs" type="solid" color="grayDark" fixedWidth />}
-              onClick={() => history.push('/organization')}
+              onClick={() => navigate('/organization')}
             />
           </Box>
         </Gutters>
@@ -82,7 +82,7 @@ export const OrganizationRolesPage: React.FC = () => {
                 <Chip
                   label={count ? `${count} member${count === 1 ? '' : 's'}` : 'none'}
                   size="small"
-                  onClick={() => history.push('/organization/members')}
+                  onClick={() => navigate('/organization/members')}
                 />
               </ListItemSecondaryAction>
             </ListItemLocation>

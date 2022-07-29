@@ -3,14 +3,14 @@ import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { makeStyles } from '@mui/styles'
 import { Button, Typography, Link, TextField } from '@mui/material'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { fullVersion } from '../helpers/versionHelper'
 
 export const FeedbackPage: React.FC<{}> = () => {
   const { feedback } = useDispatch<Dispatch>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
   const [subject, setSubject] = React.useState('')
   const [body, setBody] = React.useState('')
@@ -18,7 +18,7 @@ export const FeedbackPage: React.FC<{}> = () => {
   const sendFeedback = () => {
     feedback.set({ subject, body })
     feedback.sendFeedback()
-    history.goBack()
+    navigate(-1)
   }
 
   const email = () => {

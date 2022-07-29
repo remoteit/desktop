@@ -1,5 +1,6 @@
 import React from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { RouteArray } from '../../../components/RouteArray'
+import { Route, Routes } from 'react-router-dom'
 import {
   CheckSamlFunc,
   CognitoUser,
@@ -58,12 +59,12 @@ export function Auth(props: AuthProps): JSX.Element {
   console.log('AUTH WRAPPER render')
   return (
     <Wrapper>
-      <Routes {...props} />
+      <AppRoutes {...props} />
     </Wrapper>
   )
 }
 
-function Routes({
+function AppRoutes({
   onCheckSaml,
   onConfirmSignIn,
   onGoogleSignIn,
@@ -127,37 +128,37 @@ function Routes({
 
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
-          component={() => (
+          element={
             <PasswordVerify email={email} fullWidth={fullWidth} onVerifyPasswordChange={onVerifyPasswordChange} />
-          )}
+          }
           path="/forgot-password/verify"
         />
         <Route
-          component={() => (
+          element={
             <ForgotPassword
               email={email}
               fullWidth={fullWidth}
               onRecoverPasswordRequest={handleRecoverPasswordRequest}
             />
-          )}
+          }
           path="/forgot-password"
         />
         <Route
-          component={() => (
+          element={
             <ForgotPassword
               buttonKey="pages.update-password.reset-password"
               fullWidth={fullWidth}
               onRecoverPasswordRequest={handleRecoverPasswordRequest}
               titleKey="pages.update-password.title"
             />
-          )}
+          }
           path="/update-password"
         />
-        <Route component={() => <SignUpVerify email={email} onResend={onResend} />} path="/sign-up/verify" />
+        <Route element={<SignUpVerify email={email} onResend={onResend} />} path="/sign-up/verify" />
         <Route
-          component={() => (
+          element={
             <SignUp
               fullWidth={fullWidth}
               onResend={handleResend}
@@ -165,22 +166,22 @@ function Routes({
               onSignUp={handleSignup}
               segmentSettings={segmentSettings}
             />
-          )}
+          }
           path="/sign-up"
         />
         <Route
-          component={() => (
+          element={
             <AccountRecovery
               email={email}
               fullWidth={fullWidth}
               onSignIn={handleSignIn2}
               onVerifyRecoveryCode={onVerifyRecoveryCode}
             />
-          )}
+          }
           path="/account-recovery"
         />
         <Route
-          component={() => (
+          element={
             <MFACode
               challengeName={challenge}
               cognitoUser={cognitoUser}
@@ -188,11 +189,11 @@ function Routes({
               onSendCustomChallengeAnswer={onSendCustomChallengeAnswer}
               onSignInSuccess={onSignInSuccess}
             />
-          )}
+          }
           path="/mfa-verify"
         />
-        <Route
-          component={() => (
+        <RouteArray
+          element={
             <SignIn
               checkedCheckboxRemember={checkedCheckboxRemember}
               email={email}
@@ -208,10 +209,10 @@ function Routes({
               showCheckboxRemember={showCheckboxRemember}
               showLogo={showLogo}
             />
-          )}
-          path={['/', '/sign-in']}
+          }
+          paths={['/', '/sign-in']}
         />
-      </Switch>
+      </Routes>
     </>
   )
 }

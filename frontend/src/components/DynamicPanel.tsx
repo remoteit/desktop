@@ -1,5 +1,6 @@
 import React from 'react'
-import { useLocation, matchPath } from 'react-router-dom'
+import { matchPathArray } from '../helpers/utilHelper'
+import { useLocation } from 'react-router-dom'
 import { DoublePanel } from './DoublePanel'
 import { Panel } from './Panel'
 
@@ -12,7 +13,7 @@ type Props = {
 
 export const DynamicPanel: React.FC<Props> = ({ root, ...props }) => {
   const location = useLocation()
-  const match = matchPath(location.pathname, { path: root, exact: true })
+  const match = matchPathArray({ paths: root, end: true }, location.pathname)
 
   if (props.layout.singlePanel) {
     return <Panel layout={props.layout}>{match ? props.primary : props.secondary}</Panel>

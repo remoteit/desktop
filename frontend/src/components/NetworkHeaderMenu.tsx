@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -16,7 +16,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; children: React.Re
   network,
   children,
 }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const dispatch = useDispatch<Dispatch>()
 
   return (
@@ -42,7 +42,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; children: React.Re
                   }
                   onDelete={async () => {
                     await dispatch.networks.deleteNetwork(network)
-                    history.push('/networks')
+                    navigate('/networks')
                   }}
                 />
               </>

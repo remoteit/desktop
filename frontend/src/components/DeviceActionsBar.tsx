@@ -5,7 +5,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { selectTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { Title } from './Title'
@@ -23,7 +23,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
     removing: state.tags.removing,
   }))
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
 
   const onCreate = async tag => await dispatch.tags.create({ tag, accountId })
@@ -62,7 +62,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
               color="alwaysWhite"
               onClick={() => {
                 dispatch.ui.set({ selected: [] })
-                history.push('/devices')
+                navigate('/devices')
               }}
               size="lg"
             />

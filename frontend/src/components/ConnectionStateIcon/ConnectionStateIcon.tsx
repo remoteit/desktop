@@ -2,7 +2,7 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon'
 import { Tooltip } from '@mui/material'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Badge } from '@mui/material'
 import { spacing, FontSize } from '../../styling'
@@ -23,7 +23,7 @@ export function ConnectionStateIcon({
   size = 'md',
   ...props
 }: ConnectionStateIconProps) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const instance = device || service
 
   let name
@@ -73,7 +73,7 @@ export function ConnectionStateIcon({
         className={css.button}
         onClick={event => {
           event.stopPropagation()
-          history.push(`/devices/${device.id}/details`)
+          navigate(`/devices/${device.id}/details`)
         }}
         size="large"
       >

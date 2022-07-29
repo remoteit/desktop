@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { REGEX_FIRST_PATH } from '../shared/constants'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { makeStyles } from '@mui/styles'
@@ -13,7 +13,7 @@ import { Avatar } from './Avatar'
 
 export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, userId } = useSelector((state: ApplicationState) => ({
@@ -38,7 +38,7 @@ export const OrganizationSelect: React.FC = () => {
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()
-      if (menu && menu[0] === '/devices') history.push('/devices')
+      if (menu && menu[0] === '/devices') navigate('/devices')
     }
   }
 

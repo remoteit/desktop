@@ -10,7 +10,7 @@ import { TextField, Typography, ListItem, ListSubheader, Autocomplete, createFil
 import { spacing, fontSizes } from '../styling'
 import { TargetPlatform } from './TargetPlatform'
 import { makeStyles } from '@mui/styles'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Icon } from './Icon'
 
 type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => void }
@@ -24,7 +24,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     data: selectAllSearch(state),
   }))
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { search, devices } = useDispatch<Dispatch>()
   const [query, setQuery] = useState<string>(queryDefault)
 
@@ -49,14 +49,14 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
 
   const select = (selection: ISearch) => {
     // devices.set({ query: '' })
-    history.push(`/devices/${selection?.deviceId}/${selection?.serviceId}`)
+    navigate(`/devices/${selection?.deviceId}/${selection?.serviceId}`)
   }
 
   const submit = () => {
     devices.set({ query, searched: true, from: 0 })
     devices.fetch()
     onClose && onClose()
-    history.push(`/devices`)
+    navigate(`/devices`)
   }
 
   useEffect(() => {

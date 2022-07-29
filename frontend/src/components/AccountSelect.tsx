@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { REGEX_FIRST_PATH } from '../shared/constants'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { makeStyles } from '@mui/styles'
@@ -11,7 +11,7 @@ import { spacing } from '../styling'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState<boolean>(false)
   const { accounts, devices, tags, logs } = useDispatch<Dispatch>()
@@ -49,7 +49,7 @@ export const AccountSelect: React.FC = () => {
             await accounts.setActive(id.toString())
             devices.fetchIfEmpty()
             tags.fetchIfEmpty()
-            if (menu && menu[0] === '/devices') history.push('/devices')
+            if (menu && menu[0] === '/devices') navigate('/devices')
           }
         }}
       >
@@ -60,7 +60,7 @@ export const AccountSelect: React.FC = () => {
           </MenuItem>
         ))}
         <Divider className={css.divider} />
-        <MenuItem onClick={() => history.push('/organization/memberships')}>Manage memberships...</MenuItem>
+        <MenuItem onClick={() => navigate('/organization/memberships')}>Manage memberships...</MenuItem>
       </TextField>
     </ListItem>
   )

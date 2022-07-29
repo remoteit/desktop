@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { findService } from '../../models/devices'
 import { ApplicationState } from '../../store'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { Link } from '@mui/material'
 import { attributeName } from '../../shared/nameHelper'
@@ -21,7 +21,7 @@ const pageNameMap: { [path: string]: string } = {
 
 export const Breadcrumbs: React.FC = () => {
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const devices = useSelector((state: ApplicationState) => getAllDevices(state))
   const parentPath = location.pathname.replace(REGEX_LAST_PATH, '')
@@ -54,7 +54,7 @@ export const Breadcrumbs: React.FC = () => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
         result.push(
-          <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
+          <Link key={crumbPath} onClick={() => navigate(crumbPath)}>
             {pageName(crumb)}
           </Link>
         )

@@ -18,7 +18,7 @@ import { GoogleSignInButton } from '../GoogleSignInButton'
 // import { OktaSignInButton } from '../OktaSignInButton'
 import { Link } from '../Link'
 import { spacing } from '../../styles/variables'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const useStyles = makeStyles({
   or: {
@@ -71,7 +71,7 @@ export function SignIn({
     externalError = new Error(errorMessage)
   }
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [username, setUsername] = React.useState<string>(email ? email : '')
   const [password, setPassword] = React.useState<string>('')
   const [error, setError] = React.useState<Error | null>(externalError)
@@ -134,13 +134,13 @@ export function SignIn({
         if (challenge) {
           // They need to recover their account.
           if (challenge === 'CUSTOM_CHALLENGE') {
-            history.push('/account-recovery')
+            navigate('/account-recovery')
             return
           }
 
           // MFA verification is required, send them to verify.
           if (challenge === 'SMS_MFA' || challenge === 'SOFTWARE_TOKEN_MFA') {
-            history.push('/mfa-verify')
+            navigate('/mfa-verify')
             return
           }
 

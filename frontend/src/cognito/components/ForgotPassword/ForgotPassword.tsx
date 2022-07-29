@@ -5,7 +5,7 @@ import { Alert } from '../Alert'
 import { AuthLayout } from '../AuthLayout'
 import { Button } from '../Button'
 import { Icon } from '../Icon'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { RecoverPasswordRequestFunc } from '../../types'
 
 export type ForgotPasswordProps = {
@@ -24,7 +24,7 @@ export function ForgotPassword({
   fullWidth,
 }: ForgotPasswordProps): JSX.Element {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [stateEmail, setEmail] = React.useState<string>(email ? email : '')
   const [error, setError] = React.useState<Error | null>(null)
   const [loading, setLoading] = React.useState<boolean>(false)
@@ -48,7 +48,7 @@ export function ForgotPassword({
 
     try {
       await onRecoverPasswordRequest(stateEmail)
-      history.push(`/forgot-password/verify`)
+      navigate(`/forgot-password/verify`)
       return
     } catch (error) {
       setError(error)

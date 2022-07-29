@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
@@ -17,7 +17,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
   const { applicationTypes, devices } = useDispatch<Dispatch>()
   const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   useEffect(() => {
     applicationTypes.fetch()
@@ -51,9 +51,9 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
           disabled={!device?.permissions.includes('MANAGE')}
           onSubmit={async form => {
             if (device?.configurable) devices.cloudAddService({ form, deviceId: device?.id })
-            history.push(`/devices/${device?.id}`)
+            navigate(`/devices/${device?.id}`)
           }}
-          onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
+          onCancel={() => navigate(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />
       )}
     </Container>

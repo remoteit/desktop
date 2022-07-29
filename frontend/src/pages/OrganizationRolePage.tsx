@@ -3,7 +3,7 @@ import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
 import { getActiveAccountId } from '../models/accounts'
 import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Typography, List, ListItem, ListItemSecondaryAction, MenuItem, TextField, Chip } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Dispatch, ApplicationState } from '../store'
@@ -23,7 +23,7 @@ const NAME_MAX_LENGTH = 64
 export const OrganizationRolePage: React.FC = () => {
   const { roleID } = useParams<{ roleID?: string }>()
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
   const { accountId, disabled, roles, tags } = useSelector((state: ApplicationState) => ({
     accountId: getActiveAccountId(state),
@@ -142,7 +142,7 @@ export const OrganizationRolePage: React.FC = () => {
               onClick={tag => {
                 dispatch.devices.set({ tag: { values: [tag.name] } })
                 dispatch.devices.fetch()
-                history.push('/devices')
+                navigate('/devices')
               }}
             />
             <TagEditor
@@ -208,7 +208,7 @@ export const OrganizationRolePage: React.FC = () => {
               const roleID = await dispatch.organization.setRole(form)
               setSaving(false)
               setForm(cloneDeep(form)) // reset change detection
-              history.push(`/organization/roles/${roleID}`)
+              navigate(`/organization/roles/${roleID}`)
             }}
           >
             {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}

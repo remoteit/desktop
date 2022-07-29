@@ -3,7 +3,7 @@ import { Box, TextField, Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styles/variables'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { CognitoUserResult, SignUpFunc, ResendFunc } from '../../types'
 import { AuthLayout } from '../AuthLayout'
 import { Captcha } from '../Captcha'
@@ -24,7 +24,7 @@ export type SignUpProps = {
 
 export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullWidth }: SignUpProps): JSX.Element {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [error, setError] = useState<Error | null>(null)
   const [showResend, setShowResend] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
@@ -42,7 +42,7 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
   //       console.log('Got error, setting error: ', signupResponse.error)
   //       setError(signupResponse.error)
   //     } else {
-  //       history.push(`/sign-up/verify`)
+  //       navigate(`/sign-up/verify`)
   //     }
   //   })()
   // }, [email, password])
@@ -52,7 +52,7 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
   }
 
   async function forgotPassword() {
-    history.push(`/forgot-password`)
+    navigate(`/forgot-password`)
   }
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
@@ -73,7 +73,7 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
     // ;(async () => (signupResponse = await onSignUp(email, password)))()
     // const signupResponse = { error: { name: 'anerror', message: 'a new error' } }
     await onSignUp(email, password)
-      .then(() => history.push(`/sign-up/verify`))
+      .then(() => navigate(`/sign-up/verify`))
       .catch((err: Error) => {
         if (err.name == 'UsernameExistsException') {
           setShowResend(true)

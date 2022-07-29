@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../../components/ContactSelector'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
 import { Confirm } from '../../components/Confirm'
@@ -16,7 +16,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
     contacts: state.contacts.all,
     transferring: state.ui.transferring,
   }))
-  const history = useHistory()
+  const navigate = useNavigate()
   const [open, setOpen] = useState<boolean>(false)
   const [selected, setSelected] = useState<string | undefined>()
   const { devices } = useDispatch<Dispatch>()
@@ -27,7 +27,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
       setSelected(emails[0])
     }
   }
-  const onCancel = () => history.goBack()
+  const onCancel = () => navigate(-1)
   const onTransfer = () => devices.transferDevice({ device, email: selected })
 
   if (!device) return null

@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { useParams, useLocation, useHistory } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
 import { getOrganization } from '../../models/organization'
@@ -28,7 +28,7 @@ export const SharePage: React.FC = () => {
     deleting: state.shares.deleting,
   }))
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
   const guest = guests.find(g => g.id === userID)
   const email = guest?.email || ''
@@ -43,7 +43,7 @@ export const SharePage: React.FC = () => {
 
   const handleUnshare = async () => {
     if (device) await shares.delete({ deviceId: device.id, email })
-    history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
+    navigate(location.pathname.replace(REGEX_LAST_PATH, ''))
   }
 
   const handleChange = (emails: string[]) => {

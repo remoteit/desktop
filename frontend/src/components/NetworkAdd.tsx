@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { MAX_NAME_LENGTH } from '../shared/constants'
-import { matchPath, useLocation, useHistory, Link } from 'react-router-dom'
+import { matchPath, useLocation, useNavigate, Link } from 'react-router-dom'
 import { Collapse, Typography, TextField, Box } from '@mui/material'
 import { selectNetwork } from '../models/networks'
 import { ApplicationState, Dispatch } from '../store'
@@ -10,10 +10,10 @@ import { Gutters } from './Gutters'
 import sleep from '../services/sleep'
 
 export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const show = !!matchPath(location.pathname, { path: '/networks/new' })
+  const show = !!matchPath({ path: '/networks/new' }, location.pathname)
   const [name, setName] = useState<string>('')
   const [adding, setAdding] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement>()
@@ -59,7 +59,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
                 icon="times"
                 color="grayDark"
                 onClick={() => {
-                  history.goBack()
+                  navigate(-1)
                   reset()
                 }}
                 inline

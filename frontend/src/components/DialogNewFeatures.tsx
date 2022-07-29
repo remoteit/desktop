@@ -12,14 +12,14 @@ import {
 } from '@mui/material'
 
 import { Icon } from '../components/Icon'
-import { Route, useHistory } from 'react-router-dom'
+import { Route, useNavigate } from 'react-router-dom'
 
 export const DialogNewFeatures = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
 
   return (
     <Route path="/devices/welcome">
-      <Dialog open style={{ zIndex: 2000 }} onClose={() => history.push('/devices')}>
+      <Dialog open style={{ zIndex: 2000 }} onClose={() => navigate('/devices')}>
         <DialogContent>
           <Typography variant="h1" gutterBottom>
             Welcome!
@@ -56,7 +56,7 @@ export const DialogNewFeatures = () => {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" onClick={() => history.push('/devices')} color="primary">
+          <Button variant="outlined" onClick={() => navigate('/devices')} color="primary">
             Close
           </Button>
         </DialogActions>

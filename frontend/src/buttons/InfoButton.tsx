@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Tooltip, IconButton } from '@mui/material'
 import { Icon } from '../components/Icon'
 
@@ -10,7 +10,7 @@ type Props = {
 }
 
 export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const instance = device || service
 
   let title = 'Details'
@@ -21,7 +21,7 @@ export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
     onClick = () => {
       let path = `/devices/${device?.id}`
       if (service) path += `/${service.id}`
-      history.push(path)
+      navigate(path)
     }
 
   return (

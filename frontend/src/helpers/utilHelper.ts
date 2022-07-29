@@ -1,3 +1,5 @@
+import { matchPath } from 'react-router-dom'
+
 export function toLookup<T>(array: T[], key: string): ILookup<T> {
   return array.reduce((obj, item) => ({ ...obj, [item[key]]: item }), {})
 }
@@ -23,4 +25,16 @@ export const tagsInclude = (haystack: ILookup<any>[], needle: string) =>
 export const mergeTags = (legacy: ITag[], tags: ITag[]) => {
   const unique = legacy.filter(l => findTagIndex(tags, l.name) === -1) || []
   return tags.concat(unique)
+}
+
+type PathProps = {
+  paths?: string | string[]
+  caseSensitive?: boolean
+  end?: boolean
+}
+
+export const matchPathArray = (props: PathProps, pathname?: string) => {
+  if (!props.paths || !pathname) return false
+  if (typeof props.paths === 'string') props.paths = [props.paths]
+  return props.paths.some(path => matchPath({ path, ...props }, pathname))
 }

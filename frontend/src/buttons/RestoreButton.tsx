@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { emit } from '../services/Controller'
 import { Button, Box } from '@mui/material'
 import { Dispatch } from '../store'
@@ -8,7 +8,7 @@ import { Confirm } from '../components/Confirm'
 
 export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> = ({ device, onClick }) => {
   const [open, setOpen] = useState<boolean>(false)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { ui } = useDispatch<Dispatch>()
 
   return (
@@ -21,7 +21,7 @@ export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> 
         onConfirm={() => {
           ui.set({ restoring: true })
           emit('restore', device.id)
-          history.push('/devices')
+          navigate('/devices')
         }}
         onDeny={() => setOpen(false)}
         title="Restore device from Cloud"

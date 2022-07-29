@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles } from '@mui/styles'
 import { TextField, Typography, Button } from '@mui/material'
@@ -11,7 +11,7 @@ import { Body } from '../components/Body'
 export const OrganizationEmptyPage: React.FC = () => {
   const username = useSelector((state: ApplicationState) => (state.auth.user?.email || '').split('@')[0])
   const [name, setName] = React.useState<string>(`${username}'s org`)
-  const history = useHistory()
+  const navigate = useNavigate()
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -27,7 +27,7 @@ export const OrganizationEmptyPage: React.FC = () => {
           onSubmit={async event => {
             event.preventDefault()
             await dispatch.organization.setOrganization({ name })
-            history.push('/organization')
+            navigate('/organization')
           }}
         >
           <TextField

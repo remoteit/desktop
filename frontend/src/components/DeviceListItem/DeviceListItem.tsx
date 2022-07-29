@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
 import { makeStyles } from '@mui/styles'
 import { Box, ListItemIcon, ListItem } from '@mui/material'
@@ -30,7 +30,7 @@ export const DeviceListItem: React.FC<Props> = ({
   onSelect,
 }) => {
   const connected = connections && connections.find(c => c.enabled)
-  const history = useHistory()
+  const navigate = useNavigate()
   const offline = device?.state === 'inactive'
   const css = useStyles({ offline })
 
@@ -38,7 +38,7 @@ export const DeviceListItem: React.FC<Props> = ({
 
   const handleClick = () => {
     if (select) onSelect && onSelect(device.id)
-    else if (!restore) history.push(`/devices/${device.id}`)
+    else if (!restore) navigate(`/devices/${device.id}`)
   }
 
   return (

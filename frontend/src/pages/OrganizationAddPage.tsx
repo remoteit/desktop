@@ -11,7 +11,7 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationAddPage = () => {
@@ -30,7 +30,7 @@ export const OrganizationAddPage = () => {
   )
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const disabled = !freeLicenses
   const license = freeLicenses ? 'LICENSED' : 'UNLICENSED'
 
@@ -38,7 +38,7 @@ export const OrganizationAddPage = () => {
     analyticsHelper.page('AccountLinkPage')
   }, [])
 
-  const exit = () => history.push(location.pathname.replace('/share', ''))
+  const exit = () => navigate(location.pathname.replace('/share', ''))
   const add = () => {
     dispatch.organization.setMembers(
       emails.map(email => ({

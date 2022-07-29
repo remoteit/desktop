@@ -4,7 +4,7 @@ import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
 import { ShareSaveActions } from '../ShareSaveActions'
 import { TargetPlatform } from '../TargetPlatform'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Gutters } from '../Gutters'
@@ -25,7 +25,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
   const { script, scriptIndeterminate, users, selectedServices } = useSelector(
     (state: ApplicationState) => state.shares.currentDevice || { script, scriptIndeterminate, users, selectedServices }
   )
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const { shares } = useDispatch<Dispatch>()
   const [allowScript, setAllowScript] = useState<boolean>(script)
@@ -69,7 +69,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
     const shareData = mapShareData(share, isNew)
     if (!shareData) return
     await shares.share(shareData)
-    history.goBack()
+    navigate(-1)
   }
 
   const action = () => {
@@ -124,7 +124,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           onClick={handleChangeScripting}
         />
       </List>
-      <ShareSaveActions onCancel={() => history.goBack()} onSave={action} disabled={disabled} />
+      <ShareSaveActions onCancel={() => navigate(-1)} onSave={action} disabled={disabled} />
     </>
   )
 }

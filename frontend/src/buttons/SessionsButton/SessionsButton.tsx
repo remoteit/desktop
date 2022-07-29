@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Typography } from '@mui/material'
 import { selectSessionsByService } from '../../models/sessions'
@@ -16,18 +16,14 @@ interface Props {
 export const SessionsButton: React.FC<Props> = ({ service }) => {
   const sessions = useSelector((state: ApplicationState) => selectSessionsByService(state, service?.id))
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
 
   if (!sessions.length) return null
 
   return (
     <SessionsTooltip service={service} sessions={sessions}>
-      <IconButton
-        color="primary"
-        onClick={() => history.push(`${location.pathname}/${service?.id}/users`)}
-        size="large"
-      >
+      <IconButton color="primary" onClick={() => navigate(`${location.pathname}/${service?.id}/users`)} size="large">
         <Icon name="user" size="md" />
         <Typography className={css.label} variant="caption" color="textPrimary">
           {sessions.length}

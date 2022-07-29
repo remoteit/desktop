@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
+import { RouteArray } from '../components/RouteArray'
 import { DeviceRouter } from './DeviceRouter'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
@@ -48,7 +49,7 @@ import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
 export const Router: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { ui } = useDispatch<Dispatch>()
   const { remoteUI, redirect, thisId, registered, os, layout } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
@@ -62,49 +63,41 @@ export const Router: React.FC = () => {
   useEffect(() => {
     if (redirect) {
       console.log('UI REDIRECT', redirect)
-      history.push(redirect)
+      navigate(redirect)
       ui.set({ redirect: undefined })
     }
-  }, [history, ui, redirect])
+  }, [navigate, ui, redirect])
 
   return (
-    <Switch>
+    <Routes>
       {/* Start */}
-      <Redirect from="/" to="/devices" exact />
+      <Route path="/">
+        <Navigate to="/devices" />
+      </Route>
 
       {/* Deep links */}
-      <Redirect
-        from="/connect/:serviceID"
-        to={{
-          pathname: '/networks/:serviceID',
-          state: { autoConnect: true },
-        }}
-      />
+      <Route path="/connect/:serviceID">
+        <Navigate to="/networks/:serviceID" state={{ autoConnect: true }} />
+      </Route>
 
-      <Redirect
-        from="/launch/:serviceID"
-        to={{
-          pathname: '/networks/:serviceID',
-          state: { autoLaunch: true },
-        }}
-      />
+      <Route path="/launch/:serviceID">
+        <Navigate to="/networks/:serviceID" state={{ autoLaunch: true }} />
+      </Route>
 
-      <Redirect
-        from="/copy/:serviceID"
-        to={{
-          pathname: '/networks/:serviceID',
-          state: { autoCopy: true },
-        }}
-      />
+      <Route path="/copy/:serviceID">
+        <Navigate to="/networks/:serviceID" state={{ autoCopy: true }} />
+      </Route>
 
-      <Redirect from="/connections" to="/networks" />
+      <Route path="/connections">
+        <Navigate to="/networks" />
+      </Route>
 
       {/* Connections */}
       <Route path="/networks">
         <DynamicPanel
           primary={<ConnectionsPage />}
           secondary={
-            <Switch>
+            <Routes>
               <Route path="/networks/view/:networkID/share">
                 <NetworkSharePage />
               </Route>
@@ -125,10 +118,10 @@ export const Router: React.FC = () => {
                 <ConnectionOtherPage />
               </Route>
 
-              <Route path={['/networks/:serviceID/:sessionID', '/networks/:serviceID?']}>
+              <RouteArray paths={['/networks/:serviceID/:sessionID', '/networks/:serviceID?']}>
                 <ConnectionPage />
-              </Route>
-            </Switch>
+              </RouteArray>
+            </Routes>
           }
           layout={layout}
           root="/networks"
@@ -145,9 +138,9 @@ export const Router: React.FC = () => {
       {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
-          <Redirect to={`/devices/${thisId}`} />
+          <Navigate to={`/devices/${thisId}`} />
         ) : isPortal() ? (
-          <Redirect to={`/add/${os}`} />
+          <Navigate to={`/add/${os}`} />
         ) : (
           <Panel layout={layout}>
             <SetupDevice os={os} />
@@ -179,10 +172,10 @@ export const Router: React.FC = () => {
         </Panel>
       </Route>
 
-      <Route path={['/devices', '/devices/welcome']} exact>
+      <RouteArray paths={['/devices', '/devices/welcome']}>
         {remoteUI ? (
           registered ? (
-            <Redirect to={`/devices/${thisId}`} />
+            <Navigate to={`/devices/${thisId}`} />
           ) : (
             <Panel layout={layout}>
               <SetupDevice os={os} />
@@ -193,7 +186,7 @@ export const Router: React.FC = () => {
             <DevicesPage />
           </Panel>
         )}
-      </Route>
+      </RouteArray>
 
       <Route path="/devices/:deviceID/:serviceID?">
         <DeviceRouter layout={layout} />
@@ -224,7 +217,7 @@ export const Router: React.FC = () => {
         <DynamicPanel
           primary={<SettingsPage />}
           secondary={
-            <Switch>
+            <Routes>
               <Route path="/settings/notifications">
                 <NotificationsPage />
               </Route>
@@ -241,10 +234,10 @@ export const Router: React.FC = () => {
                 <TestPage />
               </Route>
 
-              <Route path={['/settings/options', '/settings']}>
+              <RouteArray paths={['/settings/options', '/settings']}>
                 <OptionsPage />
-              </Route>
-            </Switch>
+              </RouteArray>
+            </Routes>
           }
           layout={layout}
           root="/settings"
@@ -257,7 +250,7 @@ export const Router: React.FC = () => {
           <OrganizationMembershipPage />
         </Panel>
       </Route>
-      <Route path={['/organization/roles', '/organization/roles/:roleID']}>
+      <RouteArray paths={['/organization/roles', '/organization/roles/:roleID']}>
         <DynamicPanel
           primary={<OrganizationRolesPage />}
           secondary={
@@ -268,7 +261,7 @@ export const Router: React.FC = () => {
           layout={layout}
           root="/organization"
         />
-      </Route>
+      </RouteArray>
 
       <Route path="/organization/empty">
         <Panel layout={layout}>
@@ -279,12 +272,12 @@ export const Router: React.FC = () => {
       <Route path="/organization">
         <DynamicPanel
           primary={
-            <Route path={['/organization/members/:userID?/:deviceID?', '/organization']}>
+            <RouteArray paths={['/organization/members/:userID?/:deviceID?', '/organization']}>
               <OrganizationPage />
-            </Route>
+            </RouteArray>
           }
           secondary={
-            <Switch>
+            <Routes>
               <Route path="/organization/share">
                 <OrganizationAddPage />
               </Route>
@@ -297,22 +290,22 @@ export const Router: React.FC = () => {
                 <TagsPage />
               </Route>
 
-              <Route path={['/organization/guests/:userID/:deviceID', '/organization/members/:userID/:deviceID']}>
+              <RouteArray paths={['/organization/guests/:userID/:deviceID', '/organization/members/:userID/:deviceID']}>
                 <SharePage />
-              </Route>
+              </RouteArray>
 
-              <Route path={['/organization/guests/:userID', '/organization/members/:userID']}>
+              <RouteArray paths={['/organization/guests/:userID', '/organization/members/:userID']}>
                 <OrganizationGuestPage />
-              </Route>
+              </RouteArray>
 
               <Route path="/organization/guests">
                 <OrganizationGuestsPage />
               </Route>
 
-              <Route path={['/organization', '/organization/members']}>
+              <RouteArray paths={['/organization', '/organization/members']}>
                 <OrganizationMembersPage />
-              </Route>
-            </Switch>
+              </RouteArray>
+            </Routes>
           }
           layout={layout}
           root={['/organization']}
@@ -324,7 +317,7 @@ export const Router: React.FC = () => {
         <DynamicPanel
           primary={<AccountPage />}
           secondary={
-            <Switch>
+            <Routes>
               <Route path="/account/security">
                 <SecurityPage />
               </Route>
@@ -345,10 +338,10 @@ export const Router: React.FC = () => {
                 <AccessKeyPage />
               </Route>
 
-              <Route path={['/account', '/account/overview']}>
+              <RouteArray paths={['/account', '/account/overview']}>
                 <ProfilePage />
-              </Route>
-            </Switch>
+              </RouteArray>
+            </Routes>
           }
           layout={layout}
           root="/account"
@@ -356,7 +349,9 @@ export const Router: React.FC = () => {
       </Route>
 
       {/* Not found */}
-      <Redirect from="*" to="/devices" exact />
-    </Switch>
+      <Route path="*">
+        <Navigate to="/devices" />
+      </Route>
+    </Routes>
   )
 }

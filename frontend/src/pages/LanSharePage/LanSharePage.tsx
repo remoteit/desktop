@@ -9,7 +9,7 @@ import { Container } from '../../components/Container'
 import { getDevices } from '../../models/accounts'
 import { spacing } from '../../styling'
 import { ApplicationState } from '../../store'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
 import { Quote } from '../../components/Quote'
@@ -53,7 +53,7 @@ export const LanSharePage: React.FC = () => {
   })
   const [address, setAddress] = useState<string>(restriction || '192.168.')
   const selected = selections[selection] || {}
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
   const [error, setError] = useState<string>()
   const [disabled, setDisabled] = useState(true)
@@ -85,7 +85,7 @@ export const LanSharePage: React.FC = () => {
       ip: enabledLocalSharing ? currentIp : IP_PRIVATE,
       restriction: getSelectionValue(),
     })
-    history.goBack()
+    navigate(-1)
   }
 
   const handleLocalNetworkSecurity = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +184,7 @@ export const LanSharePage: React.FC = () => {
         <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
           Save
         </Button>
-        <Button onClick={() => history.goBack()}>Cancel</Button>
+        <Button onClick={() => navigate(-1)}>Cancel</Button>
       </div>
     </Container>
   )

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Redirect, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -27,7 +27,7 @@ export const OrganizationPage: React.FC = () => {
     analyticsHelper.page('OrganizationPage')
   }, [])
 
-  if (initialized && !organization.id) return <Redirect to={'/organization/empty'} />
+  if (initialized && !organization.id) return <Navigate to={'/organization/empty'} />
 
   const admin = !!permissions?.includes('ADMIN')
 

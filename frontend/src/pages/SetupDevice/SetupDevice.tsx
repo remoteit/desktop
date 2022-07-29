@@ -4,7 +4,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
 import { TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../models/accounts'
 import { emit } from '../../services/Controller'
@@ -21,7 +21,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
       .map((d: IDevice) => d.name.toLowerCase()),
   }))
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { backend } = useDispatch<Dispatch>()
   const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist) || '')
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
@@ -46,7 +46,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
           if (!name) return
           event.preventDefault()
           backend.registerDevice({ services: selected, name })
-          history.push('/devices/setupWaiting')
+          navigate('/devices/setupWaiting')
         }}
       >
         <section className={css.device}>

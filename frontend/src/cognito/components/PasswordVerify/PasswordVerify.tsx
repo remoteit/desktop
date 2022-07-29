@@ -1,7 +1,7 @@
 import { Box, TextField } from '@mui/material'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Alert } from '../Alert'
 import { AuthLayout } from '../AuthLayout'
 import { Button } from '../Button'
@@ -16,7 +16,7 @@ export type PasswordVerifyProps = {
 
 export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: PasswordVerifyProps): JSX.Element {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const [error, setError] = useState<Error | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
@@ -44,12 +44,7 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
 
     try {
       await onVerifyPasswordChange(localEmail.trim(), password.trim(), shortcode.trim())
-      history.push(`/sign-in`, {
-        alert: {
-          type: 'success',
-          message: t('pages.forgot-password-verify.success-message'),
-        },
-      })
+      navigate(`/sign-in`)
       return
     } catch (error) {
       console.error(error)

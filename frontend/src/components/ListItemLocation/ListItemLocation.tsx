@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ListItem, ListItemIcon, ListItemText, Badge } from '@mui/material'
 import { Color, FontSize, spacing } from '../../styling'
 import { makeStyles } from '@mui/styles'
@@ -47,7 +47,7 @@ export const ListItemLocation: React.FC<Props> = ({
   children,
   ...props
 }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const css = useStyles({ disableIcon: !!disableIcon })
 
@@ -57,7 +57,7 @@ export const ListItemLocation: React.FC<Props> = ({
 
   const onClick = () => {
     if (props.onClick) props.onClick()
-    if (!disabled && pathname) history.push(pathname)
+    if (!disabled && pathname) navigate(pathname)
   }
   const iconEl =
     icon && typeof icon === 'string' ? (

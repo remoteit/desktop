@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { useParams, useHistory, useLocation } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getFreeLicenses, selectRemoteitLicense } from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
 import { Typography, List, Box } from '@mui/material'
@@ -19,7 +19,7 @@ import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 
 export const OrganizationGuestPage: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const { userID = '' } = useParams<{ userID: string }>()
   const dispatch = useDispatch<Dispatch>()
@@ -37,7 +37,7 @@ export const OrganizationGuestPage: React.FC = () => {
   const user = guest || member?.user
 
   useEffect(() => {
-    if (!user) history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
+    if (!user) navigate(location.pathname.replace(REGEX_LAST_PATH, ''))
   }, [user])
 
   return (

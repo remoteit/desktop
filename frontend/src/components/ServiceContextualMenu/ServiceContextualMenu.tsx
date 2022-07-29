@@ -1,6 +1,6 @@
 import React from 'react'
 import { PROTOCOL } from '../../shared/constants'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { CopyButton } from '../../buttons/CopyButton'
 import { getDevices } from '../../models/accounts'
@@ -31,7 +31,7 @@ export const ServiceContextualMenu: React.FC = () => {
     }
   })
   const app = useApplication(service, connection)
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles()
 
   if (!el) return null
@@ -39,7 +39,7 @@ export const ServiceContextualMenu: React.FC = () => {
   const handleClose = () => ui.set({ serviceContextMenu: undefined })
   const handleGo = path => {
     handleClose()
-    history.push(path)
+    navigate(path)
   }
 
   return (

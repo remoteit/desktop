@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useParams, useLocation, useHistory } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, Button } from '@mui/material'
@@ -24,9 +24,9 @@ export const NetworkSharePage = () => {
   const [emails, setEmails] = useState<string[]>([])
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
-  const exit = () => history.push(location.pathname.replace('/share', '/users'))
+  const exit = () => navigate(location.pathname.replace('/share', '/users'))
   const add = async () => {
     setLoading(true)
     await dispatch.networks.shareNetwork({ id: network.id, emails })

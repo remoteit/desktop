@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
 import { makeStyles } from '@mui/styles'
+import { RouteArray } from '../RouteArray'
 import { useMediaQuery, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -99,16 +100,16 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           )}
           {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
         </Title>
-        <Route path={['/devices', '/devices/select']} exact>
+        <RouteArray paths={['/devices', '/devices/select']}>
           <FilterButton />
           <ColumnsButton />
-        </Route>
+        </RouteArray>
         {feature.tagging && editTags && (
           <>
-            <Route path="/devices" exact>
+            <Route path="/devices">
               <IconButton to="/devices/select" icon="check-square" title="Show Select" />
             </Route>
-            <Route path="/devices/select" exact>
+            <Route path="/devices/select">
               <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
             </Route>
           </>

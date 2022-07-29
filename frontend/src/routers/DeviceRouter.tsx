@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Switch, Route, useParams, useHistory } from 'react-router-dom'
+import { RouteArray } from '../components/RouteArray'
+import { Routes, Route, useParams, useNavigate } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { getDeviceModel } from '../models/accounts'
 import { selectDevice } from '../models/devices'
@@ -32,7 +33,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     silent: state.ui.silent,
   }))
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const dispatch = useDispatch<Dispatch>()
   const [loaded, setLoaded] = useState<boolean>(false)
 
@@ -42,13 +43,13 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       if (loaded && !(remoteUI && thisId)) {
         if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
         else dispatch.ui.set({ silent: false })
-        history.push('/devices')
+        navigate('/devices')
       } else if (!loaded) {
         dispatch.devices.fetchSingle({ id: deviceID, hidden: true })
         setLoaded(true)
       }
     }
-  }, [fetching, device, thisId, history])
+  }, [fetching, device, thisId, navigate])
 
   if (fetching && !device) return <LoadingMessage message="Fetching device..." />
 
@@ -56,16 +57,16 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     <DynamicPanel
       primary={<DevicePage device={device} />}
       secondary={
-        <Switch>
+        <Routes>
           <Route path="/devices/:deviceID/add/scan">
             <ScanPage />
           </Route>
           <Route path="/devices/:deviceID/add">
             <ServiceAddPage device={device} />
           </Route>
-          <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
+          <RouteArray paths={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
             <SharePage />
-          </Route>
+          </RouteArray>
           <Route path="/devices/:deviceID/edit">
             <DeviceEditPage device={device} />
           </Route>
@@ -78,18 +79,18 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
           </Route>
-          <Route path={['/devices/:deviceID', '/devices/:deviceID/details']} exact>
+          <RouteArray paths={['/devices/:deviceID', '/devices/:deviceID/details']}>
             <DeviceDetailPage device={device} />
-          </Route>
-          <Route
-            path={[
+          </RouteArray>
+          <RouteArray
+            paths={[
               '/devices/:deviceID/:serviceID/users/share',
               '/devices/:deviceID/:serviceID/users/:userID',
               '/devices/:deviceID/:serviceID/share',
             ]}
           >
             <SharePage />
-          </Route>
+          </RouteArray>
           <Route path="/devices/:deviceID/:serviceID/users">
             <ServiceUsersPage device={device} />
           </Route>
@@ -99,13 +100,13 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/:serviceID/details">
             <ServiceDetailPage device={device} />
           </Route>
-          <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
+          <RouteArray paths={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
             <LanSharePage />
-          </Route>
-          <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
+          </RouteArray>
+          <RouteArray paths={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
             <ServiceConnectPage device={device} />
-          </Route>
-        </Switch>
+          </RouteArray>
+        </Routes>
       }
       layout={layout}
       root="/devices/:deviceID"

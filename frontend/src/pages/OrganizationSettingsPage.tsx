@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { REGEX_DOMAIN_SAFE } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
@@ -65,7 +65,7 @@ export const OrganizationSettingsPage: React.FC = () => {
     dispatch.organization.setSAML({ enabled: false })
   }
 
-  if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
+  if (!permissions?.includes('ADMIN')) return <Navigate to={'/organization'} />
 
   return (
     <Container
@@ -260,5 +260,5 @@ export const OrganizationSettingsPage: React.FC = () => {
         </>
       )}
     </Container>
-  );
+  )
 }

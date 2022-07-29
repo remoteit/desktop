@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
@@ -54,7 +54,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const css = useStyles({ color })
   const contained = variant === 'contained'
   icon = icon || name
@@ -64,7 +64,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   }
   const clickHandler = (e: React.MouseEvent) => {
     if (onClick) onClick(e)
-    if (to) history.push(to)
+    if (to) navigate(to)
   }
   const button = (
     <MuiIconButton

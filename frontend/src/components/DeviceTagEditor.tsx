@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box } from '@mui/material'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { accountFromDevice } from '../models/accounts'
@@ -20,7 +20,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
     }
   })
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   if (!device) return null
 
@@ -33,7 +33,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
         onClick={tag => {
           dispatch.devices.set({ tag: { values: [tag.name] } })
           dispatch.devices.fetch()
-          history.push('/devices')
+          navigate('/devices')
         }}
       />
       {canEdit && (

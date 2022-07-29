@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
 import { ApplicationState } from '../../store'
@@ -14,7 +14,7 @@ import { osName } from '../../shared/nameHelper'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { ownDevice, thisId, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
     ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),
     thisId: state.backend.thisId,
@@ -55,10 +55,10 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
             {restore ? (
               <Typography variant="body2" color="textSecondary">
                 Select a device or
-                <Link onClick={() => history.push('/devices')}>cancel</Link>
+                <Link onClick={() => navigate('/devices')}>cancel</Link>
               </Typography>
             ) : (
-              <Chip label="Restore" size="small" onClick={() => history.push('/devices/restore')} />
+              <Chip label="Restore" size="small" onClick={() => navigate('/devices/restore')} />
             )}
           </ListItemSecondaryAction>
         )}

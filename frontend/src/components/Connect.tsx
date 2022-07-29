@@ -37,7 +37,8 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
   const css = useStyles()
-  const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
+  const location = useLocation()
+  const state = location.state as { autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
@@ -62,10 +63,10 @@ export const Connect: React.FC = () => {
   }, [deviceID])
 
   useEffect(() => {
-    if (!location.state) return
-    if (location.state.autoConnect) dispatch.ui.set({ autoConnect: true })
-    if (location.state.autoLaunch) dispatch.ui.set({ autoLaunch: true })
-    if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
+    if (!state) return
+    if (state.autoConnect) dispatch.ui.set({ autoConnect: true })
+    if (state.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+    if (state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />

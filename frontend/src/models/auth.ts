@@ -79,6 +79,7 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT START', { user })
       if (!user) {
         const authService = new AuthService(authServiceConfig)
+        console.log('AUTH INIT', { authService })
         await sleep(500)
         await dispatch.auth.set({ authService })
         await dispatch.auth.checkSession({ refreshToken: true })

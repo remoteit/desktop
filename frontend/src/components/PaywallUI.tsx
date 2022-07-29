@@ -3,7 +3,7 @@ import { Tooltip, TooltipProps, Box } from '@mui/material'
 import { ApplicationState } from '../store'
 import { selectLimitsLookup } from '../models/organization'
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 type Props = {
   limitName?: string
@@ -22,13 +22,13 @@ export const PaywallUI: React.FC<Props> = ({
   ...props
 }) => {
   const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state))
-  const history = useHistory()
+  const navigate = useNavigate()
 
   if (limits[limitName]) return <>{children}</>
 
   return (
     <Tooltip title={title} placement={placement} enterDelay={600} arrow>
-      <Box {...props} onClick={() => history.push(to)}>
+      <Box {...props} onClick={() => navigate(to)}>
         {children}
       </Box>
     </Tooltip>
