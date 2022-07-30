@@ -29,6 +29,9 @@
     "@mui/x-date-pickers": "^5.0.0-beta.3",
     "@rematch/core": "^2.0.0-next.6",
     "@rematch/immer": "^2.1.3",
+    "@remote.it/components": "^1.1.25",
+    "@remote.it/services": "^0.9.14",
+    "@remote.it/types": "^0.5.2",
     "axios": "^0.21.2",
     "classnames": "2.2.6",
     "date-fns": "^2.16.1",
@@ -49,7 +52,7 @@
     "react-i18next": "^11.18.3",
     "react-phone-input-2": "^2.14.0",
     "react-redux": "^8.0.2",
-    "react-router-dom": "^6.3.0",
+    "react-router-dom": "^5.1.2",
     "react-scripts": "^5.0.1",
     "react-select": "^4.0.2",
     "react-string-replace": "^0.4.4",
@@ -69,6 +72,7 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
+    "@mui/codemod": "^5.8.7",
     "@types/axios": "^0.14.0",
     "@types/classnames": "2.2.9",
     "@types/debug": "^4.1.5",

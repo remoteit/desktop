@@ -1,7 +1,7 @@
+import React from 'react'
 import axios from 'axios'
 import cookie from 'js-cookie'
 import i18n from 'i18next'
-import React from 'react'
 import isEmpty from 'lodash/isEmpty'
 import { AppStoreBanner } from '../AppStoreBanner'
 import { Alert } from '../Alert'
