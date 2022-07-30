@@ -54,7 +54,7 @@ export const App: React.FC = () => {
   if (signedOut)
     return (
       <Page>
-        sign in page...
+        sign in page
         {/* <SignInPage /> */}
       </Page>
     )
@@ -76,7 +76,6 @@ export const App: React.FC = () => {
   )
 }
 
-// neuter
 const useStyles = makeStyles({
   columns: ({ overlapHeader }: any) => ({
     flexGrow: 1,

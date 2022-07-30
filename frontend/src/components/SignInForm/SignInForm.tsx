@@ -9,10 +9,7 @@ import { isPortal } from '../../services/Browser'
 
 export function SignInForm() {
   const { signInError, authService, localUsername } = useSelector((state: ApplicationState) => state.auth)
-  const { appVersion, theme } = useSelector((state: ApplicationState) => ({
-    appVersion: state.binaries.version,
-    theme: state.ui.theme,
-  }))
+  const { appVersion } = useSelector((state: ApplicationState) => ({ appVersion: state.binaries.version }))
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const { auth } = useDispatch<Dispatch>()
 

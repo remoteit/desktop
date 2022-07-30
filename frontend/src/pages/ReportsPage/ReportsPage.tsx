@@ -11,7 +11,7 @@ import { ReportTimeSeriesVis } from '../../components/ReportTimeSeriesVis'
 import { ReportDeviceQualityList } from '../../components/ReportDeviceQualityList'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import { format } from 'date-fns'
-import { LoadingScreen } from '../../cognito/components/LoadingScreen'
+import { LoadingMessage } from '../../components/LoadingMessage'
 
 export const ReportsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -67,7 +67,7 @@ export const ReportsPage: React.FC = () => {
       }
     >
       {fetching ? (
-        <LoadingScreen />
+        <LoadingMessage />
       ) : (
         <>
           <Box display="flex" className={css.container}>

@@ -1,5 +1,5 @@
 import { ICredentials } from '@aws-amplify/core'
-import Auth, { CognitoHostedUIIdentityProvider } from '@aws-amplify/auth'
+import { CognitoHostedUIIdentityProvider, Auth } from '@aws-amplify/auth'
 import {
   AuthProvider,
   CodeDeliveryDetails,
@@ -42,7 +42,7 @@ export class AuthService {
 
   constructor(config: Partial<Config>) {
     this.config = this.combineConfig(config)
-    this.cognitoAuth = this.configureCognito(this.config)
+    this.cognitoAuth = this.configureCognito()
   }
 
   public async checkSaml(username: string): Promise<SamlOrgResult> {
@@ -87,7 +87,7 @@ export class AuthService {
       if (!email) throw new Error('no cognito email exists for this user')
 
       // TODO: this is duplicated also in CognitoAuth.tsx, cleanup
-      cognitoUser.authProvider = this.determinAuthProvider(cognitoUser)
+      cognitoUser.authProvider = this.determineAuthProvider(cognitoUser)
 
       // Check for session
       let currentSession = await this.currentCognitoSession()
@@ -137,7 +137,7 @@ export class AuthService {
     // this.user = { cognitoUser, remoteitUser: undefined }
 
     if (cognitoUser) {
-      cognitoUser.authProvider = this.determinAuthProvider(cognitoUser)
+      cognitoUser.authProvider = this.determineAuthProvider(cognitoUser)
     }
 
     this.cognitoUser = cognitoUser
@@ -394,7 +394,7 @@ export class AuthService {
   //   return { ...remoteitUser, partnerPortalAccess }
   // }
 
-  private determinAuthProvider(cognitoUser: CognitoUser): AuthProvider {
+  private determineAuthProvider(cognitoUser: CognitoUser): AuthProvider {
     let authProvider: AuthProvider = ''
     if (cognitoUser?.username?.includes('Google') || cognitoUser?.username?.includes('google')) {
       authProvider = 'Google'
@@ -406,7 +406,9 @@ export class AuthService {
     return authProvider
   }
 
-  private configureCognito(config: Config): any {
+  private configureCognito() {
+    const config = this.config
+
     Auth.configure({
       Auth: {
         mandatorySignIn: true,
