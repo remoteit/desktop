@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { CssBaseline } from '@mui/material'
 import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
+import { Layout } from './components/Layout'
 import { store } from './store'
 import heartbeat from './services/Heartbeat'
 import analyticsHelper from './helpers/analyticsHelper'
@@ -12,7 +13,6 @@ import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
-import { Layout } from './components/Layout'
 
 analyticsHelper.setup()
 
