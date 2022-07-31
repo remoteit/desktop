@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { CognitoUser } from '@remote.it/types'
-// import { CognitoAuth } from '../../cognito/components/CognitoAuth'
+import { CognitoUser } from '../../cognito/types'
+import { CognitoAuth } from '../../cognito/components/CognitoAuth'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { CHECKBOX_REMEMBER_KEY } from '../../models/auth'
@@ -40,18 +40,19 @@ export function SignInForm() {
 
   console.log('DESKTOP SIGN IN FORM RENDER')
 
-  return null
-  // <CognitoAuth
-  //   fullWidth
-  //   hideCaptcha
-  //   showCheckboxRemember
-  //   authService={authService}
-  //   checkedCheckboxRemember={rememberMe}
-  //   errorMessage={signInError}
-  //   inputEmail={localUsername}
-  //   onClickCheckboxRemember={onClickCheckboxRemember}
-  //   onSignInSuccess={onSignInSuccess}
-  //   segmentSettings={segmentSettings}
-  //   // themeOverride={theme} // MUI V4 theme
-  // />
+  return (
+    <CognitoAuth
+      fullWidth
+      hideCaptcha
+      showCheckboxRemember
+      authService={authService}
+      checkedCheckboxRemember={rememberMe}
+      errorMessage={signInError}
+      inputEmail={localUsername}
+      onClickCheckboxRemember={onClickCheckboxRemember}
+      onSignInSuccess={onSignInSuccess}
+      segmentSettings={segmentSettings}
+      // themeOverride={theme} // MUI V4 theme
+    />
+  )
 }

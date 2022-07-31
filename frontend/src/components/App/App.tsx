@@ -54,8 +54,7 @@ export const App: React.FC = () => {
   if (signedOut)
     return (
       <Page>
-        sign in page
-        {/* <SignInPage /> */}
+        <SignInPage />
       </Page>
     )
 
