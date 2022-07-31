@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { CognitoUser } from '../../cognito/types'
-import { CognitoAuth } from '../../cognito/components/CognitoAuth'
+import { CognitoUser } from '@remote.it/types'
+// import { CognitoAuth } from '../../cognito/components/CognitoAuth'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { CHECKBOX_REMEMBER_KEY } from '../../models/auth'
@@ -9,10 +9,7 @@ import { isPortal } from '../../services/Browser'
 
 export function SignInForm() {
   const { signInError, authService, localUsername } = useSelector((state: ApplicationState) => state.auth)
-  const { appVersion, theme } = useSelector((state: ApplicationState) => ({
-    appVersion: state.binaries.version,
-    theme: state.ui.theme,
-  }))
+  const appVersion = useSelector((state: ApplicationState) => state.binaries.version)
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const { auth } = useDispatch<Dispatch>()
 
@@ -43,19 +40,18 @@ export function SignInForm() {
 
   console.log('DESKTOP SIGN IN FORM RENDER')
 
-  return (
-    <CognitoAuth
-      fullWidth
-      hideCaptcha
-      showCheckboxRemember
-      authService={authService}
-      checkedCheckboxRemember={rememberMe}
-      errorMessage={signInError}
-      inputEmail={localUsername}
-      onClickCheckboxRemember={onClickCheckboxRemember}
-      onSignInSuccess={onSignInSuccess}
-      segmentSettings={segmentSettings}
-      // themeOverride={theme} // MUI V4 theme
-    />
-  )
+  return null
+  // <CognitoAuth
+  //   fullWidth
+  //   hideCaptcha
+  //   showCheckboxRemember
+  //   authService={authService}
+  //   checkedCheckboxRemember={rememberMe}
+  //   errorMessage={signInError}
+  //   inputEmail={localUsername}
+  //   onClickCheckboxRemember={onClickCheckboxRemember}
+  //   onSignInSuccess={onSignInSuccess}
+  //   segmentSettings={segmentSettings}
+  //   // themeOverride={theme} // MUI V4 theme
+  // />
 }
