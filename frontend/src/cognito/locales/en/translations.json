@@ -9,94 +9,19 @@
       "continue-signup": "Continue to sign in"
     },
     "actions": {
-      "add": "Add",
-      "back": "Back",
       "cancel": "Cancel",
-      "close": "Close",
-      "delete": "Delete",
-      "download": "Download",
-      "downloads": "Downloads",
-      "edit": "Edit",
-      "error": "Error: {{message}}",
-      "filter": "Filter",
-      "loading": "Loading...",
-      "next": "Next",
-      "refresh": "Refresh List",
-      "results": "{{count}} of {{total}}",
-      "save": "Save",
-      "share": "Share",
       "signing-in": "Signing you in...",
-      "sort": "Sort",
       "submit": "Submit"
-    },
-    "collapse-sidebar-message": "Show/hide sidebar",
-    "experience-toggle": {
-      "disable-message": "Disable the \"{{ experience }}\" experience",
-      "enable-message": "Enable the \"{{ experience }}\" experience"
-    },
-    "formatting": {
-      "sentence": {
-        "and": " and ",
-        "delimiter": ", ",
-        "or": " or "
-      }
-    },
-    "notices": {
-      "error": "An error has occurred.",
-      "last-updated": "Updated {{time}}"
-    },
-    "status": {
-      "connect": "Connect",
-      "connecting": "Connecting",
-      "offline": "Offline",
-      "online": "Online"
-    },
-    "tables": {
-      "headers": {
-        "date": "Date",
-        "message": "Message"
-      },
-      "no-search-results": "No results found, please try another search."
     },
     "user": {
       "email": "Email",
-      "new-password-confirm-placeholder": "Enter your new password again",
-      "new-password-placeholder": "Enter your new password",
       "password": "Password",
-      "password-confirm": "Confirm Password",
-      "password-confirm-placeholder": "Enter your password again",
-      "password-current": "Current Password",
-      "password-current-placeholder": "Enter your current password",
-      "password-placeholder": "Enter a password",
-      "username": "Email or Username"
+      "password-confirm": "Confirm Password"
     }
   },
   "pages": {
-    "account-change-email": {
-      "textblock": "Select your preferred language for remote.it emails. This does not change the language for the remote.it web application. Changes will take effect immediately for any emails sent after a language is selected.",
-      "title": "Change email language"
-    },
-    "account-delete-section": {
-      "foot": "Deletion requests take 3 to 5 business days to complete.",
-      "paidplan": "You have a paid subscription plan. Please delete or transfer your devices before making an account deletion request.",
-      "textblock": "If you no longer want/need your remote.it account, you can request an account deletion. Once your delete request is processed, all your account information is removed permanently.",
-      "title": "Delete account"
-    },
-    "account-developer-API-Keyl": {
-      "textblock": "This is your unique Developer API Key to use and access remote.it APIs.",
-      "title": "Developer API Key"
-    },
-    "account-plan-section": {
-      "caption1": "* Devices are virtual (like AWS EC2) or physical (like Raspberry Pi, Nvidia Jetson, Windows PC, etc)",
-      "caption2": "Pricing is represented and billed in US$ on most popular credit cards."
-    },
-    "account-profile-picture-section": {
-      "textblock": "Your profile picture is imported from the free service Gravatar.",
-      "textblock2": "To edit or add a profile image please visit",
-      "title": "Profile Picture"
-    },
     "account-recovery": {
-      "account-recovery-code": "            If you can’t access your mobile device to receive the two-factor\n            verification code, you can use a verification code that will be sent\n            to your email and the recovery code provided when you enabled\n            two-factor authentication.",
+      "account-recovery-code": "If you can’t access your mobile device to receive the two-factor\n            verification code, you can use a verification code that will be sent\n            to your email and the recovery code provided when you enabled\n            two-factor authentication.",
       "description": "We sent a login code to your email. Enter both the login code and the recovery code below",
       "email-recovery-code-placeholder": "Enter login Code",
       "lost-recovery-code": "If you can’t access your mobile device or recovery code you can request a reset of your authentication settings. For security reasons this can take 1-3 business days.",
@@ -104,229 +29,38 @@
       "lost-recovery-code-heading": "Lost your mobile device and recovery codes?",
       "recovery-code-placeholder": "Enter Recovery Code",
       "start-recovery": "Start Recovery",
-      "success-message": "Sucessfully logged in. <1>Update your two-factor preferences</1>",
       "title": "Two-Factor Account Recovery"
     },
     "auth-mfa-totp": {
-      "backup": "Backup this code in case of a lost authenticator device",
-      "code": "Code:",
       "invalid-code": "Invalid Code",
-      "setup-button": "Setup TOTP",
-      "short-description": "TOTP Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to sign in.",
-      "title": "TOTP Two-Factor Authentication",
-      "verified-description": "TOTP App has been verified and Enabled.",
-      "verify-button": "Verify TOTP",
-      "verify-description": "Scan the QR Code below with a TOTP App like 'Auth OTP' on iOS. 'andOTP' on Android and Google Authenticator."
+      "title": "TOTP Two-Factor Authentication"
     },
     "auth-mfa": {
-      "2FA-active-warning": "You have enabled 2FA on your account, the interactive installer and WCM applications will not be able to sign in. Switch to using the CLI and Desktop applications or disable 2FA to continue using WCM or the interactive installer.",
-      "2FA-warning": "If you enable 2FA on your account, the interactive installer and WCM applications will no longer be able to sign in. If this happens, disable 2FA or switch to using the CLI and Desktop applications.",
-      "configure-info": "Configure your Two-Factor Authentication by choosing a verification method:",
-      "description": "Two-factor authentication, or 2FA, is an extra layer of security used when signing into websites or apps. With 2FA, you sign in with your username and password and provide another form of authentication that only you know or have access to.",
-      "description2": "For remote.it, the second form of authentication is a code sent to your mobile device as a text message (SMS). After you enable 2FA, an authentication code is generated any time someone attempts to sign into your remote.it account. The only way someone can sign into your account is if they know both your password and have access to the authentication code on your mobile device.",
-      "disable-button": "TURN OFF",
-      "enable-button": "Turn on",
-      "enter-phone-number": "Enter your mobile number so we can send you the verification code",
       "errors": {
         "BACKUP_CODE_INVALID": "Invalid Backup Code",
-        "CodeMismatchException": "Invalid verification code provided, please try again.",
-        "ConcurrentModificationException": "Failed to update, there are multiple requests to update your account at the same time.",
-        "DeveloperUserAlreadyRegisteredException": "The provided account user identifier is already registered with Cognito under a different identity ID.",
-        "EMAIL_CODE_INVALID": "Invalid Email Code",
-        "ExpiredCodeException": "Invalid or expired code provided, please check the code or request a code again. Verification codes are valid for 24 hours.",
-        "ExternalServiceException": "Sign in failed, could not connect to the authentication provider.",
-        "InternalErrorException": "There was a error while processing your request. Please try again. If this issue persists, please contact support@remote.it",
-        "InvalidIdentityPoolConfigurationException": "The identity pool has no role associated for the given auth type (auth/unauth) or the AssumeRole failed.",
-        "InvalidParameterException": "Invalid number provided.",
-        "InvalidPasswordException": "Invalid password, the password supplied does not conform to the password requirements",
-        "LimitExceededException": "Attempt limit exceeded, please wait and then try again.",
-        "NotAuthorizedException": "Not authorized. If submitting a verification code, the code has expired",
-        "ResourceConflictException": "Failed to sign in, the email is already linked to another account",
-        "ResourceNotFoundException": "The account does not exist"
+        "EMAIL_CODE_INVALID": "Invalid Email Code"
       },
       "having-problems": "Having Problems?",
-      "is-google-user": "You are signed in with your Google account. You can enable two-factor authentication in your Google account settings. If you also have remote.it login and password, you can sign in with those credentials and then enable two-factor authentication.",
-      "learn-more": "Learn more",
       "mfa-verification-sent": "A verification code has been sent to your mobile device. {{number}} This code is only valid for 3 minutes.",
       "no-device-access": "Can't access your two-factor device",
-      "old-verification-sent": "A verification code had previously been sent to your mobile device. A code is only valid for 24 hours; please request the code again if it has been over 24 hours since requested.",
-      "phone-country-search-placeholder": "Search",
-      "phone-number-placeholder": "Enter your mobile number",
-      "phone-tip-info": "remote.it will only use this number for account security. Message and data rates may apply.",
-      "phone-update-warning": "Updating your mobile device number will disable two-factor authentication until the number is verified.",
-      "phone-verified": "Your mobile device is verified.",
-      "recovery-code-description": "The recovery code is used to access your account in the event you cannot receive two-factor authentication codes.",
-      "recovery-code-label": "Code:",
-      "recovery-code-title": "Recovery Code",
-      "recovery-code-warning": "Treat your recovery code with the same level of attention as you would your password.",
-      "resend-verification-code": "Didn't receive the verification code?",
-      "resend-verification-code-button": "Resend Verification Code",
-      "short-description": "Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to sign in.",
       "title": "SMS Two-Factor Authentication",
-      "toggleMFA-message": "Two-Factor Authentication is",
-      "toggleMFA-message-false": "Two-factor authentication is now disabled",
-      "toggleMFA-message-true": "Two-factor authentication is now enabled",
       "totp-mfa-verification": "Enter the one-time password generated by your authentication app.",
-      "totp": {
-        "generate": "Generate new QR Code",
-        "info": "Scan the QR below with your preferred Authenticator app to configure.",
-        "verification-code-placeholder": "Enter TOTP code"
-      },
-      "update-mfa-phone-number": "Change your verification phone number",
-      "update-phone-number": "Update your mobile device number and send verification code.",
-      "verification-code-placeholder": "Enter verification code",
-      "verification-sent": "A verification code has been sent to your mobile device. {{number}} This code is only valid for 24 hours.",
-      "verification-success": "Your mobile device is verified. Two-factor authentication is now enabled"
+      "verification-code-placeholder": "Enter verification code"
     },
     "auth": {
       "create-account": {
-        "are-you-human": "Are you human?",
         "button-label": "Create Account"
       }
     },
-    "change-password": {
-      "errors": {
-        "ConcurrentModificationException": "Failed to update, there are multiple requests to update your account at the same time.",
-        "ExternalServiceException": "Sign in failed, could not connect to the authentication provider.",
-        "InternalErrorException": "There was a error while processing your request. Please try again. If this issue persists, please contact support@remote.it",
-        "InvalidIdentityPoolConfigurationException": "The identity pool has no role associated for the given auth type (auth/unauth) or the AssumeRole failed.",
-        "InvalidPasswordException": "Failed to change password. The current password was not correct.",
-        "LimitExceededException": "Attempt limit exceeded, please wait and then try again.",
-        "NotAuthorizedException": "Failed to change password. The current password was not correct."
-      },
-      "is-google-user": "You are signed in with your Google account. You can change your password in your Google account settings. If you also have remote.it login and password, you can sign in with those credentials and then change your password.",
-      "signout-all-button": "Sign Out Everywhere",
-      "signout-all-text": "Current sessions will remain active. If you have experienced a security breach, signing out everywhere is recommended.",
-      "success": "Password Changed Successfully",
-      "title": "Change Password",
-      "update-password-button": "Change Password"
-    },
     "contact-selector": {
-      "create-contact": "Create contact <{{email}}>",
-      "create-contact-link": "Click here to create one.",
-      "create-contact-success": "<{{contact}}> has been created as a contact. An invitation has been sent to join remote.it",
-      "has-contacts-not-selectable": "You have contacts who have not created an account yet. These contacts cannot be selected.",
-      "has-no-contacts": "You haven't created any contacts.",
-      "has-no-remove-contacts": "You have not shared the selected devices with anyone.",
-      "has-no-selectable-contacts": "You do not have any contacts which can be added. Contacts who have not created an account yet cannot be selected.",
-      "has-no-selectable-contacts-body": "Please visit the Contacts page to add contacts before attempting to share. They must first create an account before you will see them in this list.",
-      "has-no-selectable-contacts-heading": "You have no contacts that you can share with yet.",
-      "placeholder": {
-        "multi": "Select contacts to share with...",
-        "remove": "Select contacts to remove",
-        "single": "Enter contact for suggestions or select from the list"
-      },
       "selected-devices": {
-        "add-shareWithCount": "You are adding connection access to {{count}} selected device",
         "add-shareWithCount_plural": "You are adding connection access to {{count}} selected devices",
-        "noQualifiedDevices": "You are not the owner of any of the selected devices. Please select other devices.",
-        "rejectedDevices": "You are not the owner of {{devicelist}}. Devices which you do not own are excluded.",
-        "remove-shareWithCount": "You are revoking connection access to {{count}} selected device",
         "remove-shareWithCount_plural": "You are revoking connection access to {{count}} selected devices",
-        "transfer-deviceWithCount": "You are transferring {{count}} selected device",
         "transfer-deviceWithCount_plural": "You are transferring {{count}} selected devices"
       }
     },
-    "contacts": {
-      "cancel-changes-tooltip": "Cancel changes to this contact",
-      "contact-button-label": {
-        "create": "Create Contact",
-        "update": "Update Contact"
-      },
-      "contact-form-fields": {
-        "email": "Email address",
-        "first-name": "First name",
-        "group": "Group name",
-        "language": "Language",
-        "last-name": "Last name"
-      },
-      "contact-search-label": "Search contacts by name or email...",
-      "create-contact-dialog-title": "Create Contact",
-      "invite-sent": "remote.it account invite sent. The user must accept it before you can share to them",
-      "invite-user-label": "Send this user an invite to create a remote.it account as they do not have one yet",
-      "loading-message": "Loading contacts...",
-      "remove-contact-tooltip": "Remove this contact. Will not unshare any devices or delete the associated remote.it account.",
-      "save-contact-invite-help-text": "NOTE: If no remote.it user with this email exists yet, an invitation email will be sent automatically.",
-      "show-edit-form-tooltip": "Edit this contact",
-      "ungrouped-label": "No Group"
-    },
-    "device-detail": {
-      "connect-button-label": "Connect",
-      "connecting-message": "Connecting to service...",
-      "connection-trouble-body": "A few reasons that you may not be able to connect:\n\n- The device is offline or not connected to the internet.\n- It is in the process off booting up and remote.it has not detected it online yet.\n- The remote.it process is not running on the device. It may need to be started/restarted in that case.\n\nMobile providers may use multiple source IP addresses. You may need to disable IP restrictions to connect to your devices from these platforms. NOTE: IP restriction will remain off for the duration of the connection.\n\nIf you are still experiencing issues, please contact support.",
-      "connection-trouble-heading": "Troubleshooting connections",
-      "device-id-label": "Device ID",
-      "edit-device-name-button-label": "Edit device name",
-      "make-public-checkbox-label": "Make connections public (IP Restriction will be disabled)",
-      "make-public-help-heading": "What does making a connection public do?",
-      "no-services-message": "This device does not have any services yet.",
-      "service-id-label": "Service ID"
-    },
-    "device-list": {
-      "device-id-label": "Device ID",
-      "location-label": "Device location"
-    },
-    "device-share": {
-      "add": "Share",
-      "add-description": "Select contacts and click add (changes will not be saved yet). You then can modify permissions for ports and scripting, then save when finished.",
-      "allow": "Allow the selected contacts access",
-      "allow-scripting": "Allow selected contacts to execute scripts on the selected devices",
-      "cancel-changes-label": "Cancel sharing changes",
-      "contact": "Contact",
-      "create-share-failed": "Failed to add sharing permissions.",
-      "create-share-success": "Successfuly added sharing permissions.",
-      "device-no-shares-body": "Please select contacts you would like to share this device with on the \"Share\" page.",
-      "device-no-shares-heading": "You have not shared this device with any contacts.",
-      "edit": "Manage Sharing",
-      "edit-share-label": "Edit sharing with {{ email }}",
-      "fetching-loading-message": "Loading sharing information...",
-      "fetching-share-failed": "Failed to get sharing information for this device. Message: {{message}}",
-      "pending-changes": "Changes have not been saved yet. Verify ports and/or scripting permissions before saving.",
-      "remove": "Remove",
-      "remove-script-execution-label": "Disable script execution for {{email}}",
-      "remove-script-execution-label-new": "Disable script execution",
-      "remove-service-sharing-label": "Disable {{serviceName}} connection access for {{email}}",
-      "remove-service-sharing-label-new": "Disable {{serviceName}} connection access",
-      "remove-share-failed": "Failed to remove sharing for {{email}}",
-      "remove-share-label": "Stop sharing with {{email}}",
-      "remove-share-success": "Successfully removed sharing for {{email}}",
-      "save-changes-label": "Save sharing changes",
-      "script-description": "Script Execution allows the contact to run scripts of any nature against the device",
-      "script-execution": "Script Execution",
-      "script-execution-help-body": "By selecting this, you will allow the user to have the ability to run scripts on your device. This is a security risk, so make sure you trust the user before giving them this permission.",
-      "script-execution-help-heading": "Share Scripting with Caution",
-      "script-execution-label": "Enable script execution for {{email}}",
-      "script-execution-label-new": "Enable script execution",
-      "scripting-enabled-icon-label": "Sharing ability to execute scripts",
-      "select-services-checkboxes-label": "Select ports to share:",
-      "service-sharing-label": "Enable {{serviceName}} connection access for {{email}}",
-      "service-sharing-label-new": "Enable {{serviceName}} connection access",
-      "share-contactslist-failed": "Failed to get contacts for the selected devices. Message: {{message}}",
-      "share-info": "Changes take several seconds per device to complete. An email will be sent to you and the other user(s) after changes are applied to both accounts.",
-      "share-initial-message-body": "You can choose any contact in your \"Contacts\" list that has a remote.it account. If they don't have a remote.it account, they won't show up in the list above..",
-      "share-initial-message-heading": "Please select contacts you'd like to share this device with.",
-      "shared-contacts": "Shared With The Following Contacts",
-      "shared-service-count-icon-label": "Sharing {{ shared }} of {{ total }} ports",
-      "staged-remove-shares": "Contacts to remove sharing",
-      "stopping-sharing-message": "Stopping sharing with \"{{ email }}\"",
-      "title": "Manage \"{{deviceName}}\" sharing",
-      "undo-remove-share": "Undo remove {{email}}",
-      "update-share-failed": "Failed to update sharing permissions for {{email}}",
-      "update-share-success": "Successfuly updated sharing permissions for {{email}}"
-    },
-    "device-transfer": {
-      "confirmation-dialog": {
-        "cancel": "NO, Cancel",
-        "confirm": "YES, Transfer",
-        "description": "Are you sure you want to transfer the device(s)",
-        "description2": "The device(s) will permanently be removed from your account. There is no undo.",
-        "title": "ARE YOU SURE?"
-      },
-      "transfer-alert": "WARNING: Transferring a device completely removes it from your account. You will no longer have any access or control over the device."
-    },
     "forgot-password-verify": {
       "password-error": {
-        "invalid": "Please fix the following problems:",
         "missing-lower": "The password must contain an lowercase letter.",
         "missing-number": "The password must contain a number.",
         "missing-special-char": "The password must contain at least one of the the following characters ",
@@ -338,13 +72,7 @@
       "password-rules": "Passwords must be {{min_length}}-{{max_length}} characters, contain a number, an uppercase and lowercase letter, and at least one of the the following characters ",
       "password-rules-reduced": "Passwords must be {{min_length}}-{{max_length}} characters.",
       "password-strength-html": "Password Strength: {{strength}}",
-      "password-strength-score": [
-        "Very Weak",
-        "Weak",
-        "Fair",
-        "Good",
-        "Strong"
-      ],
+      "password-strength-score": ["Very Weak", "Weak", "Fair", "Good", "Strong"],
       "success-message": "Your password has been reset, please sign in",
       "title": "Verify Your Account",
       "verification-link-message": "An email verification link has been sent to you. Click the link and return here. Then press continue to sign in."
@@ -354,90 +82,6 @@
       "reset-password": "Reset Password",
       "title": "Forgot Password"
     },
-    "global-signout": {
-      "signout-all-button": "Sign Out Everywhere",
-      "text": "Use this option if you would like to sign out all logins to this account.",
-      "title": "Global Sign Out"
-    },
-    "logs": {
-      "deleted": "{{id}} (deleted)",
-      "event-types-title": {
-        "DEVICE_CONNECT_connected": "Device Connected",
-        "DEVICE_CONNECT_disconnected": "Device Disconnected",
-        "DEVICE_SHARE_false": "Device Share Removed",
-        "DEVICE_SHARE_true": "Device Shared",
-        "DEVICE_STATE_active": "Device Online",
-        "DEVICE_STATE_inactive": "Device Offline",
-        "NOTIFICATION_EMAIL": "Notification Sent"
-      },
-      "filter-type-options": {
-        "DEVICE_SHARE": "Sharing",
-        "DEVICE_STATE": "Online/Offline",
-        "all": "All"
-      },
-      "filter": {
-        "type": "Filter Event Type"
-      },
-      "headers": {
-        "date": "Date",
-        "message": "Message"
-      },
-      "loading-message": "Loading event logs...",
-      "messages": {
-        "DEVICE_CONNECT": {
-          "connected": "{{user}} connected to {{device}}",
-          "connected_self": "You connected to {{device}}",
-          "disconnected": "{{user}} disconnected from {{device}}",
-          "disconnected_self": "You disconnected from {{device}}"
-        },
-        "DEVICE_SHARE": {
-          "add": {
-            "owner-messages": {
-              "by-owner-no-scripting": "You shared {{devices}} and restricted script execution with {{users}}",
-              "by-owner-no-scripting_plural": "You shared {{devices}} and restricted script execution with {{users}}",
-              "by-owner-scripting": "You shared {{devices}} and allowed script execution with {{users}}",
-              "by-owner-scripting_plural": "You shared {{devices}} and allowed script execution with {{users}}"
-            },
-            "recipient-messages": {
-              "by-owner-no-scripting": "{{owner}} shared {{devices}} and restricted script execution with you",
-              "by-owner-no-scripting_plural": "{{owner}} shared {{devices}} and restricted script execution with you",
-              "by-owner-scripting": "{{owner}} shared {{devices}} and allowed script execution with you",
-              "by-owner-scripting_plural": "{{owner}} shared {{devices}} and allowed script execution with you"
-            }
-          },
-          "remove": {
-            "owner-messages": {
-              "by-owner": "You removed sharing of {{devices}} with {{users}}",
-              "by-owner_plural": "You removed sharing of {{devices}} with {{users}}",
-              "by-user": "{{user}} left the shared device {{devices}}"
-            },
-            "recipient-messages": {
-              "by-owner": "{{owner}} removed sharing of {{devices}} with you",
-              "by-owner_plural": "{{owner}} removed sharing of {{devices}} with you",
-              "by-user": "You left the shared device {{devices}}"
-            }
-          }
-        },
-        "DEVICE_STATE": {
-          "active": "{{device}} came online",
-          "inactive": "{{device}} went offline"
-        }
-      },
-      "no-logs": "You do not have any events logged yet",
-      "title": "Logs"
-    },
-    "notification-subscriptions": {
-      "description": "Receive email notifications when a device goes online or offline",
-      "fetch-failed": "Failed to get device notification subscription information: {{message}}",
-      "labels": {
-        "my-devices-active": "Notifications are active for your devices",
-        "my-devices-inactive": "Notifications are disabled for your devices",
-        "my-shared-active": "Notifications are active for devices shared with you",
-        "my-shared-inactive": "Notifications are disabled for devices shared with you"
-      },
-      "title": "Notifications",
-      "update-failed": "Failed to update notification subscription: {{message}}"
-    },
     "password-reset": {
       "cognito-reset-password-required": "For security purposes, we require users to change their passwords periodically. A verification code has been sent to {{email}}, please check your email then enter the verification code and update your password.",
       "signout-all-text": "Current sessions will remain active. If you have experienced a security breach, signing out everywhere is recommended.  To sign out everywhere, sign in to app.remote.it and then go to the accounts page to sign out everywhere.",
@@ -445,16 +89,9 @@
       "verification-code": "Verification Code",
       "verification-code-message": "A verification code has been sent to {{email}}, please check your email then enter the verification code and update your password."
     },
-    "sharing": {
-      "save-contact-tooltip": "Save changes to contact"
-    },
-    "sign-i": {
-      "sign-up-link": "pages.sign-i.sign-up-link"
-    },
     "sign-in": {
       "create-account": "Don't have an account yet?",
       "forgot-password": "Forgot your password?",
-      "google-sign-in": "Google Sign In",
       "notice2": {
         "link": "update your password",
         "part1": "If this is your first sign-in since 3:00 PM August 4, 2020 PDT (22:00 UTC) visit our ",
@@ -465,7 +102,6 @@
       "sign-in": "Sign In",
       "sign-up-link": "Sign up for free!",
       "signing-in": "Signing In...",
-      "title": "Sign In",
       "user-password-link": "Username/Password Login"
     },
     "sign-up": {
@@ -480,12 +116,5 @@
       "resend-confirmation": "Resend account confirmation.",
       "verification-received-message": "Didn’t receive your verification link?"
     }
-  },
-  "quick-connect": {
-    "no-available-services": "This device has no services to connect to."
-  },
-  "share-icon": {
-    "leave-device-message": "Leave {{ owner }}'s device",
-    "manage-sharing-message": "Manage sharing for this device"
   }
 }
