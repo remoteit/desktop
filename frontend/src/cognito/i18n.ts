@@ -3,15 +3,13 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import enTranslation from './locales/en/translations.json'
 
 i18n.use(LanguageDetector).init({
-  fallbackLng: {
-    //'ja-JP': ['ja', 'en'],
-    'en-US': ['en'],
-    default: ['en'],
-  },
+  fallbackLng: 'en',
   debug: false,
+  ns: ['cognito'],
+  defaultNS: 'cognito',
   interpolation: { escapeValue: false },
   react: { useSuspense: false },
-  resources: { en: enTranslation },
+  resources: { en: { cognito: enTranslation } },
 })
 
 export default i18n
