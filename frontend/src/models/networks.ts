@@ -8,6 +8,7 @@ import { selectById } from '../models/devices'
 import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
+  graphQLUpdateNetwork,
   graphQLAddConnection,
   graphQLRemoveConnection,
   graphQLAddNetworkShare,
@@ -270,12 +271,16 @@ export default createModel<RootModel>()({
         return
       }
 
-      let networks = state.networks.all[id] || []
+      let networks: INetwork[] = state.networks.all[id] || []
       const index = networks.findIndex(network => network.id === params.id)
-      if (index >= 0) networks[index] = { ...networks[index], ...params }
-      else networks.push(params)
 
-      dispatch.networks.setNetworks(networks)
+      if (index >= 0) {
+        const network = { ...networks[index], ...params }
+        const response = await graphQLUpdateNetwork(network)
+        if (response === 'ERROR') return
+        networks[index] = network
+        dispatch.networks.setNetworks(networks)
+      } else dispatch.networks.addNetwork(params)
     },
     async setNetworks(networks: INetwork[], state) {
       const id = getActiveAccountId(state)
