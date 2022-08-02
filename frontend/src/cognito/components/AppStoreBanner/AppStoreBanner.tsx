@@ -2,7 +2,7 @@ import { Box, IconButton } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import cookies from 'js-cookie'
 import React, { useState } from 'react'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 import { AndroidBadge } from './AndroidBadge'
 import { IOSBadge } from './IOSBadge'
 

@@ -1,7 +1,7 @@
 import { Button as MUIButton, ButtonProps as MUIButtonProps } from '@mui/material'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 
 export type ButtonProps = MUIButtonProps & {
   href?: string

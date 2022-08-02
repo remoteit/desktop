@@ -1,8 +1,7 @@
-import { Box, TextField, List, ListItem, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import React, { useState } from 'react'
+import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
-import { colors } from '../../styles/variables'
+import { Box, TextField, Typography } from '@mui/material'
 import zxcvbn from 'zxcvbn'
 
 const PASSWORD_MIN_LENGTH = process.env.PASSWORD_MIN_LENGTH ? Number(process.env.PASSWORD_MIN_LENGTH) : 7
@@ -149,7 +148,7 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
           InputProps={{ disableUnderline: true }}
           helperText={
             error ? (
-              <span>
+              <Typography variant="caption">
                 {tooShort &&
                   t('pages.forgot-password-verify.password-error.too-short', {
                     min_length: PASSWORD_MIN_LENGTH,
@@ -181,7 +180,7 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
                         ${passwordSpecialChars.spListItemt('').join(' ')}
                       </code>
                   )} */}
-              </span>
+              </Typography>
             ) : (
               t('pages.forgot-password-verify.password-rules-reduced', {
                 min_length: PASSWORD_MIN_LENGTH,

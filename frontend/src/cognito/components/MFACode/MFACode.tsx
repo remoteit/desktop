@@ -8,11 +8,11 @@ import {
 } from '../../types'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert } from '../Alert'
 import { AuthLayout } from '../AuthLayout'
+import { Notice } from '../../../components/Notice'
 import { Button } from '../Button'
 import { Center } from '../Center'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 import { Link } from '../Link'
 
 export type MFACodeProps = {
@@ -93,7 +93,9 @@ export function MFACode({
     return (
       <Center>
         <Container maxWidth="sm">
-          <Alert>Sorry, something went wrong, please try again.</Alert>
+          <Notice severity="danger" fullWidth>
+            Sorry, something went wrong, please try again.
+          </Notice>
         </Container>
       </Center>
     )
@@ -101,7 +103,11 @@ export function MFACode({
   return (
     <AuthLayout i18nKey={title}>
       <form onSubmit={handleSubmit}>
-        {error && <Alert my={4}>{error}</Alert>}
+        {error && (
+          <Notice severity="danger" fullWidth gutterBottom>
+            {error}
+          </Notice>
+        )}
         <Box my={4}>
           {challengeName === 'SMS_MFA' && <Typography>{t('pages.auth-mfa.mfa-verification-sent')}</Typography>}
           {challengeName === 'SOFTWARE_TOKEN_MFA' && (

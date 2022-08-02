@@ -4,9 +4,9 @@ import { ApplicationState } from '../../store'
 import { Button, Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
+import { Notice } from '../Notice'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
-import { Alert } from '../Alert'
 import { Logo } from '../Logo'
 
 const mapState = (state: ApplicationState, props: any) => ({
@@ -40,11 +40,11 @@ export const InstallationNotice = connect(
       </Typography>
       <Logo className={css.space} />
       {isError && (
-        <Alert onClose={() => clearError()}>
+        <Notice onClose={() => clearError()}>
           {error === 'User did not grant permission.'
             ? 'Please grant permissions to install CLI tools'
             : JSON.stringify(error)}
-        </Alert>
+        </Notice>
       )}
       <Typography className={css.space} variant="h3" align="center">
         We need to install or update our system

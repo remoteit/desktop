@@ -15,8 +15,15 @@
     },
     "user": {
       "email": "Email",
+      "new-password-confirm-placeholder": "Enter your new password again",
+      "new-password-placeholder": "Enter your new password",
       "password": "Password",
-      "password-confirm": "Confirm Password"
+      "password-confirm": "Confirm Password",
+      "password-confirm-placeholder": "Enter your password again",
+      "password-current": "Current Password",
+      "password-current-placeholder": "Enter your current password",
+      "password-placeholder": "Enter a password",
+      "username": "Email or Username"
     }
   },
   "pages": {
@@ -49,7 +56,8 @@
     },
     "auth": {
       "create-account": {
-        "button-label": "Create Account"
+        "button-label": "Create Account",
+        "button-loading": "Creating..."
       }
     },
     "contact-selector": {

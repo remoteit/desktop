@@ -1,11 +1,10 @@
 import { Box, TextField, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert } from '../Alert'
+import { Notice } from '../../../components/Notice'
 import { AuthLayout } from '../AuthLayout'
-import { BannerNotices } from '../BannerNotices'
 import { Button } from '../Button'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 import { VerifyRecoveryCodeFunc, SignInFunc } from '../../types'
 
 export type AccountRecoveryProps = {
@@ -86,7 +85,11 @@ export function AccountRecovery({
         {sentEmailVerifyRequest ? (
           <>
             <form onSubmit={handleSubmit}>
-              {error && <Alert my={4}>{error}</Alert>}
+              {error && (
+                <Notice severity="danger" fullWidth gutterBottom>
+                  {error}
+                </Notice>
+              )}
               <Box my={4}>{t('pages.account-recovery.description')}</Box>
               <Box my={2}>
                 <TextField

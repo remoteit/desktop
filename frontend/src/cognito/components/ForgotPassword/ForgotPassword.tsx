@@ -1,10 +1,10 @@
 import React from 'react'
 import { Box, TextField } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Alert } from '../Alert'
+import { Notice } from '../../../components/Notice'
 import { AuthLayout } from '../AuthLayout'
 import { Button } from '../Button'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 import { useHistory } from 'react-router-dom'
 import { RecoverPasswordRequestFunc } from '../../types'
 
@@ -60,7 +60,11 @@ export function ForgotPassword({
   return (
     <AuthLayout back backLink="/sign-in" fullWidth={fullWidth} i18nKey={titleKey}>
       <form onSubmit={handleForgotPassword}>
-        {error && <Alert my={4}>{error.message}</Alert>}
+        {error && (
+          <Notice severity="danger" fullWidth gutterBottom>
+            {error.message}
+          </Notice>
+        )}
         <Box my={4}>
           <TextField
             autoCapitalize="none"

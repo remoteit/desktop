@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { Box, TextField } from '@mui/material'
+import { Box, TextField, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Alert } from '../Alert'
 import { AuthLayout } from '../AuthLayout'
+import { Notice } from '../../../components/Notice'
 import { Button } from '../Button'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 import { PasswordStrengthInput } from '../PasswordStrengthInput'
 
 export type PasswordVerifyProps = {
@@ -64,28 +64,26 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
     <AuthLayout back backLink="/forgot-password" i18nKey="pages.forgot-password-verify.title" fullWidth={fullWidth}>
       <form onSubmit={handleVerifyPasswordChange}>
         {verificationRequestSent && resetPasswordNeeded && (
-          <Alert my={2} stayOpen type="info">
+          <Notice severity="info" fullWidth gutterBottom>
             {t('pages.password-reset.cognito-reset-password-required', {
               email,
             })}
-          </Alert>
+          </Notice>
         )}
         {verificationRequestSent && !resetPasswordNeeded && (
-          <div>
-            <Alert my={2} stayOpen type="success">
+          <>
+            <Notice severity="success" fullWidth gutterBottom>
               {t('pages.password-reset.verification-code-message', {
                 email,
               })}
-            </Alert>
-            <Box padding={3} bgcolor="var(--color-gray-lightest)">
-              {t('pages.password-reset.signout-all-text')}
-            </Box>
-          </div>
+            </Notice>
+            <Typography variant="caption">{t('pages.password-reset.signout-all-text')}</Typography>
+          </>
         )}
         {error && (
-          <Alert my={2} type="danger">
+          <Notice severity="danger" fullWidth gutterBottom>
             {error.message}
-          </Alert>
+          </Notice>
         )}
         <Box mt={4}>
           <TextField

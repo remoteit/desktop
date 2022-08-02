@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SplashScreen } from '../SplashScreen'
 import { PageHeading } from '../PageHeading'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 
 export type AuthLayoutProps = {
   children: React.ReactNode
@@ -49,7 +49,7 @@ export function AuthLayout({
                     className={css.back}
                     onClick={() => (backLink ? history.push(backLink) : history.goBack())}
                   >
-                    <Icon fixedWidth name="chevron-left" size="sm" />
+                    <Icon fixedWidth name="chevron-left" size="lg" />
                   </IconButton>
                 </Tooltip>
               )}
@@ -64,7 +64,8 @@ export function AuthLayout({
 }
 const useStyles = makeStyles({
   back: {
-    padding: '12px 0',
-    marginRight: 8,
+    position: 'absolute',
+    marginLeft: -60,
+    marginTop: -10,
   },
 })

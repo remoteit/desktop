@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import React from 'react'
-import { Icon } from '../Icon'
+import { Icon } from '../../../components/Icon'
 import { fontSize, colors } from '../../styles/variables'
 
 export type LoadingMessageProps = {

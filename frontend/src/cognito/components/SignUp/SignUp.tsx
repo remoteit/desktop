@@ -1,17 +1,14 @@
-import React, { useCallback, useState } from 'react'
-import { Box, TextField, Typography } from '@mui/material'
+import React, { useState } from 'react'
+import { Box, Button, Checkbox, Link, TextField, Typography, FormControlLabel } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { spacing } from '../../styles/variables'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { CognitoUserResult, SignUpFunc, ResendFunc } from '../../types'
+import { SignUpFunc, ResendFunc } from '../../types'
 import { AuthLayout } from '../AuthLayout'
 import { Captcha } from '../Captcha'
-import { Button } from '../Button'
-import { Alert } from '../Alert'
-import { Link } from '../Link'
+import { Notice } from '../../../components/Notice'
+import { Icon } from '../../../components/Icon'
 import { PasswordStrengthInput } from '../PasswordStrengthInput'
-import analytics from '../../services/analytics'
 import { ISegmentSettings } from '../CognitoAuth'
 
 export type SignUpProps = {
@@ -109,20 +106,29 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
     <AuthLayout back backLink="/sign-in" fullWidth={fullWidth} i18nKey="pages.sign-up.title">
       {alert && (
         <Box my={4}>
-          <Alert type={alert.type}>{alert.message}</Alert>
+          <Notice severity={alert.type}>{alert.message}</Notice>
         </Box>
       )}
       <form onSubmit={handleSubmit}>
-        {error && <Alert my={4}>{error.message}</Alert>}
+        {error && (
+          <Notice severity="danger" fullWidth>
+            {error.message}
+          </Notice>
+        )}
         {showResend && (
           <>
-            <Alert my={4}>
-              {
-                "If you have not yet confirmed your account choose resend verification.  If your account is confirmed but you don't know your password you can go to forgot password and set a new one."
-              }
-            </Alert>
-            <button onClick={() => resend()}>Resend</button>
-            <button onClick={() => forgotPassword()}>Forgot Password</button>
+            <Notice severity="warning" fullWidth gutterBottom>
+              If you have not yet confirmed your account choose resend verification. If your account is confirmed but
+              you don't know your password you can go to forgot password and set a new one.
+              <Box textAlign="right" pt={1}>
+                <Button size="small" color="warning" onClick={() => forgotPassword()}>
+                  Forgot Password
+                </Button>
+                <Button size="small" color="warning" variant="contained" onClick={() => resend()}>
+                  Resend
+                </Button>
+              </Box>
+            </Notice>
           </>
         )}
         <Box mb={3}>
@@ -153,34 +159,42 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
             <Captcha id="sign-up-captcha" onVerify={() => setVerified(true)} />
           </Box>
         )}
-        <Box className={css.terms} my={1}>
-          <label>
-            <input onChange={e => setTerms(e.target.checked)} type="checkbox" />
-            <Typography variant="caption">
-              I agree to the remote.it
-              <Link href="https://remote.it/terms" rel="noopener noreferrer" target="_blank">
-                Terms of Use,
-              </Link>
-              <Link href="https://remote.it/privacy" rel="noopener noreferrer" target="_blank">
-                Privacy Policy
-              </Link>
-              and
-              <Link href="https://remote.it/fairuse" rel="noopener noreferrer" target="_blank">
-                Fair Use Policy.
-              </Link>
-            </Typography>
-          </label>
+        <Box ml={1}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                onChange={e => setTerms(e.target.checked)}
+                checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+                icon={<Icon name="square" size="md" type="light" color="grayDark" />}
+                color="primary"
+              />
+            }
+            label={
+              <Typography variant="caption">
+                I agree to the remote.it
+                <Link href="https://remote.it/terms" target="_blank">
+                  Terms of Use,
+                </Link>
+                <Link href="https://remote.it/privacy" target="_blank">
+                  Privacy Policy
+                </Link>
+                and
+                <Link href="https://remote.it/fairuse" target="_blank">
+                  Fair Use Policy.
+                </Link>
+              </Typography>
+            }
+          />
         </Box>
         <Box my={3}>
           <Button
             color="primary"
             disabled={loading || !verified || !isValidPassword || !terms}
             fullWidth
-            loading={loading}
             type="submit"
             variant="contained"
           >
-            {t('pages.auth.create-account.button-label')}
+            {loading ? t('pages.auth.create-account.button-loading') : t('pages.auth.create-account.button-label')}
           </Button>
         </Box>
         {/* <Box mt={4}>
@@ -195,8 +209,4 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
 
 const useStyles = makeStyles({
   captcha: { transition: 'height 600ms', overflow: 'hidden', position: 'relative' },
-  terms: {
-    '& label': { display: 'flex' },
-    '& span': { marginLeft: spacing.xs },
-  },
 })
