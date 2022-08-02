@@ -10,27 +10,11 @@ import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
 
 const defaults = {
   apiURL: 'https://api.remot3.it/apv/v27',
-  successURL: 'https://app.remote.it', // 'https://' + window.location.host
-  taskQueue: 'WeavedTaskQueue',
-  jobQueue: 'WeavedJobQueue',
+  successURL: 'https://app.remote.it'
 }
 
 const instance = setupAxios({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
-instance.interceptors.request.use(
-  (request) => requestHandler(request)
-);
 
-instance.interceptors.response.use(
-  (response) => responseHandler(response)
-);
-
-const requestHandler = (request:any) => {
-  return request;
-};
-
-const responseHandler = (response:any) => {
-  return response;
-};
 
 export function pickBy(object: { [key: string]: any }): any {
   const obj: { [key: string]: any } = {}
@@ -53,13 +37,11 @@ export function setupAxios(config: IConfig = {}, newGetToken?: () => Promise<str
       accessKey: options.accessKey,
       apiKey: options.apiKey,
       developerKey: options.developerKey,
-      taskQueue: options.taskQueue,
-      jobQueue: options.jobQueue,
       token: options.token,
     }),
   })
 }
-
+  
 export class User {
   static EVENTS = {
     signInError: 'unauthorized',
