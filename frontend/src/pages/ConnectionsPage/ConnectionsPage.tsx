@@ -68,7 +68,7 @@ export const ConnectionsPage: React.FC = () => {
         </>
       }
     >
-      <Network key={DEFAULT_ID} network={active} highlight />
+      <Network key={DEFAULT_ID} network={active} highlight noLink />
       {networks.map(n => (
         <Network key={n.id} network={n} />
       ))}
