@@ -118,7 +118,7 @@ export default createModel<RootModel>()({
       })
     },
 
-    async selectAllServices(_, globalState) {
+    async selectAllServices(_: void, globalState) {
       const { set } = dispatch.shares
       set({
         currentDevice: {

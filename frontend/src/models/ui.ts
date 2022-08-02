@@ -139,7 +139,7 @@ export default createModel<RootModel>()({
       })
       await dispatch.ui.restoreState()
     },
-    async restoreState(_, globalState) {
+    async restoreState(_: void, globalState) {
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(globalState, `ui-${key}`)
@@ -195,7 +195,7 @@ export default createModel<RootModel>()({
       state = { ...state, ...props }
       dispatch.ui.setPersistent({ [guide]: state })
     },
-    async resetGuides(_, globalState) {
+    async resetGuides(_: void, globalState) {
       Object.keys(globalState.ui).forEach(key => {
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
       })
@@ -210,7 +210,7 @@ export default createModel<RootModel>()({
       })
       dispatch.ui.set(params)
     },
-    async deprecated(_, globalState) {
+    async deprecated(_: void, globalState) {
       if (!isElectron() || isHeadless()) return
       const { preferences } = globalState.backend
       dispatch.ui.set({

@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { getActiveAccountId, getActiveUser } from './accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { selectConnection } from '../helpers/connectionHelper'
+import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
 import {
@@ -69,13 +69,13 @@ const defaultAccountState: INetworksAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init(_, state) {
+    async init(_: void, state) {
       const storedNetwork = getLocalStorage(state, 'networks-default')
       dispatch.networks.set({ default: storedNetwork ? storedNetwork : defaultNetwork(state) })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
         ` query($account: String) {
@@ -126,7 +126,7 @@ export default createModel<RootModel>()({
       // dispatch.networks.handleOrphanedConnections()
     },
 
-    async fetchIfEmpty(_, state) {
+    async fetchIfEmpty(_: void, state) {
       const accountId = getActiveAccountId(state)
       if (!state.networks.all[accountId]) dispatch.networks.fetch()
     },
@@ -147,7 +147,7 @@ export default createModel<RootModel>()({
       console.log('LOAD NETWORKS', parsed)
       return parsed
     },
-    // async handleOrphanedConnections(_, state) {
+    // async handleOrphanedConnections(_:void, state) {
     // const assigned = new Set()
     // Object.keys(state.networks.all).forEach(key => {
     //   state.networks.all[key].forEach(network => {
@@ -314,12 +314,18 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
 }
 
 export function selectNetworks(state: ApplicationState): INetwork[] {
-  let all = state.networks.all[getActiveAccountId(state)] || []
-  return [state.networks.default, ...all]
+  return state.networks.all[getActiveAccountId(state)] || []
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
+}
+
+export function selectActiveNetwork(state: ApplicationState): INetwork {
+  const active = selectEnabledConnections(state).map(connection => connection.id)
+  const network = defaultNetwork(state)
+  network.serviceIds = active
+  return network
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {

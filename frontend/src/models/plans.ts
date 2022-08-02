@@ -71,7 +71,7 @@ export default createModel<RootModel>()({
       dispatch.plans.set({ initialized: true })
     },
 
-    async restore(_, state) {
+    async restore(_: void, state) {
       const license = selectRemoteitLicense(state)
       const last = license?.subscription?.card?.last
       const planId = license?.plan.id
@@ -181,7 +181,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ successMessage: 'Subscription updated.' })
     },
 
-    async testServiceLicensing(_, state) {
+    async testServiceLicensing(_: void, state) {
       const states: ILicenseTypes[] = [
         'UNKNOWN',
         'EVALUATION',

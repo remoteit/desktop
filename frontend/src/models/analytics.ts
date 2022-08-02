@@ -78,7 +78,7 @@ type parseDeviceOptions = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetchAnalytics(_, globalState) {
+    async fetchAnalytics(_: void, globalState) {
       if (!hasCredentials()) return
       const { from, size, startDate, endDate } = globalState.analytics
       if (!endDate) return

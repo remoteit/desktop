@@ -97,6 +97,9 @@ export const RegisterMenu: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
+        </List>
+        <Divider />
+        <List className={css.list} disablePadding dense>
           {['aws', 'azure', 'gcp', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
             const platform = platforms.get(p)
             return (
@@ -112,6 +115,7 @@ export const RegisterMenu: React.FC = () => {
               />
             )
           })}
+          <Divider />
           <ListItem
             button
             disableGutters

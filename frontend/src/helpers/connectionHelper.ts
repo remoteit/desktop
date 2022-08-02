@@ -126,6 +126,10 @@ export function selectConnection(state: ApplicationState, service?: IService) {
   return connection
 }
 
+export function selectEnabledConnections(state: ApplicationState) {
+  return selectConnections(state).filter(connection => connection.enabled)
+}
+
 export function getRoute(connection: IConnection): IRouteType {
   return connection.public ? 'public' : connection.proxyOnly ? 'proxy' : connection.failover ? 'failover' : 'p2p'
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { TextField } from '@mui/material'
 import { DatePicker as MuiDatePicker, LocalizationProvider } from '@mui/x-date-pickers'
-import AdapterDateFns from '@mui/lab/AdapterDateFns'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { getDateFormatString } from '../../helpers/dateHelper'
 
 export const DatePicker: React.FC<{ onChange?: (date: any) => void; minDay: any; selectedDate: Date | null }> = ({

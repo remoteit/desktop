@@ -25,7 +25,7 @@ const defaultState: IUserState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const account = state.auth.user?.id
       const result = await graphQLBasicRequest(
         ` query($account: String) {

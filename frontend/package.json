@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.11.0-alpha.0",
+  "version": "3.11.0-alpha.1",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "watch-react": "react-scripts start"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^4.1.1",
     "@date-io/date-fns": "^1.3.13",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
@@ -22,10 +23,10 @@
     "@fortawesome/pro-solid-svg-icons": "^6.1.1",
     "@fortawesome/pro-thin-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mui/lab": "^5.0.0-alpha.87",
-    "@mui/material": "^5.8.5",
-    "@mui/styles": "^5.8.4",
-    "@mui/x-date-pickers": "^5.0.0-alpha.7",
+    "@mui/lab": "^5.0.0-alpha.92",
+    "@mui/material": "^5.9.2",
+    "@mui/styles": "^5.9.2",
+    "@mui/x-date-pickers": "^5.0.0-beta.3",
     "@rematch/core": "^2.0.0-next.6",
     "@rematch/immer": "^1.2.0",
     "@remote.it/components": "^1.1.25",
@@ -36,6 +37,8 @@
     "date-fns": "^2.16.1",
     "filesize": "^6.0.1",
     "humanize-duration": "^3.25.1",
+    "i18next": "^21.8.16",
+    "i18next-browser-languagedetector": "^6.1.4",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
     "lodash.isequal": "^4.5.0",
@@ -45,12 +48,14 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^12.0.4",
+    "react-i18next": "^11.18.3",
     "react-phone-input-2": "^2.14.0",
-    "react-redux": "^7.2.6",
+    "react-redux": "^8.0.2",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^5.0.1",
     "react-select": "^4.0.2",
     "react-string-replace": "^0.4.4",
+    "reaptcha": "^1.7.3",
     "rebound": "0.1.0",
     "reconnecting-websocket": "^4.4.0",
     "redux": "^4.0.5",
@@ -62,7 +67,8 @@
     "url": "^0.11.0",
     "use-clipboard-copy": "^0.2.0",
     "use-resize-observer": "^7.0.1",
-    "validator": "^13.7.0"
+    "validator": "^13.7.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
@@ -75,7 +81,7 @@
     "@types/lodash.isequal": "^4.5.5",
     "@types/luxon": "^1.26.5",
     "@types/md5": "^2.2.0",
-    "@types/node": "^14.14.22",
+    "@types/node": "^18.6.2",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "@types/react-dropzone": "^5.1.0",
@@ -89,12 +95,12 @@
     "@types/socket.io-client": "^1.4.35",
     "@types/validator": "^13.7.2",
     "cross-env": "^6.0.3",
+    "eslint": "^8.20.0",
+    "i18n-unused": "^0.8.0",
     "npm-run-all": "4.1.5",
     "onchange": "^6.1.0",
-    "ts-node": "^8.6.1",
-    "tslint": "^5.20.1",
-    "typescript": "3.7.4",
-    "webpack": "4.44.2"
+    "typescript": "^4.7.4",
+    "webpack": "^5.74.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1"

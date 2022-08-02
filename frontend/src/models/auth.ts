@@ -12,8 +12,8 @@ import {
 } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
 import { getToken, r3 } from '../services/remote.it'
-import { CognitoUser } from '@remote.it/types'
-import { AuthService } from '@remote.it/services'
+import { CognitoUser } from '../cognito/types'
+import { AuthService } from '../cognito/services/auth'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Dispatch } from '../store'
@@ -74,11 +74,12 @@ export const authServiceConfig = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init(_, state) {
+    async init(_: void, state) {
       let { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
         const authService = new AuthService(authServiceConfig)
+        console.log('AUTH INIT', { authService })
         await sleep(500)
         await dispatch.auth.set({ authService })
         await dispatch.auth.checkSession({ refreshToken: true })
@@ -86,7 +87,7 @@ export default createModel<RootModel>()({
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
     },
-    async fetchUser(_, state) {
+    async fetchUser(_: void, state) {
       const { auth } = dispatch as Dispatch
       try {
         const result = await graphQLRequest(
@@ -136,7 +137,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `Invalid format.` })
       }
     },
-    async forceRefreshToken(_, state) {
+    async forceRefreshToken(_: void, state) {
       if (!state.auth.authService) return
       await state.auth.authService.forceTokenRefresh()
     },
@@ -174,7 +175,7 @@ export default createModel<RootModel>()({
       const localUsername = localStorage.getItem('username')
       dispatch.auth.set({ localUsername })
     },
-    async backendAuthenticated(_, state) {
+    async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
         dispatch.auth.set({ backendAuthenticated: true })
         console.log('BACKEND AUTHENTICATED')
@@ -184,7 +185,7 @@ export default createModel<RootModel>()({
         }
       }
     },
-    async disconnect(_, state) {
+    async disconnect(_: void, state) {
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
         dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
@@ -201,7 +202,7 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.set({ signInError })
     },
-    async dataReady(_, state) {
+    async dataReady(_: void, state) {
       if (state.backend.initialized) {
         console.warn('DATA ALREADY INITIALIZED')
         return
@@ -229,14 +230,14 @@ export default createModel<RootModel>()({
       if (isPortal()) dispatch.auth.dataReady()
       dispatch.ui.init()
     },
-    async signOut(_, state) {
+    async signOut(_: void, state) {
       if (state.auth.backendAuthenticated) emit('user/sign-out')
       else await dispatch.auth.signedOut()
     },
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut(_, state) {
+    async signedOut(_: void, state) {
       await state.auth.authService?.signOut()
       removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)

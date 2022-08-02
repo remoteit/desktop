@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react'
 import { Typography } from '@mui/material'
-import { defaultNetwork, recentNetwork, DEFAULT_ID } from '../../models/networks'
+import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../../models/networks'
 import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
 import { selectConnections } from '../../helpers/connectionHelper'
-import { ApplicationState, Dispatch } from '../../store'
-import { useSelector, useDispatch } from 'react-redux'
-import { selectNetworks } from '../../models/networks'
+import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { SessionsList } from '../../components/SessionsList'
-import { ClearButton } from '../../buttons/ClearButton'
 import { IconButton } from '../../buttons/IconButton'
 import { NetworkAdd } from '../../components/NetworkAdd'
 import { Container } from '../../components/Container'
@@ -17,8 +15,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 
 export const ConnectionsPage: React.FC = () => {
-  const dispatch = useDispatch<Dispatch>()
-  const { other, recent, networks } = useSelector((state: ApplicationState) => {
+  const { other, recent, networks, active } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
@@ -44,6 +41,7 @@ export const ConnectionsPage: React.FC = () => {
         ...recentNetwork,
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
+      active: selectActiveNetwork(state),
       networks: selectNetworks(state),
     }
   })
@@ -70,8 +68,9 @@ export const ConnectionsPage: React.FC = () => {
         </>
       }
     >
+      <Network key={DEFAULT_ID} network={active} highlight noLink />
       {networks.map(n => (
-        <Network key={n.id} network={n} noLink={n.id === DEFAULT_ID} highlight={n.id === DEFAULT_ID} />
+        <Network key={n.id} network={n} />
       ))}
       <SessionsList title="Outside Connections" networks={other} />
       {!!recent.serviceIds.length && <Network network={recent} recent noLink collapse />}

@@ -67,7 +67,7 @@ const defaultState: IBackendState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async environment(_, state) {
+    async environment(_: void, state) {
       let result: string = ''
       const keys = ['os', 'osVersion', 'arch', 'manufacturerDetails']
       keys.forEach(key => {

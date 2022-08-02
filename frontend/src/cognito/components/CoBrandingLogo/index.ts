@@ -1,0 +1,1 @@
+export { CoBrandingLogo } from './CoBrandingLogo'

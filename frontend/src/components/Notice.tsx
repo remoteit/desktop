@@ -1,5 +1,6 @@
 import React from 'react'
 import { Icon } from './Icon'
+import { IconButton } from '../buttons/IconButton'
 import { spacing, fontSizes } from '../styling'
 import { alpha, Paper, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
@@ -12,6 +13,7 @@ type Props = {
   gutterBottom?: boolean
   fullWidth?: boolean
   loading?: boolean
+  onClose?: () => void
   className?: React.ReactNode
   children?: React.ReactNode
 }
@@ -23,6 +25,7 @@ export const Notice: React.FC<Props> = ({
   gutterTop,
   gutterBottom,
   loading,
+  onClose,
   className,
   children,
 }) => {
@@ -53,6 +56,7 @@ export const Notice: React.FC<Props> = ({
       )}
       <Box>{children}</Box>
       {button}
+      {onClose && <IconButton name="times" onClick={onClose} title="Close" />}
     </Paper>
   )
 }

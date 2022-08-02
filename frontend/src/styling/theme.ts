@@ -410,7 +410,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiInputBase-input': {
               borderRadius: 0,
               height: '1.1876em',
-              // '&.MuiFilledInput-input'
+            },
+            '&.MuiFilledInput-root .MuiInputBase-input': {
+              borderRadius: radius,
             },
           },
           input: {

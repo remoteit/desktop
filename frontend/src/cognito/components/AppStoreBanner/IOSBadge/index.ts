@@ -1,0 +1,1 @@
+export { IOSBadge } from './IOSBadge'
