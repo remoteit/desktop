@@ -31,8 +31,8 @@ export const DisconnectButton: React.FC<Props> = ({
 
   if (connecting || disabled) color = 'grayDark'
 
-  let title = 'Stop Connection'
-  if (state === 'ready') title = size === 'small' ? 'Pause' : 'Pause Connection'
+  let title = 'Stop '
+  if (state === 'ready') title = 'Stop'
   if (state === 'starting') title = 'Starting...'
   if (state === 'stopping') title = 'Removing...'
   if (state === 'connecting') title = 'Connecting...'

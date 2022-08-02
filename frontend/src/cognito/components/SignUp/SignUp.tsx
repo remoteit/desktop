@@ -172,14 +172,14 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
             label={
               <Typography variant="caption">
                 I agree to the remote.it
-                <Link href="https://remote.it/terms" target="_blank">
+                <Link href="https://link.remote.it/legal/terms-of-use" target="_blank">
                   Terms of Use,
                 </Link>
-                <Link href="https://remote.it/privacy" target="_blank">
+                <Link href="https://link.remote.it/legal/privacy-policy" target="_blank">
                   Privacy Policy
                 </Link>
                 and
-                <Link href="https://remote.it/fairuse" target="_blank">
+                <Link href="https://link.remote.it/legal/fair-use-policy" target="_blank">
                   Fair Use Policy.
                 </Link>
               </Typography>

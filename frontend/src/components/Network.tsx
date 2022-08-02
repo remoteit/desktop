@@ -33,7 +33,7 @@ export const Network: React.FC<Props> = ({ recent, collapse, highlight, ...props
           type="solid"
           size="sm"
         />
-        {highlight && <Typography className={css.note}>default</Typography>}
+        {highlight && <Typography className={css.note}>active</Typography>}
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
       </NetworkListTitle>
       <Collapse in={expanded}>
@@ -64,7 +64,7 @@ const useStyles = makeStyles(({ palette }) => ({
             width: `calc(100% - ${spacing.lg}px)`,
             marginLeft: spacing.sm,
           },
-          '& .MuiListItemIcon-root': {
+          '& .MuiListItemIcon-root:first-child': {
             marginLeft: -spacing.sm,
           },
           '& .MuiListItem-button': {
@@ -83,6 +83,6 @@ const useStyles = makeStyles(({ palette }) => ({
     letterSpacing: '0.2em',
     fontWeight: 500,
     fontSize: fontSizes.xxxs,
-    marginRight: spacing.xxs,
+    marginRight: spacing.sm,
   },
 }))

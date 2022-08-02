@@ -5,7 +5,7 @@ import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
 import { makeStyles } from '@mui/styles'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
-import { selectConnections } from '../helpers/connectionHelper'
+import { selectEnabledConnections } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -14,7 +14,7 @@ import { spacing } from '../styling'
 export const SidebarNav: React.FC = () => {
   const { unreadAnnouncements, connections, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
     unreadAnnouncements: selectAnnouncements(state, true).length,
-    connections: selectConnections(state).filter(connection => connection.enabled).length,
+    connections: selectEnabledConnections(state).length,
     sessions: state.sessions.all.length,
     devices: getDeviceModel(state).total,
     remoteUI: isRemoteUI(state),
@@ -40,7 +40,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
         <ListItemSecondaryAction>
           {!!connections && (
-            <Tooltip title="Active" placement="top" arrow>
+            <Tooltip title="Idle" placement="top" arrow>
               <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
             </Tooltip>
           )}

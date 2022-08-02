@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { getActiveAccountId, getActiveUser } from './accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { selectConnection } from '../helpers/connectionHelper'
+import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
 import {
@@ -314,12 +314,18 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
 }
 
 export function selectNetworks(state: ApplicationState): INetwork[] {
-  let all = state.networks.all[getActiveAccountId(state)] || []
-  return [state.networks.default, ...all]
+  return state.networks.all[getActiveAccountId(state)] || []
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
+}
+
+export function selectActiveNetwork(state: ApplicationState): INetwork {
+  const active = selectEnabledConnections(state).map(connection => connection.id)
+  const network = defaultNetwork(state)
+  network.serviceIds = active
+  return network
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
