@@ -20,7 +20,7 @@ export const ConnectionsPage: React.FC = () => {
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
     let other: ILookup<INetwork> = {}
-
+    console.log('otherSessions', otherSessions)
     otherSessions.forEach(s => {
       const id = s.user?.id || 'default'
       if (!other[id]) {
@@ -30,6 +30,7 @@ export const ConnectionsPage: React.FC = () => {
           enabled: true,
           name: s.user?.email || 'Unknown',
           icon: initiatorPlatformIcon({ id: s.platform })[0],
+          sessions: [],
         }
       }
       other[id].sessions?.push(s)
