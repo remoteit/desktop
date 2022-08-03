@@ -1,11 +1,9 @@
 import React from 'react'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { AuthLayout } from '../AuthLayout'
-import { Button } from '../Button'
+import { Link } from '../../../components/Link'
 import { Icon } from '../../../components/Icon'
-// import { Auth } from '@aws-amplify/auth'
-import { Link } from '../Link'
 import { ResendFunc } from '../../types'
 export type SignUpVerifyProps = {
   email: string
@@ -27,7 +25,7 @@ export function SignUpVerify({ email, onResend, fullWidth }: SignUpVerifyProps):
         <Typography variant="caption">{email}</Typography>
       </Box>
       <Box mt={4} textAlign="right">
-        <Button to="/sign-in">
+        <Button to="/sign-in" component={Link}>
           {t('global.action.continue-signup')}
           <Icon name="arrow-right" inline />
         </Button>
@@ -37,15 +35,7 @@ export function SignUpVerify({ email, onResend, fullWidth }: SignUpVerifyProps):
           {t('pages.verify-account.verification-received-message')}
           <br />
           {t('pages.verify-account.check-spam')}
-          <Link to="#">
-            <span
-              onClick={() => {
-                onResend(email)
-              }}
-            >
-              {t('pages.verify-account.resend-confirmation')}
-            </span>
-          </Link>
+          <Link onClick={() => onResend(email)}>{t('pages.verify-account.resend-confirmation')}</Link>
         </Typography>
       </Box>
     </AuthLayout>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Typography, Container } from '@mui/material'
-import { Link } from '../Link'
+import { Link } from '../../../components/Link'
 import { Center } from '../Center'
 
 export type Props = {

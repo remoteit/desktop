@@ -4,13 +4,14 @@ import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
 import { ApplicationState } from '../../store'
 import { makeStyles } from '@mui/styles'
-import { ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@mui/material'
+import { ListItem, ListItemText, ListItemSecondaryAction, Chip, Typography } from '@mui/material'
 import { ListItemLocation } from '../ListItemLocation'
 import { getAllDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
+import { Link } from '../../components/Link'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
@@ -55,7 +56,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
             {restore ? (
               <Typography variant="body2" color="textSecondary">
                 Select a device or
-                <Link onClick={() => history.push('/devices')}>cancel</Link>
+                <Link to="/devices">cancel</Link>
               </Typography>
             ) : (
               <Chip label="Restore" size="small" onClick={() => history.push('/devices/restore')} />

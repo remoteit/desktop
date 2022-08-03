@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { Typography, Collapse } from '@mui/material'
 import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../../models/networks'
 import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
@@ -13,6 +12,7 @@ import { Container } from '../../components/Container'
 import { Network } from '../../components/Network'
 import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
+import { Link } from '../../components/Link'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 

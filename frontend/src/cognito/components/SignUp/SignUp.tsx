@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, Checkbox, Link, TextField, Typography, FormControlLabel } from '@mui/material'
+import { Box, Button, Checkbox, TextField, Typography, FormControlLabel } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -8,6 +8,7 @@ import { AuthLayout } from '../AuthLayout'
 import { Captcha } from '../Captcha'
 import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
+import { Link } from '../../../components/Link'
 import { PasswordStrengthInput } from '../PasswordStrengthInput'
 import { ISegmentSettings } from '../CognitoAuth'
 
@@ -171,17 +172,11 @@ export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullW
             }
             label={
               <Typography variant="caption">
-                I agree to the remote.it
-                <Link href="https://link.remote.it/legal/terms-of-use" target="_blank">
-                  Terms of Use,
-                </Link>
-                <Link href="https://link.remote.it/legal/privacy-policy" target="_blank">
-                  Privacy Policy
-                </Link>
+                I agree to the Remote.It
+                <Link href="https://link.remote.it/legal/terms-of-use">Terms of Use,</Link>
+                <Link href="https://link.remote.it/legal/privacy-policy">Privacy Policy</Link>
                 and
-                <Link href="https://link.remote.it/legal/fair-use-policy" target="_blank">
-                  Fair Use Policy.
-                </Link>
+                <Link href="https://link.remote.it/legal/fair-use-policy">Fair Use Policy.</Link>
               </Typography>
             }
           />

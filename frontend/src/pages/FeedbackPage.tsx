@@ -2,11 +2,12 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { makeStyles } from '@mui/styles'
-import { Button, Typography, Link, TextField } from '@mui/material'
+import { Button, Typography, TextField } from '@mui/material'
+import { fullVersion } from '../helpers/versionHelper'
 import { useHistory } from 'react-router-dom'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
-import { fullVersion } from '../helpers/versionHelper'
+import { Link } from '../components/Link'
 
 export const FeedbackPage: React.FC<{}> = () => {
   const { feedback } = useDispatch<Dispatch>()

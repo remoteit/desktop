@@ -5,7 +5,7 @@ import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
 import { Button } from '@mui/material'
 import { Notice } from './Notice'
-import { Link } from 'react-router-dom'
+import { Link } from './Link'
 
 type Props = { device?: IDevice; license?: ILicense }
 

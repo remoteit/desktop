@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
-import { Link, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { SignInForm } from '../../components/SignInForm'
 import { IP_PRIVATE } from '../../shared/constants'
 import { isElectron } from '../../services/Browser'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
+import { Link } from '../../components/Link'
 import { spacing } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -42,9 +43,7 @@ export function SignInPage() {
                 You will be prompted by your browser with a security message regarding the remoteitpi.local certificate.
                 <br />
                 This is normal for local connections. Your data is still encrypted.
-                <Link href="https://link.remote.it/documentation-desktop/https-connections" target="_blank">
-                  Learn more
-                </Link>
+                <Link href="https://link.remote.it/documentation-desktop/https-connections">Learn more</Link>
               </Typography>
             </div>
           )}

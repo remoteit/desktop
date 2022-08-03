@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect } from 'react'
 import { makeStyles } from '@mui/styles'
-import { Box, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel } from '@mui/material'
+import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import {
   GoogleSignInFunc,
@@ -13,12 +13,11 @@ import {
 import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
 import { AuthLayout } from '../AuthLayout'
-import { Button } from '../Button'
 import { GoogleSignInButton } from '../GoogleSignInButton'
-// import { OktaSignInButton } from '../OktaSignInButton'
-import { Link } from '../Link'
+import { Link } from '../../../components/Link'
 import { spacing } from '../../styles/variables'
 import { useHistory } from 'react-router-dom'
+// import { OktaSignInButton } from '../OktaSignInButton'
 
 const useStyles = makeStyles({
   or: {
@@ -225,9 +224,8 @@ export function SignIn({
         <Box mb={0} mt={1}>
           <Button
             color="primary"
-            disabled={!username || (!password && emailProcessed)}
+            disabled={loading || !username || (!password && emailProcessed)}
             fullWidth
-            loading={loading}
             type="submit"
             variant="contained"
           >
@@ -265,7 +263,7 @@ export function SignIn({
       <Box mt={4} textAlign="center">
         <Typography variant="caption">
           {t('pages.sign-in.create-account')}
-          <Link to="/sign-up"> {t('pages.sign-in.sign-up-link')}</Link>
+          <Link to="/sign-up">{t('pages.sign-in.sign-up-link')}</Link>
         </Typography>
       </Box>
       {!emailProcessed && (

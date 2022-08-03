@@ -1,9 +1,8 @@
-import { Box, TextField, Typography } from '@mui/material'
 import React, { useState } from 'react'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Notice } from '../../../components/Notice'
 import { AuthLayout } from '../AuthLayout'
-import { Button } from '../Button'
+import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
 import { VerifyRecoveryCodeFunc, SignInFunc } from '../../types'
 
@@ -129,11 +128,10 @@ export function AccountRecovery({
               <Box my={4} textAlign="right">
                 <Button
                   disabled={loading || emailVerificationCode.length < 6 || recoveryCode.length < 36}
-                  loading={loading}
                   type="submit"
                 >
                   {t('global.actions.submit')}
-                  <Icon inline name="arrow-right" />
+                  <Icon inline spin={loading} name={loading ? 'spinner-third' : 'arrow-right'} />
                 </Button>
               </Box>
             </form>
@@ -146,7 +144,7 @@ export function AccountRecovery({
                 <Typography>{t('pages.account-recovery.account-recovery-code')} </Typography>
               </Box>
               <Box mb={4} mt={2}>
-                <Button loading={loading} type="submit">
+                <Button disabled={loading} type="submit">
                   {t('pages.account-recovery.start-recovery')}
                 </Button>
               </Box>

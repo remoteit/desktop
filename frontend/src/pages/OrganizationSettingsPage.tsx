@@ -8,7 +8,6 @@ import {
   Button,
   Chip,
   Box,
-  Link,
   List,
   ListItem,
   ListItemIcon,
@@ -26,6 +25,7 @@ import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { Link } from '../components/Link'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationSettingsPage: React.FC = () => {
@@ -135,9 +135,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   <Box display="flex" flexDirection="column">
                     <Typography variant="caption" gutterBottom>
                       Add the following CNAME and Value to your DNS records to validate your domain:
-                      <Link href="https://link.remote.it/support/setup-domain" target="_blank">
-                        Instructions.
-                      </Link>
+                      <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                     </Typography>
                     <DataCopy
                       value={organization.verificationCNAME}
@@ -175,9 +173,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                 <ListItemIcon />
                 <Typography variant="caption" gutterBottom>
                   Enter your Organization's domain name.
-                  <Link href="https://link.remote.it/support/setup-domain" target="_blank">
-                    Instructions.
-                  </Link>
+                  <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                 </Typography>
               </ListItem>
             )}
@@ -242,9 +238,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                     <ListItemIcon />
                     <Typography variant="caption" gutterBottom>
                       Setup
-                      <Link href="https://link.remote.it/support/setup-domain" target="_blank">
-                        Instructions.
-                      </Link>
+                      <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                     </Typography>
                   </ListItem>
                 </>
@@ -260,5 +254,5 @@ export const OrganizationSettingsPage: React.FC = () => {
         </>
       )}
     </Container>
-  );
+  )
 }
