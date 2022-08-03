@@ -1,7 +1,6 @@
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { getActiveAccountId, getActiveUser } from './accounts'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { selectById } from '../models/devices'
@@ -71,8 +70,7 @@ export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
     async init(_: void, state) {
-      const storedNetwork = getLocalStorage(state, 'networks-default')
-      dispatch.networks.set({ default: storedNetwork ? storedNetwork : defaultNetwork(state) })
+      dispatch.networks.set({ default: defaultNetwork(state) })
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
@@ -124,7 +122,6 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const networks = await dispatch.networks.parse(result)
       if (networks) await dispatch.networks.setNetworks(networks)
-      // dispatch.networks.handleOrphanedConnections()
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -148,22 +145,6 @@ export default createModel<RootModel>()({
       console.log('LOAD NETWORKS', parsed)
       return parsed
     },
-    // async handleOrphanedConnections(_:void, state) {
-    // const assigned = new Set()
-    // Object.keys(state.networks.all).forEach(key => {
-    //   state.networks.all[key].forEach(network => {
-    //     network.serviceIds.forEach(id => {
-    //       assigned.add(id)
-    //     })
-    //   })
-    // })
-    // const connectionIds = selectConnections(state)
-    //   .filter(c => c.enabled)
-    //   .map(c => c.id)
-    // const orphaned = connectionIds.filter(id => !assigned.has(id))
-    // console.log('ORPHANED CONNECTIONS', orphaned)
-    // dispatch.networks.add({ serviceIds: orphaned, disableConnect: true })
-    // },
     async enable(params: INetwork) {
       const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
       dispatch.connections.queueEnable(queue)
@@ -244,8 +225,6 @@ export default createModel<RootModel>()({
       const response = await graphQLAddNetworkShare(id, emails)
       if (response === 'ERROR' || !response?.data?.data?.addNetworkShare) return
       const network = selectNetwork(state, id)
-      network.access.concat(emails.map(e => ({ email: e, id: '' })))
-      await dispatch.networks.setNetwork(network)
       await dispatch.networks.fetch()
       dispatch.ui.set({
         successMessage:
@@ -265,11 +244,7 @@ export default createModel<RootModel>()({
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
 
-      if (params.id === DEFAULT_ID) {
-        dispatch.networks.set({ default: { ...params } })
-        setLocalStorage(state, 'networks-default', params)
-        return
-      }
+      if (params.id === DEFAULT_ID) return
 
       let networks: INetwork[] = state.networks.all[id] || []
       const index = networks.findIndex(network => network.id === params.id)
