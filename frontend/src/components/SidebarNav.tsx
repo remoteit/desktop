@@ -3,18 +3,18 @@ import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
+import { selectNetworks } from '../models/networks'
 import { makeStyles } from '@mui/styles'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
-import { selectEnabledConnections } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { unreadAnnouncements, connections, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { unreadAnnouncements, networks, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
     unreadAnnouncements: selectAnnouncements(state, true).length,
-    connections: selectEnabledConnections(state).length,
+    networks: selectNetworks(state).length,
     sessions: state.sessions.all.length,
     devices: getDeviceModel(state).total,
     remoteUI: isRemoteUI(state),
@@ -39,13 +39,13 @@ export const SidebarNav: React.FC = () => {
     <List className={css.list}>
       <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
         <ListItemSecondaryAction>
-          {!!connections && (
-            <Tooltip title="Idle" placement="top" arrow>
-              <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
+          {!!networks && (
+            <Tooltip title="Networks" placement="top" arrow>
+              <Chip size="small" label={networks.toLocaleString()} className={css.connections} />
             </Tooltip>
           )}
           {!!sessions && (
-            <Tooltip title="Connected" placement="top" arrow>
+            <Tooltip title="Connected Services" placement="top" arrow>
               <Chip
                 size="small"
                 label={sessions.toLocaleString()}

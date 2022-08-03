@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
-import { Typography } from '@mui/material'
+import { Link } from 'react-router-dom'
+import { Typography, Collapse } from '@mui/material'
 import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../../models/networks'
 import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
 import { selectConnections } from '../../helpers/connectionHelper'
@@ -10,6 +11,7 @@ import { IconButton } from '../../buttons/IconButton'
 import { NetworkAdd } from '../../components/NetworkAdd'
 import { Container } from '../../components/Container'
 import { Network } from '../../components/Network'
+import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
@@ -30,6 +32,7 @@ export const ConnectionsPage: React.FC = () => {
           enabled: true,
           name: s.user?.email || 'Unknown',
           icon: initiatorPlatformIcon({ id: s.platform })[0],
+          sessions: [],
         }
       }
       other[id].sessions?.push(s)
@@ -59,20 +62,30 @@ export const ConnectionsPage: React.FC = () => {
       header={
         <>
           <NetworkAdd networks={networks} />
-          {!!networks?.length && (
-            <Typography variant="subtitle1">
-              <Title>Networks</Title>
-              <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth size="lg" />
-            </Typography>
-          )}
+          <Typography variant="subtitle1">
+            <Title>Networks</Title>
+            <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth size="lg" />
+          </Typography>
         </>
       }
     >
       <Network key={DEFAULT_ID} network={active} highlight noLink />
+      <Collapse in={!networks?.length}>
+        <Gutters top="xxl">
+          <Typography variant="h3" align="center" gutterBottom>
+            Networks appear here
+          </Typography>
+          <Typography variant="body2" align="center" color="textSecondary">
+            Add services from the <Link to="/devices">Devices</Link> tab.
+            <br />
+            You must be the device owner to add a service.
+          </Typography>
+        </Gutters>
+      </Collapse>
       {networks.map(n => (
         <Network key={n.id} network={n} />
       ))}
-      <SessionsList title="Outside Connections" networks={other} />
+      <SessionsList title="Other Connections" networks={other} />
       {!!recent.serviceIds.length && <Network network={recent} recent noLink collapse />}
     </Container>
   )

@@ -410,6 +410,17 @@ export async function graphQLTransferDevice(params: ITransferProps) {
   )
 }
 
+export async function graphQLUpdateNetwork(params: INetwork) {
+  return await graphQLBasicRequest(
+    ` mutation query($id: String!, $name: String, $enabled: Boolean) {
+        updateNetwork(id: $id, name: $name, enabled: $enabled) {
+          id
+        }
+      }`,
+    params
+  )
+}
+
 export async function graphQLAddNetwork(params: INetwork, accountId: string) {
   return await graphQLBasicRequest(
     ` mutation query($accountId: String, $name: String, $enabled: Boolean) {
