@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { MAX_NAME_LENGTH } from '../shared/constants'
-import { matchPath, useLocation, useHistory, Link } from 'react-router-dom'
+import { matchPath, useLocation, useHistory } from 'react-router-dom'
 import { Collapse, Typography, TextField, Box } from '@mui/material'
 import { selectNetwork } from '../models/networks'
 import { ApplicationState, Dispatch } from '../store'

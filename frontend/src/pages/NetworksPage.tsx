@@ -47,7 +47,9 @@ export const NetworksPage: React.FC = () => {
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
       active: selectActiveNetwork(state),
-      networks: selectNetworks(state),
+      networks: selectNetworks(state).sort((a: INetwork, b: INetwork) =>
+        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
+      ),
     }
   })
 

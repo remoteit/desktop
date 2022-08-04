@@ -8,12 +8,13 @@ import { useSelector } from 'react-redux'
 
 export const NetworkUsersPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { networkID } = useParams<{ networkID?: string }>()
-  const network = useSelector((state: ApplicationState) => selectNetwork(state, networkID))
-  // const connected = useSelector((state: ApplicationState) => selectSessionUsers(state, device?.id))
-  // const users = device?.access
+  const { network, email } = useSelector((state: ApplicationState) => ({
+    network: selectNetwork(state, networkID),
+    email: state.user.email,
+  }))
 
   return (
-    <NetworkHeaderMenu network={network}>
+    <NetworkHeaderMenu network={network} email={email}>
       <SharedUsersLists device={device} network={network} users={network.access} />
     </NetworkHeaderMenu>
   )

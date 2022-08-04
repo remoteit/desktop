@@ -226,7 +226,14 @@ export default createModel<RootModel>()({
       params.id = response?.data?.data?.createNetwork?.id
       console.log('ADDING NETWORK', params)
       await dispatch.networks.setNetwork(params)
+      await dispatch.networks.fetch()
       dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
+    },
+    async updateNetwork(network: INetwork, state) {
+      const response = await graphQLUpdateNetwork(network)
+      if (response === 'ERROR') return
+      await dispatch.networks.setNetwork(network)
+      await dispatch.networks.fetch()
     },
     async shareNetwork({ id, emails }: { id: string; emails: string[] }, state) {
       const response = await graphQLAddNetworkShare(id, emails)
@@ -240,17 +247,16 @@ export default createModel<RootModel>()({
             : `${network.name} successfully shared to ${emails[0]}.`,
       })
     },
-    async unshareNetwork({ id, email }: { id: string; email: string }, state) {
-      const response = await graphQLRemoveNetworkShare(id, email)
+    async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {
+      const response = await graphQLRemoveNetworkShare(networkId, email)
       if (response === 'ERROR' || !response?.data?.data?.removeNetworkShare) return
-      const network = selectNetwork(state, id)
+      const network = selectNetwork(state, networkId)
       const index = network.access.findIndex(a => a.email === email)
       network.access.splice(index, 1)
       await dispatch.networks.setNetwork(network)
     },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
-
       if (params.id === DEFAULT_ID) return
 
       let networks: INetwork[] = state.networks.all[id] || []
@@ -258,11 +264,9 @@ export default createModel<RootModel>()({
 
       if (index >= 0) {
         const network = { ...networks[index], ...params }
-        const response = await graphQLUpdateNetwork(network)
-        if (response === 'ERROR') return
         networks[index] = network
         dispatch.networks.setNetworks(networks)
-      } else dispatch.networks.addNetwork(params)
+      }
     },
     async setNetworks(networks: INetwork[], state) {
       const id = getActiveAccountId(state)

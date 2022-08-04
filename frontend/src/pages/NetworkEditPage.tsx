@@ -10,16 +10,17 @@ import { NetworkSettings } from '../components/NetworkSettings'
 
 export const NetworkEditPage: React.FC = () => {
   const { networkID } = useParams<{ networkID?: string }>()
-  const { network, owner } = useSelector((state: ApplicationState) => {
+  const { network, owner, email } = useSelector((state: ApplicationState) => {
     const network = selectNetwork(state, networkID)
     return {
       network,
       owner: getOrganizationName(state, network.owner.id),
+      email: state.user.email,
     }
   })
 
   return (
-    <NetworkHeaderMenu network={network}>
+    <NetworkHeaderMenu network={network} email={email}>
       <AccordionMenuItem gutters subtitle="Configuration" defaultExpanded elevation={0}>
         <NetworkSettings network={network} owner={owner} />
       </AccordionMenuItem>

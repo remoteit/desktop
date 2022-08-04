@@ -43,7 +43,10 @@ export const UserListItem: React.FC<Props> = ({ user, remove, isConnected, membe
       */}
       {!member && children}
       {remove && (
-        <ClearButton id={user.id} onClick={() => dispatch.networks.unshareNetwork({ id: remove, email: user.email })} />
+        <ClearButton
+          id={user.id}
+          onClick={() => dispatch.networks.unshareNetwork({ networkId: remove, email: user.email })}
+        />
       )}
     </ListItemLocation>
   )
