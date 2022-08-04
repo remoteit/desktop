@@ -65,10 +65,9 @@ export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silen
   }
 
   if (errors) {
-    errors.forEach(error => console.error('graphQL error:', error))
+    errors.forEach(error => console.error('graphQL error:', JSON.stringify(error, null, 2)))
     if (!silent) store.dispatch.ui.set({ errorMessage: 'GraphQL: ' + errors[0].message })
   } else {
-    // console.log('No errors, setting count to 0')
     errorCount = 0 //Set error count back to 0, no errors
   }
 

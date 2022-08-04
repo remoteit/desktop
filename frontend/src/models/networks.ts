@@ -25,6 +25,7 @@ const defaultLocalNetwork: INetwork = {
   name: 'Local Network',
   permissions: [],
   enabled: true,
+  shared: false,
   icon: 'network-wired',
 }
 
@@ -129,16 +130,19 @@ export default createModel<RootModel>()({
       if (!state.networks.all[accountId]) dispatch.networks.fetch()
     },
 
-    async parse(result: AxiosResponse<any> | undefined) {
+    async parse(result: AxiosResponse<any> | undefined, state) {
+      const accountId = getActiveAccountId(state)
+      const userId = state.auth.user?.id
       const all = result?.data?.data?.login?.account?.networks
       if (!all) return
       const parsed: INetwork[] = all.map(n => ({
         ...n,
+        shared: userId !== n.owner.id && accountId === userId,
         created: new Date(n.created),
         serviceIds: n.connections.map(c => c.service.id),
         access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
         tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
-        icon: 'chart-network',
+        icon: userId !== n.owner.id && accountId === userId ? 'user-group' : 'chart-network',
       }))
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode
@@ -180,6 +184,7 @@ export default createModel<RootModel>()({
       if (networkId !== DEFAULT_ID) {
         const result = await graphQLRemoveConnection(networkId, serviceId)
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
+          console.error('Failed to remove network connection', serviceId, network, result)
           dispatch.ui.set({
             errorMessage: `Failed to remove network connection (${serviceId}) from ${network.name}. Please contact support.`,
           })
@@ -286,6 +291,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
     id: '',
     name: '',
     enabled: false,
+    shared: false,
     owner: { id: '', email: '' },
     permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
     serviceIds: [],

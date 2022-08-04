@@ -118,6 +118,7 @@ declare global {
     id: string
     name: string
     enabled: boolean
+    shared: boolean
     owner: IUserRef
     permissions: IPermission[]
     serviceIds: string[]

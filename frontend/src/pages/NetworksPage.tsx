@@ -65,7 +65,7 @@ export const NetworksPage: React.FC = () => {
           <NetworkAdd networks={networks} />
           <Typography variant="subtitle1">
             <Title>Networks</Title>
-            <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth size="lg" />
+            <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
           </Typography>
         </>
       }

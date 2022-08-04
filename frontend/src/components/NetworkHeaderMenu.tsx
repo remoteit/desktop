@@ -63,7 +63,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; children: React.Re
               pathname={`/networks/view/${network.id}/${network.access.length ? 'users' : 'share'}`}
               title={network.access.length ? 'Users' : 'Add User'}
               subtitle={network.access.length ? network.access.length + ' total' : ''}
-              icon="user-friends"
+              icon="user-group"
               iconColor="grayDarker"
               exactMatch
               dense
