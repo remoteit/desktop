@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
+import { safeHostname } from '../shared/nameHelper'
+import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
 import { Popover, List, ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
 import { selectDeviceByAccount } from '../models/devices'
 import { isPortal, getOs } from '../services/Browser'
@@ -22,11 +23,12 @@ export const RegisterMenu: React.FC = () => {
   const [el, setEl] = useState<Element | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo, hasThisDevice, permissions } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo, hasThisDevice, permissions, hostname } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.user.id) !== undefined,
     hasThisDevice: !!state.backend.thisId,
     permissions: selectPermissions(state),
+    hostname: safeHostname(state.backend.environment.hostname, []),
   }))
 
   const disabled = !permissions?.includes('MANAGE')
@@ -90,16 +92,17 @@ export const RegisterMenu: React.FC = () => {
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <List className={css.list} disablePadding dense>
-          <ListSubheader disableGutters>Add a device</ListSubheader>
+          <ListSubheader disableGutters>Add this system</ListSubheader>
           <ListItem button disableGutters disabled={hasThisDevice} onClick={handleClose} to={thisLink} component={Link}>
             <ListItemIcon>
               <Icon name="this" fixedWidth platformIcon />
             </ListItemIcon>
-            <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
+            <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
           </ListItem>
         </List>
         <Divider />
         <List className={css.list} disablePadding dense>
+          <ListSubheader disableGutters>Add a device</ListSubheader>
           {['aws', 'azure', 'gcp', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
             const platform = platforms.get(p)
             return (
@@ -115,7 +118,6 @@ export const RegisterMenu: React.FC = () => {
               />
             )
           })}
-          <Divider />
           <ListItem
             button
             disableGutters

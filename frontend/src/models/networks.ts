@@ -180,7 +180,9 @@ export default createModel<RootModel>()({
       if (networkId !== DEFAULT_ID) {
         const result = await graphQLRemoveConnection(networkId, serviceId)
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
-          dispatch.ui.set({ errorMessage: 'Failed to remove connection. Please contact support.' })
+          dispatch.ui.set({
+            errorMessage: `Failed to remove network connection (${serviceId}) from ${network.name}. Please contact support.`,
+          })
           dispatch.networks.setNetwork(network)
           return
         }
