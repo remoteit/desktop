@@ -15,7 +15,7 @@ import { Icon } from '../../../components/Icon'
 import { AuthLayout } from '../AuthLayout'
 import { GoogleSignInButton } from '../GoogleSignInButton'
 import { Link } from '../../../components/Link'
-import { spacing } from '../../styles/variables'
+import { spacing } from '../../../styling'
 import { useHistory } from 'react-router-dom'
 // import { OktaSignInButton } from '../OktaSignInButton'
 

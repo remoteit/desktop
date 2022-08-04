@@ -12,7 +12,6 @@ import {
 import { useTranslation } from 'react-i18next'
 import { AuthLayout } from '../AuthLayout'
 import { Notice } from '../../../components/Notice'
-import { Center } from '../Center'
 import { Icon } from '../../../components/Icon'
 
 export type MFACodeProps = {
@@ -91,13 +90,11 @@ export function MFACode({
 
   if (!localCognitoUser)
     return (
-      <Center>
-        <Container maxWidth="sm">
-          <Notice severity="danger" fullWidth>
-            Sorry, something went wrong, please try again.
-          </Notice>
-        </Container>
-      </Center>
+      <Container maxWidth="sm">
+        <Notice severity="danger" fullWidth>
+          Sorry, something went wrong, please try again.
+        </Notice>
+      </Container>
     )
 
   return (

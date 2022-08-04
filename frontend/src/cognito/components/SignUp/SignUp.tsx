@@ -10,17 +10,15 @@ import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
 import { Link } from '../../../components/Link'
 import { PasswordStrengthInput } from '../PasswordStrengthInput'
-import { ISegmentSettings } from '../CognitoAuth'
 
 export type SignUpProps = {
   onSignUp: SignUpFunc
   onResend: ResendFunc
-  segmentSettings?: ISegmentSettings
   hideCaptcha?: boolean
   fullWidth?: boolean
 }
 
-export function SignUp({ onSignUp, onResend, segmentSettings, hideCaptcha, fullWidth }: SignUpProps): JSX.Element {
+export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpProps): JSX.Element {
   const { t } = useTranslation()
   const history = useHistory()
   const [error, setError] = useState<Error | null>(null)

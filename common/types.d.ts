@@ -124,6 +124,7 @@ declare global {
     sessions?: ISession[]
     access: IUserRef[]
     icon?: string
+    iconType?: IconType
     tags: ITag[]
   }
 

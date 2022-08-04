@@ -13,7 +13,7 @@ import {
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
 import { getToken, r3 } from '../services/remote.it'
 import { CognitoUser } from '../cognito/types'
-import { AuthService } from '../cognito/services/auth'
+import { AuthService } from '../cognito/auth'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Dispatch } from '../store'

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
-import { ConnectionsPage } from '../pages/ConnectionsPage'
+import { NetworksPage } from '../pages/NetworksPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
@@ -102,7 +102,7 @@ export const Router: React.FC = () => {
       {/* Connections */}
       <Route path="/networks">
         <DynamicPanel
-          primary={<ConnectionsPage />}
+          primary={<NetworksPage />}
           secondary={
             <Switch>
               <Route path="/networks/view/:networkID/share">

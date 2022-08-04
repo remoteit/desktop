@@ -18,7 +18,14 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
   return (
     <ListItemLocation
       className={css.item}
-      icon={<Icon className={css.mergeIcon} name={network?.icon} color={network?.enabled ? 'primary' : undefined} />}
+      icon={
+        <Icon
+          className={css.mergeIcon}
+          name={network?.icon}
+          type={network?.iconType}
+          color={network?.enabled ? 'primary' : undefined}
+        />
+      }
       pathname={noLink ? undefined : `/networks/view/${network?.id}`}
       title={
         <Title className={css.text} enabled={network?.enabled}>
