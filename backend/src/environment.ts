@@ -97,13 +97,14 @@ export class Environment {
   }
 
   get frontend() {
+    const isWindows7 = this.isWindows && this.osVersion.includes('7')
     return {
       os: this.simpleOS,
       osVersion: this.osVersion,
       arch: os.arch(),
       manufacturerDetails: this.manufacturerDetails,
       privateIP: this.privateIP,
-      hostname: os.hostname(),
+      hostname: isWindows7 ? 'unknown' : os.hostname(),
       oobAvailable: this.oobAvailable,
       overrides: this.overrides,
       portal: false,
