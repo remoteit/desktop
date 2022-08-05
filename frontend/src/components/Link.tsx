@@ -8,15 +8,16 @@ export type LinkProps = Omit<RouterLinkProps, 'to'> &
   }
 
 export const Link = React.forwardRef<any, LinkProps>(({ children, ...props }, ref) => {
-  if (props.href?.startsWith('http')) {
-    props.target = '_blank'
-    props.rel = 'noopener'
+  let attributes = { ...props }
+  if (attributes.href?.startsWith('http')) {
+    attributes.target = '_blank'
+    attributes.rel = 'noopener'
   }
 
-  if (props.to) props.component = RouterLink
+  if (attributes.to) attributes.component = RouterLink
 
   return (
-    <MUILink {...props} ref={ref}>
+    <MUILink {...attributes} ref={ref}>
       {children}
     </MUILink>
   )

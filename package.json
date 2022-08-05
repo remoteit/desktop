@@ -29,7 +29,7 @@
     "watch-backend": "cd backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
     "watch-build": "tsc --watch",
-    "watch-electron": "sleep 5 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
+    "watch-electron": "sleep 7 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
     "electron-updater": "^5.0.1",

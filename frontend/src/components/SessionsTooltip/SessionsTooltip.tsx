@@ -23,6 +23,7 @@ export const SessionsTooltip: React.FC<Props> = ({
   secondaryLabel,
   children,
   disabled,
+  open,
   ...props
 }) => {
   if (!service) return null
@@ -35,11 +36,12 @@ export const SessionsTooltip: React.FC<Props> = ({
   }, [])
 
   if (list && secondaryLabel) list.unshift(secondaryLabel)
-  if (disabled) props.open = false
+  if (disabled) open = false
 
   return (
     <Tooltip
       {...props}
+      open={open}
       title={
         <>
           {label && attributeName(service)}
