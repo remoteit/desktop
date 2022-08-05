@@ -66,9 +66,9 @@ export const ProfilePage: React.FC = () => {
             <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>
           </TextField>
         </ListItem>
-        <Typography variant="subtitle1">Account deletion</Typography>
-        <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
       </List>
+      <Typography variant="subtitle1">Account deletion</Typography>
+      <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
     </Container>
   )
 }
@@ -83,5 +83,5 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
-  field: { '&:hover': { backgroundColor: palette.primaryHighlight.main } },
+  field: { marginBottom: spacing.lg, '&:hover': { backgroundColor: palette.primaryHighlight.main } },
 }))

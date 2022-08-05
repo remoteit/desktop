@@ -8,7 +8,6 @@ import { ListItemLocation } from './ListItemLocation'
 import { Typography } from '@mui/material'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
-import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
@@ -36,7 +35,6 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
-            <RefreshButton device={device} />
             <AddUserButton
               to={`/devices/${device.id}/${service.id}/share`}
               hide={!device.permissions.includes('MANAGE')}

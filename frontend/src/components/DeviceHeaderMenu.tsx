@@ -2,7 +2,6 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
-import { RefreshButton } from '../buttons/RefreshButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
@@ -27,7 +26,6 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any; childr
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
