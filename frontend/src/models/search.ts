@@ -136,7 +136,12 @@ export default createModel<RootModel>()({
         .flat()
 
       // remove duplicates
-      return all.filter((item, index) => all.findIndex(({ nodeId }) => nodeId === item.nodeId) === index)
+      const result = all.filter(
+        (item, index) => all.findIndex(({ combinedName }) => combinedName === item.combinedName) === index
+      )
+
+      console.log('search result', result)
+      return result
     },
   }),
 
