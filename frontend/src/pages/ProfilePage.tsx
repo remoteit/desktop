@@ -3,7 +3,7 @@ import { LANGUAGES } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'
-import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon, Link } from '@mui/material'
+import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
@@ -12,6 +12,7 @@ import { Gutters } from '../components/Gutters'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { Link } from '../components/Link'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -65,9 +66,9 @@ export const ProfilePage: React.FC = () => {
             <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>
           </TextField>
         </ListItem>
-        <Typography variant="subtitle1">Account deletion</Typography>
-        <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
       </List>
+      <Typography variant="subtitle1">Account deletion</Typography>
+      <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
     </Container>
   )
 }
@@ -82,5 +83,5 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
-  field: { '&:hover': { backgroundColor: palette.primaryHighlight.main } },
+  field: { marginBottom: spacing.lg, '&:hover': { backgroundColor: palette.primaryHighlight.main } },
 }))

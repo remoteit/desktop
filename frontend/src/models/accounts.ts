@@ -73,6 +73,12 @@ export default createModel<RootModel>()({
         dispatch.accounts.setActive('')
       }
     },
+    async select(accountId: string) {
+      await dispatch.logs.reset()
+      await dispatch.accounts.setActive(accountId)
+      dispatch.devices.fetchIfEmpty()
+      dispatch.tags.fetchIfEmpty()
+    },
     async leaveMembership(id: string, state) {
       const { membership } = state.accounts
       const result = await graphQLLeaveMembership(id)

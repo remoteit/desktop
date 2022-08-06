@@ -5,8 +5,8 @@ import { Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useDispatch } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
-import { Link } from 'react-router-dom'
 import { Notice } from './Notice'
+import { Link } from './Link'
 import { Icon } from './Icon'
 
 type Props = {

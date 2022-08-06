@@ -26,7 +26,7 @@ import { SignIn } from '../SignIn'
 import { SignUp } from '../SignUp'
 import { SignUpVerify } from '../SignUpVerify'
 import { Wrapper } from '../Wrapper'
-import { ISegmentSettings } from '../CognitoAuth'
+
 export type AuthProps = {
   onConfirmSignIn: ConfirmSignInFunc
   onGoogleSignIn: GoogleSignInFunc
@@ -50,7 +50,6 @@ export type AuthProps = {
   showCheckboxRemember?: boolean
   checkedCheckboxRemember?: boolean
   onClickCheckboxRemember?: (checked: boolean) => void
-  segmentSettings?: ISegmentSettings
   fullWidth?: boolean
 }
 
@@ -86,7 +85,6 @@ function Routes({
   showCheckboxRemember,
   checkedCheckboxRemember,
   onClickCheckboxRemember,
-  segmentSettings,
   fullWidth,
 }: AuthProps): JSX.Element {
   const [challenge, setChallenge] = React.useState<ChallengeOption>()
@@ -158,13 +156,7 @@ function Routes({
         <Route component={() => <SignUpVerify email={email} onResend={onResend} />} path="/sign-up/verify" />
         <Route
           component={() => (
-            <SignUp
-              fullWidth={fullWidth}
-              onResend={handleResend}
-              hideCaptcha={hideCaptcha}
-              onSignUp={handleSignup}
-              segmentSettings={segmentSettings}
-            />
+            <SignUp fullWidth={fullWidth} onResend={handleResend} hideCaptcha={hideCaptcha} onSignUp={handleSignup} />
           )}
           path="/sign-up"
         />

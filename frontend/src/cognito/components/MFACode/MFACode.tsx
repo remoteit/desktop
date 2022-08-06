@@ -1,4 +1,7 @@
-import { Box, Container, TextField, Typography } from '@mui/material'
+import React, { useState } from 'react'
+import { Box, Button, Container, TextField, Typography } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
+import { Link } from '../../../components/Link'
 import {
   CognitoUser,
   ChallengeOption,
@@ -6,14 +9,10 @@ import {
   SendCustomChallengeAnswerFunc,
   SignInSuccessFunc,
 } from '../../types'
-import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AuthLayout } from '../AuthLayout'
 import { Notice } from '../../../components/Notice'
-import { Button } from '../Button'
-import { Center } from '../Center'
 import { Icon } from '../../../components/Icon'
-import { Link } from '../Link'
 
 export type MFACodeProps = {
   challengeName?: ChallengeOption
@@ -91,13 +90,11 @@ export function MFACode({
 
   if (!localCognitoUser)
     return (
-      <Center>
-        <Container maxWidth="sm">
-          <Notice severity="danger" fullWidth>
-            Sorry, something went wrong, please try again.
-          </Notice>
-        </Container>
-      </Center>
+      <Container maxWidth="sm">
+        <Notice severity="danger" fullWidth>
+          Sorry, something went wrong, please try again.
+        </Notice>
+      </Container>
     )
 
   return (
@@ -134,11 +131,11 @@ export function MFACode({
           />
         </Box>
         <Box alignItems="center" display="flex" my={4}>
-          <Button disabled={loading} to="/" variant="text">
+          <Button disabled={loading} to="/" component={RouterLink} variant="text">
             {t('global.actions.cancel')}
           </Button>
           <Box ml="auto">
-            <Button disabled={loading || code.length < 6} loading={loading} type="submit">
+            <Button disabled={loading || code.length < 6} type="submit">
               {t('global.actions.submit')}
               <Icon inline name="arrow-right" />
             </Button>

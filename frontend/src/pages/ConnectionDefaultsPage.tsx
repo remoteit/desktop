@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
 import { getAllDevices } from '../models/accounts'
 import { newConnection } from '../helpers/connectionHelper'
-import { Link, useParams, useHistory } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '../shared/constants'
@@ -12,6 +12,7 @@ import { getApplication } from '../shared/applications'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
+import { Link } from '../components/Link'
 
 export const ConnectionDefaultsPage: React.FC = () => {
   let customAttributes: ILookup<Set<string>> = {}

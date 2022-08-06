@@ -104,26 +104,31 @@ declare global {
   }
 
   interface ISearch {
-    deviceId: string
-    deviceName: string
+    accountId: string
+    nodeId: string
+    nodeName: string
+    nodeType: INodeType | string
     serviceId: string
     serviceName: string
-    ownerEmail: strings
+    ownerEmail: string
     targetPlatform: number
     combinedName: string
-    offline: boolean
   }
 
-  export type INetwork = {
+  type INodeType = 'DEVICE' | 'NETWORK'
+
+  type INetwork = {
     id: string
     name: string
     enabled: boolean
+    shared: boolean
     owner: IUserRef
     permissions: IPermission[]
     serviceIds: string[]
     sessions?: ISession[]
     access: IUserRef[]
     icon?: string
+    iconType?: IconType
     tags: ITag[]
   }
 
@@ -294,7 +299,7 @@ declare global {
       launchTemplate?: string
       commandTemplate?: string
       targetHost?: string
-      description?: strings
+      description?: string
     }
   }
 

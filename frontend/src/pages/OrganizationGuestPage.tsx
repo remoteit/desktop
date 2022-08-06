@@ -61,7 +61,6 @@ export const OrganizationGuestPage: React.FC = () => {
                   size="medium"
                   roles={organization.roles}
                   roleId={member.roleId}
-                  license={member.license}
                   onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
                 />
                 {!enterprise && (

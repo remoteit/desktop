@@ -1,9 +1,9 @@
 import React from 'react'
-import { Box, TextField } from '@mui/material'
+import { Box, Button, TextField } from '@mui/material'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Notice } from '../../../components/Notice'
 import { AuthLayout } from '../AuthLayout'
-import { Button } from '../Button'
 import { Icon } from '../../../components/Icon'
 import { useHistory } from 'react-router-dom'
 import { RecoverPasswordRequestFunc } from '../../types'
@@ -82,11 +82,11 @@ export function ForgotPassword({
           />
         </Box>
         <Box alignItems="center" display="flex" my={4}>
-          <Button disabled={loading} to="/sign-in" variant="text">
+          <Button disabled={loading} to="/sign-in" component={Link} variant="text">
             {t('global.actions.cancel')}
           </Button>
           <Box ml="auto">
-            <Button disabled={loading || !stateEmail} loading={loading} type="submit">
+            <Button disabled={loading || !stateEmail} type="submit">
               {t(buttonKey)}
               <Icon inline name="arrow-right" />
             </Button>

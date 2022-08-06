@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
-import { Box, TextField, Typography } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { AuthLayout } from '../AuthLayout'
 import { Notice } from '../../../components/Notice'
-import { Button } from '../Button'
 import { Icon } from '../../../components/Icon'
 import { PasswordStrengthInput } from '../PasswordStrengthInput'
 
@@ -107,7 +106,7 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
           <PasswordStrengthInput isNewPassword onChange={handlePasswordValidation} />
         </Box>
         <Box mt={4} textAlign="right">
-          <Button disabled={loading || (shortcode !== '' && !isValidPassword)} loading={loading} type="submit">
+          <Button disabled={loading || (shortcode !== '' && !isValidPassword)} type="submit">
             {t('pages.password-reset.update-button')}
             <Icon inline name="arrow-right" />
           </Button>

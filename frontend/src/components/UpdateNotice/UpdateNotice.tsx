@@ -57,7 +57,10 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
         <Confirm
           open={confirm}
           onConfirm={handleConfirm}
-          onDeny={() => setConfirm(false)}
+          onDeny={() => {
+            setConfirm(false)
+            setOpen(false)
+          }}
           title="Are you sure?"
           action="Restart"
         >

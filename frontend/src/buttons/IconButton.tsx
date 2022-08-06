@@ -36,6 +36,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   name,
   disabled,
   hideDisableFade,
+  spin,
   to,
   color,
   variant,
@@ -60,7 +61,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   icon = icon || name
   if (loading) {
     icon = 'spinner-third'
-    props.spin = true
+    spin = true
   }
   const clickHandler = (e: React.MouseEvent) => {
     if (onClick) onClick(e)
@@ -82,7 +83,7 @@ export const IconButton: React.FC<ButtonProps> = ({
         marginLeft: inline ? spacing.sm : undefined,
       }}
     >
-      <Icon {...props} name={icon} size={size} color={contained ? undefined : color} fixedWidth />
+      <Icon {...props} name={icon} size={size} spin={spin} color={contained ? undefined : color} fixedWidth />
     </MuiIconButton>
   )
 

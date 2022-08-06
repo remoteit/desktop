@@ -56,7 +56,7 @@ export const ListItemLocation: React.FC<Props> = ({
   const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
 
   const onClick = () => {
-    if (props.onClick) props.onClick()
+    props.onClick?.()
     if (!disabled && pathname) history.push(pathname)
   }
   const iconEl =

@@ -1,23 +1,24 @@
 import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { Typography, Collapse } from '@mui/material'
-import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../../models/networks'
-import { initiatorPlatformIcon } from '../../components/InitiatorPlatform'
-import { selectConnections } from '../../helpers/connectionHelper'
-import { ApplicationState } from '../../store'
+import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../models/networks'
+import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
+import { selectConnections } from '../helpers/connectionHelper'
+import { selectPermissions } from '../models/organization'
+import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { SessionsList } from '../../components/SessionsList'
-import { IconButton } from '../../buttons/IconButton'
-import { NetworkAdd } from '../../components/NetworkAdd'
-import { Container } from '../../components/Container'
-import { Network } from '../../components/Network'
-import { Gutters } from '../../components/Gutters'
-import { Title } from '../../components/Title'
-import analyticsHelper from '../../helpers/analyticsHelper'
-import heartbeat from '../../services/Heartbeat'
+import { SessionsList } from '../components/SessionsList'
+import { IconButton } from '../buttons/IconButton'
+import { NetworkAdd } from '../components/NetworkAdd'
+import { Container } from '../components/Container'
+import { Network } from '../components/Network'
+import { Gutters } from '../components/Gutters'
+import { Title } from '../components/Title'
+import { Link } from '../components/Link'
+import analyticsHelper from '../helpers/analyticsHelper'
+import heartbeat from '../services/Heartbeat'
 
-export const ConnectionsPage: React.FC = () => {
-  const { other, recent, networks, active } = useSelector((state: ApplicationState) => {
+export const NetworksPage: React.FC = () => {
+  const { other, recent, networks, active, permissions } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
@@ -26,12 +27,14 @@ export const ConnectionsPage: React.FC = () => {
     otherSessions.forEach(s => {
       const id = s.user?.id || 'default'
       if (!other[id]) {
+        const [icon, iconType] = initiatorPlatformIcon({ id: s.platform })
         other[id] = {
           ...defaultNetwork(),
           id: 'other',
           enabled: true,
           name: s.user?.email || 'Unknown',
-          icon: initiatorPlatformIcon({ id: s.platform })[0],
+          icon,
+          iconType,
           sessions: [],
         }
       }
@@ -45,33 +48,37 @@ export const ConnectionsPage: React.FC = () => {
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
       active: selectActiveNetwork(state),
-      networks: selectNetworks(state),
+      networks: selectNetworks(state).sort((a: INetwork, b: INetwork) =>
+        a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
+      ),
+      permissions: selectPermissions(state),
     }
   })
 
   useEffect(() => {
     heartbeat.beat()
-    analyticsHelper.page('ConnectionsPage')
+    analyticsHelper.page('NetworksPage')
   }, [])
 
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
       gutterBottom
-      integrated
       header={
         <>
           <NetworkAdd networks={networks} />
           <Typography variant="subtitle1">
             <Title>Networks</Title>
-            <IconButton icon="plus" title="Add Network" to="/networks/new" fixedWidth size="lg" />
+            {permissions?.includes('MANAGE') && (
+              <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
+            )}
           </Typography>
         </>
       }
     >
       <Network key={DEFAULT_ID} network={active} highlight noLink />
       <Collapse in={!networks?.length}>
-        <Gutters top="xxl">
+        <Gutters top="xxl" bottom="xxl">
           <Typography variant="h3" align="center" gutterBottom>
             Networks appear here
           </Typography>

@@ -1,8 +1,9 @@
 import React from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { IconButton, Tooltip, Link } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
+import { Link } from './Link'
 import { Icon } from './Icon'
 
 type Props = {
@@ -24,6 +25,6 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
       </IconButton>
     </Tooltip>
   ) : (
-    <Link onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>Scan&nbsp;network</Link>
+    <Link to={`/devices/${deviceID}/add/scan`}>Scan&nbsp;network</Link>
   )
 }

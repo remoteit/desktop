@@ -1,8 +1,8 @@
 import React from 'react'
+import { Link } from '../Link'
 import { Notice } from '../Notice'
 import { MFAPhoneForm } from './MFAPhoneForm'
-import { makeStyles } from '@mui/styles'
-import { Box, Button, TextField, Link, Typography } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 
@@ -27,7 +27,6 @@ export const MFAConfigureSms: React.FC<Props> = ({
   resendCode,
   setCancelShowVerificationCode,
 }) => {
-  const css = useStyles()
   const { mfa } = useDispatch<Dispatch>()
   const { showPhone, showVerificationCode, AWSPhone } = useSelector((state: ApplicationState) => ({
     showPhone: state.mfa.showPhone,
@@ -104,27 +103,3 @@ export const MFAConfigureSms: React.FC<Props> = ({
     </>
   )
 }
-
-const useStyles = makeStyles({
-  modalMessage: {
-    backgroundColor: '#e9f6fd',
-    padding: 11,
-    display: 'flex',
-    borderRadius: 4,
-    fontSize: 14,
-    color: '#3aa1db',
-    marginBottom: 10,
-    minWidth: 500,
-  },
-  message: {
-    color: '',
-    fontWeight: 500,
-  },
-  icon: {
-    marginRight: 12,
-    padding: '7px 0',
-    display: 'flex',
-    fontSize: '22px',
-    opacity: '0.9',
-  },
-})

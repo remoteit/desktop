@@ -25,6 +25,7 @@ const defaultLocalNetwork: INetwork = {
   name: 'Local Network',
   permissions: [],
   enabled: true,
+  shared: false,
   icon: 'network-wired',
 }
 
@@ -129,11 +130,14 @@ export default createModel<RootModel>()({
       if (!state.networks.all[accountId]) dispatch.networks.fetch()
     },
 
-    async parse(result: AxiosResponse<any> | undefined) {
+    async parse(result: AxiosResponse<any> | undefined, state) {
+      const accountId = getActiveAccountId(state)
+      const userId = state.auth.user?.id
       const all = result?.data?.data?.login?.account?.networks
       if (!all) return
       const parsed: INetwork[] = all.map(n => ({
         ...n,
+        shared: userId !== n.owner.id && accountId === userId,
         created: new Date(n.created),
         serviceIds: n.connections.map(c => c.service.id),
         access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
@@ -180,7 +184,10 @@ export default createModel<RootModel>()({
       if (networkId !== DEFAULT_ID) {
         const result = await graphQLRemoveConnection(networkId, serviceId)
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
-          dispatch.ui.set({ errorMessage: 'Failed to remove connection. Please contact support.' })
+          console.error('Failed to remove network connection', serviceId, network, result)
+          dispatch.ui.set({
+            errorMessage: `Failed to remove network connection (${serviceId}) from ${network.name}. Please contact support.`,
+          })
           dispatch.networks.setNetwork(network)
           return
         }
@@ -219,7 +226,14 @@ export default createModel<RootModel>()({
       params.id = response?.data?.data?.createNetwork?.id
       console.log('ADDING NETWORK', params)
       await dispatch.networks.setNetwork(params)
+      await dispatch.networks.fetch()
       dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
+    },
+    async updateNetwork(network: INetwork, state) {
+      const response = await graphQLUpdateNetwork(network)
+      if (response === 'ERROR') return
+      await dispatch.networks.setNetwork(network)
+      await dispatch.networks.fetch()
     },
     async shareNetwork({ id, emails }: { id: string; emails: string[] }, state) {
       const response = await graphQLAddNetworkShare(id, emails)
@@ -233,17 +247,16 @@ export default createModel<RootModel>()({
             : `${network.name} successfully shared to ${emails[0]}.`,
       })
     },
-    async unshareNetwork({ id, email }: { id: string; email: string }, state) {
-      const response = await graphQLRemoveNetworkShare(id, email)
+    async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {
+      const response = await graphQLRemoveNetworkShare(networkId, email)
       if (response === 'ERROR' || !response?.data?.data?.removeNetworkShare) return
-      const network = selectNetwork(state, id)
+      const network = selectNetwork(state, networkId)
       const index = network.access.findIndex(a => a.email === email)
       network.access.splice(index, 1)
       await dispatch.networks.setNetwork(network)
     },
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
-
       if (params.id === DEFAULT_ID) return
 
       let networks: INetwork[] = state.networks.all[id] || []
@@ -251,11 +264,9 @@ export default createModel<RootModel>()({
 
       if (index >= 0) {
         const network = { ...networks[index], ...params }
-        const response = await graphQLUpdateNetwork(network)
-        if (response === 'ERROR') return
         networks[index] = network
         dispatch.networks.setNetworks(networks)
-      } else dispatch.networks.addNetwork(params)
+      }
     },
     async setNetworks(networks: INetwork[], state) {
       const id = getActiveAccountId(state)
@@ -284,6 +295,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
     id: '',
     name: '',
     enabled: false,
+    shared: false,
     owner: { id: '', email: '' },
     permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
     serviceIds: [],

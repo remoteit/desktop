@@ -1,14 +1,8 @@
 import React from 'react'
 import { CognitoUser, ChallengeOption, SignInSuccessFunc, CognitoUserResult, SamlOrgResult } from '../../types'
 import { SplashScreen } from '../SplashScreen'
-import { AuthService } from '../../services/auth'
+import { AuthService } from '../../auth'
 import { Auth } from '../Auth'
-
-export type ISegmentSettings = {
-  segmentKey?: string
-  segmentAppName?: string
-  appVersion?: string
-}
 
 export type CognitoAuthProps = {
   onSignInSuccess: SignInSuccessFunc
@@ -24,7 +18,6 @@ export type CognitoAuthProps = {
   showCheckboxRemember?: boolean
   checkedCheckboxRemember?: boolean
   onClickCheckboxRemember?: (checked: boolean) => void
-  segmentSettings?: ISegmentSettings
   fullWidth?: boolean
 }
 
@@ -42,7 +35,6 @@ export function CognitoAuth({
   showCheckboxRemember,
   checkedCheckboxRemember,
   onClickCheckboxRemember = () => {},
-  segmentSettings,
   fullWidth,
 }: CognitoAuthProps): JSX.Element {
   const [authUser, setAuthUser] = React.useState<CognitoUser>()
@@ -198,7 +190,6 @@ export function CognitoAuth({
       onSignUp={handleSignUp}
       onVerifyPasswordChange={handleVerifyPasswordChange}
       onVerifyRecoveryCode={handleVerifyRecoveryCode}
-      segmentSettings={segmentSettings}
       showCheckboxRemember={showCheckboxRemember}
       showLogo={showLogo}
     />

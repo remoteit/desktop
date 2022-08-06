@@ -32,7 +32,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   return (
     <ListItemLocation pathname={pathname} dense>
       <ListItemIcon>
-        <Icon name="user-friends" color="grayDarker" size="md" />
+        <Icon name="user-group" color="grayDarker" size="md" />
       </ListItemIcon>
       <ListItemText
         primary={total ? 'Users' : 'Add User'}

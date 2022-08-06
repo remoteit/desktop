@@ -1,12 +1,13 @@
 import React from 'react'
 import { Gutters } from './Gutters'
 import { makeStyles } from '@mui/styles'
-import { Table, TableHead, TableBody, TableRow, TableCell, Tooltip, Typography, Link } from '@mui/material'
+import { Table, TableHead, TableBody, TableRow, TableCell, Tooltip, Typography } from '@mui/material'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { LoadingMessage } from './LoadingMessage'
 import { spacing } from '../styling'
+import { Link } from './Link'
 import { Icon } from './Icon'
 
 const dateOptions: Intl.DateTimeFormatOptions = {
@@ -55,7 +56,7 @@ export const Invoices: React.FC = () => {
                 <TableCell>
                   {invoice.url && (
                     <Tooltip title="See invoice">
-                      <Link href={invoice.url} target="_blank">
+                      <Link href={invoice.url}>
                         <Icon name="receipt" />
                       </Link>
                     </Tooltip>

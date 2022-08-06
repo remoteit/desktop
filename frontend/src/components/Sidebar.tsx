@@ -46,5 +46,6 @@ const useStyles = makeStyles(({ palette }) => ({
   header: {
     display: 'flex',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
 }))

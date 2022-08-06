@@ -1,11 +1,11 @@
 import React from 'react'
-import { Button, ButtonProps } from '../Button/Button'
+import { Button, ButtonProps } from '@mui/material'
 
 export type GoogleSignInButtonProps = Omit<ButtonProps, 'children'>
 
-export function GoogleSignInButton({ onClick, ...props }: GoogleSignInButtonProps): JSX.Element {
+export function GoogleSignInButton(props: GoogleSignInButtonProps): JSX.Element {
   return (
-    <Button onClick={onClick} {...props}>
+    <Button {...props}>
       <svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1">
         <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
           <g id="google" transform="translate(11.000000, 11.000000)">

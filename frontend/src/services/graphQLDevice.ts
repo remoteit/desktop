@@ -190,7 +190,7 @@ export function graphQLAdaptor(
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),
-      shared: loginId !== owner.id,
+      shared: loginId !== owner.id && accountId === loginId,
       lastReported: d.lastReported && new Date(d.lastReported),
       externalAddress: d.endpoint?.externalAddress,
       internalAddress: d.endpoint?.internalAddress,

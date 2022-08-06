@@ -44,14 +44,14 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
       {configurable && (
         <Tooltip title="Remote configurable" placement="top" arrow>
           <sup>
-            <Icon name="wifi" size="xxs" type="solid" fixedWidth />
+            <Icon name="wifi" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )}
-      {/* {device?.shared && !configurable && (
+      {/* {device?.shared && (
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
           <sup>
-            <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
+            <Icon name="user-group" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )} */}

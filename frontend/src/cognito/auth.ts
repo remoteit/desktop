@@ -8,7 +8,7 @@ import {
   RecoveryChallengeType,
   CognitoUserResult,
   SamlOrgResult,
-} from '../types'
+} from './types'
 // import Amplify, { Auth } from 'aws-amplify'
 import { CognitoUserSession } from 'amazon-cognito-identity-js'
 import axios from 'axios'

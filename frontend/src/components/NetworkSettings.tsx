@@ -6,6 +6,7 @@ import { FormDisplay } from './FormDisplay'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { MAX_NAME_LENGTH } from '../shared/constants'
+import { Avatar } from '../components/Avatar'
 
 export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = ({ network, owner }) => {
   const dispatch = useDispatch<Dispatch>()
@@ -17,16 +18,21 @@ export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = (
         value={network.name}
         label="Network Name"
         maxLength={MAX_NAME_LENGTH}
-        onSave={name => dispatch.networks.setNetwork({ ...network, name: name.toString() })}
+        onSave={name => dispatch.networks.updateNetwork({ ...network, name: name.toString() })}
       />
       <ListItemSetting
         icon="power-off"
-        label="Enable"
+        label="Enable Connections"
         subLabel={`Start or stop all services. ${network.enabled ? 'New services will auto-start.' : ''}`}
         toggle={network.enabled}
         onClick={() => dispatch.networks.enable({ ...network, enabled: !network.enabled })}
       />
-      <FormDisplay icon="user" label="Owner" value={owner} displayOnly />
+      <FormDisplay
+        icon={<Avatar email={network.owner.email} size={24} tooltip />}
+        label="Owner"
+        value={owner}
+        displayOnly
+      />
     </List>
   )
 }

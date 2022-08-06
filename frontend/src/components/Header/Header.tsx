@@ -28,7 +28,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
       return {
         feature: selectLimitsLookup(state),
         selected: state.ui.selected,
-        searched: deviceModel.searched,
+        searched: deviceModel.searched, // debug make true
         navigationBack: state.ui.navigationBack,
         navigationForward: state.ui.navigationForward,
         device: getOwnDevices(state).find(d => d.thisDevice),

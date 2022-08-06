@@ -13,8 +13,7 @@ export interface Props {
 }
 
 export const Layout = ({ children }: Props) => {
-  const { theme, themeMode } = useSelector((state: ApplicationState) => state.ui)
-  console.log('theme', theme, themeMode)
+  const { theme } = useSelector((state: ApplicationState) => state.ui)
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>{children}</ThemeProvider>

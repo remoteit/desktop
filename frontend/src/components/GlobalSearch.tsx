@@ -25,7 +25,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   }))
   const css = useStyles()
   const history = useHistory()
-  const { search, devices } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const [query, setQuery] = useState<string>(queryDefault)
 
   const fetch = React.useMemo(
@@ -33,7 +33,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
       debounce(
         value => {
           console.log('FETCHING', value)
-          search.fetch(value)
+          dispatch.search.fetch(value)
         },
         400,
         { trailing: true }
@@ -43,19 +43,24 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
 
   const clear = () => {
     setQuery('')
-    devices.set({ query: '', searched: false, from: 0 })
-    devices.fetch()
+    dispatch.devices.set({ query: '', searched: false, from: 0 })
+    dispatch.devices.fetch()
   }
 
   const select = (selection: ISearch) => {
-    // devices.set({ query: '' })
-    history.push(`/devices/${selection?.deviceId}/${selection?.serviceId}`)
+    // dispatch.devices.set({ query: '' })
+    if (selection.nodeType === 'NETWORK') {
+      dispatch.accounts.select(selection.accountId)
+      history.push(`/networks/${selection?.serviceId}`)
+    } else {
+      history.push(`/devices/${selection?.nodeId}/${selection?.serviceId}`)
+    }
   }
 
   const submit = () => {
-    devices.set({ query, searched: true, from: 0 })
-    devices.fetch()
-    onClose && onClose()
+    dispatch.devices.set({ query, searched: true, from: 0 })
+    dispatch.devices.fetch()
+    onClose?.()
     history.push(`/devices`)
   }
 
@@ -66,6 +71,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   return (
     <div className={css.container}>
       <Autocomplete
+        // open // debug
         freeSolo
         fullWidth
         autoSelect
@@ -84,7 +90,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           if (reason === 'selectOption') select(newValue)
           if (reason === 'createOption') submit()
         }}
-        groupBy={option => option.deviceName}
+        groupBy={option => option.nodeName}
         onInputChange={(event, newQuery, reason) => {
           if (reason === 'input') setQuery(newQuery)
           if (reason === 'clear') clear()
@@ -107,7 +113,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             variant="filled"
             inputRef={inputRef}
             className={css.input}
-            onBlur={() => onClose && onClose()}
+            onBlur={() => onClose?.()}
             InputProps={{
               ...params.InputProps,
               endAdornment: <>{params.InputProps.endAdornment}</>,
@@ -125,11 +131,10 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           return (
             <ListItem {...props} key={props.id}>
               <span
-                className={classnames(enabled && css.enabled, option.offline && css.offline, css.indent)}
+                className={classnames(enabled && css.enabled, css.indent)}
                 data-email={option.ownerEmail}
-                data-platform={option.targetPlatform}
-                data-offline={option.offline.toString()}
-                data-id={option.deviceId}
+                data-platform={option.targetPlatform || option.nodeType}
+                data-id={option.nodeId}
               >
                 {parts}
               </span>
@@ -138,11 +143,15 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         }}
         renderGroup={option => {
           const props = option.children && option.children[0].props.children.props
-          console.log('RENDER GROUP', option.key, option.group)
+
           return [
             <ListSubheader disableGutters className={css.subhead} key={option.key}>
-              <Typography variant="body2" className={props['data-offline'] === 'true' ? css.offline : undefined}>
-                <TargetPlatform id={props['data-platform']} inlineLeft size="md" />
+              <Typography variant="body2">
+                {props['data-platform'] === 'NETWORK' ? (
+                  <Icon name="chart-network" color="grayDarker" inlineLeft size="md" />
+                ) : (
+                  <TargetPlatform id={props['data-platform']} inlineLeft size="md" />
+                )}
                 {reactStringReplace(option.group, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
                   <span key={i} className={css.highlight}>
                     {match}
@@ -168,7 +177,6 @@ const useStyles = makeStyles(({ palette }) => ({
   input: { '-webkit-app-region': 'no-drag' },
   button: { marginBottom: -spacing.sm },
   enabled: { color: palette.primary.main },
-  offline: { opacity: 0.3 },
   subhead: {
     top: -8,
     display: 'flex',
@@ -181,7 +189,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderRadius: 0,
     textTransform: 'inherit',
     letterSpacing: 'inherit',
-    '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
+    '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontWeight: 500 },
   },
   listbox: {
     maxHeight: '60vh',

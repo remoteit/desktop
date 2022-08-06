@@ -42,7 +42,7 @@ export const AvatarMenu: React.FC = () => {
   return (
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef}>
-        <Avatar email={user?.email} size={42} button tooltip></Avatar>
+        <Avatar email={user?.email} size={44} button tooltip></Avatar>
       </ButtonBase>
       <Menu
         open={open}

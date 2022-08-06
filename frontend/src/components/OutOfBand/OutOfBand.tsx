@@ -1,7 +1,8 @@
 import React from 'react'
+import { Link } from '../Link'
+import { Tooltip } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
-import { Tooltip, Link } from '@mui/material'
 import { ApplicationState } from '../../store'
 import { spacing, fontSizes } from '../../styling'
 
@@ -17,7 +18,7 @@ export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   return (
     <span className={inline ? undefined : css.container}>
       <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
-        <Link href="https://link.remote.it/documentation-guides/out-of-band" target="_blank">
+        <Link href="https://link.remote.it/documentation-guides/out-of-band">
           <div className={css.oob + (active ? ' ' + css.active : '')}>
             <span />
             <small>Out of Band</small>

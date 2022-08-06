@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Chip, Box } from '@mui/material'
+import { Chip, Box, Typography } from '@mui/material'
 import { Tag } from './Tag'
 
 type Props = {
@@ -30,7 +30,12 @@ export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelet
       />
     ))
 
-  if (!tags.length && showEmpty) return <>None</>
+  if (!tags.length && showEmpty)
+    return (
+      <Typography variant="caption" marginLeft={1}>
+        No tags
+      </Typography>
+    )
 
   return <Box>{dot ? <Chip size="small" label={Tags} /> : Tags}</Box>
 }
