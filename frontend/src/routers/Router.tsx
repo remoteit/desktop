@@ -105,6 +105,10 @@ export const Router: React.FC = () => {
           primary={<NetworksPage />}
           secondary={
             <Switch>
+              {/* <Route path="/networks/view/:networkID/share">
+                <NetworkSharePage />
+              </Route> */}
+
               <Route path="/networks/view/:networkID/share">
                 <NetworkSharePage />
               </Route>

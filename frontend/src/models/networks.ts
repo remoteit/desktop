@@ -142,7 +142,7 @@ export default createModel<RootModel>()({
         serviceIds: n.connections.map(c => c.service.id),
         access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
         tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
-        icon: userId !== n.owner.id && accountId === userId ? 'user-group' : 'chart-network',
+        icon: 'chart-network',
       }))
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode

@@ -24,10 +24,19 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   attributes.fixedWidth = true
 
   const refresh = async callback => {
+    network.connect()
     dispatch.ui.set({ fetching: true })
     await callback()
     dispatch.ui.set({ fetching: false })
-    network.connect()
+    await Promise.all([
+      dispatch.networks.fetch(),
+      dispatch.sessions.fetch(),
+      dispatch.user.fetch(),
+      dispatch.tags.fetch(),
+      dispatch.plans.fetch(),
+      dispatch.organization.fetch(),
+      dispatch.announcements.fetch(),
+    ])
   }
 
   return (
@@ -38,8 +47,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
           title="Refresh networks"
           onClick={async () =>
             await refresh(async () => {
-              await dispatch.sessions.fetch()
-              await dispatch.networks.fetch()
               await dispatch.devices.fetchConnections()
             })
           }
@@ -68,7 +75,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
                 await dispatch.devices.fetchSingle({ id: device.id })
               } else {
                 await dispatch.devices.set({ from: 0 })
-                await dispatch.accounts.fetch()
                 await dispatch.devices.fetch()
               }
             })
@@ -76,24 +82,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
         />
       </Route>
       <Route path="*">
-        <IconButton
-          {...attributes}
-          title="Refresh Application"
-          onClick={async () =>
-            await refresh(async () => {
-              await dispatch.accounts.fetch()
-              await Promise.all([
-                dispatch.networks.fetch(),
-                dispatch.sessions.fetch(),
-                dispatch.user.fetch(),
-                dispatch.tags.fetch(),
-                dispatch.plans.fetch(),
-                dispatch.organization.fetch(),
-                dispatch.announcements.fetch(),
-              ])
-            })
-          }
-        />
+        <IconButton {...attributes} title="Refresh Application" onClick={async () => await refresh(() => {})} />
       </Route>
     </Switch>
   )

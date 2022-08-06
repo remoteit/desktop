@@ -10,6 +10,7 @@ import { Dispatch, ApplicationState } from '../store'
 import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
+import { DesktopUI } from './DesktopUI'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
 import { Link } from 'react-router-dom'
@@ -91,16 +92,25 @@ export const RegisterMenu: React.FC = () => {
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <List className={css.list} disablePadding dense>
-          <ListSubheader disableGutters>Add this system</ListSubheader>
-          <ListItem button disableGutters disabled={hasThisDevice} onClick={handleClose} to={thisLink} component={Link}>
-            <ListItemIcon>
-              <Icon name="this" fixedWidth platformIcon />
-            </ListItemIcon>
-            <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
-          </ListItem>
-        </List>
-        <Divider />
+        <DesktopUI>
+          <List className={css.list} disablePadding dense>
+            <ListSubheader disableGutters>Add this system</ListSubheader>
+            <ListItem
+              button
+              disableGutters
+              disabled={hasThisDevice}
+              onClick={handleClose}
+              to={thisLink}
+              component={Link}
+            >
+              <ListItemIcon>
+                <Icon name="this" fixedWidth platformIcon />
+              </ListItemIcon>
+              <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
+            </ListItem>
+          </List>
+          <Divider />
+        </DesktopUI>
         <List className={css.list} disablePadding dense>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           {['aws', 'azure', 'gcp', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {

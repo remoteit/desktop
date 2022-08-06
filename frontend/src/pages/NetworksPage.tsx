@@ -3,6 +3,7 @@ import { Typography, Collapse } from '@mui/material'
 import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../models/networks'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
+import { selectPermissions } from '../models/organization'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { SessionsList } from '../components/SessionsList'
@@ -17,7 +18,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import heartbeat from '../services/Heartbeat'
 
 export const NetworksPage: React.FC = () => {
-  const { other, recent, networks, active } = useSelector((state: ApplicationState) => {
+  const { other, recent, networks, active, permissions } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
@@ -50,6 +51,7 @@ export const NetworksPage: React.FC = () => {
       networks: selectNetworks(state).sort((a: INetwork, b: INetwork) =>
         a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
       ),
+      permissions: selectPermissions(state),
     }
   })
 
@@ -67,14 +69,16 @@ export const NetworksPage: React.FC = () => {
           <NetworkAdd networks={networks} />
           <Typography variant="subtitle1">
             <Title>Networks</Title>
-            <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
+            {permissions?.includes('MANAGE') && (
+              <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
+            )}
           </Typography>
         </>
       }
     >
       <Network key={DEFAULT_ID} network={active} highlight noLink />
       <Collapse in={!networks?.length}>
-        <Gutters top="xxl">
+        <Gutters top="xxl" bottom="xxl">
           <Typography variant="h3" align="center" gutterBottom>
             Networks appear here
           </Typography>

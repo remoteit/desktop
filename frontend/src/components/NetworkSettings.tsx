@@ -6,6 +6,7 @@ import { FormDisplay } from './FormDisplay'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { MAX_NAME_LENGTH } from '../shared/constants'
+import { Avatar } from '../components/Avatar'
 
 export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = ({ network, owner }) => {
   const dispatch = useDispatch<Dispatch>()
@@ -26,7 +27,12 @@ export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = (
         toggle={network.enabled}
         onClick={() => dispatch.networks.enable({ ...network, enabled: !network.enabled })}
       />
-      <FormDisplay icon="user" label="Owner" value={owner} displayOnly />
+      <FormDisplay
+        icon={<Avatar email={network.owner.email} size={24} tooltip />}
+        label="Owner"
+        value={owner}
+        displayOnly
+      />
     </List>
   )
 }

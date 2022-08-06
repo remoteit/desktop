@@ -11,11 +11,9 @@ import { Body } from '../components/Body'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationGuestsPage: React.FC = () => {
-  const { permissions } = useSelector((state: ApplicationState) => {
-    return {
-      permissions: selectPermissions(state),
-    }
-  })
+  const { permissions } = useSelector((state: ApplicationState) => ({
+    permissions: selectPermissions(state),
+  }))
 
   useEffect(() => {
     analyticsHelper.page('OrganizationGuestsPage')

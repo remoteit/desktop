@@ -14,7 +14,7 @@ export const AccountSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const [open, setOpen] = useState<boolean>(false)
-  const { accounts, devices, tags, logs } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const { user, options, activeId, orgName } = useSelector((state: ApplicationState) => ({
     user: state.auth.user || { id: '', email: '' },
     activeId: getActiveAccountId(state),
@@ -45,10 +45,7 @@ export const AccountSelect: React.FC = () => {
           const id = event.target.value as string
           const menu = location.pathname.match(REGEX_FIRST_PATH)
           if (id) {
-            await logs.reset()
-            await accounts.setActive(id.toString())
-            devices.fetchIfEmpty()
-            tags.fetchIfEmpty()
+            dispatch.accounts.select(id.toString())
             if (menu && menu[0] === '/devices') history.push('/devices')
           }
         }}
