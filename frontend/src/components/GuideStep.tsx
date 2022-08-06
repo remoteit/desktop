@@ -47,7 +47,7 @@ export const GuideStep: React.FC<Props> = ({
   const last = step === state.total
 
   React.useEffect(() => {
-    if (!state.done && autoStart) start()
+    if (!state.done && state.step === 1 && autoStart) start()
   }, [])
 
   if (step !== 1 && !open) return <>{children}</>
@@ -57,7 +57,6 @@ export const GuideStep: React.FC<Props> = ({
       classes={{ tooltip: css.tip, arrow: css.arrow }}
       open={open}
       arrow={!hideArrow}
-      // interactive
       placement={placement || 'top'}
       title={
         <>
@@ -66,8 +65,6 @@ export const GuideStep: React.FC<Props> = ({
             title="Exit guide"
             color="white"
             onClick={() => ui.guide({ guide, step: 0, done: true })}
-            className={css.close}
-            size="lg"
           />
           <Typography variant="body1">{instructions}</Typography>
           {showNavigation && (
@@ -79,7 +76,6 @@ export const GuideStep: React.FC<Props> = ({
                 type="light"
                 disabled={step <= 1}
                 onClick={() => ui.guide({ guide, step: step - 1, back: true })}
-                size="lg"
               />
               <IconButton
                 icon="angle-right"
@@ -88,7 +84,6 @@ export const GuideStep: React.FC<Props> = ({
                 type="light"
                 disabled={step >= state.total}
                 onClick={() => ui.guide({ guide, step: step + 1 })}
-                size="lg"
               />
             </Box>
           )}
@@ -109,7 +104,6 @@ export const GuideStep: React.FC<Props> = ({
             onClick={start}
             color={state.done || step === 1 ? 'grayLight' : 'guide'}
             className={css.icon}
-            size="lg"
           />
         )}
         {children}
@@ -139,13 +133,13 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     borderRadius: radius,
     '& .MuiTypography-caption': { color: palette.white.main, marginTop: spacing.md, display: 'block' },
+    '& .IconButtonTooltip': {
+      position: 'absolute',
+      right: spacing.xs,
+      top: spacing.xs,
+    },
   },
   arrow: {
     color: palette.guide.main,
-  },
-  close: {
-    position: 'absolute',
-    right: spacing.xs,
-    top: spacing.xs,
   },
 }))

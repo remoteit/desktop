@@ -6,6 +6,7 @@ import { selectNetwork } from '../models/networks'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
+import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import sleep from '../services/sleep'
 
@@ -16,7 +17,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
   const show = !!matchPath(location.pathname, { path: '/networks/new' })
   const [name, setName] = useState<string>('')
   const [adding, setAdding] = useState<boolean>(false)
-  const inputRef = useRef<HTMLInputElement>()
+  const inputRef = useRef<HTMLInputElement>(null)
   const network = useSelector((state: ApplicationState) => selectNetwork(state))
 
   const reset = async () => {
@@ -36,6 +37,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
             event.preventDefault()
             setAdding(true)
             await dispatch.networks.addNetwork({ ...network, name })
+            dispatch.ui.guide({ guide: 'guideNetwork', step: 3 })
             reset()
           }}
         >
@@ -63,9 +65,16 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
               }}
               inline
               fixedWidth
-              size="lg"
             />
-            <IconButton icon="check" color="primary" submit fixedWidth loading={adding} size="lg" />
+            <GuideStep
+              step={2}
+              guide="guideNetwork"
+              instructions="Click here after entering your network name."
+              placement="top-end"
+              highlight
+            >
+              <IconButton icon="check" color="primary" disabled={name.length < 2} submit fixedWidth loading={adding} />
+            </GuideStep>
           </Box>
         </form>
       </Gutters>

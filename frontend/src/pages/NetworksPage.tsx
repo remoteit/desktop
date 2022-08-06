@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import { SessionsList } from '../components/SessionsList'
 import { IconButton } from '../buttons/IconButton'
 import { NetworkAdd } from '../components/NetworkAdd'
+import { GuideStep } from '../components/GuideStep'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
 import { Gutters } from '../components/Gutters'
@@ -70,7 +71,17 @@ export const NetworksPage: React.FC = () => {
           <Typography variant="subtitle1">
             <Title>Networks</Title>
             {permissions?.includes('MANAGE') && (
-              <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
+              <GuideStep
+                step={1}
+                guide="guideNetwork"
+                instructions="Click here to add a virtual network of services."
+                placement="top"
+                highlight
+                autoStart
+                autoNext
+              >
+                <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
+              </GuideStep>
             )}
           </Typography>
         </>

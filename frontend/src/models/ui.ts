@@ -10,6 +10,7 @@ export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
   'guideAWS',
+  'guideNetwork',
   'themeMode',
   'accordion',
   'drawerMenu',
@@ -68,6 +69,7 @@ type UIState = {
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
+  guideNetwork: IGuide
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -122,7 +124,8 @@ export const defaultState: UIState = {
   navigation: {},
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 1, total: 6 },
+  guideAWS: { title: 'AWS Guide', step: 1, total: 6, done: false },
+  guideNetwork: { title: 'Add Network Guide', step: 1, total: 3, done: false },
   accordion: { config: true, configConnected: false, options: false, service: false, networks: true },
   autoConnect: false,
   autoLaunch: false,
