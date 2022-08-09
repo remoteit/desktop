@@ -146,7 +146,7 @@ export default class CLI {
     const connections = await this.connectionStatus()
     if (this.processing) return
 
-    return connections.map((c, i) => {
+    return connections.map(c => {
       let error: ISimpleError | undefined
 
       if (c.reachable === false) {

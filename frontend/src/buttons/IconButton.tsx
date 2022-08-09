@@ -15,8 +15,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   hideDisableFade?: boolean
   to?: string
   buttonBaseSize?: 'small' | 'medium' | 'large'
-  variant?: 'text' | 'contained'
-  className?: string
+  variant?: 'text' | 'contained' | 'outlined'
   shiftDown?: boolean
   loading?: boolean
   submit?: boolean
@@ -48,7 +47,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   className,
   loading,
   submit,
-  placement,
+  placement = 'top',
   onMouseEnter,
   onMouseLeave,
   onMouseDown,
@@ -59,7 +58,6 @@ export const IconButton: React.FC<ButtonProps> = ({
 }) => {
   const history = useHistory()
   const css = useStyles({ color })
-  const contained = variant === 'contained'
   icon = icon || name
   if (loading) {
     icon = 'spinner-third'
@@ -78,7 +76,7 @@ export const IconButton: React.FC<ButtonProps> = ({
       onMouseLeave={onMouseLeave}
       disabled={disabled}
       size={buttonBaseSize}
-      className={classnames(className, contained && css.contained)}
+      className={classnames(className, variant && css[variant])}
       type={submit ? 'submit' : undefined}
       style={{
         opacity: disabled && !hideDisableFade ? 0.5 : undefined,
@@ -86,7 +84,14 @@ export const IconButton: React.FC<ButtonProps> = ({
         marginLeft: inline ? spacing.sm : undefined,
       }}
     >
-      <Icon {...props} name={icon} size={size} spin={spin} color={contained ? undefined : color} fixedWidth />
+      <Icon
+        {...props}
+        name={icon}
+        size={size}
+        spin={spin}
+        color={variant === 'contained' ? undefined : color}
+        fixedWidth
+      />
     </MuiIconButton>
   )
 
@@ -107,4 +112,8 @@ const useStyles = makeStyles(({ palette }) => ({
       backgroundColor: darken(palette[color].main, 0.2),
     },
   }),
+  outlined: ({ color = 'primary' }: IconProps) => ({
+    border: `1px solid ${palette[color].main}`,
+  }),
+  text: {},
 }))

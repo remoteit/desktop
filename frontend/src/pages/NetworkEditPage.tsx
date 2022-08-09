@@ -31,8 +31,9 @@ export const NetworkEditPage: React.FC = () => {
             Network added!
           </Typography>
           <Typography variant="body2">
-            Next add a service. Find the one you want and use the network panel on the connect page.
+            Next add a service. Find one from the devices page and use the network panel to add.
           </Typography>
+          <Typography variant="caption">Note, you can only add from devices you own or manage.</Typography>
         </>
       }
       placement="left"

@@ -53,7 +53,7 @@ export const TagEditor: React.FC<Props> = ({
     <>
       {button ? (
         <div ref={addRef}>
-          <IconButton {...buttonProps} icon={button} onClick={handleOpen} disabled={open} size="lg" />
+          <IconButton {...buttonProps} icon={button} onClick={handleOpen} disabled={open} />
         </div>
       ) : (
         <Chip

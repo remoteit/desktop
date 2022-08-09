@@ -21,6 +21,7 @@ import { NetworksAccordion } from './NetworksAccordion'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
+import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
 import { LoadingMessage } from './LoadingMessage'
 import { ForgetButton } from '../buttons/ForgetButton'
@@ -75,6 +76,7 @@ export const Connect: React.FC = () => {
     <>
       <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      <ConnectionSurvey connection={connection} />
       <GuideStep
         guide="guideAWS"
         step={5}
@@ -83,7 +85,7 @@ export const Connect: React.FC = () => {
           (connection.autoLaunch ? ' The connection will auto launch.' : '')
         }
       >
-        <Gutters className={css.gutters} top="lg">
+        <Gutters className={css.gutters} top={null}>
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <ComboButton
             connection={connection}
@@ -99,7 +101,7 @@ export const Connect: React.FC = () => {
       <List disablePadding>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
-      <Gutters>
+      <Gutters top={null}>
         <AccordionMenuItem
           gutters
           subtitle="Configuration"

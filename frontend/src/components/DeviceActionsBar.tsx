@@ -64,7 +64,6 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
                 dispatch.ui.set({ selected: [] })
                 history.push('/devices')
               }}
-              size="lg"
             />
           </Box>
         </Collapse>
@@ -99,6 +98,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiInputLabel-root': {
       color: palette.alwaysWhite.main,
       marginRight: spacing.xs,
+      transform: 'translate(0, 3px) scale(0.75)',
     },
     '& > div + div': {
       marginLeft: -spacing.xs,

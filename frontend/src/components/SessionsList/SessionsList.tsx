@@ -22,7 +22,7 @@ export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
       </Typography>
       {networkKeys.map(k => (
         <List key={k}>
-          <NetworkListTitle network={networks[k]} />
+          <NetworkListTitle network={networks[k]} noLink />
           {networks[k].sessions?.map((s, i) => (
             <NetworkListItem key={i} network={networks[k]} session={s} serviceId={s.target.id} external />
           ))}

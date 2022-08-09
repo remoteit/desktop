@@ -131,7 +131,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   return (
     <Collapse in={show}>
-      <Gutters top="lg" bottom={null}>
+      <Gutters top="lg">
         <Paper className={css.address} elevation={0}>
           {!!showTitle ? (
             <Gutters size="md">

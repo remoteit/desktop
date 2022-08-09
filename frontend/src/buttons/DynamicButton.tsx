@@ -91,14 +91,16 @@ const useStyles = makeStyles(({ palette }) => ({
 
     if (props.variant === 'text' && background) {
       foreground = background
-      background = palette.white.main
-      hover = alpha(foreground, 0.1)
+      background = alpha(foreground, 0.1)
+      hover = alpha(foreground, 0.2)
     }
-
+    console.log(palette.mode)
     return {
-      backgroundColor: background,
-      '& .MuiButton-label': { color: foreground },
-      '&:hover': { backgroundColor: hover },
+      '&.MuiButton-root': {
+        backgroundColor: background,
+        color: foreground,
+        '&:hover': { backgroundColor: hover },
+      },
     }
   },
 }))

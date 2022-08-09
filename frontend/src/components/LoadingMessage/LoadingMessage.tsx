@@ -19,7 +19,7 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
     <Body center>
       {logo && <Logo className={css.margin} />}
       {spinner && !logo && (
-        <Icon className={css.margin} name="spinner-third" spin size="xxl" type="light" color="primary" />
+        <Icon className={css.margin} name="spinner-third" spin size="xxxl" type="light" color="primary" />
       )}
       {message && (
         <Typography className={css.text} variant="body2">
