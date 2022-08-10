@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { newConnection, setConnection, sanitizeName, selectConnection } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
-import { graphQLConnect, graphQLDisconnect } from '../services/graphQLMutation'
+import { graphQLConnect, graphQLDisconnect, graphQLSurvey } from '../services/graphQLMutation'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
@@ -62,7 +62,7 @@ export default createModel<RootModel>()({
     },
 
     async queueEnable(queue: IConnection[], state) {
-      dispatch.connections.set({ queue })
+      await dispatch.connections.set({ queue })
       dispatch.connections.checkQueue(true)
     },
 
@@ -73,7 +73,7 @@ export default createModel<RootModel>()({
       const trigger = queue.shift()
 
       if (!trigger) return
-      console.log('TRIGGER', trigger)
+
       const [service] = selectById(state, trigger.id)
       const connection = selectConnection(state, service)
 
@@ -81,14 +81,14 @@ export default createModel<RootModel>()({
       Object.keys(trigger).forEach(key => {
         if (trigger[key] !== connection[key]) {
           different = true
-          console.log('DIFFERENT', key, trigger[key], connection[key])
         }
       })
+
       console.log('QUEUE', trigger, connection)
       console.log('NEXT', different, start)
 
       if (different || start) {
-        if (trigger.enabled) dispatch.connections.connect({ ...connection, ...trigger })
+        if (trigger.enabled) dispatch.connections.connect({ ...connection, ...trigger, autoStart: true })
         else dispatch.connections.disconnect({ ...connection, ...trigger })
         return
       }
@@ -153,10 +153,11 @@ export default createModel<RootModel>()({
 
     async connect(connection: IConnection) {
       const { proxyConnect } = dispatch.connections
-      if (connection.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+      if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
       connection.reverseProxy = undefined
+      connection.autoStart = undefined
       connection.public = connection.public || isPortal()
 
       if (connection.public) {
@@ -184,7 +185,13 @@ export default createModel<RootModel>()({
       heartbeat.caffeinate()
     },
 
-    async survey({ rating, connection }: { rating: number; connection: IConnection }) {},
+    async survey({ rating, connection }: { rating: number; connection: IConnection }) {
+      if (!connection.sessionId) return
+      const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
+      if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
+        dispatch.ui.set({ errorMessage: `Connection survey submission failed. Please contact support.` })
+      }
+    },
 
     async forget(id: string, state) {
       const { set } = dispatch.connections

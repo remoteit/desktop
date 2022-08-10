@@ -29,7 +29,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   const [prompt, setPrompt] = React.useState<boolean>(false)
   const ready = !!app?.connection?.host
   const disabled = !app?.connection?.enabled || app?.connection.connecting || !ready
-  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
+  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && app?.connection?.autoLaunch)
 
   React.useEffect(() => {
     if (autoLaunch && app?.connection?.enabled && ready) {

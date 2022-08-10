@@ -60,8 +60,8 @@ export default createModel<RootModel>()({
             connections {
               name
               service {
-                id
                 name
+                id
               }
             }
             owner {
@@ -119,7 +119,7 @@ export default createModel<RootModel>()({
               const service = connection.service
               return {
                 accountId,
-                serviceName: service.name,
+                serviceName: connection.name || service.name,
                 nodeId: network.id,
                 nodeName: network.name,
                 nodeType: 'NETWORK',

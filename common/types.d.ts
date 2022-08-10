@@ -134,6 +134,7 @@ declare global {
 
   interface IConnection {
     autoLaunch?: boolean
+    autoStart?: boolean
     commandTemplate?: string // command line launch template
     connected?: boolean
     connecting?: boolean
@@ -173,7 +174,6 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
-    // [index: string]: any // needed to be able to iterate the keys :(
   }
 
   type IConnectionState =
