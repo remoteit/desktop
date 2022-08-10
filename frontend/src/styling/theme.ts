@@ -480,7 +480,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiSelect: {
         styleOverrides: {
           select: {
-            '&:focus': { backgroundColor: 'none' },
+            '&:focus': { backgroundColor: 'inherit' },
           },
         },
       },

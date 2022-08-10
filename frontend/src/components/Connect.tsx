@@ -8,7 +8,7 @@ import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
 import { List, Button } from '@mui/material'
-import { ProxySetting } from './ProxySetting'
+import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
@@ -155,10 +155,10 @@ export const Connect: React.FC = () => {
         >
           <List disablePadding>
             <DesktopUI>
-              <TimeoutSetting connection={connection} service={service} />
-              <ProxySetting connection={connection} service={service} />
+              <RouteSetting connection={connection} service={service} />
               <LanShareSelect connection={connection} />
               <TargetHostSetting connection={connection} service={service} />
+              <TimeoutSetting connection={connection} service={service} />
               <ConnectionLogSetting connection={connection} service={service} />
             </DesktopUI>
             <PortalUI>
