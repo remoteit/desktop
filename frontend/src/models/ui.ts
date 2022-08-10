@@ -127,7 +127,7 @@ export const defaultState: UIState = {
   guideAWS: { title: 'AWS Guide', step: 1, total: 6, done: false },
   guideNetwork: { title: 'Add Network Guide', step: 1, total: 3, done: false },
   // guideService: { title: 'Add Service Guide ', step: 1, total: 3, done: false },
-  accordion: { config: true, configConnected: false, options: false, service: false, networks: true },
+  accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,

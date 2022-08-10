@@ -8,6 +8,7 @@ import { ApplicationState } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
 import { validPort } from '../helpers/connectionHelper'
+import { isPortal } from '../services/Browser'
 import { ROUTES } from '../models/devices'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
@@ -152,7 +153,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           <Quote margin="xs">
             <List disablePadding>
               {customTokens.map(token =>
-                token === 'path' ? (
+                token === 'path' && !isPortal() ? (
                   <InlineFileFieldSetting
                     key="path"
                     variant="filled"
