@@ -45,7 +45,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       analyticsHelper.trackConnect('connectionClosed', service)
       dispatch.connections.disconnect(connection)
     } else {
-      onClick && onClick()
+      onClick?.()
       analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
       dispatch.connections.connect(connection)

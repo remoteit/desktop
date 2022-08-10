@@ -85,7 +85,7 @@ export const Connect: React.FC = () => {
           (connection.autoLaunch ? ' The connection will auto launch.' : '')
         }
       >
-        <Gutters className={css.gutters} top={null}>
+        <Gutters className={css.gutters} bottom={null}>
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <ComboButton
             connection={connection}
@@ -101,7 +101,7 @@ export const Connect: React.FC = () => {
       <List disablePadding>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
-      <Gutters top={null}>
+      <Gutters bottom={null}>
         <AccordionMenuItem
           gutters
           subtitle="Configuration"

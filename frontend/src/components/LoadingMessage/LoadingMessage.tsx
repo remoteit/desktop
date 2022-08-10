@@ -1,9 +1,8 @@
 import React from 'react'
-import { Typography } from '@mui/material'
+import { Typography, CircularProgress } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Logo } from '../../components/Logo'
 import { Body } from '../Body'
-import { Icon } from '../Icon'
 import { spacing } from '../../styling'
 
 export interface LoadingMessageProps {
@@ -18,9 +17,7 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
   return (
     <Body center>
       {logo && <Logo className={css.margin} />}
-      {spinner && !logo && (
-        <Icon className={css.margin} name="spinner-third" spin size="xxxl" type="light" color="primary" />
-      )}
+      {spinner && !logo && <CircularProgress size={75} thickness={1.3} color="primary" className={css.margin} />}
       {message && (
         <Typography className={css.text} variant="body2">
           {message}

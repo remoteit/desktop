@@ -184,6 +184,8 @@ export default createModel<RootModel>()({
       heartbeat.caffeinate()
     },
 
+    async survey({ rating, connection }: { rating: number; connection: IConnection }) {},
+
     async forget(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections

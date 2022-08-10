@@ -168,6 +168,7 @@ declare global {
     sessionId?: string //the connection session id
     starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
+    surveyed?: string // the session ID of the survey that has been answered
     targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
