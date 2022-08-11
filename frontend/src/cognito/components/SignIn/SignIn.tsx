@@ -189,7 +189,6 @@ export function SignIn({
             disabled={loading}
             fullWidth
             id="sign-in-username"
-            InputProps={{ disableUnderline: true }}
             label={t('global.user.email')}
             name="email"
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -200,7 +199,7 @@ export function SignIn({
             variant="filled"
           />
         </Box>
-        <Collapse in={emailProcessed} onEntered={() => passRef.current?.focus()}>
+        <Collapse in={emailProcessed} unmountOnExit onEntered={() => passRef.current?.focus()}>
           <Box mb={1}>
             <TextField
               hidden
