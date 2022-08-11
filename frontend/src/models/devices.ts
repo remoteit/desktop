@@ -30,6 +30,34 @@ import { RootModel } from '.'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
+// TODO move to connection model?
+export const ROUTES: IRoute[] = [
+  {
+    key: 'failover',
+    icon: 'code-branch',
+    name: 'Peer to peer with proxy failover',
+    description: 'A direct connection to this service that fails over to a private proxy.',
+  },
+  {
+    key: 'p2p',
+    icon: 'arrows-h',
+    name: 'Peer to peer only',
+    description: 'A direct connection to this service.',
+  },
+  {
+    key: 'proxy',
+    icon: 'cloud',
+    name: 'Proxy only',
+    description: 'A private proxy connection routed through the cloud.',
+  },
+  {
+    key: 'public',
+    icon: 'globe',
+    name: 'Public Proxy',
+    description: 'A proxy connection with a temporary public URL.',
+  },
+]
+
 type IDeviceState = {
   all: IDevice[]
   initialized: boolean
@@ -39,6 +67,7 @@ type IDeviceState = {
   searched: boolean
   fetching: boolean
   fetchingMore: boolean
+  fetchingArray: boolean
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -62,6 +91,7 @@ export const defaultState: IDeviceState = {
   searched: false,
   fetching: true,
   fetchingMore: false,
+  fetchingArray: false,
   query: '',
   append: false,
   filter: 'all',
@@ -69,7 +99,7 @@ export const defaultState: IDeviceState = {
   tag: undefined,
   owner: 'all',
   platform: undefined,
-  size: 50,
+  size: 10,
   from: 0,
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
@@ -142,25 +172,35 @@ export default createModel<RootModel>()({
     },
 
     async fetchConnections(_: void, state) {
-      const userId = state.auth.user?.id
-      if (!userId) return
-      const options = { account: userId, ids: getConnectionIds(state).concat(getNetworkServiceIds(state)) }
-      const gqlResponse = await graphQLFetchConnections(options)
+      const accountId = state.auth.user?.id || state.user.id
+      const deviceIds = getConnectionIds(state).concat(getNetworkServiceIds(state))
+      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
+      updateConnections(connections)
+      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
+      cleanOrphanConnections(deviceIds)
+    },
+
+    async fetchDevices(deviceIds: string[], state) {
+      console.log('fetchDevices', deviceIds)
+      const accountId = getActiveAccountId(state)
+      const devices = await dispatch.devices.fetchArray({ deviceIds, accountId })
+      if (devices.length) dispatch.accounts.mergeDevices({ devices, accountId })
+    },
+
+    async fetchArray({ deviceIds, accountId }: { deviceIds: string[]; accountId: string }, state): Promise<IDevice[]> {
+      const model = getDeviceModel(state)
+      if (model.fetchingArray) return []
+      await dispatch.devices.set({ fetchingArray: true })
+      console.log('FETCH ARRAY', deviceIds)
+      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
       const loginId = gqlResponse?.data?.data?.login?.id
-      if (error) return console.error(error)
-
-      const connections = await graphQLAdaptor(connectionData, loginId, options.account, true)
-      updateConnections(connections)
-      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
-
-      cleanOrphanConnections(options.ids)
+      await dispatch.devices.set({ fetchingArray: false })
+      if (error) return []
+      return graphQLAdaptor(connectionData, loginId, accountId, true)
     },
 
-    /*
-      Fetches a single device and merges in the state
-    */
     async fetchSingle(
       {
         id,
@@ -430,34 +470,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-// TODO move to connection model?
-export const ROUTES: IRoute[] = [
-  {
-    key: 'failover',
-    icon: 'code-branch',
-    name: 'Peer to peer with proxy failover',
-    description: 'A direct connection to this service that fails over to a private proxy.',
-  },
-  {
-    key: 'p2p',
-    icon: 'arrows-h',
-    name: 'Peer to peer only',
-    description: 'A direct connection to this service.',
-  },
-  {
-    key: 'proxy',
-    icon: 'cloud',
-    name: 'Proxy only',
-    description: 'A private proxy connection routed through the cloud.',
-  },
-  {
-    key: 'public',
-    icon: 'globe',
-    name: 'Public Proxy',
-    description: 'A proxy connection with a temporary public URL.',
-  },
-]
 
 function graphQLMetadata(gqlData?: AxiosResponse) {
   const error = graphQLGetErrors(gqlData)

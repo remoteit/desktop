@@ -131,7 +131,7 @@ export default createModel<RootModel>()({
             })
           )
 
-          return parsedDevices.concat(parsedNetworks).flat()
+          return parsedNetworks.concat(parsedDevices).flat()
         })
         .flat()
 
