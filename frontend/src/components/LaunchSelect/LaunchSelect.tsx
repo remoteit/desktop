@@ -35,7 +35,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       <ListItem dense>
         <Quote margin={null} noInset listItem>
           <List className={css.indent} disablePadding>
-            <AutoLaunchToggle connection={connection} service={service} />
+            <AutoLaunchToggle app={app} connection={connection} service={service} />
             <InlineTemplateSetting app={app} connection={connection} service={service} />
             <CustomAttributeSettings app={app} connection={connection} service={service} />
           </List>
