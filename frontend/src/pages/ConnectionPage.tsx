@@ -38,7 +38,7 @@ export const ConnectionPage: React.FC = () => {
     if (!device && id) devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
-  if (!device && fetching) return <LoadingMessage message="Fetching data..." />
+  if (!device && fetching) return <LoadingMessage message="Fetching data" />
   if (!service || !device) return <NoConnectionPage />
 
   return (

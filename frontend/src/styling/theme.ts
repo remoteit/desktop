@@ -66,6 +66,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiAccordion: {
         styleOverrides: {
           root: {
+            margin: 0,
             '&.Mui-expanded': { margin: 0 },
             '&:before': { display: 'none' },
           },
@@ -74,7 +75,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             paddingTop: spacing.sm,
             paddingBottom: spacing.sm,
             marginTop: spacing.md,
-            '&.Mui-expanded': { marginTop: spacing.md },
+            '&.Mui-expanded, &.Mui-expanded:first-of-type': { marginTop: spacing.md },
           },
         },
       },
@@ -298,9 +299,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginLeft: spacing.md,
             marginRight: spacing.md,
           },
-          button: {
-            '&:hover': { backgroundColor: palette.primaryHighlight.main },
-          },
           secondaryAction: {
             paddingRight: 60,
             '& .MuiFormControl-root': { verticalAlign: 'middle' },
@@ -322,7 +320,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
-            right: spacing.xl,
+            right: spacing.sm,
             zIndex: 2,
             '& .MuiTextField-root': { verticalAlign: 'middle' },
           },
@@ -348,11 +346,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           list: {
             backgroundColor: palette.grayLightest.main,
-            '& .MuiListItem-dense': {
+            '& .MuiListItem-dense, & .MuiMenuItem-dense': {
               width: `calc(100% - ${spacing.xs * 2}px)`,
               marginLeft: spacing.xs,
-              paddingRight: spacing.sm,
               marginRight: spacing.xs,
+              paddingRight: spacing.sm,
               whiteSpace: 'nowrap',
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
@@ -361,6 +359,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiDivider-root': {
               marginTop: 10,
               marginBottom: 10,
+              minWidth: 200,
             },
           },
         },
@@ -371,17 +370,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             color: palette.grayDarkest.main,
             fontSize: fontSizes.base,
             '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
-            '&.MuiMenuItem-spacing.xl': {
-              paddingLeft: spacing.sm,
-              paddingRight: spacing.sm,
-            },
-          },
-          gutters: {
-            maxWidth: `calc(100% - ${spacing.sm * 2}px)`,
-            marginLeft: spacing.sm,
-            marginRight: spacing.sm,
-            paddingLeft: spacing.sm,
-            paddingRight: spacing.md,
           },
         },
       },

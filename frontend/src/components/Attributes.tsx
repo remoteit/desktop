@@ -168,6 +168,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'owner',
     label: 'Owner',
+    defaultWidth: 210,
     value: ({ device }) =>
       device && (
         <Avatar email={device.owner.email} size={22} inline>

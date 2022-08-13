@@ -86,7 +86,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 
 const headCells = [
   { id: 'name', label: 'Device Name', orderBy: 'name', numeric: false },
-  { id: 'quality', label: 'Connectivity', orderBy: 'qualitySort', numeric: true },
+  { id: 'quality', label: 'Stability', orderBy: 'qualitySort', numeric: true },
 ]
 
 interface HeadCell {
@@ -171,7 +171,7 @@ export const ReportDeviceQualityList: React.FC = () => {
   return (
     <>
       <TableContainer>
-        <Table size="small" className={classes.table} aria-label="Device Internet Connectivity" stickyHeader>
+        <Table size="small" className={classes.table} aria-label="Device Internet Stability" stickyHeader>
           <EnhancedTableHead classes={classes} order={order} orderBy={orderBy} onRequestSort={handleRequestSort} />
           <TableBody className={classes.tableBody}>
             {devicesInOrder.map(device => {

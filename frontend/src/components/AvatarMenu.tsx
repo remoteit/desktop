@@ -1,7 +1,6 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { makeStyles } from '@mui/styles'
-import { spacing } from '../styling'
 import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -128,14 +127,9 @@ export const AvatarMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  label: {
-    display: 'flex',
-  },
   menu: {
     '& .MuiMenu-list': {
-      minWidth: 200,
       backgroundColor: palette.white.main,
     },
   },
-  email: { color: palette.grayDark.main, marginLeft: spacing.sm },
 }))

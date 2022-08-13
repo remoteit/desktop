@@ -1,5 +1,4 @@
 import React from 'react'
-import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'

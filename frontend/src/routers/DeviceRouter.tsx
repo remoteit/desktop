@@ -50,7 +50,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     }
   }, [fetching, device, thisId, history])
 
-  if (fetching && !device) return <LoadingMessage message="Fetching device..." />
+  if (fetching && !device) return <LoadingMessage message="Fetching device" />
 
   return (
     <DynamicPanel

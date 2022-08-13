@@ -64,7 +64,7 @@ export function ConnectionStateIcon({
           type="solid"
           inlineLeft
         />
-        Connectivity {device.quality.toLowerCase()}
+        Stability {device.quality.toLowerCase()}
       </>
     )
 

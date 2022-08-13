@@ -173,7 +173,8 @@ export default createModel<RootModel>()({
 
     async fetchConnections(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
-      const deviceIds = getConnectionIds(state).concat(getNetworkServiceIds(state))
+      const networkServiceIds = getNetworkServiceIds(state)
+      const deviceIds = getConnectionIds(state).concat(networkServiceIds)
       const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
       updateConnections(connections)
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })

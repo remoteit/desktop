@@ -37,9 +37,9 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
       >
         <div>
           {service ? (
-            <CopyMenuItem icon="link" title="Service link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
+            <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
           ) : (
-            <CopyMenuItem icon="link" title="Device link" value={`${PROTOCOL}devices/${device.id}`} />
+            <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
           )}
         </div>
         {manage && [

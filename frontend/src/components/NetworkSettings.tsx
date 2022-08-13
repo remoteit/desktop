@@ -10,10 +10,13 @@ import { Avatar } from '../components/Avatar'
 
 export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = ({ network, owner }) => {
   const dispatch = useDispatch<Dispatch>()
+  const disabled = network.permissions.includes('MANAGE')
+
   return (
     <List disablePadding>
       <InlineTextFieldSetting
         required
+        disabled={disabled}
         icon="i-cursor"
         value={network.name}
         label="Network Name"

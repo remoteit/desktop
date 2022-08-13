@@ -23,8 +23,7 @@ import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
-import { LoadingMessage } from './LoadingMessage'
-import { ForgetButton } from '../buttons/ForgetButton'
+import { ConnectionMenu } from './ConnectionMenu'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
 import { ErrorButton } from '../buttons/ErrorButton'
@@ -42,7 +41,7 @@ export const Connect: React.FC = () => {
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
+  const { service, device, connection, session, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     return {
       service,
@@ -69,7 +68,6 @@ export const Connect: React.FC = () => {
     if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
-  if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <NoConnectionPage />
 
   return (
@@ -95,7 +93,7 @@ export const Connect: React.FC = () => {
             fullWidth
             onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
           />
-          <ForgetButton connection={connection} inline />
+          <ConnectionMenu connection={connection} />
         </Gutters>
       </GuideStep>
       <List disablePadding>
