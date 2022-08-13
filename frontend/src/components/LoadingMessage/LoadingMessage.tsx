@@ -28,6 +28,6 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  margin: { marginBottom: spacing.xl, color: palette.gray.main },
+  margin: { marginBottom: spacing.xl, color: palette.grayLighter.main },
   text: { color: palette.grayDark.main, paddingBottom: spacing.xl },
 }))

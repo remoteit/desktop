@@ -37,6 +37,7 @@ export const ListItemLocation: React.FC<Props> = ({
   iconType,
   iconSize,
   iconPlatform,
+  disabled,
   disableIcon,
   showDisabled,
   match,
@@ -71,13 +72,12 @@ export const ListItemLocation: React.FC<Props> = ({
     ) : (
       icon
     )
-  const disabled = Boolean(props.disabled || matches || !pathname)
 
   return (
     <ListItem
       {...props}
+      button
       className={classnames(css.root, className)}
-      button={disabled ? false : undefined}
       selected={!!matches}
       onClick={onClick}
       disabled={disabled}

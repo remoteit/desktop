@@ -20,7 +20,7 @@ const useStyles = makeStyles({
     marginTop: spacing.sm,
     paddingRight: spacing.lg,
     paddingLeft: spacing.md,
-    '& .MuiListItemButton-root': {
+    '& .MuiListItem-root': {
       display: 'block',
       maxWidth: 100,
       paddingLeft: spacing.md,

@@ -299,6 +299,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginLeft: spacing.md,
             marginRight: spacing.md,
           },
+          // button: {
+          //   '&:hover': { backgroundColor: palette.gray.main },
+          // },
           secondaryAction: {
             paddingRight: 60,
             '& .MuiFormControl-root': { verticalAlign: 'middle' },
