@@ -48,8 +48,18 @@ export function newConnection(service?: IService | null) {
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: cd?.route ? cd.route === 'failover' : service?.attributes.route === 'failover',
-    proxyOnly: cd?.route ? cd.route === 'proxy' : service?.attributes.route === 'proxy',
+    failover:
+      cd?.route === undefined
+        ? service?.attributes.route === undefined
+          ? true // default
+          : service?.attributes.route === 'failover'
+        : cd.route === 'failover',
+    proxyOnly:
+      cd?.route === undefined
+        ? service?.attributes.route === undefined
+          ? false // default
+          : service?.attributes.route === 'proxy'
+        : cd.route === 'proxy',
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
     public: isPortal() || cd?.route === 'public' || service?.attributes.route === 'public' ? true : undefined,
