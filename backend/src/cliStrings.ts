@@ -47,7 +47,7 @@ export default {
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
-      --targetHostname ${c.targetHost} \
+      --targetHostname ${c.targetHost || ''} \
       --enableCertificate ${!!preferences.get().useCertificate} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
@@ -75,7 +75,7 @@ export default {
     --p2p ${!c.proxyOnly} \
     --enable ${!!c.enabled} \
     --servicetype ${c.typeID} \
-    --targetHostname ${c.targetHost} \
+    --targetHostname ${c.targetHost || ''} \
     --enableCertificate ${!!preferences.get().useCertificate} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
