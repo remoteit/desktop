@@ -15,6 +15,7 @@ export type ConnectButtonProps = {
   size?: 'icon' | 'medium' | 'small' | 'large'
   icon?: string
   color?: Color
+  disabled?: boolean
   fullWidth?: boolean
   onClick?: () => void
 }
@@ -26,6 +27,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   size = 'medium',
   color = 'primary',
   fullWidth,
+  disabled,
   onClick,
   icon,
 }) => {
@@ -62,11 +64,13 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (!visible) return null
 
   let title = connection?.public ? 'Connect' : 'Start'
-  let disabled = !permissions?.includes('CONNECT')
+  if (!permissions?.includes('CONNECT')) {
+    disabled = true
+    title = 'Unauthorized'
+  }
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
-  if (disabled) title = 'Unauthorized'
 
   if (chip && chip.show) {
     color = chip.colorName

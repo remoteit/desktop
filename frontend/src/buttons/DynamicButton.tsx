@@ -85,7 +85,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
 
 const useStyles = makeStyles(({ palette }) => ({
   button: (props: DynamicButtonProps) => {
-    let background = props.color ? palette[props.color].main : undefined
+    let background = props.color && !props.disabled ? palette[props.color].main : undefined
     let hover = background ? darken(background, 0.25) : undefined
     let foreground = palette.alwaysWhite.main
 
@@ -94,7 +94,7 @@ const useStyles = makeStyles(({ palette }) => ({
       background = alpha(foreground, 0.1)
       hover = alpha(foreground, 0.2)
     }
-    console.log(palette.mode)
+
     return {
       '&.MuiButton-root': {
         backgroundColor: background,
