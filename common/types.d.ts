@@ -38,6 +38,7 @@ declare global {
 
     // Backend
     | 'init'
+    | 'refresh'
     | 'targets'
     | 'device'
     | 'registration'
