@@ -323,7 +323,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
-            right: spacing.sm,
+            right: spacing.lg,
             zIndex: 2,
             '& .MuiTextField-root': { verticalAlign: 'middle' },
           },

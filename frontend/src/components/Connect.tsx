@@ -7,7 +7,7 @@ import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
-import { List, Button } from '@mui/material'
+import { List, Button, Typography, Paper } from '@mui/material'
 import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
@@ -29,6 +29,7 @@ import { ComboButton } from '../buttons/ComboButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
 import { GuideStep } from './GuideStep'
+import { DataCopy } from './DataCopy'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
@@ -41,11 +42,12 @@ export const Connect: React.FC = () => {
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { service, device, connection, session, accordion } = useSelector((state: ApplicationState) => {
+  const { service, device, connection, session, accordion, ownDevice } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     return {
       service,
       device,
+      ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
       connection: selectConnection(state, service),
       session: state.sessions.all.find(s => s.id === sessionID),
       fetching: getDeviceModel(state).fetching,
@@ -72,6 +74,20 @@ export const Connect: React.FC = () => {
 
   return (
     <>
+      {ownDevice && (
+        <Notice gutterTop solid>
+          <Typography variant="h3">The service is hosted on this device. ({device.name})</Typography>
+          <Typography variant="body2" gutterBottom>
+            Connecting can be done directly without using Remote.It.
+          </Typography>
+          <DataCopy
+            label="Connection endpoint"
+            value={`${service.host || '127.0.0.1'}:${service.port}`}
+            showBackground
+            fullWidth
+          />
+        </Notice>
+      )}
       <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       <ConnectionSurvey connection={connection} />
@@ -83,7 +99,7 @@ export const Connect: React.FC = () => {
           (connection.autoLaunch ? ' The connection will auto launch.' : '')
         }
       >
-        <Gutters className={css.gutters} bottom={null}>
+        <Gutters size="md" className={css.gutters} bottom={null}>
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <ComboButton
             connection={connection}
@@ -91,6 +107,7 @@ export const Connect: React.FC = () => {
             permissions={device.permissions}
             size="large"
             fullWidth
+            disabled={ownDevice}
             onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
           />
           <ConnectionMenu connection={connection} />
@@ -99,7 +116,7 @@ export const Connect: React.FC = () => {
       <List disablePadding>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
-      <Gutters bottom={null}>
+      <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters
           subtitle="Configuration"

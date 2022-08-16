@@ -20,13 +20,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection }) => {
 
   return (
     <>
-      <IconButton
-        onClick={handleClick}
-        icon="ellipsis-v"
-        size="md"
-        inline
-        modified={connection && !connection.default}
-      />
+      <IconButton onClick={handleClick} color="primary" icon="ellipsis-v" size="md" inline />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

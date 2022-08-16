@@ -63,7 +63,7 @@ export const ConnectionPage: React.FC = () => {
       }
     >
       <Connect />
-      <Gutters>
+      <Gutters size="md">
         <AccordionMenuItem
           gutters
           subtitle="Service Details"

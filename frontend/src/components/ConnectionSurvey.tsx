@@ -63,7 +63,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
 
   return (
     <Collapse in={show}>
-      <Gutters bottom={null}>
+      <Gutters bottom={null} size="md">
         {rated === 100 ? (
           <Paper elevation={0} className={classnames(css.layout, css.survey)}>
             <Typography variant="subtitle2">Thank you for your feedback!</Typography>
