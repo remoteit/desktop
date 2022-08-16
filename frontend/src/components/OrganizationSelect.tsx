@@ -95,7 +95,9 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     '& > *': {
+      height: 50,
       borderRadius: '50%',
+      padding: 0,
     },
   },
   buttonContainer: {
