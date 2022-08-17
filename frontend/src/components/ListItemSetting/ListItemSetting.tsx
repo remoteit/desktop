@@ -78,14 +78,12 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
         children
       )
 
-    disabled = disabled || !onClick
-
     return (
       <>
         <ListItem
           dense
           ref={ref}
-          button={disabled ? false : undefined}
+          button={disabled || !onClick ? false : (true as any)}
           onClick={handleClick}
           disabled={disabled}
           onMouseEnter={() => setShowTip(true)}

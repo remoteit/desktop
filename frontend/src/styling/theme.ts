@@ -323,7 +323,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
-            right: spacing.lg,
+            right: spacing.xl,
             zIndex: 2,
             '& .MuiTextField-root': { verticalAlign: 'middle' },
           },
@@ -372,7 +372,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             color: palette.grayDarkest.main,
             fontSize: fontSizes.base,
-            '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
+          },
+          gutters: {
+            marginLeft: spacing.sm,
+            marginRight: spacing.sm,
           },
         },
       },
