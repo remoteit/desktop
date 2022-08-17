@@ -1,5 +1,6 @@
 import React from 'react'
 import network from '../../services/Network'
+import { emit } from '../../services/Controller'
 import { selectDevice } from '../../models/devices'
 import { Switch, Route, useParams } from 'react-router-dom'
 import { getDeviceModel } from '../../models/accounts'
@@ -27,7 +28,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     network.connect()
     dispatch.ui.set({ fetching: true })
     await callback()
-    dispatch.ui.set({ fetching: false })
     await Promise.all([
       dispatch.networks.fetch(),
       dispatch.sessions.fetch(),
@@ -37,6 +37,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       dispatch.organization.fetch(),
       dispatch.announcements.fetch(),
     ])
+    emit('refresh')
+    dispatch.ui.set({ fetching: false })
   }
 
   return (

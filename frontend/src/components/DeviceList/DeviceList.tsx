@@ -119,6 +119,7 @@ const useStyles = makeStyles(({ palette }) => ({
       minHeight: 42,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
+      '&:hover': { backgroundColor: palette.primaryHighlight.main },
     },
     '& .MuiBox-root': {
       display: 'flex',

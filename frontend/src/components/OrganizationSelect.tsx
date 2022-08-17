@@ -1,10 +1,10 @@
 import React from 'react'
 import classnames from 'classnames'
+import { makeStyles } from '@mui/styles'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles } from '@mui/styles'
 import { Typography, Box, List, ListItem } from '@mui/material'
 import { getOwnOrganization, getOrganization, getOrganizationName } from '../models/organization'
 import { IconButton } from '../buttons/IconButton'
@@ -50,9 +50,10 @@ export const OrganizationSelect: React.FC = () => {
       <Box className={css.name}>
         <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
-      <List dense>
-        <ListItem onClick={() => onSelect(ownOrgId || userId)} disableGutters>
+      <List dense className={css.list}>
+        <ListItem disableGutters className={css.buttonContainer}>
           <IconButton
+            onClick={() => onSelect(ownOrgId || userId)}
             className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
             title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
             icon="house"
@@ -62,7 +63,7 @@ export const OrganizationSelect: React.FC = () => {
           />
         </ListItem>
         {options.map(option => (
-          <ListItem key={option.id} onClick={() => onSelect(option.id)} disableGutters>
+          <ListItem button key={option.id} onClick={() => onSelect(option.id)} disableGutters>
             <Avatar
               email={option.email}
               title={`${option.name} - ${option.roleName}`}
@@ -72,14 +73,14 @@ export const OrganizationSelect: React.FC = () => {
             />
           </ListItem>
         ))}
-        <ListItem disableGutters>
+        <ListItem disableGutters className={css.buttonContainer}>
           <IconButton
             className={css.button}
             title="Memberships"
             icon="ellipsis-h"
             to="/organization/memberships"
             placement="right"
-            size="lg"
+            size="md"
           />
         </ListItem>
       </List>
@@ -88,11 +89,24 @@ export const OrganizationSelect: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  list: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '& > *': {
+      height: 50,
+      borderRadius: '50%',
+      padding: 0,
+    },
+  },
+  buttonContainer: {
+    width: 38,
+  },
   button: {
     borderRadius: '50%',
     width: 38,
     height: 38,
-    margin: 2,
   },
   active: {
     border: `2px solid ${palette.primary.main}`,

@@ -14,6 +14,7 @@ import {
   graphQLRemoveNetworkShare,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { graphQLServiceAdaptor, SERVICE_SELECT } from '../services/graphQLDevice'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
@@ -93,8 +94,11 @@ export default createModel<RootModel>()({
                   }
                   connections {
                     service {
-                      id
-                      name
+                      ${SERVICE_SELECT}
+                      device {
+                        id
+                        name
+                      }
                     }
                     name
                     port
@@ -121,8 +125,8 @@ export default createModel<RootModel>()({
         }
       )
       if (result === 'ERROR') return
-      const networks = await dispatch.networks.parse(result)
-      if (networks) await dispatch.networks.setNetworks(networks)
+
+      dispatch.networks.parse(result)
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -135,19 +139,43 @@ export default createModel<RootModel>()({
       const userId = state.auth.user?.id
       const all = result?.data?.data?.login?.account?.networks
       if (!all) return
-      const parsed: INetwork[] = all.map(n => ({
-        ...n,
-        shared: userId !== n.owner.id && accountId === userId,
-        created: new Date(n.created),
-        serviceIds: n.connections.map(c => c.service.id),
-        access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
-        tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
-        icon: 'chart-network',
-      }))
+
+      let devices: IDevice[] = []
+
+      const parsed: INetwork[] = all.map(n => {
+        // add network devices
+        n.connections.forEach(c => {
+          let netDevice: IDevice = { ...c.service.device, services: [c.service], permissions: [] }
+          netDevice.services = graphQLServiceAdaptor(netDevice)
+          const index = devices.findIndex(d => d.id === netDevice.id)
+          if (index === -1) {
+            devices.push(netDevice)
+          } else {
+            devices[index].services.push(c.service)
+          }
+        })
+
+        return {
+          id: n.id,
+          name: n.name,
+          enabled: n.enabled,
+          owner: n.owner,
+          permissions: n.permissions,
+          shared: userId !== n.owner.id && accountId === userId,
+          created: new Date(n.created),
+          serviceIds: n.connections.map(c => c.service.id),
+          access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
+          tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
+          icon: 'chart-network',
+        }
+      })
+
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode
-      console.log('LOAD NETWORKS', parsed)
-      return parsed
+      console.log('LOAD NETWORKS', parsed, devices)
+
+      dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+      dispatch.networks.setNetworks(parsed)
     },
     async enable(params: INetwork) {
       const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))

@@ -14,6 +14,7 @@ type Props = {
   permissions?: IPermission[]
   size?: 'icon' | 'medium' | 'small' | 'large'
   fullWidth?: boolean
+  disabled?: boolean
   onClick?: () => void
 }
 

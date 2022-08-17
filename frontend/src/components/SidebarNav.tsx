@@ -1,7 +1,7 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
-import { ApplicationState } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
 import { selectAnnouncements } from '../models/announcements'
 import { selectNetworks } from '../models/networks'
 import { makeStyles } from '@mui/styles'
@@ -19,6 +19,7 @@ export const SidebarNav: React.FC = () => {
     devices: getDeviceModel(state).total,
     remoteUI: isRemoteUI(state),
   }))
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ sessions })
 
   if (remoteUI)
@@ -78,6 +79,7 @@ export const SidebarNav: React.FC = () => {
         className={css.footer}
         title="Contact"
         // subtitle="Support and Feedback"
+        onClick={() => dispatch.feedback.reset()}
         pathname="/feedback"
         icon="envelope-open-text"
         dense

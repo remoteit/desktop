@@ -12,7 +12,7 @@ export const UpdateSetting: React.FC = () => {
     <ListItemSetting
       label={updateAvailable ? 'New version available' : 'About'}
       subLabel={`${fullVersion()} —  © remot3.it inc.`}
-      icon="info"
+      icon="copyright"
       onButtonClick={dispatch.backend.restart}
       button={updateAvailable ? 'Restart' : undefined}
     />

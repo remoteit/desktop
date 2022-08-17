@@ -168,6 +168,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'owner',
     label: 'Owner',
+    defaultWidth: 210,
     value: ({ device }) =>
       device && (
         <Avatar email={device.owner.email} size={22} inline>
@@ -369,12 +370,12 @@ export const attributes: Attribute[] = [
   }),
   new ConnectionAttribute({
     id: 'local',
-    label: 'Local Address',
+    label: 'Local Endpoint',
     value: ({ connection }) => (connection ? `${connection.host}:${connection.port}` : undefined),
   }),
   new ConnectionAttribute({
     id: 'lanShare',
-    label: 'LAN Address',
+    label: 'LAN Endpoint',
     value: ({ connection }) => {
       if (connection?.ip && lanShared(connection)) return `${replaceHost(connection.ip)}:${connection.port}`
     },

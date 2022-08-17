@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect } from 'react'
 import { makeStyles } from '@mui/styles'
-import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel } from '@mui/material'
+import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel, Collapse } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import {
   GoogleSignInFunc,
@@ -74,6 +74,7 @@ export function SignIn({
   const [emailProcessed, setEmailProcessed] = React.useState<boolean>(false)
   // const [isSaml, setIsSaml] = React.useState<boolean>(false)
   const [remember, setRemember] = React.useState<boolean>(checkedCheckboxRemember || false)
+  const passRef = React.useRef<HTMLInputElement>()
   const css = useStyles()
 
   // const orgs: any = {
@@ -180,7 +181,7 @@ export function SignIn({
             {notice}
           </Notice>
         )}
-        <Box my={1}>
+        <Box mb={1}>
           <TextField
             autoCapitalize="none"
             autoCorrect="off"
@@ -188,7 +189,6 @@ export function SignIn({
             disabled={loading}
             fullWidth
             id="sign-in-username"
-            InputProps={{ disableUnderline: true }}
             label={t('global.user.email')}
             name="email"
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -199,17 +199,17 @@ export function SignIn({
             variant="filled"
           />
         </Box>
-        {emailProcessed && (
-          <Box my={1}>
+        <Collapse in={emailProcessed} unmountOnExit onEntered={() => passRef.current?.focus()}>
+          <Box mb={1}>
             <TextField
+              hidden
+              fullWidth
+              inputRef={passRef}
               autoCapitalize="none"
               autoCorrect="off"
-              autoFocus={!!username}
+              autoFocus={emailProcessed}
               disabled={loading}
-              fullWidth
-              hidden
               id="sign-in-password"
-              InputProps={{ disableUnderline: true }}
               label={t('global.user.password')}
               name="password"
               onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -220,8 +220,8 @@ export function SignIn({
               variant="filled"
             />
           </Box>
-        )}
-        <Box mb={0} mt={1}>
+        </Collapse>
+        <Box>
           <Button
             color="primary"
             disabled={loading || !username || (!password && emailProcessed)}

@@ -5,7 +5,6 @@ import {
   Button,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
   Typography,
@@ -80,11 +79,9 @@ export const AccountAccessKey: React.FC = () => {
               }
             />
             <ListItemSecondaryAction>
-              <ListItemIcon>
-                <DeleteAccessKey deleteKey={k} />
-              </ListItemIcon>
+              <DeleteAccessKey deleteKey={k} />
               {updating === k.key ? (
-                <Icon name="spinner-third" spin size="lg" inlineLeft />
+                <Icon name="spinner-third" spin inlineLeft />
               ) : (
                 <Switch color="primary" onChange={() => handleToggle(k)} checked={k.enabled} />
               )}
@@ -108,5 +105,5 @@ export const AccountAccessKey: React.FC = () => {
 
 const useStyles = makeStyles(theme => ({
   row: { '& .MuiListItemText-root': { marginLeft: spacing.md } },
-  primary: { fontFamily: 'Roboto Mono', color: theme.palette.grayDarkest.main, letterSpacing: 0.5 },
+  primary: { fontFamily: 'Roboto Mono', color: theme.palette.grayDarker.main, fontWeight: 300, letterSpacing: 0.5 },
 }))

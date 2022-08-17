@@ -159,6 +159,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     paddingTop: 0,
     paddingBottom: 0,
     backgroundColor: palette.primaryHighlight.main,
+    minHeight: 51,
   },
   action: {
     position: 'absolute',

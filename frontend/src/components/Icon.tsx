@@ -119,8 +119,8 @@ const useStyles = makeStyles(({ palette }) => ({
   icon: ({ color, inline, inlineLeft, size, fontSize, rotate }: IconProps) => {
     const styles: any = {}
     if (color) styles.color = palette[color] ? palette[color].main : color
-    if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
-    if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
+    if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
+    if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 1.5 : spacing.md
     if (size) styles.fontSize = styles.height = fontSizes[size]
     if (fontSize) styles.fontSize = styles.height = fontSize
     if (rotate) styles.transform = `rotate(${rotate}deg)`

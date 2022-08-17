@@ -101,15 +101,13 @@ export const OptionsPage: React.FC = () => {
           onClick={() => ui.resetGuides()}
         />
         {(os === 'mac' || os === 'windows') && (
-          <>
-            <DesktopUI>
-              <ListItemSetting
-                label="Auto update"
-                icon="chevron-double-up"
-                toggle={!!preferences.autoUpdate}
-                onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-              />
-            </DesktopUI>
+          <DesktopUI>
+            <ListItemSetting
+              label="Auto update"
+              icon="chevron-double-up"
+              toggle={!!preferences.autoUpdate}
+              onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+            />
             <TestUI>
               <ListItemSetting
                 quote
@@ -118,7 +116,7 @@ export const OptionsPage: React.FC = () => {
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />
             </TestUI>
-          </>
+          </DesktopUI>
         )}
         <UpdateSetting />
       </List>
@@ -137,23 +135,22 @@ export const OptionsPage: React.FC = () => {
                 confirmMessage="This will stop and attempt to re-install the system agent."
                 onClick={() => binaries.install()}
               />
-              {!notOwner && (
-                <ListItemSetting
-                  confirm
-                  label="Uninstall"
-                  subLabel={
-                    'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.'
-                  }
-                  icon="trash"
-                  confirmTitle="Are you sure?"
-                  confirmMessage="You will remove this system as a host, your connections and command line utilities."
-                  onClick={() => {
-                    emit('uninstall')
-                    ui.set({ waitMessage: 'uninstalling' })
-                    analyticsHelper.track('uninstall')
-                  }}
-                />
-              )}
+              <ListItemSetting
+                confirm
+                label="Uninstall"
+                disabled={notOwner}
+                subLabel={
+                  'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner.'
+                }
+                icon="trash"
+                confirmTitle="Are you sure?"
+                confirmMessage="You will remove this system as a host, your connections and command line utilities."
+                onClick={() => {
+                  emit('uninstall')
+                  ui.set({ waitMessage: 'uninstalling' })
+                  analyticsHelper.track('uninstall')
+                }}
+              />
               <ListItemSetting
                 label="Show support files"
                 subLabel="Will show the folders that contain the application logs and config file."

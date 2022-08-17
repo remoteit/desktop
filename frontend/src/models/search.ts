@@ -60,8 +60,8 @@ export default createModel<RootModel>()({
             connections {
               name
               service {
-                id
                 name
+                id
               }
             }
             owner {
@@ -119,7 +119,7 @@ export default createModel<RootModel>()({
               const service = connection.service
               return {
                 accountId,
-                serviceName: service.name,
+                serviceName: connection.name || service.name,
                 nodeId: network.id,
                 nodeName: network.name,
                 nodeType: 'NETWORK',
@@ -131,12 +131,17 @@ export default createModel<RootModel>()({
             })
           )
 
-          return parsedDevices.concat(parsedNetworks).flat()
+          return parsedNetworks.concat(parsedDevices).flat()
         })
         .flat()
 
       // remove duplicates
-      return all.filter((item, index) => all.findIndex(({ nodeId }) => nodeId === item.nodeId) === index)
+      const result = all.filter(
+        (item, index) => all.findIndex(({ combinedName }) => combinedName === item.combinedName) === index
+      )
+
+      console.log('search result', result)
+      return result
     },
   }),
 

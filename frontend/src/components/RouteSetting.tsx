@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import { ROUTES } from '../../models/devices'
-import { IP_OPEN } from '../../shared/constants'
-import { Dispatch } from '../../store'
+import { ROUTES } from '../models/devices'
+import { IP_OPEN } from '../shared/constants'
+import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { ListItem, ListItemIcon, TextField, MenuItem, Typography, Chip, Box } from '@mui/material'
-import { newConnection, setConnection, getRoute } from '../../helpers/connectionHelper'
-import { spacing } from '../../styling'
-import { Icon } from '../Icon'
+import { newConnection, setConnection, getRoute } from '../helpers/connectionHelper'
+import { spacing } from '../styling'
+import { Icon } from './Icon'
 
-export const ProxySetting: React.FC<{ service: IService; connection: IConnection }> = ({ service, connection }) => {
+export const RouteSetting: React.FC<{ service: IService; connection: IConnection }> = ({ service, connection }) => {
   const [open, setOpen] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
@@ -45,7 +45,7 @@ export const ProxySetting: React.FC<{ service: IService; connection: IConnection
           setOpen(!open)
           const updated = {
             ...connection,
-            failover: route === 'failover',
+            failover: route !== 'p2p',
             proxyOnly: route === 'proxy',
             public: route === 'public',
             enabled: route === 'public' ? false : connection.enabled,

@@ -1,6 +1,7 @@
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions } from '@mui/material/styles'
 import { ApplicationState } from '../store'
+import { ArrowIcon } from '../components/ArrowIcon'
 
 declare module '@mui/styles' {
   interface DefaultTheme extends Theme {}
@@ -11,6 +12,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
 
   const palette = {
     mode: isDark ? 'dark' : 'light',
+    info: { main: colors.grayDark, dark: darkColors.grayDark },
     primary: { main: colors.primary, dark: darkColors.primary },
     secondary: { main: colors.secondary, contrastText: colors.white, dark: darkColors.secondary },
     error: { main: colors.danger, dark: darkColors.danger },
@@ -66,6 +68,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiAccordion: {
         styleOverrides: {
           root: {
+            margin: 0,
             '&.Mui-expanded': { margin: 0 },
             '&:before': { display: 'none' },
           },
@@ -74,7 +77,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             paddingTop: spacing.sm,
             paddingBottom: spacing.sm,
             marginTop: spacing.md,
-            '&.Mui-expanded': { marginTop: spacing.md },
+            '&.Mui-expanded, &.Mui-expanded:first-of-type': { marginTop: spacing.md },
           },
         },
       },
@@ -154,6 +157,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             color: palette.grayDarker.main,
             borderRadius: radius,
             backgroundColor: palette.grayLightest.main,
+            textTransform: 'initial',
           },
           colorPrimary: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
           colorSecondary: { color: palette.alwaysWhite.main },
@@ -298,9 +302,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginLeft: spacing.md,
             marginRight: spacing.md,
           },
-          button: {
-            '&:hover': { backgroundColor: palette.primaryHighlight.main },
-          },
+          // button: {
+          //   '&:hover': { backgroundColor: palette.gray.main },
+          // },
           secondaryAction: {
             paddingRight: 60,
             '& .MuiFormControl-root': { verticalAlign: 'middle' },
@@ -348,11 +352,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           list: {
             backgroundColor: palette.grayLightest.main,
-            '& .MuiListItem-dense': {
+            '& .MuiListItem-dense, & .MuiMenuItem-dense': {
               width: `calc(100% - ${spacing.xs * 2}px)`,
               marginLeft: spacing.xs,
-              paddingRight: spacing.sm,
               marginRight: spacing.xs,
+              paddingRight: spacing.sm,
               whiteSpace: 'nowrap',
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
@@ -361,6 +365,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiDivider-root': {
               marginTop: 10,
               marginBottom: 10,
+              minWidth: 200,
             },
           },
         },
@@ -370,18 +375,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             color: palette.grayDarkest.main,
             fontSize: fontSizes.base,
-            '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
-            '&.MuiMenuItem-spacing.xl': {
-              paddingLeft: spacing.sm,
-              paddingRight: spacing.sm,
-            },
           },
           gutters: {
-            maxWidth: `calc(100% - ${spacing.sm * 2}px)`,
             marginLeft: spacing.sm,
             marginRight: spacing.sm,
-            paddingLeft: spacing.sm,
-            paddingRight: spacing.md,
           },
         },
       },
@@ -438,13 +435,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             marginTop: spacing.xxs,
             marginBottom: spacing.xxs,
+            '& .MuiSelect-iconStandard': { right: spacing.md },
             '& .MuiInputBase-sizeSmall': {
               height: 20,
               borderRadius: 10,
               fontSize: fontSizes.xxs,
-              '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: 0 },
+              '& .MuiSelect-icon': { marginRight: 2 },
             },
             '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+            '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.MuiFilledInput-input': { paddingRight: spacing.lg },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
           },
@@ -478,9 +477,13 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiSelect: {
+        defaultProps: {
+          disableInjectingGlobalStyles: true,
+          IconComponent: ArrowIcon,
+        },
         styleOverrides: {
           select: {
-            '&:focus': { backgroundColor: 'none' },
+            '&:focus': { backgroundColor: 'inherit' },
           },
         },
       },
@@ -537,6 +540,16 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             textTransform: 'uppercase',
             letterSpacing: 2,
             marginTop: spacing.lg,
+            fontWeight: 500,
+          },
+          subtitle2: {
+            fontSize: fontSizes.xs,
+            color: palette.grayDarkest.main,
+            display: 'flex',
+            alignItems: 'center',
+            minHeight: spacing.lg,
+            textTransform: 'uppercase',
+            letterSpacing: 1.5,
             fontWeight: 500,
           },
           body2: {

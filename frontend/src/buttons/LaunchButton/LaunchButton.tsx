@@ -1,4 +1,5 @@
 import React from 'react'
+import heartbeat from '../../services/Heartbeat'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
@@ -29,7 +30,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   const [prompt, setPrompt] = React.useState<boolean>(false)
   const ready = !!app?.connection?.host
   const disabled = !app?.connection?.enabled || app?.connection.connecting || !ready
-  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
+  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && app?.connection?.autoLaunch)
 
   React.useEffect(() => {
     if (autoLaunch && app?.connection?.enabled && ready) {
@@ -43,7 +44,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   const clickHandler = () => {
     if (app.prompt) setPrompt(true)
     else launch()
-    onLaunch && onLaunch()
+    onLaunch?.()
   }
 
   const close = () => setPrompt(false)
@@ -60,6 +61,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   const launch = () => {
     if (app.launchType === 'URL') windowOpen(app.string)
     else emit('launch/app', app.string, !app.tokens.includes('path'))
+    heartbeat.caffeinate()
   }
 
   const LaunchIcon = <Icon name="launch" size={props.size} color={props.color} type={props.type} fixedWidth />

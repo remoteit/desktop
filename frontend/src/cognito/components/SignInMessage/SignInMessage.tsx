@@ -1,8 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { LoadingScreen } from '../LoadingScreen'
+import { LoadingMessage } from '../../../components/LoadingMessage'
 
 export function SignInMessage(): JSX.Element {
   const { t } = useTranslation()
-  return <LoadingScreen message={t('global.actions.signing-in')} />
+  return <LoadingMessage message={t('global.actions.signing-in')} />
 }

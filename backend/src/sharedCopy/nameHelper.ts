@@ -19,7 +19,7 @@ const separator = ' - '
 
 export function attributeName(instance?: IDevice | IService) {
   if (!instance) return ''
-  return instance.attributes.name || instance.name
+  return instance.attributes?.name || instance.name
 }
 
 export function replaceHost(url: string, localhost?: boolean) {

@@ -146,7 +146,7 @@ export default class CLI {
     const connections = await this.connectionStatus()
     if (this.processing) return
 
-    return connections.map((c, i) => {
+    return connections.map(c => {
       let error: ISimpleError | undefined
 
       if (c.reachable === false) {
@@ -178,12 +178,13 @@ export default class CLI {
         disconnecting: c.state === 'disconnecting',
         isP2P: c.isP2P,
         reachable: c.reachable,
-        sessionId: c.sessionID?.toLowerCase(),
         restriction: c.restrict,
         timeout: c.timeout,
         default: false,
       }
 
+      // keep old sessionID for analytics
+      if (c.sessionID) result.sessionId = c.sessionID.toLowerCase()
       if (error) result.error = error
 
       return result

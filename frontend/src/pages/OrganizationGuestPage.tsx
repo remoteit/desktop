@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { getDevices } from '../models/accounts'
 import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
@@ -8,37 +9,46 @@ import { Typography, List, Box } from '@mui/material'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
-import { getDevices } from '../models/accounts'
 import { getOrganization } from '../models/organization'
-import { Container } from '../components/Container'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from '../components/LicenseSelect'
 import { RoleSelect } from '../components/RoleSelect'
+import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 
 export const OrganizationGuestPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
-  const { userID = '' } = useParams<{ userID: string }>()
   const dispatch = useDispatch<Dispatch>()
+  const { userID = '' } = useParams<{ userID: string }>()
   const [removing, setRemoving] = useState<boolean>(false)
-  const { devices, freeLicenses, organization, license } = useSelector((state: ApplicationState) => ({
-    organization: getOrganization(state),
-    freeLicenses: getFreeLicenses(state),
-    license: selectRemoteitLicense(state),
-    devices: getDevices(state).filter((d: IDevice) => !d.hidden),
-  }))
+  const { devices, freeLicenses, organization, guest, license } = useSelector((state: ApplicationState) => {
+    const organization = getOrganization(state)
+    const guest = organization.guests.find(g => g.id === userID)
+    return {
+      guest,
+      organization,
+      freeLicenses: getFreeLicenses(state),
+      license: selectRemoteitLicense(state),
+      devices: getDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
+    }
+  })
 
   const enterprise = !!license && !license.plan.billing
-  const guest = organization.guests.find(g => g.id === userID)
   const member = organization.members.find(m => m.user.id === userID)
   const user = guest || member?.user
 
   useEffect(() => {
     if (!user) history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
   }, [user])
+
+  useEffect(() => {
+    const missing = guest?.deviceIds.filter(id => !devices.find(device => device.id === id))
+    if (missing?.length) dispatch.devices.fetchDevices(missing)
+  }, [devices])
 
   return (
     <Container
@@ -105,8 +115,14 @@ export const OrganizationGuestPage: React.FC = () => {
                 <ListItemLocation
                   key={id}
                   pathname={`${location.pathname}/${id}`}
-                  icon={<TargetPlatform id={device?.targetPlatform} size="md" />}
-                  title={device?.name}
+                  icon={
+                    device ? (
+                      <TargetPlatform id={device?.targetPlatform} size="md" />
+                    ) : (
+                      <Icon name="spinner-third" spin />
+                    )
+                  }
+                  title={device ? device.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
                 >
                   <ShareDetails user={guest} device={device} />
                 </ListItemLocation>

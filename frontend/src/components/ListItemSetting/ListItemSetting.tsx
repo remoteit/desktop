@@ -26,7 +26,7 @@ type Props = {
   onButtonClick?: () => void
 }
 
-export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
+export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
   (
     {
       icon,
@@ -60,11 +60,11 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
 
     const handleClick = () => {
       if (confirm) setOpen(true)
-      else onClick && onClick()
+      else onClick?.()
     }
 
     const handleConfirm = () => {
-      onClick && onClick()
+      onClick?.()
       setOpen(false)
     }
 
@@ -83,7 +83,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
         <ListItem
           dense
           ref={ref}
-          button={!!onClick as true}
+          button={disabled || !onClick ? false : (true as any)}
           onClick={handleClick}
           disabled={disabled}
           onMouseEnter={() => setShowTip(true)}

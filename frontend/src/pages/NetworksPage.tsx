@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Typography, Collapse } from '@mui/material'
+import { Typography, Collapse, Tooltip } from '@mui/material'
 import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEFAULT_ID } from '../models/networks'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
@@ -9,11 +9,13 @@ import { useSelector } from 'react-redux'
 import { SessionsList } from '../components/SessionsList'
 import { IconButton } from '../buttons/IconButton'
 import { NetworkAdd } from '../components/NetworkAdd'
+import { GuideStep } from '../components/GuideStep'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
+import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 import heartbeat from '../services/Heartbeat'
 
@@ -70,7 +72,17 @@ export const NetworksPage: React.FC = () => {
           <Typography variant="subtitle1">
             <Title>Networks</Title>
             {permissions?.includes('MANAGE') && (
-              <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" fixedWidth size="md" />
+              <GuideStep
+                step={1}
+                guide="guideNetwork"
+                instructions="Click here to add a virtual network of services."
+                placement="top"
+                highlight
+                autoStart
+                autoNext
+              >
+                <IconButton icon="plus" title="Add Network" to="/networks/new" color="primary" type="solid" size="md" />
+              </GuideStep>
             )}
           </Typography>
         </>
@@ -92,7 +104,19 @@ export const NetworksPage: React.FC = () => {
       {networks.map(n => (
         <Network key={n.id} network={n} />
       ))}
-      <SessionsList title="Other Connections" networks={other} />
+      <SessionsList
+        title="Other Connections"
+        networks={other}
+        action={
+          <Tooltip
+            title="These are connections to a device of yours that originated from a different application or user."
+            placement="top"
+            arrow
+          >
+            <Icon name="circle-question" color="grayDark" size="sm" />
+          </Tooltip>
+        }
+      />
       {!!recent.serviceIds.length && <Network network={recent} recent noLink collapse />}
     </Container>
   )

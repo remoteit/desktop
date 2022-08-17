@@ -76,8 +76,8 @@ export const ListItemLocation: React.FC<Props> = ({
   return (
     <ListItem
       {...props}
+      button
       className={classnames(css.root, className)}
-      button={Boolean(!matches && pathname) as any}
       selected={!!matches}
       onClick={onClick}
       disabled={disabled}

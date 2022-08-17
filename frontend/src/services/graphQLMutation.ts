@@ -57,6 +57,15 @@ export async function graphQLDisconnect(serviceId: string, connectionId: string)
   )
 }
 
+export async function graphQLSurvey(serviceId: string, sessionId: string, quality: number) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!, $sessionId: String!, $quality: Int!) {
+        rateConnection(serviceId: $serviceId, sessionId: $sessionId, quality: $quality)
+      }`,
+    { serviceId, sessionId, quality }
+  )
+}
+
 export async function graphQLRename(serviceId: string, name: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: String!, $name: String!) {
