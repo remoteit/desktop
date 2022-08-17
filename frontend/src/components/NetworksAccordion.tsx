@@ -1,5 +1,5 @@
 import React from 'react'
-import { Chip, Box, Typography } from '@mui/material'
+import { Chip, Box } from '@mui/material'
 import { NetworksJoined } from './NetworksJoined'
 import { getActiveAccountId } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
@@ -7,7 +7,6 @@ import { ApplicationState, Dispatch } from '../store'
 import { selectNetworks, selectNetworkByService } from '../models/networks'
 import { DynamicButtonMenu } from '../buttons/DynamicButtonMenu'
 import { AccordionMenuItem } from './AccordionMenuItem'
-import { Gutters } from './Gutters'
 import { Notice } from './Notice'
 
 type Props = {

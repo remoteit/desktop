@@ -143,19 +143,24 @@ export default createModel<RootModel>()({
       let devices: IDevice[] = []
 
       const parsed: INetwork[] = all.map(n => {
-        n.connections.map(c => {
-          let netDevice = c.service.device
-          netDevice.services = graphQLServiceAdaptor({ ...netDevice, services: [c.service] })
+        // add network devices
+        n.connections.forEach(c => {
+          let netDevice: IDevice = { ...c.service.device, services: [c.service], permissions: [] }
+          netDevice.services = graphQLServiceAdaptor(netDevice)
           const index = devices.findIndex(d => d.id === netDevice.id)
           if (index === -1) {
-            devices = devices.concat(netDevice)
+            devices.push(netDevice)
           } else {
             devices[index].services.push(c.service)
           }
         })
 
         return {
-          ...n,
+          id: n.id,
+          name: n.name,
+          enabled: n.enabled,
+          owner: n.owner,
+          permissions: n.permissions,
           shared: userId !== n.owner.id && accountId === userId,
           created: new Date(n.created),
           serviceIds: n.connections.map(c => c.service.id),
@@ -169,7 +174,7 @@ export default createModel<RootModel>()({
       //      don't load all data if in portal mode
       console.log('LOAD NETWORKS', parsed, devices)
 
-      dispatch.accounts.mergeDevices({ devices, accountId })
+      dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
       dispatch.networks.setNetworks(parsed)
     },
     async enable(params: INetwork) {
