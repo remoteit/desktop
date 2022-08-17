@@ -76,7 +76,7 @@ export const Connect: React.FC = () => {
     <>
       {ownDevice && (
         <Notice gutterTop solid>
-          <Typography variant="h3">The service is hosted on this device. ({device.name})</Typography>
+          <Typography variant="h2">The service is hosted on this device.</Typography>
           <Typography variant="body2" gutterBottom>
             Connecting can be done directly without using Remote.It.
           </Typography>

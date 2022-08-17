@@ -101,15 +101,13 @@ export const OptionsPage: React.FC = () => {
           onClick={() => ui.resetGuides()}
         />
         {(os === 'mac' || os === 'windows') && (
-          <>
-            <DesktopUI>
-              <ListItemSetting
-                label="Auto update"
-                icon="chevron-double-up"
-                toggle={!!preferences.autoUpdate}
-                onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-              />
-            </DesktopUI>
+          <DesktopUI>
+            <ListItemSetting
+              label="Auto update"
+              icon="chevron-double-up"
+              toggle={!!preferences.autoUpdate}
+              onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+            />
             <TestUI>
               <ListItemSetting
                 quote
@@ -118,7 +116,7 @@ export const OptionsPage: React.FC = () => {
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />
             </TestUI>
-          </>
+          </DesktopUI>
         )}
         <UpdateSetting />
       </List>

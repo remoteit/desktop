@@ -2,6 +2,29 @@ import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
 import { store } from '../store'
 
+export const SERVICE_SELECT = `
+    id
+    name
+    state
+    title
+    enabled
+    application
+    created
+    lastReported
+    port
+    host
+    type
+    protocol
+    license
+    attributes
+    access {
+      user {
+        id
+        email
+      }
+    }
+`
+
 const DEVICE_SELECT = `
   id
   name
@@ -15,6 +38,9 @@ const DEVICE_SELECT = `
   permissions
   license
   attributes
+  services {
+    ${SERVICE_SELECT}
+  }
   tags (accountId: $account) {
     name
     color
@@ -44,28 +70,6 @@ const DEVICE_SELECT = `
   owner {
     id
     email
-  }
-  services {
-    id
-    name
-    state
-    title
-    enabled
-    application
-    created
-    lastReported
-    port
-    host
-    type
-    protocol
-    license
-    attributes
-    access {
-      user {
-        id
-        email
-      }
-    }
   }
   notificationSettings {
     emailNotifications
@@ -169,7 +173,7 @@ export async function graphQLFetchDeviceCount({ tag, state, sort, owner, account
   )
 }
 
-export function graphQLAdaptor(
+export function graphQLDeviceAdaptor(
   gqlDevices: any[],
   loginId: string,
   accountId: string,
@@ -204,26 +208,7 @@ export function graphQLAdaptor(
       permissions: d.permissions,
       attributes: processDeviceAttributes(d, metaData),
       tags: d.tags.map(t => ({ ...t, created: new Date(t.created) })),
-      services: d.services.map(
-        (s: any): IService => ({
-          id: s.id,
-          type: s.title,
-          enabled: s.enabled,
-          typeID: s.application,
-          state: s.state,
-          deviceID: d.id,
-          createdAt: new Date(s.created),
-          lastReported: s.lastReported && new Date(s.lastReported),
-          contactedAt: new Date(s.endpoint?.timestamp),
-          license: s.license,
-          attributes: processServiceAttributes(s),
-          name: removeDeviceName(d.name, s.name),
-          port: s.port,
-          host: s.host,
-          protocol: s.protocol,
-          access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
-        })
-      ),
+      services: graphQLServiceAdaptor(d),
       notificationSettings: d.notificationSettings,
       access: d.access.map((e: any) => ({
         id: e.user?.id,
@@ -237,6 +222,29 @@ export function graphQLAdaptor(
   })
   store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
   return data
+}
+
+export function graphQLServiceAdaptor(device: any): IService[] {
+  return device.services.map(
+    (s: any): IService => ({
+      id: s.id,
+      type: s.title,
+      enabled: s.enabled,
+      typeID: s.application,
+      state: s.state,
+      deviceID: device.id,
+      createdAt: new Date(s.created),
+      lastReported: s.lastReported && new Date(s.lastReported),
+      contactedAt: new Date(s.endpoint?.timestamp),
+      license: s.license,
+      attributes: processServiceAttributes(s),
+      name: removeDeviceName(device.name, s.name),
+      port: s.port,
+      host: s.host,
+      protocol: s.protocol,
+      access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
+    })
+  )
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
