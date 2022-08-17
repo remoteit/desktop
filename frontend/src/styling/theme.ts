@@ -1,6 +1,7 @@
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions } from '@mui/material/styles'
 import { ApplicationState } from '../store'
+import { ArrowIcon } from '../components/ArrowIcon'
 
 declare module '@mui/styles' {
   interface DefaultTheme extends Theme {}
@@ -11,6 +12,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
 
   const palette = {
     mode: isDark ? 'dark' : 'light',
+    info: { main: colors.grayDark, dark: darkColors.grayDark },
     primary: { main: colors.primary, dark: darkColors.primary },
     secondary: { main: colors.secondary, contrastText: colors.white, dark: darkColors.secondary },
     error: { main: colors.danger, dark: darkColors.danger },
@@ -155,6 +157,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             color: palette.grayDarker.main,
             borderRadius: radius,
             backgroundColor: palette.grayLightest.main,
+            textTransform: 'initial',
           },
           colorPrimary: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
           colorSecondary: { color: palette.alwaysWhite.main },
@@ -432,13 +435,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             marginTop: spacing.xxs,
             marginBottom: spacing.xxs,
+            '& .MuiSelect-iconStandard': { right: spacing.md },
             '& .MuiInputBase-sizeSmall': {
               height: 20,
               borderRadius: 10,
               fontSize: fontSizes.xxs,
-              '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: 0 },
+              '& .MuiSelect-icon': { marginRight: 2 },
             },
             '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+            '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.MuiFilledInput-input': { paddingRight: spacing.lg },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
           },
@@ -472,6 +477,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiSelect: {
+        defaultProps: {
+          disableInjectingGlobalStyles: true,
+          IconComponent: ArrowIcon,
+        },
         styleOverrides: {
           select: {
             '&:focus': { backgroundColor: 'inherit' },
