@@ -143,7 +143,6 @@ export default createModel<RootModel>()({
       const parsed: INetwork[] = all.map(n => {
         const shared = accountId !== n.owner.id
 
-        // if (shared) {
         // add network devices - otherwise they are loaded through connections query
         n.connections.forEach(c => {
           let netDevice: IDevice = {
@@ -156,10 +155,9 @@ export default createModel<RootModel>()({
           if (index === -1) {
             devices.push(netDevice)
           } else {
-            devices[index].services.push(c.service)
+            devices[index].services.push(netDevice.services[0])
           }
         })
-        // }
 
         return {
           shared,
@@ -354,6 +352,10 @@ export function selectActiveNetwork(state: ApplicationState): INetwork {
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
   return selectNetworks(state).filter(network => network.serviceIds.includes(serviceId))
+}
+
+export function inNetworkOnly(state: ApplicationState, serviceId?: string): boolean {
+  return !selectNetworkByService(state, serviceId).find(n => !n.shared)
 }
 
 export function getNetworkServiceIds(state: ApplicationState): string[] {
