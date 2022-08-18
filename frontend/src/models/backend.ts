@@ -77,7 +77,7 @@ export default createModel<RootModel>()({
       return result
     },
     async targetDeviceUpdated(newId: string, state) {
-      const { ui, backend, devices } = dispatch
+      const { ui, backend, devices, connections } = dispatch
       const { thisId } = state.backend
 
       if (newId !== thisId) {
@@ -98,10 +98,10 @@ export default createModel<RootModel>()({
           // deleted
         } else if (state.ui.setupDeletingDevice) {
           console.log('DELETE THIS DEVICE', thisId)
-          await dispatch.connections.clearByDevice(thisId)
+          await connections.clearByDevice(thisId)
           await sleep(2000)
           await devices.fetch()
-          await devices.fetchConnections()
+          await connections.fetch()
 
           ui.set({
             silent: true,

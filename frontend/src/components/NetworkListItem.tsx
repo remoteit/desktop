@@ -60,7 +60,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
                 {attributeName(service)} - <span className={css.name}>{attributeName(device)}</span>
               </>
             ) : (
-              connection?.name || session?.target.name
+              connection?.name || session?.target.name || serviceId
             )}
           </Title>
         }

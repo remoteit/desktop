@@ -16,7 +16,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch() {
       const result = await graphQLBasicRequest(
-        ` query {
+        ` query Contacts{
             login {
               contacts {
                 id

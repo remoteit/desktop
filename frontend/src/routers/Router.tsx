@@ -8,7 +8,7 @@ import { NetworksPage } from '../pages/NetworksPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
-import { NetworkEditPage } from '../pages/NetworkEditPage'
+import { NetworkPage } from '../pages/NetworkPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
@@ -118,7 +118,7 @@ export const Router: React.FC = () => {
               </Route>
 
               <Route path="/networks/view/:networkID">
-                <NetworkEditPage />
+                <NetworkPage />
               </Route>
 
               <Route path="/networks/:serviceID/lan">

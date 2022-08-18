@@ -1,7 +1,16 @@
 import { createModel } from '@rematch/core'
-import { newConnection, setConnection, sanitizeName, selectConnection } from '../helpers/connectionHelper'
+import {
+  cleanOrphanConnections,
+  getConnectionIds,
+  newConnection,
+  sanitizeName,
+  selectConnection,
+  setConnection,
+  updateConnections,
+} from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import { graphQLConnect, graphQLDisconnect, graphQLSurvey } from '../services/graphQLMutation'
+import { getNetworkServiceIds } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
@@ -20,6 +29,16 @@ export default createModel<RootModel>()({
     async init(_: void, state) {
       let item = getLocalStorage(state, 'connections')
       if (item) dispatch.connections.setAll(item)
+    },
+
+    async fetch(_: void, state) {
+      const accountId = state.auth.user?.id || state.user.id
+      const networkIds = getNetworkServiceIds(state)
+      const deviceIds = getConnectionIds(state).filter(id => !networkIds.includes(id))
+      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
+      updateConnections(connections)
+      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
+      cleanOrphanConnections(deviceIds)
     },
 
     async updateConnection(connection: IConnection, state) {

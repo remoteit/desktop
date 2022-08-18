@@ -16,8 +16,7 @@ export async function graphQLSetDeviceNotification(
   desktopNotifications?: boolean | null
 ) {
   return await graphQLBasicRequest(
-    `
-      mutation query($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
+    ` mutation query($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
         setNotificationSettings(
           serviceId: $deviceID, 
           emailNotifications: $emailNotifications, 
@@ -391,15 +390,14 @@ export async function graphQLDeleteTag(name: string, accountId: string) {
 
 export async function graphQLNotificationSettings(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    `  mutation query($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
-          setNotificationSettings(
-            emailNotifications: $emailNotifications, 
-            desktopNotifications: $desktopNotifications, 
-            urlNotifications: $urlNotifications, 
-            notificationUrl: $notificationUrl
-          )
-        }
-      `,
+    ` mutation query($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
+        setNotificationSettings(
+          emailNotifications: $emailNotifications, 
+          desktopNotifications: $desktopNotifications, 
+          urlNotifications: $urlNotifications, 
+          notificationUrl: $notificationUrl
+        )
+      }`,
     params
   )
 }

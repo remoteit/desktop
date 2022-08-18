@@ -49,7 +49,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
           title="Refresh networks"
           onClick={async () =>
             await refresh(async () => {
-              await dispatch.devices.fetchConnections()
+              await dispatch.connections.fetch()
             })
           }
         />

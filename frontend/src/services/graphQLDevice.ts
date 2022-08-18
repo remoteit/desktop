@@ -25,7 +25,7 @@ export const SERVICE_SELECT = `
     }
 `
 
-const DEVICE_SELECT = `
+export const DEVICE_SELECT = `
   id
   name
   state
@@ -38,9 +38,6 @@ const DEVICE_SELECT = `
   permissions
   license
   attributes
-  services {
-    ${SERVICE_SELECT}
-  }
   tags (accountId: $account) {
     name
     color
@@ -89,7 +86,7 @@ export async function graphQLFetchDevices({
   platform,
 }: gqlOptions) {
   return await graphQLRequest(
-    ` query($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query Devices($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
           account(id: $account) {
@@ -97,6 +94,9 @@ export async function graphQLFetchDevices({
               total
               items {
                 ${DEVICE_SELECT}
+                services {
+                  ${SERVICE_SELECT}
+                }              
               }
             }
           }
@@ -118,11 +118,14 @@ export async function graphQLFetchDevices({
 
 export async function graphQLFetchConnections(params: { account: string; ids: string[] }) {
   return await graphQLRequest(
-    ` query($ids: [String!]!, $account: String) {
+    ` query Connections($ids: [String!]!, $account: String) {
         login {
           id
           connections: device(id: $ids)  {
             ${DEVICE_SELECT}
+            services {
+              ${SERVICE_SELECT}
+            }
           }
         }
       }`,
@@ -135,11 +138,14 @@ export async function graphQLFetchConnections(params: { account: string; ids: st
 */
 export async function graphQLFetchDevice(id: string, account: string) {
   return await graphQLRequest(
-    ` query($id: [String!]!, $account: String) {
+    ` query Device($id: [String!]!, $account: String) {
         login {
           id
           device(id: $id)  {
             ${DEVICE_SELECT}
+            services {
+              ${SERVICE_SELECT}
+            }
           }
         }
       }`,
@@ -152,7 +158,7 @@ export async function graphQLFetchDevice(id: string, account: string) {
 
 export async function graphQLFetchDeviceCount({ tag, state, sort, owner, account, platform }: gqlOptions) {
   return await graphQLBasicRequest(
-    ` query($state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query DeviceCount($state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
           account(id: $account) {
@@ -194,7 +200,7 @@ export function graphQLDeviceAdaptor(
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),
-      shared: loginId !== owner.id && accountId === loginId,
+      shared: accountId !== owner.id, //loginId !== owner.id && accountId === loginId,
       lastReported: d.lastReported && new Date(d.lastReported),
       externalAddress: d.endpoint?.externalAddress,
       internalAddress: d.endpoint?.internalAddress,
@@ -207,14 +213,15 @@ export function graphQLDeviceAdaptor(
       license: d.license,
       permissions: d.permissions,
       attributes: processDeviceAttributes(d, metaData),
-      tags: d.tags.map(t => ({ ...t, created: new Date(t.created) })),
+      tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
       services: graphQLServiceAdaptor(d),
       notificationSettings: d.notificationSettings,
-      access: d.access.map((e: any) => ({
-        id: e.user?.id,
-        email: e.user?.email || e.user?.id,
-        scripting: e.scripting,
-      })),
+      access:
+        d.access?.map((e: any) => ({
+          id: e.user?.id,
+          email: e.user?.email || e.user?.id,
+          scripting: e.scripting,
+        })) || [],
       thisDevice: d.id === thisId,
       accountId,
       hidden,
@@ -225,25 +232,27 @@ export function graphQLDeviceAdaptor(
 }
 
 export function graphQLServiceAdaptor(device: any): IService[] {
-  return device.services.map(
-    (s: any): IService => ({
-      id: s.id,
-      type: s.title,
-      enabled: s.enabled,
-      typeID: s.application,
-      state: s.state,
-      deviceID: device.id,
-      createdAt: new Date(s.created),
-      lastReported: s.lastReported && new Date(s.lastReported),
-      contactedAt: new Date(s.endpoint?.timestamp),
-      license: s.license,
-      attributes: processServiceAttributes(s),
-      name: removeDeviceName(device.name, s.name),
-      port: s.port,
-      host: s.host,
-      protocol: s.protocol,
-      access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
-    })
+  return (
+    device.services?.map(
+      (s: any): IService => ({
+        id: s.id,
+        type: s.title,
+        enabled: s.enabled,
+        typeID: s.application,
+        state: s.state,
+        deviceID: device.id,
+        createdAt: new Date(s.created),
+        lastReported: s.lastReported && new Date(s.lastReported),
+        contactedAt: new Date(s.endpoint?.timestamp),
+        license: s.license,
+        attributes: processServiceAttributes(s),
+        name: removeDeviceName(device.name, s.name),
+        port: s.port,
+        host: s.host,
+        protocol: s.protocol,
+        access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
+      })
+    ) || []
   )
 }
 
@@ -272,7 +281,7 @@ export async function graphQLRegistration(props: {
   account: string
 }) {
   return await graphQLBasicRequest(
-    ` query($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
+    ` query Registration($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
         login {
           account(id: $account) {
             registrationCode(name: $name, platform: $platform, services: $services)

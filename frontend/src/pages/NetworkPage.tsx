@@ -1,22 +1,23 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { Typography } from '@mui/material'
-import { useSelector } from 'react-redux'
+import { Typography, Button } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectNetwork } from '../models/networks'
-import { ApplicationState } from '../store'
+import { ApplicationState, Dispatch } from '../store'
 import { getOrganizationName } from '../models/organization'
-import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NetworkHeaderMenu } from '../components/NetworkHeaderMenu'
 import { NetworkSettings } from '../components/NetworkSettings'
 import { GuideStep } from '../components/GuideStep'
+import { Gutters } from '../components/Gutters'
 
-export const NetworkEditPage: React.FC = () => {
+export const NetworkPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const { networkID } = useParams<{ networkID?: string }>()
-  const { network, owner, email } = useSelector((state: ApplicationState) => {
+  const { network, orgName, email } = useSelector((state: ApplicationState) => {
     const network = selectNetwork(state, networkID)
     return {
       network,
-      owner: getOrganizationName(state, network.owner.id),
+      orgName: getOrganizationName(state, network.owner.id),
       email: state.user.email,
     }
   })
@@ -41,9 +42,26 @@ export const NetworkEditPage: React.FC = () => {
       autoNext
     >
       <NetworkHeaderMenu network={network} email={email}>
-        <AccordionMenuItem gutters subtitle="Configuration" defaultExpanded elevation={0}>
-          <NetworkSettings network={network} owner={owner} />
-        </AccordionMenuItem>
+        <Typography variant="subtitle1">Connections</Typography>
+        <Gutters bottom="xxl">
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => dispatch.networks.enable({ ...network, enabled: true })}
+          >
+            Start All
+          </Button>
+          <Button
+            variant="contained"
+            color="info"
+            size="small"
+            onClick={() => dispatch.networks.enable({ ...network, enabled: false })}
+          >
+            Stop All
+          </Button>
+        </Gutters>
+        <Typography variant="subtitle1">Settings</Typography>
+        <NetworkSettings network={network} orgName={orgName} />
       </NetworkHeaderMenu>
     </GuideStep>
   )

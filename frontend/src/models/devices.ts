@@ -19,7 +19,6 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { cleanOrphanConnections, getConnectionIds, updateConnections } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
@@ -170,17 +169,7 @@ export default createModel<RootModel>()({
       if (!deviceModel.initialized) await dispatch.devices.fetch()
     },
 
-    async fetchConnections(_: void, state) {
-      const accountId = state.auth.user?.id || state.user.id
-      const deviceIds = getConnectionIds(state)
-      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      updateConnections(connections)
-      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
-      cleanOrphanConnections(deviceIds)
-    },
-
     async fetchDevices(deviceIds: string[], state) {
-      console.log('fetchDevices', deviceIds)
       const accountId = getActiveAccountId(state)
       const devices = await dispatch.devices.fetchArray({ deviceIds, accountId })
       if (devices.length) dispatch.accounts.mergeDevices({ devices, accountId })
@@ -433,7 +422,7 @@ export default createModel<RootModel>()({
       await dispatch.connections.clearByDevice(deviceId)
       await dispatch.networks.removeById(deviceId)
       await dispatch.devices.fetch()
-      await dispatch.devices.fetchConnections()
+      await dispatch.connections.fetch()
     },
 
     async setPersistent(params: ILookup<any>, state) {

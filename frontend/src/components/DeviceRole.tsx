@@ -5,9 +5,7 @@ import { memberOrganization } from '../models/organization'
 import { accountFromDevice, getMembership } from '../models/accounts'
 import { Chip } from '@mui/material'
 
-type Props = {
-  device?: IDevice
-}
+type Props = { device?: IDevice }
 
 export const DeviceRole: React.FC<Props> = ({ device }) => {
   const { membership, roles } = useSelector((state: ApplicationState) => {
@@ -18,8 +16,11 @@ export const DeviceRole: React.FC<Props> = ({ device }) => {
     }
   })
 
-  const roleId = membership.roleId || (device?.shared ? 'GUEST' : 'OWNER')
-  let label = roles.find(r => r.id === roleId)?.name || 'Unknown'
+  if (membership.roleId === 'OWNER' && device?.owner.id !== membership.account.id) {
+    membership.roleId = 'GUEST'
+  }
 
+  let label = roles.find(r => r.id === membership.roleId)?.name || 'Unknown'
+  console.log('DeviceRole', { membership, roles })
   return <Chip size="small" label={label} variant="outlined" />
 }

@@ -64,13 +64,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (!visible) return null
 
   let title = connection?.public ? 'Connect' : 'Start'
+  let variant: 'text' | 'outlined' | 'contained' | undefined
+
+  if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
+
   if (!permissions?.includes('CONNECT')) {
     disabled = true
     title = 'Unauthorized'
   }
-  let variant: 'text' | 'outlined' | 'contained' | undefined
-
-  if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
 
   if (chip && chip.show) {
     color = chip.colorName

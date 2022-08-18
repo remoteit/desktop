@@ -109,7 +109,6 @@ export function setConnection(connection: IConnection) {
     connections.updateConnection(connection)
   } else if (auth.backendAuthenticated) {
     emit('connection', connection)
-    heartbeat.caffeinate()
   }
 }
 

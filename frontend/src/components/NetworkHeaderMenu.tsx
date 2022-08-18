@@ -74,8 +74,8 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
           <NetworkTagEditor network={network} />
           <ListHorizontal>
             <ListItemLocation
-              title="Edit"
-              icon="pen"
+              title="Details"
+              icon="circle-info"
               iconColor="grayDarker"
               pathname={`/networks/view/${network.id}/edit`}
               match={[`/networks/view/${network.id}`, `/networks/view/${network.id}/edit`]}

@@ -14,7 +14,7 @@ import {
   graphQLRemoveNetworkShare,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { graphQLServiceAdaptor, SERVICE_SELECT } from '../services/graphQLDevice'
+import { graphQLDeviceAdaptor, graphQLServiceAdaptor, DEVICE_SELECT, SERVICE_SELECT } from '../services/graphQLDevice'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
@@ -23,7 +23,7 @@ export const DEFAULT_ID = 'local'
 const defaultLocalNetwork: INetwork = {
   ...defaultNetwork(),
   id: DEFAULT_ID,
-  name: 'Local Network',
+  name: 'Connections',
   permissions: [],
   enabled: true,
   shared: false,
@@ -79,7 +79,7 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
-        ` query($account: String) {
+        ` query Networks($account: String) {
             login {
               account(id: $account) {
                 networks {
@@ -96,8 +96,7 @@ export default createModel<RootModel>()({
                     service {
                       ${SERVICE_SELECT}
                       device {
-                        id
-                        name
+                        ${DEVICE_SELECT}
                       }
                     }
                     name
@@ -136,32 +135,39 @@ export default createModel<RootModel>()({
 
     async parse(result: AxiosResponse<any> | undefined, state) {
       const accountId = getActiveAccountId(state)
-      const userId = state.auth.user?.id
       const all = result?.data?.data?.login?.account?.networks
       if (!all) return
 
       let devices: IDevice[] = []
 
       const parsed: INetwork[] = all.map(n => {
-        // add network devices
+        const shared = accountId !== n.owner.id
+
+        // if (shared) {
+        // add network devices - otherwise they are loaded through connections query
         n.connections.forEach(c => {
-          let netDevice: IDevice = { ...c.service.device, services: [c.service], permissions: [] }
+          let netDevice: IDevice = {
+            ...graphQLDeviceAdaptor([{ ...c.service.device, permissions: n.permissions }], '', accountId, true)[0],
+            services: [c.service],
+          }
           netDevice.services = graphQLServiceAdaptor(netDevice)
           const index = devices.findIndex(d => d.id === netDevice.id)
+
           if (index === -1) {
             devices.push(netDevice)
           } else {
             devices[index].services.push(c.service)
           }
         })
+        // }
 
         return {
+          shared,
           id: n.id,
           name: n.name,
           enabled: n.enabled,
           owner: n.owner,
           permissions: n.permissions,
-          shared: userId !== n.owner.id && accountId === userId,
           created: new Date(n.created),
           serviceIds: n.connections.map(c => c.service.id),
           access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
@@ -174,7 +180,7 @@ export default createModel<RootModel>()({
       //      don't load all data if in portal mode
       console.log('LOAD NETWORKS', parsed, devices)
 
-      dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+      dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
       dispatch.networks.setNetworks(parsed)
     },
     async enable(params: INetwork) {
@@ -258,9 +264,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
     },
     async updateNetwork(network: INetwork, state) {
-      const response = await graphQLUpdateNetwork(network)
-      if (response === 'ERROR') return
       await dispatch.networks.setNetwork(network)
+      await graphQLUpdateNetwork(network)
       await dispatch.networks.fetch()
     },
     async shareNetwork({ id, emails }: { id: string; emails: string[] }, state) {
