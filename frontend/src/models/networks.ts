@@ -186,7 +186,6 @@ export default createModel<RootModel>()({
     async enable(params: INetwork) {
       const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
       dispatch.connections.queueEnable(queue)
-      dispatch.networks.setNetwork({ ...params, enabled: params.enabled })
     },
     async start(serviceId: string, state) {
       const joined = selectNetworkByService(state, serviceId)
