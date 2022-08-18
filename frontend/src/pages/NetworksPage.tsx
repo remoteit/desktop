@@ -4,8 +4,8 @@ import { defaultNetwork, selectActiveNetwork, selectNetworks, recentNetwork, DEF
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
 import { selectPermissions } from '../models/organization'
-import { ApplicationState } from '../store'
-import { useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { SessionsList } from '../components/SessionsList'
 import { IconButton } from '../buttons/IconButton'
 import { NetworkAdd } from '../components/NetworkAdd'
@@ -20,6 +20,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import heartbeat from '../services/Heartbeat'
 
 export const NetworksPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const { other, recent, networks, active, permissions } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const activeSessionIds = allConnections.map(c => c.sessionId)
@@ -102,7 +103,7 @@ export const NetworksPage: React.FC = () => {
         </Gutters>
       </Collapse>
       {networks.map(n => (
-        <Network key={n.id} network={n} />
+        <Network key={n.id} network={n} onClear={id => dispatch.networks.remove({ serviceId: id, networkId: n.id })} />
       ))}
       <SessionsList
         title="Other Connections"
@@ -117,7 +118,9 @@ export const NetworksPage: React.FC = () => {
           </Tooltip>
         }
       />
-      {!!recent.serviceIds.length && <Network network={recent} recent noLink collapse />}
+      {!!recent.serviceIds.length && (
+        <Network network={recent} recent noLink collapse onClear={id => dispatch.connections.clear(id)} />
+      )}
     </Container>
   )
 }

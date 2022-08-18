@@ -15,9 +15,10 @@ export interface Props {
   recent?: boolean
   noLink?: boolean
   highlight?: boolean
+  onClear?: (serviceId: string) => void
 }
 
-export const Network: React.FC<Props> = ({ recent, collapse, highlight, ...props }) => {
+export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight, ...props }) => {
   const dispatch = useDispatch<Dispatch>()
   const [expanded, setExpanded] = useState<boolean>(!collapse)
   const css = useStyles({ highlight })
@@ -39,7 +40,7 @@ export const Network: React.FC<Props> = ({ recent, collapse, highlight, ...props
       <Collapse in={expanded}>
         {props.network?.serviceIds.map(id => (
           <NetworkListItem serviceId={id} key={id} {...props}>
-            {recent && <ClearButton id={id} onClick={() => dispatch.connections.clear(id)} />}
+            {onClear && <ClearButton id={id} onClick={() => onClear(id)} />}
           </NetworkListItem>
         ))}
         {!props.network?.serviceIds.length && (

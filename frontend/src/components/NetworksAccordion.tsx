@@ -61,7 +61,6 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
                   port: connection.port,
                   enabled: connection.enabled,
                 })
-                dispatch.ui.accordion({ networks: true })
               }}
             />
           )}
