@@ -109,7 +109,10 @@ export const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     '& > svg': { position: 'absolute', right: 6, bottom: -7 },
   },
-  platform: { minWidth: 48 },
+  platform: {
+    minWidth: 48,
+    '& > span': { flexGrow: 1, textAlign: 'center' },
+  },
   mergeIcon: {
     zIndex: 2,
     backgroundImage: `radial-gradient(${palette.white.main}, transparent)`,
