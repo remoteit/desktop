@@ -37,7 +37,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   const css = useStyles()
 
   customTokens = customTokens.length ? customTokens : app.allCustomTokens
-  console.log('TOKENS', customTokens, app.allCustomTokens)
+
   return (
     <>
       {!globalDefaults && (
