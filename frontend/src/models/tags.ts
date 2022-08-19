@@ -45,7 +45,7 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
-        ` query($account: String) {
+        ` query Tags($account: String) {
             login {
               account(id: $account) {
                 tags {

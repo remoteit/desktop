@@ -98,7 +98,7 @@ export default createModel<RootModel>()({
 
       try {
         const result = await graphQLRequest(
-          `query($from: Int, $size: Int, $start: DateTime, $end: DateTime, $timezone: String) {
+          `query Analytics($from: Int, $size: Int, $start: DateTime, $end: DateTime, $timezone: String) {
              login {
               devices(size: $size, from: $from, owner: true) {
                 total

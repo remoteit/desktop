@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { IconButton } from '../buttons/IconButton'
+import { Icon } from './Icon'
 import { ClearButton } from '../buttons/ClearButton'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
@@ -15,31 +15,30 @@ export interface Props {
   recent?: boolean
   noLink?: boolean
   highlight?: boolean
+  onClear?: (serviceId: string) => void
 }
 
-export const Network: React.FC<Props> = ({ recent, collapse, highlight, ...props }) => {
+export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight, ...props }) => {
   const dispatch = useDispatch<Dispatch>()
   const [expanded, setExpanded] = useState<boolean>(!collapse)
   const css = useStyles({ highlight })
 
   return (
     <List className={css.list}>
-      <NetworkListTitle {...props} expanded={expanded} offline={recent}>
-        <IconButton
-          icon={expanded ? 'caret-down' : 'caret-up'}
-          color="grayDark"
-          buttonBaseSize="small"
-          onClick={() => setExpanded(!expanded)}
+      <NetworkListTitle {...props} expanded={expanded} offline={recent} onClick={() => setExpanded(!expanded)}>
+        {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
+        <Icon
+          name={expanded ? 'caret-down' : 'caret-up'}
+          color={highlight ? 'primary' : 'grayDark'}
           type="solid"
           size="sm"
+          inlineLeft
         />
-        {highlight && <Typography className={css.note}>active</Typography>}
-        {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
       </NetworkListTitle>
       <Collapse in={expanded}>
         {props.network?.serviceIds.map(id => (
           <NetworkListItem serviceId={id} key={id} {...props}>
-            {recent && <ClearButton id={id} onClick={() => dispatch.connections.clear(id)} />}
+            {onClear && <ClearButton id={id} onClick={() => onClear(id)} />}
           </NetworkListItem>
         ))}
         {!props.network?.serviceIds.length && (
@@ -76,7 +75,7 @@ const useStyles = makeStyles(({ palette }) => ({
             backgroundColor: palette.white.main,
           },
         }
-      : {},
+      : { '& button': { color: palette.gray.main, marginRight: spacing.xs } },
   note: {
     color: palette.primary.main,
     textTransform: 'uppercase',

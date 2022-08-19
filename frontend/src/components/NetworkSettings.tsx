@@ -8,7 +8,7 @@ import { ListItemSetting } from '../components/ListItemSetting'
 import { MAX_NAME_LENGTH } from '../shared/constants'
 import { Avatar } from '../components/Avatar'
 
-export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = ({ network, owner }) => {
+export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> = ({ network, orgName }) => {
   const dispatch = useDispatch<Dispatch>()
   const disabled = !network.permissions.includes('MANAGE')
 
@@ -25,15 +25,15 @@ export const NetworkSettings: React.FC<{ network: INetwork; owner: string }> = (
       />
       <ListItemSetting
         icon="power-off"
-        label="Enable Connections"
-        subLabel={`Start or stop all services. ${network.enabled ? 'New services will auto-start.' : ''}`}
+        label="Enabled"
+        subLabel="Will auto-start services if enabled"
         toggle={network.enabled}
-        onClick={() => dispatch.networks.enable({ ...network, enabled: !network.enabled })}
+        onClick={() => dispatch.networks.updateNetwork({ ...network, enabled: !network.enabled })}
       />
       <FormDisplay
         icon={<Avatar email={network.owner.email} size={24} tooltip />}
         label="Owner"
-        value={owner}
+        value={`${network.owner.email} (${orgName})`}
         displayOnly
       />
     </List>

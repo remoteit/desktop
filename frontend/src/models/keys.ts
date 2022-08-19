@@ -32,7 +32,7 @@ export default createModel<RootModel>()({
     },
     async fetch() {
       const result = await graphQLBasicRequest(
-        ` query {
+        ` query Keys{
             login {
               apiKey {
                 key

@@ -281,12 +281,13 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
 
 export const useStyles = makeStyles({
   field: {
-    paddingRight: spacing.xl,
+    paddingRight: spacing.lg,
+    paddingLeft: spacing.md,
     alignItems: 'flex-start',
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
-    padding: `0 ${spacing.xl}px 0 ${spacing.xxs}px`,
+    padding: `0 ${spacing.lg}px 0 ${spacing.md}px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
       width: 300 - spacing.lg,

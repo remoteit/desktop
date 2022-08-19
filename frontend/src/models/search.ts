@@ -72,7 +72,7 @@ export default createModel<RootModel>()({
       )
 
       const response = await graphQLBasicRequest(
-        ` query ($size: Int, $state: String, $name: String) {
+        ` query Search($size: Int, $state: String, $name: String) {
               login {
                 ${accountQueries.join('\n')}
               }

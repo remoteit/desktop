@@ -36,7 +36,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   const app = useApplication(undefined, connection)
   const css = useStyles()
 
-  customTokens = customTokens || app.customTokens
+  customTokens = customTokens.length ? customTokens : app.allCustomTokens
 
   return (
     <>

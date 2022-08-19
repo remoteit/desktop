@@ -11,10 +11,11 @@ export interface Props {
   expanded?: boolean
   offline?: boolean
   noLink?: boolean
+  onClick?: () => void
   children?: React.ReactNode
 }
 
-export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, offline, noLink, children }) => {
+export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, offline, noLink, onClick, children }) => {
   const css = useStyles({ enabled: network?.enabled, offline })
   return (
     <ListItemLocation
@@ -28,6 +29,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
         />
       }
       pathname={noLink ? undefined : `/networks/view/${network?.id}`}
+      onClick={onClick}
       title={
         <>
           {network?.shared && (

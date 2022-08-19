@@ -220,7 +220,7 @@ export default createModel<RootModel>()({
       await dispatch.tags.fetch()
       dispatch.user.fetch()
       dispatch.devices.fetch()
-      dispatch.devices.fetchConnections() // change to connections.fetch()
+      dispatch.connections.fetch()
       dispatch.contacts.fetch()
       dispatch.sessions.fetch()
       dispatch.announcements.fetch()
