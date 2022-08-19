@@ -193,5 +193,5 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gutters: { display: 'flex' },
+  gutters: { display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } },
 })
