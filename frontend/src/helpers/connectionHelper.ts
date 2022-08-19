@@ -9,7 +9,6 @@ import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { isPortal } from '../services/Browser'
-import heartbeat from '../services/Heartbeat'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -48,18 +47,16 @@ export function newConnection(service?: IService | null) {
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover:
-      cd?.route === undefined
-        ? service?.attributes.route === undefined
-          ? true // default
-          : service?.attributes.route === 'failover'
-        : cd.route === 'failover',
-    proxyOnly:
-      cd?.route === undefined
-        ? service?.attributes.route === undefined
-          ? false // default
-          : service?.attributes.route === 'proxy'
-        : cd.route === 'proxy',
+    failover: cd?.route
+      ? cd.route === 'failover'
+      : service?.attributes.route
+      ? service?.attributes.route === 'failover'
+      : true, // default
+    proxyOnly: cd?.route
+      ? cd.route === 'proxy'
+      : service?.attributes.route
+      ? service?.attributes.route === 'proxy'
+      : false, // default
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
     public: isPortal() || cd?.route === 'public' || service?.attributes.route === 'public' ? true : undefined,
