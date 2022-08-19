@@ -155,7 +155,8 @@ export default createModel<RootModel>()({
           if (index === -1) {
             devices.push(netDevice)
           } else {
-            devices[index].services.push(netDevice.services[0])
+            const existing = devices[index].services.find(s => s.id === netDevice.services[0].id)
+            if (!existing) devices[index].services.push(netDevice.services[0])
           }
         })
 
