@@ -21,6 +21,6 @@ export const DeviceRole: React.FC<Props> = ({ device }) => {
   }
 
   let label = roles.find(r => r.id === membership.roleId)?.name || 'Unknown'
-  console.log('DeviceRole', { membership, roles })
+
   return <Chip size="small" label={label} variant="outlined" />
 }

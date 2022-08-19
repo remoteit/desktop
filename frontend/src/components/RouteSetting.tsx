@@ -22,7 +22,7 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
   const connectionRoute = getRoute(connection)
   const defaultRoute = getRoute(defaults)
   const route = ROUTES.find(r => r.key === connectionRoute)
-  console.log(service.attributes)
+
   return (
     <ListItem dense onClick={() => setOpen(!open)} disabled={disabled} button>
       <ListItemIcon>
