@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { IconButton } from '../buttons/IconButton'
+import { Icon } from './Icon'
 import { ClearButton } from '../buttons/ClearButton'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
@@ -25,17 +25,15 @@ export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight,
 
   return (
     <List className={css.list}>
-      <NetworkListTitle {...props} expanded={expanded} offline={recent}>
-        <IconButton
-          icon={expanded ? 'caret-down' : 'caret-up'}
-          color="grayDark"
-          buttonBaseSize="small"
-          onClick={() => setExpanded(!expanded)}
+      <NetworkListTitle {...props} expanded={expanded} offline={recent} onClick={() => setExpanded(!expanded)}>
+        {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
+        <Icon
+          name={expanded ? 'caret-down' : 'caret-up'}
+          color={highlight ? 'primary' : 'grayDark'}
           type="solid"
           size="sm"
+          inlineLeft
         />
-        {highlight && <Typography className={css.note}>active</Typography>}
-        {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
       </NetworkListTitle>
       <Collapse in={expanded}>
         {props.network?.serviceIds.map(id => (
@@ -77,7 +75,7 @@ const useStyles = makeStyles(({ palette }) => ({
             backgroundColor: palette.white.main,
           },
         }
-      : {},
+      : { '& button': { color: palette.gray.main, marginRight: spacing.xs } },
   note: {
     color: palette.primary.main,
     textTransform: 'uppercase',

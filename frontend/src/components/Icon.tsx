@@ -121,8 +121,8 @@ const useStyles = makeStyles(({ palette }) => ({
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 1.5 : spacing.md
-    if (size) styles.fontSize = styles.height = fontSizes[size]
-    if (fontSize) styles.fontSize = styles.height = fontSize
+    if (size) styles.fontSize = styles.maxHeight = fontSizes[size]
+    if (fontSize) styles.fontSize = styles.maxHeight = fontSize
     if (rotate) styles.transform = `rotate(${rotate}deg)`
     if (styles.fontSize) styles.maxWidth = styles.fontSize + spacing.sm
     return styles

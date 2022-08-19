@@ -18,7 +18,7 @@ export const ClearButton: React.FC<Props> = ({ disabled, all, onClick }) => {
   }
 
   return all ? (
-    <Button disabled={disabled} onClick={handleClick} size="small">
+    <Button disabled={disabled} onClick={handleClick} color="inherit" size="small">
       Clear
     </Button>
   ) : (
