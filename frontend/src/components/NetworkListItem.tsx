@@ -102,8 +102,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .MuiAvatar-root': { position: 'absolute', right: spacing.md, marginTop: -2 },
-    '&:hover .MuiAvatar-root': { display: 'none' },
+    '& .tooltip': { position: 'absolute', right: spacing.xl, marginTop: -2 },
   },
   connectIcon: {
     position: 'relative',

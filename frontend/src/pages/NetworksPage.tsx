@@ -117,7 +117,11 @@ export const NetworksPage: React.FC = () => {
           <Network
             key={n.id}
             network={n}
-            onClear={id => dispatch.networks.remove({ serviceId: id, networkId: n.id })}
+            onClear={
+              n.permissions.includes('MANAGE')
+                ? id => dispatch.networks.remove({ serviceId: id, networkId: n.id })
+                : undefined
+            }
           />
         ))}
       </TestUI>

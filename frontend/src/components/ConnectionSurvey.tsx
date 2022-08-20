@@ -32,7 +32,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
   const show =
     connection.surveyed !== connection.sessionId &&
     !connection.connected &&
-    Date.now() - (connection.endTime || 0) < 1000 * 60 * 60 * 24 // one day
+    Date.now() - (connection.endTime || 0) < 1000 * 60 * 60 // one hour
 
   const handleRating = async (rating: number) => {
     // call api to rate connection
@@ -66,7 +66,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
       <Gutters bottom={null} size="md">
         {rated === 100 ? (
           <Paper elevation={0} className={classnames(css.layout, css.survey)}>
-            <Typography variant="subtitle2">Thank you for your feedback!</Typography>
+            <Typography variant="body2">Thank you for your feedback!</Typography>
           </Paper>
         ) : rated === 50 || rated === 0 ? (
           <Paper elevation={0} className={css.layout}>

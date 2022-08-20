@@ -356,7 +356,9 @@ export function selectNetworkByService(state: ApplicationState, serviceId: strin
 }
 
 export function inNetworkOnly(state: ApplicationState, serviceId?: string): boolean {
-  return !selectNetworkByService(state, serviceId).find(n => !n.shared)
+  const networks = selectNetworkByService(state, serviceId)
+  if (!networks.length) return false
+  return !networks.find(n => !n.shared)
 }
 
 export function getNetworkServiceIds(state: ApplicationState): string[] {
