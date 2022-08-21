@@ -1,11 +1,11 @@
 import React from 'react'
-import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, TextField, MenuItem } from '@material-ui/core'
+import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, TextField, MenuItem } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = {
   icon?: string
-  label: string | React.ReactElement
-  subLabel?: string | React.ReactElement
+  label: React.ReactNode
+  subLabel?: React.ReactNode
   value?: string | number
   options: { label: string; value?: string }[]
   onChange: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>

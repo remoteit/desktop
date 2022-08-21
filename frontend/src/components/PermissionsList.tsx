@@ -1,6 +1,6 @@
 import React from 'react'
 import { PERMISSION } from '../models/organization'
-import { Typography, List } from '@material-ui/core'
+import { Typography, List } from '@mui/material'
 import { ListItemSetting } from './ListItemSetting'
 
 type Props = {

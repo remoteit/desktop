@@ -1,50 +1,64 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
-import { ApplicationState } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
 import { selectAnnouncements } from '../models/announcements'
-import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
-import { selectConnections } from '../helpers/connectionHelper'
+import { selectNetworks } from '../models/networks'
+import { makeStyles } from '@mui/styles'
+import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { unreadAnnouncements, connections, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { unreadAnnouncements, networks, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
     unreadAnnouncements: selectAnnouncements(state, true).length,
-    connections: selectConnections(state).filter(connection => connection.enabled).length,
+    networks: selectNetworks(state).length,
     sessions: state.sessions.all.length,
     devices: getDeviceModel(state).total,
     remoteUI: isRemoteUI(state),
   }))
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ sessions })
 
   if (remoteUI)
     return (
       <List className={css.list}>
-        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" dense />
+        <ListItemLocation
+          title="This Device"
+          pathname="/devices"
+          match="/devices/:any?/:any?/:any?"
+          icon="laptop"
+          dense
+        />
         <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       </List>
     )
 
   return (
     <List className={css.list}>
-      <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections" dense>
+      <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
         <ListItemSecondaryAction>
-          {!!connections && (
-            <Tooltip title="Active" placement="top" arrow>
-              <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
+          {!!networks && (
+            <Tooltip title="Networks" placement="top" arrow>
+              <Chip size="small" label={networks.toLocaleString()} className={css.connections} />
             </Tooltip>
           )}
           {!!sessions && (
-            <Tooltip title="Connected" placement="top" arrow>
-              <Chip size="small" label={sessions.toLocaleString()} className={css.sessions} color="primary" />
+            <Tooltip title="Connected Services" placement="top" arrow>
+              <Chip
+                size="small"
+                label={sessions.toLocaleString()}
+                className={css.sessions}
+                variant="filled"
+                color="primary"
+              />
             </Tooltip>
           )}
         </ListItemSecondaryAction>
       </ListItemLocation>
-      <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch dense>
+      <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" exactMatch dense>
         {!!devices && (
           <ListItemSecondaryAction>
             <Tooltip title="Total" placement="top" arrow>
@@ -56,7 +70,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll-old" dense />
+      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
       <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
@@ -64,7 +78,8 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation
         className={css.footer}
         title="Contact"
-        subtitle="Support and Feedback"
+        // subtitle="Support and Feedback"
+        onClick={() => dispatch.feedback.reset()}
         pathname="/feedback"
         icon="envelope-open-text"
         dense
@@ -80,7 +95,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemText-primary': { color: palette.grayDark.main },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
-    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, backgroundColor: palette.grayLight.main },
+    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px` },
     '& .Mui-selected': {
       backgroundColor: palette.white.main,
       '& .MuiListItemText-primary': {

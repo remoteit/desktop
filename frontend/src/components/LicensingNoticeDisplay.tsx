@@ -1,12 +1,12 @@
 import React from 'react'
-import { ListItem, Button, Tooltip, IconButton } from '@material-ui/core'
+import { ListItem, Button, Tooltip, IconButton } from '@mui/material'
 import { PERSONAL_PLAN_ID } from '../models/plans'
 import { Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useDispatch } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
-import { Link } from 'react-router-dom'
 import { Notice } from './Notice'
+import { Link } from './Link'
 import { Icon } from './Icon'
 
 type Props = {
@@ -28,7 +28,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
 
   const onClose = () => plans.set({ informed: true })
 
-  let notice: React.ReactElement | null = null
+  let notice: React.ReactNode | null = null
   const title = `Your ${license?.plan.description} plan of ${license?.plan.product.name}`
 
   const UpgradeButton = (
@@ -39,7 +39,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         </Button>
       </Link>
       <Tooltip title="Close">
-        <IconButton onClick={onClose}>
+        <IconButton onClick={onClose} size="large">
           <Icon name="times" size="md" color="primary" />
         </IconButton>
       </Tooltip>

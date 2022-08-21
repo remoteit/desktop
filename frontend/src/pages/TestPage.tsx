@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List, ListItem, Divider } from '@material-ui/core'
+import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'

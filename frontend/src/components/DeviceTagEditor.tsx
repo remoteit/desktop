@@ -1,4 +1,5 @@
 import React from 'react'
+import { Box } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
@@ -24,11 +25,11 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
   if (!device) return null
 
   return (
-    <>
+    <Box display="flex" marginLeft={3.5} marginBottom={3}>
       <Tags
         showEmpty={!canEdit}
         tags={device.tags}
-        onDelete={canEdit ? tag => device && dispatch.tags.remove({ tag, device, accountId }) : undefined}
+        onDelete={canEdit ? tag => dispatch.tags.removeDevice({ tag, device, accountId }) : undefined}
         onClick={tag => {
           dispatch.devices.set({ tag: { values: [tag.name] } })
           dispatch.devices.fetch()
@@ -38,12 +39,12 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
       {canEdit && (
         <TagEditor
           onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
-          onSelect={tag => dispatch.tags.add({ tag, device, accountId })}
+          onSelect={tag => dispatch.tags.addDevice({ tag, device, accountId })}
           tags={tags}
           filter={device.tags}
           button={button}
         />
       )}
-    </>
+    </Box>
   )
 }

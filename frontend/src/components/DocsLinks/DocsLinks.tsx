@@ -1,8 +1,9 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import { Typography, Link } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography } from '@mui/material'
 import { spacing } from '../../styling'
 import { Icon } from '../../components/Icon'
+import { Link } from '../../components/Link'
 
 export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
   const css = useStyles()
@@ -11,15 +12,15 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
       <Typography variant="body2" align="center" gutterBottom>
         See how to:
       </Typography>
-      <Link href={`https://link.remote.it/documentation-desktop/overview`} target="_blank">
+      <Link href="https://link.remote.it/documentation-desktop/overview">
         Use remote.it Desktop
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
-      <Link href={`https://link.remote.it/documentation-desktop/${os}-connections`} target="_blank">
+      <Link href={`https://link.remote.it/documentation-desktop/${os}-connections`}>
         Connect to this device from anywhere
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
-      <Link href={`https://link.remote.it/documentation-minecraft/overview`} target="_blank">
+      <Link href="https://link.remote.it/documentation-minecraft/overview">
         Host a Minecraft server with remote.it
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>

@@ -5,7 +5,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 const ACCOUNT_KEY = 'account'
 
@@ -22,7 +22,7 @@ const accountsState: IAccountsState = {
 export default createModel<RootModel>()({
   state: accountsState,
   effects: dispatch => ({
-    async init(_, globalState) {
+    async init(_: void, globalState) {
       let activeId = getLocalStorage(globalState, ACCOUNT_KEY)
       if (activeId) dispatch.accounts.setActive(activeId)
       await dispatch.accounts.fetch()
@@ -30,7 +30,7 @@ export default createModel<RootModel>()({
     async fetch() {
       try {
         const result = await graphQLRequest(
-          ` query {
+          ` query Accounts{
               login {
                 membership {
                   created
@@ -72,6 +72,12 @@ export default createModel<RootModel>()({
       if (!membership.find(m => m.organization.account.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
       }
+    },
+    async select(accountId: string) {
+      await dispatch.logs.reset()
+      await dispatch.accounts.setActive(accountId)
+      dispatch.devices.fetchIfEmpty()
+      dispatch.tags.fetchIfEmpty()
     },
     async leaveMembership(id: string, state) {
       const { membership } = state.accounts
@@ -172,7 +178,7 @@ export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
-export function getActiveUser(state: ApplicationState): IUserRef | undefined {
+export function getActiveUser(state: ApplicationState): IUserRef {
   const id = getActiveAccountId(state)
   const membershipOrganizations = state.accounts.membership.map(m => ({
     id: m.account.id || '',

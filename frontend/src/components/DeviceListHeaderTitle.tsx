@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box } from '@mui/material'
 import { Attribute } from './Attributes'
 import { spacing } from '../styling'
 

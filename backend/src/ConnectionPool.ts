@@ -29,8 +29,6 @@ export default class ConnectionPool {
   }
 
   constructor() {
-    EventBus.on(Connection.EVENTS.disconnected, this.updated)
-    EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
     EventBus.on(electronInterface.EVENTS.clear, this.clear)
     EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
@@ -85,6 +83,7 @@ export default class ConnectionPool {
           Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })
           connection.error(new Error('Connection certificate error, unable to use custom hostname.'))
         }
+        update = true
       }
     })
 
@@ -147,20 +146,21 @@ export default class ConnectionPool {
     const instance = this.set(connection)
     if (!instance) return
     await this.assignPort(instance)
-    instance.start()
+    await instance.start()
     this.updated()
   }
 
   stop = async ({ id }: IConnection) => {
     Logger.info('DISCONNECT', { id })
     const instance = this.find(id)
-    instance && instance.stop()
+    instance && (await instance.stop())
+    this.updated()
   }
 
   disable = async ({ id }: IConnection) => {
     Logger.info('REMOVE', { id })
     const instance = this.find(id)
-    instance && instance.disable()
+    instance && (await instance.disable())
     this.updated()
   }
 

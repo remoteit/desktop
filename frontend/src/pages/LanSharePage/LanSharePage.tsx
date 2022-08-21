@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
+import { Button, List, Typography, TextField, MenuItem } from '@mui/material'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { selectConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { getDevices } from '../../models/accounts'
 import { spacing } from '../../styling'
@@ -88,8 +88,8 @@ export const LanSharePage: React.FC = () => {
     history.goBack()
   }
 
-  const handleLocalNetworkSecurity = event => {
-    setSelection(parseInt(event.target.value as string))
+  const handleLocalNetworkSecurity = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelection(parseInt(event.target.value))
     setDisabled(false)
   }
 
@@ -107,8 +107,9 @@ export const LanSharePage: React.FC = () => {
   }
 
   const handleEnableLocalSharing = () => {
-    setCurrentIp(enabledLocalSharing ? IP_PRIVATE : IP_OPEN)
-    setEnabledLocalSharing(!enabledLocalSharing)
+    const setSharing = !enabledLocalSharing
+    setCurrentIp(setSharing ? IP_OPEN : IP_PRIVATE)
+    setEnabledLocalSharing(setSharing)
     setDisabled(false)
   }
 
@@ -119,7 +120,7 @@ export const LanSharePage: React.FC = () => {
           icon="network-wired"
           toggle={enabledLocalSharing}
           onClick={handleEnableLocalSharing}
-          label="Enable local sharing"
+          label="Enable LAN sharing"
         />
       </List>
 

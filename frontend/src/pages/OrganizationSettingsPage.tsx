@@ -8,13 +8,12 @@ import {
   Button,
   Chip,
   Box,
-  Link,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-} from '@material-ui/core'
+} from '@mui/material'
 import { getMembership } from '../models/accounts'
 import { memberOrganization, selectPermissions, selectLimitsLookup } from '../models/organization'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -26,6 +25,7 @@ import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { Link } from '../components/Link'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationSettingsPage: React.FC = () => {
@@ -45,7 +45,6 @@ export const OrganizationSettingsPage: React.FC = () => {
       }
     }
   )
-  const [removing, setRemoving] = useState<boolean>(false)
   const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<{ samlEnabled?: boolean; metadata?: string }>({
     samlEnabled: organization.samlEnabled,
@@ -77,7 +76,6 @@ export const OrganizationSettingsPage: React.FC = () => {
           {isThisOrg && (
             <DeleteButton
               title="Delete Organization"
-              destroying={removing}
               warning={
                 <>
                   <Notice severity="danger" fullWidth gutterBottom>
@@ -86,10 +84,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   This will remove all your members and their access to your devices.
                 </>
               }
-              onDelete={() => {
-                setRemoving(true)
-                dispatch.organization.removeOrganization()
-              }}
+              onDelete={async () => await dispatch.organization.removeOrganization()}
             />
           )}
         </Typography>
@@ -140,9 +135,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   <Box display="flex" flexDirection="column">
                     <Typography variant="caption" gutterBottom>
                       Add the following CNAME and Value to your DNS records to validate your domain:
-                      <Link href="https://link.remote.it/support/setup-domain" target="_blank">
-                        Instructions.
-                      </Link>
+                      <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                     </Typography>
                     <DataCopy
                       value={organization.verificationCNAME}
@@ -180,9 +173,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                 <ListItemIcon />
                 <Typography variant="caption" gutterBottom>
                   Enter your Organization's domain name.
-                  <Link href="https://link.remote.it/support/setup-domain" target="_blank">
-                    Instructions.
-                  </Link>
+                  <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                 </Typography>
               </ListItem>
             )}
@@ -206,7 +197,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                       }
                     />
                     <ListItemSecondaryAction>
-                      <Button variant="contained" color="default" disabled={updating} onClick={disable} size="small">
+                      <Button variant="contained" disabled={updating} onClick={disable} size="small">
                         {updating ? 'Updating...' : 'Disable'}
                       </Button>
                     </ListItemSecondaryAction>
@@ -247,9 +238,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                     <ListItemIcon />
                     <Typography variant="caption" gutterBottom>
                       Setup
-                      <Link href="https://link.remote.it/support/setup-domain" target="_blank">
-                        Instructions.
-                      </Link>
+                      <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                     </Typography>
                   </ListItem>
                 </>

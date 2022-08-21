@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
 import { getActiveAccountId } from './accounts'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ILogState = {
   from: number
@@ -41,7 +41,7 @@ const defaultState: ILogState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_, globalState) {
+    async fetch(_: void, globalState) {
       const { set } = dispatch.logs
       const { deviceId, from, size, maxDate, minDate, events } = globalState.logs
       const accountId = getActiveAccountId(globalState)
@@ -72,7 +72,7 @@ export default createModel<RootModel>()({
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
     },
 
-    async fetchUrl(_, globalState): Promise<string | undefined> {
+    async fetchUrl(_: void, globalState): Promise<string | undefined> {
       const { deviceId, minDate, maxDate } = globalState.logs
       try {
         let result, response

@@ -4,7 +4,7 @@ import { Title } from '../Title'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '../../shared/nameHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 
 type Props = {
   connection?: IConnection
@@ -29,10 +29,10 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
     if (device) name += ' - '
     name += attributeName(service)
   }
-  if (connection?.name && menu && menu[0] === '/connections') name = connection.name
+  if (connection?.name && menu && menu[0] === '/networks') name = connection.name
 
   return (
-    <Title inline={inline}>
+    <Title inline={inline} offline={service?.state === 'inactive'}>
       {name || 'No device found'}
       {unlicensed && (
         <Tooltip title="Unlicensed" placement="top" arrow>
@@ -44,14 +44,14 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
       {configurable && (
         <Tooltip title="Remote configurable" placement="top" arrow>
           <sup>
-            <Icon name="wifi" size="xxs" type="solid" fixedWidth />
+            <Icon name="wifi" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )}
-      {/* {device?.shared && !configurable && (
+      {/* {device?.shared && (
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
           <sup>
-            <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
+            <Icon name="user-group" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )} */}

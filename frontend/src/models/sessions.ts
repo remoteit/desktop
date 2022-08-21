@@ -4,7 +4,7 @@ import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
 import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type ISessionsState = ILookup<ISession[]> & {
   all: ISession[]

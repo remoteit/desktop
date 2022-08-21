@@ -7,7 +7,8 @@ import {
   DEFAULT_CONNECTION,
   MAX_DESCRIPTION_LENGTH,
 } from '../../shared/constants'
-import { makeStyles, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
@@ -48,7 +49,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
       ...DEFAULT_SERVICE,
       host: service?.host || IP_PRIVATE,
       id: service?.id || '',
-      port: service?.port,
+      port: service?.port || defaultType.port,
       type: defaultType.name,
       typeID: defaultType.id,
       enabled: !service || service.enabled,
@@ -191,7 +192,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
             <ListItem className={css.field}>
               <TextField
                 required
-                label="Service Host Address"
+                label="Service Host"
                 value={form.host}
                 disabled={disabled}
                 variant="filled"
@@ -280,12 +281,13 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
 
 export const useStyles = makeStyles({
   field: {
-    paddingRight: spacing.xl,
+    paddingRight: spacing.lg,
+    paddingLeft: spacing.md,
     alignItems: 'flex-start',
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
-    padding: `0 ${spacing.xl}px 0 ${spacing.xxs}px`,
+    padding: `0 ${spacing.lg}px 0 ${spacing.md}px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
       width: 300 - spacing.lg,

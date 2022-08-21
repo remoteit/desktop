@@ -47,7 +47,7 @@ export default {
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
-      --targetHostname ${c.targetHost} \
+      --targetHostname ${c.targetHost || ''} \
       --enableCertificate ${!!preferences.get().useCertificate} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
@@ -59,7 +59,7 @@ export default {
     return `-j connection disconnect --id ${c.id} --authhash ${user.authHash}`
   },
 
-  disconnect(c: IConnection) {
+  remove(c: IConnection) {
     return `-j connection remove --id ${c.id} --authhash ${user.authHash}`
   },
 
@@ -75,7 +75,7 @@ export default {
     --p2p ${!c.proxyOnly} \
     --enable ${!!c.enabled} \
     --servicetype ${c.typeID} \
-    --targetHostname ${c.targetHost} \
+    --targetHostname ${c.targetHost || ''} \
     --enableCertificate ${!!preferences.get().useCertificate} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \

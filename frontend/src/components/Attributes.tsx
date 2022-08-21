@@ -1,10 +1,10 @@
 import React from 'react'
+import { IP_LATCH } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { DeviceTagEditor } from './DeviceTagEditor'
-import { ListItemText, Chip, Typography } from '@material-ui/core'
+import { ListItemText, Chip, Typography } from '@mui/material'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
@@ -19,6 +19,7 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
+import { Icon } from './Icon'
 import { Tags } from './Tags'
 
 export class Attribute {
@@ -139,13 +140,6 @@ export const attributes: Attribute[] = [
     defaultWidth: 350,
   }),
   new DeviceAttribute({
-    id: 'tagEditor',
-    label: 'Tags',
-    value: ({ device }) => <DeviceTagEditor device={device} />,
-    column: false,
-    feature: 'tagging',
-  }),
-  new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
     defaultWidth: 180,
@@ -153,7 +147,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'quality',
-    label: 'Connectivity',
+    label: 'Stability',
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
   }),
@@ -174,6 +168,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'owner',
     label: 'Owner',
+    defaultWidth: 210,
     value: ({ device }) =>
       device && (
         <Avatar email={device.owner.email} size={22} inline>
@@ -185,8 +180,7 @@ export const attributes: Attribute[] = [
     id: 'access',
     label: 'Users',
     defaultWidth: 200,
-    value: ({ device }) =>
-      device?.shared ? <Avatar email={device.owner.email} size={22} /> : <AvatarList users={device?.access} />,
+    value: ({ device }) => <AvatarList users={device?.shared ? [device.owner] : device?.access} size={22} />,
   }),
   new DeviceAttribute({
     id: 'lastReported',
@@ -354,13 +348,34 @@ export const attributes: Attribute[] = [
         : 'Proxy',
   }),
   new ConnectionAttribute({
+    id: 'security',
+    label: 'Security',
+    value: ({ connection }) => {
+      if (!connection) return undefined
+
+      if (connection.public)
+        return connection.publicRestriction === IP_LATCH
+          ? connection.reverseProxy
+            ? 'Public randomized url'
+            : 'This IP address only'
+          : 'Public'
+
+      return (
+        <>
+          <Icon name="shield-alt" type="solid" size="xxs" inlineLeft />
+          {lanShared(connection) ? 'Zero Trust (LAN shared)' : 'Zero Trust'}
+        </>
+      )
+    },
+  }),
+  new ConnectionAttribute({
     id: 'local',
-    label: 'Local Address',
+    label: 'Local Endpoint',
     value: ({ connection }) => (connection ? `${connection.host}:${connection.port}` : undefined),
   }),
   new ConnectionAttribute({
     id: 'lanShare',
-    label: 'LAN Address',
+    label: 'LAN Endpoint',
     value: ({ connection }) => {
       if (connection?.ip && lanShared(connection)) return `${replaceHost(connection.ip)}:${connection.port}`
     },

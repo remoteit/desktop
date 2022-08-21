@@ -1,6 +1,7 @@
 import zxcvbn from 'zxcvbn'
 import React, { useState } from 'react'
-import { Grid, makeStyles, TextField, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Grid, TextField, Typography } from '@mui/material'
 import { ProgressBar } from './ProgressBar'
 
 export interface Props {
@@ -87,8 +88,8 @@ export function PasswordStrengthInput({ onChange }: Props) {
         <div className={css.danger}>
           Please fix the following problems:
           <ul>
-            {tooShort && <li>The password must be at least {{ PASSWORD_MIN_LENGTH }} characters long.</li>}
-            {tooLong && <li>The password must be no more than {{ PASSWORD_MAX_LENGTH }} characters long.</li>}
+            {tooShort && <li>The password must be at least {PASSWORD_MIN_LENGTH} characters long.</li>}
+            {tooLong && <li>The password must be no more than {PASSWORD_MAX_LENGTH} characters long.</li>}
             {passwordConfirmation != '' && !hasMatch && <li>The passwords do not match</li>}
           </ul>
         </div>
@@ -114,7 +115,7 @@ export function PasswordStrengthInput({ onChange }: Props) {
         </div>
       </div>
 
-      <TextField variant="filled" type="password" label="Confirm new password" />
+      <TextField variant="filled" type="password" label="Confirm new password" onChange={e => checkPasswordConfirmation(e)}/>
     </>
   )
 }

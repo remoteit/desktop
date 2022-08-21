@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { CreditCard } from '../components/CreditCard'
 import { Container } from '../components/Container'
 import { Invoices } from '../components/Invoices'

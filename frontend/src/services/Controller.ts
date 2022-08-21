@@ -185,7 +185,7 @@ function getEventHandlers() {
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
-    filePath: (filePath: string) => backend.set({ filePath }),
+    'app/filePath': (filePath: string) => backend.set({ filePath }),
 
     // AutoUpdate
     'update/downloaded': (version: string) => {
@@ -196,18 +196,6 @@ function getEventHandlers() {
     'cli/error': error => {
       ui.set({ errorMessage: error })
       ui.updated()
-    },
-
-    // Connections --- TODO validate we need these three channels
-    'service/connected': (msg: ConnectionMessage) => {
-      connections.updateConnection(msg.connection)
-    },
-    'service/disconnected': (msg: ConnectionMessage) => {
-      connections.updateConnection(msg.connection)
-    },
-    'service/error': (msg: ConnectionErrorMessage) => {
-      connections.updateConnection(msg.connection)
-      analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
     },
 
     'binary/install/error': (error: string) => binaries.installError(error),

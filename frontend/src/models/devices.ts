@@ -16,18 +16,45 @@ import {
   graphQLFetchDevice,
   graphQLFetchConnections,
   graphQLRegistration,
-  graphQLAdaptor,
+  graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { cleanOrphanConnections, getConnectionIds, updateConnections } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
+
+// TODO move to connection model?
+export const ROUTES: IRoute[] = [
+  {
+    key: 'failover',
+    icon: 'code-branch',
+    name: 'Peer to peer with proxy failover',
+    description: 'A direct connection to this service that fails over to a private proxy.',
+  },
+  {
+    key: 'p2p',
+    icon: 'arrows-h',
+    name: 'Peer to peer only',
+    description: 'A direct connection to this service.',
+  },
+  {
+    key: 'proxy',
+    icon: 'cloud',
+    name: 'Proxy only',
+    description: 'A private proxy connection routed through the cloud.',
+  },
+  {
+    key: 'public',
+    icon: 'globe',
+    name: 'Public Proxy',
+    description: 'A proxy connection with a temporary public URL.',
+  },
+]
 
 type IDeviceState = {
   all: IDevice[]
@@ -38,6 +65,7 @@ type IDeviceState = {
   searched: boolean
   fetching: boolean
   fetchingMore: boolean
+  fetchingArray: boolean
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -61,6 +89,7 @@ export const defaultState: IDeviceState = {
   searched: false,
   fetching: true,
   fetchingMore: false,
+  fetchingArray: false,
   query: '',
   append: false,
   filter: 'all',
@@ -86,7 +115,7 @@ const defaultAccountState: IDeviceAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init(_, state) {
+    async init(_: void, state) {
       const accountId = getActiveAccountId(state)
       let states = { accountId }
       SAVED_STATES.forEach(key => {
@@ -98,7 +127,7 @@ export default createModel<RootModel>()({
     /* 
       GraphQL search query for all device data
     */
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
       if (!deviceModel.initialized) await dispatch.devices.init()
@@ -135,31 +164,31 @@ export default createModel<RootModel>()({
       set({ fetching: false, append: false, initialized: true })
     },
 
-    async fetchIfEmpty(_, state) {
+    async fetchIfEmpty(_: void, state) {
       const deviceModel = getDeviceModel(state)
       if (!deviceModel.initialized) await dispatch.devices.fetch()
     },
 
-    async fetchConnections(_, state) {
-      const userId = state.auth.user?.id
-      if (!userId) return
-      const options = { account: userId, ids: getConnectionIds(state) }
-      const gqlResponse = await graphQLFetchConnections(options)
+    async fetchDevices(deviceIds: string[], state) {
+      const accountId = getActiveAccountId(state)
+      const devices = await dispatch.devices.fetchArray({ deviceIds, accountId })
+      if (devices.length) dispatch.accounts.mergeDevices({ devices, accountId })
+    },
+
+    async fetchArray({ deviceIds, accountId }: { deviceIds: string[]; accountId: string }, state): Promise<IDevice[]> {
+      const model = getDeviceModel(state)
+      if (model.fetchingArray) return []
+      await dispatch.devices.set({ fetchingArray: true })
+      console.log('FETCH ARRAY', deviceIds)
+      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
       const loginId = gqlResponse?.data?.data?.login?.id
-      if (error) return console.error(error)
-
-      const connections = await graphQLAdaptor(connectionData, loginId, options.account, true)
-      updateConnections(connections)
-      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
-
-      cleanOrphanConnections(options.ids)
+      await dispatch.devices.set({ fetchingArray: false })
+      if (error) return []
+      return graphQLDeviceAdaptor(connectionData, loginId, accountId, true)
     },
 
-    /*
-      Fetches a single device and merges in the state
-    */
     async fetchSingle(
       {
         id,
@@ -184,7 +213,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
         const loginId = gqlResponse?.data?.data?.login?.id
-        result = gqlDevice ? graphQLAdaptor(gqlDevice, loginId, accountId, hidden)[0] : undefined
+        result = gqlDevice ? graphQLDeviceAdaptor(gqlDevice, loginId, accountId, hidden)[0] : undefined
       } catch (error) {
         await apiError(error)
       }
@@ -214,7 +243,7 @@ export default createModel<RootModel>()({
       try {
         const gqlResponse = await graphQLFetchDevices(options)
         const [deviceData, total, loginId, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLAdaptor(deviceData, loginId, options.account)
+        const devices = graphQLDeviceAdaptor(deviceData, loginId, options.account)
         return { devices, total, error }
       } catch (error) {
         await apiError(error)
@@ -362,9 +391,7 @@ export default createModel<RootModel>()({
             email: [auth.user?.email || ''],
           })
       if (result !== 'ERROR') {
-        await dispatch.connections.clearByDevice(device.id)
-        await dispatch.devices.fetch()
-        await dispatch.devices.fetchConnections()
+        await dispatch.devices.cleanup(device.id)
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully ${manager ? 'deleted' : 'removed'}.`,
         })
@@ -382,17 +409,22 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ transferring: true, silent: true })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
-          await dispatch.connections.clearByDevice(data.device.id)
-          await dispatch.devices.fetch()
-          await dispatch.devices.fetchConnections()
+          await dispatch.devices.cleanup(data.device.id)
           dispatch.ui.set({
             successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
         }
-        await dispatch.connections.clearByDevice(data.device.id)
         dispatch.ui.set({ transferring: false })
       }
     },
+
+    async cleanup(deviceId: string) {
+      await dispatch.connections.clearByDevice(deviceId)
+      await dispatch.networks.removeById(deviceId)
+      await dispatch.devices.fetch()
+      await dispatch.connections.fetch()
+    },
+
     async setPersistent(params: ILookup<any>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       Object.keys(params).forEach(key => {
@@ -400,6 +432,7 @@ export default createModel<RootModel>()({
       })
       dispatch.devices.set(params)
     },
+
     async set(params: { accountId?: string } & ILookup<any>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       const deviceState = { ...getDeviceModel(state, accountId) }
@@ -425,34 +458,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-// TODO move to connection model?
-export const ROUTES: IRoute[] = [
-  {
-    key: 'failover',
-    icon: 'code-branch',
-    name: 'Peer to peer with proxy failover',
-    description: 'A direct connection to this service that fails over to a private proxy.',
-  },
-  {
-    key: 'p2p',
-    icon: 'arrows-h',
-    name: 'Peer to peer only',
-    description: 'A direct connection to this service.',
-  },
-  {
-    key: 'proxy',
-    icon: 'cloud',
-    name: 'Proxy only',
-    description: 'A private proxy connection routed through the cloud.',
-  },
-  {
-    key: 'public',
-    icon: 'globe',
-    name: 'Public Proxy',
-    description: 'A proxy connection with a temporary public URL.',
-  },
-]
 
 function graphQLMetadata(gqlData?: AxiosResponse) {
   const error = graphQLGetErrors(gqlData)

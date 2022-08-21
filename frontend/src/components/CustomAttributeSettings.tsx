@@ -1,4 +1,5 @@
 import React from 'react'
+import { isPortal } from '../services/Browser'
 import { Application } from '../shared/applications'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
@@ -12,7 +13,7 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
   return (
     <>
       {app.customTokens.map(token =>
-        token === 'path' ? (
+        token === 'path' && !isPortal() ? (
           <InlineFileFieldSetting
             key={token}
             label="Application Path"

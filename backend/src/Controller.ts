@@ -6,7 +6,6 @@ import rimraf from 'rimraf'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
 import showFolder from './showFolder'
-import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
@@ -30,12 +29,10 @@ class Controller {
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOut)
-    EventBus.on(electronInterface.EVENTS.filePath, path => this.io.emit('filePath', path))
 
     let eventNames = [
       ...Object.values(User.EVENTS),
       ...Object.values(Binary.EVENTS),
-      ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
       ...Object.values(cli.EVENTS),
@@ -56,6 +53,7 @@ class Controller {
     if (socket.eventNames().length > DEFAULT_SOCKETS_LENGTH) socket.removeAllListeners()
 
     socket.on('init', this.init)
+    socket.on('refresh', this.refresh)
     socket.on('user/lock', user.signOut)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
@@ -78,7 +76,7 @@ class Controller {
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
     socket.on('preferences', preferences.set)
-    socket.on('restart', this.restart)
+    socket.on('restart', this.installAndRestart)
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
@@ -90,7 +88,6 @@ class Controller {
     Logger.info('INIT FRONTEND DATA')
     binaryInstaller.check()
     this.initBackend()
-    this.check()
   }
 
   recapitate = () => {
@@ -163,9 +160,16 @@ class Controller {
     await cli.checkDefaults()
   }
 
-  initBackend = async () => {
+  initBackend = () => {
     cli.read()
     this.pool.init()
+    this.refresh()
+    this.io.emit('dataReady')
+    Logger.info('DATA READY')
+  }
+
+  refresh = () => {
+    this.check()
     this.freePort()
     this.io.emit('device', cli.data.device?.uid)
     this.io.emit('scan', lan.data)
@@ -173,8 +177,6 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
-    this.io.emit('dataReady')
-    Logger.info('DATA READY')
   }
 
   connection = async (connection: IConnection) => {
@@ -191,10 +193,10 @@ class Controller {
     app.quit()
   }
 
-  restart = async () => {
+  installAndRestart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
     await cli.serviceUninstall()
-    app.restart()
+    EventBus.emit(electronInterface.EVENTS.update)
   }
 
   signOut = async () => {

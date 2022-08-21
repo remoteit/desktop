@@ -1,7 +1,7 @@
 import React from 'react'
 import { Body } from '../../components/Body'
 import { Container } from '../../components/Container'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { ServiceName } from '../../components/ServiceName'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 

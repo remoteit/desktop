@@ -14,7 +14,7 @@ import { getActiveAccountId, getActiveUser, getAccountIds, getMembership, isUser
 import { selectRemoteitLicense, selectBaseLimits } from './plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 export const PERMISSION: ILookup<{
   name: string
@@ -25,7 +25,7 @@ export const PERMISSION: ILookup<{
 }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
-  SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll-old' },
+  SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll' },
   MANAGE: { name: 'Manage', description: 'Edit, delete, register, transfer and share devices', icon: 'pencil' },
   ADMIN: { name: 'Administer', description: 'Manage organization users', icon: 'user-hard-hat', user: true },
 }
@@ -43,6 +43,13 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     name: 'Owner',
     system: true,
     permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
+    disabled: true,
+  },
+  {
+    id: 'GUEST',
+    name: 'Guest',
+    system: true,
+    permissions: ['VIEW', 'CONNECT'],
     disabled: true,
   },
 ]
@@ -190,7 +197,7 @@ export default createModel<RootModel>()({
       dispatch.organization.set({ initialized: true })
     },
 
-    async fetch(_, state) {
+    async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
       const accountQueries = ids.map(
         (id, index) => `
@@ -209,7 +216,7 @@ export default createModel<RootModel>()({
         }`
       )
       const result = await graphQLBasicRequest(
-        ` query {
+        ` query Organizations{
             login {
               ${accountQueries.join('\n')}
             }
@@ -300,7 +307,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async removeOrganization(_, state) {
+    async removeOrganization(_: void, state) {
       const result = await graphQLRemoveOrganization()
       if (result !== 'ERROR') {
         dispatch.organization.clearActive()
@@ -341,7 +348,7 @@ export default createModel<RootModel>()({
       })
 
       await dispatch.organization.setActive({ roles })
-      return role.id
+      // return role.id
     },
 
     async removeRole(role: IOrganizationRole, state) {
@@ -389,13 +396,17 @@ export function getOwnOrganization(state: ApplicationState) {
   return memberOrganization(state.organization.all, id)
 }
 
-export function getOrganization(state: ApplicationState, accountId?: string) {
+export function getOrganization(state: ApplicationState, accountId?: string): IOrganizationState {
   accountId = accountId || getActiveAccountId(state)
   return memberOrganization(state.organization.all, accountId)
 }
 
 export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
   return organization[accountId || ''] || { ...defaultState }
+}
+
+export function getOrganizationName(state: ApplicationState, accountId?: string): string {
+  return memberOrganization(state.organization.all, accountId).name || 'Personal'
 }
 
 export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {

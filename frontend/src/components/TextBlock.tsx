@@ -1,6 +1,6 @@
 import React from 'react'
-import { Box, Typography } from '@material-ui/core'
-import { BoxProps } from '@material-ui/core/Box'
+import { Box, Typography } from '@mui/material'
+import { BoxProps } from '@mui/material/Box'
 
 export interface TextBlockProps extends BoxProps {
   children: React.ReactNode

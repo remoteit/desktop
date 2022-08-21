@@ -3,7 +3,8 @@ import Controller from '../../services/Controller'
 import { ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { makeStyles, Snackbar, IconButton, Dialog } from '@material-ui/core'
+import { Snackbar, IconButton, Dialog } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { getOwnDevices } from '../../models/accounts'
 import { DragAppRegion } from '../../components/DragAppRegion'
 import { UpdateNotice } from '../../components/UpdateNotice'
@@ -69,7 +70,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message="Webserver connection lost. Retrying..."
         action={
-          <IconButton onClick={reconnect}>
+          <IconButton onClick={reconnect} size="large">
             <Icon name="sync" size="md" color="white" fixedWidth />
           </IconButton>
         }
@@ -86,7 +87,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           </>
         }
         action={
-          <IconButton onClick={clearErrorMessage}>
+          <IconButton onClick={clearErrorMessage} size="large">
             <Icon name="times" size="md" color="white" fixedWidth />
           </IconButton>
         }
@@ -119,7 +120,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           </>
         }
         action={
-          <IconButton onClick={clearSuccessMessage}>
+          <IconButton onClick={clearSuccessMessage} size="large">
             <Icon name="times" size="md" color="white" fixedWidth />
           </IconButton>
         }

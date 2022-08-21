@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Box, useMediaQuery, ListItemSecondaryAction } from '@material-ui/core'
+import { Box, useMediaQuery, ListItemSecondaryAction } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'
@@ -39,7 +39,6 @@ export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabl
           <RoleSelect
             roles={roles}
             roleId={member.roleId}
-            license={member.license}
             onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
           />
           {!enterprise && (

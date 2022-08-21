@@ -6,27 +6,30 @@ import { windowOpen } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
-import { ProxySetting } from './ProxySetting'
+import { makeStyles } from '@mui/styles'
+import { List, Button, Typography, Paper } from '@mui/material'
+import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
-import { makeStyles, List, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
+import { NetworksAccordion } from './NetworksAccordion'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
+import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
-import { LoadingMessage } from './LoadingMessage'
-import { ForgetButton } from '../buttons/ForgetButton'
+import { ConnectionMenu } from './ConnectionMenu'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
 import { GuideStep } from './GuideStep'
+import { DataCopy } from './DataCopy'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
@@ -38,12 +41,13 @@ export const Connect: React.FC = () => {
   const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { devices, ui } = useDispatch<Dispatch>()
-  const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
+  const dispatch = useDispatch<Dispatch>()
+  const { service, device, connection, session, accordion, ownDevice } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     return {
       service,
       device,
+      ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
       connection: selectConnection(state, service),
       session: state.sessions.all.find(s => s.id === sessionID),
       fetching: getDeviceModel(state).fetching,
@@ -56,29 +60,46 @@ export const Connect: React.FC = () => {
     analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
 
-    if (!device && id) devices.fetchSingle({ id, hidden: true })
+    if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
   useEffect(() => {
     if (!location.state) return
-    if (location.state.autoConnect) ui.set({ autoConnect: true })
-    if (location.state.autoLaunch) ui.set({ autoLaunch: true })
-    if (location.state.autoCopy) ui.set({ autoCopy: true })
+    if (location.state.autoConnect) dispatch.ui.set({ autoConnect: true })
+    if (location.state.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+    if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
-  if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <NoConnectionPage />
 
   return (
     <>
+      {ownDevice && (
+        <Notice gutterTop solid>
+          <Typography variant="h2">The service is hosted on this device.</Typography>
+          <Typography variant="body2" gutterBottom>
+            Connecting can be done directly without using Remote.It.
+          </Typography>
+          <DataCopy
+            label="Connection endpoint"
+            value={`${service.host || '127.0.0.1'}:${service.port}`}
+            showBackground
+            fullWidth
+          />
+        </Notice>
+      )}
       <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      <ConnectionSurvey connection={connection} />
       <GuideStep
         guide="guideAWS"
         step={5}
-        instructions="Enable the connect on demand listener by adding the service to your network. The connection will auto launch."
+        instructions={
+          'Enable the connect on demand listener by adding the service to your network.' +
+          (connection.autoLaunch ? ' The connection will auto launch.' : '')
+        }
       >
-        <Gutters className={css.gutters} top="lg">
+        <Gutters size="md" className={css.gutters} bottom={null}>
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <ComboButton
             connection={connection}
@@ -86,20 +107,21 @@ export const Connect: React.FC = () => {
             permissions={device.permissions}
             size="large"
             fullWidth
-            onClick={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+            disabled={ownDevice}
+            onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
           />
-          <ForgetButton connection={connection} inline />
+          <ConnectionMenu connection={connection} />
         </Gutters>
       </GuideStep>
       <List disablePadding>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
-      <Gutters>
+      <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters
           subtitle="Configuration"
           expanded={accordion[accordionConfig]}
-          onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
+          onClick={() => dispatch.ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
           elevation={0}
         >
           <List disablePadding>
@@ -107,37 +129,10 @@ export const Connect: React.FC = () => {
               <NameSetting connection={connection} service={service} device={device} />
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
-            <GuideStep
-              step={1}
-              highlight
-              placement="left"
-              guide="guideLaunch"
-              hide={!accordion[accordionConfig]}
-              instructions="You can now launch services by deep link URL or terminal command."
-            >
-              <LaunchSelect connection={connection} service={service} />
-            </GuideStep>
-          </List>
-        </AccordionMenuItem>
-        <AccordionMenuItem
-          gutters
-          subtitle="Options"
-          expanded={accordion.options}
-          onClick={() => ui.accordion({ options: !accordion.options })}
-          elevation={0}
-        >
-          <List disablePadding>
-            <DesktopUI>
-              <TimeoutSetting connection={connection} service={service} />
-              <ProxySetting connection={connection} service={service} />
-              <LanShareSelect connection={connection} service={service} />
-              <TargetHostSetting connection={connection} service={service} />
-              <ConnectionLogSetting connection={connection} service={service} />
-            </DesktopUI>
+            <LaunchSelect connection={connection} service={service} />
             <PortalUI>
-              <PublicSetting connection={connection} service={service} />
               <Notice
-                gutterBottom
+                gutterTop
                 severity="info"
                 button={
                   <Button
@@ -159,6 +154,33 @@ export const Connect: React.FC = () => {
             </PortalUI>
           </List>
         </AccordionMenuItem>
+        <NetworksAccordion
+          device={device}
+          service={service}
+          connection={connection}
+          expanded={accordion.networks}
+          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
+        />
+        <AccordionMenuItem
+          gutters
+          subtitle="Options"
+          expanded={accordion.options}
+          onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
+          elevation={0}
+        >
+          <List disablePadding>
+            <DesktopUI>
+              <RouteSetting connection={connection} service={service} />
+              <LanShareSelect connection={connection} />
+              <TargetHostSetting connection={connection} service={service} />
+              <TimeoutSetting connection={connection} service={service} />
+              <ConnectionLogSetting connection={connection} service={service} />
+            </DesktopUI>
+            <PortalUI>
+              <PublicSetting connection={connection} service={service} />
+            </PortalUI>
+          </List>
+        </AccordionMenuItem>
       </Gutters>
     </>
   )
@@ -171,5 +193,5 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gutters: { display: 'flex' },
+  gutters: { display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } },
 })

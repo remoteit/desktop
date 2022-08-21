@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from '@material-ui/core'
+import { Button } from '@mui/material'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { Gutters } from '../Gutters'

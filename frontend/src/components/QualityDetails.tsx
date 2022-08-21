@@ -4,7 +4,7 @@ import { Quote } from './Quote'
 import { Color } from '../styling'
 import { Percent } from './Percent'
 import { Round } from './Round'
-import { Typography, Divider, Box } from '@material-ui/core'
+import { Typography, Divider, Box } from '@mui/material'
 
 export const QualityDetails: React.FC<{ device?: IDevice; small?: boolean }> = ({ device, small }) => {
   let title: string = 'Unknown'

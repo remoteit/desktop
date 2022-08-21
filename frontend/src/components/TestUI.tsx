@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 
@@ -16,6 +16,6 @@ export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ childre
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   style: { backgroundColor: palette.test.main },
 }))

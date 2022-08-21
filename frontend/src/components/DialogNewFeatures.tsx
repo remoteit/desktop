@@ -9,7 +9,7 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { Icon } from '../components/Icon'
 import { Route, useHistory } from 'react-router-dom'

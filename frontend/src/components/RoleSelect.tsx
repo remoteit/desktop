@@ -1,16 +1,15 @@
 import React from 'react'
-import { TextField, TextFieldProps, MenuItem } from '@material-ui/core'
+import { TextField, TextFieldProps, MenuItem } from '@mui/material'
 
 type Props = {
   size?: TextFieldProps['size']
   roles: IOrganizationRole[]
   roleId: IOrganizationRoleIdType
-  license: ILicenseTypes
   onSelect: (roleId: string) => void
 }
 
-export const RoleSelect: React.FC<Props> = ({ roleId, roles, license, size = 'small', onSelect }) => {
-  const disabled = roleId === 'OWNER' || license !== 'LICENSED'
+export const RoleSelect: React.FC<Props> = ({ roleId, roles, size = 'small', onSelect }) => {
+  const disabled = roleId === 'OWNER'
 
   return (
     <TextField

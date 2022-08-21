@@ -4,18 +4,8 @@ import cloneDeep from 'lodash/cloneDeep'
 import { getActiveAccountId } from '../models/accounts'
 import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
 import { useParams, useHistory } from 'react-router-dom'
-import {
-  makeStyles,
-  Button,
-  Typography,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  MenuItem,
-  TextField,
-  Chip,
-} from '@material-ui/core'
-
+import { Button, Typography, List, ListItem, ListItemSecondaryAction, MenuItem, TextField, Chip } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { PermissionsList } from '../components/PermissionsList'
@@ -84,7 +74,7 @@ export const OrganizationRolePage: React.FC = () => {
                   Any members with this role will lose access until they have been set to another role.
                 </>
               }
-              onDelete={() => dispatch.organization.removeRole(form)}
+              onDelete={async () => await dispatch.organization.removeRole(form)}
             />
           )}
         </Typography>

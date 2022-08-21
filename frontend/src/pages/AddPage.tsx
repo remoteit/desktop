@@ -1,6 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { makeStyles, useMediaQuery, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { useMediaQuery, Box } from '@mui/material'
 import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
 import { platforms } from '../platforms'

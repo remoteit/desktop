@@ -1,16 +1,15 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItemIcon, ListItemText } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
 
 type Props = {
-  service: IService
   connection?: IConnection
 }
 
-export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
+export const LanShareSelect: React.FC<Props> = ({ connection }) => {
   const location = useLocation()
   const shared = lanShared(connection)
   const disabled = connection?.connected || connection?.public

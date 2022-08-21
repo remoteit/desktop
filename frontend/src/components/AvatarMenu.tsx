@@ -1,6 +1,7 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { makeStyles, ButtonBase, Divider, Menu } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -40,7 +41,7 @@ export const AvatarMenu: React.FC = () => {
   return (
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef}>
-        <Avatar email={user?.email} button tooltip></Avatar>
+        <Avatar email={user?.email} size={44} button tooltip></Avatar>
       </ButtonBase>
       <Menu
         open={open}
@@ -49,7 +50,7 @@ export const AvatarMenu: React.FC = () => {
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        getContentAnchorEl={null}
+        // getContentAnchorEl={null}
         disableScrollLock
         elevation={2}
       >
@@ -126,12 +127,8 @@ export const AvatarMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  label: {
-    display: 'flex',
-  },
   menu: {
     '& .MuiMenu-list': {
-      minWidth: 200,
       backgroundColor: palette.white.main,
     },
   },

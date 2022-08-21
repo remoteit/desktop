@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
-import { Theme } from '@material-ui/core'
-import { RootModel } from './rootModel'
+import { Theme } from '@mui/material'
+import { RootModel } from '.'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { selectTheme, isDarkMode } from '../styling/theme'
@@ -10,7 +10,7 @@ export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
   'guideAWS',
-  'guideLaunch',
+  'guideNetwork',
   'themeMode',
   'accordion',
   'drawerMenu',
@@ -29,7 +29,7 @@ type UIState = {
   selected: IDevice['id'][]
   connected: boolean
   offline: boolean
-  uninstalling: boolean
+  waitMessage?: string
   claiming: boolean
   fetching: boolean
   destroying: boolean
@@ -69,7 +69,7 @@ type UIState = {
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
-  guideLaunch: IGuide
+  guideNetwork: IGuide
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -85,7 +85,7 @@ export const defaultState: UIState = {
   selected: [],
   connected: false,
   offline: !navigator.onLine,
-  uninstalling: false,
+  waitMessage: undefined,
   claiming: false,
   fetching: false,
   destroying: false,
@@ -120,13 +120,14 @@ export const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  panelWidth: { devices: 400, connections: 500, settings: 350, account: 350, organization: 350 },
+  panelWidth: { devices: 400, networks: 450, settings: 350, account: 300, organization: 350 },
   navigation: {},
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
-  guideLaunch: { title: 'Launch Guide', active: false, step: 1, total: 1 },
-  accordion: { config: true, configConnected: false, options: false, service: false },
+  guideAWS: { title: 'AWS Guide', step: 1, total: 6, done: false },
+  guideNetwork: { title: 'Add Network Guide', step: 1, total: 3, done: false },
+  // guideService: { title: 'Add Service Guide ', step: 1, total: 3, done: false },
+  accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,
@@ -142,7 +143,7 @@ export default createModel<RootModel>()({
       })
       await dispatch.ui.restoreState()
     },
-    async restoreState(_, globalState) {
+    async restoreState(_: void, globalState) {
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(globalState, `ui-${key}`)
@@ -162,7 +163,8 @@ export default createModel<RootModel>()({
       await dispatch.devices.set({ from: 0 })
       await dispatch.accounts.fetch()
       await dispatch.devices.fetch()
-      await dispatch.devices.fetchConnections()
+      await dispatch.networks.fetch()
+      await dispatch.connections.fetch()
       await Promise.all([
         dispatch.sessions.fetch(),
         dispatch.user.fetch(),
@@ -197,7 +199,7 @@ export default createModel<RootModel>()({
       state = { ...state, ...props }
       dispatch.ui.setPersistent({ [guide]: state })
     },
-    async resetGuides(_, globalState) {
+    async resetGuides(_: void, globalState) {
       Object.keys(globalState.ui).forEach(key => {
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
       })
@@ -212,7 +214,7 @@ export default createModel<RootModel>()({
       })
       dispatch.ui.set(params)
     },
-    async deprecated(_, globalState) {
+    async deprecated(_: void, globalState) {
       if (!isElectron() || isHeadless()) return
       const { preferences } = globalState.backend
       dispatch.ui.set({

@@ -1,21 +1,13 @@
 import React from 'react'
 import { Gutters } from './Gutters'
-import {
-  makeStyles,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Tooltip,
-  Typography,
-  Link,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Table, TableHead, TableBody, TableRow, TableCell, Tooltip, Typography } from '@mui/material'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { LoadingMessage } from './LoadingMessage'
 import { spacing } from '../styling'
+import { Link } from './Link'
 import { Icon } from './Icon'
 
 const dateOptions: Intl.DateTimeFormatOptions = {
@@ -55,7 +47,8 @@ export const Invoices: React.FC = () => {
               <TableRow key={index}>
                 <TableCell>{invoice.created.toLocaleString(undefined, dateOptions)}</TableCell>
                 <TableCell className={css.plan}>
-                  {invoice.plan.name.toLowerCase()} / {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}
+                  {invoice.plan.name.toLowerCase()} /{' '}
+                  {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}
                 </TableCell>
                 <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor}>
                   {currencyFormatter(invoice.price.currency, invoice.total)}
@@ -63,7 +56,7 @@ export const Invoices: React.FC = () => {
                 <TableCell>
                   {invoice.url && (
                     <Tooltip title="See invoice">
-                      <Link href={invoice.url} target="_blank">
+                      <Link href={invoice.url}>
                         <Icon name="receipt" />
                       </Link>
                     </Tooltip>

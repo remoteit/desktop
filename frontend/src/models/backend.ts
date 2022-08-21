@@ -1,8 +1,8 @@
 import { createModel } from '@rematch/core'
 import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
-import { RootModel } from './rootModel'
-import { version } from '../../package.json'
+import { RootModel } from '.'
+import { version } from '../helpers/versionHelper'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -67,7 +67,7 @@ const defaultState: IBackendState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async environment(_, state) {
+    async environment(_: void, state) {
       let result: string = ''
       const keys = ['os', 'osVersion', 'arch', 'manufacturerDetails']
       keys.forEach(key => {
@@ -77,7 +77,7 @@ export default createModel<RootModel>()({
       return result
     },
     async targetDeviceUpdated(newId: string, state) {
-      const { ui, backend, devices } = dispatch
+      const { ui, backend, devices, connections } = dispatch
       const { thisId } = state.backend
 
       if (newId !== thisId) {
@@ -98,10 +98,10 @@ export default createModel<RootModel>()({
           // deleted
         } else if (state.ui.setupDeletingDevice) {
           console.log('DELETE THIS DEVICE', thisId)
-          await dispatch.connections.clearByDevice(thisId)
+          await connections.clearByDevice(thisId)
           await sleep(2000)
           await devices.fetch()
-          await devices.fetchConnections()
+          await connections.fetch()
 
           ui.set({
             silent: true,
@@ -140,6 +140,11 @@ export default createModel<RootModel>()({
     },
     async setUpdateNotice(updateVersion: string | undefined, globalState) {
       setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
+    },
+    async restart() {
+      dispatch.ui.set({ waitMessage: 'updating' })
+      analyticsHelper.track('update')
+      emit('restart')
     },
   }),
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
-import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@material-ui/core'
+import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@mui/material'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectLimitsLookup } from '../models/organization'
 import { ApplicationState } from '../store'
@@ -54,7 +54,7 @@ export const OrganizationRolesPage: React.FC = () => {
       )}
       <Typography variant="subtitle1">
         <Title>Role</Title>
-        {limits.roles && <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" />}
+        {limits.roles && <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" size="lg" />}
       </Typography>
       <List>
         {roles.map(r => {

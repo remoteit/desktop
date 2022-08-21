@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import { set as setDate, eachDayOfInterval, isEqual } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'
@@ -78,7 +78,7 @@ type parseDeviceOptions = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetchAnalytics(_, globalState) {
+    async fetchAnalytics(_: void, globalState) {
       if (!hasCredentials()) return
       const { from, size, startDate, endDate } = globalState.analytics
       if (!endDate) return
@@ -98,7 +98,7 @@ export default createModel<RootModel>()({
 
       try {
         const result = await graphQLRequest(
-          `query($from: Int, $size: Int, $start: DateTime, $end: DateTime, $timezone: String) {
+          `query Analytics($from: Int, $size: Int, $start: DateTime, $end: DateTime, $timezone: String) {
              login {
               devices(size: $size, from: $from, owner: true) {
                 total

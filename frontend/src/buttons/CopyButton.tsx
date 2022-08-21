@@ -21,7 +21,7 @@ export interface CopyButtonProps {
   onCopy?: () => void
 }
 
-export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, onCopy, ...props }) => {
+export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, title, onCopy, ...props }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const autoCopy = useSelector((state: ApplicationState) => state.ui.autoCopy)
@@ -51,11 +51,11 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, onCopy
     setOpen(false)
   }
 
-  props.title = clipboard.copied ? 'Copied!' : props.title
+  title = clipboard.copied ? 'Copied!' : title
 
   return (
     <>
-      <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : icon} />
+      <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : icon} title={title} size="lg" />
       <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
       {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
     </>

@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AUTH_API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { getToken } from '../services/remote.it'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import axios from 'axios'
 
 export type IMfa = {
@@ -37,7 +37,7 @@ const defaultState: IMfa = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async getAWSUser(_fetch, state) {
+    async getAWSUser(_: void, state) {
       const userInfo = await state.auth.authService?.currentUserInfo()
       if (!userInfo) {
         console.error('Could not getAWSUser', userInfo)
@@ -110,7 +110,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async getTotpCode(_, state) {
+    async getTotpCode(_: void, state) {
       return state.auth.authService?.setupTOTP()
     },
 

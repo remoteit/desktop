@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
@@ -32,7 +32,11 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
       label={
         <>
           Target Host name
-          <Tooltip title="If a website expects a specific host name, enter it here." placement="top" arrow>
+          <Tooltip
+            title="If a website expects a specific host name, enter it here. (Example: https://google.com)"
+            placement="top"
+            arrow
+          >
             <span style={{ zIndex: 10 }}>
               <Icon name="question-circle" size="sm" inline />
             </span>

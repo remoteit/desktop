@@ -1,7 +1,7 @@
 import React from 'react'
+import { platforms } from '../platforms'
 import { getDeviceModel } from '../models/accounts'
 import { defaultState } from '../models/devices'
-import { TARGET_PLATFORMS } from '../helpers/platformHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { TagFilterToggle } from './TagFilterToggle'
@@ -27,14 +27,7 @@ const ownerFilters = [
   { value: 'me', name: 'Me' },
   { value: 'others', name: 'Others' },
 ]
-const platformFilter = [{ value: -1, name: 'All' }].concat(
-  Object.keys(TARGET_PLATFORMS)
-    .map(p => ({ value: parseInt(p), name: TARGET_PLATFORMS[p] }))
-    .sort(
-      (a, b) =>
-        a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : b.name?.toLowerCase() > a.name?.toLowerCase() ? -1 : 0 // only to sort
-    )
-)
+let platformFilter = [{ value: -1, name: 'All' }]
 
 export const FilterDrawer: React.FC = () => {
   const getColor = useLabel()
@@ -143,7 +136,11 @@ export const FilterDrawer: React.FC = () => {
                   if (!result?.length) result = undefined
                   update({ platform: result })
                 }}
-                filterList={platformFilter}
+                filterList={platformFilter.concat(
+                  Object.keys(platforms.nameLookup)
+                    .map(p => ({ value: parseInt(p), name: platforms.nameLookup[p] }))
+                    .sort((a, b) => (a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1))
+                )}
               />
             ),
           },

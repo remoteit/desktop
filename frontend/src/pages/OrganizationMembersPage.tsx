@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { Typography, List } from '@material-ui/core'
+import { Typography, List } from '@mui/material'
 import { selectOwner } from '../models/organization'
 import { selectRemoteitLicense } from '../models/plans'
 import { selectPermissions, getOrganization } from '../models/organization'
@@ -43,6 +43,7 @@ export const OrganizationMembersPage: React.FC = () => {
   return (
     <Container
       gutterBottom
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <Typography variant="h1">

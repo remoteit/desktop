@@ -4,7 +4,7 @@ import { getFreeLicenses } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { getOrganization } from '../models/organization'
-import { Typography, Button, Box } from '@material-ui/core'
+import { Typography, Button, Box } from '@mui/material'
 import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
 import { Container } from '../components/Container'
@@ -69,13 +69,7 @@ export const OrganizationAddPage = () => {
       <Typography variant="subtitle1">Role Assignment</Typography>
       <Gutters>
         <Box display="flex" alignItems="center">
-          <RoleSelect
-            size="medium"
-            roleId={roleId}
-            roles={organization.roles}
-            license={license}
-            onSelect={id => setRoleId(id)}
-          />
+          <RoleSelect size="medium" roleId={roleId} roles={organization.roles} onSelect={id => setRoleId(id)} />
           {disabled && (
             <Notice severity="warning">
               Purchase additional licenses to set a role. <br />

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { DeleteDevice } from '../buttons/DeleteDevice'
 import { CopyMenuItem } from './CopyMenuItem'
@@ -31,16 +31,15 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        getContentAnchorEl={null}
         disableScrollLock
         autoFocus={false}
         elevation={2}
       >
         <div>
           {service ? (
-            <CopyMenuItem icon="link" title="Service link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
+            <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
           ) : (
-            <CopyMenuItem icon="link" title="Device link" value={`${PROTOCOL}devices/${device.id}`} />
+            <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
           )}
         </div>
         {manage && [
@@ -51,7 +50,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             component={Link}
             autoFocus={false}
             disabled={!device.permissions.includes('MANAGE')}
-            disableGutters
           >
             <ListItemIcon>
               <Icon name="share" size="md" />
@@ -59,8 +57,8 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             <ListItemText primary="Transfer Device" />
           </MenuItem>,
           <Divider key="divider" />,
+          <DeleteDevice key="deleteDevice" device={device} menuItem />,
           <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
-          <DeleteDevice key="deleteDevice" device={device} hide={!!service} menuItem />,
         ]}
       </Menu>
     </>

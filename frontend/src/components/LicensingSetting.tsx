@@ -1,11 +1,11 @@
 import React from 'react'
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@material-ui/core'
+import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@mui/material'
 import { dateOptions } from './Duration/Duration'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { DataCopy } from './DataCopy'
 import { LimitSetting } from './LimitSetting'
-import { Link } from 'react-router-dom'
+import { Link } from './Link'
 
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
   if (!licenses.length) return null

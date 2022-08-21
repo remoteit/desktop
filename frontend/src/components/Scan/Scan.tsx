@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
-import { makeStyles, Button, TextField, MenuItem } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Button, TextField, MenuItem } from '@mui/material'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, fontSizes } from '../../styling'

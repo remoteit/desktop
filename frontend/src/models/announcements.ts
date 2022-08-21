@@ -3,7 +3,7 @@ import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLReadNotice } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type IAnnouncementsState = ILookup<IAnnouncement[]> & {
   all: IAnnouncement[]

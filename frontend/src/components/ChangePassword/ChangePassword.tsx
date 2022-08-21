@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
-import { Button, makeStyles, TextField, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Button, TextField, Typography } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { Gutters } from '../Gutters'
@@ -9,11 +10,12 @@ import { spacing } from '../../styling'
 export const ChangePassword = () => {
   const [currentPassword, setCurrentPassword] = useState<string>('')
   const [password, setPassword] = useState<string>('')
+  const [isValid, setValid] = useState<boolean>(false)
   const { auth } = useDispatch<Dispatch>()
   const css = useStyles()
 
   const evaluateCurrentPassword = (e: { target: { value: React.SetStateAction<string> } }) => {
-    setCurrentPassword(e.target.value)
+    setCurrentPassword(e.target.value.toString())
   }
   const updatePassword = (event: { preventDefault: () => void }) => {
     event.preventDefault()
@@ -32,15 +34,17 @@ export const ChangePassword = () => {
             label="Current Password"
             onChange={e => evaluateCurrentPassword(e)}
           />
-          <PasswordStrengthInput onChange={(password: string) => setPassword(password)} />
+          <PasswordStrengthInput onChange={(password: string, isValid: boolean) => {
+            setPassword(password)
+            setValid(isValid)
+          }
+          } />
         </Gutters>
         <Gutters bottom="xl">
-          <Button variant="contained" color="primary" type="submit" size="small">
+          <Button variant="contained" color="primary" type="submit" size="small" disabled={!isValid}>
             Save
           </Button>
-          <Button color="default" size="small">
-            Cancel
-          </Button>
+          <Button size="small">Cancel</Button>
         </Gutters>
       </form>
     </>

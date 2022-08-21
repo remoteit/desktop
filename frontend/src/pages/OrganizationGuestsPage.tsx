@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectPermissions } from '../models/organization'
 import { OrganizationGuestList } from '../components/OrganizationGuestList'
 import { Container } from '../components/Container'
@@ -11,11 +11,9 @@ import { Body } from '../components/Body'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationGuestsPage: React.FC = () => {
-  const { permissions } = useSelector((state: ApplicationState) => {
-    return {
-      permissions: selectPermissions(state),
-    }
-  })
+  const { permissions } = useSelector((state: ApplicationState) => ({
+    permissions: selectPermissions(state),
+  }))
 
   useEffect(() => {
     analyticsHelper.page('OrganizationGuestsPage')

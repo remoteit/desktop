@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography } from '@material-ui/core'
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography } from '@mui/material'
 import { IconButton } from '../../buttons/IconButton'
 import { Notice } from '../Notice'
 
@@ -24,7 +24,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
 
   return (
     <>
-      {!deleteKey.enabled && <IconButton icon="trash-alt" onClick={() => setOpen(true)} />}
+      {!deleteKey.enabled && <IconButton icon="trash" size="md" onClick={() => setOpen(true)} />}
       <Dialog onClose={handleClose} open={open} fullWidth>
         <DialogTitle>Delete Access Key</DialogTitle>
         <form onSubmit={confirmDelete}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Confirm } from '../components/Confirm'
@@ -34,7 +34,7 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
 
   return (
     <>
-      <MenuItem dense disableGutters onClick={() => setOpen(true)} disabled={disabled}>
+      <MenuItem dense onClick={() => setOpen(true)} disabled={disabled}>
         <ListItemIcon>
           <Icon
             size="md"

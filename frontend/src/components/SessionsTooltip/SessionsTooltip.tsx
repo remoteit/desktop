@@ -1,6 +1,6 @@
 import React from 'react'
 import { attributeName } from '../../shared/nameHelper'
-import { Tooltip, TooltipProps, Divider } from '@material-ui/core'
+import { Tooltip, TooltipProps, Divider } from '@mui/material'
 
 const MAX_SESSIONS_DISPLAY = 3
 
@@ -13,6 +13,7 @@ interface Props {
   open?: boolean
   arrow?: boolean
   disabled?: boolean
+  children?: React.ReactNode
 }
 
 export const SessionsTooltip: React.FC<Props> = ({
@@ -22,6 +23,7 @@ export const SessionsTooltip: React.FC<Props> = ({
   secondaryLabel,
   children,
   disabled,
+  open,
   ...props
 }) => {
   if (!service) return null
@@ -34,11 +36,12 @@ export const SessionsTooltip: React.FC<Props> = ({
   }, [])
 
   if (list && secondaryLabel) list.unshift(secondaryLabel)
-  if (disabled) props.open = false
+  if (disabled) open = false
 
   return (
     <Tooltip
       {...props}
+      open={open}
       title={
         <>
           {label && attributeName(service)}

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import useResizeObserver from 'use-resize-observer'
-import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Typography, InputLabel, Collapse, Paper, alpha } from '@mui/material'
 import { getAttributes } from './Attributes'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
@@ -23,7 +24,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
-  const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | 'copyLaunch' | undefined>()
+  const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copyLaunch' | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const app = useApplication(service, connection)
   const css = useStyles()
@@ -64,7 +65,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>Local Address</InputLabel>
+      <InputLabel shrink>Local Endpoint</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name}
         {port && (
@@ -78,15 +79,15 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   )
 
   const nameDisplay = (
-    <div className={hover === 'name' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Hostname</InputLabel>
+    <div className={hover === 'host' ? css.show : css.hide}>
+      <InputLabel shrink>Host</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name && <span className={css.active}>{name}</span>}
         {port && (
-          <>
+          <span className={css.inactive}>
             {p}
             {port}
-          </>
+          </span>
         )}
       </Typography>
     </div>
@@ -94,18 +95,20 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const portDisplay = (
     <div className={hover === 'port' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Port</InputLabel>
+      <InputLabel shrink>Port</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        {name}
-        {p}
+        <span className={css.inactive}>
+          {name}
+          {p}
+        </span>
         <span className={css.active}>{port}</span>
       </Typography>
     </div>
   )
 
   const copyDisplay = (
-    <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Local Address</InputLabel>
+    <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
+      <InputLabel shrink>Local Endpoint</InputLabel>
       <Typography variant="h3" className={css.h3}>
         <span className={css.active}>
           {name}
@@ -118,10 +121,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const launchDisplay = (
     <div ref={launchRef} className={hover === 'launch' || hover === 'copyLaunch' ? css.show : css.hide}>
-      <InputLabel shrink>
-        {hover === 'copyLaunch' ? 'Copy ' : 'Launch '}
-        {app.contextTitle}
-      </InputLabel>
+      <InputLabel shrink>{app.contextTitle}</InputLabel>
       <Typography variant="h3" className={css.h3}>
         <span className={hover === 'copyLaunch' ? css.active : ''}>{app.string}</span>
       </Typography>
@@ -129,8 +129,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   )
 
   return (
-    <Collapse in={show} timeout={800}>
-      <Gutters top="lg" bottom={null}>
+    <Collapse in={show}>
+      <Gutters top="md" size="md" bottom={null}>
         <Paper className={css.address} elevation={0}>
           {!!showTitle ? (
             <Gutters size="md">
@@ -150,14 +150,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
               </Gutters>
               <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
                 <span>
-                  <InputLabel shrink>Copy</InputLabel>
+                  <InputLabel shrink>Copy {hover === 'copyLaunch' ? app.contextTitle : hover}</InputLabel>
                   <CopyButton
                     color="alwaysWhite"
                     icon="copy"
-                    type="regular"
-                    size="lg"
                     value={name + (port ? p + port : '')}
-                    onMouseEnter={() => setHover('copy')}
+                    onMouseEnter={() => setHover('endpoint')}
                     onMouseLeave={() => setHover(undefined)}
                   />
                   {connection?.host && (
@@ -167,17 +165,13 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                           <CopyButton
                             color="alwaysWhite"
                             icon="i-cursor"
-                            type="solid"
-                            size="md"
                             value={connection.host}
-                            onMouseEnter={() => setHover('name')}
+                            onMouseEnter={() => setHover('host')}
                             onMouseLeave={() => setHover(undefined)}
                           />
                           <CopyButton
                             color="alwaysWhite"
                             icon="port"
-                            type="solid"
-                            size="md"
                             value={connection.port}
                             onMouseEnter={() => setHover('port')}
                             onMouseLeave={() => setHover(undefined)}
@@ -187,7 +181,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       <CopyButton
                         color="alwaysWhite"
                         icon={app.launchType === 'URL' ? 'link' : 'terminal'}
-                        size="md"
                         app={app}
                         value={app.string}
                         onMouseEnter={() => setHover('copyLaunch')}
@@ -201,14 +194,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   {app.canLaunch ? (
                     <LaunchButton
                       color="alwaysWhite"
-                      type="solid"
-                      size="md"
                       app={app}
                       onMouseEnter={() => setHover('launch')}
                       onMouseLeave={() => setHover(undefined)}
                     />
                   ) : (
-                    <IconButton size="lg" title="Command launch in Desktop" name="ban" fixedWidth />
+                    <IconButton title="Command launch in Desktop" name="ban" fixedWidth />
                   )}
                 </span>
               </Gutters>
@@ -229,20 +220,23 @@ const useStyles = makeStyles(({ palette }) => ({
   show: {
     opacity: 1,
     position: 'absolute',
-    transition: 'opacity 300ms',
+    // transition: 'opacity 100ms',
   },
   hide: {
     opacity: 0,
     position: 'absolute',
-    transitionProperty: 'opacity',
-    transitionDuration: '300ms',
-    transitionDelay: '150ms',
+    // transitionProperty: 'opacity',
+    // transitionDuration: '100ms',
+    // transitionDelay: '50ms',
   },
   active: {
-    display: 'inline-block',
-    backgroundColor: palette.screen.main,
-    borderRadius: spacing.xs,
-    textDecoration: `underline 2px`,
+    // display: 'inline-block',
+    // backgroundColor: palette.screen.main,
+    // borderRadius: spacing.xs,
+    // color: palette.alwaysWhite.main,
+  },
+  inactive: {
+    color: alpha(palette.alwaysWhite.main, 0.25),
   },
   h3: {
     wordBreak: 'break-word',

@@ -1,14 +1,6 @@
 import React, { useState, useRef } from 'react'
-import {
-  makeStyles,
-  Tooltip,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Switch,
-  Button,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@mui/material'
 import { Confirm } from '../Confirm'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
@@ -18,15 +10,15 @@ type Props = {
   icon?: string
   iconColor?: Color
   hideIcon?: boolean
-  label: string | React.ReactElement
-  subLabel?: string | React.ReactElement
+  label: React.ReactNode
+  subLabel?: React.ReactNode
   size?: 'small' | 'medium'
   button?: string
   toggle?: boolean
   tooltip?: string
   disabled?: boolean
   confirm?: boolean
-  confirmMessage?: string | React.ReactElement
+  confirmMessage?: React.ReactNode
   confirmTitle?: string
   quote?: boolean
   modified?: boolean
@@ -34,7 +26,7 @@ type Props = {
   onButtonClick?: () => void
 }
 
-export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
+export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
   (
     {
       icon,
@@ -68,11 +60,11 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
 
     const handleClick = () => {
       if (confirm) setOpen(true)
-      else onClick && onClick()
+      else onClick?.()
     }
 
     const handleConfirm = () => {
-      onClick && onClick()
+      onClick?.()
       setOpen(false)
     }
 
@@ -91,7 +83,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
         <ListItem
           dense
           ref={ref}
-          button={!!onClick as true}
+          button={disabled || !onClick ? false : (true as any)}
           onClick={handleClick}
           disabled={disabled}
           onMouseEnter={() => setShowTip(true)}
@@ -105,7 +97,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
           {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
           <ListItemSecondaryAction>
             {showButton && (
-              <Button onClick={onButtonClick} size="small">
+              <Button onClick={onButtonClick} color="primary" size="small">
                 {button}
               </Button>
             )}

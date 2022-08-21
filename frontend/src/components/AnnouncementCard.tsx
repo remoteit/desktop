@@ -2,17 +2,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { dateOptions } from './Duration/Duration'
-import {
-  makeStyles,
-  Tooltip,
-  Card,
-  CardContent,
-  CardMedia,
-  CardHeader,
-  CardActions,
-  Button,
-  Typography,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Tooltip, Card, CardContent, CardMedia, CardHeader, CardActions, Button, Typography } from '@mui/material'
 import { spacing } from '../styling'
 
 const types = {
@@ -33,7 +24,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
 
   const unread = !(data.read && data.read < new Date())
   const date = data.read && data.read.toLocaleString(undefined, dateOptions)
-  const css = useStyles({ unread })()
+  const css = useStyles({ unread })
 
   const handleRead = () => {
     setRead(true)
@@ -77,21 +68,20 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   )
 }
 
-const useStyles = ({ unread }) =>
-  makeStyles(({ palette }) => ({
-    card: {
-      width: 500,
-      overflow: 'hidden',
-      marginTop: spacing.md,
-      backgroundColor: palette.grayLightest.main,
-      '& .MuiButtonBase-root': { float: 'right' },
-    },
-    header: {
-      transition: 'background-color 1s',
-      backgroundColor: unread ? palette.primary.main : palette.grayDarker.main,
-    },
-    media: {
-      height: 150,
-      backgroundColor: palette.primaryLight.main,
-    },
-  }))
+const useStyles = makeStyles(({ palette }) => ({
+  card: {
+    width: 500,
+    overflow: 'hidden',
+    marginTop: spacing.md,
+    backgroundColor: palette.grayLightest.main,
+    '& .MuiButtonBase-root': { float: 'right' },
+  },
+  header: ({ unread }: { unread: boolean }) => ({
+    transition: 'background-color 1s',
+    backgroundColor: unread ? palette.primary.main : palette.grayDarker.main,
+  }),
+  media: {
+    height: 150,
+    backgroundColor: palette.primaryLight.main,
+  },
+}))

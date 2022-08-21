@@ -6,24 +6,22 @@ import { useSelector } from 'react-redux'
 
 interface Props {
   device?: IDevice
+  network?: INetwork
   users?: IUser[]
   connected?: IUser[]
-  sharedUsers?: IUser[]
 }
 
-export const SharedUsersLists: React.FC<Props> = ({ device, connected = [], users = [] }) => {
-  const { members, manager } = useSelector((state: ApplicationState) => ({
-    members: getOrganization(state).members.map(m => m.user),
-    manager: !!device?.permissions.includes('MANAGE'),
-  }))
+export const SharedUsersLists: React.FC<Props> = ({ device, network, connected = [], users = [] }) => {
+  const members = useSelector((state: ApplicationState) => getOrganization(state).members.map(m => m.user))
 
   if (!users?.length && !members.length) return null
   const disconnected = users.filter(user => !connected.find(_u => _u.email === user.email))
+  const manager = !!(device || network)?.permissions.includes('MANAGE')
 
   return (
     <>
       <SharedUsersPaginatedList title="Connected" device={device} users={connected} connected />
-      <SharedUsersPaginatedList title="Guests" device={device} users={sort(disconnected)} />
+      <SharedUsersPaginatedList title="Guests" device={device} remove={network?.id} users={sort(disconnected)} />
       {manager && (
         <SharedUsersPaginatedList title="Organization members" device={device} users={sort(members)} members />
       )}

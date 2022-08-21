@@ -1,11 +1,12 @@
 import React from 'react'
 import classnames from 'classnames'
+import { makeStyles } from '@mui/styles'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, Typography, Box, List, ListItem } from '@material-ui/core'
-import { getOwnOrganization, getOrganization, memberOrganization } from '../models/organization'
+import { Typography, Box, List, ListItem } from '@mui/material'
+import { getOwnOrganization, getOrganization, getOrganizationName } from '../models/organization'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
@@ -14,13 +15,13 @@ export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
-  const { accounts, devices, tags, logs } = useDispatch<Dispatch>()
+  const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, userId } = useSelector((state: ApplicationState) => ({
     activeOrg: getOrganization(state),
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
       email: m.account.email,
-      name: memberOrganization(state.organization.all, m.account.id).name || 'Personal',
+      name: getOrganizationName(state, m.account.id),
       roleId: m.roleId,
       roleName: m.roleName,
     })),
@@ -34,6 +35,7 @@ export const OrganizationSelect: React.FC = () => {
     if (id) {
       await logs.reset()
       await accounts.setActive(id.toString())
+      networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()
       if (menu && menu[0] === '/devices') history.push('/devices')
@@ -46,21 +48,22 @@ export const OrganizationSelect: React.FC = () => {
   return (
     <>
       <Box className={css.name}>
-        <Typography variant="h4">{activeOrg.name}</Typography>
+        <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
-      <List dense>
-        <ListItem onClick={() => onSelect(ownOrgId || userId)} disableGutters>
+      <List dense className={css.list}>
+        <ListItem disableGutters className={css.buttonContainer}>
           <IconButton
+            onClick={() => onSelect(ownOrgId || userId)}
             className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
             title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
-            icon="home-lg-alt"
+            icon="house"
             size="md"
             color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
             placement="right"
           />
         </ListItem>
         {options.map(option => (
-          <ListItem key={option.id} onClick={() => onSelect(option.id)} disableGutters>
+          <ListItem button key={option.id} onClick={() => onSelect(option.id)} disableGutters>
             <Avatar
               email={option.email}
               title={`${option.name} - ${option.roleName}`}
@@ -70,13 +73,14 @@ export const OrganizationSelect: React.FC = () => {
             />
           </ListItem>
         ))}
-        <ListItem disableGutters>
+        <ListItem disableGutters className={css.buttonContainer}>
           <IconButton
             className={css.button}
             title="Memberships"
             icon="ellipsis-h"
             to="/organization/memberships"
             placement="right"
+            size="md"
           />
         </ListItem>
       </List>
@@ -85,11 +89,24 @@ export const OrganizationSelect: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  list: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '& > *': {
+      height: 50,
+      borderRadius: '50%',
+      padding: 0,
+    },
+  },
+  buttonContainer: {
+    width: 38,
+  },
   button: {
     borderRadius: '50%',
     width: 38,
     height: 38,
-    margin: 2,
   },
   active: {
     border: `2px solid ${palette.primary.main}`,

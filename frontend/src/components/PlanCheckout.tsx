@@ -1,20 +1,12 @@
 import React from 'react'
 import { PERSONAL_PLAN_ID } from '../models/plans'
-import {
-  makeStyles,
-  Divider,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  Typography,
-  TextField,
-  Button,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
-import { spacing, fontSizes } from '../styling'
+import { spacing } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { Icon } from './Icon'
+import { QuantitySelector } from './QuantitySelector'
 
 type Props = {
   plans: IPlan[]
@@ -117,33 +109,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
           <Typography variant="h3">User Licenses</Typography>
           <ListItemSecondaryAction>
-            <div className={css.group}>
-              <Button
-                className={css.icon}
-                size="small"
-                variant="contained"
-                color="primary"
-                onClick={() => setQuantity(form.quantity - 1)}
-              >
-                <Icon name="minus" size="sm" />
-              </Button>
-              <TextField
-                hiddenLabel
-                value={form.quantity}
-                color="primary"
-                onChange={e => setQuantity(e.target.value)}
-                className={css.quantity}
-              />
-              <Button
-                className={css.icon}
-                size="small"
-                variant="contained"
-                color="primary"
-                onClick={() => setQuantity(form.quantity + 1)}
-              >
-                <Icon name="plus" size="sm" />
-              </Button>
-            </div>
+            <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
           </ListItemSecondaryAction>
         </ListItem>
       </List>
@@ -185,7 +151,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+export const useStyles = makeStyles(({ palette }) => ({
   list: {
     width: '50%',
     minWidth: 400,
@@ -201,18 +167,5 @@ const useStyles = makeStyles(({ palette }) => ({
     '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
     '& > .MuiButton-root:first-child': { borderTopLeftRadius: spacing.md, borderBottomLeftRadius: spacing.md },
     '& > .MuiButton-root:last-child': { borderTopRightRadius: spacing.md, borderBottomRightRadius: spacing.md },
-  },
-  icon: {
-    padding: 0,
-  },
-  quantity: {
-    maxWidth: 60,
-    '& .MuiInputBase-input': {
-      height: spacing.sm,
-      fontSize: fontSizes.base,
-      fontWeight: 500,
-      padding: spacing.xs,
-      textAlign: 'center',
-    },
   },
 }))

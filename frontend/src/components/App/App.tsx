@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { HIDE_SIDEBAR_WIDTH, HIDE_TWO_PANEL_WIDTH, SIDEBAR_WIDTH, ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
-import { useMediaQuery, makeStyles, Box } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { useMediaQuery, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { isElectron, isMac } from '../../services/Browser'
 import { InstallationNotice } from '../InstallationNotice'
@@ -14,11 +15,11 @@ import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { authInitialized, installed, signedOut, uninstalling, showOrgs } = useSelector((state: ApplicationState) => ({
+  const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
     installed: state.binaries.installed,
     signedOut: state.auth.initialized && !state.auth.authenticated,
-    uninstalling: state.ui.uninstalling,
+    waitMessage: state.ui.waitMessage,
     showOrgs: !!state.accounts.membership.length,
   }))
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
@@ -36,10 +37,10 @@ export const App: React.FC = () => {
 
   const css = useStyles({ overlapHeader: hideSidebar && isElectron() && isMac() })
 
-  if (uninstalling)
+  if (waitMessage)
     return (
       <Page>
-        <LoadingMessage message="Please wait, uninstalling..." />
+        <LoadingMessage message={`Please wait, ${waitMessage}...`} />
       </Page>
     )
 

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@material-ui/core'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
@@ -64,7 +64,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
               `/devices/${device.id}/logs`,
               `/devices/${device.id}`,
             ]}
-            icon={<ConnectionStateIcon device={device} connection={connection} size="lg" />}
+            icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
             exactMatch
             dense
             title={

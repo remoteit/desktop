@@ -2,10 +2,11 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getOrganization, selectPermissions } from '../models/organization'
-import { Box, Typography, Link } from '@material-ui/core'
+import { Box, Typography } from '@mui/material'
 import { platforms, IPlatform } from '../platforms'
 import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
+import { Link } from '../components/Link'
 
 export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
   const { organization, registrationCommand, permissions } = useSelector((state: ApplicationState) => ({
@@ -47,11 +48,7 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
       <DataCopy showBackground value={registrationCommand ? registrationCommand : '...generating command...'} />
       <Typography variant="body2" color="textSecondary">
         This page will automatically update when complete.
-        {platform.installation?.link && (
-          <Link href={platform.installation?.link} target="_blank">
-            Troubleshooting & instructions.
-          </Link>
-        )}
+        {platform.installation?.link && <Link href={platform.installation?.link}>Troubleshooting & instructions.</Link>}
       </Typography>
     </>
   )

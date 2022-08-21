@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.9.2",
+  "version": "3.11.0-alpha.4",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -29,7 +29,7 @@
     "watch-backend": "cd backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
     "watch-build": "tsc --watch",
-    "watch-electron": "sleep 5 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
+    "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
     "electron-updater": "^5.0.1",
@@ -45,11 +45,11 @@
     "electron-builder": "^23.0.3",
     "electron-notarize": "^1.2.1",
     "electron-osx-sign": "^0.6.0",
+    "eslint": "^8.20.0",
     "npm-run-all": "4.1.5",
     "onchange": "^7.1.0",
     "rimraf": "^3.0.2",
-    "tslint": "^6.1.3",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.4"
   },
   "homepage": "https://remote.it",
   "repository": {

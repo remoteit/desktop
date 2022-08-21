@@ -7,13 +7,12 @@ import {
   ListItemSecondaryAction,
   IconButton,
   Collapse,
-  Divider,
   Button,
   Chip,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 import { Icon } from '../Icon'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/styles'
 import { getTypeId } from '../../models/applicationTypes'
 import { DEFAULT_SERVICE, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -100,16 +99,16 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
           <span key={row}>
             <ListItem button onClick={() => toggle(row)}>
               <ListItemIcon>
-                {ip[0] === privateIP ? <Icon name="hdd" type="regular" /> : InterfaceIcon[interfaceType]}
+                {ip[0] === privateIP ? <Icon name="router" type="regular" /> : InterfaceIcon[interfaceType]}
               </ListItemIcon>
               <ListItemText primary={ip[0]} secondary={ip[0] === privateIP ? 'This system' : null} />
               <ListItemSecondaryAction>
-                <IconButton onClick={() => toggle(row)}>
+                <IconButton onClick={() => toggle(row)} size="large">
                   {open.includes(row) ? <Icon name="chevron-up" size="md" /> : <Icon name="chevron-down" size="md" />}
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
-            <Collapse in={open.includes(row)} timeout="auto">
+            <Collapse in={open.includes(row)}>
               {ip[1].map((port, key) => (
                 <ListItem key={key} dense className={css.port}>
                   <ListItemText primary={port[0]} />

@@ -1,5 +1,6 @@
 import React from 'react'
-import { makeStyles, Chip, ChipProps, alpha } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Chip, ChipProps, alpha } from '@mui/material'
 import { Color } from '../styling'
 import classnames from 'classnames'
 

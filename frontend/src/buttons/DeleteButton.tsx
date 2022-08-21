@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { Tooltip, IconButton, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { Tooltip, IconButton, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Confirm } from '../components/Confirm'
 import { Icon } from '../components/Icon'
 
 type Props = {
   title?: string
-  warning?: string | React.ReactElement
+  warning?: React.ReactNode
   icon?: string
   disabled?: boolean
   destroying?: boolean
@@ -23,36 +23,40 @@ export const DeleteButton: React.FC<Props> = ({
   onDelete,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
-  let color
+  const [deleting, setDeleting] = useState<boolean>(false)
+  let color, spin
 
-  if (destroying) {
+  if (deleting || destroying) {
     icon = 'spinner-third'
     color = 'danger'
+    spin = true
   }
+
+  const DeleteIcon = <Icon name={icon} size="md" color={color} spin={spin} fixedWidth />
 
   return (
     <>
       {menuItem ? (
-        <MenuItem dense disableGutters onClick={() => setOpen(true)} disabled={disabled}>
-          <ListItemIcon>
-            <Icon name={icon} size="md" color={color} spin={destroying} fixedWidth />
-          </ListItemIcon>
+        <MenuItem dense onClick={() => setOpen(true)} disabled={disabled}>
+          <ListItemIcon>{DeleteIcon}</ListItemIcon>
           <ListItemText primary={title} />
         </MenuItem>
       ) : (
         <Tooltip title={title}>
           <span>
-            <IconButton disabled={disabled} onClick={() => setOpen(true)}>
-              <Icon name={icon} size="md" fixedWidth />
+            <IconButton disabled={disabled} onClick={() => setOpen(true)} size="large">
+              {DeleteIcon}
             </IconButton>
           </span>
         </Tooltip>
       )}
       <Confirm
         open={open}
-        onConfirm={() => {
+        onConfirm={async () => {
           setOpen(false)
-          onDelete()
+          setDeleting(true)
+          await onDelete()
+          setDeleting(false)
         }}
         onDeny={() => setOpen(false)}
         title="Are you sure?"

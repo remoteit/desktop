@@ -38,6 +38,7 @@ declare global {
 
     // Backend
     | 'init'
+    | 'refresh'
     | 'targets'
     | 'device'
     | 'registration'
@@ -69,22 +70,6 @@ declare global {
 
     // connection update
     | 'connection'
-
-    // connection events
-    | 'service/started'
-    | 'service/connected'
-    | 'service/disconnected'
-    | 'service/error'
-    | 'service/status'
-    | 'service/uptime'
-    | 'service/request'
-    | 'service/tunnel/opened'
-    | 'service/tunnel/closed'
-    | 'service/throughput'
-    | 'service/version'
-    | 'service/unknown-event'
-    | 'service/putty/required'
-    | 'service/error/command'
 
     // binary
     | 'binary/install/start'
@@ -128,16 +113,37 @@ declare global {
   }
 
   interface ISearch {
-    deviceId: string
-    deviceName: string
+    accountId: string
+    nodeId: string
+    nodeName: string
+    nodeType: INodeType | string
     serviceId: string
     serviceName: string
     ownerEmail: string
     targetPlatform: number
-    offline: boolean
+    combinedName: string
   }
+
+  type INodeType = 'DEVICE' | 'NETWORK'
+
+  type INetwork = {
+    id: string
+    name: string
+    enabled: boolean
+    shared: boolean
+    owner: IUserRef
+    permissions: IPermission[]
+    serviceIds: string[]
+    sessions?: ISession[]
+    access: IUserRef[]
+    icon?: string
+    iconType?: IconType
+    tags: ITag[]
+  }
+
   interface IConnection {
     autoLaunch?: boolean
+    autoStart?: boolean
     commandTemplate?: string // command line launch template
     connected?: boolean
     connecting?: boolean
@@ -172,11 +178,11 @@ declare global {
     sessionId?: string //the connection session id
     starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
+    surveyed?: string // the session ID of the survey that has been answered
     targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
-    // [index: string]: any // needed to be able to iterate the keys :(
   }
 
   type IConnectionState =
@@ -264,7 +270,7 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
-    access: IUser[]
+    access: IUserRef[]
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -294,7 +300,7 @@ declare global {
     port?: number
     host?: ipAddress
     protocol?: string
-    access: IUser[]
+    access: IUserRef[]
     license: ILicenseTypes
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
@@ -303,7 +309,7 @@ declare global {
       launchTemplate?: string
       commandTemplate?: string
       targetHost?: string
-      description?: strings
+      description?: string
     }
   }
 
@@ -361,6 +367,7 @@ declare global {
     id: string
     email: string
     created?: Date
+    scripting?: boolean
   }
 
   type IOrganizationMember = {

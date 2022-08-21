@@ -4,7 +4,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { getDeviceModel } from '../models/accounts'
 import { selectDevice } from '../models/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { NetworkPage } from '../pages/NetworkPage'
+import { ScanPage } from '../pages/ScanPage'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
@@ -50,7 +50,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     }
   }, [fetching, device, thisId, history])
 
-  if (fetching && !device) return <LoadingMessage message="Fetching device..." />
+  if (fetching && !device) return <LoadingMessage message="Fetching device" />
 
   return (
     <DynamicPanel
@@ -58,7 +58,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       secondary={
         <Switch>
           <Route path="/devices/:deviceID/add/scan">
-            <NetworkPage />
+            <ScanPage />
           </Route>
           <Route path="/devices/:deviceID/add">
             <ServiceAddPage device={device} />

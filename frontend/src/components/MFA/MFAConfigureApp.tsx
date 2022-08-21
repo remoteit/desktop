@@ -1,6 +1,7 @@
 import React from 'react'
 import QRCode from 'qrcode.react'
-import { makeStyles, Box, Button, TextField, Typography, Chip } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { Box, Button, TextField, Typography, Chip } from '@mui/material'
 import { spacing, radius } from '../../styling'
 
 type Props = {

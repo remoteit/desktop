@@ -1,10 +1,11 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import Controller from './services/Controller'
-import { CssBaseline } from '@material-ui/core'
 import { App } from './components/App'
+import { createRoot } from 'react-dom/client'
+import { CssBaseline } from '@mui/material'
 import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
+import { Layout } from './components/Layout'
 import { store } from './store'
 import heartbeat from './services/Heartbeat'
 import analyticsHelper from './helpers/analyticsHelper'
@@ -12,11 +13,11 @@ import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
-import { Layout } from './components/Layout'
 
 analyticsHelper.setup()
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root')!)
+root.render(
   <Provider store={store}>
     <Layout>
       <CssBaseline />
@@ -24,8 +25,7 @@ ReactDOM.render(
         <App />
       </HashRouter>
     </Layout>
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 )
 
 // If you want your app to work offline and load faster, you can change

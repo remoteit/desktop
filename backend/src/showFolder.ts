@@ -3,10 +3,12 @@ import environment from './environment'
 
 class ShowFolder {
   show = (folder: IShowFolderType) => {
-    const folders = {
+    let folders = {
       logs: [environment.adminPath, environment.logPath],
       connections: [environment.connectionLogPath],
     }
+
+    if (environment.cliLogPath) folders.logs.push(environment.cliLogPath)
 
     const commands = new Command({})
     folders[folder].forEach(path => commands.push(this.command(path)))

@@ -30,5 +30,5 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
         })
       }
     />
-  )
+  );
 }

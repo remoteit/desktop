@@ -9,7 +9,6 @@ import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { isPortal } from '../services/Browser'
-import heartbeat from '../services/Heartbeat'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -48,8 +47,16 @@ export function newConnection(service?: IService | null) {
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: cd?.route ? cd.route === 'failover' : service?.attributes.route === 'failover',
-    proxyOnly: cd?.route ? cd.route === 'proxy' : service?.attributes.route === 'proxy',
+    failover: cd?.route
+      ? cd.route === 'failover'
+      : service?.attributes.route
+      ? service?.attributes.route === 'failover'
+      : true, // default
+    proxyOnly: cd?.route
+      ? cd.route === 'proxy'
+      : service?.attributes.route
+      ? service?.attributes.route === 'proxy'
+      : false, // default
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
     public: isPortal() || cd?.route === 'public' || service?.attributes.route === 'public' ? true : undefined,
@@ -64,10 +71,17 @@ export function newConnection(service?: IService | null) {
     connection.typeID = service.typeID
     connection.targetHost = service.attributes.targetHost
     connection.description = service.attributes.description
+    if (service.attributes.defaultPort && !usedPorts(state).includes(service.attributes.defaultPort)) {
+      connection.port = service.attributes.defaultPort
+    }
     if (device) connection.name = connectionName(service, device)
   }
 
   return connection
+}
+
+export function usedPorts(state: ApplicationState) {
+  return state.connections.all.map(c => c.port)
 }
 
 export function launchDisabled(connection: IConnection) {
@@ -88,11 +102,10 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
-  if (auth.backendAuthenticated) {
-    emit('connection', connection)
-    heartbeat.caffeinate()
-  } else {
+  if (isPortal()) {
     connections.updateConnection(connection)
+  } else if (auth.backendAuthenticated) {
+    emit('connection', connection)
   }
 }
 
@@ -117,6 +130,10 @@ export function selectConnections(state: ApplicationState) {
 export function selectConnection(state: ApplicationState, service?: IService) {
   let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
   return connection
+}
+
+export function selectEnabledConnections(state: ApplicationState) {
+  return selectConnections(state).filter(connection => connection.enabled)
 }
 
 export function getRoute(connection: IConnection): IRouteType {
@@ -152,14 +169,14 @@ export function updateConnections(devices: IDevice[]) {
 export function cleanOrphanConnections(ids?: string[]) {
   if (!ids) return
   const state = store.getState()
-  const services = getAllDevices(state)
+  const serviceIds = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
-  if (!state.ui.offline && services.length) {
-    state.connections.all.forEach(c => {
-      if (ids.includes(c.id) && !services.includes(c.id)) {
-        store.dispatch.connections.forget(c.id)
-        console.log('FORGET ORPHANED CONNECTION', c)
+  if (!state.ui.offline && serviceIds.length) {
+    ids.forEach(id => {
+      if (!serviceIds.includes(id)) {
+        store.dispatch.connections.forget(id)
+        console.log('FORGET ORPHANED CONNECTION', id)
       }
     })
   }

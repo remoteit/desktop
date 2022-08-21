@@ -5,7 +5,7 @@ import { Confirm } from '../components/Confirm'
 type Props = ButtonProps & {
   confirm?: boolean
   confirmTitle?: string
-  confirmMessage?: string | React.ReactElement
+  confirmMessage?: React.ReactNode
 }
 
 export const ConfirmButton: React.FC<Props> = ({
@@ -19,11 +19,11 @@ export const ConfirmButton: React.FC<Props> = ({
 
   const handleClick = e => {
     if (confirm) setOpen(true)
-    else onClick && onClick(e)
+    else onClick?.(e)
   }
 
   const handleConfirm = e => {
-    onClick && onClick(e)
+    onClick?.(e)
     setOpen(false)
   }
 

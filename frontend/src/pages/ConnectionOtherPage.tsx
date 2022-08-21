@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectById } from '../models/devices'
 import { ConnectionDetails } from '../components/ConnectionDetails'
 import { ApplicationState } from '../store'

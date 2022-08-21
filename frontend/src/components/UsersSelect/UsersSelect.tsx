@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectSessionUsers } from '../../models/sessions'
 import { getOrganization } from '../../models/organization'
-import { makeStyles, ListItemIcon, ListItemText } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItemIcon, ListItemText } from '@mui/material'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
 
@@ -31,7 +32,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   return (
     <ListItemLocation pathname={pathname} dense>
       <ListItemIcon>
-        <Icon name="user-friends" color="grayDarker" size="md" />
+        <Icon name="user-group" color="grayDarker" size="md" />
       </ListItemIcon>
       <ListItemText
         primary={total ? 'Users' : 'Add User'}

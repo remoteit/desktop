@@ -1,14 +1,8 @@
 import React, { useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  makeStyles,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  InputLabel,
-  TextFieldProps,
-} from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'
@@ -48,7 +42,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   return (
     <ListItem
       button
-      classes={{ container: css.container }}
+      className={css.container}
       onClick={filePrompt}
       disabled={disabled}
       disableGutters={disableGutters}
@@ -68,8 +62,8 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   container: ({ filled }: { filled?: boolean }) => ({
-    '& .MuiListItem-root': { backgroundColor: filled ? palette.grayLightest.main : undefined },
+    backgroundColor: filled ? palette.grayLightest.main : undefined,
     '& .MuiListItemText-root': { marginLeft: spacing.sm },
-    '& .MuiListItemSecondaryAction-root': { right: filled ? spacing.xs : undefined },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.xs },
   }),
 }))

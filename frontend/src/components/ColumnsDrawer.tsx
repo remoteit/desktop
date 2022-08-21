@@ -1,7 +1,8 @@
 import React from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@mui/material'
 import { masterAttributes, deviceAttributes } from './Attributes'
 import { selectLimitsLookup } from '../models/organization'
 import { defaultState } from '../models/ui'
@@ -48,6 +49,7 @@ export const ColumnsDrawer: React.FC = () => {
             <ListItem
               dense
               button
+              disableGutters
               disabled={data.required}
               key={data.id}
               onClick={() => (checked >= 0 ? remove(checked) : add(data.id))}

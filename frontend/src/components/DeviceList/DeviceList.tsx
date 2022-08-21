@@ -4,7 +4,8 @@ import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
 import { DeviceListHeader } from '../DeviceListHeader'
-import { makeStyles, List } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { List } from '@mui/material'
 import { DeviceListItem } from '../DeviceListItem'
 import { Attribute } from '../Attributes'
 import { isOffline } from '../../models/devices'
@@ -118,6 +119,7 @@ const useStyles = makeStyles(({ palette }) => ({
       minHeight: 42,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
+      '&:hover': { backgroundColor: palette.primaryHighlight.main },
     },
     '& .MuiBox-root': {
       display: 'flex',

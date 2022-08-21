@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 import { selectById } from '../models/devices'
 import { getDeviceModel } from '../models/accounts'
+import { inNetworkOnly } from '../models/networks'
 import { selectConnection } from '../helpers/connectionHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -20,11 +21,12 @@ import analyticsHelper from '../helpers/analyticsHelper'
 export const ConnectionPage: React.FC = () => {
   const { deviceID, serviceID } = useParams<{ deviceID?: string; serviceID?: string }>()
   const { devices, ui } = useDispatch<Dispatch>()
-  const { service, device, connection, fetching, accordion } = useSelector((state: ApplicationState) => {
+  const { service, device, networkOnly, connection, fetching, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     return {
       service,
       device,
+      networkOnly: inNetworkOnly(state, serviceID),
       connection: selectConnection(state, service),
       fetching: getDeviceModel(state).fetching,
       accordion: state.ui.accordion,
@@ -38,7 +40,7 @@ export const ConnectionPage: React.FC = () => {
     if (!device && id) devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
-  if (!device && fetching) return <LoadingMessage message="Fetching data..." />
+  if (!device && fetching) return <LoadingMessage message="Fetching data" />
   if (!service || !device) return <NoConnectionPage />
 
   return (
@@ -50,7 +52,7 @@ export const ConnectionPage: React.FC = () => {
         <>
           <Typography variant="h1" gutterBottom={!service.attributes.description}>
             <Title>{connection.name}</Title>
-            <InfoButton device={device} service={service} />
+            {!networkOnly && <InfoButton device={device} service={service} />}
           </Typography>
           {service.attributes.description && (
             <Gutters bottom="xl" top={null}>
@@ -63,7 +65,7 @@ export const ConnectionPage: React.FC = () => {
       }
     >
       <Connect />
-      <Gutters>
+      <Gutters size="md">
         <AccordionMenuItem
           gutters
           subtitle="Service Details"

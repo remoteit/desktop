@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Typography, TextField, List, ListItem, MenuItem } from '@material-ui/core'
+import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
 import { useStyles } from './ServiceForm/ServiceForm'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
@@ -8,6 +8,7 @@ import { ApplicationState } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
 import { validPort } from '../helpers/connectionHelper'
+import { isPortal } from '../services/Browser'
 import { ROUTES } from '../models/devices'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
@@ -16,7 +17,7 @@ type Props = IService['attributes'] & {
   connection?: IConnection
   disabled: boolean
   customTokens?: string[]
-  customTokensNote?: ILookup<React.ReactElement>
+  customTokensNote?: ILookup<React.ReactNode>
   attributes: IService['attributes']
   globalDefaults?: boolean
   onUpdate: (attributes: IService['attributes']) => void
@@ -35,7 +36,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   const app = useApplication(undefined, connection)
   const css = useStyles()
 
-  customTokens = customTokens || app.customTokens
+  customTokens = customTokens.length ? customTokens : app.allCustomTokens
 
   return (
     <>
@@ -152,7 +153,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           <Quote margin="xs">
             <List disablePadding>
               {customTokens.map(token =>
-                token === 'path' ? (
+                token === 'path' && !isPortal() ? (
                   <InlineFileFieldSetting
                     key="path"
                     variant="filled"

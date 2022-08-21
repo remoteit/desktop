@@ -1,9 +1,10 @@
 import React from 'react'
 import { Icon } from '../Icon'
-import { IconProps } from '../Icon/Icon'
-import { Tooltip } from '@material-ui/core'
+import { IconProps } from '../Icon'
+import { Tooltip } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, IconButton, Badge } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import { IconButton, Badge } from '@mui/material'
 import { spacing, FontSize } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
@@ -63,7 +64,7 @@ export function ConnectionStateIcon({
           type="solid"
           inlineLeft
         />
-        Connectivity {device.quality.toLowerCase()}
+        Stability {device.quality.toLowerCase()}
       </>
     )
 
@@ -74,6 +75,7 @@ export function ConnectionStateIcon({
           event.stopPropagation()
           history.push(`/devices/${device.id}/details`)
         }}
+        size="large"
       >
         <Badge
           variant="dot"

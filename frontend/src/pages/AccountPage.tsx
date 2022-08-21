@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { List, Typography, Tooltip, ButtonBase } from '@material-ui/core'
+import { List, Typography, Tooltip, ButtonBase } from '@mui/material'
 import { selectOwnRemoteitLicense, selectLicenseIndicator } from '../models/plans'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -42,7 +42,7 @@ export const AccountPage: React.FC = () => {
           title="Profile"
           pathname="/account/overview"
           match={['/account', '/account/overview']}
-          icon="user"
+          icon="user-large"
           exactMatch
           dense
         />

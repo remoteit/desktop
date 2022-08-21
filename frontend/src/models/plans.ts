@@ -9,10 +9,10 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { graphQLBasicRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { getDevices, getActiveAccountId } from './accounts'
+import { graphQLBasicRequest } from '../services/graphQL'
+import { getDevices } from './accounts'
 import { getOrganization } from './organization'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
@@ -71,7 +71,7 @@ export default createModel<RootModel>()({
       dispatch.plans.set({ initialized: true })
     },
 
-    async restore(_, state) {
+    async restore(_: void, state) {
       const license = selectRemoteitLicense(state)
       const last = license?.subscription?.card?.last
       const planId = license?.plan.id
@@ -181,7 +181,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ successMessage: 'Subscription updated.' })
     },
 
-    async testServiceLicensing(_, state) {
+    async testServiceLicensing(_: void, state) {
       const states: ILicenseTypes[] = [
         'UNKNOWN',
         'EVALUATION',
@@ -243,6 +243,11 @@ export function getFreeLicenses(state: ApplicationState) {
 
 function isEnterprise(state: ApplicationState) {
   return getLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
+}
+
+export function isPersonal(state: ApplicationState) {
+  const license = selectOwnRemoteitLicense(state)
+  return license?.plan.id === PERSONAL_PLAN_ID
 }
 
 export function selectBaseLimits(state: ApplicationState, accountId?: string) {

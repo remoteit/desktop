@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from './Icon'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 
 export interface Props {
   session?: ISession

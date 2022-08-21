@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip, TooltipProps, Box } from '@material-ui/core'
+import { Tooltip, TooltipProps, Box } from '@mui/material'
 import { ApplicationState } from '../store'
 import { selectLimitsLookup } from '../models/organization'
 import { useSelector } from 'react-redux'
@@ -10,6 +10,7 @@ type Props = {
   title: string
   to?: string
   placement?: TooltipProps['placement']
+  children?: React.ReactNode
 }
 
 export const PaywallUI: React.FC<Props> = ({

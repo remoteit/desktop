@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { makeStyles } from '@mui/styles'
+import { safeHostname } from '../shared/nameHelper'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import {
-  makeStyles,
-  Popover,
-  List,
-  ListItem,
-  ListSubheader,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-  Divider,
-} from '@material-ui/core'
+import { Popover, List, ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
 import { selectDeviceByAccount } from '../models/devices'
 import { isPortal, getOs } from '../services/Browser'
 import { useDispatch, useSelector } from 'react-redux'
@@ -18,6 +10,7 @@ import { Dispatch, ApplicationState } from '../store'
 import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
+import { DesktopUI } from './DesktopUI'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
 import { Link } from 'react-router-dom'
@@ -31,11 +24,12 @@ export const RegisterMenu: React.FC = () => {
   const [el, setEl] = useState<Element | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo, hasThisDevice, permissions } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo, hasThisDevice, permissions, hostname } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.user.id) !== undefined,
     hasThisDevice: !!state.backend.thisId,
     permissions: selectPermissions(state),
+    hostname: safeHostname(state.backend.environment.hostname, []),
   }))
 
   const disabled = !permissions?.includes('MANAGE')
@@ -88,8 +82,7 @@ export const RegisterMenu: React.FC = () => {
         onClick={handleOpen}
         color="primary"
         icon="plus"
-        size="sm"
-        type="regular"
+        type="solid"
         fixedWidth
       />
       <Popover
@@ -99,15 +92,28 @@ export const RegisterMenu: React.FC = () => {
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
+        <DesktopUI>
+          <List className={css.list} disablePadding dense>
+            <ListSubheader disableGutters>Add this system</ListSubheader>
+            <ListItem
+              button
+              disableGutters
+              disabled={hasThisDevice}
+              onClick={handleClose}
+              to={thisLink}
+              component={Link}
+            >
+              <ListItemIcon>
+                <Icon name="this" fixedWidth platformIcon />
+              </ListItemIcon>
+              <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
+            </ListItem>
+          </List>
+          <Divider />
+        </DesktopUI>
         <List className={css.list} disablePadding dense>
           <ListSubheader disableGutters>Add a device</ListSubheader>
-          <ListItem button disableGutters disabled={hasThisDevice} onClick={handleClose} to={thisLink} component={Link}>
-            <ListItemIcon>
-              <Icon name="this" fixedWidth platformIcon />
-            </ListItemIcon>
-            <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
-          </ListItem>
-          {['aws', 'gcp', 'azure', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
+          {['aws', 'azure', 'gcp', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation

@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { graphQLCreateAccessKey, graphQLDeleteAccessKeys, graphQLToggleAccessKeys } from '../services/graphQLAccessKeys'
-import { RootModel } from './rootModel'
+import { RootModel } from '.'
 
 type IKeysState = {
   init: boolean
@@ -25,14 +25,14 @@ const defaultState: IKeysState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_, globalState) {
+    async init(_: void, globalState) {
       if (globalState.keys.init) return
       await dispatch.keys.fetch()
       dispatch.keys.set({ init: true })
     },
     async fetch() {
       const result = await graphQLBasicRequest(
-        ` query {
+        ` query Keys{
             login {
               apiKey {
                 key

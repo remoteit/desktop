@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip } from '@mui/material'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_CONNECTION, PUBLIC_CONNECTION, REGEX_CHARACTERS } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
