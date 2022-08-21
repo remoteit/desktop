@@ -64,7 +64,7 @@ export class User {
 
   async authHashLogin(username: string, authhash: string): Promise<any> {
     const userDetails:any = await instance.post<IRawUser>('/user/login/authhash', { username, authhash })
-    return this.process(userDetails, username)
+    return this.process(userDetails.data, username)
   }
 
   process(user: IRawUser, username: string) {
@@ -86,7 +86,6 @@ export class User {
 
     try {
       const user = await this.authHashLogin(credentials.username, credentials.authHash)
-
       if (!user) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
         return false
