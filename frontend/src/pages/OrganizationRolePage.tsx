@@ -4,7 +4,17 @@ import cloneDeep from 'lodash/cloneDeep'
 import { getActiveAccountId } from '../models/accounts'
 import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
 import { useParams, useHistory } from 'react-router-dom'
-import { Button, Typography, List, ListItem, ListItemSecondaryAction, MenuItem, TextField, Chip } from '@mui/material'
+import {
+  Button,
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemSecondaryAction,
+  MenuItem,
+  TextField,
+  Chip,
+} from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,6 +25,7 @@ import { Container } from '../components/Container'
 import { TagEditor } from '../components/TagEditor'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 
@@ -33,7 +44,7 @@ export const OrganizationRolePage: React.FC = () => {
   }))
   const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
-  const [count, setCount] = useState<number>()
+  const [counts, setCounts] = useState<{ devices: number; networks: number } | null>(null)
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
@@ -41,9 +52,10 @@ export const OrganizationRolePage: React.FC = () => {
 
   const changeForm = async (changedForm: IOrganizationRole) => {
     setForm(changedForm)
-    setCount(undefined)
-    const result = await dispatch.devices.fetchCount(changedForm)
-    setCount(result)
+    setCounts(null)
+    const devices = await dispatch.devices.fetchCount(changedForm)
+    const networks = await dispatch.networks.fetchCount(changedForm)
+    setCounts({ devices, networks })
   }
 
   const handlePermissionChange = (toggle, permission) => {
@@ -107,7 +119,7 @@ export const OrganizationRolePage: React.FC = () => {
             select
             fullWidth
             disabled={disabled || systemRole}
-            label="Device access"
+            label="Access"
             value={role.id === 'NONE' ? '-' : Boolean(form?.tag).toString()}
             variant="filled"
             onChange={event => {
@@ -118,12 +130,20 @@ export const OrganizationRolePage: React.FC = () => {
             <MenuItem value="-" disabled>
               None
             </MenuItem>
-            <MenuItem value="false">All devices</MenuItem>
-            <MenuItem value="true">Tagged devices</MenuItem>
+            <MenuItem value="false">All</MenuItem>
+            <MenuItem value="true">Tagged</MenuItem>
           </TextField>
           <ListItemSecondaryAction>
-            <Typography variant="caption">Found: &nbsp;</Typography>
-            <Chip label={count === undefined ? 'Counting...' : `${count} devices`} />
+            {counts === null ? (
+              <Chip size="small" label="Counting..." />
+            ) : (
+              <Box>
+                <Chip size="small" label={`${counts.devices} device${counts.devices === 1 ? '' : 's'}`} />
+                <TestUI>
+                  <Chip size="small" label={`${counts.networks} network${counts.networks === 1 ? '' : 's'}`} />
+                </TestUI>
+              </Box>
+            )}
           </ListItemSecondaryAction>
         </ListItem>
         {form.tag && (
