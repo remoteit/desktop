@@ -15,30 +15,18 @@ const defaults = {
 
 const instance = setupAxios({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
 
-
-export function pickBy(object: { [key: string]: any }): any {
-  const obj: { [key: string]: any } = {}
-  for (const key in object) {
-    if (object[key] !== null && object[key] !== false && object[key] !== undefined) {
-      obj[key] = object[key]
-    }
-  }
-  return obj
-}
-
 export function setupAxios(config: IConfig = {}, newGetToken?: () => Promise<string>) {
   const options: IConfig = { ...defaults, ...config }
-  console.log('options', options)
   return axios.create({
     baseURL: options.apiURL,
     // timeout: 1000,
-    headers: pickBy({
+    headers: {
       'content-type': 'application/json',
-      accessKey: options.accessKey,
-      apiKey: options.apiKey,
-      developerKey: options.developerKey,
-      token: options.token,
-    }),
+      accessKey: options.accessKey !== undefined ? options.accessKey : '',
+      apiKey: options.apiKey !== undefined ? options.apiKey : '',
+      developerKey: options.developerKey !== undefined ? options.developerKey : '',
+      token: options.token !== undefined ? options.token : ''
+    },
   })
 }
   
@@ -75,9 +63,8 @@ export class User {
   }
 
   async authHashLogin(username: string, authhash: string): Promise<any> {
-    return instance
-      .post<IRawUser>('/user/login/authhash', { username, authhash })
-      .then((resp:any) => this.process(resp, username))
+    const userDetails:any = await instance.post<IRawUser>('/user/login/authhash', { username, authhash })
+    return this.process(userDetails, username)
   }
 
   process(user: IRawUser, username: string) {
@@ -98,8 +85,6 @@ export class User {
     Logger.info('Attempting auth hash login', { username: credentials.username })
 
     try {
-      const userName = credentials.username
-      const authHash = credentials.authHash
       const user = await this.authHashLogin(credentials.username, credentials.authHash)
 
       if (!user) {
@@ -152,8 +137,6 @@ export interface IConfig {
   authHash?: string
   developerKey?: string
   successURL?: string
-  taskQueue?: string
-  jobQueue?: string
   token?: string
 }
 
