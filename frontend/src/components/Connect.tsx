@@ -112,10 +112,8 @@ export const Connect: React.FC = () => {
           <ConnectionMenu connection={connection} />
         </Gutters>
       </GuideStep>
+      <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       <ConnectionSurvey connection={connection} />
-      <List disablePadding>
-        <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
-      </List>
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters

@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { clearConnectionError } from '../../helpers/connectionHelper'
-import { ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@mui/material'
+import { List, ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@mui/material'
 import { IconButton } from '@mui/material'
 import { Gutters } from '../Gutters'
 import { Icon } from '../Icon'
@@ -16,21 +16,23 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
 
   return (
     <Collapse in={visible}>
-      <Gutters bottom={null} className={css.container}>
+      <Gutters size="md" bottom={null} className={css.container}>
         <span className={css.pointer} />
-        <ListItem>
-          <ListItemText
-            primary="Connection Error"
-            secondary={connection.error.message + (connection.error.code ? ` (CODE: ${connection.error.code})` : '')}
-          />
-          <ListItemSecondaryAction>
-            <Tooltip title="clear">
-              <IconButton onClick={() => clearConnectionError(connection)} size="large">
-                <Icon name="times" color="alwaysWhite" size="md" fixedWidth />
-              </IconButton>
-            </Tooltip>
-          </ListItemSecondaryAction>
-        </ListItem>
+        <List disablePadding>
+          <ListItem>
+            <ListItemText
+              primary="Connection Error"
+              secondary={connection.error.message + (connection.error.code ? ` (CODE: ${connection.error.code})` : '')}
+            />
+            <ListItemSecondaryAction>
+              <Tooltip title="clear">
+                <IconButton onClick={() => clearConnectionError(connection)} size="large">
+                  <Icon name="times" color="alwaysWhite" size="md" fixedWidth />
+                </IconButton>
+              </Tooltip>
+            </ListItemSecondaryAction>
+          </ListItem>
+        </List>
       </Gutters>
     </Collapse>
   )
@@ -44,7 +46,7 @@ const useStyles = makeStyles(({ palette }) => ({
     backgroundColor: palette.danger.main,
     borderRadius: radius,
     color: palette.alwaysWhite.main,
-    '& .MuiListItemSecondaryAction-root': { right: spacing.md },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
     '& .MuiListItemText-secondary': { color: palette.alwaysWhite.main },
   },
   pointer: {
