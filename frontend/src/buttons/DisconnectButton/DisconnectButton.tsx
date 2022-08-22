@@ -35,9 +35,9 @@ export const DisconnectButton: React.FC<Props> = ({
   if (state === 'ready') title = 'Stop'
   if (state === 'starting') title = 'Starting...'
   if (state === 'stopping') title = 'Removing...'
-  if (state === 'connecting') title = 'Connecting...'
+  if (state === 'connecting') title = 'Connecting'
   if (state === 'offline') title = 'Offline'
-  if (state === 'disconnecting') title = 'Disconnecting...'
+  if (state === 'disconnecting') title = 'Disconnecting'
 
   return (
     <DynamicButton

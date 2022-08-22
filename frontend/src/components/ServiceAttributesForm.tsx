@@ -100,7 +100,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             <TextField
               select
               variant="filled"
-              label="Launch type"
+              label="Launch method"
               value={attributes.launchType || ''}
               onChange={event => onUpdate({ ...attributes, launchType: event.target.value })}
             >

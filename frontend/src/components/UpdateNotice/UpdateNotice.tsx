@@ -10,18 +10,18 @@ import { Icon } from '../Icon'
 
 export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
   const updateReady = useSelector((state: ApplicationState) => selectUpdateNotice(state))
+  const [confirm, setConfirm] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(!!updateReady)
   const { backend } = useDispatch<Dispatch>()
-
-  const [confirm, setConfirm] = useState<boolean>(false)
 
   const handleClick = () => {
     setConfirm(true)
   }
 
   const handleConfirm = () => {
-    backend.restart()
+    setOpen(false)
     setConfirm(false)
+    backend.restart()
   }
 
   useEffect(() => {

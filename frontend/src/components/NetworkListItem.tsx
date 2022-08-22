@@ -30,7 +30,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
     }
   })
   session = session || foundSession
-  const connected = external || session?.state === 'connected'
+  const connected = external || session?.state === 'connected' || connection?.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
   const css = useStyles({ offline, enabled: network?.enabled, connected })
@@ -40,7 +40,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   if (external) pathname += '/other'
 
   let icon: React.ReactNode | null = null
-  if (connected) icon = <Icon color="primary" name="chevron-right" size="md" />
+  if (connected) icon = <Icon color="primary" name="chevron-right" size="md" type="light" />
 
   return (
     <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>
@@ -102,14 +102,16 @@ export const useStyles = makeStyles(({ palette }) => ({
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .MuiAvatar-root': { position: 'absolute', right: spacing.md, marginTop: -2 },
-    '&:hover .MuiAvatar-root': { display: 'none' },
+    '& .tooltip': { position: 'absolute', right: spacing.xl, marginTop: -2 },
   },
   connectIcon: {
     position: 'relative',
-    '& > svg': { position: 'absolute', right: 6, bottom: -7 },
+    '& > svg': { position: 'absolute', right: 6, bottom: -7.5 },
   },
-  platform: { minWidth: 48 },
+  platform: {
+    minWidth: 48,
+    '& > span': { flexGrow: 1, textAlign: 'center' },
+  },
   mergeIcon: {
     zIndex: 2,
     backgroundImage: `radial-gradient(${palette.white.main}, transparent)`,
