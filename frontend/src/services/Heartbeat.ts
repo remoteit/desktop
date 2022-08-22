@@ -26,6 +26,7 @@ class Heartbeat {
     if (network.isActive() && !this.restInterval) {
       console.log('START HEARTBEAT')
       this.restInterval = window.setInterval(this.beat, HEARTBEAT_INTERVAL)
+      this.beat()
     }
   }
 
