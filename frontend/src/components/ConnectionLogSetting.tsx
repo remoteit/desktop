@@ -15,7 +15,7 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
   return (
     <ListItemSetting
       label="Connection Logging"
-      subLabel={log ? `Filename ${connection.id.replace(/:/g, '')}_<timestamp>.log` : undefined}
+      subLabel={log ? `${connection.id.replace(/:/g, '')}_<timestamp>.log` : undefined}
       modified={log}
       disabled={disabled}
       icon="file-alt"
@@ -30,5 +30,5 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
         })
       }
     />
-  );
+  )
 }

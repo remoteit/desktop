@@ -34,7 +34,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
         <>
           {network?.shared && (
             <Tooltip title={`Shared by ${network?.owner?.email}`} enterDelay={400} placement="top" arrow>
-              <span>
+              <span className="tooltip">
                 <Avatar email={network?.owner?.email} size={24} />
               </span>
             </Tooltip>

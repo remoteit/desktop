@@ -33,7 +33,10 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     fullWidth,
   }: DynamicButtonProps = props
 
-  if (loading) icon = 'spinner-third'
+  if (loading) {
+    icon = 'spinner-third'
+    iconType = 'solid'
+  }
 
   const IconComponent = icon ? (
     <Icon

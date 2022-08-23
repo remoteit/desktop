@@ -12,7 +12,7 @@ export const LaunchTypeSelect: React.FC<Props> = ({ app, onChange }) => {
     <SelectSetting
       icon={app.icon}
       modified={app.template !== app.defaultTemplate}
-      label="Launch type"
+      label="Launch method"
       value={app.launchType}
       values={[
         { key: 'URL', name: 'URL' },

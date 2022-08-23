@@ -50,14 +50,13 @@ export const DeviceListEmpty: React.FC = () => {
                 className={css.button}
                 disabled={claiming}
               >
-                <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft /> Sample
-                Device
+                <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft /> Demo Device
               </Button>
             </GuideStep>
           </GuideStep>
           <Typography variant="body2" align="center" color="textSecondary">
-            Try our AWS Guest VPC device. <br />
-            Our device will be shared to you and appear in your device list.
+            See how simple it is to connect with our AWS demo device, <br />
+            or add your own device from the plus menu in the top left of the page.
           </Typography>
         </>
       ) : (

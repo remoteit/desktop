@@ -182,6 +182,19 @@ export default createModel<RootModel>()({
       dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
       dispatch.networks.setNetworks(parsed)
     },
+    async fetchCount(params: IOrganizationRole, state) {
+      const options: gqlOptions = {
+        size: 0,
+        from: 0,
+        account: getActiveAccountId(state),
+        owner: true,
+        tag: params.tag?.values.length ? params.tag : undefined,
+      }
+
+      if (!options.tag) return selectNetworks(state).length
+      const networks = selectNetworkByTag(state, options.tag)
+      return networks.length
+    },
     async enable(params: INetwork) {
       const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
       dispatch.connections.queueEnable(queue)
@@ -355,8 +368,24 @@ export function selectNetworkByService(state: ApplicationState, serviceId: strin
   return selectNetworks(state).filter(network => network.serviceIds.includes(serviceId))
 }
 
+export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): INetwork[] {
+  const networks = selectNetworks(state).filter(n => {
+    const names = n.tags.map(t => t.name)
+    if (tags.operator === 'ANY') {
+      return tags.values.some(tag => names.includes(tag))
+    } else if (tags.operator === 'ALL') {
+      return tags.values.every(tag => names.includes(tag))
+    }
+    return false
+  })
+  console.log('networks by tag', networks)
+  return networks
+}
+
 export function inNetworkOnly(state: ApplicationState, serviceId?: string): boolean {
-  return !selectNetworkByService(state, serviceId).find(n => !n.shared)
+  const networks = selectNetworkByService(state, serviceId)
+  if (!networks.length) return false
+  return !networks.find(n => !n.shared)
 }
 
 export function getNetworkServiceIds(state: ApplicationState): string[] {

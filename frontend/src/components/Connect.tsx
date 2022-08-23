@@ -90,7 +90,6 @@ export const Connect: React.FC = () => {
       )}
       <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      <ConnectionSurvey connection={connection} />
       <GuideStep
         guide="guideAWS"
         step={5}
@@ -113,9 +112,8 @@ export const Connect: React.FC = () => {
           <ConnectionMenu connection={connection} />
         </Gutters>
       </GuideStep>
-      <List disablePadding>
-        <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
-      </List>
+      <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
+      <ConnectionSurvey connection={connection} />
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters
