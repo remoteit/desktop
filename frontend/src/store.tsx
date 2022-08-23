@@ -1,6 +1,7 @@
 import { init, RematchRootState } from '@rematch/core'
 import { models, RootModel } from './models'
 import { createLogger } from 'redux-logger'
+import { fullVersion } from './helpers/versionHelper'
 import immer from '@rematch/immer'
 
 console.log(`
@@ -11,6 +12,7 @@ console.log(`
   | |    | ____|| | | || |_| | | |_ | ____| _ | |  | |_
   |_|    |_____)|_|_|_| \\___/   \\__)|_____)(_)|_|   \\__)
 
+  ${fullVersion()}
   set window.stateLogging = true to enable redux state logging
 
   `)

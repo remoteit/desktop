@@ -109,7 +109,7 @@ export const Connect: React.FC = () => {
             disabled={ownDevice}
             onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
           />
-          <ConnectionMenu connection={connection} />
+          <ConnectionMenu connection={connection} service={service} />
         </Gutters>
       </GuideStep>
       <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
