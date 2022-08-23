@@ -5,10 +5,31 @@ import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
-import { r3 } from './remote.it'
+import axios from 'axios'
+import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
 
-const d = debug('r3:backend:User')
+const defaults = {
+  apiURL: 'https://api.remot3.it/apv/v27',
+  successURL: 'https://app.remote.it'
+}
 
+const instance = setupAxios({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
+
+export function setupAxios(config: IConfig = {}, newGetToken?: () => Promise<string>) {
+  const options: IConfig = { ...defaults, ...config }
+  return axios.create({
+    baseURL: options.apiURL,
+    // timeout: 1000,
+    headers: {
+      'content-type': 'application/json',
+      accessKey: options.accessKey !== undefined ? options.accessKey : '',
+      apiKey: options.apiKey !== undefined ? options.apiKey : '',
+      developerKey: options.developerKey !== undefined ? options.developerKey : '',
+      token: options.token !== undefined ? options.token : ''
+    },
+  })
+}
+  
 export class User {
   static EVENTS = {
     signInError: 'unauthorized',
@@ -20,7 +41,10 @@ export class User {
   username: string = ''
   authHash: string = ''
   signedIn: boolean = false
+  token: string = ''
 
+  
+  
   get hasCredentials() {
     return this.authHash && this.username
   }
@@ -38,6 +62,20 @@ export class User {
     EventBus.emit(User.EVENTS.signedIn, this.credentials)
   }
 
+  async authHashLogin(username: string, authhash: string): Promise<any> {
+    const userDetails:any = await instance.post<IRawUser>('/user/login/authhash', { username, authhash })
+    return this.process(userDetails.data, username)
+  }
+
+  process(user: IRawUser, username: string) {
+    return {
+      id: user.guid,
+      username,
+      token: user.token || user.auth_token,
+      authHash: user.service_authhash,
+    }
+  }
+
   checkSignIn = async (credentials?: UserCredentials) => {
     if (!credentials) {
       Logger.warn('No user, sign in failed')
@@ -47,10 +85,7 @@ export class User {
     Logger.info('Attempting auth hash login', { username: credentials.username })
 
     try {
-      const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
-
-      Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
-
+      const user = await this.authHashLogin(credentials.username, credentials.authHash)
       if (!user) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
         return false
@@ -60,6 +95,7 @@ export class User {
       this.username = user.username
       this.authHash = user.authHash
       this.id = user.id
+      this.token = user.token
 
       Logger.info('CHECK CLI SIGN IN')
       await cli.checkSignIn()
@@ -75,6 +111,7 @@ export class User {
 
   signOut = () => {
     this.id = ''
+    this.token = ''
     this.username = ''
     this.authHash = ''
     this.signedIn = false
@@ -91,3 +128,14 @@ export class User {
 }
 
 export default new User()
+
+export interface IConfig {
+  accessKey?: string
+  apiURL?: string
+  apiKey?: string
+  authHash?: string
+  developerKey?: string
+  successURL?: string
+  token?: string
+}
+
