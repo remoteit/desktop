@@ -24,7 +24,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
       subject: `Account deletion request for ${user?.email}`,
       body,
       data: { email: user?.email, userId: user?.id, contactMe: contact ? 'Yes' : 'No' },
-      snackbar: "You're account delete request has been sent. Please allow 3 to 5 business days to complete.",
+      snackbar: 'Your account delete request has been sent.',
     })
     dispatch.feedback.sendFeedback()
     setConfirm(false)
@@ -74,7 +74,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
             />
             <ListItemCheckbox
               disableGutters
-              label="I'm interested in having a Remote.It Team Member contact me about my feedback."
+              label="I'm interested in having someone contact me about my feedback."
               checked={contact}
               onClick={checked => setContact(checked)}
             />

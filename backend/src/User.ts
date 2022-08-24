@@ -1,35 +1,12 @@
+import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
 import environment from './environment'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
-import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
 import axios from 'axios'
-import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
 
-const defaults = {
-  apiURL: 'https://api.remot3.it/apv/v27',
-  successURL: 'https://app.remote.it'
-}
-
-const instance = setupAxios({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
-
-export function setupAxios(config: IConfig = {}, newGetToken?: () => Promise<string>) {
-  const options: IConfig = { ...defaults, ...config }
-  return axios.create({
-    baseURL: options.apiURL,
-    // timeout: 1000,
-    headers: {
-      'content-type': 'application/json',
-      accessKey: options.accessKey !== undefined ? options.accessKey : '',
-      apiKey: options.apiKey !== undefined ? options.apiKey : '',
-      developerKey: options.developerKey !== undefined ? options.developerKey : '',
-      token: options.token !== undefined ? options.token : ''
-    },
-  })
-}
-  
 export class User {
   static EVENTS = {
     signInError: 'unauthorized',
@@ -41,10 +18,7 @@ export class User {
   username: string = ''
   authHash: string = ''
   signedIn: boolean = false
-  token: string = ''
 
-  
-  
   get hasCredentials() {
     return this.authHash && this.username
   }
@@ -62,18 +36,20 @@ export class User {
     EventBus.emit(User.EVENTS.signedIn, this.credentials)
   }
 
-  async authHashLogin(username: string, authhash: string): Promise<any> {
-    const userDetails:any = await instance.post<IRawUser>('/user/login/authhash', { username, authhash })
-    return this.process(userDetails.data, username)
-  }
-
-  process(user: IRawUser, username: string) {
-    return {
-      id: user.guid,
-      username,
-      token: user.token || user.auth_token,
-      authHash: user.service_authhash,
-    }
+  async authHashLogin(username: string, authhash: string) {
+    const { data } = await axios.post<IRawUser>(
+      '/user/login/authhash',
+      { username, authhash },
+      {
+        baseURL: API_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          developerKey: DEVELOPER_KEY,
+        },
+      }
+    )
+    // Logger.info('AUTH LOGIN RESULT', data)
+    return { id: data.guid, authHash: data.service_authhash }
   }
 
   checkSignIn = async (credentials?: UserCredentials) => {
@@ -86,22 +62,23 @@ export class User {
 
     try {
       const user = await this.authHashLogin(credentials.username, credentials.authHash)
+      Logger.info('CHECK SIGN IN', user)
+
       if (!user) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
         return false
       }
 
       this.signedIn = true
-      this.username = user.username
+      this.username = credentials.username
       this.authHash = user.authHash
       this.id = user.id
-      this.token = user.token
 
       Logger.info('CHECK CLI SIGN IN')
       await cli.checkSignIn()
       EventBus.emit(User.EVENTS.signedIn, user)
 
-      Logger.info('BACKEND SIGNED IN', { username: user.username })
+      Logger.info('BACKEND SIGNED IN', { userId: user.id })
       return true
     } catch (error) {
       Logger.warn('LOGIN AUTH FAILURE', { username: credentials.username, error })
@@ -111,7 +88,6 @@ export class User {
 
   signOut = () => {
     this.id = ''
-    this.token = ''
     this.username = ''
     this.authHash = ''
     this.signedIn = false
@@ -128,14 +104,3 @@ export class User {
 }
 
 export default new User()
-
-export interface IConfig {
-  accessKey?: string
-  apiURL?: string
-  apiKey?: string
-  authHash?: string
-  developerKey?: string
-  successURL?: string
-  token?: string
-}
-
