@@ -11,25 +11,27 @@ export type IFeedbackState = {
   subject: string
   body: string
   data: string
+  snackbar?: string
 }
 
 const defaultState: IFeedbackState = {
   subject: '',
   body: '',
   data: '',
+  snackbar: undefined,
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async sendFeedback(_: void, state) {
-      const { subject, body, data } = state.feedback
+      const { subject, body, data, snackbar } = state.feedback
       const { user } = state.auth
       if (body.trim().length === 0) return
       try {
         const env = await dispatch.backend.environment()
         let finalBody = body
-        if (data) finalBody += '\n\n-- data\n\n' + data
+        if (data) finalBody += '\n\n-- data\n\n' + JSON.stringify(data, null, 2)
         finalBody += '\n\n--\n\n' + fullVersion()
         finalBody += '\n\n' + env + '\n\n' + navigator.userAgent
         await createTicketZendesk({
@@ -38,7 +40,7 @@ export default createModel<RootModel>()({
           name: user?.email,
           email: user?.email,
         })
-        dispatch.ui.set({ successMessage: 'Thank you. Your feedback was sent!' })
+        dispatch.ui.set({ successMessage: snackbar || 'Thank you. Your feedback was sent!' })
         dispatch.feedback.reset()
       } catch (error) {
         dispatch.ui.set({ errorMessage: 'Sending feedback encountered an error. Please try again.' })
