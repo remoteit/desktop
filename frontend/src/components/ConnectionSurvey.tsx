@@ -8,7 +8,7 @@ import { setConnection } from '../helpers/connectionHelper'
 import { Typography, Collapse, Paper, Button } from '@mui/material'
 import { windowOpen } from '../services/Browser'
 import { IconButton } from '../buttons/IconButton'
-import { Duration } from './Duration'
+import { Countdown } from './Countdown'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 
@@ -79,9 +79,9 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
             </Typography>
             <Typography variant="caption">
               <Button variant="contained" size="small" onClick={sendFeedback}>
-                Feedback
+                Give Feedback
               </Button>
-              <Duration startTime={Date.now() + FEEDBACK_DISMISS} />
+              <Countdown endTime={Date.now() + FEEDBACK_DISMISS} />
             </Typography>
           </Paper>
         ) : (
@@ -127,15 +127,16 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    maxHeight: 60,
+    minHeight: 60,
+    '& span': { whiteSpace: 'nowrap', marginTop: -spacing.md, marginBottom: -spacing.md },
     '& .IconButtonTooltip + .IconButtonTooltip': {
       marginLeft: -spacing.xs,
     },
   },
   layout: {
-    position: 'relative',
     padding: spacing.lg,
     paddingLeft: spacing.xl,
+    position: 'relative',
     '& > .MuiIconButton-root': {
       position: 'absolute',
       right: spacing.sm,

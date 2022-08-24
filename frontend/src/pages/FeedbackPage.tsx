@@ -18,7 +18,7 @@ export const FeedbackPage: React.FC<{}> = () => {
   const css = useStyles()
 
   const sendFeedback = () => {
-    dispatch.feedback.set({ subject, body })
+    dispatch.feedback.set({ subject, body, data: presets.data })
     dispatch.feedback.sendFeedback()
     history.goBack()
   }
@@ -67,7 +67,7 @@ export const FeedbackPage: React.FC<{}> = () => {
         <Gutters top="xl">
           <Typography variant="caption">
             Including data:
-            <pre>{presets.data}</pre>
+            <pre>{JSON.stringify(presets.data, null, 2)}</pre>
           </Typography>
         </Gutters>
       )}

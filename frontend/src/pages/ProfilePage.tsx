@@ -68,7 +68,7 @@ export const ProfilePage: React.FC = () => {
         </ListItem>
       </List>
       <Typography variant="subtitle1">Account deletion</Typography>
-      <DeleteAccountSection email={user.email} paidPlan={paidPlan} />
+      <DeleteAccountSection user={user} paidPlan={paidPlan} />
     </Container>
   )
 }

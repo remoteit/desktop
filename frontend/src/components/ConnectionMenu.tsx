@@ -40,7 +40,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           onClick={async () => {
             await dispatch.feedback.set({
               subject: `Connection Issue Report to ${connection?.name}`,
-              data: JSON.stringify(connection, null, 2),
+              data: connection,
             })
             handleClose()
             history.push('/feedback')
