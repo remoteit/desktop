@@ -127,15 +127,18 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    maxHeight: 60,
+    minHeight: 60,
+    '& span': { whiteSpace: 'nowrap' },
     '& .IconButtonTooltip + .IconButtonTooltip': {
       marginLeft: -spacing.xs,
     },
   },
   layout: {
     position: 'relative',
-    padding: spacing.lg,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs,
     paddingLeft: spacing.xl,
+    paddingRight: spacing.lg,
     '& > .MuiIconButton-root': {
       position: 'absolute',
       right: spacing.sm,
