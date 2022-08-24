@@ -188,7 +188,7 @@ export default createModel<RootModel>()({
     async disconnect(_: void, state) {
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
-        dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
+        if (!state.auth.signInError) dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
       }
       dispatch.ui.set({ connected: false })
       dispatch.auth.set({ backendAuthenticated: false })
@@ -198,9 +198,10 @@ export default createModel<RootModel>()({
       //send message to backend to sign out
       emit('user/lock')
     },
-    async backendSignInError(signInError: string) {
+    async backendSignInError(signInError: string, state) {
+      console.error(signInError)
+      await dispatch.auth.set({ signInError })
       await dispatch.auth.signedOut()
-      dispatch.auth.set({ signInError })
     },
     async dataReady(_: void, state) {
       if (state.backend.initialized) {
