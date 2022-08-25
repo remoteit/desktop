@@ -126,6 +126,8 @@ export default class ConnectionPool {
       'reachable',
       'sessionId',
       'starting',
+      'sessionId',
+      'error',
     ]
     return props.some(prop => {
       if (c1[prop] !== c2[prop]) {
