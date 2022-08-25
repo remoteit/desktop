@@ -59,7 +59,7 @@ export default class ConnectionPool {
     // move connections: cli -> desktop
     cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params
-      if (!connection || (!connection.public && this.changed(connection, cliConnection))) {
+      if (!connection || (!connection.public && this.changed(cliConnection, connection))) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
         this.set({ ...connection, ...cliConnection }, false, true)
         update = true
@@ -114,7 +114,7 @@ export default class ConnectionPool {
     return instance
   }
 
-  changed = (c1: IConnection, c2: IConnection) => {
+  changed = (f: IConnection, t: IConnection) => {
     const props: (keyof IConnection)[] = [
       'host',
       'port',
@@ -126,12 +126,11 @@ export default class ConnectionPool {
       'reachable',
       'sessionId',
       'starting',
-      'sessionId',
       'error',
     ]
     return props.some(prop => {
-      if (c1[prop] !== c2[prop]) {
-        Logger.info('CONNECTION CHANGED', { prop, fromConn: c1[prop], toCLI: c2[prop] })
+      if (f[prop] !== undefined && f[prop] !== t[prop]) {
+        Logger.info('CONNECTION CHANGED', { prop, fromCLI: f[prop] || '<empty>', toDesktop: t[prop] || '<empty>' })
         return true
       }
     })
@@ -283,6 +282,11 @@ export default class ConnectionPool {
         return { ...c }
       })
     }
+
+    connections = connections.map(c => {
+      if (!c.failover && c.proxyOnly) c.failover = true
+      return c
+    })
 
     preferences.update({ cliConfigVersion: thisCLI })
     return connections
