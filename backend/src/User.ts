@@ -48,7 +48,7 @@ export class User {
         },
       }
     )
-    // Logger.info('AUTH LOGIN RESULT', data)
+
     return { id: data.guid, authHash: data.service_authhash }
   }
 
@@ -62,7 +62,6 @@ export class User {
 
     try {
       const user = await this.authHashLogin(credentials.username, credentials.authHash)
-      Logger.info('CHECK SIGN IN', user)
 
       if (!user) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })

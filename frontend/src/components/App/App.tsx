@@ -18,7 +18,7 @@ export const App: React.FC = () => {
   const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
     installed: state.binaries.installed,
-    signedOut: state.auth.initialized && !state.auth.authenticated,
+    signedOut: !state.auth.initialized || !state.auth.authenticated,
     waitMessage: state.ui.waitMessage,
     showOrgs: !!state.accounts.membership.length,
   }))
