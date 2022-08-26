@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
+import { makeStyles } from '@mui/styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Button, Typography, TextField } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { fullVersion } from '../helpers/versionHelper'
 import { useHistory } from 'react-router-dom'
 import { Container } from '../components/Container'
@@ -64,12 +65,13 @@ export const FeedbackPage: React.FC<{}> = () => {
         </Typography>
       </Gutters>
       {presets.data && (
-        <Gutters top="xl">
-          <Typography variant="caption">
-            Including data:
-            <pre>{JSON.stringify(presets.data, null, 2)}</pre>
-          </Typography>
-        </Gutters>
+        <AccordionMenuItem subtitle="Included data" gutters>
+          <Gutters>
+            <Typography variant="caption">
+              <pre>{JSON.stringify(presets.data, null, 2)}</pre>
+            </Typography>
+          </Gutters>
+        </AccordionMenuItem>
       )}
     </Container>
   )
