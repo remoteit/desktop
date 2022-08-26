@@ -117,7 +117,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 
 const useStyles = makeStyles(({ palette }) => ({
   icon: ({ color, inline, inlineLeft, size, fontSize, rotate }: IconProps) => {
-    const styles: any = {}
+    const styles: any = { flexGrow: 1 }
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 1.5 : spacing.md
