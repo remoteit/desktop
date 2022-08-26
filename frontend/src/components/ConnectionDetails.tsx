@@ -57,7 +57,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     port = undefined
   }
 
-  if (connection?.connecting) {
+  if (!name && connection?.connecting) {
     name = 'Connecting...'
     port = undefined
   }
