@@ -64,7 +64,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize })
 
     // Platform icons
-    if (props.platform || platformIcon) return <PlatformIcon name={name} className={css.icon} {...props} />
+    if (props.platform || platformIcon) return <PlatformIcon className={css.icon} {...props} name={name} />
 
     // No icon
     if (!name) return null
@@ -117,12 +117,12 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 
 const useStyles = makeStyles(({ palette }) => ({
   icon: ({ color, inline, inlineLeft, size, fontSize, rotate }: IconProps) => {
-    const styles: any = { flexGrow: 1 }
+    const styles: any = { objectFit: 'contain' }
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 1.5 : spacing.md
-    if (size) styles.fontSize = styles.maxHeight = fontSizes[size]
-    if (fontSize) styles.fontSize = styles.maxHeight = fontSize
+    if (size) styles.fontSize = styles.height = fontSizes[size]
+    if (fontSize) styles.fontSize = styles.height = fontSize
     if (rotate) styles.transform = `rotate(${rotate}deg)`
     if (styles.fontSize) styles.maxWidth = styles.fontSize + spacing.sm
     return styles
