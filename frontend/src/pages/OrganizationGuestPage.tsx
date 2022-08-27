@@ -91,7 +91,8 @@ export const OrganizationGuestPage: React.FC = () => {
                 }
                 confirmTitle="Are you sure?"
                 title="Remove Member"
-                icon="trash"
+                icon="sign-out"
+                size="lg"
                 color={removing ? 'danger' : undefined}
                 loading={removing}
                 disabled={removing}

@@ -49,7 +49,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             key="transfer"
             to={`/devices/${device.id}/transfer`}
             component={Link}
-            autoFocus={false}
             disabled={!device.permissions.includes('MANAGE')}
           >
             <ListItemIcon>

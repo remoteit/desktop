@@ -357,6 +357,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               marginLeft: spacing.xs,
               marginRight: spacing.xs,
               paddingRight: spacing.sm,
+              paddingLeft: spacing.xs,
               whiteSpace: 'nowrap',
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
