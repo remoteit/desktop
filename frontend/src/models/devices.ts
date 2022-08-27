@@ -380,23 +380,32 @@ export default createModel<RootModel>()({
       }
     },
 
-    async destroy(device: IDevice, state) {
-      const { auth } = state
-      const manager = device.permissions.includes('MANAGE')
+    async destroy(device: IDevice) {
       dispatch.ui.set({ destroying: true, silent: true })
-      const result = manager
-        ? await graphQLDeleteDevice(device.id)
-        : await graphQLUnShareDevice({
-            deviceId: device.id,
-            email: [auth.user?.email || ''],
-          })
+      const result = await graphQLDeleteDevice(device.id)
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup(device.id)
         dispatch.ui.set({
-          successMessage: `"${device.name}" was successfully ${manager ? 'deleted' : 'removed'}.`,
+          successMessage: `"${device.name}" was successfully deleted.`,
         })
       }
-      dispatch.ui.set({ destroying: false })
+      dispatch.ui.set({ destroying: false, redirect: '/devices' })
+    },
+
+    async leave(device: IDevice, state) {
+      const { auth } = state
+      dispatch.ui.set({ destroying: true, silent: true })
+      const result = await graphQLUnShareDevice({
+        deviceId: device.id,
+        email: [auth.user?.email || ''],
+      })
+      if (result !== 'ERROR') {
+        await dispatch.devices.cleanup(device.id)
+        dispatch.ui.set({
+          successMessage: `"${device.name}" was successfully removed.`,
+        })
+      }
+      dispatch.ui.set({ destroying: false, redirect: '/devices' })
     },
 
     async customAttributes({ customAttributes }: { customAttributes: string[] }, state) {
