@@ -1,5 +1,5 @@
 import React from 'react'
-import { Chip, Box } from '@mui/material'
+import { Chip, Box, Tooltip } from '@mui/material'
 import { NetworksJoined } from './NetworksJoined'
 import { getActiveAccountId } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
@@ -8,7 +8,7 @@ import { selectNetworks, selectNetworkByService } from '../models/networks'
 import { DynamicButtonMenu } from '../buttons/DynamicButtonMenu'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { TestUI } from './TestUI'
-import { Notice } from './Notice'
+import { Icon } from './Icon'
 
 type Props = {
   expanded: boolean
@@ -35,45 +35,63 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
       <AccordionMenuItem
         gutters
         subtitle="Networks"
-        expanded={expanded}
+        expanded={joinedNetworks.length ? expanded : false}
         onClick={onClick}
+        disabled={!joinedNetworks.length}
         elevation={0}
         action={
           <Box display="flex" alignItems="center">
-            {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
-            {device?.permissions.includes('MANAGE') && (
-              <DynamicButtonMenu
-                options={availableNetworks.map(n => ({ value: n.id, label: n.name }))}
+            {device?.permissions.includes('MANAGE') && !device.shared ? (
+              <>
+                <Chip size="small" label={joinedNetworks.length ? joinedNetworks.length.toLocaleString() : 'None'} />
+                <DynamicButtonMenu
+                  options={availableNetworks.map(n => ({
+                    value: n.id,
+                    label: n.name,
+                    color: n.enabled ? 'primary' : undefined,
+                  }))}
+                  title={
+                    accessibleNetworks.length === 1
+                      ? `Add to ${accessibleNetworks[0].name}`
+                      : !accessibleNetworks.length
+                      ? 'No available networks'
+                      : 'Add to network'
+                  }
+                  size="icon"
+                  icon="plus"
+                  disabled={!availableNetworks.length}
+                  onClick={networkId => {
+                    if (!service) return
+                    dispatch.networks.add({
+                      networkId,
+                      serviceId: service.id,
+                      name: connection.name,
+                      port: connection.port,
+                      enabled: connection.enabled,
+                    })
+                    dispatch.connections.enable({ connection, networkId })
+                  }}
+                />
+              </>
+            ) : (
+              <Tooltip
                 title={
-                  accessibleNetworks.length === 1
-                    ? `Add to ${accessibleNetworks[0].name}`
-                    : !accessibleNetworks.length
-                    ? 'No available networks'
-                    : 'Add to network'
+                  <>
+                    You must be the device owner or
+                    <br />
+                    manager to add it to a network.
+                  </>
                 }
-                size="icon"
-                icon="plus"
-                disabled={!availableNetworks.length}
-                onClick={networkId => {
-                  if (!service) return
-                  dispatch.networks.add({
-                    networkId,
-                    serviceId: service.id,
-                    name: connection.name,
-                    port: connection.port,
-                    enabled: connection.enabled,
-                  })
-                }}
-              />
+                placement="left"
+                arrow
+              >
+                <Icon name="ban" color="grayDark" type="solid" inlineLeft />
+              </Tooltip>
             )}
           </Box>
         }
       >
-        {device?.permissions.includes('MANAGE') ? (
-          <NetworksJoined service={service} networks={joinedNetworks} />
-        ) : (
-          <Notice severity="warning">You must be the owner or a manager of this device to add it to a network.</Notice>
-        )}
+        <NetworksJoined service={service} networks={joinedNetworks} />
       </AccordionMenuItem>
     </TestUI>
   )
