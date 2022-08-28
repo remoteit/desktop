@@ -23,7 +23,7 @@ export const DEFAULT_ID = 'local'
 const defaultLocalNetwork: INetwork = {
   ...defaultNetwork(),
   id: DEFAULT_ID,
-  name: 'Connections',
+  name: 'Active',
   permissions: [],
   enabled: true,
   shared: false,
@@ -217,7 +217,6 @@ export default createModel<RootModel>()({
           return
         }
       }
-      if (copy.enabled && props.enabled) dispatch.networks.enable(copy)
     },
     async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)

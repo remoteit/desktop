@@ -1,14 +1,13 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { Menu, MenuItem, Fade, darken } from '@mui/material'
+import { Menu, MenuItem, Fade, Box, darken } from '@mui/material'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 
 type Props = DynamicButtonProps & {
-  options: { label: string; value: string }[]
   onClick: (value?: string) => void
 }
 
-export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props }) => {
+export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...props }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [menuWidth, setMenuWidth] = useState<number>()
   const css = useStyles(props)
@@ -57,7 +56,14 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options, onClick, ...props 
         disableAutoFocusItem
       >
         {options.map(option => (
-          <MenuItem key={option.value} dense onClick={() => selectHandler(option.value)} value={option.value}>
+          <MenuItem
+            dense
+            key={option.value}
+            color={option?.color}
+            onClick={() => selectHandler(option.value)}
+            value={option.value}
+            sx={{ color: option.color + '.main' }}
+          >
             {option.label}
           </MenuItem>
         ))}
