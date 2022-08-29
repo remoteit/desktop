@@ -105,7 +105,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .tooltip': { position: 'absolute', right: spacing.xl, marginTop: -2 },
+    '& .tooltip': { position: 'absolute', right: spacing.xxl, marginTop: -2 },
   },
   connectIcon: {
     position: 'relative',
