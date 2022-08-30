@@ -11,6 +11,7 @@ import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
 import { NetworkPage } from '../pages/NetworkPage'
 import { SettingsPage } from '../pages/SettingsPage'
+import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
 import { DevicesPage } from '../pages/DevicesPage'
@@ -37,16 +38,16 @@ import { BillingPage } from '../pages/BillingPage'
 import { PlansPage } from '../pages/PlansPage'
 import { SharePage } from '../pages/SharePage'
 import { TagsPage } from '../pages/TagsPage'
+import { Panel } from '../components/Panel'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { UserLogPage } from '../pages/UserLogPage'
-import { NotificationsPage } from '../pages/NotificationsPage'
-import { isPortal, getOs } from '../services/Browser'
-import { Panel } from '../components/Panel'
 import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
+import { isPortal, getOs } from '../services/Browser'
+import { NotificationsPage } from '../pages/NotificationsPage'
 
 export const Router: React.FC = () => {
   const history = useHistory()
@@ -97,6 +98,10 @@ export const Router: React.FC = () => {
           state: { autoCopy: true },
         }}
       />
+
+      <Route path="/claim/:claimID">
+        <ClaimPage />
+      </Route>
 
       {/* Connections */}
       <Route path="/connections">

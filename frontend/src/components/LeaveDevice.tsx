@@ -7,23 +7,15 @@ type Props = {
   device?: IDevice
   menuItem?: boolean
   hide?: boolean
-  onClick?: () => void
 }
 
-export const LeaveDevice: React.FC<Props> = ({ device, menuItem, hide, onClick }) => {
+export const LeaveDevice: React.FC<Props> = ({ device, menuItem, hide }) => {
   const { devices } = useDispatch<Dispatch>()
-  const { destroying, setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({
-    destroying: state.ui.destroying,
-    setupBusy: state.ui.setupBusy,
-    setupDeletingDevice: state.ui.setupDeletingDevice,
-  }))
+  const { destroying } = useSelector((state: ApplicationState) => state.ui)
 
   if (!device || hide || !device.shared) return null
 
-  const leave = () => {
-    devices.leave(device)
-    onClick && onClick()
-  }
+  const leave = () => devices.leave(device)
 
   return (
     <DeleteButton
@@ -31,8 +23,8 @@ export const LeaveDevice: React.FC<Props> = ({ device, menuItem, hide, onClick }
       icon="sign-out"
       title="Leave Device"
       warning="This device will have to be re-shared to you if you wish to access it again."
-      disabled={setupBusy}
-      destroying={destroying || setupDeletingDevice}
+      disabled={destroying}
+      destroying={destroying}
       onDelete={leave}
     />
   )

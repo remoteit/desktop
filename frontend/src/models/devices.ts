@@ -339,7 +339,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
     },
 
-    async claimDevice(code: string, state) {
+    async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
@@ -350,7 +350,10 @@ export default createModel<RootModel>()({
         const device = result?.data?.data?.claimDevice
         if (device?.id) {
           await dispatch.devices.fetch() // fetch all so that the sorting is correct
-          dispatch.ui.set({ successMessage: `'${device.name}' was successfully registered!` })
+          dispatch.ui.set({
+            redirect: redirect ? `/devices/${device.id}` : undefined,
+            successMessage: `'${device.name}' was successfully registered!`,
+          })
         } else {
           dispatch.ui.set({ noticeMessage: `Your device (${code}) could not be found.` })
         }
