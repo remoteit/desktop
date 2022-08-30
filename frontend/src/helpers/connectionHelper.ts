@@ -47,19 +47,11 @@ export function newConnection(service?: IService | null) {
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: cd?.route
-      ? cd.route === 'failover'
-      : service?.attributes.route
-      ? service?.attributes.route === 'failover'
-      : true, // default
-    proxyOnly: cd?.route
-      ? cd.route === 'proxy'
-      : service?.attributes.route
-      ? service?.attributes.route === 'proxy'
-      : false, // default
+    failover: getRouteDefault('failover', true, service, cd?.route),
+    proxyOnly: getRouteDefault('proxy', false, service, cd?.route),
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
-    public: isPortal() || cd?.route === 'public' || service?.attributes.route === 'public' ? true : undefined,
+    public: isPortal() || getRouteDefault('public', undefined, service, cd?.route),
   }
 
   if (service) {
@@ -78,6 +70,17 @@ export function newConnection(service?: IService | null) {
   }
 
   return connection
+}
+
+function getRouteDefault(
+  type: IRouteType,
+  actualDefault?: boolean,
+  service?: IService | null,
+  connectionDefaults?: IRouteType
+) {
+  if (service?.attributes.route) return service?.attributes.route === type
+  if (connectionDefaults) return connectionDefaults === type
+  return actualDefault
 }
 
 export function usedPorts(state: ApplicationState) {

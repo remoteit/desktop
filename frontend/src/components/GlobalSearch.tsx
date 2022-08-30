@@ -75,7 +75,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         freeSolo
         fullWidth
         autoSelect
-        openOnFocus
         autoComplete
         disablePortal
         includeInputInList
@@ -109,7 +108,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             {...params}
             autoFocus
             hiddenLabel
-            placeholder="Search"
+            placeholder="Search for services everywhere"
             variant="filled"
             inputRef={inputRef}
             className={css.input}

@@ -37,13 +37,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
-  const visible = !connection?.enabled
-  const connecting = state === 'connecting'
-  const stopping = state === 'stopping'
 
   let clickHandler = () => {
     dispatch.networks.start(instanceId)
-    if (connecting) {
+    if (state === 'connecting' || connection?.enabled) {
       analyticsHelper.trackConnect('connectionClosed', service)
       dispatch.connections.disconnect(connection)
     } else {
@@ -61,10 +58,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoConnect, service])
 
-  if (!visible) return null
-
   let title = connection?.public ? 'Connect' : 'Start'
-  let variant: 'text' | 'outlined' | 'contained' | undefined
+  let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
+  let loading = false
 
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
 
@@ -77,25 +73,39 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     color = chip.colorName
     title = chip.disabled ? chip.name : title
     if (chip.disabled) clickHandler = () => history.push('/account/plans')
-    variant = 'text'
   }
 
-  if (stopping) {
-    title = 'Removing...'
-    color = 'grayDark'
+  switch (state) {
+    case 'ready':
+      title = 'Stop'
+      break
+    case 'connected':
+      title = 'Disconnect'
+      break
+    case 'disconnecting':
+      title = 'Disconnecting'
+      break
+    case 'starting':
+      title = 'Starting'
+      break
+    case 'offline':
+      title = 'Offline'
+      disabled = true
+      variant = 'contained'
+      break
+    case 'stopping':
+      title = 'Removing'
+      color = 'grayDark'
+      loading = true
+      break
+    case 'connecting':
+      title = 'Connecting'
+      loading = true
+      break
+    default:
+      variant = 'contained'
   }
-  if (connecting) {
-    title = 'Connecting...'
-    color = 'grayDark'
-  }
-  if (state === 'starting') {
-    title = 'Starting'
-    color = 'grayDark'
-  }
-  if (state === 'offline') {
-    title = 'Offline'
-    disabled = true
-  }
+
   if (service?.attributes.route === 'p2p' && connection?.public) {
     disabled = true
   }
@@ -104,7 +114,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     <DynamicButton
       title={title}
       variant={variant}
-      loading={connecting || stopping}
+      loading={loading}
       color={color}
       size={size}
       icon={icon}

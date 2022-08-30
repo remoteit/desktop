@@ -4,6 +4,7 @@ import { Menu, MenuItem, Fade, Box, darken } from '@mui/material'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 
 type Props = DynamicButtonProps & {
+  options?: { label: string; value: string; color?: string; disabled?: boolean }[]
   onClick: (value?: string) => void
 }
 
@@ -62,6 +63,7 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...p
             color={option?.color}
             onClick={() => selectHandler(option.value)}
             value={option.value}
+            disabled={option.disabled}
             sx={{ color: option.color + '.main' }}
           >
             {option.label}

@@ -88,7 +88,12 @@ export const Connect: React.FC = () => {
           />
         </Notice>
       )}
-      <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
+      <ConnectionDetails
+        connection={connection}
+        service={service}
+        session={session}
+        show={!!(connection?.enabled && connection?.host)}
+      />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       <GuideStep
         guide="guideAWS"

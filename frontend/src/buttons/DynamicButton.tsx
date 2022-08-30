@@ -9,7 +9,6 @@ export type DynamicButtonProps = {
   iconType?: IconProps['type']
   title: string
   color?: Color
-  options?: { label: string; value: string; color?: string }[]
   size?: 'icon' | 'medium' | 'small' | 'large'
   disabled?: boolean
   loading?: boolean

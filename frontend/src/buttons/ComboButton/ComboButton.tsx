@@ -1,7 +1,6 @@
 import React from 'react'
 import { PROTOCOL } from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
-import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'
 import { windowOpen, isPortal } from '../../services/Browser'
@@ -43,10 +42,7 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
           )}
         </div>
       ) : (
-        <>
-          <DisconnectButton {...props} />
-          <ConnectButton {...props} />
-        </>
+        <ConnectButton {...props} />
       )}
     </div>
   )

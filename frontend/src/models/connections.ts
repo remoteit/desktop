@@ -184,7 +184,9 @@ export default createModel<RootModel>()({
       connection.host = ''
       connection.reverseProxy = undefined
       connection.autoStart = undefined
+      connection.enabled = true
       connection.public = connection.public || isPortal()
+      connection.starting = !connection.public
 
       if (connection.public) {
         proxyConnect(connection)

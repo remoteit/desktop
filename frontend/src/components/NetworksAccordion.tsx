@@ -45,10 +45,11 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
               <>
                 <Chip size="small" label={joinedNetworks.length ? joinedNetworks.length.toLocaleString() : 'None'} />
                 <DynamicButtonMenu
-                  options={availableNetworks.map(n => ({
+                  options={accessibleNetworks.map(n => ({
                     value: n.id,
                     label: n.name,
                     color: n.enabled ? 'primary' : undefined,
+                    disabled: !!joinedNetworks.some(j => j.id === n.id),
                   }))}
                   title={
                     accessibleNetworks.length === 1

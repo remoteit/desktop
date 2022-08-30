@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
@@ -52,7 +53,9 @@ export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight,
         {!network?.serviceIds.length && (
           <ListItem>
             <ListItemIcon />
-            <Typography variant="caption">No Services</Typography>
+            <Typography variant="caption">
+              Add services through the <Link to="/devices">device list</Link>
+            </Typography>
           </ListItem>
         )}
       </Collapse>
