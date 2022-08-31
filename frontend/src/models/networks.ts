@@ -48,12 +48,6 @@ export const recentNetwork: INetwork = {
   icon: 'clock-rotate-left',
 }
 
-type INetworksAccountState = {
-  initialized: boolean
-  all: ILookup<INetwork[]>
-  default: INetwork
-}
-
 export type addConnectionProps = {
   serviceId: string
   networkId: string
@@ -62,8 +56,16 @@ export type addConnectionProps = {
   enabled?: boolean
 }
 
+type INetworksAccountState = {
+  initialized: boolean
+  loading: boolean
+  all: ILookup<INetwork[]>
+  default: INetwork
+}
+
 const defaultAccountState: INetworksAccountState = {
   initialized: false,
+  loading: false,
   default: isPortal() ? defaultCloudNetwork : defaultLocalNetwork,
   all: {},
 }
@@ -78,6 +80,7 @@ export default createModel<RootModel>()({
     },
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
+      dispatch.networks.set({ loading: true })
       const result = await graphQLBasicRequest(
         ` query Networks($account: String) {
             login {
@@ -125,7 +128,8 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
 
-      dispatch.networks.parse(result)
+      await dispatch.networks.parse(result)
+      dispatch.networks.set({ loading: false })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -180,7 +184,7 @@ export default createModel<RootModel>()({
       console.log('LOAD NETWORKS', parsed, devices)
 
       dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
-      dispatch.networks.setNetworks(parsed)
+      dispatch.networks.setNetworks({ networks: parsed, accountId })
     },
     async fetchCount(params: IOrganizationRole, state) {
       const options: gqlOptions = {
@@ -308,12 +312,12 @@ export default createModel<RootModel>()({
       if (index >= 0) {
         const network = { ...networks[index], ...params }
         networks[index] = network
-        dispatch.networks.setNetworks(networks)
+        dispatch.networks.setNetworks({ networks, accountId: id })
       }
     },
-    async setNetworks(networks: INetwork[], state) {
-      const id = getActiveAccountId(state)
-      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
+    async setNetworks(props: { networks: INetwork[]; accountId?: string }, state) {
+      const id = props.accountId || getActiveAccountId(state)
+      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...props.networks] } })
     },
   }),
   reducers: {
