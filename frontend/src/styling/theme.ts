@@ -429,6 +429,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             paddingBottom: spacing.xxs,
             borderRadius: radius,
           },
+          adornedEnd: {
+            '&.MuiInputBase-adornedEnd svg': { marginRight: spacing.sm },
+          },
         },
       },
       MuiInputLabel: {
@@ -474,6 +477,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.Mui-disabled': { backgroundColor: palette.grayLightest.main },
             '&:hover': { backgroundColor: palette.primaryHighlight.main },
             '&:focused': { backgroundColor: palette.primaryHighlight.main },
+            '& svg': { marginRight: spacing.xs },
           },
           input: { padding: '22px 12px 10px' },
           underline: { '&:before, &:after': { display: 'none' } },

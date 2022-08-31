@@ -228,6 +228,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
                     <>
                       No service found running on port and host address.
                       <AddFromNetwork allowScanning={thisDevice} />
+                      <em>Double check that the host application running.</em>
                     </>
                   )}
                 </Notice>
