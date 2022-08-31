@@ -76,7 +76,7 @@ export const Connect: React.FC = () => {
     <>
       {ownDevice && (
         <Notice gutterTop solid>
-          <Typography variant="h2">The service is hosted on this device.</Typography>
+          <Typography variant="h3">The service is hosted on this device.</Typography>
           <Typography variant="body2" gutterBottom>
             Connecting can be done directly without using Remote.It.
           </Typography>
@@ -84,6 +84,7 @@ export const Connect: React.FC = () => {
             label="Connection endpoint"
             value={`${service.host || '127.0.0.1'}:${service.port}`}
             showBackground
+            alwaysWhite
             fullWidth
           />
         </Notice>
