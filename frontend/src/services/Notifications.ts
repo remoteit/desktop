@@ -37,12 +37,10 @@ function stateNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     // notify if device changes state only
     if (target.typeID === DEVICE_TYPE) {
-      createNotification({
-        title: `${target.name} ${actions[event.state]}`,
-        body:
-          platforms.nameLookup[target.platform] +
-          (event.authUserId === target.owner?.id ? '' : ' - ' + target.owner?.email),
-        id: target.deviceId,
+      let body = platforms.nameLookup[target.platform]
+      if (event.authUserId !== target.owner?.id) body += ' - ' + target.owner?.email
+      createNotification(`${target.name} ${actions[event.state]}`, target.deviceId, target.service?.id, {
+        body,
       })
     }
   })
@@ -54,17 +52,23 @@ function stateNotification(event: ICloudEvent) {
 */
 function connectNotification(event: ICloudEvent) {
   event.target.forEach(target => {
-    createNotification({
-      title: (event.authUserId === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
-      body: (event.state === 'disconnected' ? 'From ' : 'To ') + target.name + (event.isP2P ? '' : ' by proxy'),
-      id: target.deviceId,
+    const you = event.authUserId === event.actor.id
+    const disconnect = event.state === 'disconnected'
+    let body = (disconnect ? 'From ' : 'To ') + target.name + (event.isP2P ? '' : ' by proxy')
+    if (event.state === 'disconnected' && !!event.target[0].connection) body += '\nPROVIDE CONNECTION FEEDBACK'
+    const title = (you ? 'You ' : event.actor.email + ' ') + actions[event.state]
+    createNotification(title, target.deviceId, target.service?.id, {
+      body,
     })
   })
 }
 
-function createNotification({ title, body, id }: { title: string; body: string; id: string }) {
-  const notification = new Notification(title, { body, icon: isPortal() ? icon : undefined })
-  notification.onclick = () => store.dispatch.ui.set({ redirect: `/devices/${id}` })
+function createNotification(title: string, deviceId: string, serviceId?: string, options?: NotificationOptions) {
+  console.log('CREATE NOTIFICATION', arguments)
+  const notification = new Notification(title, { ...options, icon: isPortal() ? icon : undefined })
+  notification.onclick = event => {
+    store.dispatch.ui.set({ redirect: `/devices/${deviceId}` + (serviceId ? `/${serviceId}` : '') })
+  }
   notification.onclose = e => e.preventDefault()
 }
 

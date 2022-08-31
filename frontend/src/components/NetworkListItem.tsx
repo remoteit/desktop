@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { useLocation } from 'react-router-dom'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
@@ -30,12 +31,14 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
     }
   })
   session = session || foundSession
+  const location = useLocation()
+  const tab = location.pathname.split('/')[1]
   const connected = external || session?.state === 'connected' || connection?.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
   const css = useStyles({ offline, enabled: network?.enabled, connected })
 
-  let pathname = `/networks/${serviceId}`
+  let pathname = `/${tab}/${serviceId}`
   if (session) pathname += `/${session.id}`
   if (external) pathname += '/other'
 
@@ -102,7 +105,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .tooltip': { position: 'absolute', right: spacing.xl, marginTop: -2 },
+    '& .tooltip': { position: 'absolute', right: spacing.xxl, marginTop: -2 },
   },
   connectIcon: {
     position: 'relative',

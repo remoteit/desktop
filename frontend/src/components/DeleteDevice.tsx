@@ -3,8 +3,8 @@ import { emit } from '../services/Controller'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography } from '@mui/material'
-import { DeleteButton } from './DeleteButton'
-import { Notice } from '../components/Notice'
+import { DeleteButton } from '../buttons/DeleteButton'
+import { Notice } from './Notice'
 
 type Props = {
   device?: IDevice
@@ -37,7 +37,8 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
     </>
   )
 
-  if (!device || hide || (device.accountId !== userId && !device.permissions.includes('MANAGE'))) return null
+  if (!device || hide || device.shared || (device.accountId !== userId && !device.permissions.includes('MANAGE')))
+    return null
 
   const destroy = () => {
     if (device.thisDevice && device.owner.id === userId) {
@@ -52,13 +53,6 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
   if (device.state === 'active') {
     disabled = true
     title = 'Device must be offline'
-  }
-
-  if (!device?.permissions.includes('MANAGE')) {
-    disabled = false
-    icon = 'sign-out'
-    title = 'Leave Device'
-    warning = 'This device will have to be re-shared to you if you wish to access it again.'
   }
 
   if (device.thisDevice && device.permissions.includes('MANAGE')) {

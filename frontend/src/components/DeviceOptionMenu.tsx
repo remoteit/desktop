@@ -5,8 +5,9 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
-import { DeleteDevice } from '../buttons/DeleteDevice'
 import { CopyMenuItem } from './CopyMenuItem'
+import { DeleteDevice } from './DeleteDevice'
+import { LeaveDevice } from './LeaveDevice'
 import { Icon } from './Icon'
 
 type Props = { device?: IDevice; service?: IService }
@@ -48,7 +49,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             key="transfer"
             to={`/devices/${device.id}/transfer`}
             component={Link}
-            autoFocus={false}
             disabled={!device.permissions.includes('MANAGE')}
           >
             <ListItemIcon>
@@ -57,6 +57,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             <ListItemText primary="Transfer Device" />
           </MenuItem>,
           <Divider key="divider" />,
+          <LeaveDevice key="leaveDevice" device={device} menuItem />,
           <DeleteDevice key="deleteDevice" device={device} menuItem />,
           <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
         ]}

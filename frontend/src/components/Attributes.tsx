@@ -337,7 +337,9 @@ export const attributes: Attribute[] = [
     id: 'connection',
     label: 'Connection',
     value: ({ connection, session }) =>
-      connection?.public
+      connection?.connecting
+        ? 'Connecting...'
+        : connection?.public
         ? connection?.reverseProxy
           ? 'Public Reverse Proxy'
           : 'Public Proxy'

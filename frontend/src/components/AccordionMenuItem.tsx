@@ -11,6 +11,7 @@ type IAccordionMenu = {
   gutters?: boolean
   elevation?: number
   square?: boolean
+  disabled?: boolean
   onClear?: () => void
   onClick?: (expanded: boolean) => void
   action?: React.ReactNode
@@ -24,6 +25,7 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   gutters,
   elevation = 0,
   square,
+  disabled,
   onClear,
   onClick,
   action,
@@ -39,7 +41,13 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   expanded = expanded === undefined ? open : expanded
 
   return (
-    <Accordion square={square} elevation={elevation} expanded={expanded} defaultExpanded={defaultExpanded}>
+    <Accordion
+      square={square}
+      elevation={elevation}
+      expanded={expanded}
+      defaultExpanded={defaultExpanded}
+      disabled={disabled}
+    >
       <AccordionSummary className={css.item}>
         <Button onClick={clickHandler}>
           <ListSubheader disableGutters>

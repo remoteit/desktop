@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Icon } from './Icon'
+import { IconButton } from '../buttons/IconButton'
 import { ClearButton } from '../buttons/ClearButton'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
@@ -18,30 +18,38 @@ export interface Props {
   onClear?: (serviceId: string) => void
 }
 
-export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight, ...props }) => {
+export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight, noLink, network }) => {
   const dispatch = useDispatch<Dispatch>()
   const [expanded, setExpanded] = useState<boolean>(!collapse)
   const css = useStyles({ highlight })
 
   return (
     <List className={css.list}>
-      <NetworkListTitle {...props} expanded={expanded} offline={recent} onClick={() => setExpanded(!expanded)}>
+      <NetworkListTitle
+        network={network}
+        noLink={noLink}
+        expanded={expanded}
+        offline={recent}
+        onClick={() => setExpanded(!expanded)}
+      >
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
-        <Icon
+        <IconButton
+          onClick={() => setExpanded(!expanded)}
           name={expanded ? 'caret-down' : 'caret-up'}
           color={highlight ? 'primary' : 'grayDark'}
+          disabled={noLink}
+          hideDisableFade
           type="solid"
           size="sm"
-          inlineLeft
         />
       </NetworkListTitle>
       <Collapse in={expanded}>
-        {props.network?.serviceIds.map(id => (
-          <NetworkListItem serviceId={id} key={id} {...props}>
+        {network?.serviceIds.map(id => (
+          <NetworkListItem serviceId={id} key={id} network={network}>
             {onClear && <ClearButton id={id} onClick={() => onClear(id)} />}
           </NetworkListItem>
         ))}
-        {!props.network?.serviceIds.length && (
+        {!network?.serviceIds.length && (
           <ListItem>
             <ListItemIcon />
             <Typography variant="caption">No Services</Typography>

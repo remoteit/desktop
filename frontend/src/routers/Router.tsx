@@ -4,12 +4,14 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
-import { NetworksPage } from '../pages/NetworksPage'
+import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
+import { NetworksPage } from '../pages/NetworksPage'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
 import { NetworkPage } from '../pages/NetworkPage'
 import { SettingsPage } from '../pages/SettingsPage'
+import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
 import { DevicesPage } from '../pages/DevicesPage'
@@ -36,16 +38,16 @@ import { BillingPage } from '../pages/BillingPage'
 import { PlansPage } from '../pages/PlansPage'
 import { SharePage } from '../pages/SharePage'
 import { TagsPage } from '../pages/TagsPage'
+import { Panel } from '../components/Panel'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { UserLogPage } from '../pages/UserLogPage'
-import { NotificationsPage } from '../pages/NotificationsPage'
-import { isPortal, getOs } from '../services/Browser'
-import { Panel } from '../components/Panel'
 import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
+import { isPortal, getOs } from '../services/Browser'
+import { NotificationsPage } from '../pages/NotificationsPage'
 
 export const Router: React.FC = () => {
   const history = useHistory()
@@ -97,18 +99,36 @@ export const Router: React.FC = () => {
         }}
       />
 
-      <Redirect from="/connections" to="/networks" />
+      <Route path="/claim/:claimID">
+        <ClaimPage />
+      </Route>
 
       {/* Connections */}
+      <Route path="/connections">
+        <DynamicPanel
+          primary={<ConnectionsPage />}
+          secondary={
+            <Switch>
+              <Route path="/connections/:serviceID/:sessionID/other">
+                <ConnectionOtherPage />
+              </Route>
+
+              <Route path={['/connections/:serviceID/:sessionID', '/connections/:serviceID?']}>
+                <ConnectionPage />
+              </Route>
+            </Switch>
+          }
+          layout={layout}
+          root="/connections"
+        />
+      </Route>
+
+      {/* Networks */}
       <Route path="/networks">
         <DynamicPanel
           primary={<NetworksPage />}
           secondary={
             <Switch>
-              {/* <Route path="/networks/view/:networkID/share">
-                <NetworkSharePage />
-              </Route> */}
-
               <Route path="/networks/view/:networkID/share">
                 <NetworkSharePage />
               </Route>
@@ -125,11 +145,7 @@ export const Router: React.FC = () => {
                 <LanSharePage />
               </Route>
 
-              <Route path="/networks/:serviceID/:sessionID/other">
-                <ConnectionOtherPage />
-              </Route>
-
-              <Route path={['/networks/:serviceID/:sessionID', '/networks/:serviceID?']}>
+              <Route path="/networks/:serviceID?">
                 <ConnectionPage />
               </Route>
             </Switch>

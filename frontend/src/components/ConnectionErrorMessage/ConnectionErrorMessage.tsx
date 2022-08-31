@@ -1,15 +1,19 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { clearConnectionError } from '../../helpers/connectionHelper'
-import { List, ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@mui/material'
-import { IconButton } from '@mui/material'
+import { List, ListItem, ListItemSecondaryAction, ListItemText, Collapse } from '@mui/material'
+import { IconButton } from '../../buttons/IconButton'
 import { Gutters } from '../Gutters'
-import { Icon } from '../Icon'
 import { radius, spacing } from '../../styling'
 
 type Props = { connection?: IConnection; service?: IService; visible?: boolean }
 
 export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, visible }) => {
+  const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
   const css = useStyles()
 
   if (!connection || !connection.error?.message) return null
@@ -25,11 +29,26 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
               secondary={connection.error.message + (connection.error.code ? ` (CODE: ${connection.error.code})` : '')}
             />
             <ListItemSecondaryAction>
-              <Tooltip title="clear">
-                <IconButton onClick={() => clearConnectionError(connection)} size="large">
-                  <Icon name="times" color="alwaysWhite" size="md" fixedWidth />
-                </IconButton>
-              </Tooltip>
+              <IconButton
+                title="Report Issue"
+                name="flag"
+                color="alwaysWhite"
+                onClick={async () => {
+                  await dispatch.feedback.set({
+                    subject: `Connection Issue Report to ${connection?.name}`,
+                    data: connection,
+                  })
+                  history.push('/feedback')
+                }}
+                size="base"
+              />
+              <IconButton
+                title="Clear"
+                name="times"
+                color="alwaysWhite"
+                onClick={() => clearConnectionError(connection)}
+                size="md"
+              />
             </ListItemSecondaryAction>
           </ListItem>
         </List>

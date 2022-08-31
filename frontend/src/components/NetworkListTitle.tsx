@@ -29,7 +29,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
         />
       }
       pathname={noLink ? undefined : `/networks/view/${network?.id}`}
-      onClick={onClick}
+      onClick={noLink ? onClick : undefined}
       title={
         <>
           {network?.shared && (

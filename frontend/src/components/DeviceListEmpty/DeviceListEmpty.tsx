@@ -43,7 +43,7 @@ export const DeviceListEmpty: React.FC = () => {
               hideArrow
             >
               <Button
-                onClick={() => devices.claimDevice(DEMO_DEVICE_CLAIM_CODE)}
+                onClick={() => devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })}
                 variant="contained"
                 color="primary"
                 size="medium"

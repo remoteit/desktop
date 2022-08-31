@@ -10,7 +10,7 @@ import {
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import { graphQLConnect, graphQLDisconnect, graphQLSurvey } from '../services/graphQLMutation'
-import { getNetworkServiceIds } from './networks'
+import { getNetworkServiceIds, selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
@@ -112,7 +112,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      dispatch.connections.set({ queue })
+      dispatch.connections.set({ queue: different ? queue : trigger })
       setTimeout(() => dispatch.connections.checkQueue(false), 500)
     },
 
@@ -167,6 +167,13 @@ export default createModel<RootModel>()({
       } else {
         setConnection({ ...disconnect, connected: false })
         console.log('PROXY DISCONNECTED', result)
+      }
+    },
+
+    async enable({ connection, networkId }: { connection: IConnection; networkId: string }, state) {
+      const network = selectNetwork(state, networkId)
+      if (network.enabled && !connection.enabled) {
+        dispatch.connections.queueEnable([{ id: connection.id, enabled: true }])
       }
     },
 

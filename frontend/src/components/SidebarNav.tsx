@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { selectNetworks } from '../models/networks'
 import { getDeviceModel } from '../models/accounts'
 import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'
@@ -10,15 +11,19 @@ import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
+import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
-  const { unreadAnnouncements, connections, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
-    unreadAnnouncements: selectAnnouncements(state, true).length,
-    connections: selectEnabledConnections(state).length,
-    sessions: state.sessions.all.length,
-    devices: getDeviceModel(state).total,
-    remoteUI: isRemoteUI(state),
-  }))
+  const { unreadAnnouncements, connections, networks, sessions, devices, remoteUI } = useSelector(
+    (state: ApplicationState) => ({
+      unreadAnnouncements: selectAnnouncements(state, true).length,
+      connections: selectEnabledConnections(state).length,
+      networks: selectNetworks(state).length,
+      sessions: state.sessions.all.length,
+      devices: getDeviceModel(state).total,
+      remoteUI: isRemoteUI(state),
+    })
+  )
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ sessions })
 
@@ -38,15 +43,25 @@ export const SidebarNav: React.FC = () => {
 
   return (
     <List className={css.list}>
-      <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
+      <ListItemLocation
+        title="Connections"
+        icon="arrow-right-arrow-left"
+        pathname="/connections"
+        match="/connections"
+        dense
+      >
         <ListItemSecondaryAction>
-          {!!connections && (
-            <Tooltip title="Idle Connections" placement="top" arrow>
-              <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
+          {!!connections && !sessions && (
+            <Tooltip title={`${connections.toLocaleString()} Idle Connections`} placement="top" arrow>
+              <Chip size="small" label={connections.toLocaleString()} />
             </Tooltip>
           )}
           {!!sessions && (
-            <Tooltip title="Services Connected" placement="top" arrow>
+            <Tooltip
+              title={`${connections.toLocaleString()} Connections - ${sessions.toLocaleString()} Connected`}
+              placement="top"
+              arrow
+            >
               <Chip
                 size="small"
                 label={sessions.toLocaleString()}
@@ -61,12 +76,23 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" exactMatch dense>
         {!!devices && (
           <ListItemSecondaryAction>
-            <Tooltip title="Total" placement="top" arrow>
+            <Tooltip title="Total Devices" placement="top" arrow>
               <Chip size="small" label={devices.toLocaleString()} />
             </Tooltip>
           </ListItemSecondaryAction>
         )}
       </ListItemLocation>
+      <TestUI>
+        <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
+          <ListItemSecondaryAction>
+            {!!networks && (
+              <Tooltip title="Total Networks" placement="top" arrow>
+                <Chip size="small" label={networks.toLocaleString()} />
+              </Tooltip>
+            )}
+          </ListItemSecondaryAction>
+        </ListItemLocation>
+      </TestUI>
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
@@ -109,7 +135,6 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingRight: sessions ? spacing.xs : undefined,
   }),
   sessions: {
-    marginLeft: `-${spacing.xs}px !important`,
     fontWeight: 500,
   },
   footer: {

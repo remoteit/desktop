@@ -134,7 +134,7 @@ export const RegisterMenu: React.FC = () => {
             disabled={hasDemo || claiming}
             onClick={() => {
               setCode(DEMO_DEVICE_CLAIM_CODE)
-              devices.claimDevice(DEMO_DEVICE_CLAIM_CODE)
+              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })
             }}
           >
             <ListItemIcon>
@@ -147,7 +147,7 @@ export const RegisterMenu: React.FC = () => {
         <form
           onSubmit={e => {
             e.preventDefault()
-            devices.claimDevice(code)
+            devices.claimDevice({ code })
           }}
         >
           <List className={css.form}>

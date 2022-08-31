@@ -69,6 +69,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             margin: 0,
+            '&.Mui-disabled': { backgroundColor: palette.white.main },
             '&.Mui-expanded': { margin: 0 },
             '&:before': { display: 'none' },
           },
@@ -88,7 +89,17 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiAccordionSummary: {
         styleOverrides: {
-          root: { minHeight: 0, padding: 0, '&.Mui-expanded': { minHeight: 0 } },
+          root: {
+            minHeight: 0,
+            padding: 0,
+            '&.Mui-disabled': {
+              opacity: 1,
+              pointerEvents: 'all',
+              '& .fa-caret-down': { display: 'none' },
+              '& .MuiButton-root:first-child': { pointerEvents: 'none' },
+            },
+            '&.Mui-expanded': { minHeight: 0 },
+          },
           content: { margin: 0, '&.Mui-expanded': { margin: 0 } },
         },
       },
@@ -357,6 +368,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               marginLeft: spacing.xs,
               marginRight: spacing.xs,
               paddingRight: spacing.sm,
+              paddingLeft: spacing.xs,
               whiteSpace: 'nowrap',
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
