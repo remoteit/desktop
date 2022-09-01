@@ -223,8 +223,8 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
         )}
         <ListItemCheckbox
           checked={advanced}
-          label="Jump host"
-          subLabel="You can host any service that this system can access on the local network."
+          label="Use as jump host"
+          subLabel="Host any service that this system can access on the local network."
           disabled={disabled}
           onClick={() => {
             if (advanced) setForm({ ...form, host: IP_PRIVATE })

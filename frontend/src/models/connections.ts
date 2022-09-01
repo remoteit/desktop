@@ -80,12 +80,12 @@ export default createModel<RootModel>()({
       dispatch.connections.setAll(connections)
     },
 
-    async queueEnable(queue: IConnection[], state) {
+    async queueEnable(queue: IConnection[]) {
       await dispatch.connections.set({ queue })
-      dispatch.connections.checkQueue(true)
+      dispatch.connections.checkQueue()
     },
 
-    async checkQueue(start: boolean, state) {
+    async checkQueue(_: void, state) {
       if (!state.connections.queue.length) return
 
       const queue = [...state.connections.queue]
@@ -103,17 +103,16 @@ export default createModel<RootModel>()({
         }
       })
 
-      console.log('QUEUE', trigger, connection)
-      console.log('NEXT', different, start)
+      console.log('QUEUE', { trigger, connection })
+      console.log('NEXT', { different })
 
-      if (different || start) {
+      if (different) {
         if (trigger.enabled) dispatch.connections.connect({ ...connection, ...trigger, autoStart: true })
         else dispatch.connections.disconnect({ ...connection, ...trigger })
-        return
       }
 
-      dispatch.connections.set({ queue: different ? queue : trigger })
-      setTimeout(() => dispatch.connections.checkQueue(false), 500)
+      dispatch.connections.set({ queue })
+      setTimeout(dispatch.connections.checkQueue, 200)
     },
 
     async proxyConnect(connection: IConnection): Promise<any> {
@@ -256,7 +255,7 @@ export default createModel<RootModel>()({
     async setAll(all: IConnection[], state) {
       setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
-      dispatch.connections.checkQueue(false)
+      dispatch.connections.checkQueue()
     },
   }),
   reducers: {
