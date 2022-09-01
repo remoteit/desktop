@@ -113,7 +113,19 @@ export const RegisterMenu: React.FC = () => {
         </DesktopUI>
         <List className={css.list} disablePadding dense>
           <ListSubheader disableGutters>Add a device</ListSubheader>
-          {['aws', 'azure', 'gcp', 'raspberrypi', 'linux', 'tinkerboard', 'nas', 'windows', 'apple'].map(p => {
+          {[
+            'aws',
+            'azure',
+            'gcp',
+            'raspberrypi',
+            'linux',
+            'arm',
+            'firewalla',
+            'nas',
+            'tinkerboard',
+            'windows',
+            'apple',
+          ].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation

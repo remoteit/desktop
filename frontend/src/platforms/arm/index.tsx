@@ -11,4 +11,9 @@ platforms.register({
   name: 'Arm Virtual Hardware',
   component: Component,
   types: { 1217: 'AVH' },
+  installation: {
+    command: true,
+    qualifier: 'For the Arm Virtual Hardware platform.',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })
