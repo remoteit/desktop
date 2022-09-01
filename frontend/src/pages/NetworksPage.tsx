@@ -11,7 +11,6 @@ import { GuideStep } from '../components/GuideStep'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
 import { Gutters } from '../components/Gutters'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -41,28 +40,19 @@ export const NetworksPage: React.FC = () => {
           <NetworkAdd networks={networks} />
           <Typography variant="subtitle1">
             <Title>Networks</Title>
-            <TestUI>
-              {permissions?.includes('MANAGE') && (
-                <GuideStep
-                  step={1}
-                  guide="guideNetwork"
-                  instructions="Click here to add a virtual network of services."
-                  placement="top"
-                  highlight
-                  autoStart
-                  autoNext
-                >
-                  <IconButton
-                    icon="plus"
-                    title="Add Network"
-                    to="/networks/new"
-                    color="primary"
-                    type="solid"
-                    size="md"
-                  />
-                </GuideStep>
-              )}
-            </TestUI>
+            {permissions?.includes('MANAGE') && (
+              <GuideStep
+                step={1}
+                guide="guideNetwork"
+                instructions="Click here to add a virtual network of services."
+                placement="top"
+                highlight
+                autoStart
+                autoNext
+              >
+                <IconButton icon="plus" title="Add Network" to="/networks/new" type="solid" size="md" />
+              </GuideStep>
+            )}
           </Typography>
         </>
       }

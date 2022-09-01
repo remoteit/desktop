@@ -11,7 +11,6 @@ import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
-import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const { unreadAnnouncements, connections, networks, sessions, devices, remoteUI } = useSelector(
@@ -82,17 +81,15 @@ export const SidebarNav: React.FC = () => {
           </ListItemSecondaryAction>
         )}
       </ListItemLocation>
-      <TestUI>
-        <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
-          <ListItemSecondaryAction>
-            {!!networks && (
-              <Tooltip title="Total Networks" placement="top" arrow>
-                <Chip size="small" label={networks.toLocaleString()} />
-              </Tooltip>
-            )}
-          </ListItemSecondaryAction>
-        </ListItemLocation>
-      </TestUI>
+      <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
+        <ListItemSecondaryAction>
+          {!!networks && (
+            <Tooltip title="Total Networks" placement="top" arrow>
+              <Chip size="small" label={networks.toLocaleString()} />
+            </Tooltip>
+          )}
+        </ListItemSecondaryAction>
+      </ListItemLocation>
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
