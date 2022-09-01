@@ -43,13 +43,24 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
   return (
     <Switch>
-      <Route path="/networks">
+      <Route path="/connections">
         <IconButton
           {...attributes}
           title="Refresh networks"
           onClick={async () =>
             await refresh(async () => {
               await dispatch.connections.fetch()
+            })
+          }
+        />
+      </Route>
+      <Route path="/networks">
+        <IconButton
+          {...attributes}
+          title="Refresh networks"
+          onClick={async () =>
+            await refresh(async () => {
+              await dispatch.networks.fetch()
             })
           }
         />
