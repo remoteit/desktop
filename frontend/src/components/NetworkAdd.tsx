@@ -45,6 +45,7 @@ export const NetworkAdd: React.FC<{ networks: INetwork[] }> = ({ networks }) => 
             <TextField
               required
               fullWidth
+              autoFocus
               label="Name"
               value={name}
               disabled={adding}

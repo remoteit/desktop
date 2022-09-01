@@ -26,7 +26,6 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
     joinedNetworks: selectNetworkByService(state, connection.id),
   }))
   const accessibleNetworks = allNetworks.filter(n => n.owner.id === ownerId)
-  const availableNetworks = accessibleNetworks.filter(n => !joinedNetworks.find(j => j.id === n.id))
 
   if (accessibleNetworks.length < 1) return null
 
@@ -51,16 +50,10 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
                     color: n.enabled ? 'primary' : undefined,
                     disabled: !!joinedNetworks.some(j => j.id === n.id),
                   }))}
-                  title={
-                    accessibleNetworks.length === 1
-                      ? `Add to ${accessibleNetworks[0].name}`
-                      : !accessibleNetworks.length
-                      ? 'No available networks'
-                      : 'Add to network'
-                  }
+                  title={!accessibleNetworks.length ? 'No available networks' : 'Add to network'}
                   size="icon"
                   icon="plus"
-                  disabled={!availableNetworks.length}
+                  disabled={!accessibleNetworks.length}
                   onClick={networkId => {
                     if (!service) return
                     dispatch.networks.add({

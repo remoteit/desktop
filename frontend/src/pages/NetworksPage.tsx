@@ -19,8 +19,8 @@ import heartbeat from '../services/Heartbeat'
 
 export const NetworksPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { loading, networks, permissions } = useSelector((state: ApplicationState) => ({
-    loading: state.networks.loading,
+  const { initialized, networks, permissions } = useSelector((state: ApplicationState) => ({
+    initialized: state.networks.initialized,
     networks: selectNetworks(state).sort((a: INetwork, b: INetwork) =>
       a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
     ),
@@ -67,9 +67,7 @@ export const NetworksPage: React.FC = () => {
         </>
       }
     >
-      {loading ? (
-        <LoadingMessage />
-      ) : (
+      {initialized ? (
         <>
           <Collapse in={!networks?.length}>
             <Gutters top="xxl" bottom="xxl">
@@ -95,6 +93,8 @@ export const NetworksPage: React.FC = () => {
             />
           ))}
         </>
+      ) : (
+        <LoadingMessage />
       )}
     </Container>
   )
