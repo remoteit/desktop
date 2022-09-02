@@ -56,7 +56,7 @@ export const DeviceListEmpty: React.FC = () => {
           </GuideStep>
           <Typography variant="body2" align="center" color="textSecondary">
             See how simple it is to connect with our AWS demo device, <br />
-            or add your own device from the plus menu in the top left of the page.
+            or add your own device from the plus menu in the top left of the screen.
           </Typography>
         </>
       ) : (

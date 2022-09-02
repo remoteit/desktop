@@ -84,11 +84,14 @@ export const NetworksPage: React.FC = () => {
               }
             />
           ))}
-          {shared.length && (
+          {!!shared.length && (
             <>
-              <br />
-              <Divider variant="inset" />
-              <Typography variant="subtitle1">Shared with you</Typography>
+              {!!networks.length && (
+                <>
+                  <Typography variant="subtitle1">Shared with you</Typography>
+                  <Divider variant="inset" />
+                </>
+              )}
               {shared.map(n => (
                 <Network key={n.id} network={n} />
               ))}

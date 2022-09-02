@@ -7,7 +7,7 @@ import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
-import { List, Button, Typography } from '@mui/material'
+import { List, Box, Button, Typography } from '@mui/material'
 import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
@@ -34,6 +34,7 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
+import { IconButton } from '../buttons/IconButton'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
@@ -85,15 +86,29 @@ export const Connect: React.FC = () => {
         <Notice gutterTop solid>
           <Typography variant="h3">This service is on this device.</Typography>
           <Typography variant="body2" gutterBottom>
-            Connecting can be done directly without using Remote.It.
+            You can connect directly without using Remote.It.
           </Typography>
           <DataCopy
             label="Connection endpoint"
             value={`${service.host || '127.0.0.1'}:${service.port}`}
+            gutterBottom
             showBackground
             alwaysWhite
             fullWidth
           />
+          <Box display="flex">
+            <IconButton
+              name="user-plus"
+              to={`/devices/${device.id}/share`}
+              hide={!device.permissions.includes('MANAGE')}
+              color="alwaysWhite"
+              inlineLeft
+            />
+            <em>
+              Share this device to other users or sign in from another system to connect through Remote.it. Remote.It
+              will create an endpoints once connected.
+            </em>
+          </Box>
         </Notice>
       ) : (
         <GuideStep

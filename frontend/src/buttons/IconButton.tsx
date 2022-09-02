@@ -19,7 +19,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   shiftDown?: boolean
   loading?: boolean
   submit?: boolean
-  inline?: boolean
+  hide?: boolean
   placement?: TooltipProps['placement']
   ref?: React.Ref<HTMLButtonElement>
   children?: React.ReactNode
@@ -44,9 +44,11 @@ export const IconButton: React.FC<ButtonProps> = ({
   size = 'base',
   buttonBaseSize,
   inline,
+  inlineLeft,
   className,
   loading,
   submit,
+  hide,
   placement = 'top',
   onMouseEnter,
   onMouseLeave,
@@ -58,6 +60,7 @@ export const IconButton: React.FC<ButtonProps> = ({
 }) => {
   const history = useHistory()
   const css = useStyles({ color })
+  if (hide) return null
   icon = icon || name
   if (loading) {
     icon = 'spinner-third'
@@ -82,6 +85,7 @@ export const IconButton: React.FC<ButtonProps> = ({
         opacity: disabled && !hideDisableFade ? 0.5 : undefined,
         marginBottom: shiftDown ? -spacing.sm : undefined,
         marginLeft: inline ? spacing.sm : undefined,
+        marginRight: inlineLeft ? spacing.sm : undefined,
       }}
     >
       <Icon
