@@ -60,7 +60,7 @@ export const RegisterMenu: React.FC = () => {
   }
 
   let thisLink = '/devices/setup'
-  if (isPortal()) thisLink = `/add/${getOs().replace('mac', 'apple')}`
+  if (isPortal()) thisLink = `/add/${getOs()}`
 
   return (
     <>
@@ -95,16 +95,9 @@ export const RegisterMenu: React.FC = () => {
         <DesktopUI>
           <List className={css.list} disablePadding dense>
             <ListSubheader disableGutters>Add this system</ListSubheader>
-            <ListItem
-              button
-              disableGutters
-              disabled={hasThisDevice}
-              onClick={handleClose}
-              to={thisLink}
-              component={Link}
-            >
+            <ListItem button disableGutters onClick={handleClose} to={thisLink} component={Link}>
               <ListItemIcon>
-                <Icon name="this" fixedWidth platformIcon />
+                <Icon name={getOs()} fixedWidth platformIcon />
               </ListItemIcon>
               <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
             </ListItem>
@@ -124,7 +117,7 @@ export const RegisterMenu: React.FC = () => {
             'nas',
             'tinkerboard',
             'windows',
-            'apple',
+            'mac',
           ].map(p => {
             const platform = platforms.get(p)
             return (

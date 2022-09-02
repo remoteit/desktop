@@ -57,11 +57,10 @@ platforms.register({
   id: 'linux',
   name: 'Linux',
   component: Component,
-  subtitle: 'Including Jetson and OpenWRT',
   types: { 769: 'Linux', 1121: 'RedHat Linux', 1200: 'Linux ARM' },
   installation: {
     command: true,
-    qualifier: 'For any Linux based system',
+    qualifier: 'For any Linux based system, including Jetson and OpenWRT.',
     link: 'https://link.remote.it/support/streamline-install',
   },
 })

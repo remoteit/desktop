@@ -12,7 +12,7 @@ const Component = ({ darkMode, ...props }) => {
 }
 
 platforms.register({
-  id: 'apple',
+  id: 'mac',
   name: 'Mac',
   component: Component,
   types: { 256: 'Mac' },
