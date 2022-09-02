@@ -21,29 +21,24 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
     <ListItemLocation
       className={css.item}
       icon={
-        <Icon
-          className={css.mergeIcon}
-          name={network?.icon}
-          type={network?.iconType}
-          color={network?.enabled ? 'primary' : undefined}
-        />
+        false ? (
+          <Avatar email={network?.owner?.email} size={24} />
+        ) : (
+          <Icon
+            className={css.mergeIcon}
+            name={network?.icon}
+            type={network?.iconType}
+            color={network?.enabled ? 'primary' : undefined}
+          />
+        )
       }
       pathname={noLink ? undefined : `/networks/view/${network?.id}`}
       onClick={noLink ? onClick : undefined}
       title={
-        <>
-          {network?.shared && (
-            <Tooltip title={`Shared by ${network?.owner?.email}`} enterDelay={400} placement="top" arrow>
-              <span className="tooltip">
-                <Avatar email={network?.owner?.email} size={24} />
-              </span>
-            </Tooltip>
-          )}
-          <Title className={css.text} enabled={network?.enabled}>
-            <b>{network?.name}</b>
-            {expanded ? '' : ' ...'}
-          </Title>
-        </>
+        <Title className={css.text} enabled={network?.enabled}>
+          {network?.name}
+          {expanded ? '' : ' ...'}
+        </Title>
       }
       dense
     >

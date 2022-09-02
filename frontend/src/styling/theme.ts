@@ -303,8 +303,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs },
             },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
-            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, visibility: 'hidden' },
-            '&:hover .MuiIconButton-sizeSmall': { visibility: 'visible' },
+            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, opacity: 0 },
+            '&:hover .MuiIconButton-sizeSmall': { opacity: 1, transition: 'opacity 400ms 200ms' },
           },
           gutters: {
             width: `calc(100% - ${spacing.md * 2}px)`,
