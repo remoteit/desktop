@@ -7,7 +7,7 @@ import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
-import { List, Button, Typography, Paper } from '@mui/material'
+import { List, Button, Typography } from '@mui/material'
 import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
@@ -74,9 +74,16 @@ export const Connect: React.FC = () => {
 
   return (
     <>
-      {ownDevice && (
+      <ConnectionDetails
+        connection={connection}
+        service={service}
+        session={session}
+        show={!!(connection?.enabled && connection?.host)}
+      />
+      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      {ownDevice ? (
         <Notice gutterTop solid>
-          <Typography variant="h3">The service is hosted on this device.</Typography>
+          <Typography variant="h3">This service is on this device.</Typography>
           <Typography variant="body2" gutterBottom>
             Connecting can be done directly without using Remote.It.
           </Typography>
@@ -88,36 +95,30 @@ export const Connect: React.FC = () => {
             fullWidth
           />
         </Notice>
+      ) : (
+        <GuideStep
+          guide="guideAWS"
+          step={5}
+          instructions={
+            'Enable the connect on demand listener by adding the service to your network.' +
+            (connection.autoLaunch ? ' The connection will auto launch.' : '')
+          }
+        >
+          <Gutters size="md" className={css.gutters} bottom={null}>
+            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+            <ComboButton
+              connection={connection}
+              service={service}
+              permissions={device.permissions}
+              size="large"
+              fullWidth
+              disabled={ownDevice}
+              onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
+            />
+            <ConnectionMenu connection={connection} service={service} />
+          </Gutters>
+        </GuideStep>
       )}
-      <ConnectionDetails
-        connection={connection}
-        service={service}
-        session={session}
-        show={!!(connection?.enabled && connection?.host)}
-      />
-      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      <GuideStep
-        guide="guideAWS"
-        step={5}
-        instructions={
-          'Enable the connect on demand listener by adding the service to your network.' +
-          (connection.autoLaunch ? ' The connection will auto launch.' : '')
-        }
-      >
-        <Gutters size="md" className={css.gutters} bottom={null}>
-          <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-          <ComboButton
-            connection={connection}
-            service={service}
-            permissions={device.permissions}
-            size="large"
-            fullWidth
-            disabled={ownDevice}
-            onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
-          />
-          <ConnectionMenu connection={connection} service={service} />
-        </Gutters>
-      </GuideStep>
       <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       <ConnectionSurvey connection={connection} />
       <Gutters size="md" bottom={null}>

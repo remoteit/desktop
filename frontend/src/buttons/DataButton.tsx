@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { ListItemText, IconButton, InputLabel, Tooltip } from '@mui/material'
+import { ListItemText, IconButton, InputLabel, Tooltip, darken } from '@mui/material'
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -67,7 +67,13 @@ const useStyles = makeStyles(({ palette }) => ({
     marginBottom: gutterBottom ? spacing.sm : undefined,
     backgroundColor: showBackground ? (alwaysWhite ? palette.screen.main : palette.grayLightest.main) : undefined,
     '& .MuiTypography-root > *': { color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main },
-    '&:hover': { backgroundColor: showBackground ? palette.primaryHighlight.main : undefined },
+    '&:hover': {
+      backgroundColor: showBackground
+        ? alwaysWhite
+          ? darken(palette.primary.main, 0.15)
+          : palette.primaryHighlight.main
+        : undefined,
+    },
     '& svg': { minWidth: 60 },
   }),
   key: {
