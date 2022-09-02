@@ -142,6 +142,7 @@ declare global {
   }
 
   interface IConnection {
+    accountId?: string // organization id
     autoLaunch?: boolean
     autoStart?: boolean
     commandTemplate?: string // command line launch template
@@ -258,7 +259,7 @@ declare global {
     version: number // daemon version
     configurable: boolean // cloudshift device
     permissions: IPermission[]
-    accountId: string
+    accountId: string // organization id
     thisDevice?: boolean
     license: ILicenseTypes
     geo: IGeo & {

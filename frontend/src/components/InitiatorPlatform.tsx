@@ -76,7 +76,7 @@ export function initiatorPlatformIcon({ id, user, thisDevice }: Props): [string,
       type = 'brands'
       break
     case 16:
-      name = 'mac'
+      name = 'apple'
       type = 'brands'
       break
     case 17:

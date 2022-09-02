@@ -36,7 +36,7 @@ export default createModel<RootModel>()({
       const networkIds = getNetworkServiceIds(state)
       const deviceIds = getConnectionIds(state).filter(id => !networkIds.includes(id))
       const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      updateConnections(connections)
+      updateConnections(state, connections, accountId)
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
       cleanOrphanConnections(deviceIds)
     },

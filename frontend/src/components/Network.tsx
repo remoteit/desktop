@@ -40,6 +40,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight,
           color={highlight ? 'primary' : 'grayDark'}
           disabled={noLink}
           hideDisableFade
+          buttonBaseSize="small"
           type="solid"
           size="sm"
         />
@@ -86,7 +87,7 @@ const useStyles = makeStyles(({ palette }) => ({
             backgroundColor: palette.white.main,
           },
         }
-      : { '& button': { color: palette.gray.main, marginRight: spacing.xs } },
+      : {},
   note: {
     color: palette.primary.main,
     textTransform: 'uppercase',

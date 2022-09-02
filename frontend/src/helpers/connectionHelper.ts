@@ -59,6 +59,7 @@ export function newConnection(service?: IService | null) {
     connection.name = connectionName(service)
     connection.id = service.id
     connection.deviceID = service.deviceID
+    connection.accountId = device?.accountId || user.id
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
     connection.targetHost = service.attributes.targetHost
@@ -148,8 +149,8 @@ export function getConnectionSessionIds() {
   return all.map(c => c.sessionId)
 }
 
-export function updateConnections(devices: IDevice[]) {
-  const { all } = store.getState().connections
+export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
+  const { all } = state.connections
   let lookup = all.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
@@ -158,10 +159,16 @@ export function updateConnections(devices: IDevice[]) {
   devices.forEach(d => {
     d.services.forEach(s => {
       const connection = lookup[s.id]
-
-      const online = s.state === 'active'
-      if (connection && connection.online !== online) {
-        setConnection({ ...connection, deviceID: d.id, online })
+      if (connection) {
+        const online = s.state === 'active'
+        if (connection.online !== online || !connection.accountId) {
+          let accountId = connection.accountId
+          if (!accountId) {
+            const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
+            accountId = membership ? membership.account.id : userId
+          }
+          setConnection({ ...connection, deviceID: d.id, online, accountId })
+        }
       }
     })
   })

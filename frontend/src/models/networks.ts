@@ -8,7 +8,7 @@ import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
   graphQLUpdateNetwork,
-  graphQLAddConnection,
+  graphQLSetConnection,
   graphQLRemoveConnection,
   graphQLAddNetworkShare,
   graphQLRemoveNetworkShare,
@@ -37,6 +37,16 @@ const defaultCloudNetwork: INetwork = {
   permissions: [],
   enabled: true,
   icon: 'cloud',
+}
+
+export const sharedNetwork: INetwork = {
+  ...defaultNetwork(),
+  id: 'shared',
+  name: 'Shared',
+  permissions: [],
+  enabled: true,
+  shared: false,
+  icon: 'network-wired',
 }
 
 export const recentNetwork: INetwork = {
@@ -134,7 +144,11 @@ export default createModel<RootModel>()({
 
     async fetchIfEmpty(_: void, state) {
       const accountId = getActiveAccountId(state)
-      if (!state.networks.all[accountId]) dispatch.networks.fetch()
+      if (!state.networks.all[accountId]) {
+        await dispatch.networks.set({ initialized: false })
+        await dispatch.networks.fetch()
+        await dispatch.networks.set({ initialized: true })
+      }
     },
 
     async parse(result: AxiosResponse<any> | undefined, state) {
@@ -181,6 +195,7 @@ export default createModel<RootModel>()({
 
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode
+
       console.log('LOAD NETWORKS', parsed, devices)
 
       dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
@@ -214,7 +229,7 @@ export default createModel<RootModel>()({
       copy.serviceIds = Array.from(unique)
       dispatch.networks.setNetwork(copy)
       if (props.networkId !== DEFAULT_ID) {
-        const result = await graphQLAddConnection(props)
+        const result = await graphQLSetConnection(props)
         if (result === 'ERROR' || !result?.data?.data?.addNetworkConnection) {
           dispatch.ui.set({ errorMessage: `Adding network failed. Please contact support.` })
           dispatch.networks.setNetwork(network)
@@ -360,11 +375,20 @@ export function selectNetwork(state: ApplicationState, networkId?: string): INet
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
 }
 
-export function selectActiveNetwork(state: ApplicationState): INetwork {
-  const active = selectEnabledConnections(state).map(connection => connection.id)
-  const network = defaultNetwork(state)
-  network.serviceIds = active
-  return network
+export function selectActiveNetworks(state: ApplicationState): INetwork[] {
+  const template = defaultNetwork(state)
+  const all = selectEnabledConnections(state)
+  let networks: INetwork[] = []
+
+  all.forEach(c => {
+    const accountId = c?.accountId || state.user.id
+    const name = state.organization.all[accountId || '']?.name || 'Unknown'
+    const index = networks.findIndex(n => n.id === accountId)
+    if (index === -1) networks.push({ ...template, id: accountId, name, serviceIds: [c.id] })
+    else networks[index].serviceIds.push(c.id)
+  })
+
+  return networks
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
@@ -381,7 +405,6 @@ export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): I
     }
     return false
   })
-  console.log('networks by tag', networks)
   return networks
 }
 

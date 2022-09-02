@@ -1,10 +1,12 @@
 import React from 'react'
 import { Typography, Tooltip } from '@mui/material'
-import { defaultNetwork, selectActiveNetwork, recentNetwork, DEFAULT_ID } from '../models/networks'
+import { defaultNetwork, selectActiveNetworks, recentNetwork } from '../models/networks'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { getDeviceModel } from '../models/accounts'
+import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
@@ -13,7 +15,7 @@ import { Icon } from '../components/Icon'
 
 export const ConnectionsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { other, recent, active } = useSelector((state: ApplicationState) => {
+  const { other, recent, active, initialized } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
@@ -42,7 +44,8 @@ export const ConnectionsPage: React.FC = () => {
         ...recentNetwork,
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
-      active: selectActiveNetwork(state),
+      active: selectActiveNetworks(state),
+      initialized: getDeviceModel(state).initialized,
     }
   })
 
@@ -56,22 +59,30 @@ export const ConnectionsPage: React.FC = () => {
         </Typography>
       }
     >
-      <Network key={DEFAULT_ID} network={active} noLink />
-      <SessionsList
-        title="Other Connections"
-        networks={other}
-        action={
-          <Tooltip
-            title="These are connections to a device of yours that originated from a different application or user."
-            placement="top"
-            arrow
-          >
-            <Icon name="circle-question" color="grayDark" size="sm" />
-          </Tooltip>
-        }
-      />
-      {!!recent.serviceIds.length && (
-        <Network network={recent} recent noLink collapse onClear={id => dispatch.connections.clear(id)} />
+      {initialized ? (
+        <>
+          {active.map(n => (
+            <Network noLink key={n.id} network={n} />
+          ))}
+          <SessionsList
+            title="Other Connections"
+            networks={other}
+            action={
+              <Tooltip
+                title="These are connections to a device of yours that originated from a different application or user."
+                placement="top"
+                arrow
+              >
+                <Icon name="circle-question" color="grayDark" size="sm" />
+              </Tooltip>
+            }
+          />
+          {!!recent.serviceIds.length && (
+            <Network network={recent} recent noLink collapse onClear={id => dispatch.connections.clear(id)} />
+          )}
+        </>
+      ) : (
+        <LoadingMessage />
       )}
     </Container>
   )
