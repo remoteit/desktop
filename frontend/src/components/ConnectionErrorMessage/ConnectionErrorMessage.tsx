@@ -24,10 +24,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
         <span className={css.pointer} />
         <List disablePadding>
           <ListItem>
-            <ListItemText
-              primary="Connection Error"
-              secondary={connection.error.message + (connection.error.code ? ` (CODE: ${connection.error.code})` : '')}
-            />
+            <ListItemText primary="Connection Error" secondary={connection.error.message} />
             <ListItemSecondaryAction>
               <IconButton
                 title="Report Issue"
