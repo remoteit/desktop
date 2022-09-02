@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Typography, Collapse } from '@mui/material'
+import { Typography, Collapse, Divider } from '@mui/material'
 import { selectNetworks } from '../models/networks'
 import { selectPermissions } from '../models/organization'
 import { ApplicationState, Dispatch } from '../store'
@@ -18,13 +18,15 @@ import heartbeat from '../services/Heartbeat'
 
 export const NetworksPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { initialized, networks, permissions } = useSelector((state: ApplicationState) => ({
-    initialized: state.networks.initialized,
-    networks: selectNetworks(state).sort((a: INetwork, b: INetwork) =>
-      a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
-    ),
-    permissions: selectPermissions(state),
-  }))
+  const { initialized, networks, shared, permissions } = useSelector((state: ApplicationState) => {
+    const networks = selectNetworks(state).sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
+    return {
+      initialized: state.networks.initialized,
+      networks: networks.filter(n => !n.shared),
+      shared: networks.filter(n => n.shared),
+      permissions: selectPermissions(state),
+    }
+  })
 
   useEffect(() => {
     heartbeat.beat()
@@ -59,7 +61,7 @@ export const NetworksPage: React.FC = () => {
     >
       {initialized ? (
         <>
-          <Collapse in={!networks?.length}>
+          <Collapse in={!networks?.length && !shared?.length}>
             <Gutters top="xxl" bottom="xxl">
               <Typography variant="h3" align="center" gutterBottom>
                 Networks appear here
@@ -82,6 +84,16 @@ export const NetworksPage: React.FC = () => {
               }
             />
           ))}
+          {shared.length && (
+            <>
+              <br />
+              <Divider variant="inset" />
+              <Typography variant="subtitle1">Shared with you</Typography>
+              {shared.map(n => (
+                <Network key={n.id} network={n} />
+              ))}
+            </>
+          )}
         </>
       ) : (
         <LoadingMessage />

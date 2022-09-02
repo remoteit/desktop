@@ -453,7 +453,7 @@ export async function graphQLDeleteNetwork(networkId: string) {
   )
 }
 
-export async function graphQLAddConnection(props: addConnectionProps) {
+export async function graphQLSetConnection(props: addConnectionProps) {
   return await graphQLBasicRequest(
     ` mutation query(
         $networkId: String!,
