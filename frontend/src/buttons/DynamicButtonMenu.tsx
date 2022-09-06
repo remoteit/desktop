@@ -56,31 +56,34 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...p
         TransitionComponent={Fade}
         disableAutoFocusItem
       >
-        <ListSubheader disableGutters disableSticky>
-          Networks
-        </ListSubheader>
-        {options.map(option => (
-          <MenuItem
-            dense
-            key={option.value}
-            color={option?.color}
-            onClick={() => selectHandler(option.value)}
-            value={option.value}
-            disabled={option.disabled}
-            sx={{ color: option.color + '.main' }}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
-        <Divider />
+        {!!options.length && (
+          <ListSubheader disableGutters disableSticky>
+            Networks
+          </ListSubheader>
+        )}
+        {!!options.length &&
+          options.map(option => (
+            <MenuItem
+              dense
+              key={option.value}
+              color={option?.color}
+              onClick={() => selectHandler(option.value)}
+              value={option.value}
+              disabled={option.disabled}
+              sx={{ color: option.color + '.main' }}
+            >
+              {option.label}
+            </MenuItem>
+          ))}
+        {!!options.length && <Divider />}
         <ListSubheader disableGutters disableSticky>
           Create new
         </ListSubheader>
-        <MenuItem dense component={Link} to="/networks/new">
+        <MenuItem dense component={Link} to="/networks/add">
           <ListItemIcon>
             <Icon name="plus" />
           </ListItemIcon>
-          Network
+          Network &nbsp;
         </MenuItem>
       </Menu>
     </>

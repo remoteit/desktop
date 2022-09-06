@@ -25,7 +25,7 @@ export const NetworkPage: React.FC = () => {
   return (
     <GuideStep
       step={3}
-      guide="guideNetwork"
+      guide="network"
       instructions={
         <>
           <Typography variant="body1" gutterBottom>

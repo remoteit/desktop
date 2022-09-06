@@ -26,8 +26,6 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
   }))
   const accessibleNetworks = allNetworks.filter(n => n.owner.id === ownerId)
 
-  if (accessibleNetworks.length < 1) return null
-
   return (
     <AccordionMenuItem
       gutters
@@ -40,7 +38,7 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
         <Box display="flex" alignItems="center">
           {device?.permissions.includes('MANAGE') && !device.shared ? (
             <>
-              <Chip size="small" label={joinedNetworks.length ? joinedNetworks.length.toLocaleString() : 'None'} />
+              {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
               <DynamicButtonMenu
                 options={accessibleNetworks.map(n => ({
                   value: n.id,
@@ -48,10 +46,9 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
                   color: n.enabled ? 'primary' : undefined,
                   disabled: !!joinedNetworks.some(j => j.id === n.id),
                 }))}
-                title={!accessibleNetworks.length ? 'No available networks' : 'Add to network'}
+                title={!accessibleNetworks.length ? 'Add a network' : 'Connect to network'}
                 size="icon"
                 icon="plus"
-                disabled={!accessibleNetworks.length}
                 onClick={networkId => {
                   if (!service) return
                   dispatch.networks.add({

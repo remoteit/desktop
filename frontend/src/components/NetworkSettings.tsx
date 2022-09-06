@@ -26,7 +26,7 @@ export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> =
       <ListItemSetting
         icon="power-off"
         label="Auto start"
-        subLabel="Will auto-start new services added to the network."
+        subLabel="Auto start connections when added"
         toggle={network.enabled}
         onClick={() => dispatch.networks.updateNetwork({ ...network, enabled: !network.enabled })}
       />

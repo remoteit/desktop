@@ -193,6 +193,10 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
+              <Typography variant="caption">
+                Port the application's service is running on. Do not change this unless you know it is running on a
+                custom port.
+              </Typography>
             </ListItem>
             {thisDevice && (
               <ListItem className={css.field}>
