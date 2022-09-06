@@ -17,7 +17,7 @@ platforms.register({
   component: Component,
   types: { 256: 'Mac' },
   installation: {
-    instructions: 'Install the Desktop or CLI to enable remote access.',
+    instructions: 'Install the Desktop or CLI on the Mac to you want to enable remote access to.',
     qualifier: 'Macintosh installation',
     link: 'https://link.remote.it/download',
   },

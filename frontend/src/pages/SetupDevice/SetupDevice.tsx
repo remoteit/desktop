@@ -9,6 +9,7 @@ import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../models/accounts'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
+import { Link } from '../../components/Link'
 import { spacing } from '../../styling'
 
 type Props = { os?: Ios }
@@ -39,7 +40,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   return (
     <Body center maxHeight="85%">
       <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
-        Register your {osName(os)} for remote access
+        Setup your {osName(os)} for remote access or<Link to={`/add/${os}`}>add different {osName(os)}</Link>
       </Typography>
       <form
         onSubmit={event => {
@@ -82,7 +83,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             disabled={!name || disableRegister}
             type="submit"
           >
-            Register
+            Add Device
           </Button>
         </section>
         <LocalhostScanForm onSelect={setSelected} />
