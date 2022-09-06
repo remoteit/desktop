@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { Typography } from '@mui/material'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSidebar } from './OrganizationSidebar'
@@ -20,7 +21,22 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
-          <GuideStep guide="guideAWS" step={6} instructions="Now add your own first device!" autoNext>
+          <GuideStep
+            guide="register"
+            placement="right-start"
+            autoNext
+            autoStart
+            highlight
+            step={1}
+            instructions={
+              <>
+                <Typography variant="h2" gutterBottom>
+                  Welcome to Remote.It
+                </Typography>
+                <Typography variant="body2">To get started click the '+' icon to add your first device.</Typography>
+              </>
+            }
+          >
             <RegisterMenu />
           </GuideStep>
         </section>

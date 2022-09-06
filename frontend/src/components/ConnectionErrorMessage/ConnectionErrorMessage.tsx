@@ -32,7 +32,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
                 color="alwaysWhite"
                 onClick={async () => {
                   await dispatch.feedback.set({
-                    subject: `Connection Issue Report to ${connection?.name}`,
+                    subject: `Connection Issue Report for ${connection?.name}`,
                     data: connection,
                   })
                   history.push('/feedback')

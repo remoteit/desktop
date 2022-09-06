@@ -112,7 +112,7 @@ export const Connect: React.FC = () => {
         </Notice>
       ) : (
         <GuideStep
-          guide="guideAWS"
+          guide="aws"
           step={5}
           instructions={
             'Enable the connect on demand listener by adding the service to your network.' +

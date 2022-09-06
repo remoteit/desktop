@@ -615,6 +615,7 @@ declare global {
     done?: boolean
     title?: string
     active?: boolean
+    weight: number
   }
 
   type IPreferences = {

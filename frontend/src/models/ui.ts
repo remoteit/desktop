@@ -3,14 +3,14 @@ import { Theme } from '@mui/material'
 import { RootModel } from '.'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
+import { ApplicationState } from '../store'
 import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
-  'guideAWS',
-  'guideNetwork',
+  'guides',
   'themeMode',
   'accordion',
   'drawerMenu',
@@ -68,8 +68,7 @@ type UIState = {
   navigation: ILookup<string>
   navigationBack: string[]
   navigationForward: string[]
-  guideAWS: IGuide
-  guideNetwork: IGuide
+  guides: ILookup<IGuide>
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -124,9 +123,12 @@ export const defaultState: UIState = {
   navigation: {},
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 1, total: 6, done: false },
-  guideNetwork: { title: 'Add Network Guide', step: 1, total: 3, done: false },
-  // guideService: { title: 'Add Service Guide ', step: 1, total: 3, done: false },
+  guides: {
+    aws: { title: 'AWS Guide', step: 1, total: 6, done: false, weight: 20 },
+    network: { title: 'Add Network Guide', step: 1, total: 3, done: false, weight: 30 },
+    service: { title: 'Add Service Guide ', step: 1, total: 3, done: false, weight: 40 },
+    register: { title: 'Device Registration Guide', step: 1, total: 1, done: false, weight: 10 },
+  },
   accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
   autoConnect: false,
   autoLaunch: false,
@@ -143,11 +145,14 @@ export default createModel<RootModel>()({
       })
       await dispatch.ui.restoreState()
     },
-    async restoreState(_: void, globalState) {
+    async restoreState(_: void, state) {
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
-        const value = getLocalStorage(globalState, `ui-${key}`)
-        if (value) states[key] = value
+        const value = getLocalStorage(state, `ui-${key}`)
+        if (value) {
+          if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
+          else states[key] = value
+        }
       })
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
@@ -184,8 +189,8 @@ export default createModel<RootModel>()({
       const columnWidths = { ...globalState.ui.columnWidths, [params.id]: params.width }
       dispatch.ui.setPersistent({ columnWidths })
     },
-    async guide({ guide, ...props }: ILookup<any>, globalState) {
-      let state = globalState.ui[guide]
+    async guide({ guide: key, ...props }: ILookup<any>, globalState) {
+      let state = globalState.ui.guides[key]
       const active = props.active === undefined ? state.active : props.active
 
       if (active) {
@@ -196,13 +201,11 @@ export default createModel<RootModel>()({
         if (props.done) props.active = false
       }
 
-      state = { ...state, ...props }
-      dispatch.ui.setPersistent({ [guide]: state })
+      const guides = { ...globalState.ui.guides, [key]: { ...state, ...props } }
+      dispatch.ui.setPersistent({ guides })
     },
     async resetGuides(_: void, globalState) {
-      Object.keys(globalState.ui).forEach(key => {
-        if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
-      })
+      dispatch.ui.setPersistent({ guides: { ...defaultState.guides } })
     },
     async accordion(params: ILookup<boolean>, state) {
       const accordion = { ...state.ui.accordion, ...params }
@@ -241,3 +244,14 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectPriorityGuide(state: ApplicationState, guide: string): IGuide {
+  const all = state.ui.guides
+  const result = all[guide] || {}
+  let active = result.active
+  for (let key in all) {
+    const g = all[key]
+    if (g.active && g.weight < result.weight) active = false
+  }
+  return { ...result, active }
+}

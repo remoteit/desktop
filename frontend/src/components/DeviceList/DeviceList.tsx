@@ -50,7 +50,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           columnWidths={columnWidths}
         />
         <GuideStep
-          guide="guideAWS"
+          guide="aws"
           step={3}
           placement="bottom"
           instructions="Click on the Guest VPC device to continue."

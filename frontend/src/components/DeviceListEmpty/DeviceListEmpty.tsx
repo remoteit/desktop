@@ -32,16 +32,11 @@ export const DeviceListEmpty: React.FC = () => {
           <GuideStep
             step={1}
             showStart
-            guide="guideAWS"
+            guide="aws"
             instructions="Click the button below to have our device shared with you."
             autoStart
           >
-            <GuideStep
-              guide="guideAWS"
-              step={2}
-              instructions="Please wait while the device is being shared..."
-              hideArrow
-            >
+            <GuideStep guide="aws" step={2} instructions="Please wait while the device is being shared..." hideArrow>
               <Button
                 onClick={() => devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })}
                 variant="contained"

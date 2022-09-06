@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
 import { ApplicationState } from '../store'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import { Typography, List, ListItemText, ListItemIcon, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
@@ -18,6 +18,7 @@ import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { fontSizes } from '../styling'
+import { IconButton } from '../buttons/IconButton'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -106,7 +107,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
         {device.services.sort(getSortOptions(sortService).sortService).map(s => (
           <GuideStep
             key={s.id}
-            guide="guideAWS"
+            guide="aws"
             step={4}
             instructions="Select the service below."
             hide={!s.name.includes('Start')}
@@ -121,6 +122,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             >
               <ListItemText primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />} />
               <ListItemSecondaryAction>
+                <IconButton name="play" color="primary" size="xs" type="solid" buttonBaseSize="small" />
                 <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
               </ListItemSecondaryAction>
             </ListItemLocation>
