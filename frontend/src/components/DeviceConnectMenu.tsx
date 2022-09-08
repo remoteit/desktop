@@ -40,9 +40,9 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
     setAnchorEl(null)
   }
 
-  const selectHandler = (c: IConnection) => {
+  const selectHandler = (c: IConnection, serviceId: string) => {
     closeHandler()
-    history.push(`/devices/${device.id}/${c.id}`)
+    history.push(`/devices/${device.id}/${serviceId}`)
     if (c.enabled) dispatch.connections.disconnect(c)
     else dispatch.connections.connect(c)
   }
@@ -100,7 +100,7 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
               dense
               key={service.id}
               color={service.state === 'active' ? 'primary' : 'grayDark'}
-              onClick={() => selectHandler(c)}
+              onClick={() => selectHandler(c, service.id)}
               value={service.id}
               disabled={service.state === 'inactive'}
             >
