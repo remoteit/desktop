@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
+import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import {
@@ -15,11 +16,8 @@ import { IconButton } from '../../buttons/IconButton'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
 
-type Props = {
-  device: IDevice
-}
-
-export const NotificationSettings: React.FC<Props> = ({ device }) => {
+export const NotificationSettings: React.FC = () => {
+  const { device } = useContext(DeviceContext)
   const { devices } = useDispatch<Dispatch>()
   const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
     globalNotificationEmail: state.user.notificationSettings?.emailNotifications,
@@ -41,6 +39,8 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
   useEffect(() => {
     setEmailOverridden(typeof emailNotification === 'boolean')
   }, [emailNotification])
+
+  if (!device) return null // TODO refactor and make undefined check in devicerouter
 
   const handleEmailNotifications = async () => {
     const currentEmailNotification = emailOverridden ? emailNotification || false : globalNotificationEmail

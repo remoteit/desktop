@@ -43,7 +43,7 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingLeft: smallScreen ? 0 : spacing.xl,
     paddingTop: spacing.xl,
     paddingBottom: spacing.xxl,
-    '& .MuiButton-root': { marginTop: spacing.lg },
+    '& .MuiButton-root': { marginTop: spacing.lg, marginBottom: spacing.md },
     '& .MuiTypography-body2': { marginBottom: spacing.xs },
     '& .MuiIconButton-root': {
       minHeight: '3em',

@@ -16,7 +16,6 @@ import { Container } from '../components/Container'
 import { Connect } from '../components/Connect'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionPage: React.FC = () => {
   const { deviceID, serviceID } = useParams<{ deviceID?: string; serviceID?: string }>()
@@ -34,13 +33,12 @@ export const ConnectionPage: React.FC = () => {
   })
 
   useEffect(() => {
-    analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
 
     if (!device && id) devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
-  if (!device && fetching) return <LoadingMessage message="Fetching data" />
+  if (!device && fetching) return <LoadingMessage />
   if (!service || !device) return <NoConnectionPage />
 
   return (

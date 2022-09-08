@@ -7,7 +7,7 @@ export const DeviceLogPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   if (!device) return null
 
   return (
-    <DeviceHeaderMenu device={device} header={<EventHeader device={device} />}>
+    <DeviceHeaderMenu header={<EventHeader device={device} />}>
       <EventList device={device} />
     </DeviceHeaderMenu>
   )

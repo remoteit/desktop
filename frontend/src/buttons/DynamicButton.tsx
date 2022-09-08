@@ -1,19 +1,21 @@
 import React from 'react'
+import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
-import { Color } from '../styling'
+import { IconButton, Button, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
+import { Color } from '../styling'
 
 export type DynamicButtonProps = {
   icon?: string
   iconType?: IconProps['type']
   title: string
   color?: Color
-  options?: { label: string; value: string; color?: string }[]
   size?: 'icon' | 'medium' | 'small' | 'large'
+  iconSize?: IconProps['size']
   disabled?: boolean
   loading?: boolean
   variant?: 'text' | 'outlined' | 'contained'
+  className?: string
   onClick: React.MouseEventHandler<HTMLButtonElement>
   fullWidth?: boolean
 }
@@ -24,10 +26,12 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     title,
     icon,
     iconType = 'regular',
+    iconSize,
     onClick,
     color,
     size = 'icon',
     variant = 'contained',
+    className,
     disabled,
     loading,
     fullWidth,
@@ -42,9 +46,9 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     <Icon
       name={icon}
       type={iconType}
-      size={size === 'small' ? 'sm' : 'md'}
+      size={iconSize}
       color={size === 'icon' ? color : undefined}
-      inline={size !== 'icon'}
+      inlineLeft={size !== 'icon'}
       spin={loading}
       fixedWidth
     />
@@ -52,9 +56,15 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
 
   if (size === 'small') {
     return (
-      <Button variant={variant} onClick={onClick} disabled={disabled} size={size} className={css.button} fullWidth>
+      <Button
+        variant={variant}
+        onClick={onClick}
+        disabled={disabled}
+        size={size}
+        className={classnames(className, css.button)}
+      >
+        {IconComponent}
         {title}
-        {loading && IconComponent}
       </Button>
     )
   }
@@ -69,22 +79,22 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
         className={css.button}
         fullWidth={fullWidth}
       >
-        {title}
         {IconComponent}
+        {title}
       </Button>
     )
   }
 
   return (
-    <Tooltip title={title}>
-      <span>
-        <IconButton disabled={disabled} onClick={onClick} size="large">
-          {IconComponent}
-        </IconButton>
-      </span>
-    </Tooltip>
+    <IconButton className={className} disabled={disabled} onClick={onClick} size="small">
+      {IconComponent}
+    </IconButton>
   )
 }
+//   <Tooltip title={title} className={className} placement="left" arrow>
+//     <span>
+//     </span>
+//   </Tooltip>
 
 const useStyles = makeStyles(({ palette }) => ({
   button: (props: DynamicButtonProps) => {

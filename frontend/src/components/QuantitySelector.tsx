@@ -61,7 +61,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'center',
     '& > .MuiButton-root': { height: 30, borderRadius: 0 },
     '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
-    '& > .MuiButton-root:first-child': { borderTopLeftRadius: spacing.md, borderBottomLeftRadius: spacing.md },
+    '& > .MuiButton-root:first-of-type': { borderTopLeftRadius: spacing.md, borderBottomLeftRadius: spacing.md },
     '& > .MuiButton-root:last-child': { borderTopRightRadius: spacing.md, borderBottomRightRadius: spacing.md },
   },
   button: {

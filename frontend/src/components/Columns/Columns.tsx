@@ -30,7 +30,7 @@ const useStyles = makeStyles({
   two: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    '& > *:first-child': { flexGrow: 1 },
+    '& > *:first-of-type': { flexGrow: 1 },
     '& > *:last-child': {
       paddingRight: spacing.xl,
       paddingLeft: spacing.sm,

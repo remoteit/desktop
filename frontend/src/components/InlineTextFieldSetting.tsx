@@ -20,6 +20,7 @@ type Props = {
   warning?: React.ReactNode
   modified?: boolean
   disableGutters?: boolean
+  autoCorrect?: boolean
   debug?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
@@ -33,6 +34,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   value = '',
   resetValue = '',
   maxLength,
+  autoCorrect,
   onError,
   onSave,
   ...props
@@ -89,7 +91,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
             const original = value.trim()
             value = value.replace(filter, '')
             if (original !== value.trim()) {
-              setError(`Invalid character. (${original.replace(value, '')})`)
+              if (!autoCorrect) setError(`Invalid character. (${original.replace(value, '')})`)
             } else {
               setError(undefined)
             }

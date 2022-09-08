@@ -77,7 +77,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
   return (
     <>
       <Typography className={css.body} variant="body2" color="textSecondary">
-        <Title>Services</Title>
+        <Title>Active services found</Title>
         <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" size="lg" />
       </Typography>
       <List className="collapseList">
@@ -100,6 +100,8 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
           </ListItemCheckbox>
         ))}
       </List>
+      <br />
+      <Typography variant="caption">Manually add additional services after registration.</Typography>
     </>
   )
 }

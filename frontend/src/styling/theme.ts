@@ -96,7 +96,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               opacity: 1,
               pointerEvents: 'all',
               '& .fa-caret-down': { display: 'none' },
-              '& .MuiButton-root:first-child': { pointerEvents: 'none' },
+              '& .MuiButton-root:first-of-type': { pointerEvents: 'none' },
             },
             '&.Mui-expanded': { minHeight: 0 },
           },
@@ -303,8 +303,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs },
             },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
-            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, visibility: 'hidden' },
-            '&:hover .MuiIconButton-sizeSmall': { visibility: 'visible' },
+            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, opacity: 0 },
+            '&:hover .MuiIconButton-sizeSmall': { opacity: 1, transition: 'opacity 200ms 100ms' },
+            // For device list
+            '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
+            '& .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
+            '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
           },
           gutters: {
             width: `calc(100% - ${spacing.md * 2}px)`,
@@ -321,12 +325,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiFormControl-root': { verticalAlign: 'middle' },
           },
           container: {
-            '& .MuiListItemSecondaryAction-root': {},
-            '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
-            '&:hover': {
-              '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
-              '& .hoverHide': { display: 'none' },
-            },
+            // For service list
+            '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
+            '& .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
+            '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
           },
           dense: {
             '& .MuiInputBase-root': { fontSize: fontSizes.base },
@@ -368,7 +370,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               marginLeft: spacing.xs,
               marginRight: spacing.xs,
               paddingRight: spacing.sm,
-              paddingLeft: spacing.xs,
+              paddingLeft: spacing.sm,
               whiteSpace: 'nowrap',
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
@@ -429,6 +431,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             paddingBottom: spacing.xxs,
             borderRadius: radius,
           },
+          adornedEnd: {
+            '&.MuiInputBase-adornedEnd svg': { marginRight: spacing.sm },
+          },
         },
       },
       MuiInputLabel: {
@@ -474,6 +479,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.Mui-disabled': { backgroundColor: palette.grayLightest.main },
             '&:hover': { backgroundColor: palette.primaryHighlight.main },
             '&:focused': { backgroundColor: palette.primaryHighlight.main },
+            '& svg': { marginRight: spacing.xs },
           },
           input: { padding: '22px 12px 10px' },
           underline: { '&:before, &:after': { display: 'none' } },

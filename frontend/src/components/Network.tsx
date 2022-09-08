@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
@@ -39,6 +40,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight,
           color={highlight ? 'primary' : 'grayDark'}
           disabled={noLink}
           hideDisableFade
+          buttonBaseSize="small"
           type="solid"
           size="sm"
         />
@@ -52,7 +54,9 @@ export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight,
         {!network?.serviceIds.length && (
           <ListItem>
             <ListItemIcon />
-            <Typography variant="caption">No Services</Typography>
+            <Typography variant="caption">
+              Add services through the <Link to="/devices">device list</Link>
+            </Typography>
           </ListItem>
         )}
       </Collapse>
@@ -71,7 +75,7 @@ const useStyles = makeStyles(({ palette }) => ({
             width: `calc(100% - ${spacing.lg}px)`,
             marginLeft: spacing.sm,
           },
-          '& .MuiListItemIcon-root:first-child': {
+          '& .MuiListItemIcon-root:first-of-type': {
             marginLeft: -spacing.sm,
           },
           '& .MuiListItem-button': {
@@ -83,7 +87,7 @@ const useStyles = makeStyles(({ palette }) => ({
             backgroundColor: palette.white.main,
           },
         }
-      : { '& button': { color: palette.gray.main, marginRight: spacing.xs } },
+      : {},
   note: {
     color: palette.primary.main,
     textTransform: 'uppercase',

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import classnames from 'classnames'
 import {
   IP_PRIVATE,
   DEFAULT_SERVICE,
@@ -8,7 +9,7 @@ import {
   MAX_DESCRIPTION_LENGTH,
 } from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
-import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
+import { Typography, TextField, List, ListItem, MenuItem, Button, Collapse } from '@mui/material'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
@@ -22,6 +23,7 @@ import { findType } from '../../models/applicationTypes'
 import { Gutters } from '../Gutters'
 import { spacing } from '../../styling'
 import { Notice } from '../Notice'
+import { Quote } from '../Quote'
 import { emit } from '../../services/Controller'
 import { Icon } from '../Icon'
 
@@ -60,13 +62,16 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
   }
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IServiceForm>(initForm)
+  const [advanced, setAdvanced] = useState<boolean>(false)
   const appType = findType(applicationTypes, form.typeID)
   const css = useStyles()
 
   disabled = disabled || saving
 
   useEffect(() => {
-    setForm(initForm())
+    const newForm = initForm()
+    setForm(newForm)
+    setAdvanced(newForm.host !== IP_PRIVATE)
   }, [service])
 
   useEffect(() => {
@@ -188,25 +193,9 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
-            </ListItem>
-            <ListItem className={css.field}>
-              <TextField
-                required
-                label="Service Host"
-                value={form.host}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => setForm({ ...form, host: event.target.value })}
-                InputProps={{
-                  endAdornment: thisDevice && <CheckIcon />,
-                }}
-              />
               <Typography variant="caption">
-                Do not change if hosting a local service. Use a local network IP address or fully qualified domain name
-                to configure this as a jump service to system on your local network.
-                <br />
-                <i>AWS example:</i>
-                <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+                Port the application's service is running on. Do not change this unless you know it is running on a
+                custom port.
               </Typography>
             </ListItem>
             {thisDevice && (
@@ -223,11 +212,12 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
                   }
                 >
                   {isValid ? (
-                    'Service found on port and host address!'
+                    `Service found on ${form.host}:${form.port}!`
                   ) : (
                     <>
-                      No service found running on port and host address.
+                      No service found running on {form.host}:{form.port}.
                       <AddFromNetwork allowScanning={thisDevice} />
+                      <em>Double check that the host application running.</em>
                     </>
                   )}
                 </Notice>
@@ -235,6 +225,45 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
             )}
           </>
         )}
+        <ListItemCheckbox
+          checked={advanced}
+          label="Use as jump host"
+          subLabel="Host any service that this system can access on the local network."
+          disabled={disabled}
+          onClick={() => {
+            if (advanced) setForm({ ...form, host: IP_PRIVATE })
+            setAdvanced(!advanced)
+          }}
+        />
+        <ListItem className={classnames(css.fieldSub, css.fieldSubCheckbox)}>
+          <Collapse in={advanced}>
+            <Quote margin="xs" indent="checkbox">
+              <List disablePadding>
+                <ListItem disableGutters>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Service Host"
+                    value={form.host}
+                    disabled={disabled}
+                    variant="filled"
+                    onChange={event => setForm({ ...form, host: event.target.value })}
+                    InputProps={{
+                      endAdornment: thisDevice && <CheckIcon />,
+                    }}
+                  />
+                  <Typography variant="caption">
+                    Enter a local network IP address or fully qualified domain name to configure this as a jump service
+                    to a system on your local network.
+                    <br />
+                    <i>AWS example:</i>
+                    <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+                  </Typography>
+                </ListItem>
+              </List>
+            </Quote>
+          </Collapse>
+        </ListItem>
         {editable && (
           <ListItemCheckbox
             checked={form.enabled}
@@ -249,9 +278,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
               </>
             }
             disabled={disabled}
-            onClick={() => {
-              setForm({ ...form, enabled: !form.enabled })
-            }}
+            onClick={() => setForm({ ...form, enabled: !form.enabled })}
           />
         )}
       </List>
@@ -296,6 +323,13 @@ export const useStyles = makeStyles({
     },
     '& .MuiFormControl-root + .MuiFormControl-root': {
       marginTop: spacing.sm,
+    },
+  },
+  fieldSubCheckbox: {
+    '& .MuiFormControl-root': {
+      alignSelf: 'flex-start',
+      minWidth: 300 - spacing.xl,
+      width: 300 - spacing.xl,
     },
   },
 })

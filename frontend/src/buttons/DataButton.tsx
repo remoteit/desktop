@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { ListItemText, IconButton, InputLabel, Tooltip } from '@mui/material'
+import { ListItemText, IconButton, InputLabel, Tooltip, darken } from '@mui/material'
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -13,6 +13,7 @@ export type DataButtonProps = {
   gutterBottom?: boolean
   fullWidth?: boolean
   showBackground?: boolean
+  alwaysWhite?: boolean
   onClick: (event?: any) => void
 }
 
@@ -25,9 +26,10 @@ export const DataButton: React.FC<DataButtonProps> = ({
   gutterBottom,
   fullWidth,
   showBackground,
+  alwaysWhite,
   onClick,
 }) => {
-  const css = useStyles({ showBackground, fullWidth, gutterBottom })
+  const css = useStyles({ showBackground, fullWidth, gutterBottom, alwaysWhite })
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
@@ -47,21 +49,31 @@ const useStyles = makeStyles(({ palette }) => ({
     showBackground,
     fullWidth,
     gutterBottom,
+    alwaysWhite,
   }: {
     showBackground?: boolean
     fullWidth?: boolean
     gutterBottom?: boolean
+    alwaysWhite?: boolean
   }) => ({
     display: 'flex',
     alignItems: 'center',
     textAlign: 'left',
+    color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main,
     padding: spacing.sm,
     paddingLeft: spacing.xxs,
     paddingRight: spacing.lg,
     width: fullWidth ? '100%' : undefined,
-    marginBottom: gutterBottom ? spacing.xs : undefined,
-    backgroundColor: showBackground ? palette.grayLightest.main : undefined,
-    '&:hover': { backgroundColor: showBackground ? palette.primaryHighlight.main : undefined },
+    marginBottom: gutterBottom ? spacing.sm : undefined,
+    backgroundColor: showBackground ? (alwaysWhite ? palette.screen.main : palette.grayLightest.main) : undefined,
+    '& .MuiTypography-root > *': { color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main },
+    '&:hover': {
+      backgroundColor: showBackground
+        ? alwaysWhite
+          ? darken(palette.primary.main, 0.15)
+          : palette.primaryHighlight.main
+        : undefined,
+    },
     '& svg': { minWidth: 60 },
   }),
   key: {

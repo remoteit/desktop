@@ -75,7 +75,7 @@ export const TestPage: React.FC = () => {
           toggle={!!preferences.switchApi}
         />
         <ListItem>
-          <Quote margin={null} listItem noInset>
+          <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
               <InlineTextFieldSetting
                 value={getGraphQLApi()}

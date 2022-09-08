@@ -22,7 +22,6 @@ class Platforms {
   installed: string[] = [
     'advantech',
     'android',
-    'apple',
     'arm',
     'aws',
     'axis',
@@ -31,6 +30,7 @@ class Platforms {
     'gcp',
     'ios',
     'linux',
+    'mac',
     'nas',
     'nvidia',
     'openwrt',

@@ -9,6 +9,7 @@ import { ConnectionPage } from '../pages/ConnectionPage'
 import { NetworksPage } from '../pages/NetworksPage'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
+import { NetworkAddPage } from '../pages/NetworkAddPage'
 import { NetworkPage } from '../pages/NetworkPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { ClaimPage } from '../pages/ClaimPage'
@@ -78,7 +79,7 @@ export const Router: React.FC = () => {
       <Redirect
         from="/connect/:serviceID"
         to={{
-          pathname: '/networks/:serviceID',
+          pathname: '/connections/:serviceID',
           state: { autoConnect: true },
         }}
       />
@@ -86,7 +87,7 @@ export const Router: React.FC = () => {
       <Redirect
         from="/launch/:serviceID"
         to={{
-          pathname: '/networks/:serviceID',
+          pathname: '/connections/:serviceID',
           state: { autoLaunch: true },
         }}
       />
@@ -94,7 +95,7 @@ export const Router: React.FC = () => {
       <Redirect
         from="/copy/:serviceID"
         to={{
-          pathname: '/networks/:serviceID',
+          pathname: '/connections/:serviceID',
           state: { autoCopy: true },
         }}
       />
@@ -139,6 +140,10 @@ export const Router: React.FC = () => {
 
               <Route path="/networks/view/:networkID">
                 <NetworkPage />
+              </Route>
+
+              <Route path="/networks/add">
+                <NetworkAddPage />
               </Route>
 
               <Route path="/networks/:serviceID/lan">

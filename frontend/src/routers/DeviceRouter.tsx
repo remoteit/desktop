@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { DeviceContext } from '../services/Context'
 import { Switch, Route, useParams, useHistory } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { getDeviceModel } from '../models/accounts'
@@ -24,9 +25,10 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { remoteUI, device, thisId, fetching, silent } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, device, connections, thisId, fetching, silent } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     fetching: getDeviceModel(state).fetching,
+    connections: state.connections.all.filter(c => c.deviceID === deviceID),
     device: selectDevice(state, deviceID),
     thisId: state.backend.thisId,
     silent: state.ui.silent,
@@ -53,62 +55,64 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   if (fetching && !device) return <LoadingMessage message="Fetching device" />
 
   return (
-    <DynamicPanel
-      primary={<DevicePage device={device} />}
-      secondary={
-        <Switch>
-          <Route path="/devices/:deviceID/add/scan">
-            <ScanPage />
-          </Route>
-          <Route path="/devices/:deviceID/add">
-            <ServiceAddPage device={device} />
-          </Route>
-          <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
-            <SharePage />
-          </Route>
-          <Route path="/devices/:deviceID/edit">
-            <DeviceEditPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/transfer">
-            <DeviceTransferPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/users">
-            <DeviceUsersPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/logs">
-            <DeviceLogPage device={device} />
-          </Route>
-          <Route path={['/devices/:deviceID', '/devices/:deviceID/details']} exact>
-            <DeviceDetailPage device={device} />
-          </Route>
-          <Route
-            path={[
-              '/devices/:deviceID/:serviceID/users/share',
-              '/devices/:deviceID/:serviceID/users/:userID',
-              '/devices/:deviceID/:serviceID/share',
-            ]}
-          >
-            <SharePage />
-          </Route>
-          <Route path="/devices/:deviceID/:serviceID/users">
-            <ServiceUsersPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/:serviceID/edit">
-            <ServiceEditPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/:serviceID/details">
-            <ServiceDetailPage device={device} />
-          </Route>
-          <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
-            <LanSharePage />
-          </Route>
-          <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
-            <ServiceConnectPage device={device} />
-          </Route>
-        </Switch>
-      }
-      layout={layout}
-      root="/devices/:deviceID"
-    />
+    <DeviceContext.Provider value={{ device, connections }}>
+      <DynamicPanel
+        primary={<DevicePage device={device} />}
+        secondary={
+          <Switch>
+            <Route path="/devices/:deviceID/add/scan">
+              <ScanPage />
+            </Route>
+            <Route path="/devices/:deviceID/add">
+              <ServiceAddPage device={device} />
+            </Route>
+            <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
+              <SharePage />
+            </Route>
+            <Route path="/devices/:deviceID/edit">
+              <DeviceEditPage />
+            </Route>
+            <Route path="/devices/:deviceID/transfer">
+              <DeviceTransferPage device={device} />
+            </Route>
+            <Route path="/devices/:deviceID/users">
+              <DeviceUsersPage device={device} />
+            </Route>
+            <Route path="/devices/:deviceID/logs">
+              <DeviceLogPage device={device} />
+            </Route>
+            <Route path={['/devices/:deviceID', '/devices/:deviceID/details']} exact>
+              <DeviceDetailPage />
+            </Route>
+            <Route
+              path={[
+                '/devices/:deviceID/:serviceID/users/share',
+                '/devices/:deviceID/:serviceID/users/:userID',
+                '/devices/:deviceID/:serviceID/share',
+              ]}
+            >
+              <SharePage />
+            </Route>
+            <Route path="/devices/:deviceID/:serviceID/users">
+              <ServiceUsersPage device={device} />
+            </Route>
+            <Route path="/devices/:deviceID/:serviceID/edit">
+              <ServiceEditPage device={device} />
+            </Route>
+            <Route path="/devices/:deviceID/:serviceID/details">
+              <ServiceDetailPage device={device} />
+            </Route>
+            <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
+              <LanSharePage />
+            </Route>
+            <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
+              <ServiceConnectPage device={device} />
+            </Route>
+          </Switch>
+        }
+        layout={layout}
+        root="/devices/:deviceID"
+      />
+    </DeviceContext.Provider>
   )
 }

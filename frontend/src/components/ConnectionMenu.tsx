@@ -38,7 +38,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           dense
           onClick={async () => {
             await dispatch.feedback.set({
-              subject: `Connection Issue Report to ${connection?.name}`,
+              subject: `Connection Issue Report for ${connection?.name}`,
               data: connection,
             })
             handleClose()

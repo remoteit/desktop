@@ -10,9 +10,9 @@ export const NoConnectionPage: React.FC = () => {
     <Box className={css.container}>
       <Box className={css.box}>
         <Icon name="mouse-pointer" type="solid" size="lg" className={css.icon} />
-        <Typography variant="body2" color="primary">
-          Select a <br />
-          connection to
+        <Typography variant="body2" color="GrayText">
+          Select an <br />
+          item on the left
           <br /> view its details.
         </Typography>
       </Box>
@@ -26,7 +26,7 @@ const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'center',
   },
   box: {
-    backgroundColor: palette.primaryHighlight.main,
+    backgroundColor: palette.grayLightest.main,
     borderRadius: spacing.md,
     padding: spacing.xl,
     marginTop: '5vw',

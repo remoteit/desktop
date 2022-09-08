@@ -8,6 +8,7 @@ export const DataCopy: React.FC<{
   showBackground?: boolean
   fullWidth?: boolean
   gutterBottom?: boolean
+  alwaysWhite?: boolean
 }> = props => {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
 

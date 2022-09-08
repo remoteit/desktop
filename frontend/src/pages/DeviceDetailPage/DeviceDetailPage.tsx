@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react'
+import React, { useContext } from 'react'
+import { DeviceContext } from '../../services/Context'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
@@ -6,19 +7,15 @@ import { deviceAttributes } from '../../components/Attributes'
 import { selectLimitsLookup } from '../../models/organization'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Gutters } from '../../components/Gutters'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
+export const DeviceDetailPage: React.FC = () => {
+  const { device } = useContext(DeviceContext)
   const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state, device?.accountId))
-
-  useEffect(() => {
-    analyticsHelper.page('DevicesDetailPage')
-  }, [])
 
   if (!device) return null
 
   return (
-    <DeviceHeaderMenu device={device}>
+    <DeviceHeaderMenu>
       <Gutters>
         <DataDisplay attributes={deviceAttributes} device={device} limits={limits} />
       </Gutters>

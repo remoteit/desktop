@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
+import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { Menu, MenuItem, Fade, Box, darken } from '@mui/material'
-import { DynamicButton, DynamicButtonProps } from './DynamicButton'
+import { Link } from 'react-router-dom'
+import { Divider, Menu, MenuItem, ListSubheader, ListItemIcon, Fade, darken } from '@mui/material'
+import { DynamicButton, DynamicButtonProps } from '../buttons/DynamicButton'
+import { Icon } from './Icon'
 
 type Props = DynamicButtonProps & {
+  options?: { label: string; value: string; color?: string; disabled?: boolean }[]
   onClick: (value?: string) => void
 }
 
-export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...props }) => {
+export const NetworksAddMenu: React.FC<Props> = ({ options = [], onClick, ...props }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [menuWidth, setMenuWidth] = useState<number>()
   const css = useStyles(props)
@@ -26,8 +30,6 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...p
     onClick(value)
   }
 
-  if (options.length < 2) return <DynamicButton {...props} onClick={() => selectHandler(options[0].value)} />
-
   return (
     <>
       <DynamicButton
@@ -38,7 +40,7 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...p
       />
       <Menu
         elevation={2}
-        classes={{ paper: props.color === 'primary' ? css.menu : undefined }}
+        classes={{ paper: classnames(props.color === 'primary' && css.menu), list: css.subhead }}
         anchorEl={anchorEl}
         open={!!anchorEl}
         onClose={closeHandler}
@@ -51,28 +53,50 @@ export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...p
           horizontal: 'right',
         }}
         PaperProps={{ style: { minWidth: menuWidth } }}
-        // getContentAnchorEl={null}
         TransitionComponent={Fade}
         disableAutoFocusItem
       >
-        {options.map(option => (
-          <MenuItem
-            dense
-            key={option.value}
-            color={option?.color}
-            onClick={() => selectHandler(option.value)}
-            value={option.value}
-            sx={{ color: option.color + '.main' }}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
+        {!!options.length && (
+          <ListSubheader disableGutters disableSticky>
+            Networks
+          </ListSubheader>
+        )}
+        {!!options.length &&
+          options.map(option => (
+            <MenuItem
+              dense
+              key={option.value}
+              color={option?.color}
+              onClick={() => selectHandler(option.value)}
+              value={option.value}
+              disabled={option.disabled}
+              sx={{ color: option.color + '.main' }}
+            >
+              {option.label}
+            </MenuItem>
+          ))}
+        {!!options.length && <Divider />}
+        <ListSubheader disableGutters disableSticky>
+          Create new
+        </ListSubheader>
+        <MenuItem dense component={Link} to="/networks/add">
+          <ListItemIcon>
+            <Icon name="plus" />
+          </ListItemIcon>
+          Network &nbsp;
+        </MenuItem>
       </Menu>
     </>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  subhead: {
+    paddingTop: 4,
+    '& .MuiListSubheader-root + .MuiDivider-root': {
+      marginTop: 2,
+    },
+  },
   menu: {
     '& .MuiList-root': {
       backgroundColor: palette.primary.main,

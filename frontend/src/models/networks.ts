@@ -8,7 +8,7 @@ import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
   graphQLUpdateNetwork,
-  graphQLAddConnection,
+  graphQLSetConnection,
   graphQLRemoveConnection,
   graphQLAddNetworkShare,
   graphQLRemoveNetworkShare,
@@ -39,6 +39,16 @@ const defaultCloudNetwork: INetwork = {
   icon: 'cloud',
 }
 
+export const sharedNetwork: INetwork = {
+  ...defaultNetwork(),
+  id: 'shared',
+  name: 'Shared',
+  permissions: [],
+  enabled: true,
+  shared: false,
+  icon: 'network-wired',
+}
+
 export const recentNetwork: INetwork = {
   ...defaultNetwork(),
   id: 'recent',
@@ -46,12 +56,6 @@ export const recentNetwork: INetwork = {
   permissions: [],
   enabled: false,
   icon: 'clock-rotate-left',
-}
-
-type INetworksAccountState = {
-  initialized: boolean
-  all: ILookup<INetwork[]>
-  default: INetwork
 }
 
 export type addConnectionProps = {
@@ -62,8 +66,16 @@ export type addConnectionProps = {
   enabled?: boolean
 }
 
+type INetworksAccountState = {
+  initialized: boolean
+  loading: boolean
+  all: ILookup<INetwork[]>
+  default: INetwork
+}
+
 const defaultAccountState: INetworksAccountState = {
   initialized: false,
+  loading: false,
   default: isPortal() ? defaultCloudNetwork : defaultLocalNetwork,
   all: {},
 }
@@ -78,6 +90,7 @@ export default createModel<RootModel>()({
     },
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
+      dispatch.networks.set({ loading: true })
       const result = await graphQLBasicRequest(
         ` query Networks($account: String) {
             login {
@@ -125,12 +138,17 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
 
-      dispatch.networks.parse(result)
+      await dispatch.networks.parse(result)
+      dispatch.networks.set({ loading: false })
     },
 
     async fetchIfEmpty(_: void, state) {
       const accountId = getActiveAccountId(state)
-      if (!state.networks.all[accountId]) dispatch.networks.fetch()
+      if (!state.networks.all[accountId]) {
+        await dispatch.networks.set({ initialized: false })
+        await dispatch.networks.fetch()
+        await dispatch.networks.set({ initialized: true })
+      }
     },
 
     async parse(result: AxiosResponse<any> | undefined, state) {
@@ -177,10 +195,11 @@ export default createModel<RootModel>()({
 
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode
+
       console.log('LOAD NETWORKS', parsed, devices)
 
       dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
-      dispatch.networks.setNetworks(parsed)
+      dispatch.networks.setNetworks({ networks: parsed, accountId })
     },
     async fetchCount(params: IOrganizationRole, state) {
       const options: gqlOptions = {
@@ -195,10 +214,6 @@ export default createModel<RootModel>()({
       const networks = selectNetworkByTag(state, options.tag)
       return networks.length
     },
-    async enable(params: INetwork) {
-      const queue = params.serviceIds.map(id => ({ id, enabled: params.enabled }))
-      dispatch.connections.queueEnable(queue)
-    },
     async start(serviceId: string, state) {
       const joined = selectNetworkByService(state, serviceId)
       if (!joined.length) dispatch.networks.add({ serviceId, networkId: DEFAULT_ID })
@@ -210,7 +225,7 @@ export default createModel<RootModel>()({
       copy.serviceIds = Array.from(unique)
       dispatch.networks.setNetwork(copy)
       if (props.networkId !== DEFAULT_ID) {
-        const result = await graphQLAddConnection(props)
+        const result = await graphQLSetConnection(props)
         if (result === 'ERROR' || !result?.data?.data?.addNetworkConnection) {
           dispatch.ui.set({ errorMessage: `Adding network failed. Please contact support.` })
           dispatch.networks.setNetwork(network)
@@ -308,12 +323,12 @@ export default createModel<RootModel>()({
       if (index >= 0) {
         const network = { ...networks[index], ...params }
         networks[index] = network
-        dispatch.networks.setNetworks(networks)
+        dispatch.networks.setNetworks({ networks, accountId: id })
       }
     },
-    async setNetworks(networks: INetwork[], state) {
-      const id = getActiveAccountId(state)
-      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
+    async setNetworks(props: { networks: INetwork[]; accountId?: string }, state) {
+      const id = props.accountId || getActiveAccountId(state)
+      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...props.networks] } })
     },
   }),
   reducers: {
@@ -356,11 +371,20 @@ export function selectNetwork(state: ApplicationState, networkId?: string): INet
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
 }
 
-export function selectActiveNetwork(state: ApplicationState): INetwork {
-  const active = selectEnabledConnections(state).map(connection => connection.id)
-  const network = defaultNetwork(state)
-  network.serviceIds = active
-  return network
+export function selectActiveNetworks(state: ApplicationState): INetwork[] {
+  const template = defaultNetwork(state)
+  const all = selectEnabledConnections(state)
+  let networks: INetwork[] = []
+
+  all.forEach(c => {
+    const accountId = c?.accountId || state.user.id
+    const name = state.organization.all[accountId || '']?.name || 'Unknown'
+    const index = networks.findIndex(n => n.id === accountId)
+    if (index === -1) networks.push({ ...template, id: accountId, name, serviceIds: [c.id] })
+    else networks[index].serviceIds.push(c.id)
+  })
+
+  return networks
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
@@ -377,7 +401,6 @@ export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): I
     }
     return false
   })
-  console.log('networks by tag', networks)
   return networks
 }
 

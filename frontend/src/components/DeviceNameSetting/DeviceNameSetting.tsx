@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { DeviceContext } from '../../services/Context'
 import { MAX_NAME_LENGTH } from '../../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -7,8 +8,9 @@ import { attributeName } from '../../shared/nameHelper'
 import { safeHostname } from '../../shared/nameHelper'
 import { getDevices } from '../../models/accounts'
 
-export const DeviceNameSetting: React.FC<{ device: IDevice }> = ({ device }) => {
+export const DeviceNameSetting: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
+  const { device } = useContext(DeviceContext)
   const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     nameBlacklist: getDevices(state)

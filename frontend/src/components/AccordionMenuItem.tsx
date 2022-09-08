@@ -84,7 +84,7 @@ const useStyles = makeStyles({
       marginTop: -spacing.xxs,
       marginBottom: -spacing.xxs,
     },
-    '& .MuiButton-root:first-child': {
+    '& .MuiButton-root:first-of-type': {
       width: '100%',
       textAlign: 'left',
       display: 'block',

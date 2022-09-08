@@ -11,4 +11,9 @@ platforms.register({
   name: 'Firewalla',
   component: Component,
   types: { 1216: 'Firewalla' },
+  installation: {
+    command: true,
+    qualifier: 'For any Firewalla system',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

@@ -25,7 +25,7 @@ export const NetworkPage: React.FC = () => {
   return (
     <GuideStep
       step={3}
-      guide="guideNetwork"
+      guide="network"
       instructions={
         <>
           <Typography variant="body1" gutterBottom>
@@ -47,7 +47,7 @@ export const NetworkPage: React.FC = () => {
           <Button
             variant="contained"
             size="small"
-            onClick={() => dispatch.networks.enable({ ...network, enabled: true })}
+            onClick={() => dispatch.connections.queueEnable({ ...network, enabled: true })}
           >
             Start All
           </Button>
@@ -55,7 +55,7 @@ export const NetworkPage: React.FC = () => {
             variant="contained"
             color="info"
             size="small"
-            onClick={() => dispatch.networks.enable({ ...network, enabled: false })}
+            onClick={() => dispatch.connections.queueEnable({ ...network, enabled: false })}
           >
             Stop All
           </Button>

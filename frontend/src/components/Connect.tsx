@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { List, Box, Button, Typography } from '@mui/material'
+import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
@@ -7,14 +9,12 @@ import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
-import { List, Button, Typography, Paper } from '@mui/material'
 import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
-import { ApplicationState, Dispatch } from '../store'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { NetworksAccordion } from './NetworksAccordion'
@@ -34,6 +34,7 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
+import { IconButton } from '../buttons/IconButton'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
@@ -74,44 +75,65 @@ export const Connect: React.FC = () => {
 
   return (
     <>
-      {ownDevice && (
+      <ConnectionDetails
+        connection={connection}
+        service={service}
+        session={session}
+        show={!!(connection?.enabled && connection?.host)}
+      />
+      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      {ownDevice ? (
         <Notice gutterTop solid>
-          <Typography variant="h2">The service is hosted on this device.</Typography>
+          <Typography variant="h3">This service is on this device.</Typography>
           <Typography variant="body2" gutterBottom>
-            Connecting can be done directly without using Remote.It.
+            You can connect directly without using Remote.It.
           </Typography>
           <DataCopy
             label="Connection endpoint"
             value={`${service.host || '127.0.0.1'}:${service.port}`}
+            gutterBottom
             showBackground
+            alwaysWhite
             fullWidth
           />
+          <Box display="flex">
+            <IconButton
+              name="user-plus"
+              to={`/devices/${device.id}/share`}
+              hide={!device.permissions.includes('MANAGE')}
+              color="alwaysWhite"
+              inlineLeft
+            />
+            <em>
+              Share this device to other users or sign in from another system to connect through Remote.it. Remote.It
+              will create an endpoints once connected.
+            </em>
+          </Box>
         </Notice>
+      ) : (
+        <GuideStep
+          guide="aws"
+          step={5}
+          instructions={
+            'Enable the connect on demand listener by adding the service to your network.' +
+            (connection.autoLaunch ? ' The connection will auto launch.' : '')
+          }
+        >
+          <Gutters size="md" className={css.gutters} bottom={null}>
+            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+            <ComboButton
+              connection={connection}
+              service={service}
+              permissions={device.permissions}
+              size="large"
+              fullWidth
+              disabled={ownDevice}
+              onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
+            />
+            <ConnectionMenu connection={connection} service={service} />
+          </Gutters>
+        </GuideStep>
       )}
-      <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
-      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      <GuideStep
-        guide="guideAWS"
-        step={5}
-        instructions={
-          'Enable the connect on demand listener by adding the service to your network.' +
-          (connection.autoLaunch ? ' The connection will auto launch.' : '')
-        }
-      >
-        <Gutters size="md" className={css.gutters} bottom={null}>
-          <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-          <ComboButton
-            connection={connection}
-            service={service}
-            permissions={device.permissions}
-            size="large"
-            fullWidth
-            disabled={ownDevice}
-            onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
-          />
-          <ConnectionMenu connection={connection} service={service} />
-        </Gutters>
-      </GuideStep>
       <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       <ConnectionSurvey connection={connection} />
       <Gutters size="md" bottom={null}>

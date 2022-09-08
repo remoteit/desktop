@@ -1,4 +1,5 @@
 import { AnalyticsJS } from 'segment-analytics'
+import { Attribute } from './components/Attributes'
 import { Color } from './styling'
 
 declare global {
@@ -24,6 +25,13 @@ declare global {
     | 'service/throughput'
     | 'service/uptime'
     | 'connectd/install/error'
+
+  interface IDeviceContext {
+    device?: IDevice
+    connections?: IConnection[]
+    required?: Attribute
+    attributes?: Attribute[]
+  }
 
   type IOrganizationProvider = 'SAML'
 

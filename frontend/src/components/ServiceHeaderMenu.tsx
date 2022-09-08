@@ -35,10 +35,6 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
-            <AddUserButton
-              to={`/devices/${device.id}/${service.id}/share`}
-              hide={!device.permissions.includes('MANAGE')}
-            />
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (

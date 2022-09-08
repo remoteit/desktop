@@ -99,11 +99,11 @@ export class AnalyticsHelper {
   }
 
   public identify(userId: string) {
-    window.analytics.identify(userId, { trait: {} })
+    window.analytics?.identify(userId, { trait: {} })
   }
 
   public clearIdentity() {
-    window.analytics.reset()
+    window.analytics?.reset()
   }
 
   public page = (pageName: string, additionalContext?: any) => {
@@ -114,7 +114,7 @@ export class AnalyticsHelper {
     localContext.referrer = ''
     localContext.search = ''
     localContext.url = ''
-    window.analytics.page(pageName, localContext)
+    window.analytics?.page(pageName, localContext)
   }
 
   public track(
@@ -134,7 +134,7 @@ export class AnalyticsHelper {
       }
     }
 
-    window.analytics.track(name, context)
+    window.analytics?.track(name, context)
   }
 
   public trackConnect(

@@ -1,18 +1,27 @@
 import React from 'react'
+import classnames from 'classnames'
 import { spacing, Spacing } from '../styling'
 import { makeStyles } from '@mui/styles'
 import { Box } from '@mui/material'
 
-type Props = { margin?: Spacing | null; listItem?: boolean; noInset?: boolean; children?: React.ReactNode }
+type Props = {
+  margin?: Spacing | null
+  indent?: 'listItem' | 'checkbox'
+  noInset?: boolean
+  className?: string
+  children?: React.ReactNode
+}
 
-export const Quote: React.FC<Props> = ({ margin = 'lg', listItem, noInset, children }) => {
-  const css = useStyles({ margin, noInset, listItem })
-  return <Box className={css.quote}>{children}</Box>
+export const Quote: React.FC<Props> = ({ margin = 'lg', indent, noInset, className, children }) => {
+  const css = useStyles({ margin, noInset, indent })
+  return <Box className={classnames(css.quote, className)}>{children}</Box>
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  quote: ({ margin, noInset, listItem }: Props) => {
-    const marginLeft = listItem ? 27 : undefined
+  quote: ({ margin, noInset, indent }: Props) => {
+    let marginLeft
+    if (indent === 'listItem') marginLeft = 27
+    if (indent === 'checkbox') marginLeft = 14
     return {
       width: `calc(100% - ${marginLeft}px)`,
       position: 'relative',

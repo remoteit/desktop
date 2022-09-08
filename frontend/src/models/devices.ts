@@ -122,7 +122,7 @@ export default createModel<RootModel>()({
         const value = getLocalStorage(state, `device-${accountId}-${key}`)
         if (value) states[key] = value
       })
-      await dispatch.devices.set(states)
+      await dispatch.devices.set({ ...states, accountId })
     },
     /* 
       GraphQL search query for all device data
@@ -147,11 +147,11 @@ export default createModel<RootModel>()({
         platform,
       }
 
-      set({ fetching: true })
+      set({ fetching: true, accountId })
       const { devices, total, error } = await graphQLFetchProcessor(options)
 
-      if (searched) set({ results: total })
-      else set({ total })
+      if (searched) set({ results: total, accountId })
+      else set({ total, accountId })
 
       // awaiting setDevices is critical for accurate initialized state
       if (append) {
@@ -161,7 +161,7 @@ export default createModel<RootModel>()({
       }
 
       if (!error) dispatch.search.updateSearch()
-      set({ fetching: false, append: false, initialized: true })
+      set({ fetching: false, append: false, initialized: true, accountId })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -178,13 +178,12 @@ export default createModel<RootModel>()({
     async fetchArray({ deviceIds, accountId }: { deviceIds: string[]; accountId: string }, state): Promise<IDevice[]> {
       const model = getDeviceModel(state)
       if (model.fetchingArray) return []
-      await dispatch.devices.set({ fetchingArray: true })
-      console.log('FETCH ARRAY', deviceIds)
+      await dispatch.devices.set({ fetchingArray: true, accountId })
       const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
       const loginId = gqlResponse?.data?.data?.login?.id
-      await dispatch.devices.set({ fetchingArray: false })
+      await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []
       return graphQLDeviceAdaptor(connectionData, loginId, accountId, true)
     },
@@ -207,7 +206,7 @@ export default createModel<RootModel>()({
       let result: IDevice | undefined
       if (!id) return
 
-      set({ fetching: true })
+      set({ fetching: true, accountId })
       try {
         const gqlResponse = await graphQLFetchDevice(id, accountId)
         graphQLGetErrors(gqlResponse)
@@ -220,7 +219,7 @@ export default createModel<RootModel>()({
 
       if (result) result.thisDevice = result.thisDevice || thisDevice
       await dispatch.accounts.setDevice({ id: id, accountId, device: result })
-      set({ fetching: false })
+      set({ fetching: false, accountId })
 
       return result
     },
@@ -341,7 +340,7 @@ export default createModel<RootModel>()({
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
       dispatch.ui.set({ claiming: true })
-      dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
+      dispatch.ui.guide({ guide: 'aws', step: 2 })
 
       const result = await graphQLClaimDevice(code, getActiveAccountId(state))
       if (state.auth.user) await dispatch.accounts.setActive(state.auth.user.id)
@@ -360,7 +359,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ claiming: false })
       }
 
-      dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
+      dispatch.ui.guide({ guide: 'aws', step: 3 })
     },
 
     async createRegistration({

@@ -44,7 +44,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   return (
     <DevicesHeader>
       {fetching && !devices.length ? (
-        <LoadingMessage message="Loading" />
+        <LoadingMessage />
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
@@ -55,7 +55,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
             attributes={attributes}
             columnWidths={columnWidths}
             fetching={fetching}
-            primary={required}
+            required={required}
             restore={restore}
             select={select}
             selected={selected}

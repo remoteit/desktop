@@ -16,7 +16,7 @@ import { Confirm } from '../components/Confirm'
 
 const Features = {
   [PERSONAL_PLAN_ID]: [
-    'End-points: 5',
+    'Endpoints: 5',
     'Prototyping / POC',
     '7 days of activity logs',
     'Web support',
@@ -27,14 +27,14 @@ const Features = {
     'SSO with Google',
   ],
   [PROFESSIONAL_PLAN_ID]: [
-    'End-points: no limit',
+    'Endpoints: no limit',
     'Commercial usage',
     '30 days of activity logs',
     'Basic end-point tagging',
     'Email support',
   ],
   [BUSINESS_PLAN_ID]: [
-    'End-points: no limit',
+    'Endpoints: no limit',
     'Commercial usage',
     'Organizations',
     '1 year of activity logs',
@@ -45,7 +45,7 @@ const Features = {
     'Unrestricted API usage',
   ],
   enterprise: [
-    'Volume end-points or user accounts',
+    'Volume endpoints or user accounts',
     'Custom activity logs',
     'Slack support',
     'Analytics and reporting',

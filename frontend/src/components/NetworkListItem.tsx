@@ -1,11 +1,11 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useLocation } from 'react-router-dom'
+import { selectConnection } from '../helpers/connectionHelper'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
 import { TargetPlatform } from './TargetPlatform'
-import { attributeName } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
 import { spacing } from '../styling'
@@ -27,13 +27,13 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
       service,
       device,
       foundSession: state.sessions.all.find(s => s.target.id === serviceId),
-      connection: state.connections.all.find(c => c.id === serviceId),
+      connection: selectConnection(state, service),
     }
   })
   session = session || foundSession
   const location = useLocation()
   const tab = location.pathname.split('/')[1]
-  const connected = external || session?.state === 'connected' || connection?.connected
+  const connected = external || session?.state === 'connected' || connection.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
   const css = useStyles({ offline, enabled: network?.enabled, connected })
@@ -56,17 +56,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
       </ListItemIcon>
       <ListItemText
         className={css.text}
-        primary={
-          <Title enabled={external || connection?.enabled}>
-            {service ? (
-              <>
-                {attributeName(service)} - <span className={css.name}>{attributeName(device)}</span>
-              </>
-            ) : (
-              connection?.name || session?.target.name || serviceId
-            )}
-          </Title>
-        }
+        primary={<Title enabled={external || connection.enabled}>{connection.name || serviceId}</Title>}
       />
       {children}
     </ListItemLocation>
@@ -77,7 +67,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   text: ({ offline }: any) => ({
     opacity: offline ? 0.3 : 1,
     '& > span': {
-      fontWeight: 500,
+      fontWeight: 400,
       overflow: 'hidden',
       whiteSpace: 'nowrap',
     },
@@ -99,13 +89,11 @@ export const useStyles = makeStyles(({ palette }) => ({
     }
   },
   name: {
-    fontWeight: 400,
     opacity: 0.8,
   },
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .tooltip': { position: 'absolute', right: spacing.xxl, marginTop: -2 },
   },
   connectIcon: {
     position: 'relative',

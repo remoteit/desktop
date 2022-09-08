@@ -1,6 +1,7 @@
 import React from 'react'
 import Controller from './services/Controller'
 import { App } from './components/App'
+import { environment } from './services/Browser'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline } from '@mui/material'
 import { HashRouter } from 'react-router-dom'
@@ -14,7 +15,7 @@ import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
 
-analyticsHelper.setup()
+if (environment() !== 'development') analyticsHelper.setup()
 
 const root = createRoot(document.getElementById('root')!)
 root.render(

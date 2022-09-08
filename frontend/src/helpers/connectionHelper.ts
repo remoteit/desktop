@@ -47,19 +47,11 @@ export function newConnection(service?: IService | null) {
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: cd?.route
-      ? cd.route === 'failover'
-      : service?.attributes.route
-      ? service?.attributes.route === 'failover'
-      : true, // default
-    proxyOnly: cd?.route
-      ? cd.route === 'proxy'
-      : service?.attributes.route
-      ? service?.attributes.route === 'proxy'
-      : false, // default
+    failover: getRouteDefault('failover', true, service, cd?.route),
+    proxyOnly: getRouteDefault('proxy', false, service, cd?.route),
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
-    public: isPortal() || cd?.route === 'public' || service?.attributes.route === 'public' ? true : undefined,
+    public: isPortal() || getRouteDefault('public', undefined, service, cd?.route),
   }
 
   if (service) {
@@ -67,6 +59,7 @@ export function newConnection(service?: IService | null) {
     connection.name = connectionName(service)
     connection.id = service.id
     connection.deviceID = service.deviceID
+    connection.accountId = device?.accountId || user.id
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
     connection.targetHost = service.attributes.targetHost
@@ -78,6 +71,17 @@ export function newConnection(service?: IService | null) {
   }
 
   return connection
+}
+
+function getRouteDefault(
+  type: IRouteType,
+  actualDefault?: boolean,
+  service?: IService | null,
+  connectionDefaults?: IRouteType
+) {
+  if (service?.attributes.route) return service?.attributes.route === type
+  if (connectionDefaults) return connectionDefaults === type
+  return actualDefault
 }
 
 export function usedPorts(state: ApplicationState) {
@@ -145,8 +149,8 @@ export function getConnectionSessionIds() {
   return all.map(c => c.sessionId)
 }
 
-export function updateConnections(devices: IDevice[]) {
-  const { all } = store.getState().connections
+export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
+  const { all } = state.connections
   let lookup = all.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
@@ -155,10 +159,16 @@ export function updateConnections(devices: IDevice[]) {
   devices.forEach(d => {
     d.services.forEach(s => {
       const connection = lookup[s.id]
-
-      const online = s.state === 'active'
-      if (connection && connection.online !== online) {
-        setConnection({ ...connection, deviceID: d.id, online })
+      if (connection) {
+        const online = s.state === 'active'
+        if (connection.online !== online || !connection.accountId) {
+          let accountId = connection.accountId
+          if (!accountId) {
+            const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
+            accountId = membership ? membership.account.id : userId
+          }
+          setConnection({ ...connection, deviceID: d.id, online, accountId })
+        }
       }
     })
   })
