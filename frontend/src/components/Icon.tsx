@@ -64,13 +64,14 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize })
 
     // Platform icons
-    if (props.platform || platformIcon) return <PlatformIcon className={css.icon} {...props} name={name} />
+    if (props.platform || platformIcon)
+      return <PlatformIcon {...props} className={classnames(props.className, css.icon)} name={name} />
 
     // No icon
     if (!name) return null
 
     // Special Icon Handling
-    if (name === 'r3') return <R3gray className={css.icon} {...props} />
+    if (name === 'r3') return <R3gray {...props} className={classnames(props.className, css.icon)} />
 
     let fontType: IconPrefix = 'far'
 

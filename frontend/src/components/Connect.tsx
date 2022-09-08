@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { List, Box, Button, Typography } from '@mui/material'
+import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
@@ -7,14 +9,12 @@ import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
-import { List, Box, Button, Typography } from '@mui/material'
 import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
-import { ApplicationState, Dispatch } from '../store'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { NetworksAccordion } from './NetworksAccordion'
@@ -128,7 +128,7 @@ export const Connect: React.FC = () => {
               size="large"
               fullWidth
               disabled={ownDevice}
-              onClick={() => dispatch.ui.guide({ guide: 'guideAWS', step: 6 })}
+              onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
             />
             <ConnectionMenu connection={connection} service={service} />
           </Gutters>

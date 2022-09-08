@@ -79,7 +79,7 @@ const useStyles = makeStyles(({ palette }) => ({
         border: `4px solid ${background}`,
         backgroundColor: `${background}`,
       },
-      '& > *:first-child': horizontalOverflow ? { minHeight: '100.1%' } : undefined, // forces right scrollbar to appear (overflow: scroll causes extra padding)
+      '& > *:first-of-type': horizontalOverflow ? { minHeight: '100.1%' } : undefined, // forces right scrollbar to appear (overflow: scroll causes extra padding)
       '&::after': verticalOverflow
         ? {
             content: '""',

@@ -96,7 +96,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               opacity: 1,
               pointerEvents: 'all',
               '& .fa-caret-down': { display: 'none' },
-              '& .MuiButton-root:first-child': { pointerEvents: 'none' },
+              '& .MuiButton-root:first-of-type': { pointerEvents: 'none' },
             },
             '&.Mui-expanded': { minHeight: 0 },
           },
@@ -304,7 +304,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
             '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, opacity: 0 },
-            '&:hover .MuiIconButton-sizeSmall': { opacity: 1, transition: 'opacity 400ms 200ms' },
+            '&:hover .MuiIconButton-sizeSmall': { opacity: 1, transition: 'opacity 200ms 100ms' },
+            // For device list
+            '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
+            '& .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
+            '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
           },
           gutters: {
             width: `calc(100% - ${spacing.md * 2}px)`,
@@ -321,12 +325,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiFormControl-root': { verticalAlign: 'middle' },
           },
           container: {
-            '& .MuiListItemSecondaryAction-root': {},
-            '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
-            '&:hover': {
-              '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
-              '& .hoverHide': { display: 'none' },
-            },
+            // For service list
+            '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
+            '& .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
+            '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
           },
           dense: {
             '& .MuiInputBase-root': { fontSize: fontSizes.base },

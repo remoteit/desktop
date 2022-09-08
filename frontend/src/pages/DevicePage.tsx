@@ -1,34 +1,38 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useContext } from 'react'
+import { useLocation, useHistory } from 'react-router-dom'
+import { DeviceContext } from '../services/Context'
+import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
+import { AddFromNetwork } from '../components/AddFromNetwork'
 import { ApplicationState } from '../store'
-import { Typography, List, ListItemText, ListItemIcon, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
-import { AddFromNetwork } from '../components/AddFromNetwork'
+import { Typography, Box, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
+import { ConnectButton } from '../buttons/ConnectButton'
 import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
 import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { fontSizes } from '../styling'
-import { IconButton } from '../buttons/IconButton'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
   device?: IDevice
 }
 
-export const DevicePage: React.FC<Props> = ({ device }) => {
+export const DevicePage: React.FC<Props> = () => {
+  const { connections, device } = useContext(DeviceContext)
   const location = useLocation()
-  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
-    connections: state.connections.all.filter(c => c.deviceID === device?.id),
+  const history = useHistory()
+  const css = useStyles()
+  const { setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     setupAddingService: state.ui.setupAddingService,
     sortService: getDeviceModel(state).sortServiceOption,
   }))
@@ -45,12 +49,11 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
     )
 
   const editable = device.thisDevice || (device.configurable && device.permissions.includes('MANAGE'))
-  const connection = connections.find(c => c.deviceID === device.id && c.enabled)
+  const connection = connections?.find(c => c.deviceID === device.id && c.enabled)
 
   // reverse sort services by creation date
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   let servicePage = '/' + (location.pathname.split('/')[4] || 'connect')
-
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
@@ -104,32 +107,58 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             </ListItemSecondaryAction>
           </ListItemLocation>
         )}
-        {device.services.sort(getSortOptions(sortService).sortService).map(s => (
-          <GuideStep
-            key={s.id}
-            guide="aws"
-            step={4}
-            instructions="Select the service below."
-            hide={!s.name.includes('Start')}
-            highlight
-            autoNext
-          >
-            <ListItemLocation
-              pathname={`/devices/${device.id}/${s.id}${servicePage}`}
-              match={`/devices/${device.id}/${s.id}`}
-              disableIcon
-              dense
+        {device.services.sort(getSortOptions(sortService).sortService).map(s => {
+          const c = connections?.find(c => c.id === s.id)
+          return (
+            <GuideStep
+              key={s.id}
+              guide="aws"
+              step={4}
+              instructions="Select the service below."
+              hide={!s.name.includes('Start')}
+              highlight
+              autoNext
             >
-              <ListItemText primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />} />
-              <ListItemSecondaryAction>
-                <IconButton name="play" color="primary" size="xs" type="solid" buttonBaseSize="small" />
-                <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
-              </ListItemSecondaryAction>
-            </ListItemLocation>
-          </GuideStep>
-        ))}
+              <ListItemLocation
+                pathname={`/devices/${device.id}/${s.id}${servicePage}`}
+                match={`/devices/${device.id}/${s.id}`}
+                disableIcon
+                dense
+              >
+                <ListItemText primary={<ServiceName service={s} connection={c} />} />
+                <ListItemSecondaryAction>
+                  <ServiceMiniState className="hoverHide" service={s} connection={c} />
+                  <Box className={css.connect}>
+                    <ConnectButton
+                      color="primary"
+                      size="icon"
+                      className="hidden"
+                      iconSize="base"
+                      iconType="solid"
+                      connection={c}
+                      permissions={device.permissions}
+                      service={s}
+                      onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
+                    />
+                  </Box>
+                </ListItemSecondaryAction>
+              </ListItemLocation>
+            </GuideStep>
+          )
+        })}
       </List>
       <ServiceContextualMenu />
     </Container>
   )
 }
+
+const useStyles = makeStyles({
+  connect: {
+    right: 0,
+    top: 0,
+    display: 'flex',
+    alignItems: 'center',
+    position: 'absolute',
+    height: '100%',
+  },
+})

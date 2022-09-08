@@ -1,5 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
+import { DeviceContext } from '../../services/Context'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
@@ -16,7 +17,7 @@ import { spacing, fontSizes } from '../../styling'
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
   attributes: Attribute[]
-  primary: Attribute
+  required: Attribute
   columnWidths: ILookup<number>
   fetching?: boolean
   devices?: IDevice[]
@@ -31,24 +32,17 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   attributes,
   columnWidths,
   fetching,
-  primary,
+  required,
   restore,
   select,
   selected = [],
 }) => {
-  const css = useStyles({ attributes, primary, columnWidths })
+  const css = useStyles({ attributes, required: required, columnWidths })
   const dispatch = useDispatch<Dispatch>()
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
-        <DeviceListHeader
-          devices={devices}
-          primary={primary}
-          attributes={attributes}
-          select={select}
-          fetching={fetching}
-          columnWidths={columnWidths}
-        />
+        <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths }} />
         <GuideStep
           guide="aws"
           step={3}
@@ -62,25 +56,25 @@ export const DeviceList: React.FC<DeviceListProps> = ({
             const isSelected = selected?.includes(device.id)
             if (restore && !canRestore) return null
             return (
-              <DeviceListItem
+              <DeviceContext.Provider
                 key={device.id}
-                device={device}
-                connections={connections[device.id]}
-                primary={primary}
-                attributes={attributes}
-                restore={restore && canRestore}
-                select={select}
-                selected={isSelected}
-                onSelect={deviceId => {
-                  if (isSelected) {
-                    const index = selected.indexOf(deviceId)
-                    selected.splice(index, 1)
-                  } else {
-                    selected.push(deviceId)
-                  }
-                  dispatch.ui.set({ selected: [...selected] })
-                }}
-              />
+                value={{ device, connections: connections[device.id], required, attributes }}
+              >
+                <DeviceListItem
+                  restore={restore && canRestore}
+                  select={select}
+                  selected={isSelected}
+                  onSelect={deviceId => {
+                    if (isSelected) {
+                      const index = selected.indexOf(deviceId)
+                      selected.splice(index, 1)
+                    } else {
+                      selected.push(deviceId)
+                    }
+                    dispatch.ui.set({ selected: [...selected] })
+                  }}
+                />
+              </DeviceContext.Provider>
             )
           })}
         </GuideStep>
@@ -93,16 +87,16 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
 type StyleProps = {
   attributes: Attribute[]
-  primary: Attribute
+  required: Attribute
   columnWidths: ILookup<number>
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  grid: ({ attributes, primary, columnWidths }: StyleProps) => ({
+  grid: ({ attributes, required, columnWidths }: StyleProps) => ({
     minWidth: '100%',
-    width: primary.width(columnWidths) + attributes?.reduce((w, a) => w + a.width(columnWidths), 0),
+    width: required.width(columnWidths) + attributes?.reduce((w, a) => w + a.width(columnWidths), 0),
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      gridTemplateColumns: `${primary.width(columnWidths)}px ${attributes
+      gridTemplateColumns: `${required.width(columnWidths)}px ${attributes
         ?.map(a => a.width(columnWidths))
         .join('px ')}px`,
     },

@@ -29,7 +29,7 @@ export const NetworkAdd: React.FC = () => {
         event.preventDefault()
         setAdding(true)
         await dispatch.networks.addNetwork({ ...network, name })
-        dispatch.ui.guide({ guide: 'guideNetwork', step: 3 })
+        dispatch.ui.guide({ guide: 'network', step: 3 })
         reset()
       }}
     >

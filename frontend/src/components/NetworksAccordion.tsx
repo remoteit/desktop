@@ -5,7 +5,7 @@ import { getActiveAccountId } from '../models/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectNetworks, selectNetworkByService } from '../models/networks'
-import { DynamicButtonMenu } from '../buttons/DynamicButtonMenu'
+import { NetworksAddMenu } from './NetworkAddMenu'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { Icon } from './Icon'
 
@@ -39,7 +39,7 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
           {device?.permissions.includes('MANAGE') && !device.shared ? (
             <>
               {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
-              <DynamicButtonMenu
+              <NetworksAddMenu
                 options={accessibleNetworks.map(n => ({
                   value: n.id,
                   label: n.name,

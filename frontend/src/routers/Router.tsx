@@ -79,7 +79,7 @@ export const Router: React.FC = () => {
       <Redirect
         from="/connect/:serviceID"
         to={{
-          pathname: '/networks/:serviceID',
+          pathname: '/connections/:serviceID',
           state: { autoConnect: true },
         }}
       />
@@ -87,7 +87,7 @@ export const Router: React.FC = () => {
       <Redirect
         from="/launch/:serviceID"
         to={{
-          pathname: '/networks/:serviceID',
+          pathname: '/connections/:serviceID',
           state: { autoLaunch: true },
         }}
       />
@@ -95,7 +95,7 @@ export const Router: React.FC = () => {
       <Redirect
         from="/copy/:serviceID"
         to={{
-          pathname: '/networks/:serviceID',
+          pathname: '/connections/:serviceID',
           state: { autoCopy: true },
         }}
       />

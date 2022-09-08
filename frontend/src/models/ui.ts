@@ -189,8 +189,9 @@ export default createModel<RootModel>()({
       const columnWidths = { ...globalState.ui.columnWidths, [params.id]: params.width }
       dispatch.ui.setPersistent({ columnWidths })
     },
-    async guide({ guide: key, ...props }: ILookup<any>, globalState) {
-      let state = globalState.ui.guides[key]
+    async guide({ guide, ...props }: ILookup<any>, globalState) {
+      let state = globalState.ui.guides[guide]
+      if (!state) return
       const active = props.active === undefined ? state.active : props.active
 
       if (active) {
@@ -201,7 +202,7 @@ export default createModel<RootModel>()({
         if (props.done) props.active = false
       }
 
-      const guides = { ...globalState.ui.guides, [key]: { ...state, ...props } }
+      const guides = { ...globalState.ui.guides, [guide]: { ...state, ...props } }
       dispatch.ui.setPersistent({ guides })
     },
     async resetGuides(_: void, globalState) {

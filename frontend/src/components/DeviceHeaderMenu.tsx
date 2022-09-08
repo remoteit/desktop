@@ -1,21 +1,19 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { DeviceContext } from '../services/Context'
 import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
-import { AddUserButton } from '../buttons/AddUserButton'
+import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
 
-export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any; children?: React.ReactNode }> = ({
-  device,
-  header,
-  children,
-}) => {
+export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
+  const { device } = useContext(DeviceContext)
   if (!device) return <UnauthorizedPage />
 
   return (
@@ -26,7 +24,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any; childr
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
+            <DeviceConnectMenu size="small" />
             <DeviceOptionMenu device={device} />
           </Typography>
           <DeviceTagEditor device={device} />

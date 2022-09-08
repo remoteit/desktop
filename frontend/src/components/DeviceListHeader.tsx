@@ -10,7 +10,7 @@ import { Attribute } from './Attributes'
 const MIN_WIDTH = 50
 
 type Props = {
-  primary: Attribute
+  required: Attribute
   attributes?: Attribute[]
   columnWidths: ILookup<number>
   devices: IDevice[]
@@ -19,7 +19,7 @@ type Props = {
 }
 
 export const DeviceListHeader: React.FC<Props> = ({
-  primary,
+  required,
   attributes = [],
   columnWidths,
   devices,
@@ -63,7 +63,7 @@ export const DeviceListHeader: React.FC<Props> = ({
         className={css.handle}
         style={{ left: resize, height: moveRef.current[4], display: resize ? 'block' : 'none' }}
       />
-      <DeviceListHeaderTitle attribute={primary} onMouseDown={onDown} sticky>
+      <DeviceListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
         <ListItemIcon>
           <DeviceListHeaderCheckbox select={select} devices={devices} />
         </ListItemIcon>

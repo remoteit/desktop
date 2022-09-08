@@ -1,35 +1,31 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
-import { connectionState, newConnection, launchDisabled } from '../../helpers/connectionHelper'
-import { DynamicButton } from '../DynamicButton'
-import { getLicenseChip } from '../../components/LicenseChip'
+import { ApplicationState, Dispatch } from '../store'
+import { connectionState, newConnection, launchDisabled } from '../helpers/connectionHelper'
+import { DynamicButton, DynamicButtonProps } from './DynamicButton'
+import { getLicenseChip } from '../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
-import { Color } from '../../styling'
-import analyticsHelper from '../../helpers/analyticsHelper'
+import analyticsHelper from '../helpers/analyticsHelper'
 
-export type ConnectButtonProps = {
+export type ConnectButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
   connection?: IConnection
   service?: IService
   permissions?: IPermission[]
-  size?: 'icon' | 'medium' | 'small' | 'large'
-  icon?: string
-  color?: Color
-  disabled?: boolean
-  fullWidth?: boolean
-  onClick?: () => void
+  preventDefault?: boolean
+  all?: boolean
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   permissions,
-  size = 'medium',
   color = 'primary',
-  fullWidth,
   disabled,
+  preventDefault,
+  all,
   onClick,
-  icon,
+  ...props
 }) => {
   const instanceId = service?.id || connection?.id || ''
   const { autoConnect } = useSelector((state: ApplicationState) => state.ui)
@@ -38,17 +34,22 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
 
-  let clickHandler = () => {
+  let clickHandler = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    if (preventDefault) {
+      event && onClick?.(event)
+      return
+    }
+
     dispatch.networks.start(instanceId)
     if (state === 'connecting' || connection?.enabled) {
       analyticsHelper.trackConnect('connectionClosed', service)
       dispatch.connections.disconnect(connection)
     } else {
-      onClick?.()
       analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
       dispatch.connections.connect(connection)
     }
+    event && onClick?.(event)
   }
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let title = connection?.public ? 'Connect' : 'Start'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let loading = false
+  let icon = 'play'
 
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
 
@@ -78,15 +80,19 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   switch (state) {
     case 'ready':
       title = 'Stop'
+      icon = 'stop'
       break
     case 'connected':
       title = 'Disconnect'
+      icon = connection?.public ? 'stop' : 'pause'
       break
     case 'disconnecting':
       title = 'Disconnecting'
+      loading = true
       break
     case 'starting':
       title = 'Starting'
+      loading = true
       break
     case 'offline':
       title = 'Offline'
@@ -106,6 +112,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       variant = 'contained'
   }
 
+  if (all) title += ' all'
+
   if (service?.attributes.route === 'p2p' && connection?.public) {
     disabled = true
   }
@@ -116,11 +124,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       variant={variant}
       loading={loading}
       color={color}
-      size={size}
       icon={icon}
       onClick={clickHandler}
       disabled={disabled}
-      fullWidth={fullWidth}
+      {...props}
     />
   )
 }

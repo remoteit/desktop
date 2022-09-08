@@ -3,15 +3,15 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { Link } from 'react-router-dom'
 import { Divider, Menu, MenuItem, ListSubheader, ListItemIcon, Fade, darken } from '@mui/material'
-import { DynamicButton, DynamicButtonProps } from './DynamicButton'
-import { Icon } from '../components/Icon'
+import { DynamicButton, DynamicButtonProps } from '../buttons/DynamicButton'
+import { Icon } from './Icon'
 
 type Props = DynamicButtonProps & {
   options?: { label: string; value: string; color?: string; disabled?: boolean }[]
   onClick: (value?: string) => void
 }
 
-export const DynamicButtonMenu: React.FC<Props> = ({ options = [], onClick, ...props }) => {
+export const NetworksAddMenu: React.FC<Props> = ({ options = [], onClick, ...props }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [menuWidth, setMenuWidth] = useState<number>()
   const css = useStyles(props)

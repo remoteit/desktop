@@ -16,11 +16,12 @@ import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
 
-type IConnectionsState = { all: IConnection[]; queue: IConnection[] }
+type IConnectionsState = { all: IConnection[]; queue: IConnection[]; queueMessage?: string }
 
 const defaultState: IConnectionsState = {
   all: [],
   queue: [],
+  queueMessage: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -62,15 +63,18 @@ export default createModel<RootModel>()({
     },
 
     async restoreConnections(connections: IConnection[], state) {
-      connections.forEach(async connection => {
+      connections.forEach((connection, index) => {
         // data missing from cli if our connections file is lost
         if (!connection.owner || !connection.name) {
           const [service] = selectById(state, connection.id)
-          if (service) {
+          if (!connection.id) {
+            delete connections[index]
+            console.warn('No id found in connection', { connection })
+          } else if (service) {
             connection = { ...newConnection(service), ...connection }
             setConnection(connection)
           } else {
-            console.warn('No service found for connection', connection.id)
+            console.warn(`No service found for connection ${connection.id}`, { connection })
             // @TODO fetch device if trying to restore a non-loaded connection
             // const device = await dispatch.devices.fetchSingle({ id: connection.id, hidden: true })
             // console.log('FETCHED DEVICE RETURNED:', device)
@@ -80,13 +84,28 @@ export default createModel<RootModel>()({
       dispatch.connections.setAll(connections)
     },
 
-    async queueEnable(queue: IConnection[]) {
-      await dispatch.connections.set({ queue })
+    async queueEnable({
+      serviceIds,
+      enabled,
+      queueMessage,
+    }: {
+      serviceIds: string[]
+      enabled: boolean
+      queueMessage?: string
+    }) {
+      const queue: IConnection[] = serviceIds.map(id => ({ id, enabled }))
+      await dispatch.connections.set({ queue, queueMessage })
       dispatch.connections.checkQueue()
     },
 
     async checkQueue(_: void, state) {
-      if (!state.connections.queue.length) return
+      if (!state.connections.queue.length) {
+        if (state.connections.queueMessage) {
+          await dispatch.ui.set({ successMessage: state.connections.queueMessage })
+          await dispatch.connections.set({ queueMessage: undefined })
+        }
+        return
+      }
 
       const queue = [...state.connections.queue]
       const trigger = queue.shift()
@@ -172,7 +191,7 @@ export default createModel<RootModel>()({
     async enable({ connection, networkId }: { connection: IConnection; networkId: string }, state) {
       const network = selectNetwork(state, networkId)
       if (network.enabled && !connection.enabled) {
-        dispatch.connections.queueEnable([{ id: connection.id, enabled: true }])
+        dispatch.connections.queueEnable({ serviceIds: [connection.id], enabled: true })
       }
     },
 
@@ -255,7 +274,6 @@ export default createModel<RootModel>()({
     async setAll(all: IConnection[], state) {
       setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
-      dispatch.connections.checkQueue()
     },
   }),
   reducers: {

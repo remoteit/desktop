@@ -15,7 +15,7 @@ export const DeviceUsersPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   }, [])
 
   return (
-    <DeviceHeaderMenu device={device}>
+    <DeviceHeaderMenu>
       <SharedUsersLists device={device} users={users} connected={connected} />
     </DeviceHeaderMenu>
   )

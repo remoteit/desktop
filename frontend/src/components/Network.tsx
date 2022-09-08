@@ -75,7 +75,7 @@ const useStyles = makeStyles(({ palette }) => ({
             width: `calc(100% - ${spacing.lg}px)`,
             marginLeft: spacing.sm,
           },
-          '& .MuiListItemIcon-root:first-child': {
+          '& .MuiListItemIcon-root:first-of-type': {
             marginLeft: -spacing.sm,
           },
           '& .MuiListItem-button': {

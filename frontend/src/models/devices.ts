@@ -179,7 +179,6 @@ export default createModel<RootModel>()({
       const model = getDeviceModel(state)
       if (model.fetchingArray) return []
       await dispatch.devices.set({ fetchingArray: true, accountId })
-      console.log('FETCH ARRAY', deviceIds)
       const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
@@ -341,7 +340,7 @@ export default createModel<RootModel>()({
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
       dispatch.ui.set({ claiming: true })
-      dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
+      dispatch.ui.guide({ guide: 'aws', step: 2 })
 
       const result = await graphQLClaimDevice(code, getActiveAccountId(state))
       if (state.auth.user) await dispatch.accounts.setActive(state.auth.user.id)
@@ -360,7 +359,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ claiming: false })
       }
 
-      dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
+      dispatch.ui.guide({ guide: 'aws', step: 3 })
     },
 
     async createRegistration({

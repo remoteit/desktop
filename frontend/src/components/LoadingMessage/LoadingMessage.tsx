@@ -17,7 +17,7 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
   return (
     <Body center>
       {logo && <Logo className={css.margin} />}
-      {spinner && !logo && <CircularProgress size={75} thickness={1} className={css.margin} />}
+      {spinner && !logo && <CircularProgress size={50} thickness={1} className={css.margin} />}
       {message && (
         <Typography className={css.text} variant="body2">
           {message}

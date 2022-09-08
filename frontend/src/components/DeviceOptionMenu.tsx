@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
+import { AddUserButton } from '../buttons/AddUserButton'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
@@ -36,13 +37,24 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        <div>
-          {service ? (
-            <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
-          ) : (
-            <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
-          )}
-        </div>
+        {device.permissions.includes('MANAGE') && (
+          <MenuItem
+            dense
+            to={`/devices/${device.id}/share`}
+            component={Link}
+            disabled={!device.permissions.includes('MANAGE')}
+          >
+            <ListItemIcon>
+              <Icon name="user-plus" size="md" />
+            </ListItemIcon>
+            <ListItemText primary="Add User" />
+          </MenuItem>
+        )}
+        {service ? (
+          <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
+        ) : (
+          <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+        )}
         {manage && [
           <MenuItem
             dense

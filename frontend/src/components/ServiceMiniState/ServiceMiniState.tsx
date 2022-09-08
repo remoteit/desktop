@@ -11,9 +11,16 @@ interface Props {
   service?: IService
   onClick?: (IContextMenu) => void
   showConnected?: boolean
+  className?: string
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick, showConnected = true }) => {
+export const ServiceMiniState: React.FC<Props> = ({
+  connection,
+  service,
+  onClick,
+  className,
+  showConnected = true,
+}) => {
   const cState = connectionState(service, connection)
 
   let colorName: Color = 'grayDarker'
@@ -58,7 +65,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   return (
     <Box
       component="span"
-      className={classnames(onClick && css.clickable, css.indicator)}
+      className={classnames(onClick && css.clickable, css.indicator, className)}
       onMouseDown={event => {
         event.stopPropagation()
         onClick && onClick({ el: event.currentTarget, serviceID: service.id })

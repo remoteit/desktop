@@ -42,7 +42,7 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
           )}
         </div>
       ) : (
-        <ConnectButton {...props} />
+        <ConnectButton iconType="solid" {...props} />
       )}
     </div>
   )
