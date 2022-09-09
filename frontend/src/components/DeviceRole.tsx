@@ -12,7 +12,7 @@ export const DeviceRole: React.FC<Props> = ({ device }) => {
     const accountId = accountFromDevice(state, device)
     return {
       membership: getMembership(state, accountId),
-      roles: memberOrganization(state.organization.all, accountId).roles,
+      roles: memberOrganization(state.organization.accounts, accountId).roles,
     }
   })
 

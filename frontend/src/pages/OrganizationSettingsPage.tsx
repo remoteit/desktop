@@ -32,7 +32,7 @@ export const OrganizationSettingsPage: React.FC = () => {
   const { updating, domain, defaultDomain, samlOnly, isThisOrg, organization, limits, permissions } = useSelector(
     (state: ApplicationState) => {
       const membership = getMembership(state)
-      const organization = memberOrganization(state.organization.all, membership.account.id)
+      const organization = memberOrganization(state.organization.accounts, membership.account.id)
       return {
         organization,
         isThisOrg: organization.id === state.auth.user?.id,

@@ -12,7 +12,7 @@ export const LicensingPage: React.FC = () => {
   const { licenses, limits } = useSelector((state: ApplicationState) => selectOwnLicenses(state))
   const { memberships, organizations } = useSelector((state: ApplicationState) => ({
     memberships: state.accounts.membership,
-    organizations: state.organization.all,
+    organizations: state.organization.accounts,
   }))
 
   useEffect(() => {

@@ -109,7 +109,6 @@ export default createModel<RootModel>()({
       const data = gqlResponse?.data?.data
       await dispatch.plans.set({
         plans: data.plans,
-        purchasing: undefined,
         updating: undefined,
       })
     },

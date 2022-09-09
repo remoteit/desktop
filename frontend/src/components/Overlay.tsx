@@ -11,6 +11,7 @@ const useStyles = makeStyles(({ palette }) => ({
   overlay: {
     backgroundColor: palette.white.main,
     padding: spacing.md,
+    paddingBottom: '10%',
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',

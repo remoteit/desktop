@@ -17,7 +17,7 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
   return (
     <Body center>
       {logo && <Logo className={css.margin} />}
-      {spinner && !logo && <CircularProgress size={50} thickness={1} className={css.margin} />}
+      {spinner && !logo && <CircularProgress size={50} thickness={2} className={css.margin} />}
       {message && (
         <Typography className={css.text} variant="body2">
           {message}
@@ -28,6 +28,6 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  margin: { marginBottom: spacing.xl, color: palette.primaryLight.main },
+  margin: { marginBottom: spacing.xl, color: palette.primary.main },
   text: { color: palette.grayDark.main, paddingBottom: spacing.xl },
 }))

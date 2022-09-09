@@ -35,7 +35,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service }) => {
         <Icon name="user-group" color="grayDarker" size="md" />
       </ListItemIcon>
       <ListItemText
-        primary={total ? 'Users' : 'Add User'}
+        primary={total ? 'Users' : 'Share'}
         secondary={
           !!total && (
             <>

@@ -7,6 +7,7 @@ import { spacing } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { QuantitySelector } from './QuantitySelector'
+import { Pre } from './Pre'
 
 type Props = {
   plans: IPlan[]
@@ -37,9 +38,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
     onChange({ ...form, priceId })
   }
 
-  console.log('license', license)
   const onSubmit = () => {
-    console.log('submit license', license)
     if (license?.subscription) dispatch.plans.updateSubscription(form)
     else dispatch.plans.subscribe(form)
   }
@@ -65,7 +64,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         <List className={css.list}>
           <ListItem>
             <Button
-              onClick={() => dispatch.plans.unsubscribe(license?.plan.id)}
+              onClick={() => dispatch.plans.unsubscribe(form.planId)}
               color="primary"
               variant="contained"
               disabled={purchasing}

@@ -378,7 +378,7 @@ export function selectActiveNetworks(state: ApplicationState): INetwork[] {
 
   all.forEach(c => {
     const accountId = c?.accountId || state.user.id
-    const name = state.organization.all[accountId || '']?.name || 'Unknown'
+    const name = state.organization.accounts[accountId || '']?.name || 'Unknown'
     const index = networks.findIndex(n => n.id === accountId)
     if (index === -1) networks.push({ ...template, id: accountId, name, serviceIds: [c.id] })
     else networks[index].serviceIds.push(c.id)
