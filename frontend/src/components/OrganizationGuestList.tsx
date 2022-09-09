@@ -38,15 +38,28 @@ export const OrganizationGuestList: React.FC = () => {
             icon={<Avatar email={guest.email} size={26} />}
           >
             <ListItemSecondaryAction>
-              <Chip
-                size="small"
-                label={
-                  <Box display="flex">
-                    <Icon name="router" size="base" color="grayDarker" inlineLeft />
-                    {guest.deviceIds.length}
-                  </Box>
-                }
-              />
+              {!!guest.networkIds.length && (
+                <Chip
+                  size="small"
+                  label={
+                    <Box display="flex">
+                      <Icon name="chart-network" size="sm" color="grayDarker" inlineLeft />
+                      {guest.networkIds.length}
+                    </Box>
+                  }
+                />
+              )}
+              {!!guest.deviceIds.length && (
+                <Chip
+                  size="small"
+                  label={
+                    <Box display="flex">
+                      <Icon name="router" size="base" color="grayDarker" inlineLeft />
+                      {guest.deviceIds.length}
+                    </Box>
+                  }
+                />
+              )}
             </ListItemSecondaryAction>
           </ListItemLocation>
         ))}

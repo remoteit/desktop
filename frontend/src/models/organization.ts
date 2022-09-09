@@ -212,6 +212,9 @@ export default createModel<RootModel>()({
             devices {
               id
             }
+            networks {
+              id
+            }
           }
         }`
       )
@@ -240,6 +243,7 @@ export default createModel<RootModel>()({
           id: g.user.id,
           email: g.user.email || g.user.id,
           deviceIds: g.devices.map(d => d.id),
+          networkIds: g.networks.map(n => n.id),
         }))
       })
       return orgs
