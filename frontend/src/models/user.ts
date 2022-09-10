@@ -1,10 +1,11 @@
 import { LANGUAGES } from '../shared/constants'
 import { createModel } from '@rematch/core'
-import { AxiosResponse } from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from '.'
-import { r3 } from '../services/remote.it'
+import { API_URL, DEVELOPER_KEY } from '../shared/constants'
+import { getToken } from '../services/remote.it'
 
 type IUserState = {
   id: string
@@ -70,7 +71,16 @@ export default createModel<RootModel>()({
       dispatch.user.set({ notificationSettings: metadata })
     },
     async changeLanguage(language: string) {
-      await r3.post('/user/language/', { language }) // fixme - use axios
+      await axios.post('/user/language/',
+      { language },
+      {
+        baseURL: API_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          developerKey: DEVELOPER_KEY,
+          Authorization: await getToken()
+        },
+      })
       dispatch.ui.set({ successMessage: `Language changed to ${LANGUAGES[language]}` })
       dispatch.user.set({ language })
     },
