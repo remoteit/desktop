@@ -44,7 +44,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
             <>
               <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
               <Box className={css.connect}>
-                <DeviceConnectMenu size="icon" iconSize="md" color="black" />
+                <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
               </Box>
             </>
           )}
@@ -60,8 +60,12 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   )
 }
 
+type StyleProps = {
+  offline: boolean
+}
+
 const useStyles = makeStyles(({ palette }) => ({
-  row: ({ offline }: { offline: boolean }) => ({
+  row: ({ offline }: StyleProps) => ({
     '&:hover > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
     },
@@ -89,10 +93,13 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   connect: {
     top: 0,
-    marginLeft: -spacing.xs,
     display: 'flex',
     alignItems: 'center',
     position: 'absolute',
+    width: 62,
     height: '100%',
+    '& .MuiIconButton-root': {
+      backgroundImage: `radial-gradient(${palette.white.main} 15%, transparent 85%)`,
+    },
   },
 }))

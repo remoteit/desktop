@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
-import { AddUserButton } from '../buttons/AddUserButton'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
@@ -47,7 +46,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             <ListItemIcon>
               <Icon name="user-plus" size="md" />
             </ListItemIcon>
-            <ListItemText primary="Add User" />
+            <ListItemText primary="Share" />
           </MenuItem>
         )}
         {service ? (

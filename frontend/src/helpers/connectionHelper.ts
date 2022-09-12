@@ -5,6 +5,7 @@ import {
   REGEX_CONNECTION_TRIM,
   MAX_CONNECTION_NAME_LENGTH,
 } from '../shared/constants'
+import { getNetworkServiceIds } from '../models/networks'
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
@@ -119,12 +120,14 @@ export function clearConnectionError(connection: IConnection) {
   setConnection(connection)
 }
 
-export function getConnectionIds(state: ApplicationState) {
+export function getConnectionDeviceIds(state: ApplicationState) {
   const thisId = state.backend.thisId
   const connections = selectConnections(state)
-  let ids = connections.map(c => c.id)
-  if (thisId && !ids.includes(thisId)) ids.push(thisId)
-  return ids
+  const networkIds = getNetworkServiceIds(state)
+  const ids = connections.filter(c => !networkIds.includes(c.id)) || []
+  let deviceIds = ids.map(c => c.deviceID || '')
+  if (thisId && !deviceIds.includes(thisId)) deviceIds.push(thisId)
+  return deviceIds
 }
 
 export function selectConnections(state: ApplicationState) {
@@ -176,14 +179,18 @@ export function updateConnections(state: ApplicationState, devices: IDevice[], u
   return devices
 }
 
-export function cleanOrphanConnections(ids?: string[]) {
-  if (!ids) return
+export function cleanOrphanConnections(deviceIds?: string[]) {
+  if (!deviceIds) return
   const state = store.getState()
+  const connectionIds = state.connections.all.reduce((result: string[], c) => {
+    if (deviceIds.includes(c.deviceID || '')) result.push(c.id)
+    return result
+  }, [])
   const serviceIds = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
   if (!state.ui.offline && serviceIds.length) {
-    ids.forEach(id => {
+    connectionIds.forEach(id => {
       if (!serviceIds.includes(id)) {
         store.dispatch.connections.forget(id)
         console.log('FORGET ORPHANED CONNECTION', id)

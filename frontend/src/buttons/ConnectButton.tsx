@@ -118,6 +118,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     disabled = true
   }
 
+  if (disabled && props.size === 'icon') title = ''
+
   return (
     <DynamicButton
       title={title}

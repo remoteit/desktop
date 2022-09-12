@@ -108,7 +108,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             {...params}
             autoFocus
             hiddenLabel
-            placeholder="Search for services everywhere"
+            placeholder="Search by device or service name"
             variant="filled"
             inputRef={inputRef}
             className={css.input}

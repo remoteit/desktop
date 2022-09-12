@@ -138,6 +138,7 @@ export const DevicePage: React.FC<Props> = () => {
                       connection={c}
                       permissions={device.permissions}
                       service={s}
+                      disabled={s.state === 'inactive' || device.thisDevice}
                       onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                     />
                   </Box>

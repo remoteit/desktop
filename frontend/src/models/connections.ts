@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import {
   cleanOrphanConnections,
-  getConnectionIds,
+  getConnectionDeviceIds,
   newConnection,
   sanitizeName,
   selectConnection,
@@ -10,18 +10,28 @@ import {
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import { graphQLConnect, graphQLDisconnect, graphQLSurvey } from '../services/graphQLMutation'
-import { getNetworkServiceIds, selectNetwork } from './networks'
+import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
 
-type IConnectionsState = { all: IConnection[]; queue: IConnection[]; queueMessage?: string }
+type IConnectionsState = {
+  all: IConnection[]
+  queue: IConnection[]
+  queueCount?: number
+  queueEnabling: boolean
+  queueFinished: boolean
+  queueConnection?: IConnection
+}
 
 const defaultState: IConnectionsState = {
   all: [],
   queue: [],
-  queueMessage: undefined,
+  queueCount: 0,
+  queueEnabling: false,
+  queueFinished: false,
+  queueConnection: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -34,8 +44,7 @@ export default createModel<RootModel>()({
 
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
-      const networkIds = getNetworkServiceIds(state)
-      const deviceIds = getConnectionIds(state).filter(id => !networkIds.includes(id))
+      const deviceIds = getConnectionDeviceIds(state)
       const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
       updateConnections(state, connections, accountId)
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
@@ -84,26 +93,15 @@ export default createModel<RootModel>()({
       dispatch.connections.setAll(connections)
     },
 
-    async queueEnable({
-      serviceIds,
-      enabled,
-      queueMessage,
-    }: {
-      serviceIds: string[]
-      enabled: boolean
-      queueMessage?: string
-    }) {
+    async queueEnable({ serviceIds, enabled }: { serviceIds: string[]; enabled: boolean }) {
       const queue: IConnection[] = serviceIds.map(id => ({ id, enabled }))
-      await dispatch.connections.set({ queue, queueMessage })
+      await dispatch.connections.set({ queue })
       dispatch.connections.checkQueue()
     },
 
     async checkQueue(_: void, state) {
       if (!state.connections.queue.length) {
-        if (state.connections.queueMessage) {
-          await dispatch.ui.set({ successMessage: state.connections.queueMessage })
-          await dispatch.connections.set({ queueMessage: undefined })
-        }
+        await dispatch.connections.set({ queueFinished: true })
         return
       }
 

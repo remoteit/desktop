@@ -24,7 +24,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <DeviceConnectMenu size="small" />
+            <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
             <DeviceOptionMenu device={device} />
           </Typography>
           <DeviceTagEditor device={device} />
