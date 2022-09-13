@@ -1,6 +1,5 @@
 import cli from './cliInterface'
 import debug from 'debug'
-import EventBus from './EventBus'
 import { IP_OPEN, IP_PRIVATE } from './sharedCopy/constants'
 
 const d = debug('r3:backend:Connection')
