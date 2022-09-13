@@ -57,7 +57,6 @@
     "reconnecting-websocket": "^4.4.0",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
-    "remote.it": "^0.48.1",
     "screenfull": "^5.1.0",
     "seedrandom": "^3.0.5",
     "socket.io-client": "2.3.1",
