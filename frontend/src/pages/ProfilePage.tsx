@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { LANGUAGES } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles } from '@mui/styles'
@@ -14,7 +14,6 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { spacing } from '../styling'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ProfilePage: React.FC = () => {
   const { paidPlan, user } = useSelector((state: ApplicationState) => ({
@@ -23,10 +22,6 @@ export const ProfilePage: React.FC = () => {
   }))
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
-
-  useEffect(() => {
-    analyticsHelper.page('OverviewPage')
-  }, [])
 
   if (!user) return null
 

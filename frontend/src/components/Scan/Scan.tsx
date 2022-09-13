@@ -10,7 +10,6 @@ import { Container } from '../Container'
 import { Gutters } from '../Gutters'
 import { Icon } from '../Icon'
 import { emit } from '../../services/Controller'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   data: IScanData
@@ -37,7 +36,6 @@ export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP })
         scanLoading: { [i]: true },
         scanTimestamp: { [i]: selected.timestamp },
       })
-      analyticsHelper.track('networkScan')
     },
     [selected, ui]
   )

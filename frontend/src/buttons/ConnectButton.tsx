@@ -5,7 +5,6 @@ import { connectionState, newConnection, launchDisabled } from '../helpers/conne
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 import { getLicenseChip } from '../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export type ConnectButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
   connection?: IConnection
@@ -42,10 +41,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
     dispatch.networks.start(instanceId)
     if (state === 'connecting' || connection?.enabled) {
-      analyticsHelper.trackConnect('connectionClosed', service)
       dispatch.connections.disconnect(connection)
     } else {
-      analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
       dispatch.connections.connect(connection)
     }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Button, Typography, Divider } from '@mui/material'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
@@ -7,13 +7,8 @@ import { ChangePassword } from '../components/ChangePassword'
 import { MFAPreference } from '../components/MFA/MFAPreference'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const SecurityPage: React.FC = () => {
-  useEffect(() => {
-    analyticsHelper.page('SecurityPage')
-  }, [])
-
   return (
     <Container
       gutterBottom

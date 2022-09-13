@@ -34,7 +34,6 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
   const css = useStyles()
@@ -62,9 +61,7 @@ export const Connect: React.FC = () => {
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
 
   useEffect(() => {
-    analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
-
     if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 

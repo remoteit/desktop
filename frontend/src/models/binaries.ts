@@ -1,6 +1,5 @@
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
-import analyticsHelper from '../helpers/analyticsHelper'
 import { RootModel } from '.'
 
 export interface BinariesState {
@@ -28,7 +27,6 @@ export default createModel<RootModel>()({
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
       emit('binaries/install')
-      analyticsHelper.track('install')
     },
   }),
   reducers: {

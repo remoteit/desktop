@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Redirect } from 'react-router-dom'
 import { REGEX_DOMAIN_SAFE } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
@@ -26,7 +26,6 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationSettingsPage: React.FC = () => {
   const { updating, domain, defaultDomain, samlOnly, isThisOrg, organization, limits, permissions } = useSelector(
@@ -51,10 +50,6 @@ export const OrganizationSettingsPage: React.FC = () => {
     metadata: '',
   })
   const dispatch = useDispatch<Dispatch>()
-
-  useEffect(() => {
-    analyticsHelper.page('OrganizationSAMLPage')
-  }, [])
 
   const enable = () => {
     if (!form.metadata) return

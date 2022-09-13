@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { SharedUsersLists } from '../components/SharedUsersLists'
 import { ApplicationState } from '../store'
 import { ServiceHeaderMenu } from '../components/ServiceHeaderMenu'
 import { selectSessionUsers } from '../models/sessions'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ServiceUsersPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
@@ -14,10 +13,6 @@ export const ServiceUsersPage: React.FC<{ device?: IDevice }> = ({ device }) => 
     service: device?.services.find(s => s.id === serviceID),
   }))
   const users = service?.access
-
-  useEffect(() => {
-    analyticsHelper.page('UsersPageService')
-  }, [])
 
   return (
     <ServiceHeaderMenu device={device} service={service}>

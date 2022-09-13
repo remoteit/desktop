@@ -1,154 +1,36 @@
-import { version } from './versionHelper'
 import { isPortal } from '../services/Browser'
-import { SEGMENT_PROJECT_KEY, SEGMENT_PROJECT_PORTAL_KEY } from '../shared/constants'
-
-export const CONNECTION_TYPE_PROXY_FAILOVER = 'proxy_failover'
-export const CONNECTION_TYPE_PEER_TO_PEER = 'peer_to_peer'
-export const CONNECTION_TYPE_NONE = 'None'
+import { GOOGLE_TAG_MANAGER_DESKTOP_KEY, GOOGLE_TAG_MANAGER_PORTAL_KEY } from '../shared/constants'
 
 export class AnalyticsHelper {
-  private context: SegmentContext
+  key?: string
 
-  public constructor() {
-    this.context = {
-      category: 'Desktop',
-      appName: 'Desktop',
-      appVersion: version,
-      // remaining retrieved from backend if available
-    }
+  constructor() {
+    this.key = isPortal() ? GOOGLE_TAG_MANAGER_PORTAL_KEY : GOOGLE_TAG_MANAGER_DESKTOP_KEY
   }
 
-  public setup = () => {
-    var analytics = (window.analytics = window.analytics || [])
-    if (!analytics.initialize)
-      if (analytics.invoked) window.console && console.error && console.error('Segment snippet included twice.')
-      else {
-        analytics.invoked = !0
-        analytics.methods = [
-          'trackSubmit',
-          'trackClick',
-          'trackLink',
-          'trackForm',
-          'pageview',
-          'identify',
-          'reset',
-          'group',
-          'track',
-          'ready',
-          'alias',
-          'debug',
-          'page',
-          'once',
-          'off',
-          'on',
-        ]
-        analytics.factory = function (t: any) {
-          return function () {
-            var e = Array.prototype.slice.call(arguments)
-            e.unshift(t)
-            analytics.push(e)
-            return analytics
-          }
-        }
-        for (var t = 0; t < analytics.methods.length; t++) {
-          var e = analytics.methods[t]
-          analytics[e] = analytics.factory(e)
-        }
-        analytics.load = function (t: any, e: any) {
-          var n = document.createElement('script')
-          n.type = 'text/javascript'
-          n.async = !0
-          n.src = 'https://cdn.segment.com/analytics.js/v1/' + t + '/analytics.min.js'
-          var a = document.getElementsByTagName('script')[0]
-          a.parentNode?.insertBefore(n, a)
-          analytics._loadOptions = e
-        }
-        analytics.SNIPPET_VERSION = '4.1.0'
-        analytics.load(isPortal() ? SEGMENT_PROJECT_PORTAL_KEY : SEGMENT_PROJECT_KEY)
+  setup() {
+    const headScript = document.createElement('script')
+    headScript.text = `
+      <!-- Google Tag Manager -->
+      <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','${this.key}');</script>
+      <!-- End Google Tag Manager -->`
 
-        // analytics.page()
-      }
-  }
+    const bodyScript = document.createElement('script')
+    bodyScript.text = `
+      <!-- Google Tag Manager (noscript) -->
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${this.key}"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+      <!-- End Google Tag Manager (noscript) -->`
 
-  public setManufacturerDetails(details: ManufacturerDetails) {
-    this.context.manufacturerId = details.manufacturer.id
-    this.context.productVersion = details.product.version
-    this.context.productId = details.product.id
-    this.context.productPlatform = details.product.platform
-    this.context.productAppCode = details.product.appCode
-  }
+    const head = document.getElementsByTagName('head')[0]
+    head.insertBefore(headScript, head.firstChild)
 
-  public setOobAvailable(isAvailable: boolean) {
-    this.context.oobAvailable = isAvailable
-  }
-
-  public setOobActive(isActive: boolean) {
-    this.context.oobActive = isActive
-  }
-
-  public setArch(arch: any) {
-    this.context.systemArch = arch
-  }
-
-  public setOS(os: any) {
-    this.context.systemOS = os
-  }
-
-  public setOsVersion(version: any) {
-    this.context.systemOSVersion = version
-  }
-
-  public identify(userId: string) {
-    window.analytics?.identify(userId, { trait: {} })
-  }
-
-  public clearIdentity() {
-    window.analytics?.reset()
-  }
-
-  public page = (pageName: string, additionalContext?: any) => {
-    let localContext = this.context
-    if (additionalContext) {
-      localContext = { ...additionalContext, ...localContext }
-    }
-    localContext.referrer = ''
-    localContext.search = ''
-    localContext.url = ''
-    window.analytics?.page(pageName, localContext)
-  }
-
-  public track(
-    name: string,
-    data?: { id: string; name?: string; typeID?: number; connectionType?: string; error?: ISimpleError }
-  ) {
-    let context: any = this.context
-
-    if (data) {
-      context.serviceId = data.id
-      context.serviceName = data.name
-      if (data.connectionType) context.connectionType = data.connectionType
-      if (data.typeID) context.serviceType = data.typeID
-      if (data.error) {
-        context.errorCode = data.error.code
-        context.errorMessage = data.error.message
-      }
-    }
-
-    window.analytics?.track(name, context)
-  }
-
-  public trackConnect(
-    name: string,
-    data?: { id: string; name?: string; typeID?: number; isP2P?: boolean },
-    error?: ISimpleError
-  ) {
-    const connectionType =
-      data?.isP2P === undefined
-        ? CONNECTION_TYPE_NONE
-        : data?.isP2P === true
-        ? CONNECTION_TYPE_PEER_TO_PEER
-        : CONNECTION_TYPE_PROXY_FAILOVER
-    if (data) this.track(name, { ...data, error, connectionType })
+    const body = document.getElementsByTagName('body')[0]
+    body.insertBefore(bodyScript, body.firstChild)
   }
 }
 

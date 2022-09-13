@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { SignInForm } from '../../components/SignInForm'
@@ -8,7 +8,6 @@ import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import { Link } from '../../components/Link'
 import { spacing } from '../../styling'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 export function SignInPage() {
   const css = useStyles()
@@ -16,10 +15,6 @@ export function SignInPage() {
   const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== IP_PRIVATE
   const secure: boolean = protocol.includes('https')
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
-
-  useEffect(() => {
-    analyticsHelper.page('SigninPage')
-  }, [])
 
   return (
     <Body className={css.body} center>

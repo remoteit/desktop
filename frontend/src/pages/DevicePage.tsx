@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
 import { makeStyles } from '@mui/styles'
@@ -22,7 +22,6 @@ import { Notice } from '../components/Notice'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { fontSizes } from '../styling'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
   device?: IDevice
@@ -37,10 +36,6 @@ export const DevicePage: React.FC<Props> = () => {
     setupAddingService: state.ui.setupAddingService,
     sortService: getDeviceModel(state).sortServiceOption,
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('DevicePage')
-  }, [])
 
   if (!device)
     return (

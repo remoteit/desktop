@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { getFreeLicenses } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,7 +12,6 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { useHistory } from 'react-router-dom'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationAddPage = () => {
   const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => {
@@ -33,10 +32,6 @@ export const OrganizationAddPage = () => {
   const history = useHistory()
   const disabled = !freeLicenses
   const license = freeLicenses ? 'LICENSED' : 'UNLICENSED'
-
-  useEffect(() => {
-    analyticsHelper.page('AccountLinkPage')
-  }, [])
 
   const exit = () => history.push(location.pathname.replace('/share', ''))
   const add = () => {

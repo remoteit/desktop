@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@mui/material'
 import { selectPermissions, getOrganization } from '../models/organization'
@@ -12,7 +12,6 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationRolesPage: React.FC = () => {
   const history = useHistory()
@@ -21,10 +20,6 @@ export const OrganizationRolesPage: React.FC = () => {
     limits: selectLimitsLookup(state),
     permissions: selectPermissions(state),
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('OrganizationRolesPage')
-  }, [])
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
 

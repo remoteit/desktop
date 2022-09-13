@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Typography } from '@mui/material'
@@ -9,7 +9,6 @@ import { NoConnectionPage } from './NoConnectionPage'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionOtherPage: React.FC = () => {
   const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
@@ -22,10 +21,6 @@ export const ConnectionOtherPage: React.FC = () => {
       session: state.sessions.all.find(s => s.id === sessionID),
     }
   })
-
-  useEffect(() => {
-    analyticsHelper.page('ConnectionOtherPage')
-  }, [])
 
   if (!service || !device || !session) return <NoConnectionPage />
 

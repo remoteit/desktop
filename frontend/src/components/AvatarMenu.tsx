@@ -1,5 +1,4 @@
 import React from 'react'
-import analyticsHelper from '../helpers/analyticsHelper'
 import { makeStyles } from '@mui/styles'
 import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
@@ -93,10 +92,7 @@ export const AvatarMenu: React.FC = () => {
             icon="lock"
             confirmTitle="Are you sure?"
             confirmMessage="Locking the app will leave all active connections and hosted services running and prevent others from signing in."
-            onClick={() => {
-              emit('user/lock')
-              analyticsHelper.track('signOutLock')
-            }}
+            onClick={() => emit('user/lock')}
           />
         </DesktopUI>
         <ListItemSetting
@@ -104,10 +100,7 @@ export const AvatarMenu: React.FC = () => {
           label="Sign out"
           icon="sign-out"
           confirmMessage="Signing out will allow this device to be transferred or another user to sign in. It will stop all connections."
-          onClick={() => {
-            dispatch.auth.signOut()
-            analyticsHelper.track('signOut')
-          }}
+          onClick={() => dispatch.auth.signOut()}
         />
         {remoteUI || (
           <DesktopUI>

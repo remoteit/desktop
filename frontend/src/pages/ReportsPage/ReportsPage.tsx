@@ -11,7 +11,6 @@ import { ReportTimeSeriesVis } from '../../components/ReportTimeSeriesVis'
 import { ReportDeviceQualityList } from '../../components/ReportDeviceQualityList'
 import { format } from 'date-fns'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ReportsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -47,7 +46,6 @@ export const ReportsPage: React.FC = () => {
     }
   }
   useEffect(() => {
-    analyticsHelper.page('ReportPage')
     if (!fetching && (devices.length == 0 || devices.length < totalDevices)) {
       fetchAnalytics()
     }

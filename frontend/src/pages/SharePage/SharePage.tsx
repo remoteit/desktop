@@ -15,7 +15,6 @@ import { Gutters } from '../../components/Gutters'
 import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type IParams = { userID: string; serviceID: string; deviceID: string }
 
@@ -38,7 +37,6 @@ export const SharePage: React.FC = () => {
       if (!guest && userID) await organization.fetch()
       await shares.fetch({ email, serviceID, device })
     })()
-    analyticsHelper.page('SharePage')
   }, [])
 
   const handleUnshare = async () => {
