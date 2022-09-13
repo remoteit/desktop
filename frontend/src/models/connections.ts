@@ -145,10 +145,9 @@ export default createModel<RootModel>()({
       const result = await graphQLConnect(connection.id, connection.publicRestriction)
 
       if (result === 'ERROR') {
-        connection.error = {
-          message: 'An error occurred connecting. Please ensure that the device is online.',
-        }
+        connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
         setConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
       } else {
         const data = result?.data?.data?.connect
         console.log('PROXY CONNECTED', data)
