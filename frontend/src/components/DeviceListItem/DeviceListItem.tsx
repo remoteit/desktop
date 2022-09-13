@@ -7,6 +7,7 @@ import { Box, ListItemIcon, ListItem } from '@mui/material'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { DeviceConnectMenu } from '../DeviceConnectMenu'
 import { radius, spacing } from '../../styling'
+import { TestUI } from '../TestUI'
 import { Icon } from '../Icon'
 
 type Props = {
@@ -42,10 +43,12 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
             )
           ) : (
             <>
-              <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
-              <Box className={css.connect}>
-                <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
-              </Box>
+              <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
+              <TestUI>
+                <Box className={css.connect}>
+                  <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
+                </Box>
+              </TestUI>
             </>
           )}
         </ListItemIcon>

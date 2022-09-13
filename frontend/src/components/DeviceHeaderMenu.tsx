@@ -10,6 +10,7 @@ import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
+import { TestUI } from './TestUI'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
@@ -24,7 +25,9 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
+            <TestUI>
+              <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
+            </TestUI>
             <DeviceOptionMenu device={device} />
           </Typography>
           <DeviceTagEditor device={device} />

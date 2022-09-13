@@ -19,6 +19,7 @@ import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
 import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
+import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -127,21 +128,23 @@ export const DevicePage: React.FC<Props> = () => {
               >
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
                 <ListItemSecondaryAction>
-                  <ServiceMiniState className="hoverHide" service={s} connection={c} />
-                  <Box className={css.connect}>
-                    <ConnectButton
-                      color="primary"
-                      size="icon"
-                      className="hidden"
-                      iconSize="base"
-                      iconType="solid"
-                      connection={c}
-                      permissions={device.permissions}
-                      service={s}
-                      disabled={s.state === 'inactive' || device.thisDevice}
-                      onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
-                    />
-                  </Box>
+                  <ServiceMiniState /* className="hoverHide" */ service={s} connection={c} />
+                  <TestUI>
+                    <Box className={css.connect}>
+                      <ConnectButton
+                        color="primary"
+                        size="icon"
+                        className="hidden"
+                        iconSize="base"
+                        iconType="solid"
+                        connection={c}
+                        permissions={device.permissions}
+                        service={s}
+                        disabled={s.state === 'inactive' || device.thisDevice}
+                        onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
+                      />
+                    </Box>
+                  </TestUI>
                 </ListItemSecondaryAction>
               </ListItemLocation>
             </GuideStep>

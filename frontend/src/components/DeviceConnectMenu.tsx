@@ -75,7 +75,6 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
         className={css.button}
         connection={connection}
         permissions={device.permissions}
-        all={!isPortal() && device.services.length > 1}
         {...props}
       />
       <Menu
@@ -119,7 +118,14 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
           <ListItemIcon>
             <Icon name={connection?.enabled ? 'stop' : 'forward'} type="solid" color="primary" />
           </ListItemIcon>
-          {connection?.enabled ? (isPortal() ? 'Disconnect all' : 'Stop all') : 'Connect all'} &nbsp;
+          {connection?.enabled
+            ? isPortal()
+              ? 'Disconnect all'
+              : 'Stop all'
+            : isPortal()
+            ? 'Connect all'
+            : 'Start all'}
+          &nbsp;
         </MenuItem>
       </Menu>
     </>
