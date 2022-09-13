@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { List, Box, Button, Typography } from '@mui/material'
+import { List, Button, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
@@ -34,12 +34,16 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import { IconButton } from '../buttons/IconButton'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
   const css = useStyles()
-  const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
+  const location = useLocation<{
+    autoConnect?: boolean
+    autoLaunch?: boolean
+    autoCopy?: boolean
+    autoFeedback?: boolean
+  }>()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
@@ -121,7 +125,7 @@ export const Connect: React.FC = () => {
         </GuideStep>
       )}
       <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
-      <ConnectionSurvey connection={connection} />
+      <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters

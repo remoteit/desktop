@@ -100,6 +100,14 @@ export const Router: React.FC = () => {
         }}
       />
 
+      <Redirect
+        from="/feedback/:deviceID/:serviceID"
+        to={{
+          pathname: '/devices/:deviceID/:serviceID',
+          state: { autoFeedback: true },
+        }}
+      />
+
       <Route path="/claim/:claimID">
         <ClaimPage />
       </Route>

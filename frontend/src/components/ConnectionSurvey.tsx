@@ -18,14 +18,14 @@ const formId = '1FAIpQLSeYtHBGJ8MQ-9I70_ggngkL4S3PcxoIluAds-f9i44CbjKBzg'
 
 type Props = {
   connection?: IConnection
-  service?: IService
+  highlight?: boolean
 }
 
-export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
+export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => {
   const user = useSelector((state: ApplicationState) => state.user)
   const dispatch = useDispatch<Dispatch>()
   const [rated, setRated] = useState<number | null>(null)
-  const css = useStyles()
+  const css = useStyles({ highlight: true })
 
   if (!connection) return null
 
@@ -85,7 +85,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
             </Typography>
           </Paper>
         ) : (
-          <Paper elevation={0} className={classnames(css.layout, css.survey)}>
+          <Paper elevation={0} className={classnames(css.layout, css.survey, highlight && css.highlight)}>
             How was your last connection?
             <span>
               <IconButton
@@ -121,6 +121,11 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection }) => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  '@keyframes highlight': {
+    '0%': { boxShadow: `0 0 0 4px ${palette.primaryHighlight.main}` },
+    '30%': { boxShadow: `0 0 0 4px ${palette.primary.main}` },
+    '80%': { boxShadow: `0 0 0 4px ${palette.primaryHighlight.main}` },
+  },
   survey: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -148,5 +153,11 @@ const useStyles = makeStyles(({ palette }) => ({
     '& > .MuiTypography-caption': {
       color: palette.grayLight.main,
     },
+  },
+  highlight: {
+    animationName: '$highlight',
+    animationIterationCount: '3',
+    animationTimingFunction: 'ease-out',
+    animationDuration: '0.7s',
   },
 }))
