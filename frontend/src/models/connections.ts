@@ -145,7 +145,9 @@ export default createModel<RootModel>()({
       const result = await graphQLConnect(connection.id, connection.publicRestriction)
 
       if (result === 'ERROR') {
-        connection.error = { message: 'An error occurred connecting to this device.' }
+        connection.error = {
+          message: 'An error occurred connecting. Please ensure that the device is online.',
+        }
         setConnection(connection)
       } else {
         const data = result?.data?.data?.connect
