@@ -12,6 +12,7 @@ import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Pre } from '../components/Pre'
 
 export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; children: React.ReactNode }> = ({
   network,
@@ -29,29 +30,29 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
         <>
           <Typography variant="h1">
             <Title>{network.name || 'Unknown Network'}</Title>
-            {network.permissions.includes('MANAGE') && (
-              <>
-                <AddUserButton to={`/networks/view/${network.id}/share`} />
-                {network.shared ? (
-                  <ConfirmButton
-                    confirm
-                    title="Leave network"
-                    icon="arrow-right-from-bracket"
-                    size="md"
-                    confirmMessage={
-                      <>
-                        <Notice severity="danger" fullWidth gutterBottom>
-                          You will be leaving <i>{network.name}. </i>
-                        </Notice>
-                        The network will have to be re-shared to you if you wish to access it again.
-                      </>
-                    }
-                    onClick={async () => {
-                      await dispatch.networks.unshareNetwork({ networkId: network.id, email })
-                      history.push('/networks')
-                    }}
-                  />
-                ) : (
+            {network.shared ? (
+              <ConfirmButton
+                confirm
+                title="Leave network"
+                icon="arrow-right-from-bracket"
+                size="md"
+                confirmMessage={
+                  <>
+                    <Notice severity="danger" fullWidth gutterBottom>
+                      You will be leaving <i>{network.name}. </i>
+                    </Notice>
+                    The network will have to be re-shared to you if you wish to access it again.
+                  </>
+                }
+                onClick={async () => {
+                  await dispatch.networks.unshareNetwork({ networkId: network.id, email })
+                  history.push('/networks')
+                }}
+              />
+            ) : (
+              network.permissions.includes('MANAGE') && (
+                <>
+                  <AddUserButton to={`/networks/view/${network.id}/share`} />
                   <DeleteButton
                     title="Delete Network"
                     warning={
@@ -67,8 +68,8 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
                       history.push('/networks')
                     }}
                   />
-                )}
-              </>
+                </>
+              )
             )}
           </Typography>
           <NetworkTagEditor network={network} />
