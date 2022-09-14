@@ -43,7 +43,7 @@
     "socketio-auth": "^0.1.1",
     "sudo-prompt": "^9.2.1",
     "tmp": "^0.2.1",
-    "win-ca": "^3.4.5",
+    "win-ca": "^3.5.0",
     "winston": "3.3.3"
   },
   "devDependencies": {
