@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { emit } from '../services/Controller'
 import { List, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -15,7 +15,6 @@ import { Container } from '../components/Container'
 import { isRemote } from '../services/Browser'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OptionsPage: React.FC = () => {
   const { os, installing, cliVersion, preferences, thisDevice, notOwner, themeMode, remoteUI } = useSelector(
@@ -32,10 +31,6 @@ export const OptionsPage: React.FC = () => {
   )
 
   const { binaries, ui } = useDispatch<Dispatch>()
-
-  useEffect(() => {
-    analyticsHelper.page('OptionsPage')
-  }, [])
 
   return (
     <Container
@@ -70,10 +65,7 @@ export const OptionsPage: React.FC = () => {
             confirmMessage={`New connections will be from ${
               thisDevice?.name || 'this device'
             } and not your local machine.`}
-            onClick={() => {
-              analyticsHelper.track('enabledRemoteConnectUI')
-              emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })
-            }}
+            onClick={() => emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })}
           />
         )}
         <DesktopUI>
@@ -148,7 +140,6 @@ export const OptionsPage: React.FC = () => {
                 onClick={() => {
                   emit('uninstall')
                   ui.set({ waitMessage: 'uninstalling' })
-                  analyticsHelper.track('uninstall')
                 }}
               />
               <ListItemSetting

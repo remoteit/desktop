@@ -9,6 +9,7 @@ import { Typography, List, Box } from '@mui/material'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
+import { selectNetworks } from '../models/networks'
 import { getOrganization } from '../models/organization'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from '../components/LicenseSelect'
@@ -25,7 +26,7 @@ export const OrganizationGuestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { userID = '' } = useParams<{ userID: string }>()
   const [removing, setRemoving] = useState<boolean>(false)
-  const { devices, freeLicenses, organization, guest, license } = useSelector((state: ApplicationState) => {
+  const { devices, networks, freeLicenses, organization, guest, license } = useSelector((state: ApplicationState) => {
     const organization = getOrganization(state)
     const guest = organization.guests.find(g => g.id === userID)
     return {
@@ -34,6 +35,7 @@ export const OrganizationGuestPage: React.FC = () => {
       freeLicenses: getFreeLicenses(state),
       license: selectRemoteitLicense(state),
       devices: getDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
+      networks: selectNetworks(state),
     }
   })
 
@@ -106,7 +108,7 @@ export const OrganizationGuestPage: React.FC = () => {
           </Gutters>
         </>
       )}
-      {guest && (
+      {!!guest?.deviceIds.length && (
         <>
           <Typography variant="subtitle1">Devices</Typography>
           <List>
@@ -127,6 +129,24 @@ export const OrganizationGuestPage: React.FC = () => {
                 >
                   <ShareDetails user={guest} device={device} />
                 </ListItemLocation>
+              )
+            })}
+          </List>
+        </>
+      )}
+      {!!guest?.networkIds.length && (
+        <>
+          <Typography variant="subtitle1">Networks</Typography>
+          <List>
+            {guest?.networkIds.map(id => {
+              const network = networks.find(d => d.id === id)
+              return (
+                <ListItemLocation
+                  key={id}
+                  pathname={`${location.pathname}/${id}`}
+                  icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
+                  title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
+                />
               )
             })}
           </List>

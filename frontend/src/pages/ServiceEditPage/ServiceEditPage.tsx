@@ -5,7 +5,6 @@ import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { device?: IDevice }
 
@@ -20,7 +19,6 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
 
   useEffect(() => {
     applicationTypes.fetch()
-    analyticsHelper.page('ServiceEditPage')
   }, [])
 
   if (!service) {

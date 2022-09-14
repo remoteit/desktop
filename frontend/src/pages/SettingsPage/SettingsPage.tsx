@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { List, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
@@ -9,16 +9,11 @@ import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
 import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
   const { preferences } = useSelector((state: ApplicationState) => ({
     preferences: state.backend.preferences,
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('SettingsPage')
-  }, [])
 
   if (!preferences) return null
 

@@ -30,11 +30,10 @@ export const InlineTemplateSetting: React.FC<Props> = ({
       disableGutters={disableGutters}
       disabled={disabled}
       value={app.template}
-      displayValue={app.string}
       actionIcon={actionIcon}
       label={
         <>
-          {app.contextTitle}
+          {app.contextTitle} Template
           <Tooltip title="Default tokens: [host] [port] [id] [path]" placement="top" arrow>
             <span style={{ zIndex: 10 }}>
               <Icon name="question-circle" size="sm" type="regular" inline />

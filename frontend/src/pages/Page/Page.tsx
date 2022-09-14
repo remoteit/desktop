@@ -7,6 +7,7 @@ import { Snackbar, IconButton, Dialog } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { getOwnDevices } from '../../models/accounts'
 import { DragAppRegion } from '../../components/DragAppRegion'
+import { ConnectionNotice } from '../../components/ConnectionNotice'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
 import { Notice } from '../../components/Notice'
@@ -126,6 +127,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
         onClose={clearSuccessMessage}
       />
+      <ConnectionNotice className={css.snackbar} />
       <UpdateNotice className={css.snackbar} />
     </RemoteHeader>
   )

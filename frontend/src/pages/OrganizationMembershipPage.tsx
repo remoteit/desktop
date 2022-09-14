@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import {
   Typography,
@@ -22,21 +22,16 @@ import { spacing } from '../styling'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembershipPage: React.FC = () => {
   const { membership, organization, organizations, license, email } = useSelector((state: ApplicationState) => ({
     membership: state.accounts.membership,
-    organizations: state.organization.all,
+    organizations: state.organization.accounts,
     organization: getOwnOrganization(state),
     license: selectOwnRemoteitLicense(state),
     email: state.auth.user?.email || '',
   }))
   const { accounts } = useDispatch<Dispatch>()
-
-  useEffect(() => {
-    analyticsHelper.page('AccountAccessPage')
-  }, [])
 
   return (
     <Container

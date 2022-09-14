@@ -419,8 +419,8 @@ export async function graphQLTransferDevice(params: ITransferProps) {
 
 export async function graphQLUpdateNetwork(params: INetwork) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!, $name: String, $enabled: Boolean) {
-        updateNetwork(id: $id, name: $name, enabled: $enabled) {
+    ` mutation query($id: String!, $name: String) {
+        updateNetwork(id: $id, name: $name) {
           id
         }
       }`,
@@ -428,15 +428,15 @@ export async function graphQLUpdateNetwork(params: INetwork) {
   )
 }
 
-export async function graphQLAddNetwork(params: INetwork, accountId: string) {
+export async function graphQLAddNetwork(name: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $name: String, $enabled: Boolean) {
-        createNetwork(accountId: $accountId, name: $name, enabled: $enabled) {
+    ` mutation query($accountId: String, $name: String) {
+        createNetwork(accountId: $accountId, name: $name) {
           id
         }
       }`,
     {
-      ...params,
+      name,
       accountId,
     }
   )
@@ -460,9 +460,8 @@ export async function graphQLSetConnection(props: addConnectionProps) {
         $serviceId: String!,
         $port: Int,
         $name: String,
-        $enabled: Boolean
       ) {
-        addNetworkConnection(networkId: $networkId, serviceId: $serviceId, port: $port, name: $name, enabled: $enabled)
+        addNetworkConnection(networkId: $networkId, serviceId: $serviceId, port: $port, name: $name)
       }`,
     props
   )

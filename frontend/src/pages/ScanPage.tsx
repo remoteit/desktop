@@ -8,7 +8,6 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Scan } from '../components/Scan'
 import { emit } from '../services/Controller'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ScanPage: React.FC = () => {
   const { interfaces, services, scanData, privateIP } = useSelector((state: ApplicationState) => ({
@@ -20,10 +19,6 @@ export const ScanPage: React.FC = () => {
 
   useEffect(() => {
     emit('interfaces')
-  }, [])
-
-  useEffect(() => {
-    analyticsHelper.page('NetworkPage')
   }, [])
 
   return (

@@ -15,7 +15,8 @@ import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
 
-if (environment() !== 'development') analyticsHelper.setup()
+// if (environment() !== 'development')
+analyticsHelper.setup()
 
 const root = createRoot(document.getElementById('root')!)
 root.render(

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ApplicationState } from '../store'
 import { Divider, Typography } from '@mui/material'
 import { LicensingSetting } from '../components/LicensingSetting'
@@ -6,18 +6,13 @@ import { memberOrganization } from '../models/organization'
 import { selectOwnLicenses } from '../models/plans'
 import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const LicensingPage: React.FC = () => {
   const { licenses, limits } = useSelector((state: ApplicationState) => selectOwnLicenses(state))
   const { memberships, organizations } = useSelector((state: ApplicationState) => ({
     memberships: state.accounts.membership,
-    organizations: state.organization.all,
+    organizations: state.organization.accounts,
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('LicensingPage')
-  }, [])
 
   return (
     <Container gutterBottom header={<Typography variant="h1">Licensing</Typography>}>

@@ -98,7 +98,6 @@ export default createModel<RootModel>()({
                 networks {
                   id
                   name
-                  enabled
                   created
                   permissions
                   owner {
@@ -114,7 +113,6 @@ export default createModel<RootModel>()({
                     }
                     name
                     port
-                    enabled
                     created
                   }
                   tags {
@@ -182,7 +180,6 @@ export default createModel<RootModel>()({
           shared,
           id: n.id,
           name: n.name,
-          enabled: n.enabled,
           owner: n.owner,
           permissions: n.permissions,
           created: new Date(n.created),
@@ -280,7 +277,7 @@ export default createModel<RootModel>()({
     },
     async addNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
-      const response = await graphQLAddNetwork(params, id)
+      const response = await graphQLAddNetwork(params.name, id)
       if (response === 'ERROR') return
       params.id = response?.data?.data?.createNetwork?.id
       console.log('ADDING NETWORK', params)
@@ -378,7 +375,7 @@ export function selectActiveNetworks(state: ApplicationState): INetwork[] {
 
   all.forEach(c => {
     const accountId = c?.accountId || state.user.id
-    const name = state.organization.all[accountId || '']?.name || 'Unknown'
+    const name = state.organization.accounts[accountId || '']?.name || 'Unknown'
     const index = networks.findIndex(n => n.id === accountId)
     if (index === -1) networks.push({ ...template, id: accountId, name, serviceIds: [c.id] })
     else networks[index].serviceIds.push(c.id)

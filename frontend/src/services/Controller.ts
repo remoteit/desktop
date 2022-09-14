@@ -4,7 +4,6 @@ import { isPortal } from '../services/Browser'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import network from '../services/Network'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
@@ -162,10 +161,7 @@ function getEventHandlers() {
 
     interfaces: (result: IInterface[]) => {
       controller.log('event: socket interfaces', result)
-      if (result) {
-        backend.set({ interfaces: result })
-        analyticsHelper.setOobActive(result.length > 1)
-      }
+      if (result) backend.set({ interfaces: result })
     },
 
     freePort: (result: number) => backend.set({ freePort: result }),
@@ -176,11 +172,6 @@ function getEventHandlers() {
 
     environment: (result: ILookup<any>) => {
       backend.set({ environment: result })
-      analyticsHelper.setOS(result.os)
-      analyticsHelper.setOsVersion(result.osVersion)
-      analyticsHelper.setArch(result.arch)
-      analyticsHelper.setManufacturerDetails(result.manufacturerDetails)
-      analyticsHelper.setOobAvailable(result.oobAvailable)
     },
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),

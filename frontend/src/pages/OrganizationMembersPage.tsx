@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography, List } from '@mui/material'
@@ -13,7 +13,6 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembersPage: React.FC = () => {
   const { organization, permissions, license, owner } = useSelector((state: ApplicationState) => {
@@ -26,10 +25,6 @@ export const OrganizationMembersPage: React.FC = () => {
     }
   })
   const enterprise = !!license && !license.plan.billing
-
-  useEffect(() => {
-    analyticsHelper.page('OrganizationMembersPage')
-  }, [])
 
   if (!permissions?.includes('ADMIN'))
     return (

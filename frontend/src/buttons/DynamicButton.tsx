@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { IconButton, Button, alpha, darken } from '@mui/material'
+import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 import { Color } from '../styling'
 
@@ -47,7 +47,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
       name={icon}
       type={iconType}
       size={iconSize}
-      color={size === 'icon' ? color : undefined}
+      color={size === 'icon' ? (disabled ? 'grayLight' : color) : undefined}
       inlineLeft={size !== 'icon'}
       spin={loading}
       fixedWidth
@@ -62,6 +62,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
         disabled={disabled}
         size={size}
         className={classnames(className, css.button)}
+        fullWidth={fullWidth}
       >
         {IconComponent}
         {title}
@@ -86,19 +87,19 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
   }
 
   return (
-    <IconButton className={className} disabled={disabled} onClick={onClick} size="small">
-      {IconComponent}
-    </IconButton>
+    <Tooltip title={title} className={className} placement="left" enterDelay={400} arrow>
+      <span>
+        <IconButton disabled={disabled} onClick={onClick} size="small">
+          {IconComponent}
+        </IconButton>
+      </span>
+    </Tooltip>
   )
 }
-//   <Tooltip title={title} className={className} placement="left" arrow>
-//     <span>
-//     </span>
-//   </Tooltip>
 
 const useStyles = makeStyles(({ palette }) => ({
   button: (props: DynamicButtonProps) => {
-    let background = props.color && !props.disabled ? palette[props.color].main : undefined
+    let background = props.disabled ? palette.grayLight.main : props.color ? palette[props.color].main : undefined
     let hover = background ? darken(background, 0.25) : undefined
     let foreground = palette.alwaysWhite.main
 

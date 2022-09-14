@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { List, Box, Button, Typography } from '@mui/material'
+import { List, Button, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
@@ -34,12 +34,15 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import { IconButton } from '../buttons/IconButton'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
   const css = useStyles()
-  const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
+  const location = useLocation<{
+    autoConnect?: boolean
+    autoLaunch?: boolean
+    autoCopy?: boolean
+    autoFeedback?: boolean
+  }>()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
@@ -58,9 +61,7 @@ export const Connect: React.FC = () => {
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
 
   useEffect(() => {
-    analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
-
     if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
@@ -84,31 +85,17 @@ export const Connect: React.FC = () => {
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       {ownDevice ? (
         <Notice gutterTop solid>
-          <Typography variant="h3">This service is on this device.</Typography>
+          <Typography variant="h3">You are on the same device as this service.</Typography>
           <Typography variant="body2" gutterBottom>
-            You can connect directly without using Remote.It.
+            So you can connect directly without using Remote.It.
           </Typography>
           <DataCopy
             label="Connection endpoint"
             value={`${service.host || '127.0.0.1'}:${service.port}`}
-            gutterBottom
             showBackground
             alwaysWhite
             fullWidth
           />
-          <Box display="flex">
-            <IconButton
-              name="user-plus"
-              to={`/devices/${device.id}/share`}
-              hide={!device.permissions.includes('MANAGE')}
-              color="alwaysWhite"
-              inlineLeft
-            />
-            <em>
-              Share this device to other users or sign in from another system to connect through Remote.it. Remote.It
-              will create an endpoints once connected.
-            </em>
-          </Box>
         </Notice>
       ) : (
         <GuideStep
@@ -135,7 +122,7 @@ export const Connect: React.FC = () => {
         </GuideStep>
       )}
       <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
-      <ConnectionSurvey connection={connection} />
+      <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters

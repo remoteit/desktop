@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { Notice } from '../components/Notice'
@@ -15,7 +15,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { selectTags, canEditTags } from '../models/tags'
 import { REGEX_TAG_SAFE } from '../shared/constants'
 import { useLabel } from '../hooks/useLabel'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const TagsPage: React.FC = () => {
   const getColor = useLabel()
@@ -32,10 +31,6 @@ export const TagsPage: React.FC = () => {
       tags: selectTags(state),
     }
   })
-
-  useEffect(() => {
-    analyticsHelper.page('TagsPage')
-  }, [])
 
   const rename = (tag: ITag, name: string) => {
     if (findTagIndex(tags, name) >= 0) {

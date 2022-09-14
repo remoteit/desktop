@@ -180,13 +180,13 @@ const defaultState: IOrganizationState = {
 type IOrganizationAccountState = {
   initialized: boolean
   updating: boolean
-  all: ILookup<IOrganizationState>
+  accounts: ILookup<IOrganizationState>
 }
 
 const defaultAccountState: IOrganizationAccountState = {
   initialized: false,
   updating: false,
-  all: {},
+  accounts: {},
 }
 
 export default createModel<RootModel>()({
@@ -212,6 +212,9 @@ export default createModel<RootModel>()({
             devices {
               id
             }
+            networks {
+              id
+            }
           }
         }`
       )
@@ -223,14 +226,14 @@ export default createModel<RootModel>()({
           }`
       )
       if (result === 'ERROR') return
-      const all = await dispatch.organization.parse({ result, ids })
-      if (all) await dispatch.organization.set({ all })
+      const accounts = await dispatch.organization.parse({ result, ids })
+      if (accounts) await dispatch.organization.set({ accounts })
       else await dispatch.organization.clearActive()
     },
 
     async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }) {
       const data = result?.data?.data?.login
-      let orgs: IOrganizationAccountState['all'] = {}
+      let orgs: IOrganizationAccountState['accounts'] = {}
       ids.forEach((id, index) => {
         const { organization, licenses, limits, guest } = data[`_${index}`]
         orgs[id] = parseOrganization(organization)
@@ -240,6 +243,7 @@ export default createModel<RootModel>()({
           id: g.user.id,
           email: g.user.email || g.user.id,
           deviceIds: g.devices.map(d => d.id),
+          networkIds: g.networks.map(n => n.id),
         }))
       })
       return orgs
@@ -374,9 +378,9 @@ export default createModel<RootModel>()({
       const id = getActiveAccountId(state)
       let org = { ...getOrganization(state) }
       Object.keys(params).forEach(key => (org[key] = params[key]))
-      const all = { ...state.organization.all }
-      all[id] = org
-      dispatch.organization.set({ all })
+      const accounts = { ...state.organization.accounts }
+      accounts[id] = org
+      dispatch.organization.set({ accounts })
     },
   }),
   reducers: {
@@ -393,12 +397,12 @@ export default createModel<RootModel>()({
 
 export function getOwnOrganization(state: ApplicationState) {
   const id = state.auth.user?.id || ''
-  return memberOrganization(state.organization.all, id)
+  return memberOrganization(state.organization.accounts, id)
 }
 
 export function getOrganization(state: ApplicationState, accountId?: string): IOrganizationState {
   accountId = accountId || getActiveAccountId(state)
-  return memberOrganization(state.organization.all, accountId)
+  return memberOrganization(state.organization.accounts, accountId)
 }
 
 export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
@@ -406,7 +410,7 @@ export function memberOrganization(organization: ILookup<IOrganizationState>, ac
 }
 
 export function getOrganizationName(state: ApplicationState, accountId?: string): string {
-  return memberOrganization(state.organization.all, accountId).name || 'Personal'
+  return memberOrganization(state.organization.accounts, accountId).name || 'Personal'
 }
 
 export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {

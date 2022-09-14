@@ -9,7 +9,6 @@ import { Container } from '../../components/Container'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Title } from '../../components/Title'
 import { Body } from '../../components/Body'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { device?: IDevice }
 
@@ -21,7 +20,6 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
 
   useEffect(() => {
     applicationTypes.fetch()
-    analyticsHelper.page('ServiceAddPage')
   }, [])
 
   const maxReached = device && device.services.length >= setupServicesLimit

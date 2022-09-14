@@ -40,7 +40,9 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
     setAnchorEl(null)
   }
 
-  const selectHandler = (c: IConnection, serviceId: string) => {
+  const selectHandler = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, c: IConnection, serviceId: string) => {
+    event.stopPropagation()
+    event.preventDefault()
     closeHandler()
     history.push(`/devices/${device.id}/${serviceId}`)
     if (c.enabled) dispatch.connections.disconnect(c)
@@ -49,8 +51,12 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
 
   const allHandler = () => {
     closeHandler()
+    dispatch.connections.set({
+      queueCount: connections?.filter(c => c.enabled === !!connection?.enabled)?.length || 0,
+      queueEnabling: !connection?.enabled,
+      queueConnection: connection || newConnection(device.services[0]),
+    })
     dispatch.connections.queueEnable({
-      queueMessage: `${device.services.length} connections ${connection?.enabled ? 'stopped' : 'started'}.`,
       serviceIds: device.services.map(s => s.id),
       enabled: !connection?.enabled,
     })
@@ -69,7 +75,6 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
         className={css.button}
         connection={connection}
         permissions={device.permissions}
-        all={!isPortal()}
         {...props}
       />
       <Menu
@@ -100,7 +105,7 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
               dense
               key={service.id}
               color={service.state === 'active' ? 'primary' : 'grayDark'}
-              onClick={() => selectHandler(c, service.id)}
+              onClick={event => selectHandler(event, c, service.id)}
               value={service.id}
               disabled={service.state === 'inactive'}
             >
@@ -113,7 +118,14 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
           <ListItemIcon>
             <Icon name={connection?.enabled ? 'stop' : 'forward'} type="solid" color="primary" />
           </ListItemIcon>
-          {connection?.enabled ? (isPortal() ? 'Disconnect all' : 'Stop all') : 'Connect all'} &nbsp;
+          {connection?.enabled
+            ? isPortal()
+              ? 'Disconnect all'
+              : 'Stop all'
+            : isPortal()
+            ? 'Connect all'
+            : 'Start all'}
+          &nbsp;
         </MenuItem>
       </Menu>
     </>

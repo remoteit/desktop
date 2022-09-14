@@ -5,7 +5,6 @@ import { RootModel } from '.'
 import { version } from '../helpers/versionHelper'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 const NOTICE_VERSION_ID = 'notice-version'
 
@@ -124,7 +123,6 @@ export default createModel<RootModel>()({
     },
     async registerDevice({ services, name }: { services: IService[]; name: string }, state) {
       dispatch.ui.set({ setupRegisteringDevice: true })
-      const thisId = state.backend.thisId
       const code = await dispatch.devices.createRegistration({
         name,
         services: services.map(t => ({
@@ -136,14 +134,12 @@ export default createModel<RootModel>()({
         accountId: state.user.id,
       })
       emit('registration', code)
-      analyticsHelper.track('deviceCreated', { id: thisId })
     },
     async setUpdateNotice(updateVersion: string | undefined, globalState) {
       setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
     },
     async restart() {
       dispatch.ui.set({ waitMessage: 'updating' })
-      analyticsHelper.track('update')
       emit('restart')
     },
   }),

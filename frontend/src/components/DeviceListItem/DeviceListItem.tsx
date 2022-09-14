@@ -7,6 +7,7 @@ import { Box, ListItemIcon, ListItem } from '@mui/material'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { DeviceConnectMenu } from '../DeviceConnectMenu'
 import { radius, spacing } from '../../styling'
+import { TestUI } from '../TestUI'
 import { Icon } from '../Icon'
 
 type Props = {
@@ -42,10 +43,12 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
             )
           ) : (
             <>
-              <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
-              <Box className={css.connect}>
-                <DeviceConnectMenu size="icon" iconSize="md" color="black" />
-              </Box>
+              <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
+              <TestUI>
+                <Box className={css.connect}>
+                  <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
+                </Box>
+              </TestUI>
             </>
           )}
         </ListItemIcon>
@@ -60,8 +63,12 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   )
 }
 
+type StyleProps = {
+  offline: boolean
+}
+
 const useStyles = makeStyles(({ palette }) => ({
-  row: ({ offline }: { offline: boolean }) => ({
+  row: ({ offline }: StyleProps) => ({
     '&:hover > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
     },
@@ -89,10 +96,13 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   connect: {
     top: 0,
-    marginLeft: -spacing.xs,
     display: 'flex',
     alignItems: 'center',
     position: 'absolute',
+    width: 62,
     height: '100%',
+    '& .MuiIconButton-root': {
+      backgroundImage: `radial-gradient(${palette.white.main} 15%, transparent 85%)`,
+    },
   },
 }))

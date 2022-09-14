@@ -59,7 +59,13 @@ export const ServiceContextualMenu: React.FC = () => {
       </ListItem>
       {!remoteUI && (
         <ListItem className={css.connect} dense>
-          <ComboButton connection={connection} service={service} size="small" permissions={device?.permissions} />
+          <ComboButton
+            connection={connection}
+            service={service}
+            size="small"
+            permissions={device?.permissions}
+            fullWidth
+          />
           {connection?.enabled && (
             <>
               <CopyButton app={app} icon="copy" size="base" />

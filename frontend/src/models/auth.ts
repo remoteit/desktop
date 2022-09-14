@@ -1,4 +1,3 @@
-import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
@@ -105,7 +104,6 @@ export default createModel<RootModel>()({
         const user = { ...data, authHash: data.authhash }
         auth.set({ user, signInError: undefined })
         setLocalStorage(state, USER_KEY, user)
-        analyticsHelper.identify(data.id)
         if (data.authhash && data.yoicsId) {
           Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
           auth.signedIn()
@@ -264,7 +262,6 @@ export default createModel<RootModel>()({
       zendesk.endChat()
       emit('user/sign-out-complete')
       dispatch.auth.set({ authenticated: false })
-      analyticsHelper.clearIdentity()
       cloudController.close()
       Controller.close()
     },

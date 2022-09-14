@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
@@ -8,16 +8,11 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationGuestsPage: React.FC = () => {
   const { permissions } = useSelector((state: ApplicationState) => ({
     permissions: selectPermissions(state),
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('OrganizationGuestsPage')
-  }, [])
 
   if (!permissions?.includes('MANAGE'))
     return (

@@ -354,6 +354,7 @@ declare global {
     id: string
     email: string
     deviceIds: string[]
+    networkIds: string[]
   }
 
   type INotificationSetting = {

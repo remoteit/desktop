@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
-import { Redirect, useParams, useHistory } from 'react-router-dom'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { List, Typography, Chip, Box } from '@mui/material'
+import { List, Typography, Chip } from '@mui/material'
+import { Redirect, useParams, useHistory } from 'react-router-dom'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectRemoteitLicense } from '../models/plans'
 import { selectLimitsLookup } from '../models/organization'
@@ -11,7 +11,6 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
   const history = useHistory()
@@ -23,10 +22,6 @@ export const OrganizationPage: React.FC = () => {
     limits: selectLimitsLookup(state),
     license: selectRemoteitLicense(state),
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('OrganizationPage')
-  }, [])
 
   if (initialized && !organization.id) return <Redirect to={'/organization/empty'} />
 

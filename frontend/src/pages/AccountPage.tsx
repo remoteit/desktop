@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { List, Typography, Tooltip, ButtonBase } from '@mui/material'
 import { selectOwnRemoteitLicense, selectLicenseIndicator } from '../models/plans'
 import { ApplicationState } from '../store'
@@ -7,7 +7,6 @@ import { useSelector } from 'react-redux'
 import { windowOpen } from '../services/Browser'
 import { Container } from '../components/Container'
 import { Logo } from '../components/Logo'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountPage: React.FC = () => {
   const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
@@ -15,10 +14,6 @@ export const AccountPage: React.FC = () => {
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('AccountPage')
-  }, [])
 
   if (!preferences) return null
 

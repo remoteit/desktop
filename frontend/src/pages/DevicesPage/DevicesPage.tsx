@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { masterAttributes, deviceAttributes, restoreAttributes } from '../../components/Attributes'
 import { getDeviceModel } from '../../models/accounts'
@@ -11,7 +11,6 @@ import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
 import { getDevices } from '../../models/accounts'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { restore?: boolean; select?: boolean }
 
@@ -36,10 +35,6 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
       }, {}),
     })
   )
-
-  useEffect(() => {
-    analyticsHelper.page('DevicesPage')
-  }, [])
 
   return (
     <DevicesHeader>

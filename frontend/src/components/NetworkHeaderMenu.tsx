@@ -84,7 +84,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
             />
             <ListItemLocation
               pathname={`/networks/view/${network.id}/${network.access.length ? 'users' : 'share'}`}
-              title={network.access.length ? 'Users' : 'Add User'}
+              title={network.access.length ? 'Users' : 'Share'}
               subtitle={network.access.length ? network.access.length + ' total' : ''}
               icon="user-group"
               iconColor="grayDarker"

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ApplicationState } from '../store'
 import { Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
@@ -7,16 +7,11 @@ import { Title } from '../components/Title'
 import { DataCopy } from '../components/DataCopy'
 import { AccountAccessKey } from '../components/AccountAccessKey'
 import { Gutters } from '../components/Gutters'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccessKeyPage: React.FC = () => {
   const { apiKey } = useSelector((state: ApplicationState) => ({
     apiKey: state.keys?.apiKey,
   }))
-
-  useEffect(() => {
-    analyticsHelper.page('AccessKeyPage')
-  }, [])
 
   return (
     <Container
