@@ -227,8 +227,8 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
         )}
         <ListItemCheckbox
           checked={advanced}
-          label="Use as jump host"
-          subLabel="Host any service that this system can access on the local network."
+          label="Jump service"
+          subLabel="Forward a service on the local network."
           disabled={disabled}
           onClick={() => {
             if (advanced) setForm({ ...form, host: IP_PRIVATE })
@@ -236,33 +236,31 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
           }}
         />
         <ListItem className={classnames(css.fieldSub, css.fieldSubCheckbox)}>
-          <Collapse in={advanced}>
-            <Quote margin="xs" indent="checkbox">
-              <List disablePadding>
-                <ListItem disableGutters>
-                  <TextField
-                    required
-                    fullWidth
-                    label="Service Host"
-                    value={form.host}
-                    disabled={disabled}
-                    variant="filled"
-                    onChange={event => setForm({ ...form, host: event.target.value })}
-                    InputProps={{
-                      endAdornment: thisDevice && <CheckIcon />,
-                    }}
-                  />
-                  <Typography variant="caption">
-                    Enter a local network IP address or fully qualified domain name to configure this as a jump service
-                    to a system on your local network.
-                    <br />
-                    <i>AWS example:</i>
-                    <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
-                  </Typography>
-                </ListItem>
-              </List>
-            </Quote>
-          </Collapse>
+          <Quote margin="xs" indent="checkbox">
+            <List disablePadding>
+              <ListItem disableGutters>
+                <TextField
+                  required
+                  fullWidth
+                  label="Service Host"
+                  value={form.host}
+                  disabled={disabled || !advanced}
+                  variant="filled"
+                  onChange={event => setForm({ ...form, host: event.target.value })}
+                  InputProps={{
+                    endAdornment: thisDevice && <CheckIcon />,
+                  }}
+                />
+                <Typography variant="caption">
+                  Enter a local network IP address or fully qualified domain name to configure this as a jump service to
+                  a system on your local network.
+                  <br />
+                  <i>AWS example:</i>
+                  <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+                </Typography>
+              </ListItem>
+            </List>
+          </Quote>
         </ListItem>
         {editable && (
           <ListItemCheckbox
