@@ -30,7 +30,6 @@ export const OrganizationAddPage = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  const disabled = !freeLicenses
   const license = freeLicenses ? 'LICENSED' : 'UNLICENSED'
 
   const exit = () => history.push(location.pathname.replace('/share', ''))
@@ -65,9 +64,10 @@ export const OrganizationAddPage = () => {
       <Gutters>
         <Box display="flex" alignItems="center">
           <RoleSelect size="medium" roleId={roleId} roles={organization.roles} onSelect={id => setRoleId(id)} />
-          {disabled && (
+          {!freeLicenses && (
             <Notice severity="warning">
-              Purchase additional licenses to set a role. <br />
+              Purchase additional licenses to grant this user full access.
+              <br />
             </Notice>
           )}
         </Box>
