@@ -112,6 +112,7 @@ export const RegisterMenu: React.FC = () => {
             'gcp',
             'raspberrypi',
             'linux',
+            'docker',
             'arm',
             'firewalla',
             'nas',
