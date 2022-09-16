@@ -9,8 +9,7 @@ export class AnalyticsHelper {
   }
 
   setup() {
-    const headScript = document.createElement('script')
-    headScript.text = `
+    const headScript = `
       <!-- Google Tag Manager -->
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
       new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -19,18 +18,8 @@ export class AnalyticsHelper {
       })(window,document,'script','dataLayer','${this.key}');</script>
       <!-- End Google Tag Manager -->`
 
-    const bodyScript = document.createElement('script')
-    bodyScript.text = `
-      <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${this.key}"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-      <!-- End Google Tag Manager (noscript) -->`
-
     const head = document.getElementsByTagName('head')[0]
-    head.insertBefore(headScript, head.firstChild)
-
-    const body = document.getElementsByTagName('body')[0]
-    body.insertBefore(bodyScript, body.firstChild)
+    head.insertAdjacentHTML('afterbegin', headScript)
   }
 }
 
