@@ -26,6 +26,7 @@ class Platforms {
     'aws',
     'axis',
     'azure',
+    'docker',
     'firewalla',
     'gcp',
     'ios',
