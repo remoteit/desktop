@@ -9,9 +9,9 @@ import { IconButton } from '../../buttons/IconButton'
 import { Gutters } from '../Gutters'
 import { radius, spacing } from '../../styling'
 
-type Props = { connection?: IConnection; service?: IService; visible?: boolean }
+type Props = { connection?: IConnection; visible?: boolean }
 
-export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, visible }) => {
+export const ConnectionErrorMessage: React.FC<Props> = ({ connection, visible }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()

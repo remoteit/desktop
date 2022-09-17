@@ -73,6 +73,15 @@ export default createModel<RootModel>()({
 
     async restoreConnections(connections: IConnection[], state) {
       connections.forEach((connection, index) => {
+        // update device if new connection error
+        if (
+          connection.error &&
+          connection.deviceID &&
+          !state.connections.all.find(c => c.id === connection.id)?.error
+        ) {
+          dispatch.devices.fetchSingle({ id: connection.deviceID, hidden: true })
+        }
+
         // data missing from cli if our connections file is lost
         if (!connection.owner || !connection.name) {
           const [service] = selectById(state, connection.id)

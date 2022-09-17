@@ -115,7 +115,6 @@ function getEventHandlers() {
       controller.log('event: CONNECT LOCAL SOCKET')
       controller.auth()
       ui.set({ connected: true })
-      backend.set({ error: false })
     },
 
     unauthorized: (error: Error) => auth.backendSignInError(error.message),
@@ -137,16 +136,9 @@ function getEventHandlers() {
 
     'signed-out': () => auth.signedOut(),
 
-    connect_error: () => backend.set({ error: true }),
-
     pool: (result: IConnection[]) => {
       controller.log('event: socket pool', result)
       connections.restoreConnections(result)
-    },
-
-    connection: (result: IConnection) => {
-      controller.log('event: socket connection', result)
-      connections.updateConnection(result)
     },
 
     device: (result: string) => {

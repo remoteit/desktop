@@ -13,7 +13,6 @@ type IBackendState = {
   thisId: string
   scanData: IScanData
   interfaces: IInterface[]
-  error: boolean
   freePort?: number
   updateReady?: string
   environment: {
@@ -39,7 +38,6 @@ const defaultState: IBackendState = {
   thisId: '',
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
-  error: false,
   freePort: undefined,
   updateReady: undefined,
   environment: {
