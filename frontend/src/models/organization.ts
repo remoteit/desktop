@@ -158,6 +158,7 @@ export type IOrganizationState = {
   verificationCNAME?: string
   verificationValue?: string
   verified: boolean
+  guestsLoaded: boolean
 }
 
 const defaultState: IOrganizationState = {
@@ -175,6 +176,7 @@ const defaultState: IOrganizationState = {
   licenses: [],
   limits: [],
   guests: [],
+  guestsLoaded: false,
 }
 
 type IOrganizationAccountState = {
@@ -204,18 +206,6 @@ export default createModel<RootModel>()({
         _${index}: account(id: "${id}") {
           ${graphQLOrganization}
           ${graphQLLicensesLimits}
-          guest {
-            user {
-              id
-              email
-            }
-            devices {
-              id
-            }
-            networks {
-              id
-            }
-          }
         }`
       )
       const result = await graphQLBasicRequest(
@@ -231,20 +221,42 @@ export default createModel<RootModel>()({
       else await dispatch.organization.clearActive()
     },
 
+    async fetchGuests(_: void, state) {
+      const accountId = getActiveAccountId(state)
+      const result = await graphQLBasicRequest(
+        ` query Guests($id: String) {
+            login {
+              account(id: $id) {
+                guest {
+                  user {
+                    id
+                    email
+                  }
+                  devices {
+                    id
+                  }
+                  networks {
+                    id
+                  }
+                }
+              }
+            }
+          }`,
+        { id: accountId }
+      )
+      if (result === 'ERROR') return
+      const guests = parseGuests(result)
+      await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId })
+    },
+
     async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }) {
       const data = result?.data?.data?.login
       let orgs: IOrganizationAccountState['accounts'] = {}
       ids.forEach((id, index) => {
-        const { organization, licenses, limits, guest } = data[`_${index}`]
+        const { organization, licenses, limits } = data[`_${index}`]
         orgs[id] = parseOrganization(organization)
         orgs[id].licenses = licenses?.map(l => parseLicense(l))
         orgs[id].limits = limits
-        orgs[id].guests = guest.map(g => ({
-          id: g.user.id,
-          email: g.user.email || g.user.id,
-          deviceIds: g.devices.map(d => d.id),
-          networkIds: g.networks.map(n => n.id),
-        }))
       })
       return orgs
     },
@@ -375,8 +387,8 @@ export default createModel<RootModel>()({
     },
 
     async setActive(params: ILookup<any>, state) {
-      const id = getActiveAccountId(state)
-      let org = { ...getOrganization(state) }
+      const id = params.id || getActiveAccountId(state)
+      let org = { ...getOrganization(state, id) }
       Object.keys(params).forEach(key => (org[key] = params[key]))
       const accounts = { ...state.organization.accounts }
       accounts[id] = org
@@ -394,6 +406,60 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function parseGuests(result: AxiosResponse<any> | undefined) {
+  const guest = result?.data?.data?.login?.account?.guest || []
+  const parsed: IOrganizationState['guests'] = guest.map(g => ({
+    id: g.user.id,
+    email: g.user.email || g.user.id,
+    deviceIds: g.devices.map(d => d.id),
+    networkIds: g.networks.map(n => n.id),
+  }))
+  return parsed
+}
+
+export function parseOrganization(data: any): IOrganizationState {
+  if (!data) return { ...defaultState }
+  return {
+    ...defaultState,
+    ...data,
+    // verified: true, // for development
+    // samlEnabled: true, // for development
+    created: new Date(data.created),
+    members: [
+      ...data.members.map(m => ({
+        ...m,
+        roleId: m.customRole.id,
+        roleName: m.customRole.name,
+        created: new Date(m.created),
+      })),
+    ],
+    roles: [
+      ...defaultState.roles,
+      ...data.roles.map(r => ({
+        ...r,
+        created: new Date(r.created),
+      })),
+    ],
+  }
+}
+
+export function parseLicense(data) {
+  if (!data) return null
+  return {
+    ...data,
+    created: new Date(data.created),
+    updated: new Date(data.updated),
+    expiration: data.expiration && new Date(data.expiration),
+    subscription: data.subscription && {
+      ...data.subscription,
+      card: data.subscription.card && {
+        ...data.subscription.card,
+        expiration: data.subscription.card.expiration && new Date(data.subscription.card.expiration),
+      },
+    },
+  }
+}
 
 export function getOwnOrganization(state: ApplicationState) {
   const id = state.auth.user?.id || ''
@@ -457,48 +523,6 @@ export function selectLimitsLookup(state: ApplicationState, accountId?: string):
   })
 
   return result
-}
-
-export function parseOrganization(data: any): IOrganizationState {
-  if (!data) return { ...defaultState }
-  return {
-    ...data,
-    // verified: true, // for development
-    // samlEnabled: true, // for development
-    created: new Date(data.created),
-    members: [
-      ...data.members.map(m => ({
-        ...m,
-        roleId: m.customRole.id,
-        roleName: m.customRole.name,
-        created: new Date(m.created),
-      })),
-    ],
-    roles: [
-      ...defaultState.roles,
-      ...data.roles.map(r => ({
-        ...r,
-        created: new Date(r.created),
-      })),
-    ],
-  }
-}
-
-export function parseLicense(data) {
-  if (!data) return null
-  return {
-    ...data,
-    created: new Date(data.created),
-    updated: new Date(data.updated),
-    expiration: data.expiration && new Date(data.expiration),
-    subscription: data.subscription && {
-      ...data.subscription,
-      card: data.subscription.card && {
-        ...data.subscription.card,
-        expiration: data.subscription.card.expiration && new Date(data.subscription.card.expiration),
-      },
-    },
-  }
 }
 
 export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {

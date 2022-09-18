@@ -12,6 +12,7 @@ import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
 import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { getOrganization } from '../models/organization'
+import { LoadingMessage } from '../components/LoadingMessage'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from '../components/LicenseSelect'
 import { RoleSelect } from '../components/RoleSelect'
@@ -27,8 +28,8 @@ export const OrganizationGuestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { userID = '' } = useParams<{ userID: string }>()
   const [removing, setRemoving] = useState<boolean>(false)
-  const { devices, member, accessible, networks, freeLicenses, organization, guest, license } = useSelector(
-    (state: ApplicationState) => {
+  const { devices, member, accessible, networks, freeLicenses, organization, guest, guestsLoaded, license } =
+    useSelector((state: ApplicationState) => {
       const organization = getOrganization(state)
       const guest = organization.guests.find(g => g.id === userID)
       const member = organization.members.find(m => m.user.id === userID)
@@ -41,9 +42,9 @@ export const OrganizationGuestPage: React.FC = () => {
         devices: getDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
         accessible: selectAccessibleNetworks(state, organization, member),
         networks: selectNetworks(state),
+        guestsLoaded: organization.guestsLoaded,
       }
-    }
-  )
+    })
 
   const enterprise = !!license && !license.plan.billing
   const user = guest || member?.user
@@ -57,6 +58,10 @@ export const OrganizationGuestPage: React.FC = () => {
     const missing = guest?.deviceIds.filter(id => !devices.find(device => device.id === id))
     if (missing?.length) dispatch.devices.fetchDevices(missing)
   }, [devices])
+
+  useEffect(() => {
+    if (!guestsLoaded) dispatch.organization.fetchGuests()
+  }, [guest])
 
   return (
     <Container
@@ -133,6 +138,7 @@ export const OrganizationGuestPage: React.FC = () => {
           </List>
         </>
       )}
+      {!guestsLoaded && <LoadingMessage inline />}
       {(guest?.deviceIds.length || guest?.networkIds.length) && (
         <>
           <Gutters top="xl">
