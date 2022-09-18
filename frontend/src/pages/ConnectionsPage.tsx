@@ -78,7 +78,7 @@ export const ConnectionsPage: React.FC = () => {
             }
           />
           {!!recent.serviceIds.length && (
-            <Network network={recent} recent noLink collapse onClear={id => dispatch.connections.clear(id)} />
+            <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} />
           )}
         </>
       ) : (

@@ -15,6 +15,7 @@ const SAVED_STATES = [
   'accordion',
   'drawerMenu',
   'drawerAccordion',
+  'collapsed',
   'columns',
   'columnWidths',
   'limitsOverride',
@@ -41,6 +42,7 @@ type UIState = {
   drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
+  collapsed: string[]
   limitsOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
@@ -96,6 +98,7 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
+  collapsed: ['recent'],
   limitsOverride: {},
   serviceContextMenu: undefined,
   globalTooltip: undefined,

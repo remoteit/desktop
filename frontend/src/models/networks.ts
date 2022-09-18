@@ -178,6 +178,7 @@ export default createModel<RootModel>()({
         })
 
         return {
+          ...defaultNetwork(),
           shared,
           id: n.id,
           name: n.name,
@@ -340,7 +341,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
   return {
     id: '',
     name: '',
-    enabled: false,
+    enabled: true,
     shared: false,
     owner: { id: '', email: '' },
     permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
