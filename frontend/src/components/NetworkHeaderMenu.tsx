@@ -13,7 +13,6 @@ import { Container } from '../components/Container'
 import { UsersTab } from '../components/UsersTab'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Pre } from '../components/Pre'
 
 export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; children: React.ReactNode }> = ({
   network,
