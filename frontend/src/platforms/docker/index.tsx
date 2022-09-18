@@ -16,7 +16,7 @@ platforms.register({
     command: 'docker run -d -e R3_REGISTRATION_CODE="[CODE]" remoteit/remoteit-agent:x86_64',
     instructions: (
       <>
-        This command is for testing on x86 platforms. For other platforms and production settings please visit our
+        For other platforms and production settings please visit our
         <Link href="https://hub.docker.com/r/remoteit/remoteit-agent">Docker Hub page.</Link>
       </>
     ),
