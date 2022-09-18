@@ -39,7 +39,7 @@ export const OrganizationRolePage: React.FC = () => {
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
   const changed = !isEqual(form, role)
 
-  const changeForm = async (changedForm: IOrganizationRole) => setForm(changedForm)
+  const changeForm = async (changedForm: IOrganizationRole) => setForm({ ...changedForm })
   const handlePermissionChange = (toggle, permission) => {
     if (toggle) {
       setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })

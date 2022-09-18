@@ -29,6 +29,7 @@ export const TagEditor: React.FC<Props> = ({
 }) => {
   const getColor = useLabel()
   const [open, setOpen] = React.useState<boolean>(false)
+  const [creating, setCreating] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
 
@@ -53,13 +54,13 @@ export const TagEditor: React.FC<Props> = ({
     <>
       {button ? (
         <div ref={addRef}>
-          <IconButton {...buttonProps} icon={button} onClick={handleOpen} disabled={open} />
+          <IconButton {...buttonProps} icon={button} loading={creating} onClick={handleOpen} disabled={open} />
         </div>
       ) : (
         <Chip
           label={
             <>
-              <Icon name="plus" size="sm" inlineLeft />
+              <Icon name={creating ? 'spinner-third' : 'plus'} spin={creating} size="sm" inlineLeft />
               TAG
             </>
           }
@@ -86,8 +87,12 @@ export const TagEditor: React.FC<Props> = ({
           ),
         }}
         onSelect={async (action, tag) => {
-          if (action === 'new') onCreate && onCreate(tag)
-          if (onSelect) onSelect(tag)
+          if (action === 'new') {
+            setCreating(true)
+            await onCreate?.(tag)
+            setCreating(false)
+          }
+          await onSelect?.(tag)
         }}
         onClose={handleClose}
         allowAdding={allowAdding}
