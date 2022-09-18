@@ -73,6 +73,11 @@ export default createModel<RootModel>()({
 
     async restoreConnections(connections: IConnection[], state) {
       connections.forEach((connection, index) => {
+        // disable connection if service is offline
+        if (!connection.online && connection.enabled) {
+          dispatch.connections.disconnect(connection)
+        }
+
         // update device if new connection error
         if (
           connection.error &&
@@ -227,9 +232,9 @@ export default createModel<RootModel>()({
         console.warn('No connection to disconnect')
         return
       }
-      const { proxyDisconnect } = dispatch.connections
+
       if (connection.public) {
-        proxyDisconnect(connection)
+        dispatch.connections.proxyDisconnect(connection)
         return
       }
 
