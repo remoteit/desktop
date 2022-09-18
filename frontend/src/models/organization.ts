@@ -352,6 +352,7 @@ export default createModel<RootModel>()({
         result = await graphQLCreateRole(data)
         if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
         roles.push(role)
+        dispatch.ui.set({ redirect: `/organization/roles/${role.id}` })
       }
 
       if (result === 'ERROR') {
@@ -364,7 +365,6 @@ export default createModel<RootModel>()({
       })
 
       await dispatch.organization.setActive({ roles })
-      // return role.id
     },
 
     async removeRole(role: IOrganizationRole, state) {

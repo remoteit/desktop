@@ -198,10 +198,9 @@ export const OrganizationRolePage: React.FC = () => {
             onClick={async () => {
               setSaving(true)
               if (form.tag && form.tag.values.length === 0) form.tag = undefined
-              const roleID = await dispatch.organization.setRole(form)
+              await dispatch.organization.setRole(form)
               setSaving(false)
-              setForm(cloneDeep(form)) // reset change detection
-              history.push(`/organization/roles/${roleID}`)
+              setForm(cloneDeep(form))
             }}
           >
             {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
