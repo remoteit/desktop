@@ -103,5 +103,5 @@ export const ListItemLocation: React.FC<Props> = ({
 type styleProps = { disableIcon: boolean }
 
 const useStyles = makeStyles({
-  root: ({ disableIcon }: styleProps) => ({ paddingLeft: disableIcon ? spacing.sm : undefined }),
+  root: ({ disableIcon }: styleProps) => ({ paddingLeft: disableIcon ? spacing.md : undefined }),
 })

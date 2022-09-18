@@ -44,11 +44,11 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
           ) : (
             <>
               <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
-              <TestUI>
+              {/* <TestUI>
                 <Box className={css.connect}>
                   <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
                 </Box>
-              </TestUI>
+              </TestUI> */}
             </>
           )}
         </ListItemIcon>

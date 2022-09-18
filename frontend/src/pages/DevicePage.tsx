@@ -124,7 +124,7 @@ export const DevicePage: React.FC<Props> = () => {
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
                 <ListItemSecondaryAction>
                   <ServiceMiniState /* className="hoverHide" */ service={s} connection={c} />
-                  <TestUI>
+                  {/* <TestUI>
                     <Box className={css.connect}>
                       <ConnectButton
                         color="primary"
@@ -139,7 +139,7 @@ export const DevicePage: React.FC<Props> = () => {
                         onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                       />
                     </Box>
-                  </TestUI>
+                  </TestUI> */}
                 </ListItemSecondaryAction>
               </ListItemLocation>
             </GuideStep>
