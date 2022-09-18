@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import { getActiveAccountId } from '../models/accounts'
-import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
-import { useParams, useHistory } from 'react-router-dom'
-import {
-  Button,
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  MenuItem,
-  TextField,
-  Chip,
-} from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { getActiveAccountId } from '../models/accounts'
+import { useParams, useHistory } from 'react-router-dom'
+import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
+import { Button, Typography, List, ListItem, ListItemSecondaryAction, MenuItem, TextField } from '@mui/material'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { PermissionsList } from '../components/PermissionsList'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
@@ -25,7 +16,6 @@ import { Container } from '../components/Container'
 import { TagEditor } from '../components/TagEditor'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 
@@ -44,20 +34,12 @@ export const OrganizationRolePage: React.FC = () => {
   }))
   const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
-  const [counts, setCounts] = useState<{ devices: number; networks: number } | null>(null)
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
   const changed = !isEqual(form, role)
 
-  const changeForm = async (changedForm: IOrganizationRole) => {
-    setForm(changedForm)
-    setCounts(null)
-    const devices = await dispatch.devices.fetchCount(changedForm)
-    const networks = await dispatch.networks.fetchCount(changedForm)
-    setCounts({ devices, networks })
-  }
-
+  const changeForm = async (changedForm: IOrganizationRole) => setForm(changedForm)
   const handlePermissionChange = (toggle, permission) => {
     if (toggle) {
       setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })
@@ -134,16 +116,7 @@ export const OrganizationRolePage: React.FC = () => {
             <MenuItem value="true">Tagged</MenuItem>
           </TextField>
           <ListItemSecondaryAction>
-            {counts === null ? (
-              <Chip size="small" label="Counting..." />
-            ) : (
-              <Box>
-                <Chip size="small" label={`${counts.devices} device${counts.devices === 1 ? '' : 's'}`} />
-                <TestUI>
-                  <Chip size="small" label={`${counts.networks} network${counts.networks === 1 ? '' : 's'}`} />
-                </TestUI>
-              </Box>
-            )}
+            <RoleAccessCounts role={form} />
           </ListItemSecondaryAction>
         </ListItem>
         {form.tag && (

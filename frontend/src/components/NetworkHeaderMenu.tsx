@@ -10,9 +10,9 @@ import { ConfirmButton } from '../buttons/ConfirmButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
+import { UsersTab } from '../components/UsersTab'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Pre } from '../components/Pre'
 
 export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; children: React.ReactNode }> = ({
   network,
@@ -83,15 +83,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
               exactMatch
               dense
             />
-            <ListItemLocation
-              pathname={`/networks/view/${network.id}/${network.access.length ? 'users' : 'share'}`}
-              title={network.access.length ? 'Users' : 'Share'}
-              subtitle={network.access.length ? network.access.length + ' total' : ''}
-              icon="user-group"
-              iconColor="grayDarker"
-              exactMatch
-              dense
-            />
+            <UsersTab instance={network} to={`/networks/view/${network.id}/users`} />
           </ListHorizontal>
         </>
       }

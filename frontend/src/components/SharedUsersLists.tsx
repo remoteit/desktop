@@ -1,8 +1,13 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
+import { Typography, Box } from '@mui/material'
 import { ApplicationState } from '../store'
 import { SharedUsersPaginatedList } from './SharedUsersPaginatedList'
-import { getOrganization } from '../models/organization'
-import { useSelector } from 'react-redux'
+import { selectMembersWithAccess } from '../models/organization'
+import { AddUserButton } from '../buttons/AddUserButton'
+import { Gutters } from './Gutters'
+import { Icon } from './Icon'
 
 interface Props {
   device?: IDevice
@@ -12,11 +17,28 @@ interface Props {
 }
 
 export const SharedUsersLists: React.FC<Props> = ({ device, network, connected = [], users = [] }) => {
-  const members = useSelector((state: ApplicationState) => getOrganization(state).members.map(m => m.user))
-
-  if (!users?.length && !members.length) return null
+  const instance = device || network
+  const location = useLocation()
+  const members = useSelector((state: ApplicationState) => selectMembersWithAccess(state, instance).map(m => m.user))
   const disconnected = users.filter(user => !connected.find(_u => _u.email === user.email))
-  const manager = !!(device || network)?.permissions.includes('MANAGE')
+  const manager = !!instance?.permissions.includes('MANAGE')
+
+  if (!connected.length && !disconnected.length && !members.length)
+    return (
+      <Gutters top="xxl" center>
+        <Box paddingBottom={3} paddingTop={4}>
+          <Icon name="user-group" type="light" fontSize={50} color="grayLight" />
+        </Box>
+        <Typography variant="body2" color="GrayText">
+          No other users have access
+        </Typography>
+        <Typography variant="body1">
+          <AddUserButton to={location.pathname.replace('users', 'share')} inlineLeft>
+            <Typography>Add a user</Typography>
+          </AddUserButton>
+        </Typography>
+      </Gutters>
+    )
 
   return (
     <>

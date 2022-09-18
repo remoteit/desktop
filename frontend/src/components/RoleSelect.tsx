@@ -1,14 +1,13 @@
 import React from 'react'
 import { TextField, TextFieldProps, MenuItem } from '@mui/material'
 
-type Props = {
-  size?: TextFieldProps['size']
+type Props = Omit<TextFieldProps, 'onSelect'> & {
   roles: IOrganizationRole[]
   roleId: IOrganizationRoleIdType
   onSelect: (roleId: string) => void
 }
 
-export const RoleSelect: React.FC<Props> = ({ roleId, roles, size = 'small', onSelect }) => {
+export const RoleSelect: React.FC<Props> = ({ roleId, roles, size = 'small', onSelect, ...props }) => {
   const disabled = roleId === 'OWNER'
 
   return (
@@ -21,6 +20,7 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, size = 'small', onS
       value={roleId}
       variant="filled"
       onChange={e => onSelect(e.target.value)}
+      {...props}
     >
       {roles.map(r => (
         <MenuItem key={r.id} value={r.id} disabled={!!r.disabled} dense>

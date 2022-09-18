@@ -419,6 +419,32 @@ export function selectPermissions(state: ApplicationState, accountId?: string): 
   return organization.roles.find(r => r.id === membership.roleId)?.permissions
 }
 
+export function selectMembersWithAccess(state: ApplicationState, instance?: IDevice | INetwork) {
+  const organization = getOrganization(state)
+  return organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
+}
+
+export function canMemberView(roles: IOrganizationRole[], member: IOrganizationMember, instance?: IDevice | INetwork) {
+  if (!instance) return true
+  const role = roles.find(r => r.id === member?.roleId)
+  return canRoleView(role, instance)
+}
+
+export function canRoleView(role?: IOrganizationRole, instance?: IDevice | INetwork) {
+  if (instance?.shared) return false
+  return role?.tag && instance?.tags ? canViewByTags(role.tag, instance.tags) : true
+}
+
+export function canViewByTags(filter: ITagFilter, tags: ITag[]) {
+  const names = tags.map(t => t.name)
+  if (filter.operator === 'ANY') {
+    return filter.values.some(tag => names.includes(tag))
+  } else if (filter.operator === 'ALL') {
+    return filter.values.every(tag => names.includes(tag))
+  }
+  return true
+}
+
 export function selectLimitsLookup(state: ApplicationState, accountId?: string): ILookup<ILimit['value']> {
   const limits = selectBaseLimits(state, accountId)
   const notUser = !isUserAccount(state, accountId)

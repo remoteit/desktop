@@ -8,7 +8,7 @@ import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
-import { UsersSelect } from './UsersSelect'
+import { UsersTab } from './UsersTab'
 import { Container } from './Container'
 import { TestUI } from './TestUI'
 import { Title } from './Title'
@@ -48,7 +48,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               pathname={`/devices/${device.id}/edit`}
               dense
             />
-            <UsersSelect device={device} />
+            <UsersTab instance={device} to={`/devices/${device.id}/users`} />
             <ListItemLocation
               title="Logs"
               icon="file-alt"

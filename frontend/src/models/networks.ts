@@ -3,6 +3,7 @@ import { isPortal } from '../services/Browser'
 import { getActiveAccountId, getActiveUser } from './accounts'
 import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
+import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById } from '../models/devices'
 import {
   graphQLAddNetwork,
@@ -192,23 +193,13 @@ export default createModel<RootModel>()({
 
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode
-
       console.log('LOAD NETWORKS', parsed, devices)
 
       dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
       dispatch.networks.setNetworks({ networks: parsed, accountId })
     },
-    async fetchCount(params: IOrganizationRole, state) {
-      const options: gqlOptions = {
-        size: 0,
-        from: 0,
-        account: getActiveAccountId(state),
-        owner: true,
-        tag: params.tag?.values.length ? params.tag : undefined,
-      }
-
-      if (!options.tag) return selectNetworks(state).length
-      const networks = selectNetworkByTag(state, options.tag)
+    async fetchCount(role: IOrganizationRole, state) {
+      const networks: INetwork[] = selectNetworks(state).filter(n => canRoleView(role, n))
       return networks.length
     },
     async start(serviceId: string, state) {
@@ -389,16 +380,18 @@ export function selectNetworkByService(state: ApplicationState, serviceId: strin
 }
 
 export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): INetwork[] {
-  const networks = selectNetworks(state).filter(n => {
-    const names = n.tags.map(t => t.name)
-    if (tags.operator === 'ANY') {
-      return tags.values.some(tag => names.includes(tag))
-    } else if (tags.operator === 'ALL') {
-      return tags.values.every(tag => names.includes(tag))
-    }
-    return false
-  })
+  const networks = selectNetworks(state).filter(n => canViewByTags(tags, n.tags))
   return networks
+}
+
+export function selectAccessibleNetworks(
+  state: ApplicationState,
+  organization: IOrganizationState,
+  member?: IOrganizationMember
+) {
+  if (!member) return []
+  const networks = selectNetworks(state)
+  return networks.filter(n => canMemberView(organization.roles, member, n))
 }
 
 export function inNetworkOnly(state: ApplicationState, serviceId?: string): boolean {

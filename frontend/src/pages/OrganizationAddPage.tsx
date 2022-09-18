@@ -62,21 +62,23 @@ export const OrganizationAddPage = () => {
     >
       <Typography variant="subtitle1">Role Assignment</Typography>
       <Gutters>
-        <Box display="flex" alignItems="center">
-          <RoleSelect size="medium" roleId={roleId} roles={organization.roles} onSelect={id => setRoleId(id)} />
+        <Box display="flex">
+          <Box marginRight={2} minWidth={150}>
+            <RoleSelect
+              size="medium"
+              roleId={roleId}
+              roles={organization.roles}
+              onSelect={id => setRoleId(id)}
+              fullWidth
+            />
+          </Box>
           {!freeLicenses && (
-            <Notice severity="warning">
+            <Notice severity="warning" fullWidth>
               Purchase additional licenses to grant this user full access.
               <br />
             </Notice>
           )}
         </Box>
-        {!!emails.length && (
-          <Notice gutterTop fullWidth>
-            Granting access to all the devices and services you own. <br />
-            <em>Scripting will also be allowed when available.</em>
-          </Notice>
-        )}
       </Gutters>
       <Gutters top="xl">
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length}>
