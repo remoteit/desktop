@@ -46,7 +46,7 @@ export const ServiceHeaderMenu: React.FC<{
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
             <ListItemLocation
-              title="Connect"
+              title="Connection"
               icon="arrow-right"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/${serviceID}/connect`}
