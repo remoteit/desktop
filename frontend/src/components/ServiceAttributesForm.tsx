@@ -49,7 +49,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             variant="filled"
             onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
           />
-          <Typography variant="caption">Default local port to use when a system connects to this service.</Typography>
+          <Typography variant="caption">
+            Default local port to use when a system connects to this service. <b>Port will auto assign if unset.</b>
+          </Typography>
         </ListItem>
       )}
       <ListItem className={css.field}>
@@ -63,7 +65,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           onChange={event => onUpdate({ ...attributes, route: event.target.value as IRouteType })}
         >
           <MenuItem value="">
-            <i>No default</i>
+            <i>No default override</i>
           </MenuItem>
           {ROUTES.map(route => (
             <MenuItem value={route.key} key={route.key}>
@@ -73,7 +75,8 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </TextField>
         <Typography variant="caption">
           {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
-          <b> Routing is only available on desktop.</b>
+          <i> Routing is only available on desktop.</i>
+          <b> Default peer to peer with proxy failover</b>
         </Typography>
       </ListItem>
       {!globalDefaults && (
@@ -105,7 +108,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
               onChange={event => onUpdate({ ...attributes, launchType: event.target.value })}
             >
               <MenuItem value="">
-                <i>No default</i>
+                <i>No default override</i>
               </MenuItem>
               <MenuItem value="URL">URL</MenuItem>
               <MenuItem value="COMMAND">Command</MenuItem>
@@ -132,9 +135,15 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
       >
-        Replacement tokens <b>{app.launchTokens.join(', ')}</b>
+        Default tokens <b>{app.defaultTokens.join(', ')}</b>
         <br />
-        <b>{app.launchString}</b>
+        Default template <b>{app.defaultLaunchTemplate}</b>
+        {!!app.launchCustomTokens.length && (
+          <>
+            <br />
+            Custom tokens <b>{app.launchCustomTokens.join(', ')}</b>
+          </>
+        )}
       </TemplateSetting>
       <TemplateSetting
         className={css.field}
@@ -144,9 +153,15 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, commandTemplate: value })}
       >
-        Replacement tokens <b>{app.commandTokens.join(', ')}</b>
+        Default tokens <b>{app.defaultTokens.join(', ')}</b>
         <br />
-        <b>{app.commandString}</b>
+        Default template <b>{app.defaultCommandTemplate}</b>
+        {!!app.commandCustomTokens.length && (
+          <>
+            <br />
+            Custom tokens <b>{app.commandCustomTokens.join(', ')}</b>
+          </>
+        )}
       </TemplateSetting>
       <ListItem className={css.fieldSub}>
         {customTokens.length ? (
@@ -173,7 +188,9 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                       variant="filled"
                       onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
                     />
-                    <Typography variant="caption">Found in {customTokensNote[token]}</Typography>
+                    {customTokensNote[token] && (
+                      <Typography variant="caption">Found in {customTokensNote[token]}</Typography>
+                    )}
                   </ListItem>
                 )
               )}

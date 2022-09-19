@@ -140,6 +140,14 @@ export class Application {
     return this.tokens.filter(token => !this.defaultTokens.includes(token))
   }
 
+  get launchCustomTokens() {
+    return this.launchTokens.filter(token => !this.defaultTokens.includes(token))
+  }
+
+  get commandCustomTokens() {
+    return this.commandTokens.filter(token => !this.defaultTokens.includes(token))
+  }
+
   get allCustomTokens() {
     return this.allTokens.filter(token => !this.defaultTokens.includes(token))
   }
