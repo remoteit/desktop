@@ -31,7 +31,7 @@ const Features = {
     'Endpoints: no limit',
     'Commercial usage',
     '30 days of activity logs',
-    'Basic end-point tagging',
+    'Basic endpoint tagging',
     'Email support',
   ],
   [BUSINESS_PLAN_ID]: [
@@ -43,6 +43,7 @@ const Features = {
     'User access control',
     'SAML single sign on (SSO)',
     'Enhanced support',
+    'Shared tag management',
     'Unrestricted API usage',
   ],
   enterprise: [

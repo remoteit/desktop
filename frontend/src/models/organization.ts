@@ -27,7 +27,7 @@ export const PERMISSION: ILookup<{
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll' },
   MANAGE: { name: 'Manage', description: 'Edit, delete, register, transfer and share devices', icon: 'pencil' },
-  ADMIN: { name: 'Administer', description: 'Manage organization users', icon: 'user-crown', user: true },
+  ADMIN: { name: 'Administer', description: 'Manage tags and organization users', icon: 'user-tag', user: true },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
