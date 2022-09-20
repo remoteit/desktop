@@ -200,6 +200,7 @@ export default createModel<RootModel>()({
       dispatch.networks.setNetworks({ networks: parsed, accountId })
     },
     async fetchCount(role: IOrganizationRole, state) {
+      if (role.access === 'NONE') return 0
       const networks: INetwork[] = selectNetworks(state).filter(n => canRoleView(role, n))
       return networks.length
     },

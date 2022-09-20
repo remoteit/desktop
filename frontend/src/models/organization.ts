@@ -35,6 +35,7 @@ export const DEFAULT_ROLE: IOrganizationRole = {
   name: '',
   tag: { operator: 'ANY', values: [] },
   permissions: ['VIEW', 'CONNECT'],
+  access: 'NONE',
 }
 
 export const SYSTEM_ROLES: IOrganizationRole[] = [
@@ -44,6 +45,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     system: true,
     permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
     disabled: true,
+    access: 'ALL',
   },
   {
     id: 'GUEST',
@@ -51,6 +53,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     system: true,
     permissions: ['VIEW', 'CONNECT'],
     disabled: true,
+    access: 'NONE',
   },
 ]
 
@@ -123,6 +126,7 @@ const graphQLOrganization = `
       name
       system
       permissions
+      access
       tag {
         operator
         values

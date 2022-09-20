@@ -232,6 +232,9 @@ export default createModel<RootModel>()({
         owner: true,
         tag: params.tag?.values.length ? params.tag : undefined,
       }
+
+      if (params.access === 'NONE' || (params.access === 'TAG' && !options.tag)) return 0
+
       const result = await graphQLFetchDeviceCount(options)
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0

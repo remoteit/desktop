@@ -32,7 +32,7 @@ export const OrganizationRolePage: React.FC = () => {
     roles: getOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
   }))
-  const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
+  const role = roles?.find(r => r.id === roleID) || cloneDeep(DEFAULT_ROLE)
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
@@ -102,30 +102,29 @@ export const OrganizationRolePage: React.FC = () => {
             fullWidth
             disabled={disabled || systemRole}
             label="Access"
-            value={role.id === 'NONE' ? '-' : Boolean(form?.tag).toString()}
+            value={form.access}
             variant="filled"
             onChange={event => {
-              const tag = event.target.value === 'true' ? DEFAULT_ROLE.tag : undefined
-              changeForm({ ...form, tag })
+              let tag: ITagFilter | undefined
+              const access = event.target.value as IRoleAccess
+              if (access === 'TAG') tag = cloneDeep(DEFAULT_ROLE.tag)
+              changeForm({ ...form, access, tag })
             }}
           >
-            <MenuItem value="-" disabled>
-              None
-            </MenuItem>
-            <MenuItem value="false">All</MenuItem>
-            <MenuItem value="true">Tagged</MenuItem>
+            <MenuItem value="NONE">None</MenuItem>
+            <MenuItem value="ALL">All</MenuItem>
+            <MenuItem value="TAG">Tagged</MenuItem>
           </TextField>
           <ListItemSecondaryAction>
             <RoleAccessCounts role={form} />
           </ListItemSecondaryAction>
         </ListItem>
-        {form.tag && (
+        {form.access === 'TAG' && (
           <ListItem>
-            {/* <InputLabel shrink>Device Filter</InputLabel> */}
             <Tags
               tags={filteredTags}
               onDelete={({ name }) => {
-                let tag = { ...(form.tag || DEFAULT_ROLE.tag) } as ITagFilter
+                let tag = cloneDeep(form.tag || DEFAULT_ROLE.tag) as ITagFilter
                 if (!tag.values) return
                 const index = tag.values.indexOf(name)
                 tag.values.splice(index, 1)
@@ -155,7 +154,7 @@ export const OrganizationRolePage: React.FC = () => {
                 hiddenLabel
                 size="small"
                 disabled={disabled}
-                value={form.tag.operator}
+                value={form.tag?.operator || DEFAULT_ROLE.tag?.operator || 'ALL'}
                 variant="filled"
                 onChange={event => {
                   form.tag && (form.tag.operator = event.target.value as ITagOperator)
@@ -198,6 +197,7 @@ export const OrganizationRolePage: React.FC = () => {
             onClick={async () => {
               setSaving(true)
               if (form.tag && form.tag.values.length === 0) form.tag = undefined
+              if (!form.tag && form.access === 'TAG') form.access = 'NONE'
               await dispatch.organization.setRole(form)
               setSaving(false)
               setForm(cloneDeep(form))
