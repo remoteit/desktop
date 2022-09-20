@@ -79,8 +79,8 @@ export default createModel<RootModel>()({
         dispatch.ui.set({
           successMessage:
             data.email.length > 1
-              ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
-              : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
+              ? `${data.email.length} accounts shared to ${attributeName(device)}.`
+              : `${attributeName(device)} shared to ${data.email[0]}.`,
         })
       }
       set({ sharing: false })

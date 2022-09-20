@@ -290,8 +290,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set({
         successMessage:
           emails.length > 1
-            ? `${emails.length} accounts successfully shared to ${network.name}.`
-            : `${network.name} successfully shared to ${emails[0]}.`,
+            ? `${emails.length} accounts shared to ${network.name}.`
+            : `${network.name} shared to ${emails[0]}.`,
       })
     },
     async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {

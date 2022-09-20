@@ -6,11 +6,11 @@ import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
 import { DeviceListHeader } from '../DeviceListHeader'
 import { makeStyles } from '@mui/styles'
-import { List } from '@mui/material'
+import { List, Typography } from '@mui/material'
 import { DeviceListItem } from '../DeviceListItem'
 import { Attribute } from '../Attributes'
 import { isOffline } from '../../models/devices'
-import { GuideStep } from '../GuideStep'
+import { GuideBubble } from '../GuideBubble'
 import { LoadMore } from '../LoadMore'
 import { spacing, fontSizes } from '../../styling'
 
@@ -43,13 +43,22 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
         <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths }} />
-        <GuideStep
-          guide="aws"
-          step={3}
+        <GuideBubble
+          enterDelay={400}
+          guide="deviceList"
           placement="bottom"
-          instructions="Click on the Guest VPC device to continue."
-          highlight
-          autoNext
+          startDate={new Date('1122-09-15')}
+          instructions={
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>Access a device</b>
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                A device can host any number of services (applications), and will appear online if it's ready to be
+                connected to. You can also update or add services if you are the device's owner.
+              </Typography>
+            </>
+          }
         >
           {devices?.map(device => {
             const canRestore = isOffline(device) && !device.shared
@@ -77,7 +86,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               </DeviceContext.Provider>
             )
           })}
-        </GuideStep>
+        </GuideBubble>
       </List>
       <LoadMore />
       <ServiceContextualMenu />

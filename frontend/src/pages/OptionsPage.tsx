@@ -90,7 +90,7 @@ export const OptionsPage: React.FC = () => {
           label="Reset interactive guides"
           subLabel="Turn back on the in-app help bubbles."
           icon="sparkles"
-          onClick={() => ui.resetGuides()}
+          onClick={() => ui.resetHelp()}
         />
         {(os === 'mac' || os === 'windows') && (
           <DesktopUI>
@@ -103,7 +103,7 @@ export const OptionsPage: React.FC = () => {
             <TestUI>
               <ListItemSetting
                 quote
-                label="Update to pre-released builds"
+                label="Update to pre-release builds"
                 toggle={!!preferences.allowPrerelease}
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />

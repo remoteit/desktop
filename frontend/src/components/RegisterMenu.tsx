@@ -2,7 +2,17 @@ import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@mui/styles'
 import { safeHostname } from '../shared/nameHelper'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { Popover, List, ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
+import {
+  Popover,
+  List,
+  ListItem,
+  ListSubheader,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  TextField,
+  Divider,
+} from '@mui/material'
 import { selectDeviceByAccount } from '../models/devices'
 import { isPortal, getOs } from '../services/Browser'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,6 +21,7 @@ import { selectPermissions } from '../models/organization'
 import { ListItemLocation } from './ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
+import { GuideBubble } from './GuideBubble'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
 import { Link } from 'react-router-dom'
@@ -89,18 +100,36 @@ export const RegisterMenu: React.FC = () => {
         open={!!el}
         onClose={handleClose}
         anchorEl={el}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <DesktopUI>
           <List className={css.list} disablePadding dense>
             <ListSubheader disableGutters>Add this system</ListSubheader>
-            <ListItem button disableGutters onClick={handleClose} to={thisLink} component={Link}>
-              <ListItemIcon>
-                <Icon name={getOs()} fixedWidth platformIcon />
-              </ListItemIcon>
-              <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
-            </ListItem>
+            <GuideBubble
+              enterDelay={400}
+              guide="registerMenu"
+              placement="right-start"
+              startDate={new Date('1122-09-15')}
+              instructions={
+                <>
+                  <Typography variant="h3" gutterBottom>
+                    <b>Select a device</b>
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    You can setup the device you are currently using, or follow the simple instructions to setup one of
+                    the commonly used platforms.
+                  </Typography>
+                </>
+              }
+            >
+              <ListItem button disableGutters onClick={handleClose} to={thisLink} component={Link}>
+                <ListItemIcon>
+                  <Icon name={getOs()} fixedWidth platformIcon />
+                </ListItemIcon>
+                <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
+              </ListItem>
+            </GuideBubble>
           </List>
           <Divider />
         </DesktopUI>

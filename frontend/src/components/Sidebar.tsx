@@ -6,9 +6,9 @@ import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSidebar } from './OrganizationSidebar'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterMenu } from './RegisterMenu'
+import { GuideBubble } from './GuideBubble'
 import { SidebarNav } from './SidebarNav'
 import { AvatarMenu } from './AvatarMenu'
-import { GuideStep } from './GuideStep'
 import { spacing } from '../styling'
 import { Body } from './Body'
 
@@ -21,24 +21,23 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
-          <GuideStep
-            guide="register"
-            placement="right-start"
-            autoNext
-            autoStart
-            highlight
-            step={1}
+          <GuideBubble
+            guide="addDevice"
+            placement="bottom"
+            startDate={new Date('1122-09-15')}
             instructions={
               <>
-                <Typography variant="h2" gutterBottom>
-                  Welcome to Remote.It
+                <Typography variant="h3" gutterBottom>
+                  <b>Add a device</b>
                 </Typography>
-                <Typography variant="body2">To get started click the '+' icon to add your first device.</Typography>
+                <Typography variant="body2">
+                  Enable remote connections to any service (application) by adding the host device to your account.
+                </Typography>
               </>
             }
           >
             <RegisterMenu />
-          </GuideStep>
+          </GuideBubble>
         </section>
         <SidebarNav />
         <RemoteManagement />

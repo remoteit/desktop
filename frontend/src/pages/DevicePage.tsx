@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
+import { attributeName } from '../shared/nameHelper'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
@@ -17,7 +18,7 @@ import { LicensingNotice } from '../components/LicensingNotice'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
-import { GuideStep } from '../components/GuideStep'
+import { GuideBubble } from '../components/GuideBubble'
 import { Notice } from '../components/Notice'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
@@ -103,19 +104,30 @@ export const DevicePage: React.FC<Props> = () => {
             </ListItemSecondaryAction>
           </ListItemLocation>
         )}
-        {device.services.sort(getSortOptions(sortService).sortService).map(s => {
-          const c = connections?.find(c => c.id === s.id)
-          return (
-            <GuideStep
-              key={s.id}
-              guide="aws"
-              step={4}
-              instructions="Select the service below."
-              hide={!s.name.includes('Start')}
-              highlight
-              autoNext
-            >
+        <GuideBubble
+          guide="service"
+          enterDelay={400}
+          placement="right"
+          startDate={new Date('1122-09-15')}
+          instructions={
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>{attributeName(device)} services</b>
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                The device's hosted services (applications) are listed here.
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Select a service to configure it or start a connection.
+              </Typography>
+            </>
+          }
+        >
+          {device.services.sort(getSortOptions(sortService).sortService).map(s => {
+            const c = connections?.find(c => c.id === s.id)
+            return (
               <ListItemLocation
+                key={s.id}
                 pathname={`/devices/${device.id}/${s.id}${servicePage}`}
                 match={`/devices/${device.id}/${s.id}`}
                 disableIcon
@@ -142,9 +154,9 @@ export const DevicePage: React.FC<Props> = () => {
                   </TestUI> */}
                 </ListItemSecondaryAction>
               </ListItemLocation>
-            </GuideStep>
-          )
-        })}
+            )
+          })}
+        </GuideBubble>
       </List>
       <ServiceContextualMenu />
     </Container>

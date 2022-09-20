@@ -209,6 +209,7 @@ export default createModel<RootModel>()({
 
       zendesk.initChat(state.auth.user)
       dispatch.backend.set({ initialized: true })
+      dispatch.ui.set({ fetching: true })
       dispatch.plans.init()
       await cloudController.init()
       await dispatch.accounts.init()
@@ -224,6 +225,7 @@ export default createModel<RootModel>()({
       dispatch.sessions.fetch()
       dispatch.announcements.fetch()
       dispatch.applicationTypes.fetch()
+      dispatch.ui.set({ fetching: false })
     },
     async signedIn() {
       if (isPortal()) dispatch.auth.dataReady()

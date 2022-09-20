@@ -27,10 +27,10 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
     return (
       <Gutters top="xxl" center>
         <Box paddingBottom={3} paddingTop={4}>
-          <Icon name="user-group" type="light" fontSize={50} color="grayLight" />
+          <Icon name="user-group" type="light" fontSize={40} color="grayLight" />
         </Box>
-        <Typography variant="body2" color="GrayText">
-          No other users have access
+        <Typography variant="body2" color="gray.main">
+          No users have access
         </Typography>
         <Typography variant="body1">
           <AddUserButton to={location.pathname.replace('users', 'share')} inlineLeft>
