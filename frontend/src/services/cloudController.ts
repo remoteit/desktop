@@ -18,7 +18,7 @@ class CloudController {
   initialized: boolean = false
   socket?: ReconnectingWebSocket
   token?: string
-  pingInterval = 5 * 60 * 1000 // 5 minutes
+  pingInterval = 5 * 60 * 1000 + Math.floor(Math.random() * 5 * 60 * 1000) // 5 + random 5 minutes
   timer?: NodeJS.Timeout
 
   init() {
