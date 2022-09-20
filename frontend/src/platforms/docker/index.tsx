@@ -13,14 +13,14 @@ platforms.register({
   component: Component,
   types: { 1219: 'Docker Container' },
   installation: {
-    command: 'docker run -d -e R3_REGISTRATION_CODE="[CODE]" remoteit/remoteit-agent:x86_64',
+    command: 'docker run -d -e R3_REGISTRATION_CODE="[CODE]" remoteit/remoteit-agent:latest',
     instructions: (
       <>
-        For other platforms and production settings please visit our
+        For production settings please visit our
         <Link href="https://hub.docker.com/r/remoteit/remoteit-agent">Docker Hub page.</Link>
       </>
     ),
-    qualifier: 'For testing x86 systems running Docker',
+    qualifier: 'For testing on any system running Docker',
     link: 'https://hub.docker.com/r/remoteit/remoteit-agent',
   },
 })
