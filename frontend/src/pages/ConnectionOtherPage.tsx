@@ -22,7 +22,7 @@ export const ConnectionOtherPage: React.FC = () => {
     }
   })
 
-  if (!service || !device || !session) return <NoConnectionPage />
+  if (!session) return <NoConnectionPage />
 
   return (
     <Container
@@ -32,7 +32,7 @@ export const ConnectionOtherPage: React.FC = () => {
       header={
         <Typography variant="h1" gutterBottom>
           <Title>{session?.target.name}</Title>
-          <InfoButton device={device} service={service} />
+          {device && <InfoButton device={device} service={service} />}
         </Typography>
       }
     >

@@ -109,7 +109,7 @@ export const RegisterMenu: React.FC = () => {
             <GuideBubble
               enterDelay={400}
               guide="registerMenu"
-              placement="right-start"
+              placement="right"
               startDate={new Date('1122-09-15')}
               instructions={
                 <>

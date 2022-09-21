@@ -5,9 +5,12 @@ import { Typography, InputLabel, Collapse, Paper, alpha } from '@mui/material'
 import { getAttributes } from './Attributes'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
+import { GuideBubble } from './GuideBubble'
 import { DataDisplay } from './DataDisplay'
 import { IconButton } from '../buttons/IconButton'
 import { CopyButton } from '../buttons/CopyButton'
+import { DesktopUI } from './DesktopUI'
+import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 
@@ -148,61 +151,92 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   {launchDisplay}
                 </div>
               </Gutters>
-              <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
-                <span>
-                  <InputLabel shrink>Copy {hover === 'copyLaunch' ? app.contextTitle : hover}</InputLabel>
-                  <CopyButton
-                    color="alwaysWhite"
-                    icon="copy"
-                    value={name + (port ? p + port : '')}
-                    onMouseEnter={() => setHover('endpoint')}
-                    onMouseLeave={() => setHover(undefined)}
-                  />
-                  {connection?.host && (
-                    <>
-                      {connection.port && (
-                        <>
-                          <CopyButton
-                            color="alwaysWhite"
-                            icon="i-cursor"
-                            value={connection.host}
-                            onMouseEnter={() => setHover('host')}
-                            onMouseLeave={() => setHover(undefined)}
-                          />
-                          <CopyButton
-                            color="alwaysWhite"
-                            icon="port"
-                            value={connection.port}
-                            onMouseEnter={() => setHover('port')}
-                            onMouseLeave={() => setHover(undefined)}
-                          />
-                        </>
-                      )}
-                      <CopyButton
-                        color="alwaysWhite"
-                        icon={app.launchType === 'URL' ? 'link' : 'terminal'}
-                        app={app}
-                        value={app.string}
-                        onMouseEnter={() => setHover('copyLaunch')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
-                    </>
-                  )}
-                </span>
-                <span>
-                  <InputLabel shrink>Launch</InputLabel>
-                  {app.canLaunch ? (
-                    <LaunchButton
+              <GuideBubble
+                hide={!show}
+                guide="usingConnection"
+                enterDelay={600}
+                placement="left"
+                startDate={new Date('1122-09-15')}
+                queueAfter="connectButton"
+                instructions={
+                  <>
+                    <Typography variant="h3" gutterBottom>
+                      <b>Using a connection</b>
+                    </Typography>
+                    <PortalUI>
+                      <Typography variant="body2" gutterBottom>
+                        A connection was created from our proxy server to the service.
+                      </Typography>
+                    </PortalUI>
+                    <DesktopUI>
+                      <Typography variant="body2" gutterBottom>
+                        A fixed endpoint has been generated.
+                      </Typography>
+                    </DesktopUI>
+                    <Typography variant="body2" gutterBottom>
+                      Copy the endpoint and its components or launch an application according the the
+                      <cite> launch method </cite>
+                      configuration below.
+                    </Typography>
+                  </>
+                }
+              >
+                <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
+                  <span>
+                    <InputLabel shrink>Copy {hover === 'copyLaunch' ? app.contextTitle : hover}</InputLabel>
+                    <CopyButton
                       color="alwaysWhite"
-                      app={app}
-                      onMouseEnter={() => setHover('launch')}
+                      icon="copy"
+                      value={name + (port ? p + port : '')}
+                      onMouseEnter={() => setHover('endpoint')}
                       onMouseLeave={() => setHover(undefined)}
                     />
-                  ) : (
-                    <IconButton title="Command launch in Desktop" name="ban" fixedWidth />
-                  )}
-                </span>
-              </Gutters>
+                    {connection?.host && (
+                      <>
+                        {connection.port && (
+                          <>
+                            <CopyButton
+                              color="alwaysWhite"
+                              icon="i-cursor"
+                              value={connection.host}
+                              onMouseEnter={() => setHover('host')}
+                              onMouseLeave={() => setHover(undefined)}
+                            />
+                            <CopyButton
+                              color="alwaysWhite"
+                              icon="port"
+                              value={connection.port}
+                              onMouseEnter={() => setHover('port')}
+                              onMouseLeave={() => setHover(undefined)}
+                            />
+                          </>
+                        )}
+                        <CopyButton
+                          color="alwaysWhite"
+                          icon={app.launchType === 'URL' ? 'link' : 'terminal'}
+                          app={app}
+                          value={app.string}
+                          onMouseEnter={() => setHover('copyLaunch')}
+                          onMouseLeave={() => setHover(undefined)}
+                        />
+                      </>
+                    )}
+                  </span>
+                  <span>
+                    <InputLabel shrink>Launch</InputLabel>
+                    {app.canLaunch ? (
+                      <LaunchButton
+                        color="alwaysWhite"
+                        app={app}
+                        onMouseEnter={() => setHover('launch')}
+                        onMouseLeave={() => setHover(undefined)}
+                      />
+                    ) : (
+                      <IconButton title="Download the desktop app to launch" name="ban" fixedWidth />
+                    )}
+                  </span>
+                </Gutters>
+              </GuideBubble>
             </>
           )}
         </Paper>

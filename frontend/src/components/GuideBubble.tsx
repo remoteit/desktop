@@ -2,6 +2,7 @@ import React from 'react'
 import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { TestUI } from './TestUI'
 import { useStyles } from './GuideStep'
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
   hideArrow?: boolean
   hide?: boolean
   enterDelay?: number
+  queueAfter?: string
   children?: React.ReactNode
 }
 
@@ -27,6 +29,7 @@ export const GuideBubble: React.FC<Props> = ({
   hideArrow,
   hide,
   enterDelay,
+  queueAfter,
   children,
 }) => {
   const { poppedBubbles, expired } = useSelector((state: ApplicationState) => ({
@@ -35,7 +38,8 @@ export const GuideBubble: React.FC<Props> = ({
   }))
   const { ui } = useDispatch<Dispatch>()
   const [waiting, setWaiting] = React.useState<boolean>(true)
-  const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting
+  const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
+  const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued
   const css = useStyles({ highlight: highlight && open })
 
   React.useEffect(() => {
@@ -59,6 +63,11 @@ export const GuideBubble: React.FC<Props> = ({
           <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
             Ok
           </Button>
+          <TestUI>
+            <Box fontSize={10} marginLeft={2} component="span">
+              {guide}
+            </Box>
+          </TestUI>
         </>
       }
     >

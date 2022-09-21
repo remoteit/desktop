@@ -31,8 +31,12 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <Typography variant="h3" gutterBottom>
                   <b>Add a device</b>
                 </Typography>
+                <Typography variant="body2" gutterBottom>
+                  Enable connections the services (applications) available to a device by installing the Remote.It
+                  agent.
+                </Typography>
                 <Typography variant="body2">
-                  Enable remote connections to any service (application) by adding the host device to your account.
+                  Your device will automatically register and appear on the <cite>devices</cite> page.
                 </Typography>
               </>
             }

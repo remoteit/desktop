@@ -103,22 +103,31 @@ export const Connect: React.FC = () => {
           enterDelay={400}
           placement="left"
           startDate={new Date('1122-09-15')}
+          queueAfter={deviceID ? 'availableServices' : 'addNetwork'}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>Starting a connection</b>
+                <b>
+                  <PortalUI>Starting a connection</PortalUI>
+                  <DesktopUI>Connect on demand</DesktopUI>
+                </b>
               </Typography>
-              <Typography variant="body2" gutterBottom>
-                <PortalUI>Connect to this service with the button to the right. </PortalUI>
-                <DesktopUI>
-                  Start a connect on demand listener using the configuration below. Our agent will automatically make
-                  the connection to this service when it detects a network request and disconnect when idle. You can
-                  leave these connections active at all times without worrying about resource usage.
-                </DesktopUI>
-              </Typography>
+              <PortalUI>
+                <Typography variant="body2" gutterBottom>
+                  Create a connection to this service with the button to the right.
+                </Typography>
+              </PortalUI>
+              <DesktopUI>
+                <Typography variant="body2" gutterBottom>
+                  Start listening on to this endpoint for network requests. On request, automatically create the
+                  connection and disconnect when idle.
+                </Typography>
+              </DesktopUI>
               {connection.autoLaunch && (
                 <Typography variant="body2" gutterBottom>
-                  <em>This connection will auto launch.</em>
+                  <em>
+                    This connection will launch when connected because the "Auto Launch" configuration toggle is on.
+                  </em>
                 </Typography>
               )}
             </>

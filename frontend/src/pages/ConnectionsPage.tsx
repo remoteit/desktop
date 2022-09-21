@@ -50,11 +50,11 @@ export const ConnectionsPage: React.FC = () => {
     }
   })
 
-  const empty = !active?.length && !recent.serviceIds?.length
+  const empty = !active?.length
 
   return (
     <Container
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       gutterBottom
       header={
         <Typography variant="subtitle1">
@@ -65,7 +65,7 @@ export const ConnectionsPage: React.FC = () => {
       {initialized ? (
         <>
           {empty && (
-            <Gutters top="xxl" center>
+            <Gutters top="xxl" bottom="xxl" center>
               <Typography variant="h1" gutterBottom>
                 <Icon name="arrow-right-arrow-left" fontSize={50} type="light" color="grayLight" />
               </Typography>

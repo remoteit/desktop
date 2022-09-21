@@ -92,9 +92,30 @@ export const DevicePage: React.FC<Props> = () => {
         <Title>Service</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
-        <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
+        <GuideBubble
+          highlight
+          guide="addService"
+          enterDelay={400}
+          placement="right"
+          hide={!device || device.state === 'inactive' || !editable}
+          startDate={new Date('1122-09-15')}
+          queueAfter="usingConnection"
+          instructions={
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>Add a service (application)</b>
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                This device can be dynamically setup to host new services.
+              </Typography>
+            </>
+          }
+        >
+          <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
+        </GuideBubble>
       </Typography>
-      <List>
+
+      <List className={css.list}>
         {editable && <LicensingNotice device={device} />}
         {editable && setupAddingService && (
           <ListItemLocation pathname="" disableIcon disabled dense>
@@ -106,14 +127,14 @@ export const DevicePage: React.FC<Props> = () => {
         )}
         <GuideBubble
           highlight
-          guide="service"
+          guide="availableServices"
           enterDelay={400}
-          placement="right"
+          placement="bottom"
           startDate={new Date('1122-09-15')}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>{attributeName(device)}'s services</b>
+                <b>Available services</b>
               </Typography>
               <Typography variant="body2" gutterBottom>
                 The device's hosted services (applications) are listed here.
@@ -173,4 +194,5 @@ const useStyles = makeStyles({
     position: 'absolute',
     height: '100%',
   },
+  list: { marginRight: 1 },
 })

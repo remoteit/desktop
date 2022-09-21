@@ -131,8 +131,9 @@ export const GuideStep: React.FC<Props> = ({
 export const useStyles = makeStyles(({ palette }) => ({
   icon: { position: 'absolute', zIndex: 1, top: -spacing.lg, right: -spacing.xl },
   box: ({ highlight }: any) => ({
-    // border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
-    boxShadow: highlight ? `0 0 2px 0px ${palette.guide.main} inset` : undefined,
+    border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
+    // boxShadow: highlight ? `0 0 2px 0px ${palette.guide.main} inset` : undefined,
+    // background: highlight ? alpha(palette.guide.main, 0.05) : undefined,
     borderRadius: radius,
     position: 'relative',
   }),
@@ -146,7 +147,8 @@ export const useStyles = makeStyles(({ palette }) => ({
     color: palette.white.main,
     fontSize: fontSizes.lg,
     padding: spacing.lg,
-    paddingRight: spacing.xxl,
+    paddingRight: spacing.xl,
+    margin: spacing.lg,
     position: 'relative',
     borderRadius: radius,
     '& .MuiTypography-caption': { color: palette.white.main, marginTop: spacing.md, display: 'block' },
@@ -157,6 +159,15 @@ export const useStyles = makeStyles(({ palette }) => ({
     },
     '& .MuiButton-root': { background: alpha(palette.white.main, 0.15), color: palette.white.main },
     '& .MuiButton-root:hover': { background: alpha(palette.white.main, 0.3) },
+    '& cite': {
+      fontStyle: 'normal',
+      textTransform: 'uppercase',
+      fontWeight: 600,
+      fontSize: '0.8em',
+      letterSpacing: 1,
+      paddingLeft: spacing.xs,
+      paddingRight: spacing.xs,
+    },
   },
   arrow: {
     color: palette.guide.main,
