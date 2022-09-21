@@ -1,19 +1,10 @@
-import setup from 'remote.it'
 import { getRestApi } from '../helpers/apiHelper'
-import { DEVELOPER_KEY, API_URL } from '../shared/constants'
+import { API_URL } from '../shared/constants'
 import { store } from '../store'
 
 console.log('API_URL', API_URL)
 console.log('getApiURL()', getRestApi())
 
-export const r3 = setup(
-  {
-    apiURL: getRestApi(),
-    developerKey: DEVELOPER_KEY,
-    successURL: window.location.origin,
-  },
-  getToken
-)
 
 export async function getToken(): Promise<string> {
   const { auth } = store.dispatch

@@ -1,6 +1,6 @@
 // import { Auth } from 'aws-amplify'
 import Auth from '@aws-amplify/auth'
-import setup, { IUser } from 'remote.it'
+// import setup, { IUser } from 'remote.it'
 // eslint-disable-next-line import/named
 export { CodeDeliveryDetails, ISignUpResult } from 'amazon-cognito-identity-js'
 
@@ -24,7 +24,6 @@ export type RecoveryChallengeType = 'BACKUP_CODE' | 'EMAIL_CODE'
 
 export type CognitoAuthInstance = typeof Auth
 
-export type RemoteitLib = ReturnType<typeof setup>
 
 // export interface AuthUser {
 //   remoteitUser?: RemoteitUser
@@ -123,10 +122,6 @@ export type SendCustomChallengeAnswerFunc = (code: string) => Promise<CognitoUse
 export type VerifyRecoveryCodeFunc = (emailVerificationCode: string, recoveryCode: string) => Promise<CognitoUserResult>
 
 export type VerifyPasswordChangeFunc = (email: string, password: string, shortcode: string) => Promise<void>
-
-export interface RemoteitUserInfo extends IUser {
-  partnerPortalAccess: boolean
-}
 
 export type RecoverPasswordRequestFunc = (email: string) => Promise<void>
 

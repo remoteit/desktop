@@ -8,9 +8,11 @@ import {
   COGNITO_USER_POOL_ID,
   COGNITO_AUTH_DOMAIN,
   REDIRECT_URL,
+  API_URL,
+  DEVELOPER_KEY
 } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
-import { getToken, r3 } from '../services/remote.it'
+import { getToken } from '../services/remote.it'
 import { CognitoUser } from '../cognito/types'
 import { AuthService } from '../cognito/auth'
 import { createModel } from '@rematch/core'
@@ -129,7 +131,16 @@ export default createModel<RootModel>()({
     async changeEmail(email: string) {
       const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
       if (mailFormat.test(email)) {
-        r3.post('/user/email/', { email }).then(() => dispatch.auth.setAWSUserEmail(email))
+        await axios.post('/user/email/', { email } ,
+        {
+          baseURL: API_URL,
+          headers: {
+            'Content-Type': 'application/json',
+            developerKey: DEVELOPER_KEY,
+            Authorization: await getToken()
+          },
+        } )
+        dispatch.auth.setAWSUserEmail(email)
         dispatch.ui.set({ successMessage: `Email modified successfully.` })
       } else {
         dispatch.ui.set({ errorMessage: `Invalid format.` })
