@@ -2,7 +2,6 @@ import React from 'react'
 import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { IconButton } from '../buttons/IconButton'
 import { useStyles } from './GuideStep'
 
 type Props = {

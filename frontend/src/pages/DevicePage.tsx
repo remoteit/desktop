@@ -105,6 +105,7 @@ export const DevicePage: React.FC<Props> = () => {
           </ListItemLocation>
         )}
         <GuideBubble
+          highlight
           guide="service"
           enterDelay={400}
           placement="right"
@@ -112,13 +113,13 @@ export const DevicePage: React.FC<Props> = () => {
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>{attributeName(device)} services</b>
+                <b>{attributeName(device)}'s services</b>
               </Typography>
               <Typography variant="body2" gutterBottom>
                 The device's hosted services (applications) are listed here.
               </Typography>
               <Typography variant="body2" gutterBottom>
-                Select a service to configure it or start a connection.
+                Select a service to configure it or to start a connection.
               </Typography>
             </>
           }

@@ -26,9 +26,9 @@ import { LanShareSelect } from './LanShareSelect'
 import { ConnectionMenu } from './ConnectionMenu'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
+import { GuideBubble } from './GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
-import { GuideStep } from './GuideStep'
 import { DataCopy } from './DataCopy'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
@@ -98,12 +98,30 @@ export const Connect: React.FC = () => {
           />
         </Notice>
       ) : (
-        <GuideStep
-          guide="aws"
-          step={5}
+        <GuideBubble
+          guide="connectButton"
+          enterDelay={400}
+          placement="left"
+          startDate={new Date('1122-09-15')}
           instructions={
-            'Enable the connect on demand listener by adding the service to your network.' +
-            (connection.autoLaunch ? ' The connection will auto launch.' : '')
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>Starting a connection</b>
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                <PortalUI>Connect to this service with the button to the right. </PortalUI>
+                <DesktopUI>
+                  Start a connect on demand listener using the configuration below. Our agent will automatically make
+                  the connection to this service when it detects a network request and disconnect when idle. You can
+                  leave these connections active at all times without worrying about resource usage.
+                </DesktopUI>
+              </Typography>
+              {connection.autoLaunch && (
+                <Typography variant="body2" gutterBottom>
+                  <em>This connection will auto launch.</em>
+                </Typography>
+              )}
+            </>
           }
         >
           <Gutters size="md" className={css.gutters} bottom={null}>
@@ -119,7 +137,7 @@ export const Connect: React.FC = () => {
             />
             <ConnectionMenu connection={connection} service={service} />
           </Gutters>
-        </GuideStep>
+        </GuideBubble>
       )}
       <ConnectionErrorMessage connection={connection} visible={showError} />
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />

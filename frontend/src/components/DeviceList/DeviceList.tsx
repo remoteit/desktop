@@ -43,50 +43,59 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
         <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths }} />
-        <GuideBubble
-          enterDelay={400}
-          guide="deviceList"
-          placement="bottom"
-          startDate={new Date('1122-09-15')}
-          instructions={
-            <>
-              <Typography variant="h3" gutterBottom>
-                <b>Access a device</b>
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                A device can host any number of services (applications), and will appear online if it's ready to be
-                connected to. You can also update or add services if you are the device's owner.
-              </Typography>
-            </>
-          }
-        >
-          {devices?.map(device => {
-            const canRestore = isOffline(device) && !device.shared
-            const isSelected = selected?.includes(device.id)
-            if (restore && !canRestore) return null
+        {devices?.map((device, index) => {
+          const canRestore = isOffline(device) && !device.shared
+          const isSelected = selected?.includes(device.id)
+          if (restore && !canRestore) return null
+
+          const row = (
+            <DeviceContext.Provider
+              key={device.id}
+              value={{ device, connections: connections[device.id], required, attributes }}
+            >
+              <DeviceListItem
+                restore={restore && canRestore}
+                select={select}
+                selected={isSelected}
+                onSelect={deviceId => {
+                  if (isSelected) {
+                    const index = selected.indexOf(deviceId)
+                    selected.splice(index, 1)
+                  } else {
+                    selected.push(deviceId)
+                  }
+                  dispatch.ui.set({ selected: [...selected] })
+                }}
+              />
+            </DeviceContext.Provider>
+          )
+
+          if (!index)
             return (
-              <DeviceContext.Provider
+              <GuideBubble
                 key={device.id}
-                value={{ device, connections: connections[device.id], required, attributes }}
+                enterDelay={400}
+                guide="deviceList"
+                placement="bottom"
+                startDate={new Date('1122-09-15')}
+                instructions={
+                  <>
+                    <Typography variant="h3" gutterBottom>
+                      <b>Access a device</b>
+                    </Typography>
+                    <Typography variant="body2" gutterBottom>
+                      A device can host any number of services (applications), and will appear online if it's ready to
+                      be connected to. You can also update or add services if you are the device's owner.
+                    </Typography>
+                  </>
+                }
               >
-                <DeviceListItem
-                  restore={restore && canRestore}
-                  select={select}
-                  selected={isSelected}
-                  onSelect={deviceId => {
-                    if (isSelected) {
-                      const index = selected.indexOf(deviceId)
-                      selected.splice(index, 1)
-                    } else {
-                      selected.push(deviceId)
-                    }
-                    dispatch.ui.set({ selected: [...selected] })
-                  }}
-                />
-              </DeviceContext.Provider>
+                {row}
+              </GuideBubble>
             )
-          })}
-        </GuideBubble>
+
+          return row
+        })}
       </List>
       <LoadMore />
       <ServiceContextualMenu />

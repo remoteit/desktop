@@ -131,7 +131,8 @@ export const GuideStep: React.FC<Props> = ({
 export const useStyles = makeStyles(({ palette }) => ({
   icon: { position: 'absolute', zIndex: 1, top: -spacing.lg, right: -spacing.xl },
   box: ({ highlight }: any) => ({
-    border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
+    // border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
+    boxShadow: highlight ? `0 0 2px 0px ${palette.guide.main} inset` : undefined,
     borderRadius: radius,
     position: 'relative',
   }),

@@ -25,6 +25,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
             guide="addDevice"
             placement="bottom"
             startDate={new Date('1122-09-15')}
+            enterDelay={400}
             instructions={
               <>
                 <Typography variant="h3" gutterBottom>
