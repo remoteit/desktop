@@ -27,7 +27,7 @@ export const PERMISSION: ILookup<{
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll' },
   MANAGE: { name: 'Manage', description: 'Edit, delete, register, transfer and share devices', icon: 'pencil' },
-  ADMIN: { name: 'Administer', description: 'Manage organization users', icon: 'user-hard-hat', user: true },
+  ADMIN: { name: 'Administer', description: 'Manage tags and organization users', icon: 'user-tag', user: true },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
@@ -35,6 +35,7 @@ export const DEFAULT_ROLE: IOrganizationRole = {
   name: '',
   tag: { operator: 'ANY', values: [] },
   permissions: ['VIEW', 'CONNECT'],
+  access: 'NONE',
 }
 
 export const SYSTEM_ROLES: IOrganizationRole[] = [
@@ -44,6 +45,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     system: true,
     permissions: ['VIEW', 'MANAGE', 'CONNECT', 'SCRIPTING', 'ADMIN'],
     disabled: true,
+    access: 'ALL',
   },
   {
     id: 'GUEST',
@@ -51,6 +53,7 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
     system: true,
     permissions: ['VIEW', 'CONNECT'],
     disabled: true,
+    access: 'NONE',
   },
 ]
 
@@ -123,6 +126,7 @@ const graphQLOrganization = `
       name
       system
       permissions
+      access
       tag {
         operator
         values
@@ -158,6 +162,7 @@ export type IOrganizationState = {
   verificationCNAME?: string
   verificationValue?: string
   verified: boolean
+  guestsLoaded: boolean
 }
 
 const defaultState: IOrganizationState = {
@@ -175,6 +180,7 @@ const defaultState: IOrganizationState = {
   licenses: [],
   limits: [],
   guests: [],
+  guestsLoaded: false,
 }
 
 type IOrganizationAccountState = {
@@ -204,18 +210,6 @@ export default createModel<RootModel>()({
         _${index}: account(id: "${id}") {
           ${graphQLOrganization}
           ${graphQLLicensesLimits}
-          guest {
-            user {
-              id
-              email
-            }
-            devices {
-              id
-            }
-            networks {
-              id
-            }
-          }
         }`
       )
       const result = await graphQLBasicRequest(
@@ -231,20 +225,42 @@ export default createModel<RootModel>()({
       else await dispatch.organization.clearActive()
     },
 
+    async fetchGuests(_: void, state) {
+      const accountId = getActiveAccountId(state)
+      const result = await graphQLBasicRequest(
+        ` query Guests($id: String) {
+            login {
+              account(id: $id) {
+                guest {
+                  user {
+                    id
+                    email
+                  }
+                  devices {
+                    id
+                  }
+                  networks {
+                    id
+                  }
+                }
+              }
+            }
+          }`,
+        { id: accountId }
+      )
+      if (result === 'ERROR') return
+      const guests = parseGuests(result)
+      await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId })
+    },
+
     async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }) {
       const data = result?.data?.data?.login
       let orgs: IOrganizationAccountState['accounts'] = {}
       ids.forEach((id, index) => {
-        const { organization, licenses, limits, guest } = data[`_${index}`]
+        const { organization, licenses, limits } = data[`_${index}`]
         orgs[id] = parseOrganization(organization)
         orgs[id].licenses = licenses?.map(l => parseLicense(l))
         orgs[id].limits = limits
-        orgs[id].guests = guest.map(g => ({
-          id: g.user.id,
-          email: g.user.email || g.user.id,
-          deviceIds: g.devices.map(d => d.id),
-          networkIds: g.networks.map(n => n.id),
-        }))
       })
       return orgs
     },
@@ -340,6 +356,7 @@ export default createModel<RootModel>()({
         result = await graphQLCreateRole(data)
         if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
         roles.push(role)
+        dispatch.ui.set({ redirect: `/organization/roles/${role.id}` })
       }
 
       if (result === 'ERROR') {
@@ -352,7 +369,6 @@ export default createModel<RootModel>()({
       })
 
       await dispatch.organization.setActive({ roles })
-      // return role.id
     },
 
     async removeRole(role: IOrganizationRole, state) {
@@ -375,8 +391,8 @@ export default createModel<RootModel>()({
     },
 
     async setActive(params: ILookup<any>, state) {
-      const id = getActiveAccountId(state)
-      let org = { ...getOrganization(state) }
+      const id = params.id || getActiveAccountId(state)
+      let org = { ...getOrganization(state, id) }
       Object.keys(params).forEach(key => (org[key] = params[key]))
       const accounts = { ...state.organization.accounts }
       accounts[id] = org
@@ -395,47 +411,21 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getOwnOrganization(state: ApplicationState) {
-  const id = state.auth.user?.id || ''
-  return memberOrganization(state.organization.accounts, id)
-}
-
-export function getOrganization(state: ApplicationState, accountId?: string): IOrganizationState {
-  accountId = accountId || getActiveAccountId(state)
-  return memberOrganization(state.organization.accounts, accountId)
-}
-
-export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
-  return organization[accountId || ''] || { ...defaultState }
-}
-
-export function getOrganizationName(state: ApplicationState, accountId?: string): string {
-  return memberOrganization(state.organization.accounts, accountId).name || 'Personal'
-}
-
-export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
-  const membership = getMembership(state, accountId)
-  const organization = getOrganization(state, accountId)
-  return organization.roles.find(r => r.id === membership.roleId)?.permissions
-}
-
-export function selectLimitsLookup(state: ApplicationState, accountId?: string): ILookup<ILimit['value']> {
-  const limits = selectBaseLimits(state, accountId)
-  const notUser = !isUserAccount(state, accountId)
-
-  const { limitsOverride } = state.ui
-  let result = {}
-
-  limits.forEach(l => {
-    result[l.name] = limitsOverride[l.name] === undefined || notUser ? l.value : limitsOverride[l.name]
-  })
-
-  return result
+function parseGuests(result: AxiosResponse<any> | undefined) {
+  const guest = result?.data?.data?.login?.account?.guest || []
+  const parsed: IOrganizationState['guests'] = guest.map(g => ({
+    id: g.user.id,
+    email: g.user.email || g.user.id,
+    deviceIds: g.devices.map(d => d.id),
+    networkIds: g.networks.map(n => n.id),
+  }))
+  return parsed
 }
 
 export function parseOrganization(data: any): IOrganizationState {
   if (!data) return { ...defaultState }
   return {
+    ...defaultState,
     ...data,
     // verified: true, // for development
     // samlEnabled: true, // for development
@@ -473,6 +463,70 @@ export function parseLicense(data) {
       },
     },
   }
+}
+
+export function getOwnOrganization(state: ApplicationState) {
+  const id = state.auth.user?.id || ''
+  return memberOrganization(state.organization.accounts, id)
+}
+
+export function getOrganization(state: ApplicationState, accountId?: string): IOrganizationState {
+  accountId = accountId || getActiveAccountId(state)
+  return memberOrganization(state.organization.accounts, accountId)
+}
+
+export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
+  return organization[accountId || ''] || { ...defaultState }
+}
+
+export function getOrganizationName(state: ApplicationState, accountId?: string): string {
+  return memberOrganization(state.organization.accounts, accountId).name || 'Personal'
+}
+
+export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
+  const membership = getMembership(state, accountId)
+  const organization = getOrganization(state, accountId)
+  return organization.roles.find(r => r.id === membership.roleId)?.permissions
+}
+
+export function selectMembersWithAccess(state: ApplicationState, instance?: IDevice | INetwork) {
+  const organization = getOrganization(state)
+  return organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
+}
+
+export function canMemberView(roles: IOrganizationRole[], member: IOrganizationMember, instance?: IDevice | INetwork) {
+  if (!instance) return true
+  const role = roles.find(r => r.id === member?.roleId)
+  return canRoleView(role, instance)
+}
+
+export function canRoleView(role?: IOrganizationRole, instance?: IDevice | INetwork) {
+  if (instance?.shared) return false
+  return role?.tag && instance?.tags ? canViewByTags(role.tag, instance.tags) : true
+}
+
+export function canViewByTags(filter: ITagFilter, tags: ITag[]) {
+  const names = tags.map(t => t.name)
+  if (filter.operator === 'ANY') {
+    return filter.values.some(tag => names.includes(tag))
+  } else if (filter.operator === 'ALL') {
+    return filter.values.every(tag => names.includes(tag))
+  }
+  return true
+}
+
+export function selectLimitsLookup(state: ApplicationState, accountId?: string): ILookup<ILimit['value']> {
+  const limits = selectBaseLimits(state, accountId)
+  const notUser = !isUserAccount(state, accountId)
+
+  const { limitsOverride } = state.ui
+  let result = {}
+
+  limits.forEach(l => {
+    result[l.name] = limitsOverride[l.name] === undefined || notUser ? l.value : limitsOverride[l.name]
+  })
+
+  return result
 }
 
 export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {

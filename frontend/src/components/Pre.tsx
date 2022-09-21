@@ -5,7 +5,7 @@ export const Pre: React.FC<ILookup<any>> = props => {
     <>
       {Object.keys(props).map(key => (
         <pre key={key}>
-          {key}: {`\n${JSON.stringify(props[key])}\n\n`}
+          {key}: {`\n${JSON.stringify(props[key], null, 2)}\n\n`}
         </pre>
       ))}
     </>

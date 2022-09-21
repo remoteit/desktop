@@ -8,8 +8,7 @@ import { ListItemLocation } from './ListItemLocation'
 import { Typography } from '@mui/material'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
-import { AddUserButton } from '../buttons/AddUserButton'
-import { UsersSelect } from './UsersSelect'
+import { UsersTab } from './UsersTab'
 import { Container } from './Container'
 import { Gutters } from './Gutters'
 import { Color } from '../styling'
@@ -47,7 +46,7 @@ export const ServiceHeaderMenu: React.FC<{
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
             <ListItemLocation
-              title="Connect"
+              title="Connection"
               icon="arrow-right"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/${serviceID}/connect`}
@@ -71,7 +70,7 @@ export const ServiceHeaderMenu: React.FC<{
                 dense
               />
             )}
-            <UsersSelect service={service} device={device} />
+            <UsersTab instance={device} service={service} to={`/devices/${device.id}/${service.id}/users`} />
           </ListHorizontal>
         </>
       }

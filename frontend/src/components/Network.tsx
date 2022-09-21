@@ -1,41 +1,44 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { ClearButton } from '../buttons/ClearButton'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
 import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
 import { makeStyles } from '@mui/styles'
 
 export interface Props {
   network?: INetwork
-  collapse?: boolean
   recent?: boolean
   noLink?: boolean
   highlight?: boolean
   onClear?: (serviceId: string) => void
 }
 
-export const Network: React.FC<Props> = ({ onClear, recent, collapse, highlight, noLink, network }) => {
+export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, network }) => {
   const dispatch = useDispatch<Dispatch>()
-  const [expanded, setExpanded] = useState<boolean>(!collapse)
+  const { collapsed } = useSelector((state: ApplicationState) => state.ui)
   const css = useStyles({ highlight })
+
+  if (!network?.id) return null
+
+  const expanded = !collapsed.includes(network.id)
+  const toggle = () => {
+    if (expanded) collapsed.push(network.id)
+    else collapsed.splice(collapsed.indexOf(network.id), 1)
+    console.log('--- TOGGLE', { expanded, collapsed })
+    dispatch.ui.set({ collapsed: [...collapsed] })
+  }
 
   return (
     <List className={css.list}>
-      <NetworkListTitle
-        network={network}
-        noLink={noLink}
-        expanded={expanded}
-        offline={recent}
-        onClick={() => setExpanded(!expanded)}
-      >
+      <NetworkListTitle network={network} noLink={noLink} expanded={expanded} offline={recent} onClick={toggle}>
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
         <IconButton
-          onClick={() => setExpanded(!expanded)}
+          onClick={toggle}
           name={expanded ? 'caret-down' : 'caret-up'}
           color={highlight ? 'primary' : 'grayDark'}
           disabled={noLink}

@@ -232,6 +232,9 @@ export default createModel<RootModel>()({
         owner: true,
         tag: params.tag?.values.length ? params.tag : undefined,
       }
+
+      if (params.access === 'NONE' || (params.access === 'TAG' && !options.tag)) return 0
+
       const result = await graphQLFetchDeviceCount(options)
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0
@@ -367,15 +370,18 @@ export default createModel<RootModel>()({
       services,
       platform,
       accountId,
+      template,
     }: {
       name?: string
       services: IServiceRegistration[]
       platform?: number
       accountId: string
+      template?: string | boolean
     }) {
       const result = await graphQLRegistration({ name, services, platform, account: accountId })
       if (result !== 'ERROR') {
-        const { registrationCommand, registrationCode } = result?.data?.data?.login?.account
+        let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
+        if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)
         console.log('CREATE REGISTRATION', registrationCommand)
         dispatch.ui.set({ registrationCommand })
         return registrationCode

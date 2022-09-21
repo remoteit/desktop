@@ -9,6 +9,7 @@ import { r3 } from '../services/remote.it'
 type IUserState = {
   id: string
   email: string
+  created: Date
   notificationSettings: INotificationSetting
   language: string
   attributes: ILookup<any>
@@ -17,6 +18,7 @@ type IUserState = {
 const defaultState: IUserState = {
   id: '',
   email: '',
+  created: new Date(0),
   notificationSettings: {},
   language: 'en',
   attributes: {},
@@ -57,6 +59,7 @@ export default createModel<RootModel>()({
       console.log('USER DATA', data)
       return {
         ...data,
+        created: new Date(data.created),
         attributes: data?.attributes?.$remoteit,
       }
     },

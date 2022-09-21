@@ -4,13 +4,15 @@ import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { getFreeLicenses, selectRemoteitLicense } from '../models/plans'
+import { selectAccessibleNetworks, selectNetworks } from '../models/networks'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography, List, Box } from '@mui/material'
+import { Typography, List, Box, Divider } from '@mui/material'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
-import { selectNetworks } from '../models/networks'
+import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { getOrganization } from '../models/organization'
+import { LoadingMessage } from '../components/LoadingMessage'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from '../components/LicenseSelect'
 import { RoleSelect } from '../components/RoleSelect'
@@ -26,22 +28,27 @@ export const OrganizationGuestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { userID = '' } = useParams<{ userID: string }>()
   const [removing, setRemoving] = useState<boolean>(false)
-  const { devices, networks, freeLicenses, organization, guest, license } = useSelector((state: ApplicationState) => {
-    const organization = getOrganization(state)
-    const guest = organization.guests.find(g => g.id === userID)
-    return {
-      guest,
-      organization,
-      freeLicenses: getFreeLicenses(state),
-      license: selectRemoteitLicense(state),
-      devices: getDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
-      networks: selectNetworks(state),
-    }
-  })
+  const { devices, member, accessible, networks, freeLicenses, organization, guest, guestsLoaded, license } =
+    useSelector((state: ApplicationState) => {
+      const organization = getOrganization(state)
+      const guest = organization.guests.find(g => g.id === userID)
+      const member = organization.members.find(m => m.user.id === userID)
+      return {
+        guest,
+        member,
+        organization,
+        freeLicenses: getFreeLicenses(state),
+        license: selectRemoteitLicense(state),
+        devices: getDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
+        accessible: selectAccessibleNetworks(state, organization, member),
+        networks: selectNetworks(state),
+        guestsLoaded: organization.guestsLoaded,
+      }
+    })
 
   const enterprise = !!license && !license.plan.billing
-  const member = organization.members.find(m => m.user.id === userID)
   const user = guest || member?.user
+  const role = organization.roles.find(r => r.id === member?.roleId)
 
   useEffect(() => {
     if (!user) history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
@@ -51,6 +58,10 @@ export const OrganizationGuestPage: React.FC = () => {
     const missing = guest?.deviceIds.filter(id => !devices.find(device => device.id === id))
     if (missing?.length) dispatch.devices.fetchDevices(missing)
   }, [devices])
+
+  useEffect(() => {
+    if (!guestsLoaded) dispatch.organization.fetchGuests()
+  }, [guest])
 
   return (
     <Container
@@ -83,29 +94,57 @@ export const OrganizationGuestPage: React.FC = () => {
                   />
                 )}
               </Box>
-              <ConfirmButton
-                confirm
-                confirmMessage={
-                  <>
-                    This will remove <b>{member.user.email}’s </b>
-                    access to all the organization’s devices
-                  </>
-                }
-                confirmTitle="Are you sure?"
-                title="Remove Member"
-                icon="sign-out"
-                size="lg"
-                color={removing ? 'danger' : undefined}
-                loading={removing}
-                disabled={removing}
-                onClick={async () => {
-                  setRemoving(true)
-                  await dispatch.organization.removeMember(member)
-                  setRemoving(false)
-                }}
-              />
+              <Box display="flex">
+                <RoleAccessCounts role={role} />
+                <ConfirmButton
+                  confirm
+                  confirmMessage={
+                    <>
+                      This will remove <b>{member.user.email}’s </b>
+                      access to all the organization’s devices
+                    </>
+                  }
+                  confirmTitle="Are you sure?"
+                  title="Remove Member"
+                  icon="remove"
+                  size="lg"
+                  inline
+                  color={removing ? 'danger' : undefined}
+                  loading={removing}
+                  disabled={removing}
+                  onClick={async () => {
+                    setRemoving(true)
+                    await dispatch.organization.removeMember(member)
+                    setRemoving(false)
+                  }}
+                />
+              </Box>
             </Box>
           </Gutters>
+        </>
+      )}
+      {!!accessible.length && (
+        <>
+          <Typography variant="subtitle1">Networks</Typography>
+          <List>
+            {accessible.map(network => (
+              <ListItemLocation
+                key={network.id}
+                pathname={`${location.pathname}/${network.id}`}
+                icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
+                title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
+              />
+            ))}
+          </List>
+        </>
+      )}
+      {!guestsLoaded && <LoadingMessage inline />}
+      {(guest?.deviceIds.length || guest?.networkIds.length) && (
+        <>
+          <Gutters top="xl">
+            <Typography variant="h3">Guest Access</Typography>
+          </Gutters>
+          <Divider variant="inset" />
         </>
       )}
       {!!guest?.deviceIds.length && (

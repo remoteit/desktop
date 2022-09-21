@@ -11,10 +11,12 @@ export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
   'guides',
+  'poppedBubbles',
   'themeMode',
   'accordion',
   'drawerMenu',
   'drawerAccordion',
+  'collapsed',
   'columns',
   'columnWidths',
   'limitsOverride',
@@ -41,6 +43,7 @@ type UIState = {
   drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
+  collapsed: string[]
   limitsOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
@@ -69,6 +72,7 @@ type UIState = {
   navigationBack: string[]
   navigationForward: string[]
   guides: ILookup<IGuide>
+  poppedBubbles: string[]
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -96,6 +100,7 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'status', 'tags', 'services'],
   columnWidths: {},
+  collapsed: ['recent'],
   limitsOverride: {},
   serviceContextMenu: undefined,
   globalTooltip: undefined,
@@ -124,11 +129,14 @@ export const defaultState: UIState = {
   navigationBack: [],
   navigationForward: [],
   guides: {
-    aws: { title: 'AWS Guide', step: 1, total: 6, done: false, weight: 20 },
-    network: { title: 'Add Network Guide', step: 1, total: 3, done: false, weight: 30 },
-    service: { title: 'Add Service Guide ', step: 1, total: 3, done: false, weight: 40 },
-    register: { title: 'Device Registration Guide', step: 1, total: 1, done: false, weight: 10 },
+    // all multi-step guides disabled while testing the guide bubbles
+    // - consider removing guide steps feature if not needed any longer
+    aws: { title: 'AWS Guide', step: 1, total: 6, done: true, weight: 20 },
+    network: { title: 'Add Network Guide', step: 1, total: 3, done: true, weight: 30 },
+    service: { title: 'Add Service Guide ', step: 1, total: 3, done: true, weight: 40 },
+    register: { title: 'Device Registration Guide', step: 1, total: 1, done: true, weight: 10 },
   },
+  poppedBubbles: [],
   accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
   autoConnect: false,
   autoLaunch: false,
@@ -157,8 +165,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
     },
-    async setupUpdated(count: number, globalState) {
-      if (count !== globalState.ui.setupServicesCount) {
+    async setupUpdated(count: number, state) {
+      if (count !== state.ui.setupServicesCount) {
         dispatch.ui.updated()
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
@@ -180,33 +188,38 @@ export default createModel<RootModel>()({
       ])
       dispatch.ui.set({ fetching: false })
     },
-    async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
-      themeMode = themeMode || globalState.ui.themeMode
+    async setTheme(themeMode: UIState['themeMode'] | undefined, state) {
+      themeMode = themeMode || state.ui.themeMode
       dispatch.ui.setPersistent({ themeMode })
       dispatch.ui.set({ theme: selectTheme(themeMode), themeDark: isDarkMode(themeMode) })
     },
-    async resizeColumn(params: { id: string; width: number }, globalState) {
-      const columnWidths = { ...globalState.ui.columnWidths, [params.id]: params.width }
+    async resizeColumn(params: { id: string; width: number }, state) {
+      const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }
       dispatch.ui.setPersistent({ columnWidths })
     },
-    async guide({ guide, ...props }: ILookup<any>, globalState) {
-      let state = globalState.ui.guides[guide]
-      if (!state) return
-      const active = props.active === undefined ? state.active : props.active
+    async guide({ guide, ...props }: ILookup<any>, state) {
+      let original = state.ui.guides[guide]
+      if (!original) return
+      const active = props.active === undefined ? original.active : props.active
 
       if (active) {
-        if (props.step > state.total) {
+        if (props.step > original.total) {
           props.done = true
           props.step = 0
         }
         if (props.done) props.active = false
       }
 
-      const guides = { ...globalState.ui.guides, [guide]: { ...state, ...props } }
+      const guides = { ...state.ui.guides, [guide]: { ...original, ...props } }
       dispatch.ui.setPersistent({ guides })
     },
-    async resetGuides(_: void, globalState) {
-      dispatch.ui.setPersistent({ guides: { ...defaultState.guides } })
+    async pop(bubble: string, state) {
+      let poppedBubbles = [...state.ui.poppedBubbles]
+      poppedBubbles.push(bubble)
+      dispatch.ui.setPersistent({ poppedBubbles })
+    },
+    async resetHelp(_: void) {
+      dispatch.ui.setPersistent({ guides: { ...defaultState.guides }, poppedBubbles: [...defaultState.poppedBubbles] })
     },
     async accordion(params: ILookup<boolean>, state) {
       const accordion = { ...state.ui.accordion, ...params }
@@ -218,9 +231,9 @@ export default createModel<RootModel>()({
       })
       dispatch.ui.set(params)
     },
-    async deprecated(_: void, globalState) {
+    async deprecated(_: void, state) {
       if (!isElectron() || isHeadless()) return
-      const { preferences } = globalState.backend
+      const { preferences } = state.backend
       dispatch.ui.set({
         errorMessage: 'This version of Desktop is no longer supported. It should auto update shortly.',
       })
@@ -246,7 +259,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectPriorityGuide(state: ApplicationState, guide: string): IGuide {
+export function selectPriorityGuide(state: ApplicationState, guide: string, startDate: Date): IGuide {
   const all = state.ui.guides
   const result = all[guide] || {}
   let active = result.active
@@ -254,5 +267,6 @@ export function selectPriorityGuide(state: ApplicationState, guide: string): IGu
     const g = all[key]
     if (g.active && g.weight < result.weight) active = false
   }
+  if (state.user.created < startDate) active = false
   return { ...result, active }
 }

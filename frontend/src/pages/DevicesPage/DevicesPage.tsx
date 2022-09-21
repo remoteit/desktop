@@ -24,7 +24,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
             .concat(deviceAttributes)
             .filter(a => a.show(selectLimitsLookup(state)) && state.ui.columns.includes(a.id) && !a.required),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
-      fetching: getDeviceModel(state).fetching,
+      fetching: getDeviceModel(state).fetching || state.ui.fetching,
       columnWidths: state.ui.columnWidths,
       devices: getDevices(state).filter((d: IDevice) => !d.hidden),
       connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {

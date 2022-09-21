@@ -20,7 +20,12 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
 
   useEffect(() => {
     const platformType = platforms.findType(platform.name)
-    dispatch.devices.createRegistration({ services: [{ application: 28 }], accountId, platform: platformType }) // ssh
+    dispatch.devices.createRegistration({
+      services: [{ application: 28 }],
+      accountId,
+      platform: platformType,
+      template: platform.installation?.command,
+    }) // ssh
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
@@ -47,8 +52,16 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
       </Typography>
       <DataCopy showBackground value={registrationCommand ? registrationCommand : '...generating command...'} />
       <Typography variant="body2" color="textSecondary">
-        This page will automatically update when complete.
-        {platform.installation?.link && <Link href={platform.installation?.link}>Troubleshooting & instructions.</Link>}
+        {platform.installation?.instructions ? (
+          platform.installation.instructions
+        ) : (
+          <>
+            This page will automatically update when complete.
+            {platform.installation?.link && (
+              <Link href={platform.installation?.link}>Troubleshooting & instructions.</Link>
+            )}
+          </>
+        )}
       </Typography>
     </>
   )

@@ -62,7 +62,8 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       {children}
       <Dialog open={offline} maxWidth="xs" fullWidth>
         <Notice severity="warning" fullWidth>
-          Network Offline
+          Disconnected
+          <em>Internet access is required.</em>
         </Notice>
       </Dialog>
       <Snackbar

@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import { getActiveAccountId } from '../models/accounts'
-import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
-import { useParams, useHistory } from 'react-router-dom'
-import {
-  Button,
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  MenuItem,
-  TextField,
-  Chip,
-} from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { getActiveAccountId } from '../models/accounts'
+import { useParams, useHistory } from 'react-router-dom'
+import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
+import { Button, Typography, List, ListItem, ListItemSecondaryAction, MenuItem, TextField } from '@mui/material'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { PermissionsList } from '../components/PermissionsList'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { selectTags } from '../models/tags'
@@ -25,7 +16,6 @@ import { Container } from '../components/Container'
 import { TagEditor } from '../components/TagEditor'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 
@@ -42,22 +32,14 @@ export const OrganizationRolePage: React.FC = () => {
     roles: getOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
   }))
-  const role = roles?.find(r => r.id === roleID) || DEFAULT_ROLE
+  const role = roles?.find(r => r.id === roleID) || cloneDeep(DEFAULT_ROLE)
   const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
-  const [counts, setCounts] = useState<{ devices: number; networks: number } | null>(null)
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
   const changed = !isEqual(form, role)
 
-  const changeForm = async (changedForm: IOrganizationRole) => {
-    setForm(changedForm)
-    setCounts(null)
-    const devices = await dispatch.devices.fetchCount(changedForm)
-    const networks = await dispatch.networks.fetchCount(changedForm)
-    setCounts({ devices, networks })
-  }
-
+  const changeForm = async (changedForm: IOrganizationRole) => setForm({ ...changedForm })
   const handlePermissionChange = (toggle, permission) => {
     if (toggle) {
       setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })
@@ -120,39 +102,29 @@ export const OrganizationRolePage: React.FC = () => {
             fullWidth
             disabled={disabled || systemRole}
             label="Access"
-            value={role.id === 'NONE' ? '-' : Boolean(form?.tag).toString()}
+            value={form.access}
             variant="filled"
             onChange={event => {
-              const tag = event.target.value === 'true' ? DEFAULT_ROLE.tag : undefined
-              changeForm({ ...form, tag })
+              let tag: ITagFilter | undefined
+              const access = event.target.value as IRoleAccess
+              if (access === 'TAG') tag = cloneDeep(DEFAULT_ROLE.tag)
+              changeForm({ ...form, access, tag })
             }}
           >
-            <MenuItem value="-" disabled>
-              None
-            </MenuItem>
-            <MenuItem value="false">All</MenuItem>
-            <MenuItem value="true">Tagged</MenuItem>
+            <MenuItem value="NONE">None</MenuItem>
+            <MenuItem value="ALL">All</MenuItem>
+            <MenuItem value="TAG">Tagged</MenuItem>
           </TextField>
           <ListItemSecondaryAction>
-            {counts === null ? (
-              <Chip size="small" label="Counting..." />
-            ) : (
-              <Box>
-                <Chip size="small" label={`${counts.devices} device${counts.devices === 1 ? '' : 's'}`} />
-                <TestUI>
-                  <Chip size="small" label={`${counts.networks} network${counts.networks === 1 ? '' : 's'}`} />
-                </TestUI>
-              </Box>
-            )}
+            <RoleAccessCounts role={form} />
           </ListItemSecondaryAction>
         </ListItem>
-        {form.tag && (
+        {form.access === 'TAG' && (
           <ListItem>
-            {/* <InputLabel shrink>Device Filter</InputLabel> */}
             <Tags
               tags={filteredTags}
               onDelete={({ name }) => {
-                let tag = { ...(form.tag || DEFAULT_ROLE.tag) } as ITagFilter
+                let tag = cloneDeep(form.tag || DEFAULT_ROLE.tag) as ITagFilter
                 if (!tag.values) return
                 const index = tag.values.indexOf(name)
                 tag.values.splice(index, 1)
@@ -182,7 +154,7 @@ export const OrganizationRolePage: React.FC = () => {
                 hiddenLabel
                 size="small"
                 disabled={disabled}
-                value={form.tag.operator}
+                value={form.tag?.operator || DEFAULT_ROLE.tag?.operator || 'ALL'}
                 variant="filled"
                 onChange={event => {
                   form.tag && (form.tag.operator = event.target.value as ITagOperator)
@@ -225,10 +197,10 @@ export const OrganizationRolePage: React.FC = () => {
             onClick={async () => {
               setSaving(true)
               if (form.tag && form.tag.values.length === 0) form.tag = undefined
-              const roleID = await dispatch.organization.setRole(form)
+              if (!form.tag && form.access === 'TAG') form.access = 'NONE'
+              await dispatch.organization.setRole(form)
               setSaving(false)
-              setForm(cloneDeep(form)) // reset change detection
-              history.push(`/organization/roles/${roleID}`)
+              setForm(cloneDeep(form))
             }}
           >
             {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}

@@ -1,14 +1,17 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { IconButton, Tooltip } from '@mui/material'
-import { Icon } from '../../components/Icon'
+import { Icon, IconProps } from '../../components/Icon'
 
-export const AddUserButton: React.FC<{ to: string; hide?: boolean }> = ({ to, hide }) => {
+type Props = IconProps & { to: string; hide?: boolean; children?: React.ReactNode }
+
+export const AddUserButton: React.FC<Props> = ({ to, hide, children, ...props }) => {
   if (hide) return null
   return (
     <Tooltip title="Share">
-      <IconButton to={to} component={Link} size="large">
-        <Icon name="user-plus" size="md" />
+      <IconButton to={to} component={Link}>
+        <Icon name="user-plus" size="md" {...props} />
+        {children}
       </IconButton>
     </Tooltip>
   )

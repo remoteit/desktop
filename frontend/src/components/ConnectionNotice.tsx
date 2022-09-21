@@ -45,7 +45,7 @@ export const ConnectionNotice: React.FC<{ className: string }> = ({ className })
                 history.push(`/devices/${queueConnection?.deviceID}/${queueConnection?.id}`)
               }}
             >
-              <Icon name="arrow-right-arrow-left" size="md" color="white" inlineLeft /> Get Endpoint
+              <Icon name="arrow-right-arrow-left" size="md" color="alwaysWhite" inlineLeft /> Show Endpoint
               {queueCount === 1 ? '' : 's'}
             </Button>
           )}

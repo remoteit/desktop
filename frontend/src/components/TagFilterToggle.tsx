@@ -6,7 +6,7 @@ import { spacing } from '../styling'
 
 type Props = {
   tag: ITagFilter | undefined
-  onUpdate: ({ tag: ITagFilter }) => void
+  onUpdate: ({ tag }: { tag: ITagFilter }) => void
 }
 
 export const TagFilterToggle: React.FC<Props> = ({ tag, onUpdate }) => {

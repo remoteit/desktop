@@ -327,6 +327,8 @@ declare global {
     values: string[]
   }
 
+  type IRoleAccess = 'NONE' | 'TAG' | 'ALL'
+
   type ILabel = {
     id: number
     name: string
@@ -396,6 +398,7 @@ declare global {
     system?: boolean
     disabled?: boolean
     permissions: IPermission[]
+    access: IRoleAccess
     tag?: ITagFilter
   }
 
@@ -404,6 +407,7 @@ declare global {
     name?: string
     grant?: IPermission[]
     revoke?: IPermission[]
+    access?: IRoleAccess
     tag?: ITagFilter
     accountId: string
   }

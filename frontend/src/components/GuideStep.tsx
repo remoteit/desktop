@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { Box, Tooltip, Typography, TooltipProps, BoxProps } from '@mui/material'
+import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button, alpha } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectPriorityGuide } from '../models/ui'
@@ -13,6 +13,8 @@ type Props = {
   placement?: TooltipProps['placement']
   instructions: React.ReactNode
   component?: BoxProps['component']
+  startDate?: Date
+  acknowledge?: boolean
   autoNext?: boolean
   autoStart?: boolean
   highlight?: boolean
@@ -29,6 +31,8 @@ export const GuideStep: React.FC<Props> = ({
   step,
   placement,
   instructions,
+  acknowledge,
+  startDate = new Date(0),
   component = 'div',
   autoNext,
   autoStart,
@@ -41,7 +45,7 @@ export const GuideStep: React.FC<Props> = ({
   children,
 }) => {
   const { ui } = useDispatch<Dispatch>()
-  const state = useSelector((state: ApplicationState) => selectPriorityGuide(state, guide))
+  const state = useSelector((state: ApplicationState) => selectPriorityGuide(state, guide, startDate))
   const open: boolean = !!(!hide && (state.step === step || !!show) && state.active)
   const css = useStyles({ highlight: highlight && open })
   const start = () => ui.guide({ guide, step, active: true, done: false })
@@ -61,13 +65,22 @@ export const GuideStep: React.FC<Props> = ({
       placement={placement || 'top'}
       title={
         <>
-          <IconButton
-            icon="times"
-            title="Exit guide"
-            color="white"
-            onClick={() => ui.guide({ guide, step: 0, done: true })}
-          />
-          <Typography variant="body1">{instructions}</Typography>
+          {acknowledge || (
+            <IconButton
+              icon="times"
+              title="Exit guide"
+              color="white"
+              onClick={() => ui.guide({ guide, step: 0, done: true })}
+            />
+          )}
+          <Typography variant="body1" gutterBottom>
+            {instructions}
+          </Typography>
+          {acknowledge && (
+            <Button size="small" variant="text" onClick={() => ui.guide({ guide, step: 0, done: true })}>
+              Ok
+            </Button>
+          )}
           {showNavigation && (
             <Box className={css.nav}>
               <IconButton
@@ -115,7 +128,7 @@ export const GuideStep: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+export const useStyles = makeStyles(({ palette }) => ({
   icon: { position: 'absolute', zIndex: 1, top: -spacing.lg, right: -spacing.xl },
   box: ({ highlight }: any) => ({
     border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
@@ -141,6 +154,8 @@ const useStyles = makeStyles(({ palette }) => ({
       right: spacing.xs,
       top: spacing.xs,
     },
+    '& .MuiButton-root': { background: alpha(palette.white.main, 0.15), color: palette.white.main },
+    '& .MuiButton-root:hover': { background: alpha(palette.white.main, 0.3) },
   },
   arrow: {
     color: palette.guide.main,

@@ -156,25 +156,23 @@ export async function graphQLFetchDevice(id: string, account: string) {
   )
 }
 
-export async function graphQLFetchDeviceCount({ tag, state, sort, owner, account, platform }: gqlOptions) {
+export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gqlOptions) {
   return await graphQLBasicRequest(
-    ` query DeviceCount($state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query DeviceCount($size: Int, $tag: ListFilter, $account: String, $owner: Boolean) {
         login {
           id
           account(id: $account) {
-            devices(state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
+            devices(tag: $tag, owner: $owner, size: $size) {
               total
             }
           }
         }
       }`,
     {
+      size,
       tag,
-      state,
-      sort,
       owner,
       account,
-      platform,
     }
   )
 }

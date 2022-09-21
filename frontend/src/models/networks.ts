@@ -3,6 +3,7 @@ import { isPortal } from '../services/Browser'
 import { getActiveAccountId, getActiveUser } from './accounts'
 import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
+import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById } from '../models/devices'
 import {
   graphQLAddNetwork,
@@ -177,6 +178,7 @@ export default createModel<RootModel>()({
         })
 
         return {
+          ...defaultNetwork(),
           shared,
           id: n.id,
           name: n.name,
@@ -192,23 +194,14 @@ export default createModel<RootModel>()({
 
       // TODO load connection data and merge into connections
       //      don't load all data if in portal mode
-
       console.log('LOAD NETWORKS', parsed, devices)
 
       dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
       dispatch.networks.setNetworks({ networks: parsed, accountId })
     },
-    async fetchCount(params: IOrganizationRole, state) {
-      const options: gqlOptions = {
-        size: 0,
-        from: 0,
-        account: getActiveAccountId(state),
-        owner: true,
-        tag: params.tag?.values.length ? params.tag : undefined,
-      }
-
-      if (!options.tag) return selectNetworks(state).length
-      const networks = selectNetworkByTag(state, options.tag)
+    async fetchCount(role: IOrganizationRole, state) {
+      if (role.access === 'NONE') return 0
+      const networks: INetwork[] = selectNetworks(state).filter(n => canRoleView(role, n))
       return networks.length
     },
     async start(serviceId: string, state) {
@@ -298,8 +291,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set({
         successMessage:
           emails.length > 1
-            ? `${emails.length} accounts successfully shared to ${network.name}.`
-            : `${network.name} successfully shared to ${emails[0]}.`,
+            ? `${emails.length} accounts shared to ${network.name}.`
+            : `${network.name} shared to ${emails[0]}.`,
       })
     },
     async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {
@@ -349,7 +342,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
   return {
     id: '',
     name: '',
-    enabled: false,
+    enabled: true,
     shared: false,
     owner: { id: '', email: '' },
     permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
@@ -389,16 +382,18 @@ export function selectNetworkByService(state: ApplicationState, serviceId: strin
 }
 
 export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): INetwork[] {
-  const networks = selectNetworks(state).filter(n => {
-    const names = n.tags.map(t => t.name)
-    if (tags.operator === 'ANY') {
-      return tags.values.some(tag => names.includes(tag))
-    } else if (tags.operator === 'ALL') {
-      return tags.values.every(tag => names.includes(tag))
-    }
-    return false
-  })
+  const networks = selectNetworks(state).filter(n => canViewByTags(tags, n.tags))
   return networks
+}
+
+export function selectAccessibleNetworks(
+  state: ApplicationState,
+  organization: IOrganizationState,
+  member?: IOrganizationMember
+) {
+  if (!member) return []
+  const networks = selectNetworks(state)
+  return networks.filter(n => canMemberView(organization.roles, member, n))
 }
 
 export function inNetworkOnly(state: ApplicationState, serviceId?: string): boolean {

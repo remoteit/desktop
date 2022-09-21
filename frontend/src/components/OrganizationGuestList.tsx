@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import React, { useState, useEffect } from 'react'
+import { useStyles } from './SharedUsersPaginatedList'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
 import { List, ListSubheader, ListItemSecondaryAction, Box, Chip } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { getOrganization } from '../models/organization'
-import { useStyles } from './SharedUsersPaginatedList'
+import { LoadingMessage } from './LoadingMessage'
 import { Pagination } from '@mui/lab'
 import { Gutters } from './Gutters'
 import { Avatar } from './Avatar'
@@ -12,15 +13,19 @@ import { Icon } from './Icon'
 
 export const OrganizationGuestList: React.FC = () => {
   const css = useStyles()
+  const dispatch = useDispatch<Dispatch>()
   const [page, setPage] = useState<number>(1)
-  const { guests } = useSelector((state: ApplicationState) => ({
-    guests: getOrganization(state).guests,
-  }))
-
+  const { guests, guestsLoaded } = useSelector((state: ApplicationState) => getOrganization(state))
   const perPage = 20
   const pageCount = Math.ceil(guests.length / perPage)
   const start = (page - 1) * perPage
   const pageGuests = guests.sort(alphaEmailSort).slice(start, start + perPage)
+
+  useEffect(() => {
+    if (!guestsLoaded) dispatch.organization.fetchGuests()
+  }, [guests])
+
+  if (!guestsLoaded) return <LoadingMessage />
 
   return (
     <>

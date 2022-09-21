@@ -121,7 +121,7 @@ export const Connect: React.FC = () => {
           </Gutters>
         </GuideStep>
       )}
-      <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
+      <ConnectionErrorMessage connection={connection} visible={showError} />
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
