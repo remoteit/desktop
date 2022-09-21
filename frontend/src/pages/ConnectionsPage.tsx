@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Tooltip } from '@mui/material'
+import { Typography, Tooltip, Divider } from '@mui/material'
 import { defaultNetwork, selectActiveNetworks, recentNetwork } from '../models/networks'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
@@ -65,7 +65,7 @@ export const ConnectionsPage: React.FC = () => {
             <Network noLink key={n.id} network={n} />
           ))}
           <SessionsList
-            title="Other Connections"
+            title="Outside Connections"
             networks={other}
             action={
               <Tooltip
@@ -78,7 +78,11 @@ export const ConnectionsPage: React.FC = () => {
             }
           />
           {!!recent.serviceIds.length && (
-            <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} />
+            <>
+              <br />
+              <Divider variant="inset" />
+              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} />
+            </>
           )}
         </>
       ) : (

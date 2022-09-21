@@ -1,6 +1,5 @@
-// import { Auth } from 'aws-amplify'
 import Auth from '@aws-amplify/auth'
-// import setup, { IUser } from 'remote.it'
+
 // eslint-disable-next-line import/named
 export { CodeDeliveryDetails, ISignUpResult } from 'amazon-cognito-identity-js'
 
@@ -17,23 +16,10 @@ export interface CognitoUser /*extends CognitoCognitoUser*/ {
   username: string
   signInUserSession?: unknown
 }
-// export type CodeDeliveryDetails = CognitoCodeDeliveryDetails
-// export type ISignUpResult = CognitoISignUpResult
 
 export type RecoveryChallengeType = 'BACKUP_CODE' | 'EMAIL_CODE'
 
 export type CognitoAuthInstance = typeof Auth
-
-
-// export interface AuthUser {
-//   remoteitUser?: RemoteitUser
-//   cognitoUser?: CognitoUser
-// }
-
-// export interface AuthUserResult {
-//   authUser?: AuthUser
-//   error?: Error
-// }
 
 export interface CognitoUserResult {
   cognitoUser?: CognitoUser
@@ -45,29 +31,7 @@ export interface SamlOrgResult {
   orgName?: string
 }
 
-// export interface RemoteitUser extends IUser {
-//   partnerPortalAccess?: boolean
-// }
-
 export type AuthProvider = 'Apple' | 'Google' | ''
-
-// export interface CognitoUser {
-// authProvider?: AuthProvider
-// id?: string
-// attributes?: CognitoUserAttributes
-// challengeName?: ChallengeOption
-// preferredMFA: MFAMethod
-// username: string
-// pool: CognitoUserPool {userPoolId: "us-west-2_UsaYxTMNN", clientId: "5tf7k7v74qrnghuv4gmt1nm1oj", client: Client, advancedSecurityDataCollectionFlag: true, storage: Storage}
-// Session: null
-// client: Client {endpoint: "https://cognito-idp.us-west-2.amazonaws.com/", userAgent: "aws-amplify/0.1.x js"}
-// signInUserSession: CognitoUserSession {idToken: CognitoIdToken, refreshToken: CognitoRefreshToken, accessToken: CognitoAccessToken, clockDrift: 0}
-// authenticationFlowType: "USER_SRP_AUTH"
-// storage: Storage {CognitoIdentityServiceProvider.5tf7k7v74qrnghuv4gmt1nm1oj.8b6067fa-5414-44bb-9113-98a67f35b236.refreshToken: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUl…uaQwIR-y_gJM7LwqlEMBrC-kxl.zKX3uAiapLt8kO8UP82pkA", CognitoIdentityServiceProvider.5tf7k7v74qrnghuv4gmt1nm1oj.8b6067fa-5414-44bb-9113-98a67f35b236.clockDrift: "0", amplify-signin-with-hostedUI: "false", CognitoIdentityServiceProvider.5tf7k7v74qrnghuv4gmt1nm1oj.8b6067fa-5414-44bb-9113-98a67f35b236.deviceGroupKey: "-cpVlfF1x", CognitoIdentityServiceProvider.5tf7k7v74qrnghuv4gmt1nm1oj.8b6067fa-5414-44bb-9113-98a67f35b236.idToken: "eyJraWQiOiI2ZWFYcHB0blptaFczV0hpcDB6Y09yUkd4Tk8yNF…25Fwf-lHDdJc_EOFXbPckm4IDd9z4FZgjnF_vrqIZdSqPJ45A", …}
-// keyPrefix: string
-// userDataKey: string
-// deviceKey: string
-// }
 
 export interface CognitoUserAttributes {
   email: string
@@ -78,7 +42,6 @@ export interface CognitoUserAttributes {
   family_name?: string //last_name
   gender?: string
   'custom:backup_code'?: string
-  // [key: string]: any
 }
 
 export type MFAMethod = 'SMS' | 'TOTP' | 'NOMFA'

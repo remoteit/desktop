@@ -239,8 +239,6 @@ declare global {
   }
 }
 
-declare module 'remote.it' {}
-
 declare module '@mui/material/styles' {
   interface Palette {
     primaryLight: Palette['primary']

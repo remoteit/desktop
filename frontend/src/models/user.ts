@@ -74,16 +74,18 @@ export default createModel<RootModel>()({
       dispatch.user.set({ notificationSettings: metadata })
     },
     async changeLanguage(language: string) {
-      await axios.post('/user/language/',
-      { language },
-      {
-        baseURL: API_URL,
-        headers: {
-          'Content-Type': 'application/json',
-          developerKey: DEVELOPER_KEY,
-          Authorization: await getToken()
-        },
-      })
+      await axios.post(
+        '/user/language/',
+        { language },
+        {
+          baseURL: API_URL,
+          headers: {
+            'Content-Type': 'application/json',
+            developerKey: DEVELOPER_KEY,
+            Authorization: await getToken(),
+          },
+        }
+      )
       dispatch.ui.set({ successMessage: `Language changed to ${LANGUAGES[language]}` })
       dispatch.user.set({ language })
     },
