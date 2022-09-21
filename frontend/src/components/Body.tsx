@@ -133,6 +133,6 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    padding: `${spacing.md}px ${spacing.md}px`,
+    padding: `${spacing.md}px ${spacing.md}px 100px`,
   },
 }))

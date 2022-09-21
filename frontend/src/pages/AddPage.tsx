@@ -42,7 +42,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderLeft: smallScreen ? undefined : `1px solid ${palette.divider}`,
     paddingLeft: smallScreen ? 0 : spacing.xl,
     paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xl,
     maxWidth: 600,
     '& .MuiButton-root': { marginTop: spacing.lg, marginBottom: spacing.md },
     '& .MuiTypography-body2': { marginBottom: spacing.xs },

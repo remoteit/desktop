@@ -10,6 +10,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
+import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
@@ -49,6 +50,8 @@ export const ConnectionsPage: React.FC = () => {
     }
   })
 
+  const empty = !active?.length && !recent.serviceIds?.length
+
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
@@ -61,6 +64,15 @@ export const ConnectionsPage: React.FC = () => {
     >
       {initialized ? (
         <>
+          {empty && (
+            <Gutters top="xxl" center>
+              <Typography variant="h1" gutterBottom>
+                <Icon name="arrow-right-arrow-left" fontSize={50} type="light" color="grayLight" />
+              </Typography>
+              <Typography variant="h3">You have no connections</Typography>
+              <Typography variant="caption">Begin by selecting a device's service from the Devices menu.</Typography>
+            </Gutters>
+          )}
           {active.map(n => (
             <Network noLink key={n.id} network={n} />
           ))}
