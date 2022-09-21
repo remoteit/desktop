@@ -56,7 +56,9 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
       </ListItemIcon>
       <ListItemText
         className={css.text}
-        primary={<Title enabled={external || connection.enabled}>{connection.name || serviceId}</Title>}
+        primary={
+          <Title enabled={external || connection.enabled}>{connection.name || session?.target.name || serviceId}</Title>
+        }
       />
       {children}
     </ListItemLocation>

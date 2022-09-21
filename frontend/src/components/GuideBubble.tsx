@@ -2,8 +2,8 @@ import React from 'react'
 import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TestUI } from './TestUI'
 import { useStyles } from './GuideStep'
+import { TestUI } from './TestUI'
 
 type Props = {
   guide: string
