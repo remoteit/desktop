@@ -35,7 +35,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           console.log('FETCHING', value)
           dispatch.search.fetch(value)
         },
-        600,
+        400,
         { trailing: true }
       ),
     []

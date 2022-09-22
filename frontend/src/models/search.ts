@@ -3,7 +3,7 @@ import { getDeviceModel } from './accounts'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getAccountIds } from './accounts'
+import { getActiveAccountId } from './accounts'
 import { RootModel } from '.'
 
 type ISearchState = ILookup<any> & {
@@ -19,7 +19,7 @@ const searchState: ISearchState = {
 }
 
 export default createModel<RootModel>()({
-  state: searchState,
+  state: { ...searchState },
   effects: dispatch => ({
     async updateSearch(_: void, state) {
       const { total, size } = getDeviceModel(state)
@@ -33,14 +33,12 @@ export default createModel<RootModel>()({
 
       dispatch.search.set({ fetching: true })
 
-      const ids: string[] = getAccountIds(state)
-      const searchState = 'active'
-      const size = Math.max(4 - ids.length, 0) + 3
-      const accountQueries = ids.map(
-        (id, index) => `
-        _${index}: account(id: "${id}") {
+      const id = getActiveAccountId(state)
+      const size = 5
+      const accountQuery = `
+        account(id: $id) {
           id
-          devices(size: $size, state: $state, name: $name) {
+          devices(size: $size, name: $name) {
             items {
               id
               name
@@ -48,7 +46,7 @@ export default createModel<RootModel>()({
               owner {
                 email
               }
-              services(state: $state) {
+              services {
                 name
                 id
               }
@@ -69,71 +67,67 @@ export default createModel<RootModel>()({
             }
           }
         }`
-      )
 
       const response = await graphQLBasicRequest(
-        ` query Search($size: Int, $state: String, $name: String) {
+        ` query Search($id: String, $size: Int, $name: String) {
               login {
-                ${accountQueries.join('\n')}
+                ${accountQuery}
               }
             }`,
         {
+          id,
           size,
-          state: searchState,
           name,
         }
       )
 
       if (response === 'ERROR') return
-      const search = await dispatch.search.parse({ response, ids })
+      const search = await dispatch.search.parse({ response, id })
       await dispatch.search.set({ search })
       dispatch.search.set({ fetching: false })
     },
 
-    async parse({ response, ids }: { response: any; ids: string[] }): Promise<ISearch[]> {
-      const data = response?.data?.data?.login
-      const all = ids
-        .map((id, index) => {
-          const accountId = data[`_${index}`].id
-          const devices = data[`_${index}`].devices.items
-          const networks = data[`_${index}`].networks
-          const parsedDevices = devices.map(device =>
-            device.services.map(service => {
-              const serviceName = removeDeviceName(device.name, service.name)
-              return {
-                accountId,
-                serviceName,
-                nodeId: device.id,
-                nodeName: device.name,
-                nodeType: 'DEVICE',
-                combinedName: serviceName + ' ' + device.name,
-                serviceId: service.id,
-                ownerEmail: device.owner.email,
-                targetPlatform: device.platform,
-              }
-            })
-          )
+    async parse({ response, id }: { response: any; id: string }): Promise<ISearch[]> {
+      const data = response?.data?.data?.login?.account
 
-          const parsedNetworks = networks.map(network =>
-            network.connections.map(connection => {
-              const service = connection.service
-              return {
-                accountId,
-                serviceName: connection.name || service.name,
-                nodeId: network.id,
-                nodeName: network.name,
-                nodeType: 'NETWORK',
-                combinedName: service.name + ' ' + network.name + ' ' + connection.name,
-                serviceId: service.id,
-                ownerEmail: network.owner.email,
-                targetPlatform: undefined,
-              }
-            })
-          )
-
-          return parsedNetworks.concat(parsedDevices).flat()
+      const accountId = data.id
+      const devices = data.devices.items
+      const networks = data.networks
+      const parsedDevices = devices.map(device =>
+        device.services.map(service => {
+          const serviceName = removeDeviceName(device.name, service.name)
+          return {
+            accountId,
+            serviceName,
+            nodeId: device.id,
+            nodeName: device.name,
+            nodeType: 'DEVICE',
+            combinedName: serviceName + ' ' + device.name,
+            serviceId: service.id,
+            ownerEmail: device.owner.email,
+            targetPlatform: device.platform,
+          }
         })
-        .flat()
+      )
+
+      const parsedNetworks = networks.map(network =>
+        network.connections.map(connection => {
+          const service = connection.service
+          return {
+            accountId,
+            serviceName: connection.name || service.name,
+            nodeId: network.id,
+            nodeName: network.name,
+            nodeType: 'NETWORK',
+            combinedName: service.name + ' ' + network.name + ' ' + connection.name,
+            serviceId: service.id,
+            ownerEmail: network.owner.email,
+            targetPlatform: undefined,
+          }
+        })
+      )
+
+      const all = parsedNetworks.concat(parsedDevices).flat()
 
       // remove duplicates
       const result = all.filter(
@@ -147,7 +141,7 @@ export default createModel<RootModel>()({
 
   reducers: {
     reset(state) {
-      state = searchState
+      state = { ...searchState }
       return state
     },
     set(state, params: ILookup<any>) {
