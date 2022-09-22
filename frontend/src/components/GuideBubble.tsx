@@ -3,7 +3,6 @@ import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button } from '@mui/m
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { useStyles } from './GuideStep'
-import { TestUI } from './TestUI'
 
 type Props = {
   guide: string
@@ -63,11 +62,9 @@ export const GuideBubble: React.FC<Props> = ({
           <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
             Ok
           </Button>
-          <TestUI>
-            <Box fontSize={10} marginLeft={2} component="span">
+          {/* <Box fontSize={10} marginLeft={2} component="span">
               {guide}
-            </Box>
-          </TestUI>
+            </Box> */}
         </>
       }
     >

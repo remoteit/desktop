@@ -81,7 +81,7 @@ export const IconButton: React.FC<ButtonProps> = ({
       size={buttonBaseSize}
       className={classnames(className, variant && css[variant])}
       type={submit ? 'submit' : undefined}
-      sx={{
+      style={{
         opacity: disabled && !hideDisableFade ? 0.5 : undefined,
         marginBottom: shiftDown ? -spacing.xs : undefined,
         marginTop: shiftDown ? -spacing.xs : undefined,

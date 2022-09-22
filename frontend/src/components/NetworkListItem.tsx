@@ -1,4 +1,5 @@
 import React from 'react'
+import reactStringReplace from 'react-string-replace'
 import { makeStyles } from '@mui/styles'
 import { useLocation } from 'react-router-dom'
 import { selectConnection } from '../helpers/connectionHelper'
@@ -6,10 +7,10 @@ import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
 import { TargetPlatform } from './TargetPlatform'
+import { ConnectionName } from './ConnectionName'
 import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
 import { spacing } from '../styling'
-import { Title } from './Title'
 import { Icon } from './Icon'
 
 export interface Props {
@@ -36,7 +37,9 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const connected = external || session?.state === 'connected' || connection.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
-  const css = useStyles({ offline, enabled: network?.enabled, connected })
+  const css = useStyles({ offline, networkEnabled: network?.enabled, connected })
+  const enabled = external || connection.enabled
+  const name = connection.name || session?.target.name || serviceId
 
   let pathname = `/${tab}/${serviceId}`
   if (session) pathname += `/${session.id}`
@@ -51,14 +54,12 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
         <div className={css.connection} />
         {icon}
       </ListItemIcon>
-      <ListItemIcon className={css.platform + ' ' + css.text}>
+      <ListItemIcon className={css.platform}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
       <ListItemText
         className={css.text}
-        primary={
-          <Title enabled={external || connection.enabled}>{connection.name || session?.target.name || serviceId}</Title>
-        }
+        primary={<ConnectionName name={name} port={connection.port} enabled={enabled} />}
       />
       {children}
     </ListItemLocation>
@@ -68,15 +69,10 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
 export const useStyles = makeStyles(({ palette }) => ({
   text: ({ offline }: any) => ({
     opacity: offline ? 0.3 : 1,
-    '& > span': {
-      fontWeight: 400,
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-    },
   }),
-  connection: ({ offline, enabled, connected }: any) => {
+  connection: ({ offline, networkEnabled, connected }: any) => {
     let color = palette.grayDark.main
-    if (enabled || connected) color = palette.primary.main
+    if (networkEnabled || connected) color = palette.primary.main
     return {
       borderColor: color,
       borderBottomColor: offline ? palette.gray.main : color,
