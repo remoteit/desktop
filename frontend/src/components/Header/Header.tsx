@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
 import { makeStyles } from '@mui/styles'
+import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
 import { useMediaQuery, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'

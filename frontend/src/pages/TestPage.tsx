@@ -107,6 +107,11 @@ export const TestPage: React.FC = () => {
             </List>
           </Quote>
         </ListItem>
+        <ListItemSetting
+          hideIcon
+          label="Display expired guide bubbles"
+          onClick={() => ui.set({ unExpireBubbles: true })}
+        />
       </List>
       <Typography variant="subtitle1">Features</Typography>
       <List>
