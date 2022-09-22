@@ -26,9 +26,9 @@ import { LanShareSelect } from './LanShareSelect'
 import { ConnectionMenu } from './ConnectionMenu'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
+import { GuideBubble } from './GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
-import { GuideStep } from './GuideStep'
 import { DataCopy } from './DataCopy'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
@@ -98,12 +98,39 @@ export const Connect: React.FC = () => {
           />
         </Notice>
       ) : (
-        <GuideStep
-          guide="aws"
-          step={5}
+        <GuideBubble
+          guide="connectButton"
+          enterDelay={400}
+          placement="left"
+          startDate={new Date('1122-09-15')}
+          queueAfter={deviceID ? 'availableServices' : 'addNetwork'}
           instructions={
-            'Enable the connect on demand listener by adding the service to your network.' +
-            (connection.autoLaunch ? ' The connection will auto launch.' : '')
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>
+                  <PortalUI>Starting a connection</PortalUI>
+                  <DesktopUI>Connect on demand</DesktopUI>
+                </b>
+              </Typography>
+              <PortalUI>
+                <Typography variant="body2" gutterBottom>
+                  Create a connection to this service with the button to the right.
+                </Typography>
+              </PortalUI>
+              <DesktopUI>
+                <Typography variant="body2" gutterBottom>
+                  Start listening on to this endpoint for network requests. On request, automatically create the
+                  connection and disconnect when idle.
+                </Typography>
+              </DesktopUI>
+              {connection.autoLaunch && (
+                <Typography variant="body2" gutterBottom>
+                  <em>
+                    This connection will launch when connected because the "Auto Launch" configuration toggle is on.
+                  </em>
+                </Typography>
+              )}
+            </>
           }
         >
           <Gutters size="md" className={css.gutters} bottom={null}>
@@ -119,7 +146,7 @@ export const Connect: React.FC = () => {
             />
             <ConnectionMenu connection={connection} service={service} />
           </Gutters>
-        </GuideStep>
+        </GuideBubble>
       )}
       <ConnectionErrorMessage connection={connection} visible={showError} />
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />

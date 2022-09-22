@@ -1,12 +1,12 @@
 import React from 'react'
-import { Typography, Collapse, Divider } from '@mui/material'
+import { Typography, Divider } from '@mui/material'
 import { selectNetworks } from '../models/networks'
 import { selectPermissions } from '../models/organization'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { GuideStep } from '../components/GuideStep'
+import { GuideBubble } from '../components/GuideBubble'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
 import { Gutters } from '../components/Gutters'
@@ -35,17 +35,27 @@ export const NetworksPage: React.FC = () => {
         <Typography variant="subtitle1">
           <Title>Networks</Title>
           {permissions?.includes('MANAGE') && (
-            <GuideStep
-              step={1}
-              guide="network"
-              instructions="Click here to add a virtual network of services."
-              placement="top"
-              highlight
-              autoStart
-              autoNext
+            <GuideBubble
+              guide="addNetwork"
+              enterDelay={400}
+              placement="right"
+              startDate={new Date('1122-09-15')}
+              instructions={
+                <>
+                  <Typography variant="h3" gutterBottom>
+                    <b>Welcome to networks</b>
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    A network is a custom group of services organized for ease of access and sharing.
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    Select the <cite>+</cite> icon to get started.
+                  </Typography>
+                </>
+              }
             >
-              <IconButton icon="plus" title="Add Network" to="/networks/add" type="solid" size="md" />
-            </GuideStep>
+              <IconButton icon="plus" title="New Network" to="/networks/add" type="solid" size="md" shiftDown />
+            </GuideBubble>
           )}
         </Typography>
       }
@@ -53,7 +63,7 @@ export const NetworksPage: React.FC = () => {
       {initialized ? (
         <>
           {empty && (
-            <Gutters top="xxl" center>
+            <Gutters top="xxl" bottom="xxl" center>
               <Typography variant="h1" gutterBottom>
                 <Icon name="chart-network" fontSize={50} type="light" color="grayLight" />
               </Typography>

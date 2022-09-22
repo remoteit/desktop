@@ -74,7 +74,7 @@ export const lightColors: { [key in Color]: string } = {
   darken: 'rgba(0,0,0,0.5)',
   screen: 'rgba(0,0,0,0.06)',
   rpi: '#C51A4A',
-  guide: '#001247',
+  guide: '#593098', // '#001247',
   test: '#fffcf0',
 }
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Tooltip } from '@mui/material'
+import { Typography, Tooltip, Divider } from '@mui/material'
 import { defaultNetwork, selectActiveNetworks, recentNetwork } from '../models/networks'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
@@ -10,6 +10,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
+import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
@@ -49,9 +50,11 @@ export const ConnectionsPage: React.FC = () => {
     }
   })
 
+  const empty = !active?.length
+
   return (
     <Container
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       gutterBottom
       header={
         <Typography variant="subtitle1">
@@ -61,11 +64,20 @@ export const ConnectionsPage: React.FC = () => {
     >
       {initialized ? (
         <>
+          {empty && (
+            <Gutters top="xxl" bottom="xxl" center>
+              <Typography variant="h1" gutterBottom>
+                <Icon name="arrow-right-arrow-left" fontSize={50} type="light" color="grayLight" />
+              </Typography>
+              <Typography variant="h3">You have no connections</Typography>
+              <Typography variant="caption">Begin by selecting a device's service from the Devices menu.</Typography>
+            </Gutters>
+          )}
           {active.map(n => (
             <Network noLink key={n.id} network={n} />
           ))}
           <SessionsList
-            title="Other Connections"
+            title="Outside Connections"
             networks={other}
             action={
               <Tooltip
@@ -78,7 +90,11 @@ export const ConnectionsPage: React.FC = () => {
             }
           />
           {!!recent.serviceIds.length && (
-            <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} />
+            <>
+              <br />
+              <Divider variant="inset" />
+              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} />
+            </>
           )}
         </>
       ) : (

@@ -3,8 +3,9 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { selectSessionUsers } from '../models/sessions'
 import { selectMembersWithAccess } from '../models/organization'
-import { ListItemIcon, ListItemText } from '@mui/material'
+import { ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
+import { GuideBubble } from './GuideBubble'
 import { makeStyles } from '@mui/styles'
 import { Icon } from './Icon'
 
@@ -27,23 +28,43 @@ export const UsersTab: React.FC<Props> = ({ instance, service, to }) => {
   if (!instance?.permissions.includes('MANAGE')) return null
 
   return (
-    <ListItemLocation pathname={to} dense>
-      <ListItemIcon>
-        <Icon name="user-group" color="grayDarker" size="md" />
-      </ListItemIcon>
-      <ListItemText
-        primary="Users"
-        secondary={
-          !!total && (
-            <>
-              {total ? total + ' total' : ''}
-              <br />
-              {!!connected && <span className={css.text}>{connected} connected</span>}
-            </>
-          )
-        }
-      />
-    </ListItemLocation>
+    <GuideBubble
+      highlight
+      guide="users"
+      enterDelay={400}
+      placement="bottom"
+      startDate={new Date('1122-09-15')}
+      queueAfter="addService"
+      instructions={
+        <>
+          <Typography variant="h3" gutterBottom>
+            <b>The power of sharing</b>
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            Sharing can be done directly to a guest user from here, or by adding members to your
+            <cite>Organization</cite>.
+          </Typography>
+        </>
+      }
+    >
+      <ListItemLocation pathname={to} dense>
+        <ListItemIcon>
+          <Icon name="user-group" color="grayDarker" size="md" />
+        </ListItemIcon>
+        <ListItemText
+          primary="Users"
+          secondary={
+            !!total && (
+              <>
+                {total ? total + ' total' : ''}
+                <br />
+                {!!connected && <span className={css.text}>{connected} connected</span>}
+              </>
+            )
+          }
+        />
+      </ListItemLocation>
+    </GuideBubble>
   )
 }
 

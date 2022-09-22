@@ -13,7 +13,8 @@ export const NoConnectionPage: React.FC = () => {
         <Typography variant="body2" color="GrayText">
           Select an <br />
           item on the left
-          <br /> view its details.
+          <br />
+          to view its details.
         </Typography>
       </Box>
     </Box>

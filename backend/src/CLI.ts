@@ -151,7 +151,7 @@ export default class CLI {
 
       if (c.reachable === false) {
         error = {
-          message: 'remote.it connected, but there is no service running on the remote machine.',
+          message: 'Remote.It connected, but there is no service running on the remote machine.',
           code: REACHABLE_ERROR_CODE,
         }
       } else if (c.reachable === true) {

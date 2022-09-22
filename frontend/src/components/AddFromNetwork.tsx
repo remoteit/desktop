@@ -1,10 +1,9 @@
 import React from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { IconButton, Tooltip } from '@mui/material'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { Link } from './Link'
-import { Icon } from './Icon'
+import { IconButton } from '../buttons/IconButton'
 
 type Props = {
   allowScanning?: boolean
@@ -19,11 +18,12 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
   if (!allowScanning || !scanEnabled) return null
 
   return button ? (
-    <Tooltip title="Scan for Services">
-      <IconButton onClick={() => history.push(`/devices/${deviceID}/add/scan`)} size="large">
-        <Icon name="radar" size="md" />
-      </IconButton>
-    </Tooltip>
+    <IconButton
+      icon="radar"
+      size="md"
+      title="Scan for Services"
+      onClick={() => history.push(`/devices/${deviceID}/add/scan`)}
+    />
   ) : (
     <Link to={`/devices/${deviceID}/add/scan`}>Scan&nbsp;network</Link>
   )

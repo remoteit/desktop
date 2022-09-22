@@ -351,6 +351,7 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice
         if (device?.id) {
+          // fixme should fetch single and in memory sort
           await dispatch.devices.fetch() // fetch all so that the sorting is correct
           dispatch.ui.set({
             redirect: redirect ? `/devices/${device.id}` : undefined,

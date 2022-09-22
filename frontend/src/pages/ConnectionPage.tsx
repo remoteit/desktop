@@ -10,6 +10,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { ServiceAttributes } from '../components/ServiceAttributes'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
+import { ConnectionName } from '../components/ConnectionName'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
@@ -49,7 +50,9 @@ export const ConnectionPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1" gutterBottom={!service.attributes.description}>
-            <Title>{connection.name}</Title>
+            <Title>
+              <ConnectionName name={connection.name} />
+            </Title>
             {!networkOnly && <InfoButton device={device} service={service} />}
           </Typography>
           {service.attributes.description && (

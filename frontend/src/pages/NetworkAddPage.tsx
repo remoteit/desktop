@@ -10,7 +10,7 @@ export const NetworkAddPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>Add network</Title>
+          <Title>New network</Title>
         </Typography>
       }
     >

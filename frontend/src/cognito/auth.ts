@@ -48,14 +48,8 @@ export class AuthService {
   public async checkSaml(username: string): Promise<SamlOrgResult> {
     const response = await axios.post(
       this.config.checkSamlURL,
-      {
-        username,
-      },
-      {
-        headers: {
-          developerKey: process.env.DEVELOPER_KEY,
-        },
-      }
+      { username },
+      { headers: { developerKey: process.env.DEVELOPER_KEY } }
     )
 
     // console.log ('setMFAPreference MFA PREF RESPONSE')
