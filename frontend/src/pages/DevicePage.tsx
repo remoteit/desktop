@@ -98,7 +98,7 @@ export const DevicePage: React.FC<Props> = () => {
           enterDelay={400}
           placement="right"
           hide={!device || device.state === 'inactive' || !editable}
-          startDate={new Date('1122-09-15')}
+          startDate={new Date('2022-09-20')}
           queueAfter="usingConnection"
           instructions={
             <>
@@ -130,7 +130,7 @@ export const DevicePage: React.FC<Props> = () => {
           guide="availableServices"
           enterDelay={400}
           placement="bottom"
-          startDate={new Date('1122-09-15')}
+          startDate={new Date('2022-09-20')}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>

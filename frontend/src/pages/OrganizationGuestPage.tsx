@@ -130,7 +130,7 @@ export const OrganizationGuestPage: React.FC = () => {
             {accessible.map(network => (
               <ListItemLocation
                 key={network.id}
-                pathname={`${location.pathname}/${network.id}`}
+                pathname={`/networks/view/${network.id}`}
                 icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
                 title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
               />
@@ -182,7 +182,7 @@ export const OrganizationGuestPage: React.FC = () => {
               return (
                 <ListItemLocation
                   key={id}
-                  pathname={`${location.pathname}/${id}`}
+                  pathname={`/networks/view/${id}`}
                   icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
                   title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
                 />

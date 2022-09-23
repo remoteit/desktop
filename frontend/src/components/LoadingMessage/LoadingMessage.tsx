@@ -19,7 +19,7 @@ export function LoadingMessage({ message, logo, spinner = true, inline }: Loadin
   return (
     <Container center>
       {logo && <Logo className={css.margin} />}
-      {spinner && !logo && <CircularProgress size={50} thickness={2} className={css.margin} />}
+      {spinner && !logo && <CircularProgress size={50} thickness={1.5} className={css.margin} />}
       {message && (
         <Typography className={css.text} variant="body2">
           {message}
@@ -31,5 +31,5 @@ export function LoadingMessage({ message, logo, spinner = true, inline }: Loadin
 
 const useStyles = makeStyles(({ palette }) => ({
   margin: { marginBottom: spacing.xl, color: palette.primary.main },
-  text: { color: palette.grayDark.main, paddingBottom: spacing.xl },
+  text: { color: palette.grayDark.main },
 }))

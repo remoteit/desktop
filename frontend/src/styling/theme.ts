@@ -432,7 +432,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: radius,
           },
           adornedEnd: {
-            '&.MuiInputBase-adornedEnd svg': { marginRight: spacing.sm },
+            // interferers with global search adornment
+            // '&.MuiInputBase-adornedEnd svg': { marginRight: 0 },
+            // '&.MuiInputBase-adornedEnd > *': { marginRight: spacing.md },
           },
         },
       },
@@ -479,7 +481,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.Mui-disabled': { backgroundColor: palette.grayLightest.main },
             '&:hover': { backgroundColor: palette.primaryHighlight.main },
             '&:focused': { backgroundColor: palette.primaryHighlight.main },
-            '& svg': { marginRight: spacing.xs },
+            // '& svg': { marginRight: spacing.xs }, // interfering with global search
           },
           input: { padding: '22px 12px 10px' },
           underline: { '&:before, &:after': { display: 'none' } },

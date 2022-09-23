@@ -33,7 +33,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, to }) => {
       guide="users"
       enterDelay={400}
       placement="bottom"
-      startDate={new Date('1122-09-15')}
+      startDate={new Date('2022-09-20')}
       queueAfter="addService"
       instructions={
         <>

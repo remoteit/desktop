@@ -33,7 +33,7 @@ export const GuideBubble: React.FC<Props> = ({
 }) => {
   const { poppedBubbles, expired } = useSelector((state: ApplicationState) => ({
     poppedBubbles: state.ui.poppedBubbles,
-    expired: startDate > state.user.created,
+    expired: startDate > state.user.created && !state.ui.unExpireBubbles,
   }))
   const { ui } = useDispatch<Dispatch>()
   const [waiting, setWaiting] = React.useState<boolean>(true)
@@ -56,9 +56,7 @@ export const GuideBubble: React.FC<Props> = ({
       placement={placement || 'top'}
       title={
         <>
-          <Typography variant="body1" gutterBottom>
-            {instructions}
-          </Typography>
+          {instructions}
           <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
             Ok
           </Button>

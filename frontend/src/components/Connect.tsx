@@ -102,7 +102,7 @@ export const Connect: React.FC = () => {
           guide="connectButton"
           enterDelay={400}
           placement="left"
-          startDate={new Date('1122-09-15')}
+          startDate={new Date('2022-09-20')}
           queueAfter={deviceID ? 'availableServices' : 'addNetwork'}
           instructions={
             <>

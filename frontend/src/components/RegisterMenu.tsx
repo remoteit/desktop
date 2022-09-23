@@ -110,7 +110,7 @@ export const RegisterMenu: React.FC = () => {
               enterDelay={400}
               guide="registerMenu"
               placement="right"
-              startDate={new Date('1122-09-15')}
+              startDate={new Date('2022-09-20')}
               instructions={
                 <>
                   <Typography variant="h3" gutterBottom>

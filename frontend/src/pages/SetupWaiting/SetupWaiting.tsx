@@ -27,7 +27,7 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
   if (errorMessage) history.push('/devices/setup')
 
   return (
-    <Body center={true}>
+    <Body center>
       <CircularProgress thickness={1.5} size={60} />
       <section>
         <Typography className={css.title} variant="h3" align="center" gutterBottom>

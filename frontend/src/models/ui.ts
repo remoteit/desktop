@@ -73,6 +73,7 @@ type UIState = {
   navigationForward: string[]
   guides: ILookup<IGuide>
   poppedBubbles: string[]
+  unExpireBubbles: boolean
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -137,6 +138,7 @@ export const defaultState: UIState = {
     register: { title: 'Device Registration Guide', step: 1, total: 1, done: true, weight: 10 },
   },
   poppedBubbles: [],
+  unExpireBubbles: false,
   accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
   autoConnect: false,
   autoLaunch: false,

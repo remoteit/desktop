@@ -39,7 +39,7 @@ export const NetworksPage: React.FC = () => {
               guide="addNetwork"
               enterDelay={400}
               placement="right"
-              startDate={new Date('1122-09-15')}
+              startDate={new Date('2002-01-01')}
               instructions={
                 <>
                   <Typography variant="h3" gutterBottom>

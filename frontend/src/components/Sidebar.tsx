@@ -24,7 +24,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <GuideBubble
             guide="addDevice"
             placement="bottom"
-            startDate={new Date('1122-09-15')}
+            startDate={new Date('2022-09-20')}
             enterDelay={400}
             instructions={
               <>
@@ -35,7 +35,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
                   Enable connections the services (applications) available to a device by installing the Remote.It
                   agent.
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" gutterBottom>
                   Your device will automatically register and appear on the <cite>devices</cite> page.
                 </Typography>
               </>
