@@ -31,7 +31,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             <DeviceOptionMenu device={device} />
           </Typography>
           <DeviceTagEditor device={device} />
-          <ListHorizontal>
+          <ListHorizontal dense>
             <ListItemLocation
               title="Details"
               icon="info-circle"

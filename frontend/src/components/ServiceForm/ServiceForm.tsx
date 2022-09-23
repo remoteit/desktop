@@ -226,7 +226,6 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
         <ListItem className={css.field}>
           <TextField
             required
-            fullWidth
             label="Service Host"
             value={form.host}
             disabled={disabled}

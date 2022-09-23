@@ -73,7 +73,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
             )}
           </Typography>
           <NetworkTagEditor network={network} />
-          <ListHorizontal>
+          <ListHorizontal dense>
             <ListItemLocation
               title="Details"
               icon="circle-info"

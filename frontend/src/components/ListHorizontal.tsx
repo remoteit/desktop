@@ -1,12 +1,13 @@
 import React from 'react'
-import { List } from '@mui/material'
+import classnames from 'classnames'
+import { List, ListProps } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
-export const ListHorizontal: React.FC<{ children?: React.ReactNode }> = ({ children, ...props }) => {
+export const ListHorizontal: React.FC<ListProps> = ({ children, ...props }) => {
   const css = useStyles()
   return (
-    <List {...props} className={css.horizontal} dense>
+    <List {...props} className={classnames(css.horizontal, props.className)}>
       {children}
     </List>
   )
@@ -17,8 +18,9 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
     marginTop: spacing.sm,
-    paddingRight: spacing.lg,
+    paddingRight: spacing.xs,
     paddingLeft: spacing.md,
     '& .MuiListItem-root': {
       display: 'block',
@@ -31,6 +33,7 @@ const useStyles = makeStyles({
       margin: 1,
     },
     '& .MuiListItemIcon-root': { minWidth: 'initial' },
-    // '& .MuiListItem-root + .MuiListItem-root': { borderLeft: `1px solid ${colors.grayLighter}` },
+    '& .MuiListSubheader-root': { width: '100%' },
+    '& .MuiDivider-root': { width: '100%', marginBottom: spacing.sm },
   },
 })
