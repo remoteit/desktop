@@ -58,10 +58,10 @@ export const AddPage: React.FC = () => {
   if (isPortal()) thisLink = `/add/${getOs()}`
 
   return (
-    <Body>
+    <Body verticalOverflow>
       <Gutters className={css.container}>
         <DesktopUI>
-          <ListHorizontal className={classnames(css.list, css.third)} dense>
+          <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
             <ListSubheader disableGutters>Add this system</ListSubheader>
             <Divider />
             <GuideBubble
@@ -90,7 +90,7 @@ export const AddPage: React.FC = () => {
             </GuideBubble>
           </ListHorizontal>
         </DesktopUI>
-        <ListHorizontal className={classnames(css.list, css.third)}>
+        <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
           <ListItem>
@@ -126,8 +126,8 @@ export const AddPage: React.FC = () => {
             </form>
           </ListItem>
         </ListHorizontal>
-        <ListHorizontal className={classnames(css.list, css.third)} dense>
-          <ListSubheader disableGutters>Test a device</ListSubheader>
+        <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
+          <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
           <ListItem
             button
@@ -144,23 +144,29 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </ListHorizontal>
-        <ListHorizontal className={css.list} dense>
+        <ListHorizontal className={css.list} dense disablePadding>
+          <ListSubheader disableGutters>Add an instance</ListSubheader>
+          <Divider />
+          {['docker', 'aws', 'azure', 'gcp', 'arm'].map(p => {
+            const platform = platforms.get(p)
+            return (
+              <ListItemLocation
+                key={p}
+                iconPlatform
+                iconSize="xxl"
+                icon={platform.id}
+                pathname={`/add/${platform.id}`}
+                title={platform.name}
+                subtitle={platform.subtitle}
+                disableGutters
+              />
+            )
+          })}
+        </ListHorizontal>
+        <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           <Divider />
-          {[
-            'aws',
-            'azure',
-            'gcp',
-            'raspberrypi',
-            'linux',
-            'docker',
-            'arm',
-            'firewalla',
-            'nas',
-            'tinkerboard',
-            'windows',
-            'mac',
-          ].map(p => {
+          {['raspberrypi', 'linux', 'firewalla', 'nas', 'tinkerboard', 'windows', 'mac'].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation

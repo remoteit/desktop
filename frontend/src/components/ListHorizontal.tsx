@@ -34,6 +34,6 @@ const useStyles = makeStyles({
     },
     '& .MuiListItemIcon-root': { minWidth: 'initial' },
     '& .MuiListSubheader-root': { width: '100%' },
-    '& .MuiDivider-root': { width: '100%', marginBottom: spacing.sm },
+    '& .MuiDivider-root': { width: '100%' },
   },
 })
