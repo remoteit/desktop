@@ -63,10 +63,10 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
     <List className={css.list}>
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
+        <ListItemSecondaryAction>
+          <CSVDownloadButton />
+        </ListItemSecondaryAction>
       </ListItem>
-      <ListItemSecondaryAction>
-        <CSVDownloadButton />
-      </ListItemSecondaryAction>
     </List>
   )
 }

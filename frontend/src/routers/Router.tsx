@@ -15,6 +15,7 @@ import { SettingsPage } from '../pages/SettingsPage'
 import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
+import { AddPlatformPage } from '../pages/AddPlatformPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
@@ -40,8 +41,8 @@ import { PlansPage } from '../pages/PlansPage'
 import { SharePage } from '../pages/SharePage'
 import { TagsPage } from '../pages/TagsPage'
 import { Panel } from '../components/Panel'
+import { LogsPage } from '../pages/LogsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { UserLogPage } from '../pages/UserLogPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
@@ -171,6 +172,12 @@ export const Router: React.FC = () => {
       {/* Add */}
       <Route path="/add/:platform">
         <Panel layout={layout}>
+          <AddPlatformPage />
+        </Panel>
+      </Route>
+
+      <Route path="/add">
+        <Panel layout={layout}>
           <AddPage />
         </Panel>
       </Route>
@@ -234,7 +241,7 @@ export const Router: React.FC = () => {
 
       <Route path="/logs">
         <Panel layout={layout}>
-          <UserLogPage />
+          <LogsPage />
         </Panel>
       </Route>
 

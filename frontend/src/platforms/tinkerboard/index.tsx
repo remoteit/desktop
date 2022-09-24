@@ -9,7 +9,7 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'tinkerboard',
-  name: 'ASUS Tinker Board',
+  name: 'Tinker Board',
   component: Component,
   types: { 1215: 'ASUS Tinker Board' },
   installation: {
