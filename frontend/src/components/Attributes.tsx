@@ -86,6 +86,8 @@ const ATTRIBUTES = [
   { label: 'Status E', id: 'statusE' },
 ]
 
+// @TODO  display more service / device attributes  and more of the geo data
+
 export const attributes: Attribute[] = [
   new RestoreAttribute({
     id: 'restore',
@@ -197,6 +199,12 @@ export const attributes: Attribute[] = [
       </>
     ),
   }),
+  new DeviceAttribute({
+    id: 'created',
+    label: 'Created date',
+    defaultWidth: 175,
+    value: ({ device }) => <Timestamp startDate={device?.createdAt} />,
+  }),
   new DeviceAttribute({ id: 'isp', label: 'ISP', value: ({ device }) => device?.geo?.isp }),
   new DeviceAttribute({
     id: 'connectionType',
@@ -306,6 +314,12 @@ export const attributes: Attribute[] = [
     defaultWidth: 230,
     value: ({ service }) =>
       service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
+  }),
+  new DeviceAttribute({
+    id: 'serviceCreated',
+    label: 'Service Created',
+    defaultWidth: 175,
+    value: ({ service }) => <Timestamp startDate={service?.createdAt} />,
   }),
   new ServiceAttribute({
     id: 'serviceType',

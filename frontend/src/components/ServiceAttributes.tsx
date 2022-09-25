@@ -6,6 +6,7 @@ import { Gutters } from './Gutters'
 export const ServiceAttributes: React.FC<{ service?: IService; disablePadding?: boolean }> = props => {
   const attributes = getAttributes([
     'serviceLastReported',
+    'serviceCreated',
     'serviceName',
     'servicePort',
     'serviceHost',

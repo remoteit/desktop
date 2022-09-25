@@ -5,8 +5,9 @@ import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'
 import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
+import { FormDisplay } from '../components/FormDisplay'
+import { Timestamp } from '../components/Timestamp'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Avatar } from '../components/Avatar'
@@ -44,7 +45,13 @@ export const ProfilePage: React.FC = () => {
         </Typography>
       </Gutters>
       <List>
-        <InlineTextFieldSetting icon="at" value={user.email} label="EMAIL" disabled={true} />
+        <FormDisplay icon={<Icon name="at" />} label="Email" displayValue={user.email} displayOnly />
+        <FormDisplay
+          icon={<Icon name="calendar-star" />}
+          label="Member since"
+          displayValue={<Timestamp startDate={user.created} />}
+          displayOnly
+        />
         <ListItem dense className={css.field} button>
           <ListItemIcon>
             <Icon name="language" fixedWidth />
