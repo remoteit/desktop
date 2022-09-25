@@ -25,7 +25,8 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
                 secondary={
                   !license.id
                     ? 'Not subscribed'
-                    : license.expiration && `Renews ${license.expiration.toLocaleString(undefined, dateOptions)}`
+                    : license.expiration &&
+                      `Renews ${license.expiration.toLocaleString(navigator.language, dateOptions)}`
                 }
               />
               <ListItemSecondaryAction>

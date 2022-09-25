@@ -73,8 +73,10 @@ export const AccountAccessKey: React.FC = () => {
               primary={k.key}
               secondary={
                 <>
-                  Created {k.created.toLocaleString(undefined, dateOptions)} &nbsp;/ &nbsp;
-                  {k.lastUsed ? 'Last used ' + k.lastUsed.toLocaleString(undefined, dateOptions) : 'Never used'}
+                  Created {k.created.toLocaleString(navigator.language, dateOptions)} &nbsp;/ &nbsp;
+                  {k.lastUsed
+                    ? 'Last used ' + k.lastUsed.toLocaleString(navigator.language, dateOptions)
+                    : 'Never used'}
                 </>
               }
             />

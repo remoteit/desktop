@@ -45,7 +45,7 @@ export const Invoices: React.FC = () => {
           <TableBody>
             {invoices.map((invoice: IInvoice, index) => (
               <TableRow key={index}>
-                <TableCell>{invoice.created.toLocaleString(undefined, dateOptions)}</TableCell>
+                <TableCell>{invoice.created.toLocaleString(navigator.language, dateOptions)}</TableCell>
                 <TableCell className={css.plan}>
                   {invoice.plan.name.toLowerCase()} /{' '}
                   {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}

@@ -26,7 +26,7 @@ export const Duration: React.FC<Props> = ({ startTime, endTime, startDate, endDa
   const duration = Math.round((now - startTime) / 1000) * 1000
   const display =
     duration > aDay
-      ? new Date(startTime).toLocaleString(undefined, dateOptions)
+      ? new Date(startTime).toLocaleString(navigator.language, dateOptions)
       : humanize(duration, { largest: 2 }) + (ago ? ' ago' : '')
 
   return <>{display || '-'}</>
