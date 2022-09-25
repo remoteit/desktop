@@ -73,6 +73,8 @@ class CloudController {
       this.close()
       delete this.socket
       this.connect()
+      // re-sync device
+      store.dispatch.sessions.fetch()
     }
   }
 
