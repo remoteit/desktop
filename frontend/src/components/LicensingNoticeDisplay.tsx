@@ -105,7 +105,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         notice = (
           <Notice severity="info" button={UpgradeButton}>
             {title} will renew on {/* replace with countdown */}
-            {license?.expiration.toLocaleString(undefined, dateOptions)}.
+            {license?.expiration.toLocaleString(navigator.language, dateOptions)}.
           </Notice>
         )
       break

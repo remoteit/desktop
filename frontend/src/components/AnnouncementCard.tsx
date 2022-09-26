@@ -23,7 +23,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   const cardRef = useRef<HTMLDivElement>(null)
 
   const unread = !(data.read && data.read < new Date())
-  const date = data.read && data.read.toLocaleString(undefined, dateOptions)
+  const date = data.read && data.read.toLocaleString(navigator.language, dateOptions)
   const css = useStyles({ unread })
 
   const handleRead = () => {
