@@ -3,7 +3,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@mui/material'
-import { masterAttributes, deviceAttributes } from './Attributes'
+import { getColumns } from './Attributes'
 import { selectLimitsLookup } from '../models/organization'
 import { defaultState } from '../models/ui'
 import { spacing } from '../styling'
@@ -16,23 +16,28 @@ export const ColumnsDrawer: React.FC = () => {
     selected: state.ui.columns,
     feature: selectLimitsLookup(state),
   }))
-  const { ui } = useDispatch<Dispatch>()
+  const { ui, devices } = useDispatch<Dispatch>()
   const css = useStyles()
 
-  const add = name => ui.setPersistent({ columns: [...selected, name] })
+  const add = name => {
+    ui.setPersistent({ columns: [...selected, name] })
+    devices.fetch()
+  }
   const remove = index => {
     selected.splice(index, 1)
     ui.setPersistent({ columns: [...selected] })
   }
 
-  const attributes = masterAttributes.concat(deviceAttributes).filter(a => a.column && a.show(feature))
+  const attributes = getColumns(feature)
 
-  const onReset = () =>
+  const onReset = () => {
     ui.setPersistent({
       columns: [...defaultState.columns],
       columnWidths: { ...defaultState.columnWidths },
       drawerMenu: null,
     })
+    devices.fetch()
+  }
 
   return (
     <Drawer open={open}>

@@ -224,7 +224,7 @@ declare global {
   type CLIDeviceProps =
     | {
         hostname: string //     proxy_dest_ip      service ip to forward
-        hardwareID?: string
+        hardwareId?: string
         uid: string //          UID
         name?: string
         secret?: string //      password
@@ -246,8 +246,9 @@ declare global {
     id: string
     name: string
     owner: IUser
+    loaded?: boolean
     state: 'active' | 'inactive'
-    hardwareID?: string
+    hardwareId?: string
     lastReported: Date
     externalAddress: ipAddress
     internalAddress: ipAddress

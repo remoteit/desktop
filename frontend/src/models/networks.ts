@@ -163,7 +163,13 @@ export default createModel<RootModel>()({
         // add network devices - otherwise they are loaded through connections query
         n.connections.forEach(c => {
           let netDevice: IDevice = {
-            ...graphQLDeviceAdaptor([{ ...c.service.device, permissions: n.permissions }], '', accountId, true)[0],
+            ...graphQLDeviceAdaptor(
+              [{ ...c.service.device, permissions: n.permissions }],
+              '',
+              accountId,
+              true,
+              true
+            )[0],
             services: [c.service],
           }
           netDevice.services = graphQLServiceAdaptor(netDevice)

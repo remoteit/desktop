@@ -524,7 +524,7 @@ export function selectLimitsLookup(state: ApplicationState, accountId?: string):
   const notUser = !isUserAccount(state, accountId)
 
   const { limitsOverride } = state.ui
-  let result = {}
+  let result: ILookup<boolean> = {}
 
   limits.forEach(l => {
     result[l.name] = limitsOverride[l.name] === undefined || notUser ? l.value : limitsOverride[l.name]

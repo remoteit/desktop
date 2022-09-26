@@ -1,5 +1,6 @@
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
+import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
 export const SERVICE_SELECT = `
@@ -25,31 +26,65 @@ export const SERVICE_SELECT = `
     }
 `
 
-export const DEVICE_SELECT = `
-  id
+const DeviceSelectLookup: ILookup<string> = {
+  id: `
+  id`,
+
+  deviceName: `
   name
-  state
-  created
-  lastReported
-  hardwareId
-  platform
-  version
   configurable
-  permissions
-  license
-  attributes
+  platform`,
+
+  license: `
+  license`,
+
+  version: `
+  version`,
+
+  hardwareId: `
+  hardwareId`,
+
+  lastReported: `
+  lastReported`,
+
+  permissions: `
+  permissions`,
+
+  status: `
+  state`,
+
+  created: `
+  created`,
+
+  attributes: `
+  attributes`,
+
+  tags: `
   tags (accountId: $account) {
     name
     color
     created
-  }
+  }`,
+
+  access: `
   access {
     user {
       id
       email
     }
     scripting
-  }
+  }`,
+
+  services: `
+  services {
+    id
+    name
+    state
+    title
+    license
+  }`,
+
+  endpoint: `
   endpoint {
     externalAddress
     internalAddress
@@ -63,16 +98,24 @@ export const DEVICE_SELECT = `
       city
       isp
     }
-  }
+  }`,
+
+  owner: `
   owner {
     id
     email
-  }
+  }`,
+
+  notifications: `
   notificationSettings {
     emailNotifications
     desktopNotifications
-  }
-`
+  }`,
+}
+
+export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
+  .map(k => DeviceSelectLookup[k])
+  .join()
 
 export async function graphQLFetchDevices({
   tag,
@@ -85,6 +128,19 @@ export async function graphQLFetchDevices({
   account,
   platform,
 }: gqlOptions) {
+  let deviceQuery = new Set()
+  let columns = ['id']
+  columns = columns.concat(store.getState().ui.columns)
+
+  console.log('DEVICE QUERY COLUMNS', columns, store.getState().ui.columns)
+
+  columns.forEach(c => {
+    const a = getAttribute(c)
+    deviceQuery.add(DeviceSelectLookup[a.query || a.id])
+  })
+
+  console.log('DEVICE QUERY', deviceQuery)
+
   return await graphQLRequest(
     ` query Devices($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
@@ -93,10 +149,7 @@ export async function graphQLFetchDevices({
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
               total
               items {
-                ${DEVICE_SELECT}
-                services {
-                  ${SERVICE_SELECT}
-                }              
+                ${Array.from(deviceQuery).join('')}
               }
             }
           }
@@ -181,7 +234,8 @@ export function graphQLDeviceAdaptor(
   gqlDevices: any[],
   loginId: string,
   accountId: string,
-  hidden: boolean = false
+  hidden: boolean = false,
+  loaded: boolean = false
 ): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
@@ -194,8 +248,9 @@ export function graphQLDeviceAdaptor(
       name: d.name,
       owner: owner,
       state: d.state,
+      loaded: loaded,
       configurable: d.configurable,
-      hardwareID: d.hardwareId,
+      hardwareId: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),
       shared: accountId !== owner.id, //loginId !== owner.id && accountId === loginId,
@@ -209,7 +264,7 @@ export function graphQLDeviceAdaptor(
       version: d.version,
       geo: d.endpoint?.geo,
       license: d.license,
-      permissions: d.permissions,
+      permissions: d.permissions || [],
       attributes: processDeviceAttributes(d, metaData),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
       services: graphQLServiceAdaptor(d),
@@ -248,7 +303,7 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         port: s.port,
         host: s.host,
         protocol: s.protocol,
-        access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
+        access: s.access?.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
       })
     ) || []
   )

@@ -212,7 +212,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
         const loginId = gqlResponse?.data?.data?.login?.id
-        result = gqlDevice ? graphQLDeviceAdaptor(gqlDevice, loginId, accountId, hidden)[0] : undefined
+        result = gqlDevice ? graphQLDeviceAdaptor(gqlDevice, loginId, accountId, hidden, true)[0] : undefined
       } catch (error) {
         await apiError(error)
       }

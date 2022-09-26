@@ -35,11 +35,11 @@ export const ConnectionPage: React.FC = () => {
 
   useEffect(() => {
     const id = connection?.deviceID || deviceID
+    if (id && !device?.loaded) devices.fetchSingle({ id, hidden: true })
+    console.log('CONNECT PAGE EFFECT', { device, id })
+  }, [deviceID, connection.deviceID])
 
-    if (!device && id) devices.fetchSingle({ id, hidden: true })
-  }, [deviceID])
-
-  if (!device && fetching) return <LoadingMessage />
+  if (fetching && !device?.loaded) return <LoadingMessage />
   if (!service || !device) return <NoConnectionPage />
 
   return (

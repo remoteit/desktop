@@ -155,6 +155,7 @@ export default createModel<RootModel>()({
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()
+      console.log('UI INIT')
     },
     async restoreState(_: void, state) {
       let states: ILookup<any> = {}
