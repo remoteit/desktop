@@ -11,6 +11,7 @@ export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
   'guides',
+  'panelWidth',
   'poppedBubbles',
   'themeMode',
   'accordion',
@@ -159,6 +160,7 @@ export default createModel<RootModel>()({
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `ui-${key}`)
+        console.log('RESTORE STATE', { value, key })
         if (value) {
           if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
           else states[key] = value
@@ -197,6 +199,7 @@ export default createModel<RootModel>()({
     },
     async resizeColumn(params: { id: string; width: number }, state) {
       const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }
+      console.log('SET COLUMN WIDTHS', { columnWidths })
       dispatch.ui.setPersistent({ columnWidths })
     },
     async guide({ guide, ...props }: ILookup<any>, state) {
