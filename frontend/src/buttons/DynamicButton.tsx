@@ -87,7 +87,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
   }
 
   return (
-    <Tooltip title={title} className={className} placement="left" enterDelay={400} arrow>
+    <Tooltip title={title} className={className} placement="right" enterDelay={400} arrow>
       <span>
         <IconButton disabled={disabled} onClick={onClick} size="small">
           {IconComponent}

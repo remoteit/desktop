@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
-import { attributeName } from '../shared/nameHelper'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
@@ -152,25 +151,18 @@ export const DevicePage: React.FC = () => {
                 dense
               >
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
-                <ListItemSecondaryAction>
-                  <ServiceMiniState /* className="hoverHide" */ service={s} connection={c} />
-                  {/* <TestUI>
-                    <Box className={css.connect}>
-                      <ConnectButton
-                        color="primary"
-                        size="icon"
-                        className="hidden"
-                        iconSize="base"
-                        iconType="solid"
-                        connection={c}
-                        permissions={device.permissions}
-                        service={s}
-                        disabled={s.state === 'inactive' || device.thisDevice}
-                        onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
-                      />
-                    </Box>
-                  </TestUI> */}
-                </ListItemSecondaryAction>
+                <ServiceMiniState service={s} connection={c} /> &nbsp;
+                <ConnectButton
+                  size="icon"
+                  color="primary"
+                  iconSize="base"
+                  iconType="solid"
+                  connection={c}
+                  service={s}
+                  permissions={device.permissions}
+                  disabled={s.state === 'inactive' || device.thisDevice}
+                  onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
+                />
               </ListItemLocation>
             )
           })}
@@ -190,5 +182,6 @@ const useStyles = makeStyles({
     position: 'absolute',
     height: '100%',
   },
+  show: { opacity: 1 },
   list: { marginRight: 1 },
 })
