@@ -300,13 +300,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: radius,
             '&.Mui-selected': {
               backgroundColor: palette.primaryHighlight.main,
-              '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs },
             },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
-            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, opacity: 0 },
-            '&:hover .MuiIconButton-sizeSmall': { opacity: 1, transition: 'opacity 200ms 100ms' },
-            // For device list
-            '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
+            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
+            '& .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
             '& .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
             '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
           },

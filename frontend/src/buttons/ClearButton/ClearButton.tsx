@@ -6,10 +6,11 @@ type Props = {
   id?: string
   all?: boolean
   disabled?: boolean
+  className?: string
   onClick?: () => void
 }
 
-export const ClearButton: React.FC<Props> = ({ disabled, all, onClick }) => {
+export const ClearButton: React.FC<Props> = ({ all, onClick, ...props }) => {
   const [deleting, setDeleting] = useState<boolean>(false)
 
   const handleClick = () => {
@@ -18,12 +19,12 @@ export const ClearButton: React.FC<Props> = ({ disabled, all, onClick }) => {
   }
 
   return all ? (
-    <Button disabled={disabled} onClick={handleClick} color="inherit" size="small">
+    <Button {...props} onClick={handleClick} color="inherit" size="small">
       Clear
     </Button>
   ) : (
     <IconButton
-      disabled={disabled}
+      {...props}
       onClick={handleClick}
       size="sm"
       buttonBaseSize="small"

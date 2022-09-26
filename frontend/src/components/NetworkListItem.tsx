@@ -90,6 +90,10 @@ export const useStyles = makeStyles(({ palette }) => ({
       marginRight: '-1.5em',
     }
   },
+  hover: {
+    position: 'absolute',
+    marginTop: -1,
+  },
   name: {
     opacity: 0.8,
   },
