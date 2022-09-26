@@ -39,7 +39,7 @@ export function AuthLayout({
     <>
       {logo}
       {notice}
-      <Box ml="auto" mr="auto" pb={4} pt={2} width={fullWidth ? '85%' : '50%'}>
+      <Box ml="auto" mr="auto" pt={2} width={fullWidth ? '85%' : '50%'}>
         {i18nKey && (
           <Box mb={4}>
             <PageHeading>

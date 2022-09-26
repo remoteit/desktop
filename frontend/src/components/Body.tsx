@@ -67,7 +67,7 @@ const useStyles = makeStyles(({ palette }) => ({
     return {
       flexGrow: 1,
       height: '100%',
-      overflow: 'auto',
+      overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
       position: 'relative',
       '-webkit-overflow-scrolling': 'touch',
       '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
@@ -133,6 +133,6 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    padding: `${spacing.md}px ${spacing.md}px 80px`,
+    padding: `${spacing.md}px ${spacing.md}px 60px`,
   },
 }))
