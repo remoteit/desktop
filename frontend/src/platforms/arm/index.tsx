@@ -1,5 +1,6 @@
 import React from 'react'
 import { platforms } from '..'
+import { Link } from '../../components/Link'
 import logo from './arm.svg'
 
 const Component = ({ darkMode, ...props }) => {
@@ -14,6 +15,12 @@ platforms.register({
   installation: {
     command: true,
     qualifier: 'For the Arm Virtual Hardware platform.',
-    link: 'https://link.remote.it/support/streamline-install',
+    link: 'https://link.remote.it/avh',
+    instructions: (
+      <>
+        This page will automatically update when complete.
+        <Link href="https://link.remote.it/avh">Learn more about AVH.</Link>
+      </>
+    ),
   },
 })
