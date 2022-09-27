@@ -39,7 +39,7 @@ export default class ElectronApp {
     // Windows event
     this.app.on('ready', this.handleAppReady)
     this.app.on('activate', this.handleActivate)
-    this.app.on('before-quit', () => (this.quitSelected = true))
+    this.app.on('before-quit', this.handleBeforeQuit)
     this.app.on('second-instance', this.handleSecondInstance)
     this.app.on('open-url', this.handleOpenUrl)
 
@@ -71,6 +71,11 @@ export default class ElectronApp {
     this.handleOpenAtLogin(preferences.data || {})
     this.openWindow()
     EventBus.emit(EVENTS.ready, this.tray)
+  }
+
+  private handleBeforeQuit = () => {
+    this.quitSelected = true
+    this.saveWindowState()
   }
 
   private handleSecondInstance = (_: electron.Event, argv: string[]) => {
@@ -150,10 +155,9 @@ export default class ElectronApp {
     d('Create main window')
     if (this.window) return
     this.app.setAppUserModelId('it.remote.desktop')
-
+    const { windowState } = preferences.get()
     this.window = new electron.BrowserWindow({
-      width: 1280,
-      height: 800,
+      ...windowState,
       minWidth: 525,
       minHeight: 325,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
@@ -171,6 +175,7 @@ export default class ElectronApp {
 
     this.window.on('close', event => {
       d('Window closed')
+      this.saveWindowState()
       if (!this.quitSelected) {
         event.preventDefault()
         this.closeWindow()
@@ -197,6 +202,11 @@ export default class ElectronApp {
     })
 
     this.logWebErrors()
+  }
+
+  private saveWindowState = () => {
+    const bounds = this.window?.getBounds()
+    preferences.update({ windowState: bounds })
   }
 
   private logWebErrors = () => {
@@ -254,7 +264,6 @@ export default class ElectronApp {
     d('Showing window')
 
     if (!this.window.isVisible()) {
-      this.setWindowPosition()
       if (this.app.dock) this.app.dock.show()
     }
 
@@ -286,27 +295,5 @@ export default class ElectronApp {
   private closeWindow() {
     if (this.window) this.window.hide()
     if (this.app.dock) this.app.dock.hide()
-  }
-
-  private setWindowPosition() {
-    if (!this.window || !this.tray) return
-
-    const padding = 12
-    const window = this.window.getBounds()
-    const tray = this.tray.getBounds()
-    const display = electron.screen.getDisplayMatching(tray).bounds
-
-    let position = {
-      x: Math.round(display.x + display.width / 2 - window.width / 2),
-      y: Math.round(display.y + display.height / 2 - window.height / 2),
-    }
-
-    // out of bounds check
-    const windowRightEdge = position.x + window.width
-    const displayRightEdge = display.x + display.width - padding
-    const overlap = displayRightEdge - windowRightEdge
-    if (overlap < 0) position.x += overlap
-
-    this.window.setPosition(position.x, position.y)
   }
 }

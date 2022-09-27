@@ -3,9 +3,8 @@ import { DeviceContext } from '../../services/Context'
 import { MAX_NAME_LENGTH } from '../../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { safeHostname, attributeName } from '../../shared/nameHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { attributeName } from '../../shared/nameHelper'
-import { safeHostname } from '../../shared/nameHelper'
 import { getDevices } from '../../models/accounts'
 
 export const DeviceNameSetting: React.FC = () => {

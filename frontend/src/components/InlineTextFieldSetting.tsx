@@ -21,6 +21,7 @@ type Props = {
   modified?: boolean
   disableGutters?: boolean
   autoCorrect?: boolean
+  multiline?: boolean
   debug?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
@@ -35,6 +36,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   resetValue = '',
   maxLength,
   autoCorrect,
+  multiline,
   onError,
   onSave,
   ...props
@@ -73,7 +75,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
       <Field
         {...FieldProps}
         autoFocus
-        multiline={value?.toString().length > 30}
+        multiline={multiline || value?.toString().length > 30}
         inputRef={fieldRef}
         label={label}
         error={!!error}

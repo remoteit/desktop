@@ -122,7 +122,6 @@ class Server {
     }
     // Sign in
     else if (credentials.guid && credentials.authHash) {
-      // const { admin } = cli.data
       Logger.info('USER SIGNING IN', { admin: admin?.username })
 
       // Not registered or signed in matches cli user

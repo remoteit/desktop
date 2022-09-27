@@ -8,8 +8,10 @@ import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
+import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersTab } from './UsersTab'
 import { Container } from './Container'
+import { Gutters } from './Gutters'
 import { TestUI } from './TestUI'
 import { Title } from './Title'
 
@@ -28,8 +30,16 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             <TestUI>
               <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
             </TestUI>
+            <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
+          {device.attributes.description && (
+            <Gutters top={null}>
+              <Typography variant="body2" color="textSecondary">
+                {device.attributes.description}
+              </Typography>
+            </Gutters>
+          )}
           <DeviceTagEditor device={device} />
           <ListHorizontal dense>
             <ListItemLocation

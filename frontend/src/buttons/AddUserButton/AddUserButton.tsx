@@ -10,7 +10,7 @@ export const AddUserButton: React.FC<Props> = ({ to, hide, children, ...props })
   return (
     <Tooltip title="Share">
       <IconButton to={to} component={Link}>
-        <Icon name="user-plus" size="md" {...props} />
+        <Icon name="arrow-up-from-bracket" size="md" {...props} />
         {children}
       </IconButton>
     </Tooltip>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import classnames from 'classnames'
 import {
   IP_PRIVATE,
   DEFAULT_SERVICE,
@@ -9,7 +8,7 @@ import {
   MAX_DESCRIPTION_LENGTH,
 } from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
-import { Typography, TextField, List, ListItem, MenuItem, Button, Collapse } from '@mui/material'
+import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
@@ -23,7 +22,6 @@ import { findType } from '../../models/applicationTypes'
 import { Gutters } from '../Gutters'
 import { spacing } from '../../styling'
 import { Notice } from '../Notice'
-import { Quote } from '../Quote'
 import { emit } from '../../services/Controller'
 import { Icon } from '../Icon'
 

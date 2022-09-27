@@ -8,8 +8,9 @@ import { ListItemLocation } from './ListItemLocation'
 import { Typography } from '@mui/material'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
-import { UsersTab } from './UsersTab'
+import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
+import { UsersTab } from './UsersTab'
 import { Gutters } from './Gutters'
 import { Color } from '../styling'
 
@@ -34,6 +35,10 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
+            <AddUserButton
+              to={`/devices/${device.id}/${service.id}/share`}
+              hide={!device.permissions.includes('MANAGE')}
+            />
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
