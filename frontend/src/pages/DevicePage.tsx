@@ -14,6 +14,7 @@ import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
+import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
@@ -45,31 +46,35 @@ export const DevicePage: React.FC = () => {
   // reverse sort services by creation date
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   let servicePage = '/' + (location.pathname.split('/')[4] || 'connect')
+
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
       header={
-        <List>
-          <ListItemLocation
-            pathname={`/devices/${device.id}/details`}
-            match={[
-              `/devices/${device.id}/details`,
-              `/devices/${device.id}/edit`,
-              `/devices/${device.id}/users`,
-              `/devices/${device.id}/logs`,
-              `/devices/${device.id}`,
-            ]}
-            icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
-            exactMatch
-            dense
-            title={
-              <Typography variant="h3">
-                <ServiceName device={device} connection={connection} />
-              </Typography>
-            }
-            subtitle={device.thisDevice ? 'This device' : undefined}
-          />
-        </List>
+        <>
+          <List>
+            <ListItemLocation
+              pathname={`/devices/${device.id}/details`}
+              match={[
+                `/devices/${device.id}/details`,
+                `/devices/${device.id}/edit`,
+                `/devices/${device.id}/users`,
+                `/devices/${device.id}/logs`,
+                `/devices/${device.id}`,
+              ]}
+              icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
+              exactMatch
+              dense
+              title={
+                <Typography variant="h3">
+                  <ServiceName device={device} connection={connection} />
+                </Typography>
+              }
+              subtitle={device.thisDevice ? 'This device' : undefined}
+            />
+          </List>
+          <LinearProgress loading={!device.loaded} />
+        </>
       }
     >
       {device.state === 'inactive' && (

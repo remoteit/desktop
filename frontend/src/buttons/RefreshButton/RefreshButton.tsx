@@ -28,7 +28,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     network.connect()
     dispatch.ui.set({ fetching: true })
     await callback()
-    await Promise.all([
+    Promise.all([
       dispatch.networks.fetch(),
       dispatch.sessions.fetch(),
       dispatch.user.fetch(),

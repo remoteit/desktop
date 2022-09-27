@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Typography } from '@mui/material'
 import { selectById } from '../models/devices'
+import { Typography } from '@mui/material'
 import { getDeviceModel } from '../models/accounts'
 import { inNetworkOnly } from '../models/networks'
 import { selectConnection } from '../helpers/connectionHelper'
@@ -10,8 +10,8 @@ import { ApplicationState, Dispatch } from '../store'
 import { ServiceAttributes } from '../components/ServiceAttributes'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
+import { LinearProgress } from '../components/LinearProgress'
 import { ConnectionName } from '../components/ConnectionName'
-import { LoadingMessage } from '../components/LoadingMessage'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
 import { Connect } from '../components/Connect'
@@ -39,7 +39,7 @@ export const ConnectionPage: React.FC = () => {
     console.log('CONNECT PAGE EFFECT', { device, id })
   }, [deviceID, connection.deviceID])
 
-  if (fetching && !device?.loaded) return <LoadingMessage />
+  // if (fetching && !device?.loaded) return <LoadingMessage />
   if (!service || !device) return <NoConnectionPage />
 
   return (
@@ -62,6 +62,7 @@ export const ConnectionPage: React.FC = () => {
               </Typography>
             </Gutters>
           )}
+          <LinearProgress loading={fetching} />
         </>
       }
     >
