@@ -19,6 +19,7 @@ export class Preferences {
     apiURL: '',
     apiGraphqlURL: '',
     testUI: 'OFF',
+    windowState: { width: 1280, height: 800 },
   }
 
   private file: JSONFile<IPreferences>
