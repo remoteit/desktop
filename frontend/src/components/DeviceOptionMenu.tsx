@@ -36,7 +36,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        {device.permissions.includes('MANAGE') && (
+        {/* {device.permissions.includes('MANAGE') && (
           <MenuItem
             dense
             to={`/devices/${device.id}/share`}
@@ -48,7 +48,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             </ListItemIcon>
             <ListItemText primary="Share" />
           </MenuItem>
-        )}
+        )} */}
         {service ? (
           <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
         ) : (

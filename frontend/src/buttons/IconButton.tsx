@@ -97,6 +97,7 @@ export const IconButton: React.FC<ButtonProps> = ({
         color={variant === 'contained' ? undefined : color}
         fixedWidth
       />
+      {children}
     </MuiIconButton>
   )
 

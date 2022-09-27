@@ -15,7 +15,8 @@ type Props = {
   loading?: boolean
   solid?: boolean
   onClose?: () => void
-  className?: React.ReactNode
+  iconOverride?: React.ReactNode
+  className?: string
   children?: React.ReactNode
 }
 
@@ -28,34 +29,35 @@ export const Notice: React.FC<Props> = ({
   loading,
   solid,
   onClose,
+  iconOverride,
   className,
   children,
 }) => {
   const css = useStyles({ fullWidth, gutterBottom, gutterTop })
-  let icon
+  let iconName: string
 
   switch (severity) {
     case 'info':
-      icon = 'info-circle'
+      iconName = 'info-circle'
       break
     case 'danger':
-      icon = 'exclamation-triangle'
+      iconName = 'exclamation-triangle'
       break
     case 'warning':
-      icon = 'exclamation-triangle'
+      iconName = 'exclamation-triangle'
       break
     case 'success':
-      icon = 'check-circle'
+      iconName = 'check-circle'
       break
   }
 
+  let icon: React.ReactNode = <Icon name={iconName} size="md" type="regular" />
+  if (iconOverride) icon = iconOverride
+  if (loading) icon = <Icon name="spinner-third" spin size="md" fixedWidth />
+
   return (
     <Paper elevation={0} className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}>
-      {loading ? (
-        <Icon name="spinner-third" spin size="md" fixedWidth />
-      ) : (
-        <Icon name={icon} size="md" type="regular" />
-      )}
+      {icon}
       <Box>{children}</Box>
       {button}
       {onClose && <IconButton name="times" onClick={onClose} title="Close" />}

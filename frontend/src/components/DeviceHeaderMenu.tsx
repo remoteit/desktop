@@ -8,6 +8,7 @@ import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
+import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersTab } from './UsersTab'
 import { Container } from './Container'
 import { TestUI } from './TestUI'
@@ -28,6 +29,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             <TestUI>
               <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
             </TestUI>
+            <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
           <DeviceTagEditor device={device} />
