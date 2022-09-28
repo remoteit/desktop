@@ -43,8 +43,13 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
           or
         </Typography>
         {hasOrganization ? (
-          <IconButton icon="user-plus" to="/organization/share" size="md">
-            <Typography variant="body2"> &nbsp;&nbsp; Add a member</Typography>
+          <IconButton
+            icon="user-plus"
+            to="/organization/share"
+            size="md"
+            disabled={!instance?.permissions.includes('ADMIN')}
+          >
+            <Typography variant="body2"> &nbsp;&nbsp; Add an organization member</Typography>
           </IconButton>
         ) : (
           <IconButton icon="industry-alt" to="/organization" size="md">
