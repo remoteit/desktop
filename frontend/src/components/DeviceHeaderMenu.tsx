@@ -3,7 +3,7 @@ import { DeviceContext } from '../services/Context'
 import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
-import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { LoadingMessage } from './LoadingMessage'
 import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { DeviceConnectMenu } from './DeviceConnectMenu'
@@ -17,7 +17,7 @@ import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
   const { device } = useContext(DeviceContext)
-  if (!device) return <UnauthorizedPage />
+  if (!device) return <LoadingMessage />
 
   return (
     <Container

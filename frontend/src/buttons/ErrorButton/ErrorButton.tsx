@@ -1,23 +1,22 @@
 import React from 'react'
-import { Tooltip, IconButton } from '@mui/material'
-import { Icon } from '../../components/Icon'
+import { IconButton } from '../IconButton'
 
-type Props = { connection?: IConnection; onClick?: () => void; visible: boolean; className?: string }
+type Props = { connection?: IConnection; onClick?: () => void; visible: boolean }
 
-export const ErrorButton: React.FC<Props> = ({ connection, onClick, visible, className }) => {
+export const ErrorButton: React.FC<Props> = ({ connection, onClick, visible }) => {
   if (!connection || !connection.error?.message) return null
 
   return (
-    <Tooltip title={visible ? 'Hide error' : 'Show error'} className={className}>
-      <IconButton
-        onClick={event => {
-          event.stopPropagation()
-          onClick && onClick()
-        }}
-        size="large"
-      >
-        <Icon name="exclamation-triangle" color="danger" size="md" fixedWidth />
-      </IconButton>
-    </Tooltip>
+    <IconButton
+      onClick={event => {
+        event.stopPropagation()
+        onClick && onClick()
+      }}
+      title={visible ? 'Hide error' : 'Show error'}
+      icon="exclamation-triangle"
+      size="md"
+      color="danger"
+      inlineLeft
+    />
   )
 }
