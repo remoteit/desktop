@@ -50,10 +50,6 @@ export function SignInPage() {
 
 const useStyles = makeStyles(({ palette }) => ({
   body: { '& > div': { maxWidth: 440 } },
-  logo: {
-    marginTop: -spacing.xl,
-    marginBottom: spacing.lg,
-  },
   secure: { color: palette.success.main },
   insecure: {
     margin: `${spacing.xs}px auto`,

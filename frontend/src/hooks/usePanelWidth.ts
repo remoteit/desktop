@@ -13,7 +13,7 @@ export function usePanelWidth(): [number, (value: number) => void] {
   const panelWidth = useSelector((state: ApplicationState) => state.ui.panelWidth)
 
   const setPanelWidth = (value: number) => {
-    ui.set({
+    ui.setPersistent({
       panelWidth: {
         ...panelWidth,
         [resize]: value,

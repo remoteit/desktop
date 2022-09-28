@@ -1,7 +1,7 @@
 import React from 'react'
+import classnames from 'classnames'
 import { ListItemLocation } from './ListItemLocation'
 import { useStyles } from './NetworkListItem'
-import { Tooltip } from '@mui/material'
 import { Avatar } from './Avatar'
 import { Title } from './Title'
 import { Icon } from './Icon'
@@ -21,16 +21,27 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
     <ListItemLocation
       className={css.item}
       icon={
-        false ? (
-          <Avatar email={network?.owner?.email} size={24} />
-        ) : (
-          <Icon
-            className={css.mergeIcon}
-            name={network?.icon}
-            type={network?.iconType}
-            color={network?.enabled ? 'primary' : undefined}
-          />
-        )
+        <>
+          {false ? (
+            <Avatar email={network?.owner?.email} size={24} />
+          ) : (
+            <Icon
+              className={classnames(css.mergeIcon, noLink || 'hoverHide')}
+              name={network?.icon}
+              type={network?.iconType}
+              color={network?.enabled ? 'primary' : undefined}
+            />
+          )}
+          {noLink || (
+            <Icon
+              className={classnames(css.mergeIcon, css.hover, 'hidden')}
+              name="sliders-h"
+              type="light"
+              size="md"
+              color={network?.enabled ? 'primary' : undefined}
+            />
+          )}
+        </>
       }
       pathname={noLink ? undefined : `/networks/view/${network?.id}`}
       onClick={noLink ? onClick : undefined}

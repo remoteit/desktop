@@ -37,8 +37,8 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const connected = external || session?.state === 'connected' || connection.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
-  const css = useStyles({ offline, networkEnabled: network?.enabled, connected })
   const enabled = external || connection.enabled
+  const css = useStyles({ offline, networkEnabled: network?.enabled, enabled, connected })
   const name = connection.name || session?.target.name || serviceId
 
   let pathname = `/${tab}/${serviceId}`
@@ -57,18 +57,22 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
       <ListItemIcon className={css.platform}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
-      <ListItemText
-        className={css.text}
-        primary={<ConnectionName name={name} port={connection.port} enabled={enabled} />}
-      />
+      <ListItemText className={css.text} primary={<ConnectionName name={name} port={connection.port} />} />
       {children}
     </ListItemLocation>
   )
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
-  text: ({ offline }: any) => ({
+  text: ({ offline, enabled }: any) => ({
     opacity: offline ? 0.3 : 1,
+    fontWeight: 400,
+    whiteSpace: 'nowrap',
+    '& span': {
+      color: enabled ? palette.primary.main : palette.grayDarkest.main,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
   }),
   connection: ({ offline, networkEnabled, connected }: any) => {
     let color = palette.grayDark.main
@@ -85,6 +89,10 @@ export const useStyles = makeStyles(({ palette }) => ({
       marginTop: '-2.7em',
       marginRight: '-1.5em',
     }
+  },
+  hover: {
+    position: 'absolute',
+    marginTop: -1,
   },
   name: {
     opacity: 0.8,

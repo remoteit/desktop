@@ -80,7 +80,6 @@ const useStyles = makeStyles(({ palette }) => ({
   button: { padding: '8px 0' },
   icon: { padding: '0 0 8px' },
   indicator: {
-    height: spacing.xl,
     display: 'inline-flex',
     alignItems: 'center',
     '& > span': {

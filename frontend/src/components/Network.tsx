@@ -39,6 +39,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
         <IconButton
           onClick={toggle}
+          className="hidden"
           name={expanded ? 'caret-down' : 'caret-up'}
           color={highlight ? 'primary' : 'grayDark'}
           disabled={noLink}
@@ -51,7 +52,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
       <Collapse in={expanded}>
         {network?.serviceIds.map(id => (
           <NetworkListItem serviceId={id} key={id} network={network}>
-            {onClear && <ClearButton id={id} onClick={() => onClear(id)} />}
+            {onClear && <ClearButton id={id} onClick={() => onClear(id)} className="hidden" />}
           </NetworkListItem>
         ))}
         {!network?.serviceIds.length && (

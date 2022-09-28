@@ -12,10 +12,9 @@ type Props = {
   device?: IDevice
   shared?: boolean
   inline?: boolean
-  children?: any
 }
 
-export const ServiceName: React.FC<Props> = ({ connection, service, device, inline, children }) => {
+export const ServiceName: React.FC<Props> = ({ connection, service, device, inline }) => {
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
@@ -55,7 +54,6 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
           </sup>
         </Tooltip>
       )} */}
-      {children && <>{` ${children}`}</>}
     </Title>
   )
 }

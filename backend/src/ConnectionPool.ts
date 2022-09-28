@@ -127,6 +127,7 @@ export default class ConnectionPool {
       'sessionId',
       'starting',
       'error',
+      'isP2P',
     ]
     return props.some(prop => {
       if (f[prop] !== undefined && f[prop] !== t[prop]) {
