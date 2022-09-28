@@ -373,7 +373,9 @@ export const attributes: Attribute[] = [
         ? 'Connecting...'
         : connection?.public
         ? connection?.reverseProxy
-          ? 'Public Reverse Proxy'
+          ? connection?.connectLink
+            ? 'Persistent Public Reverse Proxy'
+            : 'Public Reverse Proxy'
           : 'Public Proxy'
         : !connection?.connected && !session
         ? 'Idle - Connect on demand'

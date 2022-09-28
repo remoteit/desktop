@@ -1,3 +1,4 @@
+import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import {
   cleanOrphanConnections,
@@ -9,7 +10,7 @@ import {
   updateConnections,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
-import { graphQLConnect, graphQLDisconnect, graphQLSurvey } from '../services/graphQLMutation'
+import { graphQLConnect, graphQLDisconnect, graphQLSurvey, graphQLConnectLink } from '../services/graphQLMutation'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
@@ -208,8 +209,45 @@ export default createModel<RootModel>()({
       }
     },
 
+    async toggleConnectLink(connection: IConnection) {
+      if (connection.enabled) {
+        // remove
+        setConnection({
+          ...connection,
+          enabled: false,
+          connected: false,
+          reverseProxy: false,
+        })
+      } else {
+        // create
+        const connecting: IConnection = { ...connection, starting: true }
+        setConnection(connecting)
+        const result = await graphQLConnectLink(connection.id)
+
+        if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
+          dispatch.ui.set({ errorMessage: 'Persistent connection link generation failed. Please contact support.' })
+          connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
+          setConnection(connection)
+          if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+          return
+        }
+
+        const url = urlParse(result?.data?.data?.enableConnectLink?.url)
+        setConnection({
+          ...connecting,
+          starting: false,
+          enabled: true,
+          error: undefined,
+          isP2P: false,
+          reverseProxy: true,
+          port: url.port ? parseInt(url.port, 10) : undefined,
+          host: url.hostname || undefined,
+        })
+      }
+    },
+
     async connect(connection: IConnection) {
-      const { proxyConnect } = dispatch.connections
+      const { proxyConnect, toggleConnectLink } = dispatch.connections
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
@@ -217,6 +255,11 @@ export default createModel<RootModel>()({
       connection.autoStart = undefined
       connection.public = connection.public || isPortal()
       connection.starting = !connection.public
+
+      if (connection.connectLink) {
+        toggleConnectLink(connection)
+        return
+      }
 
       if (connection.public) {
         proxyConnect(connection)
@@ -230,6 +273,11 @@ export default createModel<RootModel>()({
     async disconnect(connection: IConnection | undefined) {
       if (!connection) {
         console.warn('No connection to disconnect')
+        return
+      }
+
+      if (connection.connectLink) {
+        dispatch.connections.toggleConnectLink(connection)
         return
       }
 
@@ -247,7 +295,7 @@ export default createModel<RootModel>()({
       if (!connection.sessionId) return
       const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
       if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
-        dispatch.ui.set({ errorMessage: `Connection survey submission failed. Please contact support.` })
+        dispatch.ui.set({ errorMessage: 'Connection survey submission failed. Please contact support.' })
       }
     },
 

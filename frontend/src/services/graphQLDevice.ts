@@ -24,6 +24,27 @@ export const SERVICE_SELECT = `
         email
       }
     }
+
+    {
+      login {
+        email
+        device(id: "80:00:00:00:01:24:9C:71") {
+          id
+          name
+          services {
+            id
+            name
+            connect {
+              code
+              url
+              created
+            }
+          }
+        }
+      }
+    }
+
+
 `
 
 const DeviceSelectLookup: ILookup<string> = {

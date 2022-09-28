@@ -146,6 +146,7 @@ declare global {
     autoLaunch?: boolean
     autoStart?: boolean
     commandTemplate?: string // command line launch template
+    connectLink?: boolean
     connected?: boolean
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup

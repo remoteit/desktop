@@ -18,6 +18,7 @@ import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { NetworksAccordion } from './NetworksAccordion'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { ConnectLinkSetting } from './ConnectLinkSetting'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
@@ -80,7 +81,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
         connection={connection}
         service={service}
         session={session}
-        show={!!(connection?.enabled && connection?.host)}
+        show={!!(connection.enabled && connection.host)}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       {ownDevice ? (
@@ -164,6 +165,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
             <LaunchSelect connection={connection} service={service} />
+            <ConnectLinkSetting connection={connection} permissions={device.permissions} />
             <PortalUI>
               <Notice
                 gutterTop

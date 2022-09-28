@@ -25,6 +25,7 @@ export class Application {
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
+  allowConnectLink: boolean = false
   localhost?: boolean
 
   connection?: IConnection
@@ -246,6 +247,7 @@ function getApplicationType(typeId: number | undefined) {
         title: 'Secure Browser',
         windowsLaunchType: 'URL',
         defaultLaunchTemplate: 'https://[host]:[port]',
+        allowConnectLink: true,
       })
     case 7:
     case 30:
@@ -254,6 +256,7 @@ function getApplicationType(typeId: number | undefined) {
       return new Application({
         title: 'Browser',
         windowsLaunchType: 'URL',
+        allowConnectLink: true,
       })
     case 34:
       return new Application({

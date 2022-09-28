@@ -56,7 +56,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoConnect, service])
 
-  let title = connection?.public ? 'Connect' : 'Start'
+  let title = connection?.public && !connection?.connectLink ? 'Connect' : 'Start'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let loading = false
   let icon = 'play'
