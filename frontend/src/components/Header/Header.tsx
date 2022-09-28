@@ -89,13 +89,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
                 setShowSearch(true)
                 setTimeout(() => inputRef.current?.focus(), 20)
               }}
-            >
-              {device && (
-                <Typography variant="caption" color="textSecondary">
-                  {attributeName(device)}
-                </Typography>
-              )}
-            </IconButton>
+            />
           )}
           {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
         </Title>
