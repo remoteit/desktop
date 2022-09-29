@@ -5,7 +5,16 @@ import { makeStyles } from '@mui/styles'
 import { getActiveAccountId } from '../models/accounts'
 import { useParams, useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
-import { Button, Typography, List, ListItem, ListItemSecondaryAction, MenuItem, TextField } from '@mui/material'
+import {
+  Button,
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  MenuItem,
+  TextField,
+} from '@mui/material'
 import { Dispatch, ApplicationState } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { RoleAccessCounts } from '../components/RoleAccessCounts'
@@ -18,6 +27,7 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
+import { Icon } from '../components/Icon'
 
 const NAME_MAX_LENGTH = 64
 
@@ -80,7 +90,6 @@ export const OrganizationRolePage: React.FC = () => {
             System roles cannot be modified.
           </Notice>
         )}
-        <Typography variant="subtitle1">Role</Typography>
         <ListItem>
           <TextField
             required
@@ -96,7 +105,19 @@ export const OrganizationRolePage: React.FC = () => {
             }}
           />
         </ListItem>
+        <Typography variant="subtitle1">User Permissions</Typography>
+        <PermissionsList
+          locked={systemRole}
+          disabled={disabled}
+          allowed={form.permissions}
+          permissions={Object.keys(PERMISSION).filter(p => PERMISSION[p].user)}
+          onChange={handlePermissionChange}
+        />
+        <Typography variant="subtitle1">Device and Network Permissions</Typography>
         <ListItem>
+          <ListItemIcon>
+            <Icon name={form.access === 'NONE' ? 'ban' : form.access === 'TAG' ? 'tag' : 'key'} size="md" fixedWidth />
+          </ListItemIcon>
           <TextField
             select
             fullWidth
@@ -121,6 +142,7 @@ export const OrganizationRolePage: React.FC = () => {
         </ListItem>
         {form.access === 'TAG' && (
           <ListItem>
+            <ListItemIcon />
             <Tags
               tags={filteredTags}
               onDelete={({ name }) => {
@@ -171,23 +193,14 @@ export const OrganizationRolePage: React.FC = () => {
             </ListItemSecondaryAction>
           </ListItem>
         )}
+        <PermissionsList
+          locked={systemRole}
+          disabled={disabled}
+          allowed={form.permissions}
+          permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user)}
+          onChange={handlePermissionChange}
+        />
       </List>
-      <PermissionsList
-        title="Device Permissions"
-        locked={systemRole}
-        disabled={disabled}
-        allowed={form.permissions}
-        permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user)}
-        onChange={handlePermissionChange}
-      />
-      <PermissionsList
-        title="User Permissions"
-        locked={systemRole}
-        disabled={disabled}
-        allowed={form.permissions}
-        permissions={Object.keys(PERMISSION).filter(p => PERMISSION[p].user)}
-        onChange={handlePermissionChange}
-      />
       {!systemRole && (
         <Gutters top="lg">
           <Button
