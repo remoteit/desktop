@@ -6,18 +6,11 @@ import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
-import { selectEnabledConnections } from '../helpers/connectionHelper'
+import { selectEnabledConnections, selectActiveCount } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
-
-function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
-  const sessions = state.sessions.all.map(s => s.target.id)
-  const connected = connections.filter(c => c.connected).map(c => c.id)
-  const unique = new Set(sessions.concat(connected))
-  return Array.from(unique)
-}
 
 export const SidebarNav: React.FC = () => {
   const { unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
