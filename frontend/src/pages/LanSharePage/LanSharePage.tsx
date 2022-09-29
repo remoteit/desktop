@@ -3,7 +3,7 @@ import { Button, List, Typography, TextField, MenuItem } from '@mui/material'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { selectConnection, setConnection } from '../../helpers/connectionHelper'
-import { findService } from '../../models/devices'
+import { findById } from '../../models/devices'
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { getDevices } from '../../models/accounts'
@@ -19,7 +19,7 @@ type Selections = { value: string | Function; name: string; note: string; id: nu
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const { service, lanIp, connection } = useSelector((state: ApplicationState) => {
-    const [service] = findService(getDevices(state), serviceID)
+    const [service] = findById(getDevices(state), serviceID)
     return {
       service,
       lanIp: state.backend.environment.privateIP,
