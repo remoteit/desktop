@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
 import { windowOpen } from '../services/Browser'
-import { selectById } from '../models/devices'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
@@ -13,7 +12,6 @@ import { RouteSetting } from './RouteSetting'
 import { PublicSetting } from './PublicSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
-import { selectConnection } from '../helpers/connectionHelper'
 import { ConnectionDetails } from './ConnectionDetails'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
@@ -35,7 +33,13 @@ import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
 
-export const Connect: React.FC = () => {
+type Props = {
+  service?: IService
+  device?: IDevice
+  connection: IConnection
+}
+
+export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const css = useStyles()
   const location = useLocation<{
     autoConnect?: boolean
@@ -43,24 +47,20 @@ export const Connect: React.FC = () => {
     autoCopy?: boolean
     autoFeedback?: boolean
   }>()
-  const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
+  const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { service, device, connection, session, accordion, ownDevice } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceID)
-    return {
-      service,
-      device,
-      ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
-      connection: selectConnection(state, service),
-      session: state.sessions.all.find(s => s.id === sessionID),
-      fetching: getDeviceModel(state).fetching,
-      accordion: state.ui.accordion,
-    }
-  })
+  const { session, accordion, ownDevice } = useSelector((state: ApplicationState) => ({
+    ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
+    session: state.sessions.all.find(s => s.id === sessionID),
+    fetching: getDeviceModel(state).fetching,
+    accordion: state.ui.accordion,
+  }))
+
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
 
   useEffect(() => {
+    // FIXME - move this up to the router level - for connection display now
     const id = connection?.deviceID || deviceID
     if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])

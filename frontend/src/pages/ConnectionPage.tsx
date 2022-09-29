@@ -65,7 +65,7 @@ export const ConnectionPage: React.FC = () => {
         </>
       }
     >
-      <Connect />
+      <Connect service={service} device={device} connection={connection} />
       <Gutters size="md">
         <AccordionMenuItem
           gutters

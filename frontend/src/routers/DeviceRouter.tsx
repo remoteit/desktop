@@ -57,7 +57,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   return (
     <DeviceContext.Provider value={{ device, connections }}>
       <DynamicPanel
-        primary={<DevicePage device={device} />}
+        primary={<DevicePage />}
         secondary={
           <Switch>
             <Route path="/devices/:deviceID/add/scan">
@@ -106,7 +106,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <LanSharePage />
             </Route>
             <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
-              <ServiceConnectPage device={device} />
+              <ServiceConnectPage />
             </Route>
           </Switch>
         }
