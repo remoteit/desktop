@@ -81,7 +81,11 @@ export default class ConnectionPool {
       if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
         if (!connection.params.error) {
           Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })
-          connection.error(new Error('Connection certificate error, unable to use custom hostname.'))
+          connection.error(
+            new Error(
+              'Connection certificate error, unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.'
+            )
+          )
         }
         update = true
       }

@@ -21,11 +21,14 @@ type IParams = { userID: string; serviceID: string; deviceID: string }
 export const SharePage: React.FC = () => {
   const { userID = '', serviceID = '', deviceID = '' } = useParams<IParams>()
   const { shares, organization } = useDispatch<Dispatch>()
-  const { device, guests, deleting } = useSelector((state: ApplicationState) => ({
-    device: selectDevice(state, deviceID),
-    guests: getOrganization(state).guests,
-    deleting: state.shares.deleting,
-  }))
+  const { device, guests, deleting } = useSelector((state: ApplicationState) => {
+    const device = selectDevice(state, deviceID)
+    return {
+      device,
+      guests: device ? device.access : (getOrganization(state).guests as IUserRef[]),
+      deleting: state.shares.deleting,
+    }
+  })
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -47,7 +50,7 @@ export const SharePage: React.FC = () => {
   const handleChange = (emails: string[]) => {
     shares.selectContacts(emails)
   }
-
+  console.log('SHARE PAGE', { email, guests, guest, device })
   return (
     <Container
       header={

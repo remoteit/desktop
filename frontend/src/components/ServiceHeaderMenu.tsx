@@ -7,7 +7,7 @@ import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { Typography } from '@mui/material'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
-import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { LoadingMessage } from './LoadingMessage'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
 import { UsersTab } from './UsersTab'
@@ -23,7 +23,7 @@ export const ServiceHeaderMenu: React.FC<{
 }> = ({ device, service, footer, backgroundColor, children }) => {
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
 
-  if (!service || !device) return <UnauthorizedPage />
+  if (!service || !device) return <LoadingMessage />
 
   return (
     <Container

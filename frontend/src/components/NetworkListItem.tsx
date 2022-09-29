@@ -1,5 +1,4 @@
 import React from 'react'
-import reactStringReplace from 'react-string-replace'
 import { makeStyles } from '@mui/styles'
 import { useLocation } from 'react-router-dom'
 import { selectConnection } from '../helpers/connectionHelper'

@@ -8,7 +8,7 @@ type Props = IconProps & { to: string; hide?: boolean; children?: React.ReactNod
 export const AddUserButton: React.FC<Props> = ({ to, hide, children, ...props }) => {
   if (hide) return null
   return (
-    <Tooltip title="Share">
+    <Tooltip title="Share to guest">
       <IconButton to={to} component={Link}>
         <Icon name="arrow-up-from-bracket" size="md" {...props} />
         {children}

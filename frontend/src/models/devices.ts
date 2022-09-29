@@ -512,7 +512,10 @@ export function selectDeviceByAccount(state: ApplicationState, deviceId?: string
 }
 
 export function selectById(state: ApplicationState, id?: string) {
-  return findService(getAllDevices(state), id)
+  const accountId = getActiveAccountId(state)
+  const accountDevices = getDevices(state, accountId)
+  const result = findService(accountDevices, id)
+  return result[0] ? result : findService(getAllDevices(state), id)
 }
 
 export function findService(devices: IDevice[], id?: string) {

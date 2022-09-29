@@ -6,25 +6,28 @@ import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
-import { selectEnabledConnections } from '../helpers/connectionHelper'
+import { selectEnabledConnections, selectActiveCount } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { unreadAnnouncements, connections, networks, sessions, devices, remoteUI } = useSelector(
-    (state: ApplicationState) => ({
-      unreadAnnouncements: selectAnnouncements(state, true).length,
-      connections: selectEnabledConnections(state).length,
-      networks: selectNetworks(state).length,
-      sessions: state.sessions.all.length,
-      devices: getDeviceModel(state).total,
-      remoteUI: isRemoteUI(state),
-    })
+  const { unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
+    (state: ApplicationState) => {
+      const connections = selectEnabledConnections(state)
+      return {
+        unreadAnnouncements: selectAnnouncements(state, true).length,
+        connections: connections.length,
+        networks: selectNetworks(state).length,
+        active: selectActiveCount(state, connections).length,
+        devices: getDeviceModel(state).total,
+        remoteUI: isRemoteUI(state),
+      }
+    }
   )
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles({ sessions })
+  const css = useStyles({ active })
 
   if (remoteUI)
     return (
@@ -50,21 +53,21 @@ export const SidebarNav: React.FC = () => {
         dense
       >
         <ListItemSecondaryAction>
-          {!!connections && !sessions && (
+          {!!connections && !active && (
             <Tooltip title={`${connections.toLocaleString()} Idle Connections`} placement="top" arrow>
               <Chip size="small" label={connections.toLocaleString()} />
             </Tooltip>
           )}
-          {!!sessions && (
+          {!!active && (
             <Tooltip
-              title={`${connections.toLocaleString()} Connections - ${sessions.toLocaleString()} Connected`}
+              title={`${connections.toLocaleString()} Connections - ${active.toLocaleString()} Connected`}
               placement="top"
               arrow
             >
               <Chip
                 size="small"
-                label={sessions.toLocaleString()}
-                className={css.sessions}
+                label={active.toLocaleString()}
+                className={css.active}
                 variant="filled"
                 color="primary"
               />
@@ -126,12 +129,12 @@ const useStyles = makeStyles(({ palette }) => ({
       },
     },
   },
-  connections: ({ sessions }: { sessions: number }) => ({
-    borderTopRightRadius: sessions ? 0 : undefined,
-    borderBottomRightRadius: sessions ? 0 : undefined,
-    paddingRight: sessions ? spacing.xs : undefined,
+  connections: ({ active }: { active: number }) => ({
+    borderTopRightRadius: active ? 0 : undefined,
+    borderBottomRightRadius: active ? 0 : undefined,
+    paddingRight: active ? spacing.xs : undefined,
   }),
-  sessions: {
+  active: {
     fontWeight: 500,
   },
   footer: {

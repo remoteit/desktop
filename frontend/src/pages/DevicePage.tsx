@@ -24,11 +24,7 @@ import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { fontSizes } from '../styling'
 
-type Props = {
-  device?: IDevice
-}
-
-export const DevicePage: React.FC<Props> = () => {
+export const DevicePage: React.FC = () => {
   const { connections, device } = useContext(DeviceContext)
   const location = useLocation()
   const history = useHistory()
