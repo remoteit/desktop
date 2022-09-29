@@ -1,5 +1,6 @@
 import React from 'react'
 import { TextField, TextFieldProps, MenuItem } from '@mui/material'
+import { Icon } from './Icon'
 
 type Props = Omit<TextFieldProps, 'onSelect'> & {
   roles: IOrganizationRole[]
@@ -25,6 +26,7 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, size = 'small', onS
       {roles.map(r => (
         <MenuItem key={r.id} value={r.id} disabled={!!r.disabled} dense>
           {r.name}
+          {r.system && <Icon name="lock" size="xxxs" type="solid" color="gray" inline />}
         </MenuItem>
       ))}
     </TextField>
