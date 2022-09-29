@@ -10,7 +10,13 @@ import {
   updateConnections,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
-import { graphQLConnect, graphQLDisconnect, graphQLSurvey, graphQLConnectLink } from '../services/graphQLMutation'
+import {
+  graphQLConnect,
+  graphQLDisconnect,
+  graphQLSurvey,
+  graphQLEnableConnectLink,
+  graphQLDisableConnectLink,
+} from '../services/graphQLMutation'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
@@ -209,45 +215,57 @@ export default createModel<RootModel>()({
       }
     },
 
-    async toggleConnectLink(connection: IConnection) {
-      if (connection.enabled) {
-        // remove
-        setConnection({
-          ...connection,
-          enabled: false,
-          connected: false,
-          reverseProxy: false,
-        })
-      } else {
-        // create
-        const connecting: IConnection = { ...connection, starting: true }
-        setConnection(connecting)
-        const result = await graphQLConnectLink(connection.id)
+    async disableConnectLink(connection: IConnection) {
+      const disconnecting: IConnection = { ...connection, enabled: false }
+      setConnection(disconnecting)
 
-        if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
-          dispatch.ui.set({ errorMessage: 'Persistent connection link generation failed. Please contact support.' })
-          connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
-          setConnection(connection)
-          if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
-          return
-        }
+      const result = await graphQLDisableConnectLink(connection.id)
 
-        const url = urlParse(result?.data?.data?.enableConnectLink?.url)
-        setConnection({
-          ...connecting,
-          starting: false,
-          enabled: true,
-          error: undefined,
-          isP2P: false,
-          reverseProxy: true,
-          port: url.port ? parseInt(url.port, 10) : undefined,
-          host: url.hostname || undefined,
-        })
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Persistent connection closing failed. Please contact support.' })
+        connection.error = { message: 'An error occurred removing your connection.' }
+        setConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        return
       }
+
+      setConnection({
+        ...disconnecting,
+        enabled: false,
+        connected: false,
+        reverseProxy: false,
+      })
+    },
+
+    async enableConnectLink(connection: IConnection) {
+      const connecting: IConnection = { ...connection, starting: true }
+      setConnection(connecting)
+
+      const result = await graphQLEnableConnectLink(connection.id)
+
+      if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
+        dispatch.ui.set({ errorMessage: 'Persistent connection generation failed. Please contact support.' })
+        connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
+        setConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        return
+      }
+
+      const url = urlParse(result?.data?.data?.enableConnectLink?.url)
+      setConnection({
+        ...connecting,
+        starting: false,
+        enabled: true,
+        error: undefined,
+        isP2P: false,
+        reverseProxy: true,
+        port: url.port ? parseInt(url.port, 10) : undefined,
+        host: url.hostname || undefined,
+      })
     },
 
     async connect(connection: IConnection) {
-      const { proxyConnect, toggleConnectLink } = dispatch.connections
+      const { proxyConnect, enableConnectLink: toggleConnectLink } = dispatch.connections
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
@@ -277,7 +295,7 @@ export default createModel<RootModel>()({
       }
 
       if (connection.connectLink) {
-        dispatch.connections.toggleConnectLink(connection)
+        dispatch.connections.enableConnectLink(connection)
         return
       }
 

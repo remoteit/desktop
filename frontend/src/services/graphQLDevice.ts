@@ -23,29 +23,11 @@ export const SERVICE_SELECT = `
         id
         email
       }
-    }
-
-    {
-      login {
-        email
-        device(id: "80:00:00:00:01:24:9C:71") {
-          id
-          name
-          services {
-            id
-            name
-            connect {
-              code
-              url
-              created
-            }
-          }
-        }
-      }
-    }
-
-
-`
+    }`
+// }
+// connect {
+//   url
+//   created
 
 const DeviceSelectLookup: ILookup<string> = {
   id: `
@@ -325,6 +307,10 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         host: s.host,
         protocol: s.protocol,
         access: s.access?.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
+        connect: {
+          url: s.connect.url,
+          created: new Date(s.connect.created),
+        },
       })
     ) || []
   )
