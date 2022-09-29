@@ -66,9 +66,8 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
             <Tooltip
               title={
                 <>
-                  You must be the device owner or
-                  <br />
-                  manager to add it to a network.
+                  {!device?.permissions.includes('MANAGE') && 'You are not a manager of this device.'}
+                  {device?.shared && 'You can not add a device shared to you.'}
                 </>
               }
               placement="left"
