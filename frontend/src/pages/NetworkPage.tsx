@@ -1,8 +1,9 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
+import { selectNetwork } from '../models/networks'
+import { NoConnectionPage } from './NoConnectionPage'
 import { Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectNetwork } from '../models/networks'
 import { ApplicationState, Dispatch } from '../store'
 import { getOrganizationName } from '../models/organization'
 import { NetworkHeaderMenu } from '../components/NetworkHeaderMenu'
@@ -21,6 +22,8 @@ export const NetworkPage: React.FC = () => {
       email: state.user.email,
     }
   })
+
+  if (!network) return <NoConnectionPage />
 
   return (
     <GuideStep

@@ -219,44 +219,42 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
                 </Notice>
               </ListItem>
             )}
+            <ListItem className={css.field}>
+              <TextField
+                required
+                label="Service Host"
+                value={form.host}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => setForm({ ...form, host: event.target.value })}
+                InputProps={{
+                  endAdornment: thisDevice && <CheckIcon />,
+                }}
+              />
+              <Typography variant="caption">
+                Enter a local network IP address or fully qualified domain name to configure this as a jump service to a
+                system on your local network.
+                <br />
+                <i>AWS example:</i>
+                <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+              </Typography>
+            </ListItem>
+            <ListItemCheckbox
+              checked={form.enabled}
+              label="Enable service"
+              subLabel={
+                <>
+                  Disabling your service will take it offline.{' '}
+                  <i>
+                    Service is
+                    {form.enabled ? ' enabled' : ' disabled'}
+                  </i>
+                </>
+              }
+              disabled={disabled}
+              onClick={() => setForm({ ...form, enabled: !form.enabled })}
+            />
           </>
-        )}
-        <ListItem className={css.field}>
-          <TextField
-            required
-            label="Service Host"
-            value={form.host}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => setForm({ ...form, host: event.target.value })}
-            InputProps={{
-              endAdornment: thisDevice && <CheckIcon />,
-            }}
-          />
-          <Typography variant="caption">
-            Enter a local network IP address or fully qualified domain name to configure this as a jump service to a
-            system on your local network.
-            <br />
-            <i>AWS example:</i>
-            <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
-          </Typography>
-        </ListItem>
-        {editable && (
-          <ListItemCheckbox
-            checked={form.enabled}
-            label="Enable service"
-            subLabel={
-              <>
-                Disabling your service will take it offline.{' '}
-                <i>
-                  Service is
-                  {form.enabled ? ' enabled' : ' disabled'}
-                </i>
-              </>
-            }
-            disabled={disabled}
-            onClick={() => setForm({ ...form, enabled: !form.enabled })}
-          />
         )}
       </List>
       <AccordionMenuItem subtitle="Connection defaults" gutters>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { findService } from '../../models/devices'
+import { findById } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { useLocation } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
@@ -34,7 +34,7 @@ export const Breadcrumbs: React.FC = () => {
     const device: IDevice | undefined = findDevice(path)
     if (device) return attributeName(device)
 
-    const [service, d] = findService(devices, path)
+    const [service, d] = findById(devices, path)
     if (service && d) return attributeName(service)
 
     const match = path.match(REGEX_LAST_PATH)

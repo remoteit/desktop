@@ -254,7 +254,7 @@ export default createModel<RootModel>()({
     },
 
     async renameService(service: IService, state) {
-      let device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
+      let [_, device] = selectById(state, service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].name = service.name
@@ -289,9 +289,10 @@ export default createModel<RootModel>()({
     },
 
     async setServiceAttributes(service: IService, state) {
-      let device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
+      let [_, device] = selectById(state, service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
+      if (index === -1) return
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
       dispatch.accounts.setDevice({ id: device.id, device })
@@ -514,11 +515,11 @@ export function selectDeviceByAccount(state: ApplicationState, deviceId?: string
 export function selectById(state: ApplicationState, id?: string) {
   const accountId = getActiveAccountId(state)
   const accountDevices = getDevices(state, accountId)
-  const result = findService(accountDevices, id)
-  return result[0] ? result : findService(getAllDevices(state), id)
+  const result = findById(accountDevices, id)
+  return result[0] ? result : findById(getAllDevices(state), id)
 }
 
-export function findService(devices: IDevice[], id?: string) {
+export function findById(devices: IDevice[], id?: string) {
   let service: IService | undefined
   const device = devices.find(
     d =>

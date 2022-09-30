@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { CopyButton } from '../../buttons/CopyButton'
 import { getDevices } from '../../models/accounts'
-import { findService } from '../../models/devices'
+import { findById } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { useApplication } from '../../hooks/useApplication'
@@ -21,7 +21,7 @@ export const ServiceContextualMenu: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
   const { el, remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
     const { el, serviceID } = state.ui.serviceContextMenu || {}
-    const [service, device] = findService(getDevices(state), serviceID)
+    const [service, device] = findById(getDevices(state), serviceID)
     return {
       el,
       remoteUI: isRemoteUI(state),
