@@ -9,14 +9,14 @@ import { Provider } from 'react-redux'
 import { Layout } from './components/Layout'
 import { store } from './store'
 import heartbeat from './services/Heartbeat'
-import analyticsHelper from './helpers/analyticsHelper'
+import analytics from './services/analytics'
 import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
 
 // if (environment() !== 'development')
-analyticsHelper.setup()
+analytics.initialize()
 
 const root = createRoot(document.getElementById('root')!)
 root.render(
