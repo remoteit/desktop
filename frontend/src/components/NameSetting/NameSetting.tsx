@@ -21,7 +21,6 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
       filter={REGEX_CONNECTION_NAME}
       maxLength={MAX_CONNECTION_NAME_LENGTH}
       onSave={name =>
-        connection &&
         setConnection({
           ...connection,
           name: name.toString() || connection.name,

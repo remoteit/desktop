@@ -111,6 +111,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (all) title += ' all'
+  if (props.loading) title = 'Loading'
+  props.loading = props.loading || loading
 
   if (service?.attributes.route === 'p2p' && connection?.public) {
     disabled = true
@@ -122,7 +124,6 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     <DynamicButton
       title={title}
       variant={variant}
-      loading={loading}
       color={color}
       icon={icon}
       onClick={clickHandler}

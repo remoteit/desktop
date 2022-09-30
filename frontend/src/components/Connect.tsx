@@ -143,6 +143,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               size="large"
               fullWidth
               disabled={ownDevice}
+              loading={!device.loaded}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
             />
             <ConnectionMenu connection={connection} service={service} />

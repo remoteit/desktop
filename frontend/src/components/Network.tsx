@@ -51,7 +51,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
       </NetworkListTitle>
       <Collapse in={expanded}>
         {network?.serviceIds.map(id => (
-          <NetworkListItem serviceId={id} key={id} network={network}>
+          <NetworkListItem serviceId={id} key={id} network={network} fallbackName={network.connectionNames[id]}>
             {onClear && <ClearButton id={id} onClick={() => onClear(id)} className="hidden" />}
           </NetworkListItem>
         ))}

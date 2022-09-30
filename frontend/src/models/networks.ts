@@ -1,8 +1,8 @@
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
+import { ApplicationState } from '../store'
 import { getActiveAccountId, getActiveUser } from './accounts'
 import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
-import { ApplicationState } from '../store'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById } from '../models/devices'
 import {
@@ -15,7 +15,6 @@ import {
   graphQLRemoveNetworkShare,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { graphQLDeviceAdaptor, graphQLServiceAdaptor, DEVICE_SELECT, SERVICE_SELECT } from '../services/graphQLDevice'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
@@ -107,14 +106,10 @@ export default createModel<RootModel>()({
                   }
                   connections {
                     service {
-                      ${SERVICE_SELECT}
-                      device {
-                        ${DEVICE_SELECT}
-                      }
+                      id
                     }
                     name
                     port
-                    created
                   }
                   tags {
                     name
@@ -155,33 +150,8 @@ export default createModel<RootModel>()({
       const all = result?.data?.data?.login?.account?.networks
       if (!all) return
 
-      let devices: IDevice[] = []
-
       const parsed: INetwork[] = all.map(n => {
         const shared = accountId !== n.owner.id
-
-        // add network devices - otherwise they are loaded through connections query
-        n.connections.forEach(c => {
-          let netDevice: IDevice = {
-            ...graphQLDeviceAdaptor(
-              [{ ...c.service.device, permissions: n.permissions }],
-              '',
-              accountId,
-              true,
-              true
-            )[0],
-            services: [c.service],
-          }
-          netDevice.services = graphQLServiceAdaptor(netDevice)
-          const index = devices.findIndex(d => d.id === netDevice.id)
-
-          if (index === -1) {
-            devices.push(netDevice)
-          } else {
-            const existing = devices[index].services.find(s => s.id === netDevice.services[0].id)
-            if (!existing) devices[index].services.push(netDevice.services[0])
-          }
-        })
 
         return {
           ...defaultNetwork(),
@@ -191,6 +161,7 @@ export default createModel<RootModel>()({
           owner: n.owner,
           permissions: n.permissions,
           created: new Date(n.created),
+          connectionNames: n.connections.reduce((obj, c) => ({ ...obj, [c.service.id]: c.name }), {}),
           serviceIds: n.connections.map(c => c.service.id),
           access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
           tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
@@ -198,11 +169,7 @@ export default createModel<RootModel>()({
         }
       })
 
-      // TODO load connection data and merge into connections
-      //      don't load all data if in portal mode
-      console.log('LOAD NETWORKS', parsed, devices)
-
-      dispatch.accounts.mergeDevices({ devices, accountId: 'networks' })
+      console.log('LOAD NETWORKS', parsed)
       dispatch.networks.setNetworks({ networks: parsed, accountId })
     },
     async fetchCount(role: IOrganizationRole, state) {
@@ -352,6 +319,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
     shared: false,
     owner: { id: '', email: '' },
     permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
+    connectionNames: {},
     serviceIds: [],
     access: [],
     tags: [],

@@ -133,6 +133,7 @@ declare global {
     shared: boolean
     owner: IUserRef
     permissions: IPermission[]
+    connectionNames: INameLookupByServiceId
     serviceIds: string[]
     sessions?: ISession[]
     access: IUserRef[]
@@ -140,6 +141,8 @@ declare global {
     iconType?: IconType
     tags: ITag[]
   }
+
+  type INameLookupByServiceId = ILookup<string>
 
   interface IConnection {
     accountId?: string // organization id
@@ -305,7 +308,7 @@ declare global {
     protocol?: string
     access: IUserRef[]
     license: ILicenseTypes
-    connect?: { url: string; created: Date }
+    link?: { url: string; created: Date }
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy

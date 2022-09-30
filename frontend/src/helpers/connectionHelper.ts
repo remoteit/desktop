@@ -160,12 +160,16 @@ export function getConnectionSessionIds() {
   return all.map(c => c.sessionId)
 }
 
-export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
+export function getConnectionLookup(state: ApplicationState) {
   const { all } = state.connections
-  let lookup = all.reduce((result: ConnectionLookup, c: IConnection) => {
+  return all.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
   }, {})
+}
+
+export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
+  let lookup = getConnectionLookup(state)
 
   devices.forEach(d => {
     d.services.forEach(s => {

@@ -161,7 +161,6 @@ export default createModel<RootModel>()({
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `ui-${key}`)
-        console.log('RESTORE STATE', { value, key })
         if (value) {
           if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
           else states[key] = value

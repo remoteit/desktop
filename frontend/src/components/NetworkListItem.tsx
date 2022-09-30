@@ -16,11 +16,12 @@ export interface Props {
   serviceId: string
   session?: ISession
   network?: INetwork
-  children?: React.ReactNode
+  fallbackName?: string
   external?: boolean
+  children?: React.ReactNode
 }
 
-export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, external, children }) => {
+export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, fallbackName, external, children }) => {
   const { service, device, foundSession, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceId)
     return {
@@ -38,7 +39,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const platform = device?.targetPlatform || session?.target.platform
   const enabled = external || connection.enabled
   const css = useStyles({ offline, networkEnabled: network?.enabled, enabled, connected })
-  const name = connection.name || session?.target.name || serviceId
+  const name = connection.name || session?.target.name || fallbackName || serviceId
 
   let pathname = `/${tab}/${serviceId}`
   if (session) pathname += `/${session.id}`

@@ -23,11 +23,11 @@ export const SERVICE_SELECT = `
         id
         email
       }
+    }
+    link {
+      url
+      created
     }`
-// }
-// connect {
-//   url
-//   created
 
 const DeviceSelectLookup: ILookup<string> = {
   id: `
@@ -131,19 +131,6 @@ export async function graphQLFetchDevices({
   account,
   platform,
 }: gqlOptions) {
-  let deviceQuery = new Set()
-  let columns = ['id']
-  columns = columns.concat(store.getState().ui.columns)
-
-  console.log('DEVICE QUERY COLUMNS', columns, store.getState().ui.columns)
-
-  columns.forEach(c => {
-    const a = getAttribute(c)
-    deviceQuery.add(DeviceSelectLookup[a.query || a.id])
-  })
-
-  console.log('DEVICE QUERY', deviceQuery)
-
   return await graphQLRequest(
     ` query Devices($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
@@ -152,7 +139,7 @@ export async function graphQLFetchDevices({
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
               total
               items {
-                ${Array.from(deviceQuery).join('')}
+                ${deviceQueryColumns()}
               }
             }
           }
@@ -179,9 +166,6 @@ export async function graphQLFetchConnections(params: { account: string; ids: st
           id
           connections: device(id: $ids)  {
             ${DEVICE_SELECT}
-            services {
-              ${SERVICE_SELECT}
-            }
           }
         }
       }`,
@@ -235,7 +219,6 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gql
 
 export function graphQLDeviceAdaptor(
   gqlDevices: any[],
-  loginId: string,
   accountId: string,
   hidden: boolean = false,
   loaded: boolean = false
@@ -307,13 +290,30 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         host: s.host,
         protocol: s.protocol,
         access: s.access?.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
-        connect: {
-          url: s.connect.url,
-          created: new Date(s.connect.created),
+        link: s.link && {
+          ...s.link,
+          created: new Date(s.link.created),
         },
       })
     ) || []
   )
+}
+
+function deviceQueryColumns() {
+  let deviceQuery = new Set()
+  let columns = ['id']
+  columns = columns.concat(store.getState().ui.columns)
+
+  console.log('DEVICE QUERY COLUMNS', columns, store.getState().ui.columns)
+
+  columns.forEach(c => {
+    const a = getAttribute(c)
+    deviceQuery.add(DeviceSelectLookup[a.query || a.id])
+  })
+
+  console.log('DEVICE QUERY', deviceQuery)
+
+  return Array.from(deviceQuery).join('')
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {

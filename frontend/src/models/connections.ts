@@ -50,12 +50,13 @@ export default createModel<RootModel>()({
     },
 
     async fetch(_: void, state) {
-      const accountId = state.auth.user?.id || state.user.id
-      const deviceIds = getConnectionDeviceIds(state)
-      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      updateConnections(state, connections, accountId)
-      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
-      cleanOrphanConnections(deviceIds)
+      return
+      // const accountId = state.auth.user?.id || state.user.id
+      // const deviceIds = getConnectionDeviceIds(state)
+      // const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
+      // updateConnections(state, connections, accountId)
+      // await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
+      // cleanOrphanConnections(deviceIds)
     },
 
     async updateConnection(connection: IConnection, state) {
