@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { FontSize, Color } from '../styling'
@@ -21,43 +21,55 @@ export interface CopyButtonProps {
   onCopy?: () => void
 }
 
-export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, title, onCopy, ...props }) => {
-  const [open, setOpen] = useState<boolean>(false)
-  const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const autoCopy = useSelector((state: ApplicationState) => state.ui.autoCopy)
-  const { ui } = useDispatch<Dispatch>()
+const COPY_TIMEOUT = 1000
 
-  React.useEffect(() => {
-    if (autoCopy) {
-      check()
-      ui.set({ autoCopy: false })
+export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
+  ({ icon, app, value, title, onCopy, ...props }, ref) => {
+    // export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, title, onCopy, ...props }) => {
+    const [open, setOpen] = useState<boolean>(false)
+    const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
+    const autoCopy = useSelector((state: ApplicationState) => state.ui.autoCopy)
+    const { ui } = useDispatch<Dispatch>()
+
+    useEffect(() => {
+      if (autoCopy) {
+        check()
+        ui.set({ autoCopy: false })
+      }
+    }, [autoCopy])
+
+    const check = () => {
+      app?.prompt ? setOpen(true) : copy()
     }
-  }, [autoCopy])
 
-  const check = () => {
-    app?.prompt ? setOpen(true) : copy()
+    const copy = () => {
+      clipboard.copy()
+      setTimeout(() => {
+        onCopy && onCopy()
+      }, COPY_TIMEOUT)
+    }
+
+    const onSubmit = (tokens: ILookup<string>) => {
+      if (app?.connection) setConnection({ ...app.connection, ...tokens })
+      setTimeout(copy, 100)
+      setOpen(false)
+    }
+
+    title = clipboard.copied ? 'Copied!' : title
+
+    return (
+      <>
+        <IconButton
+          {...props}
+          ref={ref}
+          onClick={check}
+          icon={clipboard.copied ? 'check' : icon}
+          title={title}
+          size="lg"
+        />
+        <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
+        {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
+      </>
+    )
   }
-
-  const copy = () => {
-    clipboard.copy()
-    setTimeout(() => {
-      onCopy && onCopy()
-    }, 600)
-  }
-
-  const onSubmit = (tokens: ILookup<string>) => {
-    if (app?.connection) setConnection({ ...app.connection, ...tokens })
-    setTimeout(copy, 100)
-    setOpen(false)
-  }
-
-  title = clipboard.copied ? 'Copied!' : title
-
-  return (
-    <>
-      <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : icon} title={title} size="lg" />
-      <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
-      {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
-    </>
-  )
-}
+)

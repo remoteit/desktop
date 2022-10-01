@@ -27,7 +27,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copyLaunch' | undefined>()
+  const [copied, setCopied] = useState<string | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const app = useApplication(service, connection)
   const css = useStyles()
@@ -68,8 +70,15 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>Local Endpoint</InputLabel>
-      <Typography variant="h3" className={css.h3}>
+      <InputLabel shrink>Local Endpoint {copied}</InputLabel>
+      <Typography
+        variant="h3"
+        className={css.h3}
+        onClick={() => {
+          buttonRef.current?.click()
+          setCopied('Copied!')
+        }}
+      >
         {name}
         {port && (
           <>
@@ -185,11 +194,13 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   <span>
                     <InputLabel shrink>Copy {hover === 'copyLaunch' ? app.contextTitle : hover}</InputLabel>
                     <CopyButton
+                      ref={buttonRef}
                       color="alwaysWhite"
                       icon="copy"
                       value={name + (port ? p + port : '')}
                       onMouseEnter={() => setHover('endpoint')}
                       onMouseLeave={() => setHover(undefined)}
+                      onCopy={() => setCopied(undefined)}
                     />
                     {connection?.host && (
                       <>
@@ -259,6 +270,7 @@ const useStyles = makeStyles(({ palette }) => ({
   hide: {
     opacity: 0,
     position: 'absolute',
+    pointerEvents: 'none',
     // transitionProperty: 'opacity',
     // transitionDuration: '100ms',
     // transitionDelay: '50ms',
@@ -273,6 +285,7 @@ const useStyles = makeStyles(({ palette }) => ({
     color: alpha(palette.alwaysWhite.main, 0.25),
   },
   h3: {
+    // cursor: 'pointer',
     wordBreak: 'break-word',
     overflow: 'hidden',
     fontWeight: 500,
