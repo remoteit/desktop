@@ -6,9 +6,9 @@ import { setConnection } from '../helpers/connectionHelper'
 import { useClipboard } from 'use-clipboard-copy'
 import { Application } from '../shared/applications'
 import { PromptModal } from '../components/PromptModal'
-import { IconButton } from './IconButton'
+import { IconButton, ButtonProps } from './IconButton'
 
-export interface CopyButtonProps {
+export type CopyButtonProps = ButtonProps & {
   icon: string
   app?: Application
   title?: string
@@ -18,13 +18,14 @@ export interface CopyButtonProps {
   type?: IconType
   onMouseEnter?: () => void
   onMouseLeave?: () => void
+  onClick?: () => void
   onCopy?: () => void
 }
 
 const COPY_TIMEOUT = 1000
 
 export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  ({ icon, app, value, title, onCopy, ...props }, ref) => {
+  ({ icon, app, value, title, onClick, onCopy, ...props }, ref) => {
     // export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, title, onCopy, ...props }) => {
     const [open, setOpen] = useState<boolean>(false)
     const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
@@ -39,13 +40,14 @@ export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
     }, [autoCopy])
 
     const check = () => {
+      onClick?.()
       app?.prompt ? setOpen(true) : copy()
     }
 
     const copy = () => {
       clipboard.copy()
       setTimeout(() => {
-        onCopy && onCopy()
+        onCopy?.()
       }, COPY_TIMEOUT)
     }
 

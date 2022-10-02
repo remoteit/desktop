@@ -72,7 +72,7 @@ export const DEFAULT_CONNECTION: IConnection = {
   name: '',
   owner: { id: '', email: '' },
   deviceID: '',
-  online: false,
+  online: true,
   timeout: 15,
   enabled: false,
   ip: IP_PRIVATE,

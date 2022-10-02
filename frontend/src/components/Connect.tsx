@@ -77,14 +77,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
 
   return (
     <>
-      <ConnectionDetails
-        connection={connection}
-        service={service}
-        session={session}
-        show={!!(connection.enabled && connection.host)}
-      />
-      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      {ownDevice ? (
+      {ownDevice && (
         <Notice gutterTop solid>
           <Typography variant="h3">You are on the same device as this service.</Typography>
           <Typography variant="body2" gutterBottom>
@@ -98,7 +91,15 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
             fullWidth
           />
         </Notice>
-      ) : (
+      )}
+      <ConnectionDetails
+        connection={connection}
+        service={service}
+        session={session}
+        show={!!(connection.enabled && connection.host)}
+      />
+      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      {(!ownDevice || connection.connectLink) && (
         <GuideBubble
           guide="connectButton"
           enterDelay={400}
@@ -142,7 +143,6 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               permissions={device.permissions}
               size="large"
               fullWidth
-              disabled={ownDevice}
               loading={!device.loaded}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
             />

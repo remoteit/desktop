@@ -91,6 +91,24 @@ export const AddPage: React.FC = () => {
           </ListHorizontal>
         </DesktopUI>
         <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
+          <ListSubheader disableGutters>Try a device</ListSubheader>
+          <Divider />
+          <ListItem
+            button
+            disableGutters
+            disabled={hasDemo || claiming}
+            onClick={() => {
+              setCode(DEMO_DEVICE_CLAIM_CODE)
+              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })
+            }}
+          >
+            <ListItemIcon>
+              <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
+            </ListItemIcon>
+            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
+          </ListItem>
+        </ListHorizontal>
+        <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
           <ListItem>
@@ -124,24 +142,6 @@ export const AddPage: React.FC = () => {
                 }}
               />
             </form>
-          </ListItem>
-        </ListHorizontal>
-        <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
-          <ListSubheader disableGutters>Try a device</ListSubheader>
-          <Divider />
-          <ListItem
-            button
-            disableGutters
-            disabled={hasDemo || claiming}
-            onClick={() => {
-              setCode(DEMO_DEVICE_CLAIM_CODE)
-              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })
-            }}
-          >
-            <ListItemIcon>
-              <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
-            </ListItemIcon>
-            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </ListHorizontal>
         <ListHorizontal className={css.list} dense disablePadding>

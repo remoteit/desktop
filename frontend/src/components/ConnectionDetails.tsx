@@ -66,7 +66,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     name = 'Connecting...'
     port = undefined
   }
-  const p = port ? ':' : ''
+
+  const endpoint = name + (port ? ':' + port : '')
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
@@ -79,13 +80,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
           setCopied('Copied!')
         }}
       >
-        {name}
-        {port && (
-          <>
-            {p}
-            {port}
-          </>
-        )}
+        {endpoint}
       </Typography>
     </div>
   )
@@ -95,12 +90,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       <InputLabel shrink>Host</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name && <span className={css.active}>{name}</span>}
-        {port && (
-          <span className={css.inactive}>
-            {p}
-            {port}
-          </span>
-        )}
+        {port && <span className={css.inactive}>:{port}</span>}
       </Typography>
     </div>
   )
@@ -109,10 +99,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div className={hover === 'port' ? css.show : css.hide}>
       <InputLabel shrink>Port</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={css.inactive}>
-          {name}
-          {p}
-        </span>
+        <span className={css.inactive}>{name}:</span>
         <span className={css.active}>{port}</span>
       </Typography>
     </div>
@@ -122,11 +109,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
       <InputLabel shrink>Local Endpoint</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={css.active}>
-          {name}
-          {p}
-          {port}
-        </span>
+        <span className={css.active}>{endpoint}</span>
       </Typography>
     </div>
   )
@@ -197,7 +180,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       ref={buttonRef}
                       color="alwaysWhite"
                       icon="copy"
-                      value={name + (port ? p + port : '')}
+                      value={endpoint}
                       onMouseEnter={() => setHover('endpoint')}
                       onMouseLeave={() => setHover(undefined)}
                       onCopy={() => setCopied(undefined)}
@@ -233,6 +216,17 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       </>
                     )}
                   </span>
+                  {app.canShare && (
+                    <span className={css.share}>
+                      <InputLabel shrink>Share</InputLabel>
+                      <CopyButton
+                        color="alwaysWhite"
+                        icon="arrow-up-from-bracket"
+                        value={app.string}
+                        onClick={() => navigator.share?.({ text: endpoint })}
+                      />
+                    </span>
+                  )}
                   <span>
                     <InputLabel shrink>Launch</InputLabel>
                     {app.canLaunch ? (
@@ -314,5 +308,14 @@ const useStyles = makeStyles(({ palette }) => ({
   buttons: {
     display: 'flex',
     justifyContent: 'space-between',
+    '& > :first-of-type': { flexGrow: 1 },
+  },
+  share: {
+    display: 'inline-flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+    marginRight: spacing.md,
+    '& label': { transformOrigin: 'top center' },
   },
 }))

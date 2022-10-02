@@ -28,8 +28,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
   const sessions = state.sessions.all.map(s => s.target.id)
   const connected = connections.filter(c => c.connected).map(c => c.id)
-  const unique = new Set(sessions.concat(connected))
-  return Array.from(unique)
+  return sessions.concat(connected)
 }
 
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {

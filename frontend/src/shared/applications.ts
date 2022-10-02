@@ -61,6 +61,10 @@ export class Application {
     return !(portal && this.launchType === 'COMMAND')
   }
 
+  get canShare() {
+    return !!this.connection?.connectLink
+  }
+
   get icon() {
     return this.launchType === 'COMMAND' ? this.commandIcon : this.launchIcon
   }

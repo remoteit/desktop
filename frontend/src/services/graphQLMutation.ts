@@ -80,7 +80,7 @@ export async function graphQLEnableConnectLink(serviceId: string) {
 export async function graphQLDisableConnectLink(serviceId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: String!) {
-        disableAccessLink(serviceId: $serviceId)
+        disableConnectLink(serviceId: $serviceId)
       }`,
     { serviceId }
   )

@@ -50,13 +50,12 @@ export default createModel<RootModel>()({
     },
 
     async fetch(_: void, state) {
-      return
-      // const accountId = state.auth.user?.id || state.user.id
-      // const deviceIds = getConnectionDeviceIds(state)
-      // const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      // updateConnections(state, connections, accountId)
-      // await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
-      // cleanOrphanConnections(deviceIds)
+      const accountId = state.auth.user?.id || state.user.id
+      const deviceIds = getConnectionDeviceIds(state)
+      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
+      updateConnections(state, connections, accountId)
+      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
+      cleanOrphanConnections(deviceIds)
     },
 
     async updateConnection(connection: IConnection, state) {
@@ -217,6 +216,7 @@ export default createModel<RootModel>()({
     },
 
     async disableConnectLink(connection: IConnection) {
+      debugger
       const disconnecting: IConnection = { ...connection, enabled: false }
       setConnection(disconnecting)
 
@@ -266,7 +266,6 @@ export default createModel<RootModel>()({
     },
 
     async connect(connection: IConnection) {
-      const { proxyConnect, enableConnectLink: toggleConnectLink } = dispatch.connections
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
@@ -276,12 +275,12 @@ export default createModel<RootModel>()({
       connection.starting = !connection.public
 
       if (connection.connectLink) {
-        toggleConnectLink(connection)
+        dispatch.connections.enableConnectLink(connection)
         return
       }
 
       if (connection.public) {
-        proxyConnect(connection)
+        dispatch.connections.proxyConnect(connection)
         return
       }
 
@@ -296,7 +295,7 @@ export default createModel<RootModel>()({
       }
 
       if (connection.connectLink) {
-        dispatch.connections.enableConnectLink(connection)
+        dispatch.connections.disableConnectLink(connection)
         return
       }
 
