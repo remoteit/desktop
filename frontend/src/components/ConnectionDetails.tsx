@@ -223,7 +223,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                         color="alwaysWhite"
                         icon="arrow-up-from-bracket"
                         value={app.string}
-                        onClick={() => navigator.share?.({ text: endpoint })}
+                        onClick={() => navigator.share?.({ url: app.string })}
                       />
                     </span>
                   )}

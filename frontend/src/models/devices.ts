@@ -97,7 +97,7 @@ export const defaultState: IDeviceState = {
   tag: undefined,
   owner: 'all',
   platform: undefined,
-  size: 5,
+  size: 50,
   from: 0,
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
