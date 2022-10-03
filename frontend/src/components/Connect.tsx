@@ -52,12 +52,12 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, ownDevice, canUseConnectLink } = useSelector((state: ApplicationState) => ({
+  const { session, accordion, ownDevice, connectLink } = useSelector((state: ApplicationState) => ({
     ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    canUseConnectLink: canUseConnectLink(state, service?.typeID),
+    connectLink: canUseConnectLink(state, service?.typeID),
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
@@ -170,7 +170,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               </DesktopUI>
               <LaunchSelect connection={connection} service={service} />
             </Collapse>
-            {canUseConnectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
+            {connectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
             <PortalUI>
               <Notice
                 gutterTop
