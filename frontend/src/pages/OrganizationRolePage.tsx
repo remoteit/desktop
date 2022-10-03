@@ -198,7 +198,7 @@ export const OrganizationRolePage: React.FC = () => {
             locked={systemRole}
             disabled={disabled}
             allowed={form.permissions}
-            permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user)}
+            permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user && !PERMISSION[p].hidden)}
             onChange={handlePermissionChange}
           />
         )}
