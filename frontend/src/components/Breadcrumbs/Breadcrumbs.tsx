@@ -65,8 +65,9 @@ export const Breadcrumbs: React.FC = () => {
 
 const useStyles = makeStyles(({ palette }) => ({
   header: {
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
     marginLeft: spacing.lg,
+    marginBottom: -spacing.xs,
     color: palette.gray.main,
     position: 'relative',
     zIndex: 2,
@@ -74,9 +75,10 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
+      textDecoration: 'none',
       fontSize: fontSizes.xxs,
       color: palette.grayDark.main,
-      padding: `${spacing.xxs}px ${spacing.xs}px`,
+      padding: `${spacing.md}px ${spacing.xs}px`,
       marginLeft: spacing.xxs,
       marginRight: spacing.xxs,
     },

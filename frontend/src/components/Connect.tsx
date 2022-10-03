@@ -172,25 +172,21 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
             </Collapse>
             {connectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
             <PortalUI>
-              <Notice
-                gutterTop
-                severity="info"
-                button={
-                  <Button
-                    size="small"
-                    color="primary"
-                    variant="contained"
-                    onClick={() => windowOpen('https://link.remote.it/download')}
-                  >
-                    Download
-                  </Button>
-                }
-              >
-                <strong>Get Desktop for additional features and control.</strong>
+              <Notice gutterTop severity="info">
+                <strong>Get Desktop for more features and control.</strong>
                 <em>
                   Peer-to-peer and on demand connections with persistent URLs and LAN sharing. Remote system and network
                   access. Improved launch commands and the Remote.It CLI.
                 </em>
+                <Button
+                  size="small"
+                  color="primary"
+                  variant="contained"
+                  sx={{ marginTop: 1 }}
+                  onClick={() => windowOpen('https://link.remote.it/download')}
+                >
+                  Download
+                </Button>
               </Notice>
             </PortalUI>
           </List>

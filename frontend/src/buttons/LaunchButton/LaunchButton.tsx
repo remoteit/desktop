@@ -33,7 +33,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && app?.connection?.autoLaunch)
 
   React.useEffect(() => {
-    if (autoLaunch && app?.connection?.enabled && ready) {
+    if (autoLaunch && !app?.connection?.connectLink && app?.connection?.enabled && ready) {
       ui.set({ autoLaunch: false })
       clickHandler()
     }

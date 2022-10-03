@@ -97,7 +97,7 @@ export function usedPorts(state: ApplicationState) {
 }
 
 export function launchDisabled(connection: IConnection) {
-  return connection.launchType === 'COMMAND' && isPortal()
+  return (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink
 }
 
 export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
