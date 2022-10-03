@@ -215,24 +215,27 @@ export default createModel<RootModel>()({
       }
     },
 
-    async disableConnectLink(connection: IConnection) {
-      debugger
-      const disconnecting: IConnection = { ...connection, enabled: false }
-      setConnection(disconnecting)
+    async disableConnectLink(connection?: IConnection) {
+      if (!connection) {
+        console.warn('No connection to disconnect')
+        return
+      }
+      const disconnecting: IConnection = { ...connection, enabled: false, public: false || isPortal() }
+
+      dispatch.connections.updateConnection(disconnecting)
 
       const result = await graphQLDisableConnectLink(connection.id)
 
       if (result === 'ERROR') {
         dispatch.ui.set({ errorMessage: 'Persistent connection closing failed. Please contact support.' })
         connection.error = { message: 'An error occurred removing your connection.' }
-        setConnection(connection)
+        dispatch.connections.updateConnection(connection)
         if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
         return
       }
 
       setConnection({
         ...disconnecting,
-        enabled: false,
         connected: false,
         reverseProxy: false,
       })
@@ -240,14 +243,14 @@ export default createModel<RootModel>()({
 
     async enableConnectLink(connection: IConnection) {
       const connecting: IConnection = { ...connection, starting: true }
-      setConnection(connecting)
+      dispatch.connections.updateConnection(connecting)
 
       const result = await graphQLEnableConnectLink(connection.id)
 
       if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
         dispatch.ui.set({ errorMessage: 'Persistent connection generation failed. Please contact support.' })
         connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
-        setConnection(connection)
+        dispatch.connections.updateConnection(connection)
         if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
         return
       }

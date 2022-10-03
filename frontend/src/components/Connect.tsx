@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { List, Button, Typography } from '@mui/material'
+import { List, Button, Typography, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
+import { canUseConnectLink } from '../models/applicationTypes'
 import { windowOpen } from '../services/Browser'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -51,11 +52,12 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, ownDevice } = useSelector((state: ApplicationState) => ({
+  const { session, accordion, ownDevice, canUseConnectLink } = useSelector((state: ApplicationState) => ({
     ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
+    canUseConnectLink: canUseConnectLink(state, service?.typeID),
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
@@ -161,12 +163,14 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           elevation={0}
         >
           <List disablePadding>
-            <DesktopUI>
-              <NameSetting connection={connection} service={service} device={device} />
-              <PortSetting connection={connection} service={service} />
-            </DesktopUI>
-            <LaunchSelect connection={connection} service={service} />
-            <ConnectLinkSetting connection={connection} permissions={device.permissions} />
+            <Collapse in={!connection.connectLink}>
+              <DesktopUI>
+                <NameSetting connection={connection} service={service} device={device} />
+                <PortSetting connection={connection} service={service} />
+              </DesktopUI>
+              <LaunchSelect connection={connection} service={service} />
+            </Collapse>
+            {canUseConnectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
             <PortalUI>
               <Notice
                 gutterTop

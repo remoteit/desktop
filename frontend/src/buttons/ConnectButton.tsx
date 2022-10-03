@@ -41,7 +41,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
     dispatch.networks.start(instanceId)
     if (state === 'connecting' || connection?.enabled) {
-      dispatch.connections.disconnect(connection)
+      connection?.connectLink
+        ? dispatch.ui.set({
+            confirm: {
+              id: 'destroyLink',
+              callback: () => dispatch.connections.disableConnectLink(connection),
+            },
+          })
+        : dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
       dispatch.connections.connect(connection)

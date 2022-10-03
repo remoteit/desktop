@@ -1,14 +1,15 @@
 import React, { useState, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@mui/material'
+import { Icon, IconProps } from '../Icon'
 import { Confirm } from '../Confirm'
 import { Quote } from '../Quote'
-import { Icon } from '../Icon'
-import { Color, spacing } from '../../styling'
+import { spacing } from '../../styling'
 
 type Props = {
   icon?: string
-  iconColor?: Color
+  iconColor?: IconProps['color']
+  iconType?: IconProps['type']
   hideIcon?: boolean
   label: React.ReactNode
   subLabel?: React.ReactNode
@@ -31,6 +32,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
     {
       icon,
       iconColor,
+      iconType,
       hideIcon,
       label,
       subLabel,
@@ -91,7 +93,15 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
         >
           <TooltipWrapper>
             <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
-              <Icon ref={iconRef} name={icon} color={iconColor} size="md" modified={modified} fixedWidth />
+              <Icon
+                ref={iconRef}
+                name={icon}
+                color={iconColor}
+                size="md"
+                modified={modified}
+                type={iconType}
+                fixedWidth
+              />
             </ListItemIcon>
           </TooltipWrapper>
           {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}

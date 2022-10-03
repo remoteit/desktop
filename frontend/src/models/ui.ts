@@ -75,6 +75,7 @@ type UIState = {
   guides: ILookup<IGuide>
   poppedBubbles: string[]
   unExpireBubbles: boolean
+  confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -141,6 +142,7 @@ export const defaultState: UIState = {
   poppedBubbles: [],
   unExpireBubbles: false,
   accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
+  confirm: undefined,
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,

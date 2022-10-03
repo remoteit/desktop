@@ -36,7 +36,8 @@ const DeviceSelectLookup: ILookup<string> = {
   deviceName: `
   name
   configurable
-  platform`,
+  platform
+  state`,
 
   license: `
   license`,
@@ -120,6 +121,9 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => DeviceSelectLookup[k])
   .join()
 
+const DEVICE_SELECT_PRELOAD =
+  DeviceSelectLookup.id + DeviceSelectLookup.deviceName + DeviceSelectLookup.status + DeviceSelectLookup.services
+
 export async function graphQLFetchDevices({
   tag,
   size,
@@ -161,11 +165,11 @@ export async function graphQLFetchDevices({
 
 export async function graphQLFetchConnections(params: { account: string; ids: string[] }) {
   return await graphQLRequest(
-    ` query Connections($ids: [String!]!, $account: String) {
+    ` query Connections($ids: [String!]!) {
         login {
           id
           connections: device(id: $ids)  {
-            ${DEVICE_SELECT}
+            ${DEVICE_SELECT_PRELOAD}
           }
         }
       }`,
@@ -301,10 +305,8 @@ export function graphQLServiceAdaptor(device: any): IService[] {
 
 function deviceQueryColumns() {
   let deviceQuery = new Set()
-  let columns = ['id']
+  let columns = ['id', 'status', 'deviceName']
   columns = columns.concat(store.getState().ui.columns)
-
-  console.log('DEVICE QUERY COLUMNS', columns, store.getState().ui.columns)
 
   columns.forEach(c => {
     const a = getAttribute(c)
@@ -312,7 +314,6 @@ function deviceQueryColumns() {
   })
 
   console.log('DEVICE QUERY', deviceQuery)
-
   return Array.from(deviceQuery).join('')
 }
 

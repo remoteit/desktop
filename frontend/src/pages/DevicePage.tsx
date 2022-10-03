@@ -21,7 +21,7 @@ import { Container } from '../components/Container'
 import { GuideBubble } from '../components/GuideBubble'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 
 export const DevicePage: React.FC = () => {
   const { connections, device } = useContext(DeviceContext)
@@ -154,8 +154,6 @@ export const DevicePage: React.FC = () => {
                 disableIcon
                 dense
               >
-                <ListItemText primary={<ServiceName service={s} connection={c} />} />
-                <ServiceMiniState service={s} connection={c} /> &nbsp;
                 <ConnectButton
                   size="icon"
                   color="primary"
@@ -163,10 +161,15 @@ export const DevicePage: React.FC = () => {
                   iconType="solid"
                   connection={c}
                   service={s}
+                  className={css.connect}
                   permissions={device.permissions}
                   disabled={s.state === 'inactive' || device.thisDevice}
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
+                <ListItemText primary={<ServiceName service={s} connection={c} />} />
+                <ListItemSecondaryAction>
+                  <ServiceMiniState service={s} connection={c} />
+                </ListItemSecondaryAction>
               </ListItemLocation>
             )
           })}
@@ -179,12 +182,8 @@ export const DevicePage: React.FC = () => {
 
 const useStyles = makeStyles({
   connect: {
-    right: 0,
-    top: 0,
-    display: 'flex',
-    alignItems: 'center',
-    position: 'absolute',
-    height: '100%',
+    marginLeft: -spacing.sm,
+    marginRight: spacing.xs,
   },
   show: { opacity: 1 },
   list: { marginRight: 1 },
