@@ -75,6 +75,7 @@ type UIState = {
   guides: ILookup<IGuide>
   poppedBubbles: string[]
   unExpireBubbles: boolean
+  confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
   autoConnect: boolean
   autoLaunch: boolean
@@ -141,6 +142,7 @@ export const defaultState: UIState = {
   poppedBubbles: [],
   unExpireBubbles: false,
   accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
+  confirm: undefined,
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,
@@ -155,12 +157,12 @@ export default createModel<RootModel>()({
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()
+      console.log('UI INIT')
     },
     async restoreState(_: void, state) {
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `ui-${key}`)
-        console.log('RESTORE STATE', { value, key })
         if (value) {
           if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
           else states[key] = value

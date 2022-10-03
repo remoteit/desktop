@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { List, Button, Typography } from '@mui/material'
+import { List, Button, Typography, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { getDeviceModel } from '../models/accounts'
+import { canUseConnectLink } from '../models/applicationTypes'
 import { windowOpen } from '../services/Browser'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -18,6 +19,7 @@ import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { NetworksAccordion } from './NetworksAccordion'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { ConnectLinkSetting } from './ConnectLinkSetting'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
@@ -50,11 +52,12 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, ownDevice } = useSelector((state: ApplicationState) => ({
+  const { session, accordion, ownDevice, connectLink } = useSelector((state: ApplicationState) => ({
     ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
+    connectLink: canUseConnectLink(state, service?.typeID),
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
@@ -76,14 +79,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
 
   return (
     <>
-      <ConnectionDetails
-        connection={connection}
-        service={service}
-        session={session}
-        show={!!(connection?.enabled && connection?.host)}
-      />
-      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      {ownDevice ? (
+      {ownDevice && (
         <Notice gutterTop solid>
           <Typography variant="h3">You are on the same device as this service.</Typography>
           <Typography variant="body2" gutterBottom>
@@ -97,7 +93,15 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
             fullWidth
           />
         </Notice>
-      ) : (
+      )}
+      <ConnectionDetails
+        connection={connection}
+        service={service}
+        session={session}
+        show={!!(connection.enabled && connection.host)}
+      />
+      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      {(!ownDevice || connection.connectLink) && (
         <GuideBubble
           guide="connectButton"
           enterDelay={400}
@@ -141,7 +145,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               permissions={device.permissions}
               size="large"
               fullWidth
-              disabled={ownDevice}
+              loading={!device.loaded}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
             />
             <ConnectionMenu connection={connection} service={service} />
@@ -159,31 +163,30 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           elevation={0}
         >
           <List disablePadding>
-            <DesktopUI>
-              <NameSetting connection={connection} service={service} device={device} />
-              <PortSetting connection={connection} service={service} />
-            </DesktopUI>
-            <LaunchSelect connection={connection} service={service} />
+            <Collapse in={!connection.connectLink}>
+              <DesktopUI>
+                <NameSetting connection={connection} service={service} device={device} />
+                <PortSetting connection={connection} service={service} />
+              </DesktopUI>
+              <LaunchSelect connection={connection} service={service} />
+            </Collapse>
+            {connectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
             <PortalUI>
-              <Notice
-                gutterTop
-                severity="info"
-                button={
-                  <Button
-                    size="small"
-                    color="primary"
-                    variant="contained"
-                    onClick={() => windowOpen('https://link.remote.it/download')}
-                  >
-                    Download
-                  </Button>
-                }
-              >
-                <strong>Get Desktop for additional features and control.</strong>
+              <Notice gutterTop severity="info">
+                <strong>Get Desktop for more features and control.</strong>
                 <em>
                   Peer-to-peer and on demand connections with persistent URLs and LAN sharing. Remote system and network
                   access. Improved launch commands and the Remote.It CLI.
                 </em>
+                <Button
+                  size="small"
+                  color="primary"
+                  variant="contained"
+                  sx={{ marginTop: 1 }}
+                  onClick={() => windowOpen('https://link.remote.it/download')}
+                >
+                  Download
+                </Button>
               </Notice>
             </PortalUI>
           </List>

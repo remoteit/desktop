@@ -65,6 +65,27 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
   )
 }
 
+export async function graphQLEnableConnectLink(serviceId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!) {
+        enableConnectLink(serviceId: $serviceId) {
+          url
+          created
+        }
+      }`,
+    { serviceId }
+  )
+}
+
+export async function graphQLDisableConnectLink(serviceId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!) {
+        disableConnectLink(serviceId: $serviceId)
+      }`,
+    { serviceId }
+  )
+}
+
 export async function graphQLRename(serviceId: string, name: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: String!, $name: String!) {

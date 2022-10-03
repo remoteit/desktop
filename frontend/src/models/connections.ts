@@ -1,3 +1,4 @@
+import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import {
   cleanOrphanConnections,
@@ -9,7 +10,13 @@ import {
   updateConnections,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
-import { graphQLConnect, graphQLDisconnect, graphQLSurvey } from '../services/graphQLMutation'
+import {
+  graphQLConnect,
+  graphQLDisconnect,
+  graphQLSurvey,
+  graphQLEnableConnectLink,
+  graphQLDisableConnectLink,
+} from '../services/graphQLMutation'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
@@ -208,8 +215,60 @@ export default createModel<RootModel>()({
       }
     },
 
+    async disableConnectLink(connection?: IConnection) {
+      if (!connection) {
+        console.warn('No connection to disconnect')
+        return
+      }
+      const disconnecting: IConnection = { ...connection, enabled: false, public: false || isPortal() }
+
+      dispatch.connections.updateConnection(disconnecting)
+
+      const result = await graphQLDisableConnectLink(connection.id)
+
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Persistent connection closing failed. Please contact support.' })
+        connection.error = { message: 'An error occurred removing your connection.' }
+        dispatch.connections.updateConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        return
+      }
+
+      setConnection({
+        ...disconnecting,
+        connected: false,
+        reverseProxy: false,
+      })
+    },
+
+    async enableConnectLink(connection: IConnection) {
+      const connecting: IConnection = { ...connection, starting: true }
+      dispatch.connections.updateConnection(connecting)
+
+      const result = await graphQLEnableConnectLink(connection.id)
+
+      if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
+        dispatch.ui.set({ errorMessage: 'Persistent connection generation failed. Please contact support.' })
+        connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
+        dispatch.connections.updateConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        return
+      }
+
+      const url = urlParse(result?.data?.data?.enableConnectLink?.url)
+      setConnection({
+        ...connecting,
+        starting: false,
+        enabled: true,
+        error: undefined,
+        isP2P: false,
+        reverseProxy: true,
+        port: url.port ? parseInt(url.port, 10) : undefined,
+        host: url.hostname || undefined,
+      })
+    },
+
     async connect(connection: IConnection) {
-      const { proxyConnect } = dispatch.connections
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
@@ -218,8 +277,13 @@ export default createModel<RootModel>()({
       connection.public = connection.public || isPortal()
       connection.starting = !connection.public
 
+      if (connection.connectLink) {
+        dispatch.connections.enableConnectLink(connection)
+        return
+      }
+
       if (connection.public) {
-        proxyConnect(connection)
+        dispatch.connections.proxyConnect(connection)
         return
       }
 
@@ -230,6 +294,11 @@ export default createModel<RootModel>()({
     async disconnect(connection: IConnection | undefined) {
       if (!connection) {
         console.warn('No connection to disconnect')
+        return
+      }
+
+      if (connection.connectLink) {
+        dispatch.connections.disableConnectLink(connection)
         return
       }
 
@@ -247,7 +316,7 @@ export default createModel<RootModel>()({
       if (!connection.sessionId) return
       const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
       if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
-        dispatch.ui.set({ errorMessage: `Connection survey submission failed. Please contact support.` })
+        dispatch.ui.set({ errorMessage: 'Connection survey submission failed. Please contact support.' })
       }
     },
 

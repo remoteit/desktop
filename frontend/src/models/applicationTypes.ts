@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
 type IApplicationTypeState = ILookup<IApplicationType[]> & {
@@ -51,6 +52,12 @@ export function findType(all: IApplicationType[], typeId?: number) {
 export function getTypeId(all: IApplicationType[], port: number) {
   const type = all?.find(t => t.port === port)
   return type ? type.id : DEFAULT_SERVICE.typeID
+}
+
+export function canUseConnectLink(state: ApplicationState, typeId?: number) {
+  if (!typeId) return false
+  const applicationType = findType(state.applicationTypes.all, typeId)
+  return applicationType.proxy
 }
 
 const emptyServiceType = {

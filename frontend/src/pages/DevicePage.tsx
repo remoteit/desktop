@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
-import { attributeName } from '../shared/nameHelper'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
@@ -10,19 +9,19 @@ import { ApplicationState } from '../store'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
-import { Typography, Box, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
+import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
 import { GuideBubble } from '../components/GuideBubble'
 import { Notice } from '../components/Notice'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
-import { fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 
 export const DevicePage: React.FC = () => {
   const { connections, device } = useContext(DeviceContext)
@@ -47,31 +46,35 @@ export const DevicePage: React.FC = () => {
   // reverse sort services by creation date
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   let servicePage = '/' + (location.pathname.split('/')[4] || 'connect')
+
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
       header={
-        <List>
-          <ListItemLocation
-            pathname={`/devices/${device.id}/details`}
-            match={[
-              `/devices/${device.id}/details`,
-              `/devices/${device.id}/edit`,
-              `/devices/${device.id}/users`,
-              `/devices/${device.id}/logs`,
-              `/devices/${device.id}`,
-            ]}
-            icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
-            exactMatch
-            dense
-            title={
-              <Typography variant="h3">
-                <ServiceName device={device} connection={connection} />
-              </Typography>
-            }
-            subtitle={device.thisDevice ? 'This device' : undefined}
-          />
-        </List>
+        <>
+          <List>
+            <ListItemLocation
+              pathname={`/devices/${device.id}/details`}
+              match={[
+                `/devices/${device.id}/details`,
+                `/devices/${device.id}/edit`,
+                `/devices/${device.id}/users`,
+                `/devices/${device.id}/logs`,
+                `/devices/${device.id}`,
+              ]}
+              icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
+              exactMatch
+              dense
+              title={
+                <Typography variant="h3">
+                  <ServiceName device={device} connection={connection} />
+                </Typography>
+              }
+              subtitle={device.thisDevice ? 'This device' : undefined}
+            />
+          </List>
+          <LinearProgress loading={!device.loaded} />
+        </>
       }
     >
       {device.state === 'inactive' && (
@@ -151,25 +154,21 @@ export const DevicePage: React.FC = () => {
                 disableIcon
                 dense
               >
+                <ConnectButton
+                  size="icon"
+                  color="primary"
+                  iconSize="base"
+                  iconType="solid"
+                  connection={c}
+                  service={s}
+                  className={css.connect}
+                  permissions={device.permissions}
+                  disabled={s.state === 'inactive' || device.thisDevice}
+                  onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
+                />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
                 <ListItemSecondaryAction>
-                  <ServiceMiniState /* className="hoverHide" */ service={s} connection={c} />
-                  {/* <TestUI>
-                    <Box className={css.connect}>
-                      <ConnectButton
-                        color="primary"
-                        size="icon"
-                        className="hidden"
-                        iconSize="base"
-                        iconType="solid"
-                        connection={c}
-                        permissions={device.permissions}
-                        service={s}
-                        disabled={s.state === 'inactive' || device.thisDevice}
-                        onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
-                      />
-                    </Box>
-                  </TestUI> */}
+                  <ServiceMiniState service={s} connection={c} />
                 </ListItemSecondaryAction>
               </ListItemLocation>
             )
@@ -183,12 +182,9 @@ export const DevicePage: React.FC = () => {
 
 const useStyles = makeStyles({
   connect: {
-    right: 0,
-    top: 0,
-    display: 'flex',
-    alignItems: 'center',
-    position: 'absolute',
-    height: '100%',
+    marginLeft: -spacing.sm,
+    marginRight: spacing.xs,
   },
+  show: { opacity: 1 },
   list: { marginRight: 1 },
 })

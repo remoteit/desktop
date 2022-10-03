@@ -182,10 +182,9 @@ export default createModel<RootModel>()({
       const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
       const connectionData = gqlResponse?.data?.data?.login?.connections
-      const loginId = gqlResponse?.data?.data?.login?.id
       await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []
-      return graphQLDeviceAdaptor(connectionData, loginId, accountId, true)
+      return graphQLDeviceAdaptor(connectionData, accountId, true)
     },
 
     async fetchSingle(
@@ -211,8 +210,7 @@ export default createModel<RootModel>()({
         const gqlResponse = await graphQLFetchDevice(id, accountId)
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
-        const loginId = gqlResponse?.data?.data?.login?.id
-        result = gqlDevice ? graphQLDeviceAdaptor(gqlDevice, loginId, accountId, hidden)[0] : undefined
+        result = gqlDevice ? graphQLDeviceAdaptor(gqlDevice, accountId, hidden, true)[0] : undefined
       } catch (error) {
         await apiError(error)
       }
@@ -244,8 +242,8 @@ export default createModel<RootModel>()({
     async graphQLFetchProcessor(options: gqlOptions) {
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [deviceData, total, loginId, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLDeviceAdaptor(deviceData, loginId, options.account)
+        const [deviceData, total, error] = graphQLMetadata(gqlResponse)
+        const devices = graphQLDeviceAdaptor(deviceData, options.account)
         return { devices, total, error }
       } catch (error) {
         await apiError(error)

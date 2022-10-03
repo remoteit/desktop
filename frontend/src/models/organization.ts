@@ -22,10 +22,11 @@ export const PERMISSION: ILookup<{
   icon: string
   system?: boolean
   user?: boolean
+  hidden?: boolean
 }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
-  // SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll' },
+  SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll', hidden: true },
   MANAGE: {
     name: 'Manage',
     description: 'Edit, delete, register, transfer and share devices and networks',
@@ -524,7 +525,7 @@ export function selectLimitsLookup(state: ApplicationState, accountId?: string):
   const notUser = !isUserAccount(state, accountId)
 
   const { limitsOverride } = state.ui
-  let result = {}
+  let result: ILookup<boolean> = {}
 
   limits.forEach(l => {
     result[l.name] = limitsOverride[l.name] === undefined || notUser ? l.value : limitsOverride[l.name]

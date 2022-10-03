@@ -27,7 +27,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copyLaunch' | undefined>()
+  const [copied, setCopied] = useState<string | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const app = useApplication(service, connection)
   const css = useStyles()
@@ -64,19 +66,21 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     name = 'Connecting...'
     port = undefined
   }
-  const p = port ? ':' : ''
+
+  const endpoint = name + (port ? ':' + port : '')
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>Local Endpoint</InputLabel>
-      <Typography variant="h3" className={css.h3}>
-        {name}
-        {port && (
-          <>
-            {p}
-            {port}
-          </>
-        )}
+      <InputLabel shrink>Local Endpoint {copied}</InputLabel>
+      <Typography
+        variant="h3"
+        className={css.h3}
+        onClick={() => {
+          buttonRef.current?.click()
+          setCopied('Copied!')
+        }}
+      >
+        {endpoint}
       </Typography>
     </div>
   )
@@ -86,12 +90,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       <InputLabel shrink>Host</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name && <span className={css.active}>{name}</span>}
-        {port && (
-          <span className={css.inactive}>
-            {p}
-            {port}
-          </span>
-        )}
+        {port && <span className={css.inactive}>:{port}</span>}
       </Typography>
     </div>
   )
@@ -100,10 +99,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div className={hover === 'port' ? css.show : css.hide}>
       <InputLabel shrink>Port</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={css.inactive}>
-          {name}
-          {p}
-        </span>
+        <span className={css.inactive}>{name}:</span>
         <span className={css.active}>{port}</span>
       </Typography>
     </div>
@@ -113,11 +109,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
       <InputLabel shrink>Local Endpoint</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={css.active}>
-          {name}
-          {p}
-          {port}
-        </span>
+        <span className={css.active}>{endpoint}</span>
       </Typography>
     </div>
   )
@@ -185,11 +177,13 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   <span>
                     <InputLabel shrink>Copy {hover === 'copyLaunch' ? app.contextTitle : hover}</InputLabel>
                     <CopyButton
+                      ref={buttonRef}
                       color="alwaysWhite"
                       icon="copy"
-                      value={name + (port ? p + port : '')}
+                      value={endpoint}
                       onMouseEnter={() => setHover('endpoint')}
                       onMouseLeave={() => setHover(undefined)}
+                      onCopy={() => setCopied(undefined)}
                     />
                     {connection?.host && (
                       <>
@@ -222,6 +216,17 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       </>
                     )}
                   </span>
+                  {app.canShare && (
+                    <span className={css.share}>
+                      <InputLabel shrink>Share</InputLabel>
+                      <CopyButton
+                        color="alwaysWhite"
+                        icon="arrow-up-from-bracket"
+                        value={app.string}
+                        onClick={() => navigator.share?.({ url: app.string })}
+                      />
+                    </span>
+                  )}
                   <span>
                     <InputLabel shrink>Launch</InputLabel>
                     {app.canLaunch ? (
@@ -259,6 +264,7 @@ const useStyles = makeStyles(({ palette }) => ({
   hide: {
     opacity: 0,
     position: 'absolute',
+    pointerEvents: 'none',
     // transitionProperty: 'opacity',
     // transitionDuration: '100ms',
     // transitionDelay: '50ms',
@@ -273,6 +279,7 @@ const useStyles = makeStyles(({ palette }) => ({
     color: alpha(palette.alwaysWhite.main, 0.25),
   },
   h3: {
+    // cursor: 'pointer',
     wordBreak: 'break-word',
     overflow: 'hidden',
     fontWeight: 500,
@@ -301,5 +308,14 @@ const useStyles = makeStyles(({ palette }) => ({
   buttons: {
     display: 'flex',
     justifyContent: 'space-between',
+    '& > :first-of-type': { flexGrow: 1 },
+  },
+  share: {
+    display: 'inline-flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+    marginRight: spacing.md,
+    '& label': { transformOrigin: 'top center' },
   },
 }))

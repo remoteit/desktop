@@ -1,16 +1,12 @@
 import React, { useEffect } from 'react'
 import { DeviceRouter } from './DeviceRouter'
+import { NetworkRouter } from './NetworkRouter'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
-import { NetworksPage } from '../pages/NetworksPage'
-import { NetworkUsersPage } from '../pages/NetworkUsersPage'
-import { NetworkSharePage } from '../pages/NetworkSharePage'
-import { NetworkAddPage } from '../pages/NetworkAddPage'
-import { NetworkPage } from '../pages/NetworkPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
@@ -19,7 +15,6 @@ import { AddPlatformPage } from '../pages/AddPlatformPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
-import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
@@ -135,38 +130,7 @@ export const Router: React.FC = () => {
 
       {/* Networks */}
       <Route path="/networks">
-        <DynamicPanel
-          primary={<NetworksPage />}
-          secondary={
-            <Switch>
-              <Route path="/networks/view/:networkID/share">
-                <NetworkSharePage />
-              </Route>
-
-              <Route path="/networks/view/:networkID/users">
-                <NetworkUsersPage />
-              </Route>
-
-              <Route path="/networks/view/:networkID">
-                <NetworkPage />
-              </Route>
-
-              <Route path="/networks/add">
-                <NetworkAddPage />
-              </Route>
-
-              <Route path="/networks/:serviceID/lan">
-                <LanSharePage />
-              </Route>
-
-              <Route path="/networks/:serviceID?">
-                <ConnectionPage />
-              </Route>
-            </Switch>
-          }
-          layout={layout}
-          root="/networks"
-        />
+        <NetworkRouter layout={layout} />
       </Route>
 
       {/* Add */}

@@ -1,17 +1,18 @@
 import React from 'react'
-import Controller from '../../services/Controller'
-import { ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
+import Controller from '../services/Controller'
+import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { ApplicationState, Dispatch } from '../store'
 import { Snackbar, IconButton, Dialog } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { getOwnDevices } from '../../models/accounts'
-import { DragAppRegion } from '../../components/DragAppRegion'
-import { ConnectionNotice } from '../../components/ConnectionNotice'
-import { UpdateNotice } from '../../components/UpdateNotice'
-import { RemoteHeader } from '../../components/RemoteHeader'
-import { Notice } from '../../components/Notice'
-import { Icon } from '../../components/Icon'
+import { getOwnDevices } from '../models/accounts'
+import { DragAppRegion } from '../components/DragAppRegion'
+import { ConnectionNotice } from '../components/ConnectionNotice'
+import { GlobalConfirm } from '../components/GlobalConfirm'
+import { UpdateNotice } from '../components/UpdateNotice'
+import { RemoteHeader } from '../components/RemoteHeader'
+import { Notice } from '../components/Notice'
+import { Icon } from '../components/Icon'
 
 export interface Props {
   children: React.ReactNode
@@ -66,6 +67,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           <em>Internet access is required.</em>
         </Notice>
       </Dialog>
+      <GlobalConfirm />
       <Snackbar
         className={css.snackbar}
         open={snackbar === 'retry'}

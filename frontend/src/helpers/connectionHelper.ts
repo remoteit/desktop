@@ -28,8 +28,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
   const sessions = state.sessions.all.map(s => s.target.id)
   const connected = connections.filter(c => c.connected).map(c => c.id)
-  const unique = new Set(sessions.concat(connected))
-  return Array.from(unique)
+  return sessions.concat(connected)
 }
 
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {
@@ -98,7 +97,7 @@ export function usedPorts(state: ApplicationState) {
 }
 
 export function launchDisabled(connection: IConnection) {
-  return connection.launchType === 'COMMAND' && isPortal()
+  return (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink
 }
 
 export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -160,12 +159,16 @@ export function getConnectionSessionIds() {
   return all.map(c => c.sessionId)
 }
 
-export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
+export function getConnectionLookup(state: ApplicationState) {
   const { all } = state.connections
-  let lookup = all.reduce((result: ConnectionLookup, c: IConnection) => {
+  return all.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
   }, {})
+}
+
+export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
+  let lookup = getConnectionLookup(state)
 
   devices.forEach(d => {
     d.services.forEach(s => {

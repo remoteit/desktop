@@ -1,5 +1,6 @@
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
+import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
 export const SERVICE_SELECT = `
@@ -23,33 +24,71 @@ export const SERVICE_SELECT = `
         email
       }
     }
-`
+    link {
+      url
+      created
+    }`
 
-export const DEVICE_SELECT = `
-  id
+const DeviceSelectLookup: ILookup<string> = {
+  id: `
+  id`,
+
+  deviceName: `
   name
-  state
-  created
-  lastReported
-  hardwareId
-  platform
-  version
   configurable
-  permissions
-  license
-  attributes
+  platform
+  state`,
+
+  license: `
+  license`,
+
+  version: `
+  version`,
+
+  hardwareId: `
+  hardwareId`,
+
+  lastReported: `
+  lastReported`,
+
+  permissions: `
+  permissions`,
+
+  status: `
+  state`,
+
+  created: `
+  created`,
+
+  attributes: `
+  attributes`,
+
+  tags: `
   tags (accountId: $account) {
     name
     color
     created
-  }
+  }`,
+
+  access: `
   access {
     user {
       id
       email
     }
     scripting
-  }
+  }`,
+
+  services: `
+  services {
+    id
+    name
+    state
+    title
+    license
+  }`,
+
+  endpoint: `
   endpoint {
     externalAddress
     internalAddress
@@ -63,16 +102,27 @@ export const DEVICE_SELECT = `
       city
       isp
     }
-  }
+  }`,
+
+  owner: `
   owner {
     id
     email
-  }
+  }`,
+
+  notifications: `
   notificationSettings {
     emailNotifications
     desktopNotifications
-  }
-`
+  }`,
+}
+
+export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
+  .map(k => DeviceSelectLookup[k])
+  .join()
+
+const DEVICE_SELECT_PRELOAD =
+  DeviceSelectLookup.id + DeviceSelectLookup.deviceName + DeviceSelectLookup.status + DeviceSelectLookup.services
 
 export async function graphQLFetchDevices({
   tag,
@@ -93,10 +143,7 @@ export async function graphQLFetchDevices({
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
               total
               items {
-                ${DEVICE_SELECT}
-                services {
-                  ${SERVICE_SELECT}
-                }              
+                ${deviceQueryColumns()}
               }
             }
           }
@@ -118,14 +165,11 @@ export async function graphQLFetchDevices({
 
 export async function graphQLFetchConnections(params: { account: string; ids: string[] }) {
   return await graphQLRequest(
-    ` query Connections($ids: [String!]!, $account: String) {
+    ` query Connections($ids: [String!]!) {
         login {
           id
           connections: device(id: $ids)  {
-            ${DEVICE_SELECT}
-            services {
-              ${SERVICE_SELECT}
-            }
+            ${DEVICE_SELECT_PRELOAD}
           }
         }
       }`,
@@ -179,9 +223,9 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gql
 
 export function graphQLDeviceAdaptor(
   gqlDevices: any[],
-  loginId: string,
   accountId: string,
-  hidden: boolean = false
+  hidden: boolean = false,
+  loaded: boolean = false
 ): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
@@ -194,8 +238,9 @@ export function graphQLDeviceAdaptor(
       name: d.name,
       owner: owner,
       state: d.state,
+      loaded: loaded,
       configurable: d.configurable,
-      hardwareID: d.hardwareId,
+      hardwareId: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),
       shared: accountId !== owner.id, //loginId !== owner.id && accountId === loginId,
@@ -209,7 +254,7 @@ export function graphQLDeviceAdaptor(
       version: d.version,
       geo: d.endpoint?.geo,
       license: d.license,
-      permissions: d.permissions,
+      permissions: d.permissions || [],
       attributes: processDeviceAttributes(d, metaData),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
       services: graphQLServiceAdaptor(d),
@@ -248,10 +293,28 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         port: s.port,
         host: s.host,
         protocol: s.protocol,
-        access: s.access.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
+        access: s.access?.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
+        link: s.link && {
+          ...s.link,
+          created: new Date(s.link.created),
+        },
       })
     ) || []
   )
+}
+
+function deviceQueryColumns() {
+  let deviceQuery = new Set()
+  let columns = ['id', 'status', 'deviceName']
+  columns = columns.concat(store.getState().ui.columns)
+
+  columns.forEach(c => {
+    const a = getAttribute(c)
+    deviceQuery.add(DeviceSelectLookup[a.query || a.id])
+  })
+
+  console.log('DEVICE QUERY', deviceQuery)
+  return Array.from(deviceQuery).join('')
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {

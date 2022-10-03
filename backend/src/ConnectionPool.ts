@@ -124,14 +124,17 @@ export default class ConnectionPool {
       'port',
       'enabled',
       'startTime',
+      'endTime',
+      'starting',
       'connected',
       'connecting',
       'disconnecting',
-      'reachable',
-      'sessionId',
-      'starting',
-      'error',
       'isP2P',
+      'reachable',
+      'restriction',
+      'timeout',
+      'sessionId',
+      'error',
     ]
     return props.some(prop => {
       if (f[prop] !== undefined && f[prop] !== t[prop]) {

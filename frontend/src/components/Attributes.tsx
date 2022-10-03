@@ -33,6 +33,7 @@ export class Attribute {
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
   feature?: string
   multiline?: boolean
+  query?: string // key to device query - fall back to id
   value: (options: IDataOptions) => any = () => {}
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
@@ -46,14 +47,15 @@ export class Attribute {
     defaultWidth?: number
     feature?: string
     multiline?: boolean
+    query?: string
     type?: Attribute['type']
     value?: Attribute['value']
   }) {
     Object.assign(this, options)
   }
 
-  show(feature: ILookup<boolean>) {
-    return !this.feature ? true : feature[this.feature]
+  show(feature?: ILookup<boolean>) {
+    return !this.feature || !feature ? true : feature[this.feature]
   }
 }
 
@@ -131,6 +133,7 @@ export const attributes: Attribute[] = [
   }),
   new Attribute({
     id: 'qualitySmall',
+    query: 'endpoint',
     label: 'Quality',
     defaultWidth: 120,
     value: ({ device }) => <QualityDetails device={device} small />,
@@ -149,6 +152,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'quality',
+    query: 'endpoint',
     label: 'Stability',
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
@@ -163,6 +167,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'role',
+    query: 'owner',
     label: 'Role',
     defaultWidth: 210,
     value: ({ device }) => <DeviceRole device={device} />,
@@ -205,14 +210,21 @@ export const attributes: Attribute[] = [
     defaultWidth: 175,
     value: ({ device }) => <Timestamp startDate={device?.createdAt} />,
   }),
-  new DeviceAttribute({ id: 'isp', label: 'ISP', value: ({ device }) => device?.geo?.isp }),
+  new DeviceAttribute({
+    id: 'isp',
+    query: 'endpoint',
+    label: 'ISP',
+    value: ({ device }) => device?.geo?.isp,
+  }),
   new DeviceAttribute({
     id: 'connectionType',
+    query: 'endpoint',
     label: 'Connection type',
     value: ({ device }) => device?.geo?.connectionType,
   }),
   new DeviceAttribute({
     id: 'location',
+    query: 'endpoint',
     label: 'Location',
     column: false,
     value: ({ device, session }) => {
@@ -223,30 +235,35 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'city',
     label: 'City',
+    query: 'endpoint',
     defaultWidth: 115,
     value: ({ device }) => device?.geo?.city,
   }),
   new DeviceAttribute({
     id: 'state',
     label: 'State',
+    query: 'endpoint',
     defaultWidth: 100,
     value: ({ device }) => device?.geo?.stateName,
   }),
   new DeviceAttribute({
     id: 'country',
     label: 'Country',
+    query: 'endpoint',
     defaultWidth: 130,
     value: ({ device }) => device?.geo?.countryName,
   }),
   new DeviceAttribute({
     id: 'externalAddress',
     label: 'External IP',
+    query: 'endpoint',
     defaultWidth: 180,
     value: ({ device }) => device?.externalAddress,
   }),
   new DeviceAttribute({
     id: 'internalAddress',
     label: 'Internal IP',
+    query: 'endpoint',
     value: ({ device }) => device?.internalAddress,
   }),
   new DeviceAttribute({
@@ -256,10 +273,10 @@ export const attributes: Attribute[] = [
     value: ({ device }) => device?.id,
   }),
   new DeviceAttribute({
-    id: 'hardwareID',
+    id: 'hardwareId',
     label: 'Hardware ID',
     defaultWidth: 190,
-    value: ({ device }) => device?.hardwareID,
+    value: ({ device }) => device?.hardwareId,
   }),
   new DeviceAttribute({
     id: 'version',
@@ -279,6 +296,7 @@ export const attributes: Attribute[] = [
       new DeviceAttribute({
         id: a.id,
         label: a.label,
+        query: 'attributes',
         value: ({ device }) => device?.attributes[a.id],
         multiline: true,
       })
@@ -355,7 +373,9 @@ export const attributes: Attribute[] = [
         ? 'Connecting...'
         : connection?.public
         ? connection?.reverseProxy
-          ? 'Public Reverse Proxy'
+          ? connection?.connectLink
+            ? 'Persistent Public Endpoint'
+            : 'Public Reverse Proxy'
           : 'Public Proxy'
         : !connection?.connected && !session
         ? 'Idle - Connect on demand'
@@ -417,4 +437,8 @@ export function getAttribute(id: string): Attribute {
 
 export function getAttributes(ids: string[]): Attribute[] {
   return ids.map(id => attributeLookup[id])
+}
+
+export function getColumns(feature?: ILookup<boolean>) {
+  return masterAttributes.concat(deviceAttributes).filter(a => a.column && a.show(feature))
 }

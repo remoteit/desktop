@@ -133,6 +133,7 @@ declare global {
     shared: boolean
     owner: IUserRef
     permissions: IPermission[]
+    connectionNames: INameLookupByServiceId
     serviceIds: string[]
     sessions?: ISession[]
     access: IUserRef[]
@@ -141,11 +142,14 @@ declare global {
     tags: ITag[]
   }
 
+  type INameLookupByServiceId = ILookup<string>
+
   interface IConnection {
     accountId?: string // organization id
     autoLaunch?: boolean
     autoStart?: boolean
     commandTemplate?: string // command line launch template
+    connectLink?: boolean
     connected?: boolean
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
@@ -224,7 +228,7 @@ declare global {
   type CLIDeviceProps =
     | {
         hostname: string //     proxy_dest_ip      service ip to forward
-        hardwareID?: string
+        hardwareId?: string
         uid: string //          UID
         name?: string
         secret?: string //      password
@@ -246,8 +250,9 @@ declare global {
     id: string
     name: string
     owner: IUser
+    loaded?: boolean
     state: 'active' | 'inactive'
-    hardwareID?: string
+    hardwareId?: string
     lastReported: Date
     externalAddress: ipAddress
     internalAddress: ipAddress
@@ -303,6 +308,7 @@ declare global {
     protocol?: string
     access: IUserRef[]
     license: ILicenseTypes
+    link?: { url: string; created: Date }
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy

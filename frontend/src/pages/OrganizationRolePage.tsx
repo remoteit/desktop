@@ -193,13 +193,15 @@ export const OrganizationRolePage: React.FC = () => {
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        <PermissionsList
-          locked={systemRole}
-          disabled={disabled}
-          allowed={form.permissions}
-          permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user)}
-          onChange={handlePermissionChange}
-        />
+        {form.access !== 'NONE' && (
+          <PermissionsList
+            locked={systemRole}
+            disabled={disabled}
+            allowed={form.permissions}
+            permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user && !PERMISSION[p].hidden)}
+            onChange={handlePermissionChange}
+          />
+        )}
       </List>
       {!systemRole && (
         <Gutters top="lg">

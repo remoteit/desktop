@@ -99,6 +99,7 @@ export default createModel<RootModel>()({
       const publicConnections = globalState.connections.all.filter(c => c.public)
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
+        if (connection.connectLink) return
         const session = all.find(s => s.id === connection.sessionId)
         connection.connecting = false
         connection.enabled = !!session

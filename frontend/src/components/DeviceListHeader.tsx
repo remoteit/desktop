@@ -2,9 +2,10 @@ import React, { useState, useRef } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
-import { ListSubheader, ListItemIcon, LinearProgress } from '@mui/material'
+import { ListSubheader, ListItemIcon } from '@mui/material'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
 import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
+import { LinearProgress } from './LinearProgress'
 import { Attribute } from './Attributes'
 
 const MIN_WIDTH = 50
@@ -71,7 +72,7 @@ export const DeviceListHeader: React.FC<Props> = ({
       {attributes?.map(attribute => (
         <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
       ))}
-      {fetching && <LinearProgress className={css.fetching} />}
+      <LinearProgress loading={fetching} />
     </ListSubheader>
   )
 }
@@ -81,13 +82,6 @@ const useStyles = makeStyles(({ palette }) => ({
     padding: 0,
     minWidth: '100%',
     boxShadow: `inset 0 -1px ${palette.grayLighter.main}`,
-  },
-  fetching: {
-    position: 'absolute',
-    width: '100%',
-    zIndex: 10,
-    height: 2,
-    bottom: 0,
   },
   checkbox: {
     maxWidth: 60,

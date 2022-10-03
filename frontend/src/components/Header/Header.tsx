@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
-import { getOwnDevices, getActiveAccountId } from '../../models/accounts'
-import { useMediaQuery, Typography } from '@mui/material'
+import { getActiveAccountId } from '../../models/accounts'
+import { useMediaQuery } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../models/accounts'
@@ -9,7 +9,6 @@ import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
 import { selectLimitsLookup } from '../../models/organization'
 import { canEditTags } from '../../models/tags'
 import { useNavigation } from '../../hooks/useNavigation'
-import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -22,20 +21,17 @@ import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
-  const { searched, navigationBack, navigationForward, feature, device, editTags } = useSelector(
-    (state: ApplicationState) => {
-      const deviceModel = getDeviceModel(state)
-      return {
-        feature: selectLimitsLookup(state),
-        selected: state.ui.selected,
-        searched: deviceModel.searched, // debug make true
-        navigationBack: state.ui.navigationBack,
-        navigationForward: state.ui.navigationForward,
-        device: getOwnDevices(state).find(d => d.thisDevice),
-        editTags: canEditTags(state, getActiveAccountId(state)),
-      }
+  const { searched, navigationBack, navigationForward, feature, editTags } = useSelector((state: ApplicationState) => {
+    const deviceModel = getDeviceModel(state)
+    return {
+      feature: selectLimitsLookup(state),
+      selected: state.ui.selected,
+      searched: deviceModel.searched, // debug make true
+      navigationBack: state.ui.navigationBack,
+      navigationForward: state.ui.navigationForward,
+      editTags: canEditTags(state, getActiveAccountId(state)),
     }
-  )
+  })
   const { handleBack, handleForward } = useNavigation()
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)

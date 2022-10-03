@@ -39,7 +39,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const [loaded, setLoaded] = useState<boolean>(false)
 
   useEffect(() => {
-    if (deviceID && !device && !fetching) {
+    if (deviceID && !device?.loaded && !fetching) {
       // check that target device is registered and don't redirect
       if (loaded && !(remoteUI && thisId)) {
         if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })

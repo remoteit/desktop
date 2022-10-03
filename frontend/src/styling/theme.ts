@@ -291,10 +291,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             opacity: 1,
-            paddingLeft: 0,
-            paddingRight: 0,
-            paddingTop: 5,
-            paddingBottom: 5,
             marginTop: 1,
             marginBottom: 1,
             borderRadius: radius,
@@ -313,6 +309,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             paddingRight: spacing.xxs,
             marginLeft: spacing.md,
             marginRight: spacing.md,
+          },
+          padding: {
+            paddingLeft: 0,
+            paddingRight: 0,
+            paddingTop: 5,
+            paddingBottom: 5,
           },
           // button: {
           //   '&:hover': { backgroundColor: palette.gray.main },
