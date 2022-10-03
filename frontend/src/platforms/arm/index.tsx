@@ -14,12 +14,13 @@ platforms.register({
   types: { 1217: 'AVH' },
   installation: {
     command: true,
-    qualifier: 'For the Arm Virtual Hardware platform.',
+    qualifier: 'For the Arm Virtual Hardware platform',
     link: 'https://link.remote.it/avh',
     instructions: (
       <>
-        This page will automatically update when complete.
+        Arm Virtual Hardware (AVH) requires an Arm account.
         <Link href="https://link.remote.it/avh">Learn more about AVH.</Link>
+        This page will automatically update when complete.
       </>
     ),
   },
