@@ -333,7 +333,7 @@ export const attributes: Attribute[] = [
     value: ({ service }) =>
       service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
   }),
-  new DeviceAttribute({
+  new ServiceAttribute({
     id: 'serviceCreated',
     label: 'Service Created',
     defaultWidth: 175,
