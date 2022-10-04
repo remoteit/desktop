@@ -507,7 +507,9 @@ export function canMemberView(roles: IOrganizationRole[], member: IOrganizationM
 
 export function canRoleView(role?: IOrganizationRole, instance?: IDevice | INetwork) {
   if (instance?.shared) return false
-  return role?.tag && instance?.tags ? canViewByTags(role.tag, instance.tags) : true
+  if (!role?.permissions.includes('VIEW')) return false
+  if (role?.tag && instance?.tags) return canViewByTags(role.tag, instance.tags)
+  return true
 }
 
 export function canViewByTags(filter: ITagFilter, tags: ITag[]) {

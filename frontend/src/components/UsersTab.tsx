@@ -19,7 +19,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, to }) => {
   const css = useStyles()
   const { connected, access } = useSelector((state: ApplicationState) => ({
     connected: selectSessionUsers(state, service ? service.id : instance?.id).length,
-    access: instance?.owner.id === state.auth.user?.id ? selectMembersWithAccess(state, instance).map(m => m.user) : [],
+    access: instance?.permissions.includes('MANAGE') ? selectMembersWithAccess(state, instance).map(m => m.user) : [],
   }))
   const users = (service ? service.access : instance?.access) || []
   const usersLinked = access.filter(user => !users.find(_u => _u.email === user.email))
