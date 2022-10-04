@@ -190,6 +190,12 @@ export const attributes: Attribute[] = [
     value: ({ device }) => <AvatarList users={device?.shared ? [device.owner] : device?.access} size={22} />,
   }),
   new DeviceAttribute({
+    id: 'license',
+    label: 'License',
+    defaultWidth: 100,
+    value: ({ device }) => <LicenseChip license={device?.license} />,
+  }),
+  new DeviceAttribute({
     id: 'lastReported',
     label: 'Last reported',
     defaultWidth: 175,
@@ -283,12 +289,6 @@ export const attributes: Attribute[] = [
     label: 'Daemon version',
     defaultWidth: 80,
     value: ({ device }) => device?.version,
-  }),
-  new DeviceAttribute({
-    id: 'license',
-    label: 'License',
-    defaultWidth: 100,
-    value: ({ device }) => <LicenseChip license={device?.license} />,
   }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(

@@ -1,5 +1,5 @@
 import React from 'react'
-import { TextField, TextFieldProps, MenuItem } from '@mui/material'
+import { Box, TextField, TextFieldProps, MenuItem } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = Omit<TextFieldProps, 'onSelect'> & {
@@ -25,8 +25,10 @@ export const RoleSelect: React.FC<Props> = ({ roleId, roles, size = 'small', onS
     >
       {roles.map(r => (
         <MenuItem key={r.id} value={r.id} disabled={!!r.disabled} dense>
-          {r.name}
-          {r.system && <Icon name="lock" size="xxxs" type="solid" color="gray" inline />}
+          <Box sx={{ color: r.system ? 'primary.main' : undefined, display: 'flex', alignItems: 'center' }}>
+            {r.system && <Icon name="lock" size="xxxs" type="solid" inlineLeft />}
+            {r.name}
+          </Box>
         </MenuItem>
       ))}
     </TextField>
