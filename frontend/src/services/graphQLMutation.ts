@@ -65,10 +65,10 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
   )
 }
 
-export async function graphQLEnableConnectLink(serviceId: string) {
+export async function graphQLSetConnectLink(serviceId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: String!) {
-        enableConnectLink(serviceId: $serviceId) {
+        setConnectLink(serviceId: $serviceId) {
           url
           created
         }
@@ -77,10 +77,10 @@ export async function graphQLEnableConnectLink(serviceId: string) {
   )
 }
 
-export async function graphQLDisableConnectLink(serviceId: string) {
+export async function graphQLRemoveConnectLink(serviceId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: String!) {
-        disableConnectLink(serviceId: $serviceId)
+        removeConnectLink(serviceId: $serviceId)
       }`,
     { serviceId }
   )

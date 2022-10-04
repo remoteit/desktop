@@ -198,26 +198,28 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           expanded={accordion.networks}
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
         />
-        <AccordionMenuItem
-          gutters
-          subtitle="Options"
-          expanded={accordion.options}
-          onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
-          elevation={0}
-        >
-          <List disablePadding>
-            <DesktopUI>
-              <RouteSetting connection={connection} service={service} />
-              <LanShareSelect connection={connection} />
-              <TargetHostSetting connection={connection} service={service} />
-              <TimeoutSetting connection={connection} service={service} />
-              <ConnectionLogSetting connection={connection} service={service} />
-            </DesktopUI>
-            <PortalUI>
-              <PublicSetting connection={connection} service={service} />
-            </PortalUI>
-          </List>
-        </AccordionMenuItem>
+        {connection.connectLink || (
+          <AccordionMenuItem
+            gutters
+            subtitle="Options"
+            expanded={accordion.options}
+            onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
+            elevation={0}
+          >
+            <List disablePadding>
+              <DesktopUI>
+                <RouteSetting connection={connection} service={service} />
+                <LanShareSelect connection={connection} />
+                <TargetHostSetting connection={connection} service={service} />
+                <TimeoutSetting connection={connection} service={service} />
+                <ConnectionLogSetting connection={connection} service={service} />
+              </DesktopUI>
+              <PortalUI>
+                <PublicSetting connection={connection} service={service} />
+              </PortalUI>
+            </List>
+          </AccordionMenuItem>
+        )}
       </Gutters>
     </>
   )

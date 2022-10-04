@@ -121,11 +121,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (props.loading) title = 'Loading'
   props.loading = props.loading || loading
 
-  if (service?.attributes.route === 'p2p' && connection?.public) {
-    disabled = true
-  }
-
+  if (service?.attributes.route === 'p2p' && connection?.public) disabled = true
   if (disabled && props.size === 'icon') title = ''
+  if (connection?.connectLink) icon = 'globe'
 
   return (
     <DynamicButton

@@ -32,7 +32,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   return (
     <>
       <LaunchTypeSelect app={app} onChange={handleChange} />
-      <ListItem dense disablePadding>
+      <ListItem className={css.group} dense disablePadding>
         <Quote margin={null} noInset indent="listItem">
           <List className={css.indent} disablePadding>
             <AutoLaunchToggle app={app} connection={connection} service={service} />
@@ -47,4 +47,5 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
 const useStyles = makeStyles({
   indent: { marginRight: -spacing.lg, marginTop: -spacing.xs },
+  group: { marginBottom: spacing.sm },
 })

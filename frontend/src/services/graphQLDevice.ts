@@ -121,8 +121,7 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => DeviceSelectLookup[k])
   .join()
 
-const DEVICE_SELECT_PRELOAD =
-  DeviceSelectLookup.id + DeviceSelectLookup.deviceName + DeviceSelectLookup.status + DeviceSelectLookup.services
+const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'services']
 
 export async function graphQLFetchDevices({
   tag,
@@ -169,7 +168,7 @@ export async function graphQLFetchConnections(params: { account: string; ids: st
         login {
           id
           connections: device(id: $ids)  {
-            ${DEVICE_SELECT_PRELOAD}
+            ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
           }
         }
       }`,
@@ -304,17 +303,21 @@ export function graphQLServiceAdaptor(device: any): IService[] {
 }
 
 function deviceQueryColumns() {
-  let deviceQuery = new Set()
-  let columns = ['id', 'status', 'deviceName']
+  let columns = DEVICE_PRELOAD_ATTRIBUTES
   columns = columns.concat(store.getState().ui.columns)
+  return attributeQuery(columns)
+}
 
-  columns.forEach(c => {
+function attributeQuery(attributes: string[]) {
+  let uniqueAttributes = new Set()
+
+  attributes.forEach(c => {
     const a = getAttribute(c)
-    deviceQuery.add(DeviceSelectLookup[a.query || a.id])
+    uniqueAttributes.add(DeviceSelectLookup[a.query || a.id])
   })
 
-  console.log('DEVICE QUERY', deviceQuery)
-  return Array.from(deviceQuery).join('')
+  console.log('DEVICE QUERY', uniqueAttributes)
+  return Array.from(uniqueAttributes).join('')
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
@@ -341,6 +344,7 @@ export async function graphQLRegistration(props: {
   platform?: number
   account: string
 }) {
+  console.log('REGISTRATION DETAILS', props)
   return await graphQLBasicRequest(
     ` query Registration($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
         login {

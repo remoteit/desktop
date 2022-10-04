@@ -14,8 +14,8 @@ import {
   graphQLConnect,
   graphQLDisconnect,
   graphQLSurvey,
-  graphQLEnableConnectLink,
-  graphQLDisableConnectLink,
+  graphQLSetConnectLink,
+  graphQLRemoveConnectLink,
 } from '../services/graphQLMutation'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
@@ -56,6 +56,10 @@ export default createModel<RootModel>()({
       updateConnections(state, connections, accountId)
       await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
       cleanOrphanConnections(deviceIds)
+    },
+
+    async mergeConnectionParams(params: IConnection, state) {
+      const { all } = state.connections
     },
 
     async updateConnection(connection: IConnection, state) {
@@ -224,7 +228,7 @@ export default createModel<RootModel>()({
 
       dispatch.connections.updateConnection(disconnecting)
 
-      const result = await graphQLDisableConnectLink(connection.id)
+      const result = await graphQLRemoveConnectLink(connection.id)
 
       if (result === 'ERROR') {
         dispatch.ui.set({ errorMessage: 'Persistent connection closing failed. Please contact support.' })
@@ -245,7 +249,7 @@ export default createModel<RootModel>()({
       const connecting: IConnection = { ...connection, starting: true }
       dispatch.connections.updateConnection(connecting)
 
-      const result = await graphQLEnableConnectLink(connection.id)
+      const result = await graphQLSetConnectLink(connection.id)
 
       if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
         dispatch.ui.set({ errorMessage: 'Persistent connection generation failed. Please contact support.' })
