@@ -19,7 +19,7 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
   let accountName = organization.name
 
   useEffect(() => {
-    const platformType = platforms.findType(platform.name)
+    const platformType = platforms.findType(platform.id)
     dispatch.devices.createRegistration({
       services: [{ application: 28 }],
       accountId,
