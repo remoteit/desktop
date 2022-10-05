@@ -161,7 +161,10 @@ export default createModel<RootModel>()({
           owner: n.owner,
           permissions: n.permissions,
           created: new Date(n.created),
+          // FIXME this is not enough data to generate new network connections... need full generation for shared networks...
+          // ...maybe can be done by adding the network service IDs to the connection query
           connectionNames: n.connections.reduce((obj, c) => ({ ...obj, [c.service.id]: c.name }), {}),
+
           serviceIds: n.connections.map(c => c.service.id),
           access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
           tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),

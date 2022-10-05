@@ -86,6 +86,7 @@ const DeviceSelectLookup: ILookup<string> = {
     state
     title
     license
+    application
   }`,
 
   endpoint: `
@@ -121,7 +122,7 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => DeviceSelectLookup[k])
   .join()
 
-const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'services']
+const DEVICE_PRELOAD = ['id', 'deviceName', 'status', 'services']
 
 export async function graphQLFetchDevices({
   tag,
@@ -162,13 +163,41 @@ export async function graphQLFetchDevices({
   )
 }
 
+export async function graphQLFetchDevice(params: { account: string; ids: string[] }) {
+  return await graphQLRequest(
+    ` query Connections($ids: [String!]!) {
+        login {
+          id
+          account(id: $account) {
+            device(id: $ids)  {
+              ${attributeQuery(DEVICE_PRELOAD)}
+            }
+          }
+        }
+      }`,
+    params
+  )
+}
+
 export async function graphQLFetchConnections(params: { account: string; ids: string[] }) {
   return await graphQLRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
           connections: device(id: $ids)  {
-            ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
+            ${attributeQuery(DEVICE_PRELOAD)}
+          }
+          links {
+            url
+            password
+            created
+            service {
+              id
+              name
+              device {
+                ${attributeQuery(DEVICE_PRELOAD)}
+              }
+            }
           }
         }
       }`,
@@ -179,7 +208,7 @@ export async function graphQLFetchConnections(params: { account: string; ids: st
 /* 
   Fetches single, or array of devices across shared accounts by id
 */
-export async function graphQLFetchDevice(id: string, account: string) {
+export async function graphQLFetchCompleteDevice(id: string, account: string) {
   return await graphQLRequest(
     ` query Device($id: [String!]!, $account: String) {
         login {
@@ -303,7 +332,7 @@ export function graphQLServiceAdaptor(device: any): IService[] {
 }
 
 function deviceQueryColumns() {
-  let columns = DEVICE_PRELOAD_ATTRIBUTES
+  let columns = DEVICE_PRELOAD
   columns = columns.concat(store.getState().ui.columns)
   return attributeQuery(columns)
 }

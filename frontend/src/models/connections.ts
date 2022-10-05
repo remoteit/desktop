@@ -1,5 +1,7 @@
 import { parse as urlParse } from 'url'
+import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
+import { DEFAULT_CONNECTION } from '../shared/constants'
 import {
   cleanOrphanConnections,
   getConnectionDeviceIds,
@@ -8,6 +10,7 @@ import {
   selectConnection,
   setConnection,
   updateConnections,
+  connectionName,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import {
@@ -17,6 +20,8 @@ import {
   graphQLSetConnectLink,
   graphQLRemoveConnectLink,
 } from '../services/graphQLMutation'
+import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
+import { graphQLGetErrors } from '../services/graphQL'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
@@ -52,14 +57,62 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
       const deviceIds = getConnectionDeviceIds(state)
-      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      updateConnections(state, connections, accountId)
-      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
+      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
+
+      const error = graphQLGetErrors(gqlResponse)
+      if (error) return
+
+      await dispatch.connections.parseConnections({ gqlResponse, accountId })
+      await dispatch.connections.parseConnectLinks(gqlResponse)
       cleanOrphanConnections(deviceIds)
     },
 
-    async mergeConnectionParams(params: IConnection, state) {
-      const { all } = state.connections
+    async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }, state) {
+      const connectionData = gqlResponse?.data?.data?.login?.connections || []
+      const linkData = gqlResponse?.data?.data?.login?.links || []
+      console.log('CONNECTION FETCH', { connectionData, linkData })
+      const mergedData = connectionData.concat(linkData.map(l => l?.service?.device))
+      const devices = graphQLDeviceAdaptor(mergedData, accountId, true)
+      updateConnections(state, devices, accountId)
+      await dispatch.accounts.setDevices({ devices, accountId: 'connections' })
+    },
+
+    async parseConnectLinks(gqlResponse: AxiosResponse<any> | undefined, state) {
+      const data = gqlResponse?.data?.data?.login || {}
+      const links: IConnection[] = data?.links.map(
+        link =>
+          ({
+            ...DEFAULT_CONNECTION,
+            id: link.service.id,
+            deviceID: link.service.device.id,
+            accountId: data?.id,
+            createdTime: link.created,
+            password: link.password,
+            host: link.url,
+            name: connectionName(link.service, link.service.device),
+            connectLink: true,
+            public: true,
+            default: false,
+            enabled: true,
+          } as IConnection)
+      )
+      dispatch.connections.mergeConnections(links)
+    },
+
+    async mergeConnections(connections: IConnection[], state) {
+      if (!connections.length) return
+      const all = state.connections.all
+      // merge and remove new connections
+      const updated = all.map(c => {
+        const index = connections.findIndex(a => a.id === c.id)
+        if (index >= 0) {
+          const merged = { ...c, ...connections[index] }
+          connections.splice(index, 1)
+          return merged
+        }
+        return c
+      })
+      dispatch.connections.setAll([...updated, ...connections])
     },
 
     async updateConnection(connection: IConnection, state) {

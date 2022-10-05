@@ -13,8 +13,8 @@ import {
 import {
   graphQLFetchDeviceCount,
   graphQLFetchDevices,
+  graphQLFetchCompleteDevice,
   graphQLFetchDevice,
-  graphQLFetchConnections,
   graphQLRegistration,
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
@@ -171,20 +171,20 @@ export default createModel<RootModel>()({
 
     async fetchDevices(deviceIds: string[], state) {
       const accountId = getActiveAccountId(state)
-      const devices = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      if (devices.length) dispatch.accounts.mergeDevices({ devices, accountId })
-    },
-
-    async fetchArray({ deviceIds, accountId }: { deviceIds: string[]; accountId: string }, state): Promise<IDevice[]> {
       const model = getDeviceModel(state)
+
       if (model.fetchingArray) return []
       await dispatch.devices.set({ fetchingArray: true, accountId })
-      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
+
+      const gqlResponse = await graphQLFetchDevice({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
-      const connectionData = gqlResponse?.data?.data?.login?.connections
+      const result = gqlResponse?.data?.data?.login?.device
+
       await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []
-      return graphQLDeviceAdaptor(connectionData, accountId, true)
+
+      const devices = graphQLDeviceAdaptor(result, accountId, true)
+      if (devices.length) dispatch.accounts.mergeDevices({ devices, accountId })
     },
 
     async fetchSingle(
@@ -207,7 +207,7 @@ export default createModel<RootModel>()({
 
       set({ fetching: true, accountId })
       try {
-        const gqlResponse = await graphQLFetchDevice(id, accountId)
+        const gqlResponse = await graphQLFetchCompleteDevice(id, accountId)
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
         result = gqlDevice ? graphQLDeviceAdaptor(gqlDevice, accountId, hidden, true)[0] : undefined
