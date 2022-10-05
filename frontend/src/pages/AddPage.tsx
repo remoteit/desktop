@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { safeHostname } from '../shared/nameHelper'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, TextField, Divider } from '@mui/material'
+import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
 import { selectDeviceByAccount } from '../models/devices'
-import { isPortal, getOs } from '../services/Browser'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
+import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { ListHorizontal } from '../components/ListHorizontal'
-import { GuideBubble } from '../components/GuideBubble'
 import { IconButton } from '../buttons/IconButton'
-import { DesktopUI } from '../components/DesktopUI'
 import { platforms } from '../platforms'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
-import { Link } from 'react-router-dom'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
@@ -27,11 +23,9 @@ export const AddPage: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo, hasThisDevice, hostname } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.user.id) !== undefined,
-    hasThisDevice: !!state.backend.thisId,
-    hostname: safeHostname(state.backend.environment.hostname, []),
   }))
 
   const handleClose = () => {
@@ -54,42 +48,10 @@ export const AddPage: React.FC = () => {
     setCode(value.toUpperCase())
   }
 
-  let thisLink = '/devices/setup'
-  if (isPortal()) thisLink = `/add/${getOs()}`
-
   return (
     <Body verticalOverflow>
       <Gutters className={css.container}>
-        <DesktopUI>
-          <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
-            <ListSubheader disableGutters>Add this system</ListSubheader>
-            <Divider />
-            <GuideBubble
-              enterDelay={400}
-              guide="registerMenu"
-              placement="right"
-              startDate={new Date('2022-09-20')}
-              instructions={
-                <>
-                  <Typography variant="h3" gutterBottom>
-                    <b>Select a device</b>
-                  </Typography>
-                  <Typography variant="body2" gutterBottom>
-                    You can setup the device you are currently using, or follow the simple instructions to setup one of
-                    the commonly used platforms.
-                  </Typography>
-                </>
-              }
-            >
-              <ListItem button disableGutters onClick={handleClose} to={thisLink} component={Link}>
-                <ListItemIcon>
-                  <Icon name={getOs()} fixedWidth platformIcon size="xxl" />
-                </ListItemIcon>
-                <ListItemText primary={hostname} secondary={hasThisDevice && 'Already created'} />
-              </ListItem>
-            </GuideBubble>
-          </ListHorizontal>
-        </DesktopUI>
+        <DeviceSetupItem className={classnames(css.list, css.third)} onClick={handleClose} />
         <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
@@ -196,6 +158,7 @@ const useStyles = makeStyles(({ palette }) => ({
   list: {
     '& .MuiListItem-root': { width: 140 },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm, color: palette.grayDark.main },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
   },
   third: {
     width: '33%',

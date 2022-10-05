@@ -78,6 +78,7 @@ class Controller {
     socket.on('preferences', preferences.set)
     socket.on('restart', this.installAndRestart)
     socket.on('uninstall', this.uninstall)
+    socket.on('forceUnregister', this.forceUnregister)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
@@ -95,10 +96,11 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  check = () => {
+  check = (all?: boolean) => {
     this.pool.check()
     lan.check()
     app.check()
+    if (all) binaryInstaller.check()
   }
 
   connect = async (connection: IConnection) => {
@@ -133,6 +135,10 @@ class Controller {
   restore = async (deviceId: string) => {
     await cli.restore(deviceId)
     this.io.emit('device', cli.data.device?.uid)
+  }
+
+  forceUnregister = async (code: string) => {
+    cli.forceUnregister()
   }
 
   interfaces = async () => {

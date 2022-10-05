@@ -110,6 +110,7 @@ export default createModel<RootModel>()({
 
           // restored
         } else if (state.ui.restoring) {
+          devices.fetch()
           ui.set({
             restoring: false,
             successMessage: 'Device restored successfully!',

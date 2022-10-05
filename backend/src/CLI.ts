@@ -212,6 +212,11 @@ export default class CLI {
     this.read()
   }
 
+  async forceUnregister() {
+    // @TODO when cli supports force reset will implement
+    // await this.exec({ cmds: [strings.unregister()], admin: true })
+  }
+
   async addConnection(c: IConnection, onError: (error: Error) => void) {
     d('ADD CONNECTION', strings.connect(c))
     await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
@@ -273,7 +278,7 @@ export default class CLI {
       cmds: [strings.agentStatus()],
       checkAuthHash: true,
       skipSignInCheck: true,
-      quiet: true,
+      quiet: false,
       force,
     })
 

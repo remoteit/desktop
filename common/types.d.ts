@@ -53,6 +53,7 @@ declare global {
     | 'osInfo'
     | 'reachablePort'
     | 'useCertificate'
+    | 'forceUnregister'
 
   type SocketEvent =
     // built-in events
@@ -171,6 +172,7 @@ declare global {
     name?: string
     online?: boolean // online if service is online
     owner?: IUserRef
+    password?: string // link password
     path?: string // application path
     port?: number
     proxyOnly?: boolean // disabled p2p

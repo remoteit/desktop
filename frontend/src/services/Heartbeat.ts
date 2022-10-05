@@ -11,6 +11,7 @@ class Heartbeat {
   count = 0
   restInterval?: number = undefined
   caffeineInterval?: number = undefined
+  checkAll?: true = undefined
 
   init() {
     if (!isPortal()) {
@@ -41,7 +42,7 @@ class Heartbeat {
   beat = () => {
     const { auth } = store.getState()
     if (navigator.onLine && auth.backendAuthenticated) {
-      emit('heartbeat')
+      emit('heartbeat', this.checkAll)
     }
   }
 
