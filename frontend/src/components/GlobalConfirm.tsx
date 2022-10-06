@@ -4,10 +4,11 @@ import { ApplicationState, Dispatch } from '../store'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 
-const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode }> = {
+const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?: string }> = {
   destroyLink: {
     title: 'Remove persistent endpoint?',
-    message: 'Once removed, this endpoint will no longer work. If you restart the connection you will get a new url.',
+    message: 'Once removed, this endpoint will not be the same again. You will get a new url when you restart.',
+    action: 'Remove',
   },
   forceUnregister: {
     title: 'Force removal?',
@@ -41,7 +42,14 @@ export const GlobalConfirm: React.FC = () => {
   if (!dialog) return null
 
   return (
-    <Confirm open={open} onConfirm={handleConfirm} onDeny={close} title={dialog.title}>
+    <Confirm
+      open={open}
+      onConfirm={handleConfirm}
+      onDeny={close}
+      title={dialog.title}
+      color="error"
+      action={dialog.action}
+    >
       {dialog.message}
     </Confirm>
   )

@@ -65,15 +65,16 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
   )
 }
 
-export async function graphQLSetConnectLink(serviceId: string) {
+export async function graphQLSetConnectLink(params: { serviceId: string; password?: string; enabled?: boolean }) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!) {
-        setConnectLink(serviceId: $serviceId) {
+    ` mutation query($serviceId: String!, $password: String, $enabled: Boolean) {
+        setConnectLink(serviceId: $serviceId, password: $password, enabled: $enabled) {
           url
-          created
+          password
+          enabled
         }
       }`,
-    { serviceId }
+    params
   )
 }
 

@@ -79,23 +79,24 @@ export default createModel<RootModel>()({
 
     async parseConnectLinks(gqlResponse: AxiosResponse<any> | undefined, state) {
       const data = gqlResponse?.data?.data?.login || {}
-      const links: IConnection[] = data?.links.map(
-        link =>
-          ({
-            ...DEFAULT_CONNECTION,
-            id: link.service.id,
-            deviceID: link.service.device.id,
-            accountId: data?.id,
-            createdTime: link.created,
-            password: link.password,
-            host: link.url,
-            name: connectionName(link.service, link.service.device),
-            connectLink: true,
-            public: true,
-            default: false,
-            enabled: true,
-          } as IConnection)
-      )
+      const links: IConnection[] = data?.links.map(link => {
+        const url = urlParse(link.url)
+        return {
+          ...DEFAULT_CONNECTION,
+          id: link.service.id,
+          deviceID: link.service.device.id,
+          accountId: data?.id,
+          createdTime: link.created,
+          password: link.password,
+          host: url.host,
+          port: url.port ? parseInt(url.port, 10) : undefined,
+          name: connectionName(link.service, link.service.device),
+          connectLink: true,
+          public: true,
+          default: false,
+          enabled: true,
+        } as IConnection
+      })
       dispatch.connections.mergeConnections(links)
     },
 
@@ -272,51 +273,30 @@ export default createModel<RootModel>()({
       }
     },
 
-    async disableConnectLink(connection?: IConnection) {
-      if (!connection) {
-        console.warn('No connection to disconnect')
-        return
-      }
-      const disconnecting: IConnection = { ...connection, enabled: false, public: false || isPortal() }
-
-      dispatch.connections.updateConnection(disconnecting)
-
-      const result = await graphQLRemoveConnectLink(connection.id)
-
-      if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Persistent connection closing failed. Please contact support.' })
-        connection.error = { message: 'An error occurred removing your connection.' }
-        dispatch.connections.updateConnection(connection)
-        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
-        return
-      }
-
-      setConnection({
-        ...disconnecting,
-        connected: false,
-        reverseProxy: false,
+    async setConnectLink(connection: IConnection) {
+      const creating: IConnection = { ...connection, public: true, connectLink: true }
+      dispatch.connections.updateConnection(creating)
+      const result = await graphQLSetConnectLink({
+        serviceId: connection.id,
+        enabled: connection.enabled,
+        password: connection.password,
       })
-    },
 
-    async enableConnectLink(connection: IConnection) {
-      const connecting: IConnection = { ...connection, starting: true }
-      dispatch.connections.updateConnection(connecting)
-
-      const result = await graphQLSetConnectLink(connection.id)
-
-      if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
-        dispatch.ui.set({ errorMessage: 'Persistent connection generation failed. Please contact support.' })
-        connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
+      if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
+        connection.error = { message: 'Persistent connection update failed. Please contact support.' }
         dispatch.connections.updateConnection(connection)
         if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
         return
       }
 
-      const url = urlParse(result?.data?.data?.enableConnectLink?.url)
+      const data = result?.data?.data?.setConnectLink
+      const url = urlParse(data?.url)
+
       setConnection({
-        ...connecting,
+        ...creating,
+        password: data?.password,
         starting: false,
-        enabled: true,
+        enabled: !!data?.enabled,
         error: undefined,
         isP2P: false,
         reverseProxy: true,
@@ -325,9 +305,39 @@ export default createModel<RootModel>()({
       })
     },
 
-    async connect(connection: IConnection) {
+    async removeConnectLink(connection?: IConnection) {
+      if (!connection) return console.warn('No connection to disconnect')
+
+      const removing: IConnection = {
+        ...connection,
+        connectLink: false,
+        enabled: false,
+        public: false || isPortal(),
+        disconnecting: true,
+      }
+      dispatch.connections.updateConnection(removing)
+      const result = await graphQLRemoveConnectLink(connection.id)
+
+      if (result === 'ERROR') {
+        connection.error = { message: 'An error occurred removing your persistent connection. Please contact support.' }
+        dispatch.connections.updateConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        return
+      }
+
+      setConnection({
+        ...removing,
+        disconnecting: false,
+        connected: false,
+        reverseProxy: false,
+      })
+    },
+
+    async connect(connection: IConnection, state) {
+      const [service] = selectById(state, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
+      connection.online = service ? service?.state === 'active' : connection.online
       connection.host = ''
       connection.reverseProxy = undefined
       connection.autoStart = undefined
@@ -335,7 +345,7 @@ export default createModel<RootModel>()({
       connection.starting = !connection.public
 
       if (connection.connectLink) {
-        dispatch.connections.enableConnectLink(connection)
+        dispatch.connections.setConnectLink({ ...connection, enabled: true, starting: true })
         return
       }
 
@@ -355,7 +365,7 @@ export default createModel<RootModel>()({
       }
 
       if (connection.connectLink) {
-        dispatch.connections.disableConnectLink(connection)
+        dispatch.connections.setConnectLink({ ...connection, enabled: false })
         return
       }
 

@@ -41,14 +41,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
     dispatch.networks.start(instanceId)
     if (state === 'connecting' || connection?.enabled) {
-      connection?.connectLink
-        ? dispatch.ui.set({
-            confirm: {
-              id: 'destroyLink',
-              callback: () => dispatch.connections.disableConnectLink(connection),
-            },
-          })
-        : dispatch.connections.disconnect(connection)
+      dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
       dispatch.connections.connect(connection)
@@ -118,7 +111,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (all) title += ' all'
-  if (props.loading) title = 'Loading'
+  if (props.loading) {
+    title = 'Loading'
+    disabled = true
+  }
   props.loading = props.loading || loading
 
   if (service?.attributes.route === 'p2p' && connection?.public) disabled = true

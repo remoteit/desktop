@@ -52,12 +52,12 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, ownDevice, connectLink } = useSelector((state: ApplicationState) => ({
+  const { session, accordion, ownDevice, showConnectLink } = useSelector((state: ApplicationState) => ({
     ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    connectLink: canUseConnectLink(state, service?.typeID),
+    showConnectLink: canUseConnectLink(state, service?.typeID),
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
@@ -98,7 +98,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
         connection={connection}
         service={service}
         session={session}
-        show={!!(connection.enabled && connection.host)}
+        show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       {(!ownDevice || connection.connectLink) && (
@@ -170,7 +170,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               </DesktopUI>
               <LaunchSelect connection={connection} service={service} />
             </Collapse>
-            {connectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
+            {showConnectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Get Desktop for more features and control.</strong>

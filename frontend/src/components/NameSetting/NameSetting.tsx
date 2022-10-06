@@ -15,7 +15,7 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
       modified={connection.name !== resetValue}
       icon="i-cursor"
       value={connection.name}
-      label="Host Name"
+      label="Subdomain"
       resetValue={resetValue}
       disabled={connection.connected || connection.public}
       filter={REGEX_CONNECTION_NAME}
