@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { List, Typography } from '@mui/material'
-import { Pagination } from '@mui/lab'
+import { List, Typography, Pagination, Slider, Box } from '@mui/material'
+import { spacing, fontSizes } from '../styling'
 import { UserListItem } from './UserListItem'
 import { ShareDetails } from './ShareDetails'
+import { IconButton } from '../buttons/IconButton'
 import { Title } from './Title'
-import { fontSizes } from '../styling'
 
 interface Props {
   title: string
@@ -39,9 +39,31 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
     <>
       <Typography variant="subtitle1" color={connected ? 'primary' : undefined}>
         <Title>{title}</Title>
-        {users.length > perPage && (
-          <Pagination className={css.pagination} count={pageCount} onChange={(e, page) => setPage(page)} size="small" />
-        )}
+        <Box className={css.pagination}>
+          {users.length > perPage * 3 ? (
+            <>
+              <IconButton name="chevron-left" type="solid" color="primary" onClick={() => setPage(page - 1)} />
+              <Slider
+                valueLabelDisplay="auto"
+                valueLabelFormat={value => pageUsers[0]?.email?.substring(0, 1) || '-'}
+                defaultValue={page}
+                max={pageCount}
+                onChange={(e, page) => setPage(Number(page))}
+                size="small"
+              />
+              <IconButton name="chevron-right" type="solid" color="primary" onClick={() => setPage(page + 1)} />
+            </>
+          ) : (
+            users.length > perPage && (
+              <Pagination
+                className={css.pagination}
+                count={pageCount}
+                onChange={(e, page) => setPage(Math.max(page, 1))}
+                size="small"
+              />
+            )
+          )}
+        </Box>
       </Typography>
       <List>
         {pageUsers.map((user, i) => (
@@ -56,7 +78,10 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
 
 export const useStyles = makeStyles(({ palette }) => ({
   pagination: {
+    marginRight: spacing.sm,
     margin: 0,
+    '& .MuiSlider-sizeSmall': { width: 200 },
+    '& .MuiIconButton-root': { marginTop: -spacing.lg },
     '& .MuiPaginationItem-sizeSmall': { fontSize: fontSizes.xxs },
     '& .MuiPaginationItem-page.Mui-selected': {
       backgroundColor: palette.primary.main,
