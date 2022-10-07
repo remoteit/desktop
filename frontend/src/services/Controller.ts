@@ -22,7 +22,7 @@ class Controller extends EventEmitter {
   }
 
   log(...args) {
-    console.log(`%c${args[0]}`, 'color:lime;font-weight:bold', ...args.slice(1))
+    console.log(`%c${args[0]}`, 'color:limegreen;font-weight:bold', ...args.slice(1))
   }
 
   onNetworkConnect = () => {

@@ -52,6 +52,10 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     }
   }, [fetching, device, thisId, history])
 
+  useEffect(() => {
+    setLoaded(false)
+  }, [deviceID])
+
   if (fetching && !device) return <LoadingMessage message="Fetching device" />
 
   return (

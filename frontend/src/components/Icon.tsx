@@ -27,6 +27,7 @@ export interface IconProps {
   size?: FontSize
   rotate?: number
   spin?: boolean
+  scale?: number
   type?: IconType
   inline?: boolean
   inlineLeft?: boolean
@@ -44,6 +45,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       fontSize,
       rotate,
       spin,
+      scale,
       type = 'regular',
       inline,
       inlineLeft,
@@ -60,8 +62,12 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       name = 'arrow-right'
       rotate = -45
     }
+    if (name === 'circle-medium') {
+      name = 'circle'
+      scale = 0.8
+    }
 
-    const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize })
+    const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize, scale })
 
     // Platform icons
     if (props.platform || platformIcon)
@@ -117,7 +123,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 )
 
 const useStyles = makeStyles(({ palette }) => ({
-  icon: ({ color, inline, inlineLeft, size, fontSize, rotate }: IconProps) => {
+  icon: ({ color, inline, inlineLeft, size, fontSize, rotate, scale }: IconProps) => {
     const styles: any = { objectFit: 'contain' }
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
@@ -126,6 +132,7 @@ const useStyles = makeStyles(({ palette }) => ({
     if (fontSize) styles.fontSize = styles.height = fontSize
     if (rotate) styles.transform = `rotate(${rotate}deg)`
     if (styles.fontSize) styles.maxWidth = styles.fontSize + spacing.sm
+    if (scale) styles.height *= scale
     return styles
   },
 }))

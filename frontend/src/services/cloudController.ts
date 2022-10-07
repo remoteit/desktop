@@ -34,7 +34,7 @@ class CloudController {
   }
 
   log(...args) {
-    console.log(`%c${args[0]}`, 'color:cyan;font-weight:bold', ...args.slice(1))
+    console.log(`%c${args[0]}`, 'color:blue;font-weight:bold', ...args.slice(1))
   }
 
   connect() {

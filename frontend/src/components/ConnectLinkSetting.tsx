@@ -11,6 +11,7 @@ import { Dispatch } from '../store'
 import { ColorChip } from './ColorChip'
 
 type ISecurity = 'PROTECTED' | 'OPEN'
+const MAX_PASSWORD_LENGTH = 49
 
 export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions: IPermission[] }> = ({
   connection,
@@ -39,14 +40,12 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
         toggle={!!connection.connectLink}
         onClick={() => {
           if (connection.connectLink) {
-            connection.enabled
-              ? dispatch.ui.set({
-                  confirm: {
-                    id: 'destroyLink',
-                    callback: () => dispatch.connections.removeConnectLink(connection),
-                  },
-                })
-              : setConnection({ ...connection, public: false || isPortal(), connectLink: false })
+            dispatch.ui.set({
+              confirm: {
+                id: 'destroyLink',
+                callback: () => dispatch.connections.removeConnectLink(connection),
+              },
+            })
           } else {
             dispatch.connections.setConnectLink(connection)
           }
@@ -62,20 +61,21 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
               { name: 'None', key: 'OPEN' },
               { name: 'Password', key: 'PROTECTED' },
             ]}
-            onChange={value => setSecurity(value as ISecurity)}
+            onChange={value => {
+              setSecurity(value as ISecurity)
+              if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
+            }}
           />
           {security === 'PROTECTED' && (
             <InlineTextFieldSetting
               required
               hideIcon
-              type="password"
               displayValue={connection.password?.replaceAll(/./g, '•')}
               modified={!!connection.password}
               value={connection.password}
               label="Password"
               resetValue=""
-              // filter={REGEX_CONNECTION_NAME}
-              // maxLength={MAX_CONNECTION_NAME_LENGTH}
+              maxLength={MAX_PASSWORD_LENGTH}
               onSave={password => dispatch.connections.setConnectLink({ ...connection, password: password.toString() })}
             />
           )}
