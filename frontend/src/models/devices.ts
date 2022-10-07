@@ -122,6 +122,7 @@ export default createModel<RootModel>()({
         const value = getLocalStorage(state, `device-${accountId}-${key}`)
         if (value) states[key] = value
       })
+      console.log('RESTORE DEVICE STATES', states)
       await dispatch.devices.set({ ...states, accountId })
     },
     /* 

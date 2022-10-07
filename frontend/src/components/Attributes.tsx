@@ -432,7 +432,7 @@ export const serviceAttributes = attributes.filter(a => a.type === 'SERVICE')
 export const restoreAttributes = attributes.filter(a => a.type === 'RESTORE')
 
 export function getAttribute(id: string): Attribute {
-  return attributeLookup[id]
+  return attributeLookup[id] || new Attribute({ id: 'unknown', label: 'Unknown' })
 }
 
 export function getAttributes(ids: string[]): Attribute[] {

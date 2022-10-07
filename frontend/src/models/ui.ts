@@ -168,6 +168,7 @@ export default createModel<RootModel>()({
           else states[key] = value
         }
       })
+      console.log('RESTORE UI STATE', states)
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
     },
