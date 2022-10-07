@@ -279,7 +279,7 @@ export default createModel<RootModel>()({
       const result = await graphQLSetConnectLink({
         serviceId: connection.id,
         enabled: connection.enabled,
-        password: connection.password,
+        password: connection.password?.trim() || null,
       })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
@@ -327,6 +327,7 @@ export default createModel<RootModel>()({
 
       setConnection({
         ...removing,
+        password: undefined,
         disconnecting: false,
         connected: false,
         reverseProxy: false,
