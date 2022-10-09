@@ -227,7 +227,7 @@ function getApplicationType(typeId: number | undefined) {
     case 28:
       return new Application({
         title: 'SSH',
-        defaultLaunchType: 'URL',
+        defaultLaunchType: 'COMMAND',
         windowsLaunchType: 'COMMAND',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
