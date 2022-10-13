@@ -61,6 +61,7 @@ export const DeleteButton: React.FC<Props> = ({
         onDeny={() => setOpen(false)}
         title="Are you sure?"
         action={title}
+        color="error"
       >
         {warning}
       </Confirm>

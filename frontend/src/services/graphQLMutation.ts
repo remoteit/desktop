@@ -76,6 +76,7 @@ export async function graphQLSetConnectLink(params: {
           url
           password
           enabled
+          created
         }
       }`,
     params
@@ -88,6 +89,25 @@ export async function graphQLRemoveConnectLink(serviceId: string) {
         removeConnectLink(serviceId: $serviceId)
       }`,
     { serviceId }
+  )
+}
+
+export async function graphQLRegistration(props: {
+  name?: string
+  services: IServiceRegistration[]
+  platform?: number
+  account: string
+}) {
+  return await graphQLBasicRequest(
+    ` query Registration($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
+        login {
+          account(id: $account) {
+            registrationCode(name: $name, platform: $platform, services: $services)
+            registrationCommand(name: $name, platform: $platform, services: $services)
+          }
+        }
+      }`,
+    props
   )
 }
 

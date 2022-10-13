@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { List, Button, Typography, Collapse } from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText, Button, Typography, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
@@ -24,6 +24,7 @@ import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
 import { ConnectionMenu } from './ConnectionMenu'
+import { ListItemQuote } from './ListItemQuote'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
 import { GuideBubble } from './GuideBubble'
@@ -34,6 +35,7 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
+import { Icon } from './Icon'
 
 type Props = {
   service?: IService
@@ -170,6 +172,9 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
               </DesktopUI>
               <LaunchSelect connection={connection} service={service} />
             </Collapse>
+            <PortalUI>
+              <PublicSetting connection={connection} service={service} />
+            </PortalUI>
             {showConnectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
             <PortalUI>
               <Notice gutterTop severity="info">
@@ -183,7 +188,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
                   color="primary"
                   variant="contained"
                   sx={{ marginTop: 1 }}
-                  onClick={() => windowOpen('https://link.remote.it/download')}
+                  onClick={() => windowOpen('https://link.remote.it/download/desktop')}
                 >
                   Download
                 </Button>
@@ -199,26 +204,52 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
         />
         {connection.connectLink || (
-          <AccordionMenuItem
-            gutters
-            subtitle="Options"
-            expanded={accordion.options}
-            onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
-            elevation={0}
-          >
-            <List disablePadding>
-              <DesktopUI>
+          <DesktopUI>
+            <AccordionMenuItem
+              gutters
+              subtitle="Options"
+              expanded={accordion.options}
+              onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
+              elevation={0}
+            >
+              <List disablePadding>
                 <RouteSetting connection={connection} service={service} />
                 <LanShareSelect connection={connection} />
                 <TargetHostSetting connection={connection} service={service} />
                 <TimeoutSetting connection={connection} service={service} />
+              </List>
+            </AccordionMenuItem>
+          </DesktopUI>
+        )}
+        {!connection.public && (
+          <DesktopUI>
+            <AccordionMenuItem
+              gutters
+              subtitle="Logs"
+              expanded={accordion.logs}
+              onClick={() => dispatch.ui.accordion({ logs: !accordion.logs })}
+              elevation={0}
+            >
+              <List disablePadding>
+                <ListItem dense>
+                  <ListItemIcon>
+                    <Icon name="terminal" />
+                  </ListItemIcon>
+                  <ListItemText primary="CLI command log" />
+                </ListItem>
+                <ListItemQuote>
+                  {connection.commandLog?.map((l, i) => (
+                    <ListItem key={i} disablePadding>
+                      <DataCopy value={l} hideIcon fullWidth dense />
+                    </ListItem>
+                  ))}
+                </ListItemQuote>
+              </List>
+              <List>
                 <ConnectionLogSetting connection={connection} service={service} />
-              </DesktopUI>
-              <PortalUI>
-                <PublicSetting connection={connection} service={service} />
-              </PortalUI>
-            </List>
-          </AccordionMenuItem>
+              </List>
+            </AccordionMenuItem>
+          </DesktopUI>
         )}
       </Gutters>
     </>

@@ -5,7 +5,7 @@ import { spacing } from '../styling'
 import { Quote } from './Quote'
 
 type Props = {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const ListItemQuote: React.FC<Props> = ({ children }) => {

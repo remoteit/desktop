@@ -21,7 +21,7 @@ export const ColumnsDrawer: React.FC = () => {
 
   const add = name => {
     ui.setPersistent({ columns: [...selected, name] })
-    devices.fetch()
+    devices.fetchList()
   }
   const remove = index => {
     selected.splice(index, 1)
@@ -36,7 +36,7 @@ export const ColumnsDrawer: React.FC = () => {
       columnWidths: { ...defaultState.columnWidths },
       drawerMenu: null,
     })
-    devices.fetch()
+    devices.fetchList()
   }
 
   return (

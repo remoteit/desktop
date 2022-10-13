@@ -44,7 +44,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   const clear = () => {
     setQuery('')
     dispatch.devices.set({ query: '', searched: false, from: 0 })
-    dispatch.devices.fetch()
+    dispatch.devices.fetchList()
   }
 
   const select = (selection: ISearch) => {
@@ -59,7 +59,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
 
   const submit = () => {
     dispatch.devices.set({ query, searched: true, from: 0 })
-    dispatch.devices.fetch()
+    dispatch.devices.fetchList()
     onClose?.()
     history.push(`/devices`)
   }

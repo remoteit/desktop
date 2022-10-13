@@ -149,6 +149,7 @@ declare global {
     accountId?: string // organization id
     autoLaunch?: boolean
     autoStart?: boolean
+    commandLog?: string[]
     commandTemplate?: string // command line launch template
     connectLink?: boolean
     connected?: boolean
@@ -167,7 +168,7 @@ declare global {
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
-    launchType?: 'COMMAND' | 'URL' // scheme to use for launching
+    launchType?: 'COMMAND' | 'URL' | 'NONE' // scheme to use for launching
     log?: boolean // if cli should log the connectd stdout to file
     name?: string
     online?: boolean // online if service is online
@@ -298,6 +299,7 @@ declare global {
     createdAt: Date
     id: string
     name: string
+    subdomain: string
     lastReported: Date
     enabled?: boolean
     state: IDevice['state']
@@ -310,7 +312,6 @@ declare global {
     protocol?: string
     access: IUserRef[]
     license: ILicenseTypes
-    link?: { url: string; created: Date }
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -320,6 +321,17 @@ declare global {
       targetHost?: string
       description?: string
     }
+  }
+
+  type ILinkData = {
+    set: boolean
+    url: string
+    created: Date
+    enabled: boolean
+    password?: string
+    serviceId: string
+    deviceId: string
+    subdomain: string
   }
 
   type ITag = {
@@ -471,6 +483,7 @@ declare global {
       typeID: IService['typeID']
       platform: IDevice['targetPlatform']
       deviceId: string
+      deviceCreated: Date
       device?: IDevice
       service?: IService
       connection?: IConnection

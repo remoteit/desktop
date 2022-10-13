@@ -180,7 +180,7 @@ class Controller {
     this.io.emit('device', cli.data.device?.uid)
     this.io.emit('scan', lan.data)
     this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
-    this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
+    this.io.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
   }

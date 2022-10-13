@@ -97,7 +97,9 @@ export function usedPorts(state: ApplicationState) {
 }
 
 export function launchDisabled(connection: IConnection) {
-  return (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink
+  return (
+    (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink || connection.launchType === 'NONE'
+  )
 }
 
 export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -127,18 +129,16 @@ export function clearConnectionError(connection: IConnection) {
   setConnection(connection)
 }
 
-export function getConnectionDeviceIds(state: ApplicationState) {
+export function getConnectionAndNetworkServiceIds(state: ApplicationState) {
   const thisId = state.backend.thisId
-  const connections = selectConnections(state)
-  const networkIds = getNetworkServiceIds(state)
-  const ids = connections.filter(c => !networkIds.includes(c.id)) || []
-  let deviceIds = ids.map(c => c.deviceID || '')
-  if (thisId && !deviceIds.includes(thisId)) deviceIds.push(thisId)
-  return deviceIds
+  const connectionIds = selectConnections(state).map(c => c.id)
+  const serviceIds = connectionIds.concat(getNetworkServiceIds(state))
+  if (thisId && !serviceIds.includes(thisId)) serviceIds.push(thisId)
+  return serviceIds
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public))
+  return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public || c.connectLink))
 }
 
 export function selectConnection(state: ApplicationState, service?: IService) {
@@ -167,27 +167,41 @@ export function getConnectionLookup(state: ApplicationState) {
   }, {})
 }
 
-export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
-  let lookup = getConnectionLookup(state)
+export function parseLinkData(responseData: any) {
+  let result: ILinkData[] = []
+  console.log('PARSE LINK DATA', responseData)
 
-  devices.forEach(d => {
-    d.services.forEach(s => {
-      const connection = lookup[s.id]
-      if (connection) {
-        const online = s.state === 'active'
-        if (connection.online !== online || !connection.accountId) {
-          let accountId = connection.accountId
-          if (!accountId) {
-            const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
-            accountId = membership ? membership.account.id : userId
-          }
-          setConnection({ ...connection, deviceID: d.id, online, accountId })
-        }
-      }
-    })
-  })
+  const devices: any[] = Array.isArray(responseData) ? responseData : responseData?.device
 
-  return devices
+  if (Array.isArray(devices)) {
+    devices.forEach(device =>
+      device.services.forEach(s => {
+        result.push({
+          ...s.link,
+          set: !!s.link,
+          subdomain: s.subdomain,
+          serviceId: s.id,
+          deviceId: device.id,
+        })
+      })
+    )
+  }
+
+  if (responseData?.links) {
+    const links = responseData.links
+    result = result.concat(
+      links.map(l => ({
+        ...l,
+        set: true,
+        subdomain: l.service.subdomain,
+        serviceId: l.service.id,
+        deviceId: l.service.device.id,
+      }))
+    )
+  }
+
+  console.log('PARSE LINK DATA RESULT', result)
+  return result
 }
 
 export function cleanOrphanConnections(deviceIds?: string[]) {

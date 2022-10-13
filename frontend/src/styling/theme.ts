@@ -299,9 +299,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
             '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
-            '& > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
-            '& > .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
-            '&:hover': { '& > .hidden': { opacity: 1 }, '& > .hoverHide': { opacity: 0 } },
+            '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
+            '& > .hoverHide, & > div > .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
+            '&:hover': {
+              '& > .hidden, & > div > .hidden': { opacity: 1 },
+              '& > .hoverHide, & > div > .hoverHide': { opacity: 0 },
+            },
           },
           gutters: {
             width: `calc(100% - ${spacing.md * 2}px)`,

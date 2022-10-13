@@ -1,5 +1,5 @@
 import React from 'react'
-import { IP_LATCH } from '../shared/constants'
+import { IP_LATCH, PROTOCOL } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -112,6 +112,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'status',
     label: 'Status',
+    query: 'deviceName',
     defaultWidth: 100,
     value: ({ device, connection }) =>
       connection?.connected ? (
@@ -304,7 +305,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'connectLink',
     label: 'Connect Link',
-    value: ({ service }) => `remoteit://connect/${service?.id}`,
+    value: ({ service }) => `${PROTOCOL}connect/${service?.id}`,
   }),
   new ServiceAttribute({
     id: 'serviceName',
@@ -372,10 +373,10 @@ export const attributes: Attribute[] = [
       connection?.connecting
         ? 'Connecting...'
         : connection?.public
-        ? connection?.reverseProxy
-          ? connection?.connectLink
-            ? 'Persistent Public Endpoint'
-            : 'Public Reverse Proxy'
+        ? connection?.connectLink
+          ? 'Persistent Public Endpoint'
+          : connection?.reverseProxy
+          ? 'Public Reverse Proxy'
           : 'Public Proxy'
         : !connection?.connected && !session
         ? 'Idle - Connect on demand'

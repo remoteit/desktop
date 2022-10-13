@@ -141,7 +141,7 @@ export const defaultState: UIState = {
   },
   poppedBubbles: [],
   unExpireBubbles: false,
-  accordion: { config: true, configConnected: false, options: false, service: false, networks: false },
+  accordion: { config: true, configConnected: false, options: false, service: false, networks: false, logs: false },
   confirm: undefined,
   autoConnect: false,
   autoLaunch: false,
@@ -182,7 +182,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ fetching: true })
       await dispatch.devices.set({ from: 0 })
       await dispatch.accounts.fetch()
-      await dispatch.devices.fetch()
+      await dispatch.devices.fetchList()
       await dispatch.networks.fetch()
       await dispatch.connections.fetch()
       await Promise.all([

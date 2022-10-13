@@ -40,14 +40,15 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const enabled = external || connection.enabled
   const css = useStyles({ offline, networkEnabled: network?.enabled, enabled, connected })
   const name = connection.name || session?.target.name || fallbackName || serviceId
+  const color = connection.enabled ? 'primary' : undefined
 
   let pathname = `/${tab}/${serviceId}`
   if (session) pathname += `/${session.id}`
   if (external) pathname += '/other'
 
   let icon: React.ReactNode | null = null
-  if (connected) icon = <Icon color="primary" name="chevron-right" size="md" type="light" />
-  if (connection.connectLink) icon = <Icon color="primary" name="globe" size="sm" className={css.mergeIcon} />
+  if (connected) icon = <Icon color={color} name="play" size="sm" type="solid" />
+  if (connection.connectLink) icon = <Icon color={color} name="circle-medium" type="solid" size="sm" />
 
   return (
     <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>

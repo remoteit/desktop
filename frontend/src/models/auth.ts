@@ -9,7 +9,7 @@ import {
   COGNITO_AUTH_DOMAIN,
   REDIRECT_URL,
   API_URL,
-  DEVELOPER_KEY
+  DEVELOPER_KEY,
 } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
 import { getToken } from '../services/remote.it'
@@ -131,15 +131,18 @@ export default createModel<RootModel>()({
     async changeEmail(email: string) {
       const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
       if (mailFormat.test(email)) {
-        await axios.post('/user/email/', { email } ,
-        {
-          baseURL: API_URL,
-          headers: {
-            'Content-Type': 'application/json',
-            developerKey: DEVELOPER_KEY,
-            Authorization: await getToken()
-          },
-        } )
+        await axios.post(
+          '/user/email/',
+          { email },
+          {
+            baseURL: API_URL,
+            headers: {
+              'Content-Type': 'application/json',
+              developerKey: DEVELOPER_KEY,
+              Authorization: await getToken(),
+            },
+          }
+        )
         dispatch.auth.setAWSUserEmail(email)
         dispatch.ui.set({ successMessage: `Email modified successfully.` })
       } else {
@@ -230,7 +233,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.init()
       await dispatch.tags.fetch()
       dispatch.user.fetch()
-      dispatch.devices.fetch()
+      dispatch.devices.fetchList()
       dispatch.connections.fetch()
       dispatch.contacts.fetch()
       dispatch.sessions.fetch()

@@ -155,7 +155,7 @@ export const OrganizationRolePage: React.FC = () => {
               }}
               onClick={tag => {
                 dispatch.devices.set({ tag: { values: [tag.name] } })
-                dispatch.devices.fetch()
+                dispatch.devices.fetchList()
                 history.push('/devices')
               }}
             />

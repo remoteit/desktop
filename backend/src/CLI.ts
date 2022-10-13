@@ -30,6 +30,7 @@ type IExec = {
   admin?: boolean
   quiet?: boolean
   force?: boolean
+  onCommand?: (command: string) => void
   onError?: (error: Error) => void
 }
 
@@ -74,6 +75,7 @@ export default class CLI {
 
   EVENTS = {
     error: 'cli/error',
+    command: 'cli/command',
   }
 
   constructor() {
@@ -217,24 +219,24 @@ export default class CLI {
     // await this.exec({ cmds: [strings.unregister()], admin: true })
   }
 
-  async addConnection(c: IConnection, onError: (error: Error) => void) {
+  async addConnection(c: IConnection, onError: (error: Error) => void, onCommand: (command: string) => void) {
     d('ADD CONNECTION', strings.connect(c))
-    await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
+    await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError, onCommand })
   }
 
-  async removeConnection(c: IConnection, onError: (error: Error) => void) {
+  async removeConnection(c: IConnection, onError: (error: Error) => void, onCommand: (command: string) => void) {
     d('REMOVE CONNECTION', strings.remove(c))
-    await this.exec({ cmds: [strings.remove(c)], checkAuthHash: true, onError })
+    await this.exec({ cmds: [strings.remove(c)], checkAuthHash: true, onError, onCommand })
   }
 
-  async stopConnection(c: IConnection, onError: (error: Error) => void) {
+  async stopConnection(c: IConnection, onError: (error: Error) => void, onCommand: (command: string) => void) {
     d('STOP CONNECTION', strings.stop(c))
-    await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError })
+    await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError, onCommand })
   }
 
-  async setConnection(c: IConnection, onError: (error: Error) => void) {
+  async setConnection(c: IConnection, onError: (error: Error) => void, onCommand: (command: string) => void) {
     d('SET CONNECTION', strings.setConnect(c))
-    await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
+    await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError, onCommand })
   }
 
   async restore(deviceId: string) {
@@ -299,6 +301,7 @@ export default class CLI {
     admin = false,
     quiet = false,
     force,
+    onCommand,
     onError,
   }: IExec) {
     if (!force && (binaryInstaller.inProgress || !binaryInstaller.ready)) {
@@ -331,6 +334,8 @@ export default class CLI {
     const result = await commands.exec()
 
     if (!quiet) setTimeout(() => this.processing--, 400)
+
+    if (typeof onCommand === 'function') onCommand(commands.toSafeString())
 
     if (result) {
       try {

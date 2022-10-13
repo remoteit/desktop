@@ -30,13 +30,12 @@ export const SelectSetting: React.FC<Props> = ({
   return (
     <ListItem dense onClick={handleClick} disabled={disabled} button>
       <ListItemIcon sx={{ minWidth: hideIcon ? spacing.sm : undefined }}>
-        {hideIcon || <Icon name={icon} size="md" modified={modified} fixedWidth />}
+        {hideIcon ? null : <Icon name={icon} size="md" modified={modified} fixedWidth />}
       </ListItemIcon>
       <TextField
         select
         fullWidth
         variant="standard"
-        disabled={disabled}
         SelectProps={{ open }}
         label={label}
         value={value}

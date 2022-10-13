@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -13,8 +13,18 @@ type Props = { connection?: IConnection; visible?: boolean }
 
 export const ConnectionErrorMessage: React.FC<Props> = ({ connection, visible }) => {
   const dispatch = useDispatch<Dispatch>()
+  const [hasError, setHasError] = useState<boolean>(!!connection?.error)
   const history = useHistory()
   const css = useStyles()
+
+  useEffect(() => {
+    // update device if new connection error
+    if (connection?.error && connection?.deviceID && !hasError) {
+      console.log('NEW CONNECTION ERROR - Load device')
+      dispatch.devices.fetchSingle({ id: connection.deviceID, hidden: true })
+      setHasError(true)
+    }
+  }, [connection?.error])
 
   if (!connection || !connection.error?.message) return null
 

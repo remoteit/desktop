@@ -57,21 +57,19 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   let name = connection?.host
   let port = connection?.port
 
-  if ((port === -1 || !name) && !connection?.enabled) {
-    name = 'Starting...'
-    port = undefined
-  }
-
   if (!name && connection?.connecting) {
     name = 'Connecting...'
     port = undefined
   }
 
   const endpoint = name + (port ? ':' + port : '')
+  const endpointName = (connection?.public ? 'Public' : 'Local') + ' Endpoint'
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>Local Endpoint {copied}</InputLabel>
+      <InputLabel shrink>
+        {endpointName} {copied}
+      </InputLabel>
       <Typography
         variant="h3"
         className={css.h3}
@@ -107,7 +105,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const copyDisplay = (
     <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
-      <InputLabel shrink>Local Endpoint</InputLabel>
+      <InputLabel shrink>{endpointName}</InputLabel>
       <Typography variant="h3" className={css.h3}>
         <span className={css.active}>{endpoint}</span>
       </Typography>
@@ -205,14 +203,16 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                             />
                           </>
                         )}
-                        <CopyButton
-                          color="alwaysWhite"
-                          icon={app.launchType === 'URL' ? 'link' : 'terminal'}
-                          app={app}
-                          value={app.string}
-                          onMouseEnter={() => setHover('copyLaunch')}
-                          onMouseLeave={() => setHover(undefined)}
-                        />
+                        {app.launchType !== 'NONE' && (
+                          <CopyButton
+                            color="alwaysWhite"
+                            icon={app.launchType === 'URL' ? 'link' : 'terminal'}
+                            app={app}
+                            value={app.string}
+                            onMouseEnter={() => setHover('copyLaunch')}
+                            onMouseLeave={() => setHover(undefined)}
+                          />
+                        )}
                       </>
                     )}
                   </span>
@@ -221,25 +221,34 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       <InputLabel shrink>Share</InputLabel>
                       <CopyButton
                         color="alwaysWhite"
-                        icon="arrow-up-from-bracket"
+                        icon="share"
                         value={app.string}
                         onClick={() => navigator.share?.({ url: app.string })}
                       />
                     </span>
                   )}
-                  <span>
-                    <InputLabel shrink>Launch</InputLabel>
-                    {app.canLaunch ? (
-                      <LaunchButton
-                        color="alwaysWhite"
-                        app={app}
-                        onMouseEnter={() => setHover('launch')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
-                    ) : (
-                      <IconButton title="Download the desktop app to launch" name="ban" fixedWidth />
-                    )}
-                  </span>
+                  {app.launchType !== 'NONE' && (
+                    <span>
+                      <InputLabel shrink>Launch</InputLabel>
+                      {app.canLaunch ? (
+                        <LaunchButton
+                          color="alwaysWhite"
+                          app={app}
+                          onMouseEnter={() => setHover('launch')}
+                          onMouseLeave={() => setHover(undefined)}
+                        />
+                      ) : (
+                        <IconButton
+                          title="Download the desktop app to launch"
+                          name="ban"
+                          type="regular"
+                          color="alwaysWhite"
+                          size="lg"
+                          fixedWidth
+                        />
+                      )}
+                    </span>
+                  )}
                 </Gutters>
               </GuideBubble>
             </>

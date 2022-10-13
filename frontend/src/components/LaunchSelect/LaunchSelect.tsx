@@ -28,11 +28,13 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   return (
     <>
       <LaunchTypeSelect app={app} onChange={handleChange} />
-      <ListItemQuote>
-        <AutoLaunchToggle app={app} connection={connection} service={service} />
-        <InlineTemplateSetting app={app} connection={connection} service={service} />
-        <CustomAttributeSettings app={app} connection={connection} service={service} />
-      </ListItemQuote>
+      {app.launchType !== 'NONE' && (
+        <ListItemQuote>
+          <AutoLaunchToggle app={app} connection={connection} service={service} />
+          <InlineTemplateSetting app={app} connection={connection} service={service} />
+          <CustomAttributeSettings app={app} connection={connection} service={service} />
+        </ListItemQuote>
+      )}
     </>
   )
 }

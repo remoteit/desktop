@@ -141,6 +141,11 @@ function getEventHandlers() {
       connections.restoreConnections(result)
     },
 
+    updated: (result: IConnection) => {
+      controller.log('event: socket connection', result)
+      connections.restoreConnections([result])
+    },
+
     device: (result: string) => {
       controller.log('event: socket device', result)
       backend.targetDeviceUpdated(result)
@@ -175,7 +180,6 @@ function getEventHandlers() {
       backend.set({ updateReady: version })
     },
 
-    // AutoUpdate
     'cli/error': error => {
       ui.set({ errorMessage: error })
       ui.updated()

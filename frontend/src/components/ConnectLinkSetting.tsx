@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { isPortal } from '../services/Browser'
-import { setConnection } from '../helpers/connectionHelper'
 import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { ListItemSetting } from './ListItemSetting'

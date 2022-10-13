@@ -25,21 +25,25 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { remoteUI, device, connections, thisId, fetching, silent } = useSelector((state: ApplicationState) => ({
-    remoteUI: isRemoteUI(state),
-    fetching: getDeviceModel(state).fetching,
-    connections: state.connections.all.filter(c => c.deviceID === deviceID),
-    device: selectDevice(state, deviceID),
-    thisId: state.backend.thisId,
-    silent: state.ui.silent,
-  }))
+  const { remoteUI, device, connections, thisId, waiting, silent } = useSelector((state: ApplicationState) => {
+    const { fetching, initialized } = getDeviceModel(state)
+    return {
+      waiting: fetching || !initialized,
+      remoteUI: isRemoteUI(state),
+      connections: state.connections.all.filter(c => c.deviceID === deviceID),
+      device: selectDevice(state, deviceID),
+      thisId: state.backend.thisId,
+      silent: state.ui.silent,
+    }
+  })
 
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [loaded, setLoaded] = useState<boolean>(false)
 
   useEffect(() => {
-    if (deviceID && !device?.loaded && !fetching) {
+    console.log('DEVICE ROUTER EFFECT', { deviceID, waiting, device, thisId, loaded })
+    if (deviceID && !device?.loaded && !waiting) {
       // check that target device is registered and don't redirect
       if (loaded && !(remoteUI && thisId)) {
         if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
@@ -50,13 +54,14 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         setLoaded(true)
       }
     }
-  }, [fetching, device, thisId, history])
+  }, [waiting, device, thisId, loaded])
 
   useEffect(() => {
+    console.log('DEVICE ROUTER deviceID change', deviceID, 'setLoaded false')
     setLoaded(false)
   }, [deviceID])
 
-  if (fetching && !device) return <LoadingMessage message="Fetching device" />
+  if (waiting && !device) return <LoadingMessage message="Fetching device" />
 
   return (
     <DeviceContext.Provider value={{ device, connections }}>

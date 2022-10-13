@@ -158,7 +158,7 @@ export default createModel<RootModel>()({
     async unsubscribe(planId: string | undefined) {
       dispatch.plans.set({ purchasing: planId })
       await graphQLUnsubscribe()
-      dispatch.devices.fetch()
+      dispatch.devices.fetchList()
       console.log('UNSUBSCRIBE')
     },
 

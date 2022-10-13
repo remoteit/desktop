@@ -6,22 +6,18 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment, isPortal } from '../sharedAdaptor'
+import { getEnvironment } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
-
-export type LAUNCH_TYPE = 'COMMAND' | 'URL'
 
 export class Application {
   title: string = ''
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
-  defaultLaunchType: LAUNCH_TYPE = 'URL'
-  windowsLaunchType: LAUNCH_TYPE = 'COMMAND'
+  appLaunchType: IConnection['launchType'] = 'NONE'
+  appCommandTemplate: string = '[host]:[port]'
+  appLaunchTemplate: string = 'http://[host]:[port]'
   reverseProxyTemplate: string = 'https://[host]'
-  defaultLaunchTemplate: string = 'http://[host]:[port]'
-  defaultCommandTemplate: string = '[host]:[port]'
-  windowsCommandTemplate?: string
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
@@ -30,20 +26,15 @@ export class Application {
   connection?: IConnection
   service?: IService
 
-  isPortal: boolean = isPortal()
+  windows: boolean = false
+  portal: boolean = false
 
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
-    const { os } = getEnvironment()
-    if (os === 'windows') {
-      options.defaultLaunchType = options.windowsLaunchType || options.defaultLaunchType || this.windowsLaunchType
-      options.defaultCommandTemplate =
-        options.windowsCommandTemplate ||
-        options.defaultCommandTemplate ||
-        this.windowsCommandTemplate ||
-        this.defaultCommandTemplate
-    }
+    const { os, portal } = getEnvironment()
+    options.windows = os === 'windows'
+    options.portal = portal
     Object.assign(this, options)
   }
 
@@ -56,8 +47,7 @@ export class Application {
   }
 
   get canLaunch() {
-    const { portal } = getEnvironment()
-    return !(portal && this.launchType === 'COMMAND')
+    return !(this.portal && this.launchType === 'COMMAND') && this.launchType !== 'NONE'
   }
 
   get canShare() {
@@ -133,7 +123,19 @@ export class Application {
   }
 
   get launchType() {
-    return this.connection?.launchType || this.globalDefaults?.launchType || this.defaultLaunchType
+    return this.connection?.launchType || this.defaultLaunchType
+  }
+
+  get defaultLaunchType(): IConnection['launchType'] {
+    return this.globalDefaults?.launchType || this.appLaunchType
+  }
+
+  get defaultCommandTemplate() {
+    return this.appCommandTemplate
+  }
+
+  get defaultLaunchTemplate() {
+    return this.appLaunchTemplate
   }
 
   get defaultTokens() {
@@ -170,7 +172,7 @@ export class Application {
   private get resolvedDefaultLaunchTemplate() {
     return this.connection?.reverseProxy
       ? this.reverseProxyTemplate
-      : this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
+      : this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.appLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
@@ -178,7 +180,7 @@ export class Application {
       this.service?.attributes.commandTemplate ||
       this.globalDefaults.commandTemplate ||
       this.defaultCommandTemplate ||
-      this.defaultLaunchTemplate
+      this.appLaunchTemplate
     )
   }
 
@@ -213,43 +215,44 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 }
 
 function getApplicationType(typeId: number | undefined) {
+  const { portal, os } = getEnvironment()
+  const windows = os === 'windows'
+
   switch (typeId) {
     case 4:
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
-        defaultLaunchType: 'COMMAND',
-        windowsLaunchType: 'COMMAND',
-        defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultCommandTemplate: '[path] -Username [username] [host]:[port]',
-        windowsCommandTemplate: '"[path]" -Username [username] [host]:[port]',
+        appLaunchType: 'COMMAND',
+        appLaunchTemplate: 'vnc://[username]@[host]:[port]',
+        appCommandTemplate: windows
+          ? '"[path]" -Username [username] [host]:[port]'
+          : '[path] -Username [username] [host]:[port]',
       })
     case 28:
       return new Application({
         title: 'SSH',
-        defaultLaunchType: 'COMMAND',
-        windowsLaunchType: 'COMMAND',
-        defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
-        windowsCommandTemplate: 'start cmd /k ssh [username]@[host] -p [port]',
-        defaultTokenData: { path: 'putty.exe' },
+        appLaunchType: portal ? 'URL' : 'COMMAND',
+        appLaunchTemplate: 'ssh://[username]@[host]:[port]',
+        appCommandTemplate: windows
+          ? 'start cmd /k ssh [username]@[host] -p [port]'
+          : 'ssh -l [username] [host] -p [port]',
+        // defaultTokenData: { path: 'putty.exe' },
       })
     case 5:
       return new Application({
         title: 'RDP',
-        defaultLaunchType: 'URL',
-        windowsLaunchType: 'COMMAND',
-        defaultLaunchTemplate: 'rdp://[username]@[host]:[port]',
-        defaultCommandTemplate: '[host]:[port]',
-        windowsCommandTemplate: 'mstsc /v: [host]:[port]',
+        appLaunchType: windows ? 'COMMAND' : 'URL',
+        appLaunchTemplate: 'rdp://[username]@[host]:[port]',
+        appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : '[host]:[port]',
       })
     case 8:
     case 10:
     case 33:
       return new Application({
         title: 'Secure Browser',
-        windowsLaunchType: 'URL',
-        defaultLaunchTemplate: 'https://[host]:[port]',
+        appLaunchType: 'URL',
+        appLaunchTemplate: 'https://[host]:[port]',
       })
     case 7:
     case 30:
@@ -257,7 +260,7 @@ function getApplicationType(typeId: number | undefined) {
     case 42:
       return new Application({
         title: 'Browser',
-        windowsLaunchType: 'URL',
+        appLaunchType: 'URL',
       })
     case 34:
       return new Application({
@@ -265,8 +268,8 @@ function getApplicationType(typeId: number | undefined) {
         launchIcon: 'folder',
         commandIcon: 'clipboard',
         localhost: true,
-        defaultLaunchTemplate: 'smb://[host]:[port]',
-        windowsCommandTemplate: '\\\\[host]:[port]',
+        appLaunchTemplate: 'smb://[host]:[port]',
+        appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
       })
     default:
       return new Application({})

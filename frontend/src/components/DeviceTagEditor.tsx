@@ -32,7 +32,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
         onDelete={canEdit ? tag => dispatch.tags.removeDevice({ tag, device, accountId }) : undefined}
         onClick={tag => {
           dispatch.devices.set({ tag: { values: [tag.name] } })
-          dispatch.devices.fetch()
+          dispatch.devices.fetchList()
           history.push('/devices')
         }}
       />

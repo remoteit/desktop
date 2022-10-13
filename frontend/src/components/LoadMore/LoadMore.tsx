@@ -25,7 +25,7 @@ export const LoadMore: React.FC = () => {
         disabled={fetching}
         onClick={() => {
           dispatch.devices.set({ from: nextPage * size, append: true })
-          dispatch.devices.fetch()
+          dispatch.devices.fetchList()
         }}
       >
         {fetching ? `Loading ${from} - ${from + size}...` : 'Load More'}

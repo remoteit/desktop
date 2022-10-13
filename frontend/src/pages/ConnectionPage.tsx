@@ -21,27 +21,24 @@ import { Title } from '../components/Title'
 export const ConnectionPage: React.FC = () => {
   const { deviceID, serviceID } = useParams<{ deviceID?: string; serviceID?: string }>()
   const { devices, ui } = useDispatch<Dispatch>()
-  const { service, device, networkOnly, connection, fetching, initialized, accordion } = useSelector(
-    (state: ApplicationState) => {
-      const [service, device] = selectById(state, serviceID)
-      const { initialized, fetching } = getDeviceModel(state)
-      return {
-        service,
-        device,
-        fetching,
-        initialized,
-        networkOnly: inNetworkOnly(state, serviceID),
-        connection: selectConnection(state, service),
-        accordion: state.ui.accordion,
-      }
+  const { service, device, networkOnly, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
+    const [service, device] = selectById(state, serviceID)
+    const { initialized, fetching } = getDeviceModel(state)
+    return {
+      service,
+      device,
+      waiting: !initialized || fetching,
+      networkOnly: inNetworkOnly(state, serviceID),
+      connection: selectConnection(state, service),
+      accordion: state.ui.accordion,
     }
-  )
+  })
 
   useEffect(() => {
     const id = connection?.deviceID || deviceID
-    if (id && !device?.loaded && initialized) devices.fetchSingle({ id, hidden: true })
+    if (id && !device?.loaded && !waiting) devices.fetchSingle({ id, hidden: true })
     console.log('CONNECT PAGE EFFECT', { device, id })
-  }, [deviceID, serviceID, initialized])
+  }, [deviceID, serviceID, waiting])
 
   if (!service || !device) return <NoConnectionPage />
 
@@ -65,7 +62,7 @@ export const ConnectionPage: React.FC = () => {
               </Typography>
             </Gutters>
           )}
-          <LinearProgress loading={fetching} />
+          <LinearProgress loading={waiting} />
         </>
       }
     >

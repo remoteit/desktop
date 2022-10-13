@@ -22,7 +22,8 @@ export default class ConnectionPool {
   private file?: JSONFile<IConnection[]>
 
   static EVENTS = {
-    updated: 'pool',
+    pool: 'pool',
+    updated: 'updated',
     freePort: 'freePort',
     reachablePort: 'reachablePort',
     clearErrors: 'clearErrors',
@@ -86,8 +87,8 @@ export default class ConnectionPool {
               'Connection certificate error, unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.'
             )
           )
+          update = true
         }
-        update = true
       }
     })
 
@@ -102,11 +103,11 @@ export default class ConnectionPool {
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
         instance.set(connection, setCLI)
-        if (!skipUpdate) this.updated()
+        if (!skipUpdate) this.updated(instance)
       }
     } else {
       instance = this.add(connection)
-      if (!skipUpdate) this.updated()
+      if (!skipUpdate) this.updated(instance)
     }
     return instance
   }
@@ -156,21 +157,21 @@ export default class ConnectionPool {
     if (!instance) return
     await this.assignPort(instance)
     await instance.start()
-    this.updated()
+    this.updated(instance)
   }
 
   stop = async ({ id }: IConnection) => {
     Logger.info('DISCONNECT', { id })
     const instance = this.find(id)
     instance && (await instance.stop())
-    this.updated()
+    this.updated(instance)
   }
 
   disable = async ({ id }: IConnection) => {
     Logger.info('REMOVE', { id })
     const instance = this.find(id)
     instance && (await instance.disable())
-    this.updated()
+    this.updated(instance)
   }
 
   forget = async ({ id }: IConnection) => {
@@ -180,7 +181,7 @@ export default class ConnectionPool {
       const index = this.pool.indexOf(connection)
       await connection.clear()
       this.pool.splice(index, 1)
-      this.updated()
+      this.updated(connection)
     }
   }
 
@@ -212,15 +213,17 @@ export default class ConnectionPool {
   clearMemory = async () => {
     Logger.info('CLEARING CONNECTIONS')
     this.pool = []
-    EventBus.emit(ConnectionPool.EVENTS.updated, [])
+    EventBus.emit(ConnectionPool.EVENTS.pool, [])
   }
 
-  updated = () => {
-    const json = this.toJSON()
+  updated = (instance?: Connection) => {
     if (!user.signedIn) return
+    const json = this.toJSON()
     this.file?.write(json)
-    // Logger.info('CONNECTION POOL UPDATED')
-    EventBus.emit(ConnectionPool.EVENTS.updated, json)
+    if (instance) {
+      EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
+    }
+    EventBus.emit(ConnectionPool.EVENTS.pool, json)
   }
 
   toJSON = (): IConnection[] => {

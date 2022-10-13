@@ -4,15 +4,16 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import {
   cleanOrphanConnections,
-  getConnectionDeviceIds,
+  getConnectionAndNetworkServiceIds,
   newConnection,
   sanitizeName,
   selectConnection,
   setConnection,
-  updateConnections,
-  connectionName,
+  parseLinkData,
+  getConnectionLookup,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
+import { dedupe } from '../helpers/utilHelper'
 import {
   graphQLConnect,
   graphQLDisconnect,
@@ -37,6 +38,8 @@ type IConnectionsState = {
   queueConnection?: IConnection
 }
 
+type IUpdateLinks = { linkData: ILinkData[]; removeLinks?: boolean; accountId: string }
+
 const defaultState: IConnectionsState = {
   all: [],
   queue: [],
@@ -51,53 +54,120 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init(_: void, state) {
       let item = getLocalStorage(state, 'connections')
-      if (item) dispatch.connections.setAll(item)
+      console.log('INIT CONNECTIONS', item)
+      if (item) dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
     },
 
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
-      const deviceIds = getConnectionDeviceIds(state)
-      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: deviceIds })
+      const serviceIds = getConnectionAndNetworkServiceIds(state)
+      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: serviceIds })
 
       const error = graphQLGetErrors(gqlResponse)
       if (error) return
 
       await dispatch.connections.parseConnections({ gqlResponse, accountId })
-      await dispatch.connections.parseConnectLinks(gqlResponse)
-      cleanOrphanConnections(deviceIds)
+      cleanOrphanConnections(serviceIds)
     },
 
     async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }, state) {
       const connectionData = gqlResponse?.data?.data?.login?.connections || []
-      const linkData = gqlResponse?.data?.data?.login?.links || []
+      const connectionLinkData = parseLinkData(connectionData)
+      const devices = graphQLDeviceAdaptor(connectionData, accountId, true)
+      const linkData = parseLinkData(gqlResponse?.data?.data?.login)
+
       console.log('CONNECTION FETCH', { connectionData, linkData })
-      const mergedData = connectionData.concat(linkData.map(l => l?.service?.device))
-      const devices = graphQLDeviceAdaptor(mergedData, accountId, true)
-      updateConnections(state, devices, accountId)
+
+      await dispatch.connections.updateConnectLinks({
+        linkData: connectionLinkData,
+        removeLinks: true,
+        accountId,
+      })
+
+      await dispatch.connections.updateConnectLinks({
+        linkData: linkData,
+        accountId,
+      })
+
       await dispatch.accounts.setDevices({ devices, accountId: 'connections' })
+      await dispatch.connections.updateConnectionState({ devices, accountId })
     },
 
-    async parseConnectLinks(gqlResponse: AxiosResponse<any> | undefined, state) {
-      const data = gqlResponse?.data?.data?.login || {}
-      const links: IConnection[] = data?.links.map(link => {
-        const url = urlParse(link.url)
+    async updateConnectionState({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
+      let lookup = getConnectionLookup(state)
+
+      devices.forEach(d => {
+        d.services.forEach(async s => {
+          const connection = lookup[s.id]
+          if (connection) {
+            const online = s.state === 'active'
+            if (connection.online !== online || !connection.accountId) {
+              if (!connection.accountId) {
+                const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
+                accountId = membership ? membership.account.id : accountId
+              }
+            }
+            // disable connection if service is offline
+            if (!online && connection.enabled) {
+              console.log('DISABLING OFFLINE CONNECTION', connection.name)
+              await dispatch.connections.disconnect(connection)
+              // enabled = false
+            }
+
+            // setConnection({
+            await dispatch.connections.updateConnection({
+              ...connection,
+              // name: s.subdomain, // implement after CLI supports all utf-8 chars
+              online,
+            })
+          }
+        })
+      })
+    },
+
+    async updateConnectLinks({ linkData, removeLinks, accountId }: IUpdateLinks, state) {
+      let lookup = getConnectionLookup(state)
+      let unlink: IConnection[] = []
+
+      console.log('UPDATE CONNECT LINKS', linkData)
+
+      const updated: IConnection[] = linkData.map(link => {
+        const connection = lookup[link.serviceId]
+        console.log('UPDATE CONNECT LINK', link)
+
+        const url = link.url ? urlParse(link.url) : { host: '', port: '' }
+
+        if (connection) delete lookup[link.serviceId]
+        else console.log('ADD CONNECT LINK', link.serviceId, link.subdomain)
+
         return {
-          ...DEFAULT_CONNECTION,
-          id: link.service.id,
-          deviceID: link.service.device.id,
-          accountId: data?.id,
-          createdTime: link.created,
+          ...(connection || DEFAULT_CONNECTION),
+          accountId,
+          id: link.serviceId,
+          deviceID: link.deviceId,
+          createdTime: new Date(link.created).getTime(),
           password: link.password,
+          enabled: link.enabled,
           host: url.host,
           port: url.port ? parseInt(url.port, 10) : undefined,
-          name: connectionName(link.service, link.service.device),
-          connectLink: true,
+          name: link.subdomain,
+          connectLink: link.set,
           public: true,
-          default: false,
-          enabled: true,
         } as IConnection
       })
-      dispatch.connections.mergeConnections(links)
+
+      if (removeLinks)
+        unlink = Object.keys(lookup).map(key => {
+          return {
+            ...lookup[key],
+            connectLink: false,
+            enabled: false,
+            public: false,
+          }
+        })
+
+      console.log('UPDATE CONNECT LINK', { updated, unlink })
+      await dispatch.connections.mergeConnections([...unlink, ...updated])
     },
 
     async mergeConnections(connections: IConnection[], state) {
@@ -138,22 +208,9 @@ export default createModel<RootModel>()({
 
     async restoreConnections(connections: IConnection[], state) {
       connections.forEach((connection, index) => {
-        // disable connection if service is offline
-        if (!connection.online && connection.enabled) {
-          dispatch.connections.disconnect(connection)
-        }
-
-        // update device if new connection error
-        if (
-          connection.error &&
-          connection.deviceID &&
-          !state.connections.all.find(c => c.id === connection.id)?.error
-        ) {
-          dispatch.devices.fetchSingle({ id: connection.deviceID, hidden: true })
-        }
-
         // data missing from cli if our connections file is lost
         if (!connection.owner || !connection.name) {
+          console.log('CONNECTION MISSING DATA', connection.id)
           const [service] = selectById(state, connection.id)
           if (!connection.id) {
             delete connections[index]
@@ -297,6 +354,7 @@ export default createModel<RootModel>()({
         password: data?.password,
         starting: false,
         enabled: !!data?.enabled,
+        createdTime: new Date(data.created).getTime(),
         error: undefined,
         isP2P: false,
         reverseProxy: true,

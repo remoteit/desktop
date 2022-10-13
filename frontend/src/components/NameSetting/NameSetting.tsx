@@ -20,11 +20,13 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
       disabled={connection.connected || connection.public}
       filter={REGEX_CONNECTION_NAME}
       maxLength={MAX_CONNECTION_NAME_LENGTH}
-      onSave={name =>
-        setConnection({
-          ...connection,
-          name: name.toString() || connection.name,
-        })
+      onSave={
+        name =>
+          setConnection({
+            ...connection,
+            name: name.toString() || connection.name,
+          })
+        // update service SUBDOMAIN setting
       }
     />
   )
