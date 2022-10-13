@@ -48,7 +48,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
 
   return (
     <>
-      {breadcrumbs && <Breadcrumbs />}
+      <Breadcrumbs show={breadcrumbs} />
       <div className={css.header}>
         {hideSidebar && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
