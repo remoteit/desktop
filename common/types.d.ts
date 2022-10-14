@@ -463,6 +463,7 @@ declare global {
       typeID: IService['typeID']
       platform: IDevice['targetPlatform']
       deviceId: string
+      deviceCreated: Date
       device?: IDevice
       service?: IService
       connection?: IConnection
