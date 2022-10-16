@@ -46,13 +46,11 @@ export default class ConnectionPool {
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c, false, true))
-    this.updated()
+    this.update(connections, false)
   }
 
   // Sync with CLI
   check = async () => {
-    let update = false
     if (!binaryInstaller.ready || binaryInstaller.inProgress || !user.signedIn) return
     const cliData = await cli.readConnections()
     if (!cliData) return
@@ -60,10 +58,9 @@ export default class ConnectionPool {
     // move connections: cli -> desktop
     cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params
-      if (!connection || (!connection.public && this.changed(cliConnection, connection))) {
+      if (!connection || this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
-        this.set({ ...connection, ...cliConnection }, false, true)
-        update = true
+        this.updated(this.set({ ...connection, ...cliConnection }, false, true))
       }
     })
 
@@ -76,7 +73,7 @@ export default class ConnectionPool {
       if (!cliConnection) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
-        update = true
+        this.updated(connection)
       }
 
       if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
@@ -87,12 +84,15 @@ export default class ConnectionPool {
               'Connection certificate error, unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.'
             )
           )
-          update = true
+          this.updated(connection)
         }
       }
     })
+  }
 
-    if (update) this.updated()
+  update = (connections: IConnection[], setCLI?: boolean) => {
+    connections.forEach(c => this.set(c, setCLI, true))
+    this.updated()
   }
 
   // update single connection
@@ -181,7 +181,7 @@ export default class ConnectionPool {
       const index = this.pool.indexOf(connection)
       await connection.clear()
       this.pool.splice(index, 1)
-      this.updated(connection)
+      this.updated()
     }
   }
 
@@ -220,10 +220,8 @@ export default class ConnectionPool {
     if (!user.signedIn) return
     const json = this.toJSON()
     this.file?.write(json)
-    if (instance) {
-      EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
-    }
-    EventBus.emit(ConnectionPool.EVENTS.pool, json)
+    if (instance) EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
+    else EventBus.emit(ConnectionPool.EVENTS.pool, json)
   }
 
   toJSON = (): IConnection[] => {
