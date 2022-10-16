@@ -40,7 +40,7 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const enabled = external || connection.enabled
   const css = useStyles({ offline, networkEnabled: network?.enabled, enabled, connected })
   const name = connection.name || session?.target.name || fallbackName || serviceId
-  const color = connection.enabled ? 'primary' : undefined
+  const color = network?.enabled ? 'primary' : undefined
 
   let pathname = `/${tab}/${serviceId}`
   if (session) pathname += `/${session.id}`

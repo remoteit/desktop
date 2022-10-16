@@ -66,7 +66,8 @@ class Controller {
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('launch/app', launch)
-    socket.on('connection', this.connection)
+    socket.on('connection', connection => this.pool.set(connection, true))
+    socket.on('connections', connections => this.pool.update(connections))
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('restore', this.restore)
@@ -183,10 +184,6 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
-  }
-
-  connection = async (connection: IConnection) => {
-    await this.pool.set(connection, true)
   }
 
   showFolder = (type: IShowFolderType) => {

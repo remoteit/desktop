@@ -20,6 +20,7 @@ declare global {
 
     // single connection update
     | 'connection'
+    | 'connections'
 
     // individual actions
     | 'service/connect'
@@ -324,7 +325,7 @@ declare global {
   }
 
   type ILinkData = {
-    set: boolean
+    set: boolean // connectLink is set
     url: string
     created: Date
     enabled: boolean
