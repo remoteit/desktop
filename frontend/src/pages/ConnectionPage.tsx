@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { selectById } from '../models/devices'
 import { Typography } from '@mui/material'
@@ -19,8 +19,8 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionPage: React.FC = () => {
-  const { deviceID, serviceID } = useParams<{ deviceID?: string; serviceID?: string }>()
-  const { devices, ui } = useDispatch<Dispatch>()
+  const { sessionID, serviceID } = useParams<{ sessionID?: string; serviceID?: string }>()
+  const dispatch = useDispatch<Dispatch>()
   const { service, device, networkOnly, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     const { initialized, fetching } = getDeviceModel(state)
@@ -34,13 +34,26 @@ export const ConnectionPage: React.FC = () => {
     }
   })
 
-  useEffect(() => {
-    const id = connection?.deviceID || deviceID
-    if (id && !device?.loaded && !waiting) devices.fetchSingle({ id, hidden: true })
-    console.log('CONNECT PAGE EFFECT', { device, id })
-  }, [deviceID, serviceID, waiting])
+  const [loaded, setLoaded] = useState<boolean>(false)
 
-  if (!service || !device) return <NoConnectionPage />
+  useEffect(() => {
+    if (serviceID && !device?.loaded && !waiting) {
+      if (loaded) {
+        dispatch.ui.set({ errorMessage: `You do not have access to that service. (${serviceID})` })
+        if (connection) dispatch.connections.forget(serviceID)
+      } else if (!loaded) {
+        dispatch.devices.fetchSingle({ id: serviceID, hidden: true })
+        setLoaded(true)
+      }
+    }
+  }, [waiting, device, loaded])
+
+  useEffect(() => {
+    console.log('CONNECTION PAGE ROUTE change', serviceID, sessionID, 'setLoaded false')
+    setLoaded(false)
+  }, [serviceID, sessionID])
+
+  if (!service) return <NoConnectionPage />
 
   return (
     <Container
@@ -49,16 +62,16 @@ export const ConnectionPage: React.FC = () => {
       backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
       header={
         <>
-          <Typography variant="h1" gutterBottom={!service.attributes.description}>
+          <Typography variant="h1" gutterBottom={!service?.attributes.description}>
             <Title>
               <ConnectionName name={connection.name} />
             </Title>
-            {!networkOnly && <InfoButton device={device} service={service} />}
+            {!networkOnly && device && <InfoButton device={device} service={service} />}
           </Typography>
-          {service.attributes.description && (
+          {service?.attributes.description && (
             <Gutters bottom="xl" top={null}>
               <Typography variant="body2" color="textSecondary">
-                {service.attributes.description}
+                {service?.attributes.description}
               </Typography>
             </Gutters>
           )}
@@ -72,7 +85,7 @@ export const ConnectionPage: React.FC = () => {
           gutters
           subtitle="Service Details"
           expanded={accordion.service}
-          onClick={() => ui.accordion({ service: !accordion.service })}
+          onClick={() => dispatch.ui.accordion({ service: !accordion.service })}
         >
           <ServiceAttributes service={service} disablePadding />
         </AccordionMenuItem>
