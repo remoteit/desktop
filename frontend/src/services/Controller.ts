@@ -143,7 +143,7 @@ function getEventHandlers() {
 
     updated: (result: IConnection) => {
       controller.log('event: socket connection', result)
-      connections.restoreConnections([result])
+      connections.updateConnection(result)
     },
 
     device: (result: string) => {

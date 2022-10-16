@@ -96,15 +96,16 @@ export default createModel<RootModel>()({
       }, [])
     },
     async updatePublicConnections(all: ISession[], globalState) {
-      const publicConnections = globalState.connections.all.filter(c => c.public)
+      const publicConnections = globalState.connections.all.filter(c => c.public && !c.connectLink)
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
-        if (connection.connectLink) return
         const session = all.find(s => s.id === connection.sessionId)
-        connection.connecting = false
-        connection.enabled = !!session
-        connection.connected = !!session
-        setConnection(connection)
+        if (connection.connecting !== false || connection.enabled !== !!session || connection.connected !== !!session) {
+          connection.connecting = false
+          connection.enabled = !!session
+          connection.connected = !!session
+          setConnection(connection)
+        }
       })
     },
   }),

@@ -188,13 +188,14 @@ export default createModel<RootModel>()({
       const linkData = parseLinkData(result)
       await dispatch.connections.updateConnectLinks({ linkData, accountId })
 
-      const devices = graphQLDeviceAdaptor(result, accountId, true)
+      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden: true })
       if (devices.length) {
         await dispatch.accounts.mergeDevices({ devices, accountId })
         await dispatch.connections.updateConnectionState({ devices, accountId })
       }
     },
 
+    // by service or device id
     async fetchSingle(
       {
         id,
@@ -208,19 +209,22 @@ export default createModel<RootModel>()({
       state
     ): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
-      const device = selectDevice(state, id)
+      const [_, device] = selectById(state, id)
       const accountId = device?.accountId || getActiveAccountId(state)
       let result: IDevice | undefined
       let linkData: ILinkData[] = []
-      if (!id) return
 
+      if (!id) return
       set({ fetching: true, accountId })
+
       try {
         const gqlResponse = await graphQLFetchFullDevice(id, accountId)
         graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
-        result = gqlData ? graphQLDeviceAdaptor(gqlData.device, accountId, hidden, true)[0] : undefined
-        linkData = parseLinkData(gqlData)
+        if (gqlData) {
+          result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
+          linkData = parseLinkData(gqlData)
+        }
       } catch (error) {
         await apiError(error)
       }
@@ -229,10 +233,10 @@ export default createModel<RootModel>()({
         result.thisDevice = result.thisDevice || thisDevice
         await dispatch.connections.updateConnectLinks({ linkData, accountId })
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
+        await dispatch.accounts.setDevice({ id: result.id, device: result, accountId })
+        console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
       }
-      await dispatch.accounts.setDevice({ id: id, accountId, device: result })
       set({ fetching: false, accountId })
-
       return result
     },
 
@@ -256,8 +260,8 @@ export default createModel<RootModel>()({
     async graphQLListProcessor(options: gqlOptions) {
       try {
         const gqlResponse = await graphQLFetchDeviceList(options)
-        const [deviceData, total, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLDeviceAdaptor(deviceData, options.account)
+        const [gqlDevices, total, error] = graphQLMetadata(gqlResponse)
+        const devices = graphQLDeviceAdaptor({ gqlDevices, accountId: options.account })
         return { devices, total, error }
       } catch (error) {
         await apiError(error)
@@ -526,8 +530,7 @@ export function selectDeviceByAccount(state: ApplicationState, deviceId?: string
 
 export function selectById(state: ApplicationState, id?: string) {
   const accountId = getActiveAccountId(state)
-  const accountDevices = getDevices(state, accountId)
-  const result = findById(accountDevices, id)
+  const result = findById(getDevices(state, accountId), id)
   return result[0] ? result : findById(getAllDevices(state), id)
 }
 

@@ -36,9 +36,8 @@ type IConnectionsState = {
   queueEnabling: boolean
   queueFinished: boolean
   queueConnection?: IConnection
+  initialized: boolean
 }
-
-type IUpdateLinks = { linkData: ILinkData[]; removeLinks?: boolean; accountId: string }
 
 const defaultState: IConnectionsState = {
   all: [],
@@ -47,6 +46,7 @@ const defaultState: IConnectionsState = {
   queueEnabling: false,
   queueFinished: false,
   queueConnection: undefined,
+  initialized: false,
 }
 
 export default createModel<RootModel>()({
@@ -55,7 +55,7 @@ export default createModel<RootModel>()({
     async init(_: void, state) {
       let item = getLocalStorage(state, 'connections')
       console.log('INIT CONNECTIONS', item)
-      if (item) dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
+      if (item) await dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
     },
 
     async fetch(_: void, state) {
@@ -72,17 +72,17 @@ export default createModel<RootModel>()({
 
     async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }, state) {
       const connectionData = gqlResponse?.data?.data?.login?.connections || []
-      const connectionLinkData = parseLinkData(connectionData)
-      const devices = graphQLDeviceAdaptor(connectionData, accountId, true)
+      // const connectionLinkData = parseLinkData(connectionData)
+      const devices = graphQLDeviceAdaptor({ gqlDevices: connectionData, accountId, hidden: true })
       const linkData = parseLinkData(gqlResponse?.data?.data?.login)
 
       console.log('CONNECTION FETCH', { connectionData, linkData })
 
-      await dispatch.connections.updateConnectLinks({
-        linkData: connectionLinkData,
-        removeLinks: true,
-        accountId,
-      })
+      // await dispatch.connections.updateConnectLinks({
+      //   linkData: connectionLinkData,
+      //   removeLinks: true,
+      //   accountId,
+      // })
 
       await dispatch.connections.updateConnectLinks({
         linkData: linkData,
@@ -91,6 +91,8 @@ export default createModel<RootModel>()({
 
       await dispatch.accounts.setDevices({ devices, accountId: 'connections' })
       await dispatch.connections.updateConnectionState({ devices, accountId })
+      await dispatch.connections.updateCLI()
+      await dispatch.connections.set({ initialized: true })
     },
 
     async updateConnectionState({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
@@ -111,13 +113,10 @@ export default createModel<RootModel>()({
             if (!online && connection.enabled) {
               console.log('DISABLING OFFLINE CONNECTION', connection.name)
               await dispatch.connections.disconnect(connection)
-              // enabled = false
             }
 
-            // setConnection({
             await dispatch.connections.updateConnection({
               ...connection,
-              // name: s.subdomain, // implement after CLI supports all utf-8 chars
               online,
             })
           }
@@ -125,48 +124,53 @@ export default createModel<RootModel>()({
       })
     },
 
-    async updateConnectLinks({ linkData, removeLinks, accountId }: IUpdateLinks, state) {
+    async updateConnectLinks({ linkData, accountId }: { linkData: ILinkData[]; accountId: string }, state) {
       let lookup = getConnectionLookup(state)
       let unlink: IConnection[] = []
 
       console.log('UPDATE CONNECT LINKS', linkData)
 
       const updated: IConnection[] = linkData.map(link => {
-        const connection = lookup[link.serviceId]
-        console.log('UPDATE CONNECT LINK', link)
+        const connection = lookup[link.serviceId] || DEFAULT_CONNECTION
 
-        const url = link.url ? urlParse(link.url) : { host: '', port: '' }
+        delete lookup[link.serviceId]
 
-        if (connection) delete lookup[link.serviceId]
-        else console.log('ADD CONNECT LINK', link.serviceId, link.subdomain)
-
-        return {
-          ...(connection || DEFAULT_CONNECTION),
+        let update: IConnection = {
           accountId,
-          id: link.serviceId,
-          deviceID: link.deviceId,
-          createdTime: new Date(link.created).getTime(),
+          ...connection,
+          id: connection.id || link.serviceId,
+          deviceID: connection.deviceID || link.deviceId,
+          name: connection.name || link.subdomain,
           password: link.password,
-          enabled: link.enabled,
-          host: url.host,
-          port: url.port ? parseInt(url.port, 10) : undefined,
-          name: link.subdomain,
-          connectLink: link.set,
-          public: true,
-        } as IConnection
+        }
+
+        if (link.set) {
+          const url = urlParse(link.url)
+          if (url.host) update.host = url.host
+          if (url.port) update.port = parseInt(url.port, 10)
+          update.createdTime = new Date(link.created).getTime()
+          update.enabled = link.enabled
+          update.connectLink = true
+          update.public = true
+          console.log('UPDATE CONNECT LINK', update)
+        }
+
+        return update
       })
 
-      if (removeLinks)
-        unlink = Object.keys(lookup).map(key => {
-          return {
+      unlink = Object.keys(lookup).reduce((result: IConnection[], key) => {
+        if (lookup[key].connectLink) {
+          console.log('UNLINK CONNECT LINK', key)
+          result.push({
             ...lookup[key],
-            connectLink: false,
-            enabled: false,
-            public: false,
-          }
-        })
+            connectLink: DEFAULT_CONNECTION.connectLink,
+            enabled: DEFAULT_CONNECTION.enabled,
+            public: DEFAULT_CONNECTION.public,
+          })
+        }
+        return result
+      }, [])
 
-      console.log('UPDATE CONNECT LINK', { updated, unlink })
       await dispatch.connections.mergeConnections([...unlink, ...updated])
     },
 
@@ -183,7 +187,7 @@ export default createModel<RootModel>()({
         }
         return c
       })
-      dispatch.connections.setAll([...updated, ...connections])
+      await dispatch.connections.setAll([...updated, ...connections])
     },
 
     async updateConnection(connection: IConnection, state) {
@@ -204,6 +208,10 @@ export default createModel<RootModel>()({
         all.push(connection)
         dispatch.connections.setAll(all)
       }
+    },
+
+    async updateCLI(_: void, state) {
+      emit('connections', state.connections.all)
     },
 
     async restoreConnections(connections: IConnection[], state) {

@@ -256,12 +256,17 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gql
   )
 }
 
-export function graphQLDeviceAdaptor(
-  gqlDevices: any[],
-  accountId: string,
-  hidden: boolean = false,
-  loaded: boolean = false
-): IDevice[] {
+export function graphQLDeviceAdaptor({
+  gqlDevices,
+  accountId,
+  hidden,
+  loaded,
+}: {
+  gqlDevices: any[]
+  accountId: string
+  hidden?: boolean
+  loaded?: boolean
+}): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
   const thisId = state.backend.thisId
@@ -273,7 +278,7 @@ export function graphQLDeviceAdaptor(
       name: d.name,
       owner: owner,
       state: d.state,
-      loaded: loaded,
+      loaded: !!loaded,
       configurable: d.configurable,
       hardwareId: d.hardwareId,
       createdAt: new Date(d.created),
@@ -301,8 +306,8 @@ export function graphQLDeviceAdaptor(
           scripting: e.scripting,
         })) || [],
       thisDevice: d.id === thisId,
+      hidden: !!hidden,
       accountId,
-      hidden,
     }
   })
   store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })

@@ -219,6 +219,10 @@ function getApplicationType(typeId: number | undefined) {
   const windows = os === 'windows'
 
   switch (typeId) {
+    case 1:
+      return new Application({
+        appLaunchType: 'URL',
+      })
     case 4:
       return new Application({
         title: 'VNC',
@@ -237,7 +241,6 @@ function getApplicationType(typeId: number | undefined) {
         appCommandTemplate: windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
           : 'ssh -l [username] [host] -p [port]',
-        // defaultTokenData: { path: 'putty.exe' },
       })
     case 5:
       return new Application({
@@ -256,6 +259,7 @@ function getApplicationType(typeId: number | undefined) {
       })
     case 7:
     case 30:
+    case 37:
     case 38:
     case 42:
       return new Application({
