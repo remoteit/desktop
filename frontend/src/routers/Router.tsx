@@ -245,7 +245,7 @@ export const Router: React.FC = () => {
                 <TestPage />
               </Route>
 
-              <Route path="/settings/options?">
+              <Route path={['/settings/options', '/settings']}>
                 <OptionsPage />
               </Route>
             </Switch>
