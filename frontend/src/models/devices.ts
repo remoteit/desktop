@@ -209,8 +209,7 @@ export default createModel<RootModel>()({
       state
     ): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
-      const [_, device] = selectById(state, id)
-      const accountId = device?.accountId || getActiveAccountId(state)
+      const accountId = getActiveAccountId(state)
       let result: IDevice | undefined
       let linkData: ILinkData[] = []
 
