@@ -236,7 +236,7 @@ function getApplicationType(typeId: number | undefined) {
     case 28:
       return new Application({
         title: 'SSH',
-        appLaunchType: portal ? 'URL' : 'COMMAND',
+        appLaunchType: portal ? 'URL' : windows ? 'COMMAND' : 'URL',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
