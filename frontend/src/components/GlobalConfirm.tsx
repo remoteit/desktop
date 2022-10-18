@@ -6,9 +6,9 @@ import { Notice } from '../components/Notice'
 
 const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?: string }> = {
   destroyLink: {
-    title: 'Remove persistent endpoint?',
-    message: 'Once removed, this endpoint will not be the same again. You will get a new url when you restart.',
-    action: 'Remove',
+    title: 'Clear persistent endpoint?',
+    message: 'This will clear your connect link url so that a new one will be created when you restart again.',
+    action: 'Clear',
   },
   forceUnregister: {
     title: 'Force removal?',

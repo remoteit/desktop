@@ -34,19 +34,20 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
           </>
         }
         disabled={disabled}
-        subLabel={'Create a fixed public endpoint for anyone to connect to'}
+        subLabel="Create a fixed public endpoint for anyone to connect to"
+        button={connection.connectLink ? 'clear' : undefined}
+        onButtonClick={() =>
+          dispatch.ui.set({
+            confirm: {
+              id: 'destroyLink',
+              callback: () => dispatch.connections.removeConnectLink(connection),
+            },
+          })
+        }
         toggle={!!connection.connectLink}
         onClick={() => {
-          if (connection.connectLink) {
-            dispatch.ui.set({
-              confirm: {
-                id: 'destroyLink',
-                callback: () => dispatch.connections.removeConnectLink(connection),
-              },
-            })
-          } else {
-            dispatch.connections.setConnectLink({ ...connection, enabled: true })
-          }
+          if (connection.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
+          else dispatch.connections.setConnectLink({ ...connection, enabled: true })
         }}
       />
       <Collapse in={connection.connectLink}>

@@ -103,7 +103,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
         show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      {(!ownDevice || connection.connectLink) && (
+      {!ownDevice && !connection.connectLink && (
         <GuideBubble
           guide="connectButton"
           enterDelay={400}

@@ -180,7 +180,7 @@ export default createModel<RootModel>()({
       const networks: INetwork[] = selectNetworks(state).filter(n => canRoleView(role, n))
       return networks.length
     },
-    async start(serviceId: string, state) {
+    async join(serviceId: string, state) {
       const joined = selectNetworkByService(state, serviceId)
       if (!joined.length) dispatch.networks.add({ serviceId, networkId: DEFAULT_ID })
     },

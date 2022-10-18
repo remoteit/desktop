@@ -328,7 +328,10 @@ export default createModel<RootModel>()({
     },
 
     async setConnectLink(connection: IConnection) {
-      const creating: IConnection = { ...connection, public: true, connectLink: true, reverseProxy: true }
+      const creating: IConnection = connection.enabled
+        ? { ...connection, public: true, reverseProxy: true, connectLink: true }
+        : { ...connection, public: false, reverseProxy: false, connectLink: false }
+
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
         serviceId: connection.id,
@@ -349,14 +352,13 @@ export default createModel<RootModel>()({
       setConnection({
         ...creating,
         password: data?.password,
-        starting: false,
         enabled: !!data?.enabled,
         createdTime: new Date(data.created).getTime(),
-        error: undefined,
-        isP2P: false,
-        reverseProxy: true,
         port: url.port ? parseInt(url.port, 10) : undefined,
         host: url.hostname || undefined,
+        error: undefined,
+        starting: false,
+        isP2P: false,
       })
     },
 
