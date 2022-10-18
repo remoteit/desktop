@@ -297,7 +297,7 @@ export default class ConnectionPool {
       return c
     })
 
-    preferences.update({ cliConfigVersion: thisCLI })
+    if (previousCLI !== thisCLI) preferences.update({ cliConfigVersion: thisCLI })
     return connections
   }
 }
