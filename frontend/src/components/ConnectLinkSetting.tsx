@@ -45,7 +45,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
               },
             })
           } else {
-            dispatch.connections.setConnectLink(connection)
+            dispatch.connections.setConnectLink({ ...connection, enabled: true })
           }
         }}
       />
