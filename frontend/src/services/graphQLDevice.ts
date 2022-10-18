@@ -3,12 +3,6 @@ import { removeDeviceName } from '../shared/nameHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
-const LINK_SELECT = `
-  url
-  created
-  password
-  enabled`
-
 export const SERVICE_SELECT = `
   id
   name
@@ -30,9 +24,6 @@ export const SERVICE_SELECT = `
       id
       email
     }
-  }
-  link {
-    ${LINK_SELECT}
   }`
 
 const DeviceSelectLookup: ILookup<string> = {
@@ -91,9 +82,6 @@ const DeviceSelectLookup: ILookup<string> = {
     license
     application
     subdomain
-    link {
-      ${LINK_SELECT}
-    }
   }`,
 
   endpoint: `
@@ -195,7 +183,10 @@ export async function graphQLFetchConnections(params: { account: string; ids: st
             ${attributeQuery(DEVICE_PRELOAD)}
           }
           links {
-            ${LINK_SELECT}
+            url
+            created
+            password
+            enabled
             service {
               id
               name

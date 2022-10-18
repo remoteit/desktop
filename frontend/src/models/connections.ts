@@ -72,23 +72,10 @@ export default createModel<RootModel>()({
 
     async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }, state) {
       const connectionData = gqlResponse?.data?.data?.login?.connections || []
-      // const connectionLinkData = parseLinkData(connectionData)
       const devices = graphQLDeviceAdaptor({ gqlDevices: connectionData, accountId, hidden: true })
       const linkData = parseLinkData(gqlResponse?.data?.data?.login)
 
-      console.log('CONNECTION FETCH', { connectionData, linkData })
-
-      // await dispatch.connections.updateConnectLinks({
-      //   linkData: connectionLinkData,
-      //   removeLinks: true,
-      //   accountId,
-      // })
-
-      await dispatch.connections.updateConnectLinks({
-        linkData: linkData,
-        accountId,
-      })
-
+      await dispatch.connections.updateConnectLinks({ linkData, accountId })
       await dispatch.accounts.setDevices({ devices, accountId: 'connections' })
       await dispatch.connections.updateConnectionState({ devices, accountId })
       await dispatch.connections.updateCLI()
