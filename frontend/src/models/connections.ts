@@ -138,6 +138,7 @@ export default createModel<RootModel>()({
           update.createdTime = new Date(link.created).getTime()
           update.enabled = link.enabled
           update.connectLink = true
+          update.reverseProxy = true
           update.public = true
           console.log('UPDATE CONNECT LINK', update)
         }
@@ -151,6 +152,7 @@ export default createModel<RootModel>()({
           result.push({
             ...lookup[key],
             connectLink: DEFAULT_CONNECTION.connectLink,
+            reverseProxy: DEFAULT_CONNECTION.reverseProxy,
             enabled: DEFAULT_CONNECTION.enabled,
             public: DEFAULT_CONNECTION.public,
           })
@@ -326,7 +328,7 @@ export default createModel<RootModel>()({
     },
 
     async setConnectLink(connection: IConnection) {
-      const creating: IConnection = { ...connection, public: true, connectLink: true }
+      const creating: IConnection = { ...connection, public: true, connectLink: true, reverseProxy: true }
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
         serviceId: connection.id,
@@ -366,6 +368,7 @@ export default createModel<RootModel>()({
         connectLink: false,
         enabled: false,
         public: false || isPortal(),
+        reverseProxy: undefined,
         disconnecting: true,
       }
       dispatch.connections.updateConnection(removing)
