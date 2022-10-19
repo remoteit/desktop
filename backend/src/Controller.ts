@@ -67,7 +67,7 @@ class Controller {
     socket.on('binaries/install', this.installBinaries)
     socket.on('launch/app', launch)
     socket.on('connection', connection => this.pool.set(connection, true))
-    socket.on('connections', connections => this.pool.update(connections))
+    socket.on('connections', connections => this.pool.setAll(connections))
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('restore', this.restore)

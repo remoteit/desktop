@@ -15,13 +15,13 @@ export default class Connection {
   async set({ ip = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { ip, restriction, failover, ...connection }
     d('SET CONNECTION', { params: this.params })
-    if (setCLI && !this.params.public) await cli.setConnection(this.params, this.error, this.log)
+    if (setCLI) await cli.setConnection(this.params, this.error, this.log)
   }
 
   async start() {
     this.params.enabled = true
     this.params.error = undefined
-    if (!this.params.public) await cli.addConnection(this.params, this.error, this.log)
+    await cli.addConnection(this.params, this.error, this.log)
   }
 
   async stop() {
@@ -31,7 +31,7 @@ export default class Connection {
 
   async disable() {
     this.params.enabled = false
-    if (!this.params.public) await cli.removeConnection(this.params, this.error, this.log)
+    await cli.removeConnection(this.params, this.error, this.log)
   }
 
   async clear() {
@@ -40,7 +40,7 @@ export default class Connection {
     this.params.disconnecting = false
     this.params.createdTime = undefined
     this.params.error = undefined
-    if (!this.params.public) await cli.removeConnection(this.params, this.error, this.log)
+    await cli.removeConnection(this.params, this.error, this.log)
   }
 
   log = (c: string) => {

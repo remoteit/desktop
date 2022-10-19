@@ -1,7 +1,7 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import { WEB_PORT } from './constants'
-import { IP_PRIVATE } from './sharedCopy/constants'
+import { IP_PRIVATE, DEFAULT_CONNECTION } from './sharedCopy/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
 import preferences from './preferences'
@@ -46,7 +46,7 @@ export default class ConnectionPool {
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
-    this.update(connections, false)
+    this.setAll(connections, false)
   }
 
   // Sync with CLI
@@ -57,10 +57,12 @@ export default class ConnectionPool {
 
     // move connections: cli -> desktop
     cliData.forEach(cliConnection => {
-      const connection = this.find(cliConnection.id)?.params
-      if (!connection || this.changed(cliConnection, connection)) {
+      const connection = this.find(cliConnection.id)?.params || DEFAULT_CONNECTION
+      if (connection.public) {
+        this.disable(connection)
+      } else if (this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
-        this.updated(this.set({ ...connection, ...cliConnection }, false, true))
+        this.set({ ...connection, ...cliConnection })
       }
     })
 
@@ -90,8 +92,8 @@ export default class ConnectionPool {
     })
   }
 
-  update = (connections: IConnection[], setCLI?: boolean) => {
-    connections.forEach(c => this.set(c, setCLI, true))
+  setAll = (connections: IConnection[], setCLI?: boolean) => {
+    connections.forEach(c => this.set(c, c.public ? false : setCLI, true))
     this.updated()
   }
 
@@ -139,7 +141,12 @@ export default class ConnectionPool {
     ]
     return props.some(prop => {
       if (f[prop] !== undefined && f[prop] !== t[prop]) {
-        Logger.info('CONNECTION CHANGED', { prop, fromCLI: f[prop] || '<empty>', toDesktop: t[prop] || '<empty>' })
+        Logger.info('CONNECTION CHANGED', {
+          id: f.id,
+          prop,
+          fromCLI: f[prop] || '<empty>',
+          toDesktop: t[prop] || '<empty>',
+        })
         return true
       }
     })
@@ -220,6 +227,7 @@ export default class ConnectionPool {
     if (!user.signedIn) return
     const json = this.toJSON()
     this.file?.write(json)
+    if (instance) Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })
     if (instance) EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
     else EventBus.emit(ConnectionPool.EVENTS.pool, json)
   }
