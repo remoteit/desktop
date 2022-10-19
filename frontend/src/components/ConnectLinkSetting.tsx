@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import { IconButton } from '../buttons/IconButton'
 import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { ListItemSetting } from './ListItemSetting'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Tooltip, Collapse } from '@mui/material'
 import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { ColorChip } from './ColorChip'
+import { Dispatch } from '../store'
 
 type ISecurity = 'PROTECTED' | 'OPEN'
 const MAX_PASSWORD_LENGTH = 49
@@ -17,7 +18,8 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
 }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
-  const disabled = !permissions.includes('MANAGE')
+  const canManage = !permissions.includes('MANAGE')
+  const hadLink = connection.host?.includes('connect.remote.it')
 
   useEffect(() => {
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
@@ -27,22 +29,28 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
     <>
       <ListItemSetting
         icon="globe"
-        label={
-          <>
-            <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" />
-            &nbsp;Persistent public url
-          </>
-        }
-        disabled={disabled}
+        disabled={canManage || (connection.enabled && !connection.connectLink)}
+        label="Persistent public url"
         subLabel="Create a fixed public endpoint for anyone to connect to"
-        button={connection.connectLink ? 'clear' : undefined}
-        onButtonClick={() =>
-          dispatch.ui.set({
-            confirm: {
-              id: 'destroyLink',
-              callback: () => dispatch.connections.removeConnectLink(connection),
-            },
-          })
+        secondaryContent={
+          <>
+            {!connection.connectLink && hadLink && (
+              <IconButton
+                name="trash"
+                color="grayDark"
+                title="Reset URL"
+                onClick={() =>
+                  dispatch.ui.set({
+                    confirm: {
+                      id: 'destroyLink',
+                      callback: () => dispatch.connections.removeConnectLink(connection),
+                    },
+                  })
+                }
+              />
+            )}
+            <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
+          </>
         }
         toggle={!!connection.connectLink}
         onClick={() => {
@@ -50,7 +58,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
           else dispatch.connections.setConnectLink({ ...connection, enabled: true })
         }}
       />
-      <Collapse in={connection.connectLink}>
+      <Collapse in={connection.connectLink} timeout={800}>
         <ListItemQuote>
           <SelectSetting
             hideIcon
@@ -83,7 +91,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
     </>
   )
 
-  return disabled ? (
+  return canManage ? (
     <Tooltip title="Requires device 'Manage' permission" placement="left" enterDelay={400} arrow>
       <span>{Setting}</span>
     </Tooltip>
