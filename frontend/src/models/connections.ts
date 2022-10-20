@@ -64,20 +64,23 @@ export default createModel<RootModel>()({
       const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
       if (graphQLGetErrors(gqlResponse)) return
 
-      await dispatch.connections.parseConnections({ gqlResponse, accountId })
+      const devices = await dispatch.connections.parseConnections({ gqlResponse, accountId })
+      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+
       cleanOrphanConnections(serviceIds)
     },
 
-    async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }, state) {
-      const gqlDevices = gqlResponse?.data?.data?.login?.connections || []
+    async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }) {
+      const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
       const linkData = parseLinkData(gqlResponse?.data?.data?.login)
 
-      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
       await dispatch.connections.updateConnectLinks({ linkData, accountId })
       await dispatch.connections.updateConnectionState({ devices, accountId })
       await dispatch.connections.updateCLI()
       await dispatch.connections.set({ initialized: true })
+
+      return devices
     },
 
     async updateConnectionState({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
@@ -123,22 +126,20 @@ export default createModel<RootModel>()({
         let update: IConnection = {
           accountId,
           ...connection,
-          id: connection.id || link.serviceId,
-          deviceID: connection.deviceID || link.deviceId,
+          id: link.serviceId,
+          deviceID: link.deviceId,
           name: connection.name || link.subdomain,
           password: link.password,
+          createdTime: new Date(link.created).getTime(),
+          enabled: link.enabled,
+          connectLink: true,
+          reverseProxy: true,
+          public: true,
         }
 
-        if (link.set) {
-          const url = urlParse(link.url)
-          if (url.host) update.host = url.host
-          if (url.port) update.port = parseInt(url.port, 10)
-          update.createdTime = new Date(link.created).getTime()
-          update.enabled = link.enabled
-          update.connectLink = true
-          update.reverseProxy = true
-          update.public = true
-        }
+        const url = urlParse(link.url)
+        if (url.host) update.host = url.host
+        if (url.port) update.port = parseInt(url.port, 10)
 
         return update
       })

@@ -166,37 +166,14 @@ export function getConnectionLookup(state: ApplicationState) {
 }
 
 export function parseLinkData(responseData: any) {
-  let result: ILinkData[] = []
-  console.log('PARSE LINK DATA', responseData)
+  if (!responseData.links) return []
 
-  const devices: any[] = Array.isArray(responseData) ? responseData : responseData?.device
-
-  if (Array.isArray(devices)) {
-    devices.forEach(device =>
-      device.services.forEach(s => {
-        result.push({
-          ...s.link,
-          set: !!s.link,
-          subdomain: s.subdomain,
-          serviceId: s.id,
-          deviceId: device.id,
-        })
-      })
-    )
-  }
-
-  if (responseData?.links) {
-    const links = responseData.links
-    result = result.concat(
-      links.map(l => ({
-        ...l,
-        set: true,
-        subdomain: l.service.subdomain,
-        serviceId: l.service.id,
-        deviceId: l.service.device.id,
-      }))
-    )
-  }
+  let result: ILinkData[] = responseData.links.map(l => ({
+    ...l,
+    subdomain: l.service.subdomain,
+    serviceId: l.service.id,
+    deviceId: l.service.device.id,
+  }))
 
   console.log('PARSE LINK DATA RESULT', result)
   return result

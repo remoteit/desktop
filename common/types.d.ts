@@ -322,7 +322,6 @@ declare global {
   }
 
   type ILinkData = {
-    set: boolean // connectLink is set
     url: string
     created: Date
     enabled: boolean
