@@ -204,13 +204,13 @@ export default createModel<RootModel>()({
         thisDevice?: boolean
       },
       state
-    ): Promise<IDevice | undefined> {
-      const { set } = dispatch.devices
+    ) {
+      if (!id) return
+
       const accountId = getActiveAccountId(state)
       let result: IDevice | undefined
 
-      if (!id) return
-      set({ fetching: true, accountId })
+      dispatch.devices.set({ fetching: true, accountId })
 
       try {
         const gqlResponse = await graphQLFetchFullDevice(id, accountId)
@@ -227,7 +227,7 @@ export default createModel<RootModel>()({
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId })
         console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
       }
-      set({ fetching: false, accountId })
+      dispatch.devices.set({ fetching: false, accountId })
       return result
     },
 

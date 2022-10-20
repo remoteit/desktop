@@ -4,7 +4,7 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import {
   cleanOrphanConnections,
-  getConnectionAndNetworkServiceIds,
+  getConnectionServiceIds,
   newConnection,
   sanitizeName,
   selectConnection,
@@ -54,29 +54,27 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init(_: void, state) {
       let item = getLocalStorage(state, 'connections')
-      console.log('INIT CONNECTIONS', item)
       if (item) await dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
+      console.log('INIT CONNECTIONS', item)
     },
 
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
-      const serviceIds = getConnectionAndNetworkServiceIds(state)
-      const gqlResponse = await graphQLFetchConnections({ account: accountId, ids: serviceIds })
-
-      const error = graphQLGetErrors(gqlResponse)
-      if (error) return
+      const serviceIds = getConnectionServiceIds(state)
+      const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
+      if (graphQLGetErrors(gqlResponse)) return
 
       await dispatch.connections.parseConnections({ gqlResponse, accountId })
       cleanOrphanConnections(serviceIds)
     },
 
     async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }, state) {
-      const connectionData = gqlResponse?.data?.data?.login?.connections || []
-      const devices = graphQLDeviceAdaptor({ gqlDevices: connectionData, accountId, hidden: true })
+      const gqlDevices = gqlResponse?.data?.data?.login?.connections || []
+      const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
       const linkData = parseLinkData(gqlResponse?.data?.data?.login)
 
+      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
       await dispatch.connections.updateConnectLinks({ linkData, accountId })
-      await dispatch.accounts.setDevices({ devices, accountId: 'connections' })
       await dispatch.connections.updateConnectionState({ devices, accountId })
       await dispatch.connections.updateCLI()
       await dispatch.connections.set({ initialized: true })
@@ -140,7 +138,6 @@ export default createModel<RootModel>()({
           update.connectLink = true
           update.reverseProxy = true
           update.public = true
-          console.log('UPDATE CONNECT LINK', update)
         }
 
         return update

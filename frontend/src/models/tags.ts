@@ -233,7 +233,7 @@ export default createModel<RootModel>()({
   },
 })
 
-function removeTag<T extends INetwork | IDevice>(original: T, tag: ITag): T {
+function removeTag<T extends IInstance>(original: T, tag: ITag): T {
   const copy = { ...original }
   const index = findTagIndex(copy.tags, tag.name)
   copy.tags.splice(index, 1)

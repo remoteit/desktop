@@ -215,7 +215,7 @@ export const attributes: Attribute[] = [
     id: 'created',
     label: 'Created date',
     defaultWidth: 175,
-    value: ({ device }) => <Timestamp startDate={device?.createdAt} />,
+    value: ({ device }) => (device?.createdAt ? <Timestamp startDate={device.createdAt} /> : undefined),
   }),
   new DeviceAttribute({
     id: 'isp',

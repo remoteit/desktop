@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { selectById } from '../models/devices'
 import { Typography } from '@mui/material'
 import { getDeviceModel } from '../models/accounts'
-import { inNetworkOnly } from '../models/networks'
+import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../helpers/connectionHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -21,32 +21,34 @@ import { Title } from '../components/Title'
 export const ConnectionPage: React.FC = () => {
   const { sessionID, serviceID } = useParams<{ sessionID?: string; serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
-  const { service, device, networkOnly, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
+  const { service, device, network, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     const { initialized, fetching } = getDeviceModel(state)
     return {
       service,
       device,
       waiting: !initialized || fetching,
-      networkOnly: inNetworkOnly(state, serviceID),
+      network: selectSharedNetwork(state, serviceID),
       connection: selectConnection(state, service),
       accordion: state.ui.accordion,
     }
   })
 
   const [loaded, setLoaded] = useState<boolean>(false)
+  const instance: IInstance | undefined = network || device
 
   useEffect(() => {
-    if (serviceID && !device?.loaded && !waiting) {
+    if (serviceID && !instance?.loaded && !waiting) {
       if (loaded) {
         dispatch.ui.set({ errorMessage: `You do not have access to that service. (${serviceID})` })
         if (connection) dispatch.connections.forget(serviceID)
       } else if (!loaded) {
-        dispatch.devices.fetchSingle({ id: serviceID, hidden: true })
+        if (network) dispatch.networks.fetchSingle(network)
+        else dispatch.devices.fetchSingle({ id: serviceID, hidden: true })
         setLoaded(true)
       }
     }
-  }, [waiting, device, loaded])
+  }, [waiting, instance, loaded])
 
   useEffect(() => {
     console.log('CONNECTION PAGE ROUTE change', serviceID, sessionID, 'setLoaded false')
@@ -66,7 +68,7 @@ export const ConnectionPage: React.FC = () => {
             <Title>
               <ConnectionName name={connection.name} />
             </Title>
-            {!networkOnly && device && <InfoButton device={device} service={service} />}
+            {!network && device && <InfoButton device={device} service={service} />}
           </Typography>
           {service?.attributes.description && (
             <Gutters bottom="xl" top={null}>
@@ -79,7 +81,7 @@ export const ConnectionPage: React.FC = () => {
         </>
       }
     >
-      <Connect service={service} device={device} connection={connection} />
+      <Connect service={service} instance={instance} connection={connection} />
       <Gutters size="md">
         <AccordionMenuItem
           gutters

@@ -3,8 +3,8 @@ import { List, ListItem, ListItemIcon, ListItemText, Button, Typography, Collaps
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
-import { getDeviceModel } from '../models/accounts'
 import { canUseConnectLink } from '../models/applicationTypes'
+import { getDeviceModel } from '../models/accounts'
 import { windowOpen } from '../services/Browser'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -39,11 +39,11 @@ import { Icon } from './Icon'
 
 type Props = {
   service?: IService
-  device?: IDevice
+  instance?: IInstance
   connection: IConnection
 }
 
-export const Connect: React.FC<Props> = ({ service, device, connection }) => {
+export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
   const css = useStyles()
   const location = useLocation<{
     autoConnect?: boolean
@@ -55,7 +55,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
   const { session, accordion, ownDevice, showConnectLink } = useSelector((state: ApplicationState) => ({
-    ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
+    ownDevice: (instance as IDevice)?.thisDevice && instance?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
@@ -67,7 +67,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   useEffect(() => {
     // FIXME - move this up to the router level - for connection display now
     const id = connection?.deviceID || deviceID
-    if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
+    if (!instance && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
     if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
-  if (!service || !device) return <NoConnectionPage />
+  if (!service || !instance) return <NoConnectionPage />
 
   return (
     <>
@@ -102,7 +102,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
         session={session}
         show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
-      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+      {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
       {!ownDevice && !connection.connectLink && (
         <GuideBubble
           guide="connectButton"
@@ -142,13 +142,13 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           <Gutters size="md" className={css.gutters} bottom={null}>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
-              connection={connection}
-              service={service}
-              permissions={device.permissions}
               size="large"
-              fullWidth
-              loading={!device.loaded}
+              service={service}
+              connection={connection}
+              loading={!instance.loaded}
+              permissions={instance.permissions}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
+              fullWidth
             />
             <ConnectionMenu connection={connection} service={service} />
           </Gutters>
@@ -167,7 +167,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           <List disablePadding>
             <Collapse in={!connection.connectLink}>
               <DesktopUI>
-                <NameSetting connection={connection} service={service} device={device} />
+                <NameSetting connection={connection} service={service} instance={instance} />
                 <PortSetting connection={connection} service={service} />
               </DesktopUI>
               <LaunchSelect connection={connection} service={service} />
@@ -175,7 +175,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
             <PortalUI>
               <PublicSetting connection={connection} service={service} />
             </PortalUI>
-            {showConnectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
+            {showConnectLink && <ConnectLinkSetting connection={connection} permissions={instance.permissions} />}
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Get Desktop for more features and control.</strong>
@@ -197,7 +197,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           </List>
         </AccordionMenuItem>
         <NetworksAccordion
-          device={device}
+          instance={instance}
           service={service}
           connection={connection}
           expanded={accordion.networks}

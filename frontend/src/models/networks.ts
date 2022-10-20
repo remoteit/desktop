@@ -14,7 +14,12 @@ import {
   graphQLAddNetworkShare,
   graphQLRemoveNetworkShare,
 } from '../services/graphQLMutation'
-import { graphQLBasicRequest } from '../services/graphQL'
+import {
+  graphQLFetchNetworkServices,
+  graphQLNetworkAdaptor,
+  graphQLDeviceAdaptor,
+  graphQLPreloadNetworks,
+} from '../services/graphQLDevice'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
@@ -91,49 +96,29 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       dispatch.networks.set({ loading: true })
-      const result = await graphQLBasicRequest(
-        ` query Networks($account: String) {
-            login {
-              account(id: $account) {
-                networks {
-                  id
-                  name
-                  created
-                  permissions
-                  owner {
-                    id
-                    email
-                  }
-                  connections {
-                    service {
-                      id
-                    }
-                    name
-                    port
-                  }
-                  tags {
-                    name
-                    color
-                    created
-                  }
-                  access {
-                    user {
-                      id
-                      email
-                    }
-                  }
-                }
-              }
-            }
-          }`,
-        {
-          account: accountId,
-        }
-      )
+      const result = await graphQLPreloadNetworks(accountId)
+
       if (result === 'ERROR') return
 
-      await dispatch.networks.parse(result)
+      const networks = await dispatch.networks.parse(result)
+      await dispatch.networks.setNetworks({ networks, accountId })
       dispatch.networks.set({ loading: false })
+    },
+
+    async fetchSingle(network: INetwork, state) {
+      if (!network) return
+
+      const accountId = getActiveAccountId(state)
+      dispatch.devices.set({ fetching: true, accountId })
+
+      const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId)
+      if (gqlResponse === 'ERROR') return
+
+      const gqlConnections = gqlResponse?.data?.data?.login?.network?.connections || {}
+      await dispatch.networks.parseServices({ gqlConnections, accountId, loaded: true })
+      await dispatch.networks.setNetwork({ ...network, loaded: true })
+
+      dispatch.devices.set({ fetching: false, accountId })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -145,45 +130,58 @@ export default createModel<RootModel>()({
       }
     },
 
-    async parse(result: AxiosResponse<any> | undefined, state) {
+    async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
       const accountId = getActiveAccountId(state)
-      const all = result?.data?.data?.login?.account?.networks
-      if (!all) return
+      const networks = gqlResponse?.data?.data?.login?.account?.networks || []
 
-      const parsed: INetwork[] = all.map(n => {
-        const shared = accountId !== n.owner.id
+      const parsed: INetwork[] = await Promise.all(
+        networks.map(async n => {
+          const shared = accountId !== n.owner.id
+          const gqlConnections = n?.connections || {}
+          dispatch.networks.parseServices({ gqlConnections, accountId })
 
-        return {
-          ...defaultNetwork(),
-          shared,
-          id: n.id,
-          name: n.name,
-          owner: n.owner,
-          permissions: n.permissions,
-          created: new Date(n.created),
-          // FIXME this is not enough data to generate new network connections... need full generation for shared networks...
-          // ...maybe can be done by adding the network service IDs to the connection query
-          connectionNames: n.connections.reduce((obj, c) => ({ ...obj, [c.service.id]: c.name }), {}),
-
-          serviceIds: n.connections.map(c => c.service.id),
-          access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
-          tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
-          icon: 'chart-network',
-        }
-      })
+          return {
+            ...defaultNetwork(),
+            shared,
+            id: n.id,
+            name: n.name,
+            owner: n.owner,
+            permissions: n.permissions,
+            created: new Date(n.created),
+            // FIXME this is not enough data to generate new network connections... need full generation for shared networks...
+            // ...maybe can be done by adding the network service IDs to the connection query
+            connectionNames: n.connections.reduce((obj, c) => ({ ...obj, [c.service.id]: c.name }), {}),
+            serviceIds: n.connections.map(c => c.service.id),
+            access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
+            tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
+            icon: 'chart-network',
+          }
+        })
+      )
 
       console.log('LOAD NETWORKS', parsed)
-      dispatch.networks.setNetworks({ networks: parsed, accountId })
+      return parsed
     },
+
+    async parseServices(props: { gqlConnections: any; loaded?: boolean; accountId: string }) {
+      const { gqlConnections, loaded, accountId } = props
+      const gqlDevices = graphQLNetworkAdaptor(gqlConnections)
+      const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true, loaded })
+      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+      await dispatch.connections.updateConnectionState({ devices, accountId })
+    },
+
     async fetchCount(role: IOrganizationRole, state) {
       if (role.access === 'NONE') return 0
       const networks: INetwork[] = selectNetworks(state).filter(n => canRoleView(role, n))
       return networks.length
     },
+
     async join(serviceId: string, state) {
       const joined = selectNetworkByService(state, serviceId)
       if (!joined.length) dispatch.networks.add({ serviceId, networkId: DEFAULT_ID })
     },
+
     async add(props: addConnectionProps, state) {
       const network = selectNetwork(state, props.networkId)
       let copy = { ...network }
@@ -199,6 +197,7 @@ export default createModel<RootModel>()({
         }
       }
     },
+
     async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
@@ -223,6 +222,7 @@ export default createModel<RootModel>()({
         dispatch.connections.disconnect(connection)
       }
     },
+
     async removeById(id: string, state) {
       let { all } = state.networks
       all[DEFAULT_ID] = [state.networks.default]
@@ -235,6 +235,7 @@ export default createModel<RootModel>()({
         })
       })
     },
+
     async deleteNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
       const response = await graphQLDeleteNetwork(params.id)
@@ -244,6 +245,7 @@ export default createModel<RootModel>()({
       networks.splice(index, 1)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },
+
     async addNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
       const response = await graphQLAddNetwork(params.name, id)
@@ -254,11 +256,13 @@ export default createModel<RootModel>()({
       await dispatch.networks.fetch()
       dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
     },
-    async updateNetwork(network: INetwork, state) {
+
+    async updateNetwork(network: INetwork) {
       await dispatch.networks.setNetwork(network)
       await graphQLUpdateNetwork(network)
       await dispatch.networks.fetch()
     },
+
     async shareNetwork({ id, emails }: { id: string; emails: string[] }, state) {
       const response = await graphQLAddNetworkShare(id, emails)
       if (response === 'ERROR' || !response?.data?.data?.addNetworkShare) return
@@ -271,6 +275,7 @@ export default createModel<RootModel>()({
             : `${network.name} shared to ${emails[0]}.`,
       })
     },
+
     async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {
       const response = await graphQLRemoveNetworkShare(networkId, email)
       if (response === 'ERROR' || !response?.data?.data?.removeNetworkShare) return
@@ -279,6 +284,7 @@ export default createModel<RootModel>()({
       network.access.splice(index, 1)
       await dispatch.networks.setNetwork(network)
     },
+
     async setNetwork(params: INetwork, state) {
       const id = getActiveAccountId(state)
       if (params.id === DEFAULT_ID) return
@@ -292,6 +298,7 @@ export default createModel<RootModel>()({
         dispatch.networks.setNetworks({ networks, accountId: id })
       }
     },
+
     async setNetworks(props: { networks: INetwork[]; accountId?: string }, state) {
       const id = props.accountId || getActiveAccountId(state)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...props.networks] } })
@@ -320,6 +327,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
     name: '',
     enabled: true,
     shared: false,
+    loaded: false,
     owner: { id: '', email: '' },
     permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
     connectionNames: {},
@@ -373,15 +381,8 @@ export function selectAccessibleNetworks(
   return networks.filter(n => canMemberView(organization.roles, member, n))
 }
 
-export function inNetworkOnly(state: ApplicationState, serviceId?: string): boolean {
+export function selectSharedNetwork(state: ApplicationState, serviceId?: string): INetwork | undefined {
   const networks = selectNetworkByService(state, serviceId)
-  if (!networks.length) return false
-  return !networks.find(n => !n.shared)
-}
-
-export function getNetworkServiceIds(state: ApplicationState): string[] {
-  const networks = selectNetworks(state)
-  let serviceIds: string[] = []
-  networks.forEach(network => (serviceIds = serviceIds.concat(network.serviceIds)))
-  return serviceIds
+  if (!networks.length) return
+  return networks.find(n => n.shared)
 }

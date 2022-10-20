@@ -128,20 +128,13 @@ declare global {
 
   type INodeType = 'DEVICE' | 'NETWORK'
 
-  type INetwork = {
-    id: string
-    name: string
+  interface INetwork extends IInstance {
     enabled: boolean
-    shared: boolean
-    owner: IUserRef
-    permissions: IPermission[]
     connectionNames: INameLookupByServiceId
     serviceIds: string[]
     sessions?: ISession[]
-    access: IUserRef[]
     icon?: string
     iconType?: IconType
-    tags: ITag[]
   }
 
   type INameLookupByServiceId = ILookup<string>
@@ -231,14 +224,14 @@ declare global {
 
   type CLIDeviceProps =
     | {
-        hostname: string //     proxy_dest_ip      service ip to forward
+        hostname: string // proxy_dest_ip - service ip to forward
         hardwareId?: string
-        uid: string //          UID
+        uid: string // UID
         name?: string
-        secret?: string //      password
-        port: number //         proxy_dest_port    service port
-        type: number //         application_type   service type
-        disabled: boolean //    service enabled / disabled
+        secret?: string // password
+        port: number // proxy_dest_port - service port
+        type: number // application_type - service type
+        disabled: boolean // service enabled / disabled
       }
     | undefined
 
@@ -250,11 +243,18 @@ declare global {
     enabled?: boolean
   }
 
-  interface IDevice {
+  interface IInstance {
     id: string
     name: string
-    owner: IUser
+    shared: boolean
     loaded?: boolean
+    owner: IUserRef
+    permissions: IPermission[]
+    access: IUserRef[]
+    tags: ITag[]
+  }
+
+  interface IDevice extends IInstance {
     state: 'active' | 'inactive'
     hardwareId?: string
     lastReported: Date
@@ -263,11 +263,9 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
-    tags: ITag[]
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
-    configurable: boolean // cloudshift device
-    permissions: IPermission[]
+    configurable: boolean // cloud shift device
     accountId: string // organization id
     thisDevice?: boolean
     license: ILicenseTypes
@@ -280,7 +278,6 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
-    access: IUserRef[]
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -296,12 +293,12 @@ declare global {
   }
 
   interface IService {
-    contactedAt: Date
-    createdAt: Date
     id: string
     name: string
     subdomain: string
     lastReported: Date
+    contactedAt: Date
+    createdAt: Date
     enabled?: boolean
     state: IDevice['state']
     type: string

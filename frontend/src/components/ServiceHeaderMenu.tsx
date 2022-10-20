@@ -48,7 +48,7 @@ export const ServiceHeaderMenu: React.FC<{
               </Typography>
             </Gutters>
           )}
-          {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
+          {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
           <ListHorizontal dense>
             <ListItemLocation
               title="Connection"

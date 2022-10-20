@@ -90,18 +90,17 @@ export default createModel<RootModel>()({
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {
       accountId = accountId || devices[0]?.accountId
       if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      dispatch.devices.set({ all: devices, accountId })
+      await dispatch.devices.set({ all: devices, accountId })
     },
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       accountId = accountId || devices[0]?.accountId
       if (!accountId) return console.error('MERGE DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const updatedDevices = getDevices(state, accountId).map(ud => {
+      const updatedDevices = getDevices(state, accountId).filter(ud => {
         const index = devices.findIndex(d => d.id === ud.id)
-        if (index >= 0) devices.splice(index, 1)
-        return ud
+        return index < 0
       })
-      dispatch.accounts.setDevices({
+      await dispatch.accounts.setDevices({
         devices: [...updatedDevices, ...devices],
         accountId,
       })
@@ -120,7 +119,7 @@ export default createModel<RootModel>()({
             return false
           })
       )
-      dispatch.accounts.setDevices({
+      await dispatch.accounts.setDevices({
         devices: [...existingDevices, ...devices],
         accountId,
       })

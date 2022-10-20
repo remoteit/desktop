@@ -494,18 +494,18 @@ export function selectPermissions(state: ApplicationState, accountId?: string): 
   return organization.roles.find(r => r.id === membership.roleId)?.permissions
 }
 
-export function selectMembersWithAccess(state: ApplicationState, instance?: IDevice | INetwork) {
+export function selectMembersWithAccess(state: ApplicationState, instance?: IInstance) {
   const organization = getOrganization(state)
   return organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
 }
 
-export function canMemberView(roles: IOrganizationRole[], member: IOrganizationMember, instance?: IDevice | INetwork) {
+export function canMemberView(roles: IOrganizationRole[], member: IOrganizationMember, instance?: IInstance) {
   if (!instance) return true
   const role = roles.find(r => r.id === member?.roleId)
   return canRoleView(role, instance)
 }
 
-export function canRoleView(role?: IOrganizationRole, instance?: IDevice | INetwork) {
+export function canRoleView(role?: IOrganizationRole, instance?: IInstance) {
   if (instance?.shared) return false
   if (!role?.permissions.includes('VIEW')) return false
   if (role?.tag && instance?.tags) return canViewByTags(role.tag, instance.tags)

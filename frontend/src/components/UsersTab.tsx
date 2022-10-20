@@ -10,7 +10,7 @@ import { makeStyles } from '@mui/styles'
 import { Icon } from './Icon'
 
 type Props = {
-  instance?: IDevice | INetwork
+  instance?: IInstance
   service?: IService
   to: string
 }

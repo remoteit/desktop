@@ -5,7 +5,6 @@ import {
   REGEX_CONNECTION_TRIM,
   MAX_CONNECTION_NAME_LENGTH,
 } from '../shared/constants'
-import { getNetworkServiceIds } from '../models/networks'
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
@@ -58,7 +57,7 @@ export function newConnection(service?: IService | null) {
     failover: getRouteDefault('failover', true, service, cd?.route),
     proxyOnly: getRouteDefault('proxy', false, service, cd?.route),
     autoLaunch:
-      cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
+      cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch, // FIXME
     public: isPortal() || getRouteDefault('public', undefined, service, cd?.route),
   }
 
@@ -129,10 +128,9 @@ export function clearConnectionError(connection: IConnection) {
   setConnection(connection)
 }
 
-export function getConnectionAndNetworkServiceIds(state: ApplicationState) {
+export function getConnectionServiceIds(state: ApplicationState) {
   const thisId = state.backend.thisId
-  const connectionIds = selectConnections(state).map(c => c.id)
-  const serviceIds = connectionIds.concat(getNetworkServiceIds(state))
+  const serviceIds = selectConnections(state).map(c => c.id)
   if (thisId && !serviceIds.includes(thisId)) serviceIds.push(thisId)
   return serviceIds
 }
