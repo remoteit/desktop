@@ -178,7 +178,7 @@ export default createModel<RootModel>()({
       tags[index] = tag
       dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ updating: undefined })
-      dispatch.devices.fetch()
+      dispatch.devices.fetchList()
     },
 
     async rename({ tag, name, accountId }: { tag: ITag; name: string; accountId: string }, state) {
@@ -200,7 +200,7 @@ export default createModel<RootModel>()({
       }
       dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ updating: undefined })
-      dispatch.devices.fetch()
+      dispatch.devices.fetchList()
     },
 
     async delete({ tag, accountId }: { tag: ITag; accountId: string }, state) {
@@ -212,7 +212,7 @@ export default createModel<RootModel>()({
       tags.splice(index, 1)
       dispatch.tags.setTags({ tags, accountId })
       dispatch.tags.set({ deleting: undefined })
-      dispatch.devices.fetch()
+      dispatch.devices.fetchList()
     },
     async setTags({ tags, accountId }: { tags: ITag[]; accountId: string }, state) {
       tags = tags.sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0))
@@ -233,7 +233,7 @@ export default createModel<RootModel>()({
   },
 })
 
-function removeTag<T extends INetwork | IDevice>(original: T, tag: ITag): T {
+function removeTag<T extends IInstance>(original: T, tag: ITag): T {
   const copy = { ...original }
   const index = findTagIndex(copy.tags, tag.name)
   copy.tags.splice(index, 1)

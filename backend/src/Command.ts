@@ -45,6 +45,10 @@ export default class Command {
     return params
   }
 
+  toSafeString() {
+    return this.sanitize({ string: this.commands.join(' && ') }).string.toString()
+  }
+
   parseJSONError(error: string) {
     const jsonError = error.match(/{.*}/)
     if (jsonError) {

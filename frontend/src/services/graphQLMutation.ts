@@ -65,24 +65,49 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
   )
 }
 
-export async function graphQLEnableConnectLink(serviceId: string) {
+export async function graphQLSetConnectLink(params: {
+  serviceId: string
+  password?: string | null
+  enabled?: boolean
+}) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!) {
-        enableConnectLink(serviceId: $serviceId) {
+    ` mutation query($serviceId: String!, $password: String, $enabled: Boolean) {
+        setConnectLink(serviceId: $serviceId, password: $password, enabled: $enabled) {
           url
+          password
+          enabled
           created
         }
+      }`,
+    params
+  )
+}
+
+export async function graphQLRemoveConnectLink(serviceId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!) {
+        removeConnectLink(serviceId: $serviceId)
       }`,
     { serviceId }
   )
 }
 
-export async function graphQLDisableConnectLink(serviceId: string) {
+export async function graphQLRegistration(props: {
+  name?: string
+  services: IServiceRegistration[]
+  platform?: number
+  account: string
+}) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!) {
-        disableConnectLink(serviceId: $serviceId)
+    ` query Registration($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
+        login {
+          account(id: $account) {
+            registrationCode(name: $name, platform: $platform, services: $services)
+            registrationCommand(name: $name, platform: $platform, services: $services)
+          }
+        }
       }`,
-    { serviceId }
+    props
   )
 }
 

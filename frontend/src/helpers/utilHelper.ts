@@ -2,6 +2,15 @@ export function toLookup<T>(array: T[], key: string): ILookup<T> {
   return array.reduce((obj, item) => ({ ...obj, [item[key]]: item }), {})
 }
 
+export function dedupe<T>(collection: T[], id: string) {
+  let keys: string[] = []
+  return collection.reduce((result: T[], item) => {
+    if (!keys.includes(item[id])) result.push(item)
+    keys.push(item[id])
+    return result
+  }, [])
+}
+
 export const currencyFormatter = (currency?: string, value?: number, digits: number = 2) => {
   if (!currency || !value) return '-'
   const result = new Intl.NumberFormat('en-US', {

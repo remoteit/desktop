@@ -84,7 +84,7 @@ export default createModel<RootModel>()({
           if (!result) {
             // Instances were reported where a device wasn't returned
             await sleep(2000)
-            await devices.fetch()
+            await devices.fetchList()
           }
           ui.set({
             silent: true,
@@ -97,7 +97,7 @@ export default createModel<RootModel>()({
           console.log('DELETE THIS DEVICE', thisId)
           await connections.clearByDevice(thisId)
           await sleep(2000)
-          await devices.fetch()
+          await devices.fetchList()
           await connections.fetch()
 
           ui.set({
@@ -110,6 +110,7 @@ export default createModel<RootModel>()({
 
           // restored
         } else if (state.ui.restoring) {
+          devices.fetchList()
           ui.set({
             restoring: false,
             successMessage: 'Device restored successfully!',

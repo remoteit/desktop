@@ -29,7 +29,6 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
   const toggle = () => {
     if (expanded) collapsed.push(network.id)
     else collapsed.splice(collapsed.indexOf(network.id), 1)
-    console.log('--- TOGGLE', { expanded, collapsed })
     dispatch.ui.set({ collapsed: [...collapsed] })
   }
 

@@ -40,13 +40,15 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const enabled = external || connection.enabled
   const css = useStyles({ offline, networkEnabled: network?.enabled, enabled, connected })
   const name = connection.name || session?.target.name || fallbackName || serviceId
+  const color = network?.enabled ? 'primary' : undefined
 
   let pathname = `/${tab}/${serviceId}`
   if (session) pathname += `/${session.id}`
   if (external) pathname += '/other'
 
   let icon: React.ReactNode | null = null
-  if (connected) icon = <Icon color="primary" name="chevron-right" size="md" type="light" />
+  if (connected) icon = <Icon color={color} name="play" size="sm" type="solid" />
+  if (connection.connectLink) icon = <Icon color={color} name="circle-medium" type="solid" size="sm" />
 
   return (
     <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>
@@ -82,7 +84,7 @@ export const useStyles = makeStyles(({ palette }) => ({
       borderBottomColor: offline ? palette.gray.main : color,
       borderWidth: '0 0 1px 1px',
       borderBottomWidth: 1,
-      borderBottomStyle: connected ? 'solid' : 'dashed',
+      borderBottomStyle: connected ? 'solid' : 'dotted',
       borderStyle: 'solid',
       height: '2.7em',
       width: '1.5em',
@@ -103,7 +105,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   },
   connectIcon: {
     position: 'relative',
-    '& > svg': { position: 'absolute', right: 6, bottom: -7.5 },
+    '& > svg': { position: 'absolute', right: 6, transform: 'translate(0px, -55%)' },
   },
   platform: {
     minWidth: 48,

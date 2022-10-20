@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import heartbeat from '../../services/Heartbeat'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Button, Typography } from '@mui/material'
@@ -32,6 +33,11 @@ export const InstallationNotice = connect(
   if (error) console.error(error)
 
   const isError = error && JSON.stringify(error) !== JSON.stringify({})
+
+  useEffect(() => {
+    heartbeat.checkAll = true
+    return () => (heartbeat.checkAll = undefined)
+  }, [])
 
   return (
     <Body center>

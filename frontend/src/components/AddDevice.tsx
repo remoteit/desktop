@@ -9,17 +9,18 @@ import { Notice } from '../components/Notice'
 import { Link } from '../components/Link'
 
 export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
-  const { organization, registrationCommand, permissions } = useSelector((state: ApplicationState) => ({
+  const { organization, registrationCommand, permissions, userId } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
     registrationCommand: state.ui.registrationCommand,
     permissions: selectPermissions(state),
+    userId: state.user.id,
   }))
   const dispatch = useDispatch<Dispatch>()
-  let accountId = organization.id
+  let accountId = organization.id || userId
   let accountName = organization.name
 
   useEffect(() => {
-    const platformType = platforms.findType(platform.name)
+    const platformType = platforms.findType(platform.id)
     dispatch.devices.createRegistration({
       services: [{ application: 28 }],
       accountId,
@@ -31,10 +32,7 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
     }
   }, [accountId, platform])
 
-  if (permissions?.includes('MANAGE')) {
-    accountId = organization.id
-    accountName = organization.name
-  } else {
+  if (!permissions?.includes('MANAGE')) {
     return (
       <Box>
         <Notice>You must have the register permission to add a device to this organization.</Notice>

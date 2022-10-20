@@ -17,7 +17,8 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
   if (!service) return null
 
   const defaults = newConnection(service)
-  const disabled = connection.connected || ['p2p', 'proxy'].includes(service.attributes.route || '')
+  const disabled =
+    connection.connected || ['p2p', 'proxy'].includes(service.attributes.route || '') || connection.connectLink
   const connectionRoute = getRoute(connection)
   const defaultRoute = getRoute(defaults)
   const route = ROUTES.find(r => r.key === connectionRoute)

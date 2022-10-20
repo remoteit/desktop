@@ -99,6 +99,7 @@ export const DEFAULT_SERVICE: IService = {
   contactedAt: new Date(),
   createdAt: new Date(),
   name: '',
+  subdomain: '',
   lastReported: new Date(),
   state: 'inactive',
   type: '',

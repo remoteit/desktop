@@ -20,6 +20,7 @@ declare global {
 
     // single connection update
     | 'connection'
+    | 'connections'
 
     // individual actions
     | 'service/connect'
@@ -53,6 +54,7 @@ declare global {
     | 'osInfo'
     | 'reachablePort'
     | 'useCertificate'
+    | 'forceUnregister'
 
   type SocketEvent =
     // built-in events
@@ -126,20 +128,13 @@ declare global {
 
   type INodeType = 'DEVICE' | 'NETWORK'
 
-  type INetwork = {
-    id: string
-    name: string
+  interface INetwork extends IInstance {
     enabled: boolean
-    shared: boolean
-    owner: IUserRef
-    permissions: IPermission[]
     connectionNames: INameLookupByServiceId
     serviceIds: string[]
     sessions?: ISession[]
-    access: IUserRef[]
     icon?: string
     iconType?: IconType
-    tags: ITag[]
   }
 
   type INameLookupByServiceId = ILookup<string>
@@ -148,6 +143,7 @@ declare global {
     accountId?: string // organization id
     autoLaunch?: boolean
     autoStart?: boolean
+    commandLog?: string[]
     commandTemplate?: string // command line launch template
     connectLink?: boolean
     connected?: boolean
@@ -166,11 +162,12 @@ declare global {
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
-    launchType?: 'COMMAND' | 'URL' // scheme to use for launching
+    launchType?: 'COMMAND' | 'URL' | 'NONE' // scheme to use for launching
     log?: boolean // if cli should log the connectd stdout to file
     name?: string
     online?: boolean // online if service is online
     owner?: IUserRef
+    password?: string // link password
     path?: string // application path
     port?: number
     proxyOnly?: boolean // disabled p2p
@@ -227,14 +224,14 @@ declare global {
 
   type CLIDeviceProps =
     | {
-        hostname: string //     proxy_dest_ip      service ip to forward
+        hostname: string // proxy_dest_ip - service ip to forward
         hardwareId?: string
-        uid: string //          UID
+        uid: string // UID
         name?: string
-        secret?: string //      password
-        port: number //         proxy_dest_port    service port
-        type: number //         application_type   service type
-        disabled: boolean //    service enabled / disabled
+        secret?: string // password
+        port: number // proxy_dest_port - service port
+        type: number // application_type - service type
+        disabled: boolean // service enabled / disabled
       }
     | undefined
 
@@ -246,11 +243,18 @@ declare global {
     enabled?: boolean
   }
 
-  interface IDevice {
+  interface IInstance {
     id: string
     name: string
-    owner: IUser
+    shared: boolean
     loaded?: boolean
+    owner: IUserRef
+    permissions: IPermission[]
+    access: IUserRef[]
+    tags: ITag[]
+  }
+
+  interface IDevice extends IInstance {
     state: 'active' | 'inactive'
     hardwareId?: string
     lastReported: Date
@@ -259,11 +263,9 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
-    tags: ITag[]
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
-    configurable: boolean // cloudshift device
-    permissions: IPermission[]
+    configurable: boolean // cloud shift device
     accountId: string // organization id
     thisDevice?: boolean
     license: ILicenseTypes
@@ -276,7 +278,6 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
-    access: IUserRef[]
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -292,11 +293,12 @@ declare global {
   }
 
   interface IService {
-    contactedAt: Date
-    createdAt: Date
     id: string
     name: string
+    subdomain: string
     lastReported: Date
+    contactedAt: Date
+    createdAt: Date
     enabled?: boolean
     state: IDevice['state']
     type: string
@@ -308,7 +310,6 @@ declare global {
     protocol?: string
     access: IUserRef[]
     license: ILicenseTypes
-    link?: { url: string; created: Date }
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -318,6 +319,16 @@ declare global {
       targetHost?: string
       description?: string
     }
+  }
+
+  type ILinkData = {
+    url: string
+    created: Date
+    enabled: boolean
+    password?: string
+    serviceId: string
+    deviceId: string
+    subdomain: string
   }
 
   type ITag = {
@@ -469,6 +480,7 @@ declare global {
       typeID: IService['typeID']
       platform: IDevice['targetPlatform']
       deviceId: string
+      deviceCreated: Date
       device?: IDevice
       service?: IService
       connection?: IConnection

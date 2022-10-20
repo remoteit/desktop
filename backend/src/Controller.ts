@@ -66,7 +66,8 @@ class Controller {
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('launch/app', launch)
-    socket.on('connection', this.connection)
+    socket.on('connection', connection => this.pool.set(connection, true))
+    socket.on('connections', connections => this.pool.setAll(connections))
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('restore', this.restore)
@@ -78,6 +79,7 @@ class Controller {
     socket.on('preferences', preferences.set)
     socket.on('restart', this.installAndRestart)
     socket.on('uninstall', this.uninstall)
+    socket.on('forceUnregister', this.forceUnregister)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
@@ -95,10 +97,11 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  check = () => {
+  check = (all?: boolean) => {
     this.pool.check()
     lan.check()
     app.check()
+    if (all) binaryInstaller.check()
   }
 
   connect = async (connection: IConnection) => {
@@ -133,6 +136,10 @@ class Controller {
   restore = async (deviceId: string) => {
     await cli.restore(deviceId)
     this.io.emit('device', cli.data.device?.uid)
+  }
+
+  forceUnregister = async (code: string) => {
+    cli.forceUnregister()
   }
 
   interfaces = async () => {
@@ -174,13 +181,9 @@ class Controller {
     this.io.emit('device', cli.data.device?.uid)
     this.io.emit('scan', lan.data)
     this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
-    this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
+    this.io.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
-  }
-
-  connection = async (connection: IConnection) => {
-    await this.pool.set(connection, true)
   }
 
   showFolder = (type: IShowFolderType) => {

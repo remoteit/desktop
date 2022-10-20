@@ -5,7 +5,6 @@ import { ENVIRONMENT } from './constants'
 
 import * as winston from 'winston'
 
-const ENV = process.env.NODE_ENV
 const DEBUG = process.env.DEBUG
 const MAX_LOG_SIZE_BYTES = 1e6 // 1mb
 const MAX_LOG_FILES = 5
@@ -14,11 +13,8 @@ if (!fs.existsSync(environment.connectionLogPath)) fs.mkdirSync(environment.conn
 
 const { combine, printf } = winston.format
 const consoleFormat = printf(p => {
-  const { timestamp, level, message } = p
-  delete p.timestamp
-  delete p.level
-  delete p.message
-  return `${message} ${level} ${timestamp} ${JSON.stringify(p, null, 4)}`
+  const { timestamp, level, message, ...rest } = p
+  return `${message} ${level} ${timestamp} ${JSON.stringify(rest, null, 4)}`
 })
 
 const transports = [
@@ -29,7 +25,7 @@ const transports = [
     maxsize: MAX_LOG_SIZE_BYTES, // in bytes
     maxFiles: MAX_LOG_FILES,
     tailable: true,
-    silent: ENV === 'test',
+    silent: ENVIRONMENT === 'test',
   }),
   new winston.transports.File({
     filename: path.join(environment.logPath, 'combined.log'),
@@ -37,11 +33,11 @@ const transports = [
     maxsize: MAX_LOG_SIZE_BYTES, // in bytes
     maxFiles: MAX_LOG_FILES,
     tailable: true,
-    silent: ENV === 'test',
+    silent: ENVIRONMENT === 'test',
   }),
   new winston.transports.Console({
     format: combine(winston.format.colorize(), consoleFormat),
-    silent: ENV === 'test' || !!DEBUG,
+    silent: ENVIRONMENT === 'test' || !!DEBUG,
   }),
 ]
 

@@ -1,12 +1,10 @@
 import { EventEmitter } from 'events'
-import debug from 'debug'
-
-const d = debug('r3:backend:event')
+import Logger from './Logger'
 
 class EventBus extends EventEmitter {
   emit(event: string | symbol, ...args: any[]): boolean {
-    d('EMIT:', event)
-    return EventEmitter.prototype.emit.apply(this, arguments as any)
+    // Logger.info('EMIT:', { event, length: args.length })
+    return EventEmitter.prototype.emit.apply(this, [event, ...args])
   }
 }
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { IP_LATCH } from '../shared/constants'
+import { IP_LATCH, PROTOCOL } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -112,6 +112,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'status',
     label: 'Status',
+    query: 'deviceName',
     defaultWidth: 100,
     value: ({ device, connection }) =>
       connection?.connected ? (
@@ -190,6 +191,12 @@ export const attributes: Attribute[] = [
     value: ({ device }) => <AvatarList users={device?.shared ? [device.owner] : device?.access} size={22} />,
   }),
   new DeviceAttribute({
+    id: 'license',
+    label: 'License',
+    defaultWidth: 100,
+    value: ({ device }) => <LicenseChip license={device?.license} />,
+  }),
+  new DeviceAttribute({
     id: 'lastReported',
     label: 'Last reported',
     defaultWidth: 175,
@@ -208,7 +215,7 @@ export const attributes: Attribute[] = [
     id: 'created',
     label: 'Created date',
     defaultWidth: 175,
-    value: ({ device }) => <Timestamp startDate={device?.createdAt} />,
+    value: ({ device }) => (device?.createdAt ? <Timestamp startDate={device.createdAt} /> : undefined),
   }),
   new DeviceAttribute({
     id: 'isp',
@@ -284,12 +291,6 @@ export const attributes: Attribute[] = [
     defaultWidth: 80,
     value: ({ device }) => device?.version,
   }),
-  new DeviceAttribute({
-    id: 'license',
-    label: 'License',
-    defaultWidth: 100,
-    value: ({ device }) => <LicenseChip license={device?.license} />,
-  }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(
     a =>
@@ -304,7 +305,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'connectLink',
     label: 'Connect Link',
-    value: ({ service }) => `remoteit://connect/${service?.id}`,
+    value: ({ service }) => `${PROTOCOL}connect/${service?.id}`,
   }),
   new ServiceAttribute({
     id: 'serviceName',
@@ -333,7 +334,7 @@ export const attributes: Attribute[] = [
     value: ({ service }) =>
       service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
   }),
-  new DeviceAttribute({
+  new ServiceAttribute({
     id: 'serviceCreated',
     label: 'Service Created',
     defaultWidth: 175,
@@ -372,10 +373,10 @@ export const attributes: Attribute[] = [
       connection?.connecting
         ? 'Connecting...'
         : connection?.public
-        ? connection?.reverseProxy
-          ? connection?.connectLink
-            ? 'Persistent Public Endpoint'
-            : 'Public Reverse Proxy'
+        ? connection?.connectLink
+          ? 'Persistent Public Endpoint'
+          : connection?.reverseProxy
+          ? 'Public Reverse Proxy'
           : 'Public Proxy'
         : !connection?.connected && !session
         ? 'Idle - Connect on demand'
@@ -432,7 +433,7 @@ export const serviceAttributes = attributes.filter(a => a.type === 'SERVICE')
 export const restoreAttributes = attributes.filter(a => a.type === 'RESTORE')
 
 export function getAttribute(id: string): Attribute {
-  return attributeLookup[id]
+  return attributeLookup[id] || new Attribute({ id: 'unknown', label: 'Unknown' })
 }
 
 export function getAttributes(ids: string[]): Attribute[] {

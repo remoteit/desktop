@@ -9,7 +9,7 @@ import { Icon } from './Icon'
 type Props = {
   label?: React.ReactNode
   icon?: React.ReactNode
-  value?: string | number
+  value?: string | number | React.ReactNode
   actionIcon?: React.ReactNode
   displayValue?: string | number | React.ReactNode
   disabled?: boolean

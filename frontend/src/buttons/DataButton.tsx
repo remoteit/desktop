@@ -8,7 +8,8 @@ export type DataButtonProps = {
   title: string
   value?: string
   label?: string
-  icon: React.ReactNode
+  dense?: boolean
+  icon: React.ReactNode | null
   iconColor?: Color
   gutterBottom?: boolean
   fullWidth?: boolean
@@ -21,6 +22,7 @@ export const DataButton: React.FC<DataButtonProps> = ({
   title,
   value,
   label,
+  dense,
   icon,
   iconColor,
   gutterBottom,
@@ -29,7 +31,7 @@ export const DataButton: React.FC<DataButtonProps> = ({
   alwaysWhite,
   onClick,
 }) => {
-  const css = useStyles({ showBackground, fullWidth, gutterBottom, alwaysWhite })
+  const css = useStyles({ icon: !!icon, showBackground, fullWidth, gutterBottom, alwaysWhite, dense })
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
@@ -46,23 +48,27 @@ export const DataButton: React.FC<DataButtonProps> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   box: ({
+    icon,
     showBackground,
     fullWidth,
     gutterBottom,
     alwaysWhite,
+    dense,
   }: {
+    icon?: boolean
     showBackground?: boolean
     fullWidth?: boolean
     gutterBottom?: boolean
     alwaysWhite?: boolean
+    dense?: boolean
   }) => ({
     display: 'flex',
     alignItems: 'center',
     textAlign: 'left',
     color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main,
-    padding: spacing.sm,
-    paddingLeft: spacing.xxs,
-    paddingRight: spacing.lg,
+    padding: dense ? spacing.xxs : spacing.sm,
+    paddingLeft: icon ? spacing.xxs : dense ? spacing.md : undefined,
+    paddingRight: dense ? spacing.md : spacing.lg,
     width: fullWidth ? '100%' : undefined,
     marginBottom: gutterBottom ? spacing.sm : undefined,
     backgroundColor: showBackground ? (alwaysWhite ? palette.screen.main : palette.grayLightest.main) : undefined,

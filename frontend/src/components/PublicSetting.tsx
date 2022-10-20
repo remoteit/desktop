@@ -6,7 +6,7 @@ import { SelectSetting } from './SelectSetting'
 import { Gutters } from './Gutters'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  if (!connection || !connection.public) return null
+  if (!connection || !connection.public || connection.connectLink) return null
 
   const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =

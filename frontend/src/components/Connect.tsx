@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { List, Button, Typography, Collapse } from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText, Button, Typography, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
-import { getDeviceModel } from '../models/accounts'
 import { canUseConnectLink } from '../models/applicationTypes'
+import { getDeviceModel } from '../models/accounts'
 import { windowOpen } from '../services/Browser'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -24,6 +24,7 @@ import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { ConnectionSurvey } from './ConnectionSurvey'
 import { LanShareSelect } from './LanShareSelect'
 import { ConnectionMenu } from './ConnectionMenu'
+import { ListItemQuote } from './ListItemQuote'
 import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
 import { GuideBubble } from './GuideBubble'
@@ -34,14 +35,15 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
+import { Icon } from './Icon'
 
 type Props = {
   service?: IService
-  device?: IDevice
+  instance?: IInstance
   connection: IConnection
 }
 
-export const Connect: React.FC<Props> = ({ service, device, connection }) => {
+export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
   const css = useStyles()
   const location = useLocation<{
     autoConnect?: boolean
@@ -52,12 +54,12 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, ownDevice, connectLink } = useSelector((state: ApplicationState) => ({
-    ownDevice: device?.thisDevice && device?.owner.id === state.user.id,
+  const { session, accordion, ownDevice, showConnectLink } = useSelector((state: ApplicationState) => ({
+    ownDevice: (instance as IDevice)?.thisDevice && instance?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    connectLink: canUseConnectLink(state, service?.typeID),
+    showConnectLink: canUseConnectLink(state, service?.typeID),
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
@@ -65,7 +67,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
   useEffect(() => {
     // FIXME - move this up to the router level - for connection display now
     const id = connection?.deviceID || deviceID
-    if (!device && id) dispatch.devices.fetchSingle({ id, hidden: true })
+    if (!instance && id) dispatch.devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
     if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
-  if (!service || !device) return <NoConnectionPage />
+  if (!service || !instance) return <NoConnectionPage />
 
   return (
     <>
@@ -98,10 +100,10 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
         connection={connection}
         service={service}
         session={session}
-        show={!!(connection.enabled && connection.host)}
+        show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
-      {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      {(!ownDevice || connection.connectLink) && (
+      {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
+      {!ownDevice && !connection.connectLink && (
         <GuideBubble
           guide="connectButton"
           enterDelay={400}
@@ -140,13 +142,13 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           <Gutters size="md" className={css.gutters} bottom={null}>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
-              connection={connection}
-              service={service}
-              permissions={device.permissions}
               size="large"
-              fullWidth
-              loading={!device.loaded}
+              service={service}
+              connection={connection}
+              loading={!instance.loaded}
+              permissions={instance.permissions}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
+              fullWidth
             />
             <ConnectionMenu connection={connection} service={service} />
           </Gutters>
@@ -165,12 +167,15 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           <List disablePadding>
             <Collapse in={!connection.connectLink}>
               <DesktopUI>
-                <NameSetting connection={connection} service={service} device={device} />
+                <NameSetting connection={connection} service={service} instance={instance} />
                 <PortSetting connection={connection} service={service} />
               </DesktopUI>
               <LaunchSelect connection={connection} service={service} />
             </Collapse>
-            {connectLink && <ConnectLinkSetting connection={connection} permissions={device.permissions} />}
+            <PortalUI>
+              <PublicSetting connection={connection} service={service} />
+            </PortalUI>
+            {showConnectLink && <ConnectLinkSetting connection={connection} permissions={instance.permissions} />}
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Get Desktop for more features and control.</strong>
@@ -183,7 +188,7 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
                   color="primary"
                   variant="contained"
                   sx={{ marginTop: 1 }}
-                  onClick={() => windowOpen('https://link.remote.it/download')}
+                  onClick={() => windowOpen('https://link.remote.it/download/desktop')}
                 >
                   Download
                 </Button>
@@ -192,32 +197,60 @@ export const Connect: React.FC<Props> = ({ service, device, connection }) => {
           </List>
         </AccordionMenuItem>
         <NetworksAccordion
-          device={device}
+          instance={instance}
           service={service}
           connection={connection}
           expanded={accordion.networks}
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
         />
-        <AccordionMenuItem
-          gutters
-          subtitle="Options"
-          expanded={accordion.options}
-          onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
-          elevation={0}
-        >
-          <List disablePadding>
-            <DesktopUI>
-              <RouteSetting connection={connection} service={service} />
-              <LanShareSelect connection={connection} />
-              <TargetHostSetting connection={connection} service={service} />
-              <TimeoutSetting connection={connection} service={service} />
-              <ConnectionLogSetting connection={connection} service={service} />
-            </DesktopUI>
-            <PortalUI>
-              <PublicSetting connection={connection} service={service} />
-            </PortalUI>
-          </List>
-        </AccordionMenuItem>
+        {connection.connectLink || (
+          <DesktopUI>
+            <AccordionMenuItem
+              gutters
+              subtitle="Options"
+              expanded={accordion.options}
+              onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
+              elevation={0}
+            >
+              <List disablePadding>
+                <RouteSetting connection={connection} service={service} />
+                <LanShareSelect connection={connection} />
+                <TargetHostSetting connection={connection} service={service} />
+                <TimeoutSetting connection={connection} service={service} />
+              </List>
+            </AccordionMenuItem>
+          </DesktopUI>
+        )}
+        {!connection.public && (
+          <DesktopUI>
+            <AccordionMenuItem
+              gutters
+              subtitle="Logs"
+              expanded={accordion.logs}
+              onClick={() => dispatch.ui.accordion({ logs: !accordion.logs })}
+              elevation={0}
+            >
+              <List disablePadding>
+                <ListItem dense>
+                  <ListItemIcon>
+                    <Icon name="terminal" />
+                  </ListItemIcon>
+                  <ListItemText primary="CLI command log" />
+                </ListItem>
+                <ListItemQuote>
+                  {connection.commandLog?.map((l, i) => (
+                    <ListItem key={i} disablePadding>
+                      <DataCopy value={l} hideIcon fullWidth dense />
+                    </ListItem>
+                  ))}
+                </ListItemQuote>
+              </List>
+              <List>
+                <ConnectionLogSetting connection={connection} service={service} />
+              </List>
+            </AccordionMenuItem>
+          </DesktopUI>
+        )}
       </Gutters>
     </>
   )

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Grid, TextField, Typography } from '@mui/material'
 import { ProgressBar } from './ProgressBar'
+import { Notice } from '../Notice'
 
 export interface Props {
   onChange: (password: string, isValid: boolean) => void
@@ -84,38 +85,36 @@ export function PasswordStrengthInput({ onChange }: Props) {
 
   return (
     <>
-      {((password !== '' && !valid) || (passwordConfirmation != '' && !hasMatch)) && (
-        <div className={css.danger}>
-          Please fix the following problems:
-          <ul>
-            {tooShort && <li>The password must be at least {PASSWORD_MIN_LENGTH} characters long.</li>}
-            {tooLong && <li>The password must be no more than {PASSWORD_MAX_LENGTH} characters long.</li>}
-            {passwordConfirmation != '' && !hasMatch && <li>The passwords do not match</li>}
-          </ul>
-        </div>
-      )}
-      <div className="meter">
-        <Grid container wrap="nowrap">
-          <Grid item>
-            <TextField variant="filled" type="password" label="Enter new password" onChange={e => checkPassword(e)} />
-          </Grid>
-          <Grid item>
-            <Typography variant="caption" display="block" className={css.caption} gutterBottom>
-              Passwords must be 7-64 characters in length.
-            </Typography>
-          </Grid>
+      <Grid container wrap="nowrap">
+        <Grid item>
+          <TextField variant="filled" type="password" label="Enter new password" onChange={e => checkPassword(e)} />
         </Grid>
-        <div>
-          {valid && (
-            <ProgressBar
-              description={`Password Strength: ${createPasswordStrengthLabel(checkTestedResult(password))}`}
-              value={checkTestedResult(password) * 10}
-            />
-          )}
-        </div>
-      </div>
-
-      <TextField variant="filled" type="password" label="Confirm new password" onChange={e => checkPasswordConfirmation(e)}/>
+        <Grid item>
+          <Typography variant="caption" display="block" className={css.caption} gutterBottom>
+            Passwords must be 7-64 characters in length.
+          </Typography>
+        </Grid>
+      </Grid>
+      <TextField
+        variant="filled"
+        type="password"
+        label="Confirm new password"
+        onChange={e => checkPasswordConfirmation(e)}
+      />
+      {((password !== '' && !valid) || (passwordConfirmation != '' && !hasMatch)) && (
+        <Notice severity="warning" fullWidth>
+          Please fix the following problems
+          {tooShort && <em>The password must be at least {PASSWORD_MIN_LENGTH} characters long.</em>}
+          {tooLong && <em>The password must be no more than {PASSWORD_MAX_LENGTH} characters long.</em>}
+          {passwordConfirmation != '' && !hasMatch && <em>The passwords do not match</em>}
+        </Notice>
+      )}
+      {valid && (
+        <ProgressBar
+          description={`Password Strength: ${createPasswordStrengthLabel(checkTestedResult(password))}`}
+          value={checkTestedResult(password) * 10}
+        />
+      )}
     </>
   )
 }
@@ -128,6 +127,6 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   caption: {
     minWidth: 150,
-    paddingTop: 15,
+    paddingTop: 10,
   },
 }))

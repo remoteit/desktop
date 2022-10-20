@@ -142,7 +142,7 @@ export const OrganizationGuestPage: React.FC = () => {
       {(guest?.deviceIds.length || guest?.networkIds.length) && (
         <>
           <Gutters top="xl">
-            <Typography variant="h3">Guest Access</Typography>
+            <Typography variant="h2">Guest Access</Typography>
           </Gutters>
           <Divider variant="inset" />
         </>

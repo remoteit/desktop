@@ -27,7 +27,7 @@ export const SearchField: React.FC = () => {
       onSubmit={e => {
         e.preventDefault()
         devices.set({ searched: true, from: 0 })
-        devices.fetch()
+        devices.fetchList()
       }}
     >
       <TextField
@@ -38,7 +38,7 @@ export const SearchField: React.FC = () => {
         onKeyPress={e => {
           if (e.key === 'Enter' && query.trim().length < 2) {
             devices.set({ query: '', searched: false, from: 0 })
-            devices.fetch()
+            devices.fetchList()
           }
         }}
         onChange={e => devices.set({ query: e.target.value })}
@@ -54,7 +54,7 @@ export const SearchField: React.FC = () => {
               type="button"
               onClick={() => {
                 devices.set({ query: '', searched: false, from: 0 })
-                devices.fetch()
+                devices.fetchList()
               }}
               size="large"
             >

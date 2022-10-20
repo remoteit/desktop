@@ -40,14 +40,14 @@ export default {
     return `-j connection add \
       --id ${c.id} \
       --name "${c.name}" \
-      --port ${c.port} \
+      ${c.port ? `--port ${c.port}` : ''} \
       --ip ${c.ip} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
-      --targetHostname ${c.targetHost || ''} \
+      ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
       --enableCertificate ${!!preferences.get().useCertificate} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
@@ -75,7 +75,7 @@ export default {
     --p2p ${!c.proxyOnly} \
     --enable ${!!c.enabled} \
     --servicetype ${c.typeID} \
-    --targetHostname ${c.targetHost || ''} \
+    ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
     --enableCertificate ${!!preferences.get().useCertificate} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \

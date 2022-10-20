@@ -4,30 +4,36 @@ import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
 export const SERVICE_SELECT = `
-    id
-    name
-    state
-    title
-    enabled
-    application
-    created
-    lastReported
-    port
-    host
-    type
-    protocol
-    license
-    attributes
-    access {
-      user {
-        id
-        email
-      }
+  id
+  name
+  state
+  title
+  enabled
+  application
+  created
+  lastReported
+  port
+  host
+  type
+  subdomain
+  protocol
+  license
+  attributes
+  access {
+    user {
+      id
+      email
     }
-    link {
-      url
-      created
-    }`
+  }`
+
+const SERVICE_PRELOAD = `
+  id
+  name
+  state
+  title
+  license
+  application
+  subdomain`
 
 const DeviceSelectLookup: ILookup<string> = {
   id: `
@@ -54,9 +60,6 @@ const DeviceSelectLookup: ILookup<string> = {
   permissions: `
   permissions`,
 
-  status: `
-  state`,
-
   created: `
   created`,
 
@@ -81,11 +84,7 @@ const DeviceSelectLookup: ILookup<string> = {
 
   services: `
   services {
-    id
-    name
-    state
-    title
-    license
+    ${SERVICE_PRELOAD}
   }`,
 
   endpoint: `
@@ -118,13 +117,12 @@ const DeviceSelectLookup: ILookup<string> = {
 }
 
 export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
-  .map(k => DeviceSelectLookup[k])
-  .join()
+  .map(k => (k === 'services' ? '' : DeviceSelectLookup[k]))
+  .join('')
 
-const DEVICE_SELECT_PRELOAD =
-  DeviceSelectLookup.id + DeviceSelectLookup.deviceName + DeviceSelectLookup.status + DeviceSelectLookup.services
+const DEVICE_PRELOAD = ['id', 'deviceName', 'status', 'owner', 'services']
 
-export async function graphQLFetchDevices({
+export async function graphQLFetchDeviceList({
   tag,
   size,
   from,
@@ -136,7 +134,7 @@ export async function graphQLFetchDevices({
   platform,
 }: gqlOptions) {
   return await graphQLRequest(
-    ` query Devices($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
           account(id: $account) {
@@ -163,13 +161,87 @@ export async function graphQLFetchDevices({
   )
 }
 
-export async function graphQLFetchConnections(params: { account: string; ids: string[] }) {
+export async function graphQLPreloadDevices(params: { account: string; ids: string[] }) {
+  return await graphQLRequest(
+    ` query DevicePreload($ids: [String!]!) {
+        login {
+          id
+          account(id: $account) {
+            device(id: $ids)  {
+              ${attributeQuery(DEVICE_PRELOAD)}
+            }
+          }
+        }
+      }`,
+    params
+  )
+}
+
+export async function graphQLPreloadNetworks(accountId: string) {
+  return await graphQLBasicRequest(
+    ` query Networks($accountId: String) {
+      login {
+        account(id: $accountId) {
+          networks {
+            id
+            name
+            created
+            permissions
+            owner {
+              id
+              email
+            }
+            connections {
+              service {
+                ${SERVICE_PRELOAD}
+                device {
+                  ${attributeQuery(DEVICE_PRELOAD)}
+                }          
+              }
+              name
+              port
+            }
+            tags {
+              name
+              color
+              created
+            }
+            access {
+              user {
+                id
+                email
+              }
+            }
+          }
+        }
+      }
+    }`,
+    { accountId }
+  )
+}
+
+export async function graphQLFetchConnections(params: { ids: string[] }) {
   return await graphQLRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
-          connections: device(id: $ids)  {
-            ${DEVICE_SELECT_PRELOAD}
+          device(id: $ids)  {
+            ${attributeQuery(DEVICE_PRELOAD)}
+          }
+          links {
+            url
+            created
+            password
+            enabled
+            service {
+              id
+              name
+              subdomain
+              device {
+                id
+                name
+              }
+            }
           }
         }
       }`,
@@ -180,7 +252,7 @@ export async function graphQLFetchConnections(params: { account: string; ids: st
 /* 
   Fetches single, or array of devices across shared accounts by id
 */
-export async function graphQLFetchDevice(id: string, account: string) {
+export async function graphQLFetchFullDevice(id: string, account: string) {
   return await graphQLRequest(
     ` query Device($id: [String!]!, $account: String) {
         login {
@@ -189,6 +261,33 @@ export async function graphQLFetchDevice(id: string, account: string) {
             ${DEVICE_SELECT}
             services {
               ${SERVICE_SELECT}
+            }
+          }
+        }
+      }`,
+    {
+      id,
+      account,
+    }
+  )
+}
+
+/* 
+  Fetches single network across shared accounts by id
+*/
+export async function graphQLFetchNetworkServices(id: string, account: string) {
+  return await graphQLBasicRequest(
+    ` query Network($id: String!, $account: String) {
+        login {
+          id
+          network(id: $id)  {
+            connections {
+              service {
+                ${SERVICE_SELECT}
+                device {
+                  ${DEVICE_SELECT}
+                }
+              }
             }
           }
         }
@@ -221,12 +320,30 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gql
   )
 }
 
-export function graphQLDeviceAdaptor(
-  gqlDevices: any[],
-  accountId: string,
-  hidden: boolean = false,
-  loaded: boolean = false
-): IDevice[] {
+export function graphQLNetworkAdaptor(gqlConnections) {
+  let lookup = {}
+
+  gqlConnections.forEach(({ service }) => {
+    const id = service.device.id
+    lookup[id] = lookup[id] || service.device
+    lookup[id].services = lookup[id].services || []
+    lookup[id].services.push(service)
+  })
+
+  return Object.keys(lookup).map(key => lookup[key])
+}
+
+export function graphQLDeviceAdaptor({
+  gqlDevices,
+  accountId,
+  hidden,
+  loaded,
+}: {
+  gqlDevices: any[]
+  accountId: string
+  hidden?: boolean
+  loaded?: boolean
+}): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
   const thisId = state.backend.thisId
@@ -238,7 +355,7 @@ export function graphQLDeviceAdaptor(
       name: d.name,
       owner: owner,
       state: d.state,
-      loaded: loaded,
+      loaded: !!loaded,
       configurable: d.configurable,
       hardwareId: d.hardwareId,
       createdAt: new Date(d.created),
@@ -266,8 +383,8 @@ export function graphQLDeviceAdaptor(
           scripting: e.scripting,
         })) || [],
       thisDevice: d.id === thisId,
+      hidden: !!hidden,
       accountId,
-      hidden,
     }
   })
   store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
@@ -280,10 +397,11 @@ export function graphQLServiceAdaptor(device: any): IService[] {
       (s: any): IService => ({
         id: s.id,
         type: s.title,
+        state: s.state,
         enabled: s.enabled,
         typeID: s.application,
-        state: s.state,
         deviceID: device.id,
+        subdomain: s.subdomain,
         createdAt: new Date(s.created),
         lastReported: s.lastReported && new Date(s.lastReported),
         contactedAt: new Date(s.endpoint?.timestamp),
@@ -293,28 +411,31 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         port: s.port,
         host: s.host,
         protocol: s.protocol,
-        access: s.access?.map((e: any) => ({ email: e.user?.email || e.user?.id, id: e.user?.id })),
-        link: s.link && {
-          ...s.link,
-          created: new Date(s.link.created),
-        },
+        access: s.access?.map(e => ({
+          email: e.user?.email || e.user?.id,
+          id: e.user?.id,
+        })),
       })
     ) || []
   )
 }
 
 function deviceQueryColumns() {
-  let deviceQuery = new Set()
-  let columns = ['id', 'status', 'deviceName']
+  let columns = DEVICE_PRELOAD
   columns = columns.concat(store.getState().ui.columns)
+  return attributeQuery(columns)
+}
 
-  columns.forEach(c => {
+function attributeQuery(attributes: string[]) {
+  let uniqueAttributes = new Set()
+
+  attributes.forEach(c => {
     const a = getAttribute(c)
-    deviceQuery.add(DeviceSelectLookup[a.query || a.id])
+    uniqueAttributes.add(DeviceSelectLookup[a.query || a.id])
   })
 
-  console.log('DEVICE QUERY', deviceQuery)
-  return Array.from(deviceQuery).join('')
+  console.log('ATTRIBUTE QUERY', uniqueAttributes)
+  return Array.from(uniqueAttributes).join('')
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
@@ -333,23 +454,4 @@ function processAttributes(response: any): ILookup<any> {
   let result = { ...root, ...$ }
   delete result.$remoteit
   return result
-}
-
-export async function graphQLRegistration(props: {
-  name?: string
-  services: IServiceRegistration[]
-  platform?: number
-  account: string
-}) {
-  return await graphQLBasicRequest(
-    ` query Registration($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
-        login {
-          account(id: $account) {
-            registrationCode(name: $name, platform: $platform, services: $services)
-            registrationCommand(name: $name, platform: $platform, services: $services)
-          }
-        }
-      }`,
-    props
-  )
 }

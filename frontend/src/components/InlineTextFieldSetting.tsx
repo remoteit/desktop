@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
-import { TextField, TextFieldProps, Input } from '@mui/material'
+import { TextField, TextFieldProps, Input, InputProps } from '@mui/material'
 import { InlineSetting } from './InlineSetting'
 import { spacing } from '../styling'
 
@@ -22,6 +22,7 @@ type Props = {
   disableGutters?: boolean
   autoCorrect?: boolean
   multiline?: boolean
+  type?: InputProps['type']
   debug?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
@@ -37,6 +38,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   maxLength,
   autoCorrect,
   multiline,
+  type,
   onError,
   onSave,
   ...props
@@ -51,7 +53,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   }, [error])
 
   let Field
-  let FieldProps: TextFieldProps = {}
+  let FieldProps: TextFieldProps = { type }
 
   if (label) {
     Field = TextField

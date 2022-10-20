@@ -88,7 +88,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
                 await dispatch.devices.fetchSingle({ id: device.id })
               } else {
                 await dispatch.devices.set({ from: 0 })
-                await dispatch.devices.fetch()
+                await dispatch.devices.fetchList()
               }
             })
           }

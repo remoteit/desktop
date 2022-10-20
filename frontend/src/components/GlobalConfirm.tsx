@@ -1,12 +1,25 @@
 import React, { useEffect } from 'react'
-import { Confirm } from '../components/Confirm'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { Confirm } from '../components/Confirm'
+import { Notice } from '../components/Notice'
 
-const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode }> = {
+const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?: string }> = {
   destroyLink: {
-    title: 'Remove persistent endpoint?',
-    message: 'Once removed, this endpoint will no longer work. If you restart the connection you will get a new url.',
+    title: 'Reset persistent endpoint?',
+    message: 'This will clear your connect link url so that a new one will be created when you restart again.',
+    action: 'Clear',
+  },
+  forceUnregister: {
+    title: 'Force removal?',
+    message: (
+      <>
+        <Notice severity="danger" fullWidth gutterBottom>
+          This device is owned by another user. You will be permanently removing it.
+        </Notice>
+        Use your system admin privileges to unregister this device?
+      </>
+    ),
   },
 }
 
@@ -29,7 +42,14 @@ export const GlobalConfirm: React.FC = () => {
   if (!dialog) return null
 
   return (
-    <Confirm open={open} onConfirm={handleConfirm} onDeny={close} title={dialog.title}>
+    <Confirm
+      open={open}
+      onConfirm={handleConfirm}
+      onDeny={close}
+      title={dialog.title}
+      color="error"
+      action={dialog.action}
+    >
       {dialog.message}
     </Confirm>
   )

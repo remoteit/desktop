@@ -44,6 +44,7 @@ export class Preferences {
   }
 
   update(pref: { [key: string]: any }) {
+    Logger.info('UPDATE PREFERENCE', pref)
     this.set({ ...this.data, ...pref })
   }
 

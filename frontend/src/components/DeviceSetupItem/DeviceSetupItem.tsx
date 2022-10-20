@@ -1,25 +1,38 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { emit } from '../../services/Controller'
+import { safeHostname } from '../../shared/nameHelper'
 import { getDeviceModel } from '../../models/accounts'
-import { ApplicationState } from '../../store'
-import { makeStyles } from '@mui/styles'
-import { ListItem, ListItemText, ListItemSecondaryAction, Chip, Typography } from '@mui/material'
-import { ListItemLocation } from '../ListItemLocation'
+import { Link, useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import {
+  ListItem,
+  ListItemText,
+  ListSubheader,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Chip,
+  ChipProps,
+  Divider,
+  Typography,
+} from '@mui/material'
+import { isPortal, getOs } from '../../services/Browser'
+import { ListHorizontal } from '../../components/ListHorizontal'
 import { getAllDevices } from '../../models/accounts'
-import { attributeName } from '../../shared/nameHelper'
+import { GuideBubble } from '../../components/GuideBubble'
 import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
-import { osName } from '../../shared/nameHelper'
-import { Link } from '../../components/Link'
+import { Icon } from '../../components/Icon'
 
-export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
-  const css = useStyles()
+type Props = { className?: string; onClick?: () => void }
+
+export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   const history = useHistory()
-  const { ownDevice, thisId, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+  const dispatch = useDispatch<Dispatch>()
+  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+    registered: !!state.backend.thisId,
+    hostname: safeHostname(state.backend.environment.hostname, []),
     ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),
-    thisId: state.backend.thisId,
-    os: state.backend.environment.os,
     restoring: state.ui.restoring,
     canRestore:
       !state.backend.thisId &&
@@ -29,45 +42,78 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
 
   if (restoring)
     return (
-      <ListItem>
-        <Notice loading={true}>Restoring device.</Notice>
-      </ListItem>
+      <ListHorizontal className={className} dense disablePadding>
+        <Notice loading={true}>Restoring device...</Notice>
+      </ListHorizontal>
     )
 
-  const registered = !!thisId
-  let title = 'Set up this device'
-  let subtitle = `Add remote access to this ${osName(os)} or any service on the local network.`
+  let secondary: React.ReactNode
+  let action: ChipProps | undefined
+  let disabled = false
 
   if (registered) {
     if (ownDevice) {
-      title = attributeName(ownDevice) || ''
-      subtitle = `Configure this system.`
+      secondary = 'Already created'
     } else {
-      return <Notice>This system is not registered to you.</Notice>
+      secondary = 'This is not your system.'
+      disabled = true
+      // action = {
+      //   label: 'unregister',
+      //   onClick: () => {
+      //     dispatch.ui.set({
+      //       confirm: {
+      //         id: 'forceUnregister',
+      //         callback: () => emit('forceUnregister'),
+      //       },
+      //     })
+      //   },
+      // }
+    }
+  } else if (canRestore) {
+    action = {
+      label: 'restore',
+      onClick: () => history.push('/devices/restore'),
     }
   }
 
+  let thisLink = '/devices/setup'
+  if (isPortal()) thisLink = `/add/${getOs()}`
+
   return (
     <DesktopUI>
-      <ListItemLocation icon="laptop" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
-        <ListItemText primary={title} secondary={subtitle} />
-        {canRestore && (
-          <ListItemSecondaryAction>
-            {restore ? (
-              <Typography variant="body2" color="textSecondary">
-                Select a device or
-                <Link to="/devices">cancel</Link>
+      <ListHorizontal className={className} dense disablePadding>
+        <ListSubheader disableGutters>Add this system</ListSubheader>
+        <Divider />
+        <GuideBubble
+          enterDelay={400}
+          guide="registerMenu"
+          placement="right"
+          startDate={new Date('2022-09-20')}
+          instructions={
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>Select a device</b>
               </Typography>
-            ) : (
-              <Chip label="Restore" size="small" onClick={() => history.push('/devices/restore')} />
+              <Typography variant="body2" gutterBottom>
+                You can setup the device you are currently using, or follow the simple instructions to setup one of the
+                commonly used platforms.
+              </Typography>
+            </>
+          }
+        >
+          <ListItem button disableGutters onClick={onClick} to={thisLink} component={Link} disabled={disabled}>
+            <ListItemIcon>
+              <Icon name={getOs()} fixedWidth platformIcon size="xxl" />
+            </ListItemIcon>
+            <ListItemText primary={hostname} secondary={secondary} />
+            {action && (
+              <ListItemSecondaryAction>
+                <Chip {...action} size="small" />
+              </ListItemSecondaryAction>
             )}
-          </ListItemSecondaryAction>
-        )}
-      </ListItemLocation>
+          </ListItem>
+        </GuideBubble>
+      </ListHorizontal>
     </DesktopUI>
   )
 }
-
-const useStyles = makeStyles({
-  margin: { paddingRight: 80 },
-})

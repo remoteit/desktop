@@ -59,14 +59,10 @@ export const OrganizationRolesPage: React.FC = () => {
             <ListItemLocation
               key={r.id}
               title={
-                <>
+                <Box sx={{ color: r.system ? 'primary.main' : undefined, display: 'flex', alignItems: 'center' }}>
+                  {r.system && <Icon name="lock" size="xxxs" type="solid" inlineLeft />}
                   {r.name}
-                  {r.system && (
-                    <sup>
-                      <Icon name="lock" size="xxxs" type="solid" color="grayDark" inline />
-                    </sup>
-                  )}
-                </>
+                </Box>
               }
               pathname={`/organization/roles/${r.id}`}
               exactMatch

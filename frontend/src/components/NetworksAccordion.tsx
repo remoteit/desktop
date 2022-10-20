@@ -11,13 +11,13 @@ import { Icon } from './Icon'
 
 type Props = {
   expanded: boolean
-  device?: IDevice
+  instance?: IInstance
   service?: IService
   connection: IConnection
   onClick: () => void
 }
 
-export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, connection, onClick }) => {
+export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service, connection, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
   const { ownerId, allNetworks, joinedNetworks } = useSelector((state: ApplicationState) => ({
     ownerId: getActiveAccountId(state),
@@ -36,7 +36,7 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
       elevation={0}
       action={
         <Box display="flex" alignItems="center">
-          {device?.permissions.includes('MANAGE') && !device.shared ? (
+          {instance?.permissions.includes('MANAGE') && !instance.shared ? (
             <>
               {!!joinedNetworks.length && <Chip size="small" label={joinedNetworks.length.toLocaleString()} />}
               <NetworksAddMenu
@@ -58,7 +58,6 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
                     port: connection.port,
                     enabled: connection.enabled,
                   })
-                  dispatch.connections.enable({ connection, networkId })
                 }}
               />
             </>
@@ -66,8 +65,8 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, device, service, 
             <Tooltip
               title={
                 <>
-                  {!device?.permissions.includes('MANAGE') && 'You are not a manager of this device.'}
-                  {device?.shared && 'You can not add a device shared to you.'}
+                  {!instance?.permissions.includes('MANAGE') && 'You are not a manager of this device.'}
+                  {instance?.shared && 'You can not add a device shared to you.'}
                 </>
               }
               placement="left"

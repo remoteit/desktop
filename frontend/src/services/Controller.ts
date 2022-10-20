@@ -22,7 +22,7 @@ class Controller extends EventEmitter {
   }
 
   log(...args) {
-    console.log(`%c${args[0]}`, 'color:lime;font-weight:bold', ...args.slice(1))
+    console.log(`%c${args[0]}`, 'color:limegreen;font-weight:bold', ...args.slice(1))
   }
 
   onNetworkConnect = () => {
@@ -141,6 +141,11 @@ function getEventHandlers() {
       connections.restoreConnections(result)
     },
 
+    updated: (result: IConnection) => {
+      controller.log('event: socket connection', result)
+      connections.updateConnection(result)
+    },
+
     device: (result: string) => {
       controller.log('event: socket device', result)
       backend.targetDeviceUpdated(result)
@@ -175,7 +180,6 @@ function getEventHandlers() {
       backend.set({ updateReady: version })
     },
 
-    // AutoUpdate
     'cli/error': error => {
       ui.set({ errorMessage: error })
       ui.updated()

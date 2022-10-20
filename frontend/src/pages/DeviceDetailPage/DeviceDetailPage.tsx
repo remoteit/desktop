@@ -5,6 +5,7 @@ import { ApplicationState } from '../../store'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
 import { deviceAttributes } from '../../components/Attributes'
 import { selectLimitsLookup } from '../../models/organization'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Gutters } from '../../components/Gutters'
 import { Notice } from '../../components/Notice'
@@ -14,7 +15,7 @@ export const DeviceDetailPage: React.FC = () => {
   const { device } = useContext(DeviceContext)
   const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state, device?.accountId))
 
-  if (!device) return null
+  if (!device?.loaded) return <LoadingMessage message="loading..." spinner={false} />
 
   return (
     <DeviceHeaderMenu>

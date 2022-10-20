@@ -4,12 +4,12 @@ import { LicensingNoticeDisplay } from './LicensingNoticeDisplay'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 
-type Props = { device?: IDevice; license?: ILicense; fullWidth?: boolean }
+type Props = { instance?: IInstance; license?: ILicense; fullWidth?: boolean }
 
-export const LicensingNotice: React.FC<Props> = ({ device, fullWidth, ...props }) => {
+export const LicensingNotice: React.FC<Props> = ({ instance, fullWidth, ...props }) => {
   const { noticeType, license, informed, serviceLimit, managePath } = useSelector((state: ApplicationState) => {
     let productId
-    if (device && state.auth.user?.id === device.owner.id) productId = lookupLicenseProductId(device)
+    if (instance && state.auth.user?.id === instance.owner.id) productId = lookupLicenseProductId(instance)
     return selectFullLicense(state, { productId, license: props.license })
   })
 

@@ -23,6 +23,8 @@ type Props = {
   confirmTitle?: string
   quote?: boolean
   modified?: boolean
+  content?: React.ReactNode
+  secondaryContent?: React.ReactNode
   onClick?: () => void
   onButtonClick?: () => void
 }
@@ -48,6 +50,8 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
       confirm,
       confirmMessage = 'Are you sure?',
       confirmTitle = '',
+      content,
+      secondaryContent,
     },
     ref
   ) => {
@@ -62,7 +66,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
 
     const handleClick = () => {
       if (confirm) setOpen(true)
-      else onClick?.()
+      else disabled || onClick?.()
     }
 
     const handleConfirm = () => {
@@ -70,7 +74,12 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
       setOpen(false)
     }
 
-    const ListItemContent = <ListItemText primary={label} secondary={subLabel} />
+    const ListItemContent = (
+      <>
+        {(label || subLabel) && <ListItemText primary={label} secondary={subLabel} />}
+        {content}
+      </>
+    )
     const TooltipWrapper = ({ children }) =>
       tooltip ? (
         <Tooltip title={tooltip} placement="top" open={showTip} arrow>
@@ -106,6 +115,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
           </TooltipWrapper>
           {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
           <ListItemSecondaryAction>
+            {secondaryContent}
             {showButton && (
               <Button onClick={onButtonClick} color="primary" size="small">
                 {button}

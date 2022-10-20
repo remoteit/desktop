@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { findById } from '../../models/devices'
 import { ApplicationState } from '../../store'
@@ -11,6 +11,8 @@ import { Link } from '../Link'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { spacing, fontSizes } from '../../styling'
 
+const BASE_TITLE = 'Remote.It'
+
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
   devices: 'Devices',
@@ -19,7 +21,7 @@ const pageNameMap: { [path: string]: string } = {
   setupServices: 'This Device',
 }
 
-export const Breadcrumbs: React.FC = () => {
+export const Breadcrumbs: React.FC<{ show?: boolean }> = ({ show }) => {
   const css = useStyles()
   const location = useLocation()
   const devices = useSelector((state: ApplicationState) => getAllDevices(state))
@@ -45,7 +47,12 @@ export const Breadcrumbs: React.FC = () => {
 
   let breadcrumb: string = ''
 
-  if (!crumbs.join()) return null
+  useEffect(() => {
+    const parts = location.pathname.split('/').map(crumb => pageName(crumb))
+    document.title = BASE_TITLE + parts.join(' - ')
+  }, [crumbs])
+
+  if (!show || !crumbs.join()) return null
 
   return (
     <span className={css.header}>

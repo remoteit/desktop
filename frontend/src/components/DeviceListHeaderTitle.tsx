@@ -20,8 +20,10 @@ export const DeviceListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMo
       textAlign={attribute?.align}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
     >
-      {children}
-      {attribute.label}
+      <span className={css.text}>
+        {children}
+        {attribute.label}
+      </span>
       <span className={css.drag} onMouseDown={event => onMouseDown(event, attribute)} />
     </Box>
   )
@@ -38,11 +40,15 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   title: {
     paddingLeft: spacing.xxs,
-    paddingRight: spacing.sm,
+    paddingRight: `${spacing.lg}px !important`,
     backgroundColor: palette.white.main,
     borderBottom: `1px solid ${palette.grayLighter.main}`,
     position: 'relative',
-    overflow: 'visible',
+  },
+  text: {
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
   },
   drag: {
     right: 0,

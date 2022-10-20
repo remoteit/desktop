@@ -50,7 +50,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             disabled={!device.permissions.includes('MANAGE')}
           >
             <ListItemIcon>
-              <Icon name="share" size="md" />
+              <Icon name="arrow-turn-down-right" size="md" />
             </ListItemIcon>
             <ListItemText primary="Transfer Device" />
           </MenuItem>,

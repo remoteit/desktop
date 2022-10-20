@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '../shared/constants'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
@@ -16,25 +16,21 @@ export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
     async fetch() {
-      try {
-        const result = await graphQLRequest(
-          ` {
-              applicationTypes {
-                name
-                id
-                port
-                proxy
-                protocol
-                description
-              }
-            }`
-        )
-        graphQLGetErrors(result)
-        const all = result?.data?.data?.applicationTypes
-        dispatch.applicationTypes.set({ all })
-      } catch (error) {
-        await apiError(error)
-      }
+      const result = await graphQLBasicRequest(
+        ` {
+            applicationTypes {
+              name
+              id
+              port
+              proxy
+              protocol
+              description
+            }
+          }`
+      )
+      if (result === 'ERROR') return
+      const all = result?.data?.data?.applicationTypes
+      dispatch.applicationTypes.set({ all })
     },
   }),
   reducers: {

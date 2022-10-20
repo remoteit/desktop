@@ -1,7 +1,7 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import { WEB_PORT } from './constants'
-import { IP_PRIVATE } from './sharedCopy/constants'
+import { IP_PRIVATE, DEFAULT_CONNECTION } from './sharedCopy/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
 import preferences from './preferences'
@@ -22,7 +22,8 @@ export default class ConnectionPool {
   private file?: JSONFile<IConnection[]>
 
   static EVENTS = {
-    updated: 'pool',
+    pool: 'pool',
+    updated: 'updated',
     freePort: 'freePort',
     reachablePort: 'reachablePort',
     clearErrors: 'clearErrors',
@@ -45,24 +46,23 @@ export default class ConnectionPool {
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c, false, true))
-    this.updated()
+    this.setAll(connections, false)
   }
 
   // Sync with CLI
   check = async () => {
-    let update = false
     if (!binaryInstaller.ready || binaryInstaller.inProgress || !user.signedIn) return
     const cliData = await cli.readConnections()
     if (!cliData) return
 
     // move connections: cli -> desktop
     cliData.forEach(cliConnection => {
-      const connection = this.find(cliConnection.id)?.params
-      if (!connection || (!connection.public && this.changed(cliConnection, connection))) {
+      const connection = this.find(cliConnection.id)?.params || DEFAULT_CONNECTION
+      if (connection.public) {
+        this.disable(connection)
+      } else if (this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
-        this.set({ ...connection, ...cliConnection }, false, true)
-        update = true
+        this.set({ ...connection, ...cliConnection })
       }
     })
 
@@ -75,7 +75,7 @@ export default class ConnectionPool {
       if (!cliConnection) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
-        update = true
+        this.updated(connection)
       }
 
       if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
@@ -86,12 +86,15 @@ export default class ConnectionPool {
               'Connection certificate error, unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.'
             )
           )
+          this.updated(connection)
         }
-        update = true
       }
     })
+  }
 
-    if (update) this.updated()
+  setAll = (connections: IConnection[], setCLI?: boolean) => {
+    connections.forEach(c => this.set(c, c.public ? false : setCLI, true))
+    this.updated()
   }
 
   // update single connection
@@ -102,11 +105,11 @@ export default class ConnectionPool {
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
         instance.set(connection, setCLI)
-        if (!skipUpdate) this.updated()
+        if (!skipUpdate) this.updated(instance)
       }
     } else {
       instance = this.add(connection)
-      if (!skipUpdate) this.updated()
+      if (!skipUpdate) this.updated(instance)
     }
     return instance
   }
@@ -138,7 +141,12 @@ export default class ConnectionPool {
     ]
     return props.some(prop => {
       if (f[prop] !== undefined && f[prop] !== t[prop]) {
-        Logger.info('CONNECTION CHANGED', { prop, fromCLI: f[prop] || '<empty>', toDesktop: t[prop] || '<empty>' })
+        Logger.info('CONNECTION CHANGED', {
+          id: f.id,
+          prop,
+          fromCLI: f[prop] || '<empty>',
+          toDesktop: t[prop] || '<empty>',
+        })
         return true
       }
     })
@@ -156,21 +164,21 @@ export default class ConnectionPool {
     if (!instance) return
     await this.assignPort(instance)
     await instance.start()
-    this.updated()
+    this.updated(instance)
   }
 
   stop = async ({ id }: IConnection) => {
     Logger.info('DISCONNECT', { id })
     const instance = this.find(id)
     instance && (await instance.stop())
-    this.updated()
+    this.updated(instance)
   }
 
   disable = async ({ id }: IConnection) => {
     Logger.info('REMOVE', { id })
     const instance = this.find(id)
     instance && (await instance.disable())
-    this.updated()
+    this.updated(instance)
   }
 
   forget = async ({ id }: IConnection) => {
@@ -212,15 +220,16 @@ export default class ConnectionPool {
   clearMemory = async () => {
     Logger.info('CLEARING CONNECTIONS')
     this.pool = []
-    EventBus.emit(ConnectionPool.EVENTS.updated, [])
+    EventBus.emit(ConnectionPool.EVENTS.pool, [])
   }
 
-  updated = () => {
-    const json = this.toJSON()
+  updated = (instance?: Connection) => {
     if (!user.signedIn) return
+    const json = this.toJSON()
     this.file?.write(json)
-    // Logger.info('CONNECTION POOL UPDATED')
-    EventBus.emit(ConnectionPool.EVENTS.updated, json)
+    if (instance) Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })
+    if (instance) EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
+    else EventBus.emit(ConnectionPool.EVENTS.pool, json)
   }
 
   toJSON = (): IConnection[] => {
@@ -296,7 +305,7 @@ export default class ConnectionPool {
       return c
     })
 
-    preferences.update({ cliConfigVersion: thisCLI })
+    if (previousCLI !== thisCLI) preferences.update({ cliConfigVersion: thisCLI })
     return connections
   }
 }

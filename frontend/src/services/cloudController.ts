@@ -34,7 +34,7 @@ class CloudController {
   }
 
   log(...args) {
-    console.log(`%c${args[0]}`, 'color:cyan;font-weight:bold', ...args.slice(1))
+    console.log(`%c${args[0]}`, 'color:blue;font-weight:bold', ...args.slice(1))
   }
 
   connect() {
@@ -121,6 +121,7 @@ class CloudController {
             device {
               id
               name
+              created
             }
           }
           actor {
@@ -208,6 +209,7 @@ class CloudController {
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device.id,
+            deviceCreated: new Date(t.device.created),
             connection,
             service,
             device,
@@ -249,16 +251,19 @@ class CloudController {
             accounts.setDevice({ id: target.device.id, device: target.device })
           }
 
-          // if new unknown device discovered
+          // New unknown device discovered
           if (!target.device && target.id === target.deviceId && state === 'active') {
             const state = store.getState()
-            if (target.owner?.id === getActiveAccountId(state)) {
+
+            // Device created within one minute of the event
+            if (
+              target.owner?.id === getActiveAccountId(state) &&
+              event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
+            ) {
               if (state.ui.registrationCommand) {
-                ui.set({
-                  redirect: `/devices/${target.deviceId}`,
-                  successMessage: `${target.name} registered successfully!`,
-                })
+                ui.set({ redirect: `/devices/${target.deviceId}` })
               }
+              ui.set({ successMessage: `${target.name} registered successfully!` })
               devices.fetchSingle({ id: target.deviceId })
             }
           }
@@ -299,6 +304,7 @@ class CloudController {
           } else {
             sessions.removeSession(event.sessionId)
           }
+
           if (target.device?.id) {
             accounts.setDevice({ id: target.device.id, device: target.device })
           }

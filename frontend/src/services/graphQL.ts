@@ -31,6 +31,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
     headers: { Authorization: token },
     data: { query, variables },
   }
+  console.log('GRAPHQL REQUEST', { query, variables, url: request.url })
   return await axios.request(request)
 }
 
@@ -84,6 +85,7 @@ export async function apiError(error: unknown) {
   errorCount = errorCount + 1
 
   if (axios.isAxiosError(error)) {
+    console.error('AXIOS ERROR DETAILS:', { ...error })
     if (error.response?.status === 401 || error.response?.status === 403) {
       if (errorCount > 10) {
         auth.signOut()
@@ -91,12 +93,10 @@ export async function apiError(error: unknown) {
       console.log('Incrementing error count: ', errorCount)
       await sleep(1000 * errorCount * errorCount)
       auth.checkSession({ refreshToken: true })
-    } else if (error.message !== 'Network Error') {
-      ui.set({ errorMessage: error.message })
     }
   }
 
-  if (error instanceof Error) {
+  if ((error instanceof Error || axios.isAxiosError(error)) && error.message !== 'Network Error') {
     ui.set({ errorMessage: error.message })
   }
 }

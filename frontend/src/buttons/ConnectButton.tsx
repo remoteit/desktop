@@ -39,19 +39,12 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       return
     }
 
-    dispatch.networks.start(instanceId)
     if (state === 'connecting' || connection?.enabled) {
-      connection?.connectLink
-        ? dispatch.ui.set({
-            confirm: {
-              id: 'destroyLink',
-              callback: () => dispatch.connections.disableConnectLink(connection),
-            },
-          })
-        : dispatch.connections.disconnect(connection)
+      dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
       dispatch.connections.connect(connection)
+      dispatch.networks.join(instanceId)
     }
     event && onClick?.(event)
   }
@@ -63,7 +56,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoConnect, service])
 
-  let title = connection?.public && !connection?.connectLink ? 'Connect' : 'Start'
+  let title = connection?.public ? 'Connect' : 'Start'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let loading = false
   let icon = 'play'
@@ -118,14 +111,18 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (all) title += ' all'
-  if (props.loading) title = 'Loading'
-  props.loading = props.loading || loading
-
-  if (service?.attributes.route === 'p2p' && connection?.public) {
+  if (props.loading) {
+    title = 'Loading'
     disabled = true
   }
+  props.loading = props.loading || loading
 
+  if (service?.attributes.route === 'p2p' && connection?.public) disabled = true
   if (disabled && props.size === 'icon') title = ''
+  if (connection?.connectLink && state !== 'offline') {
+    title = connection.enabled ? 'Disable' : 'Enable'
+    icon = 'circle-medium'
+  }
 
   return (
     <DynamicButton

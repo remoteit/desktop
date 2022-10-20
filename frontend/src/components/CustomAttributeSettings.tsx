@@ -34,6 +34,7 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
             key={token}
             label={token}
             value={app.value(token)}
+            type={token === 'password' ? token : undefined}
             // filter={REGEX_NAME_SAFE} // should be set by application type
             onSave={value =>
               connection &&

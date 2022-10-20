@@ -1,22 +1,28 @@
 import { parse as urlParse } from 'url'
+import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
+import { DEFAULT_CONNECTION } from '../shared/constants'
 import {
   cleanOrphanConnections,
-  getConnectionDeviceIds,
+  getConnectionServiceIds,
   newConnection,
   sanitizeName,
   selectConnection,
   setConnection,
-  updateConnections,
+  parseLinkData,
+  getConnectionLookup,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
+import { dedupe } from '../helpers/utilHelper'
 import {
   graphQLConnect,
   graphQLDisconnect,
   graphQLSurvey,
-  graphQLEnableConnectLink,
-  graphQLDisableConnectLink,
+  graphQLSetConnectLink,
+  graphQLRemoveConnectLink,
 } from '../services/graphQLMutation'
+import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
+import { graphQLGetErrors } from '../services/graphQL'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
 import { RootModel } from '.'
@@ -30,6 +36,7 @@ type IConnectionsState = {
   queueEnabling: boolean
   queueFinished: boolean
   queueConnection?: IConnection
+  initialized: boolean
 }
 
 const defaultState: IConnectionsState = {
@@ -39,6 +46,7 @@ const defaultState: IConnectionsState = {
   queueEnabling: false,
   queueFinished: false,
   queueConnection: undefined,
+  initialized: false,
 }
 
 export default createModel<RootModel>()({
@@ -46,16 +54,127 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init(_: void, state) {
       let item = getLocalStorage(state, 'connections')
-      if (item) dispatch.connections.setAll(item)
+      if (item) await dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
+      console.log('INIT CONNECTIONS', item)
     },
 
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
-      const deviceIds = getConnectionDeviceIds(state)
-      const connections = await dispatch.devices.fetchArray({ deviceIds, accountId })
-      updateConnections(state, connections, accountId)
-      await dispatch.accounts.setDevices({ devices: connections, accountId: 'connections' })
-      cleanOrphanConnections(deviceIds)
+      const serviceIds = getConnectionServiceIds(state)
+      const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
+      if (graphQLGetErrors(gqlResponse)) return
+
+      const devices = await dispatch.connections.parseConnections({ gqlResponse, accountId })
+      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+
+      cleanOrphanConnections(serviceIds)
+    },
+
+    async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }) {
+      const gqlDevices = gqlResponse?.data?.data?.login?.device || []
+      const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
+      const linkData = parseLinkData(gqlResponse?.data?.data?.login)
+
+      await dispatch.connections.updateConnectLinks({ linkData, accountId })
+      await dispatch.connections.updateConnectionState({ devices, accountId })
+      await dispatch.connections.updateCLI()
+      await dispatch.connections.set({ initialized: true })
+
+      return devices
+    },
+
+    async updateConnectionState({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
+      let lookup = getConnectionLookup(state)
+
+      devices.forEach(d => {
+        d.services.forEach(async s => {
+          const connection = lookup[s.id]
+          if (connection) {
+            const online = s.state === 'active'
+            if (connection.online !== online || !connection.accountId) {
+              if (!connection.accountId) {
+                const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
+                accountId = membership ? membership.account.id : accountId
+              }
+            }
+            // disable connection if service is offline
+            if (!online && connection.enabled) {
+              console.log('DISABLING OFFLINE CONNECTION', connection.name)
+              await dispatch.connections.disconnect(connection)
+            }
+
+            await dispatch.connections.updateConnection({
+              ...connection,
+              online,
+            })
+          }
+        })
+      })
+    },
+
+    async updateConnectLinks({ linkData, accountId }: { linkData: ILinkData[]; accountId: string }, state) {
+      let lookup = getConnectionLookup(state)
+      let unlink: IConnection[] = []
+
+      console.log('UPDATE CONNECT LINKS', linkData)
+
+      const updated: IConnection[] = linkData.map(link => {
+        const connection = lookup[link.serviceId] || DEFAULT_CONNECTION
+
+        delete lookup[link.serviceId]
+
+        let update: IConnection = {
+          accountId,
+          ...connection,
+          id: link.serviceId,
+          deviceID: link.deviceId,
+          name: connection.name || link.subdomain,
+          password: link.password,
+          createdTime: new Date(link.created).getTime(),
+          enabled: link.enabled,
+          connectLink: true,
+          reverseProxy: true,
+          public: true,
+        }
+
+        const url = urlParse(link.url)
+        if (url.host) update.host = url.host
+        if (url.port) update.port = parseInt(url.port, 10)
+
+        return update
+      })
+
+      unlink = Object.keys(lookup).reduce((result: IConnection[], key) => {
+        if (lookup[key].connectLink) {
+          console.log('UNLINK CONNECT LINK', key)
+          result.push({
+            ...lookup[key],
+            connectLink: DEFAULT_CONNECTION.connectLink,
+            reverseProxy: DEFAULT_CONNECTION.reverseProxy,
+            enabled: DEFAULT_CONNECTION.enabled,
+            public: DEFAULT_CONNECTION.public,
+          })
+        }
+        return result
+      }, [])
+
+      await dispatch.connections.mergeConnections([...unlink, ...updated])
+    },
+
+    async mergeConnections(connections: IConnection[], state) {
+      if (!connections.length) return
+      const all = state.connections.all
+      // merge and remove new connections
+      const updated = all.map(c => {
+        const index = connections.findIndex(a => a.id === c.id)
+        if (index >= 0) {
+          const merged = { ...c, ...connections[index] }
+          connections.splice(index, 1)
+          return merged
+        }
+        return c
+      })
+      await dispatch.connections.setAll([...updated, ...connections])
     },
 
     async updateConnection(connection: IConnection, state) {
@@ -78,24 +197,15 @@ export default createModel<RootModel>()({
       }
     },
 
+    async updateCLI(_: void, state) {
+      emit('connections', state.connections.all)
+    },
+
     async restoreConnections(connections: IConnection[], state) {
       connections.forEach((connection, index) => {
-        // disable connection if service is offline
-        if (!connection.online && connection.enabled) {
-          dispatch.connections.disconnect(connection)
-        }
-
-        // update device if new connection error
-        if (
-          connection.error &&
-          connection.deviceID &&
-          !state.connections.all.find(c => c.id === connection.id)?.error
-        ) {
-          dispatch.devices.fetchSingle({ id: connection.deviceID, hidden: true })
-        }
-
         // data missing from cli if our connections file is lost
         if (!connection.owner || !connection.name) {
+          console.log('CONNECTION MISSING DATA', connection.id)
           const [service] = selectById(state, connection.id)
           if (!connection.id) {
             delete connections[index]
@@ -215,62 +325,76 @@ export default createModel<RootModel>()({
       }
     },
 
-    async disableConnectLink(connection?: IConnection) {
-      if (!connection) {
-        console.warn('No connection to disconnect')
+    async setConnectLink(connection: IConnection) {
+      const creating: IConnection = connection.enabled
+        ? { ...connection, public: true, reverseProxy: true, connectLink: true }
+        : { ...connection, public: false, reverseProxy: false, connectLink: false }
+
+      dispatch.connections.updateConnection(creating)
+      const result = await graphQLSetConnectLink({
+        serviceId: connection.id,
+        enabled: connection.enabled,
+        password: connection.password?.trim() || null,
+      })
+
+      if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
+        connection.error = { message: 'Persistent connection update failed. Please contact support.' }
+        dispatch.connections.updateConnection(connection)
+        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
         return
       }
-      const disconnecting: IConnection = { ...connection, enabled: false, public: false || isPortal() }
 
-      dispatch.connections.updateConnection(disconnecting)
+      const data = result?.data?.data?.setConnectLink
+      const url = urlParse(data?.url)
 
-      const result = await graphQLDisableConnectLink(connection.id)
+      setConnection({
+        ...creating,
+        password: data?.password,
+        enabled: !!data?.enabled,
+        createdTime: new Date(data.created).getTime(),
+        port: url.port ? parseInt(url.port, 10) : undefined,
+        host: url.hostname || undefined,
+        error: undefined,
+        starting: false,
+        isP2P: false,
+      })
+    },
+
+    async removeConnectLink(connection?: IConnection) {
+      if (!connection) return console.warn('No connection to disconnect')
+
+      const removing: IConnection = {
+        ...connection,
+        connectLink: false,
+        enabled: false,
+        public: false || isPortal(),
+        reverseProxy: undefined,
+        disconnecting: true,
+      }
+      dispatch.connections.updateConnection(removing)
+      const result = await graphQLRemoveConnectLink(connection.id)
 
       if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Persistent connection closing failed. Please contact support.' })
-        connection.error = { message: 'An error occurred removing your connection.' }
+        connection.error = { message: 'An error occurred removing your persistent connection. Please contact support.' }
         dispatch.connections.updateConnection(connection)
         if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
         return
       }
 
       setConnection({
-        ...disconnecting,
+        ...removing,
+        password: undefined,
+        disconnecting: false,
         connected: false,
         reverseProxy: false,
       })
     },
 
-    async enableConnectLink(connection: IConnection) {
-      const connecting: IConnection = { ...connection, starting: true }
-      dispatch.connections.updateConnection(connecting)
-
-      const result = await graphQLEnableConnectLink(connection.id)
-
-      if (result === 'ERROR' || !result?.data?.data?.enableConnectLink?.url) {
-        dispatch.ui.set({ errorMessage: 'Persistent connection generation failed. Please contact support.' })
-        connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
-        dispatch.connections.updateConnection(connection)
-        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
-        return
-      }
-
-      const url = urlParse(result?.data?.data?.enableConnectLink?.url)
-      setConnection({
-        ...connecting,
-        starting: false,
-        enabled: true,
-        error: undefined,
-        isP2P: false,
-        reverseProxy: true,
-        port: url.port ? parseInt(url.port, 10) : undefined,
-        host: url.hostname || undefined,
-      })
-    },
-
-    async connect(connection: IConnection) {
+    async connect(connection: IConnection, state) {
+      const [service] = selectById(state, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
+      connection.online = service ? service?.state === 'active' : connection.online
       connection.host = ''
       connection.reverseProxy = undefined
       connection.autoStart = undefined
@@ -278,7 +402,7 @@ export default createModel<RootModel>()({
       connection.starting = !connection.public
 
       if (connection.connectLink) {
-        dispatch.connections.enableConnectLink(connection)
+        dispatch.connections.setConnectLink({ ...connection, enabled: true, starting: true })
         return
       }
 
@@ -298,7 +422,7 @@ export default createModel<RootModel>()({
       }
 
       if (connection.connectLink) {
-        dispatch.connections.disableConnectLink(connection)
+        dispatch.connections.setConnectLink({ ...connection, enabled: false })
         return
       }
 

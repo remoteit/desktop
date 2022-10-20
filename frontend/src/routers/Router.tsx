@@ -118,7 +118,7 @@ export const Router: React.FC = () => {
                 <ConnectionOtherPage />
               </Route>
 
-              <Route path={['/connections/:serviceID/:sessionID', '/connections/:serviceID?']}>
+              <Route path="/connections/:serviceID?/:sessionID?">
                 <ConnectionPage />
               </Route>
             </Switch>

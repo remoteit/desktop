@@ -5,7 +5,6 @@ import {
   REGEX_CONNECTION_TRIM,
   MAX_CONNECTION_NAME_LENGTH,
 } from '../shared/constants'
-import { getNetworkServiceIds } from '../models/networks'
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
@@ -58,7 +57,7 @@ export function newConnection(service?: IService | null) {
     failover: getRouteDefault('failover', true, service, cd?.route),
     proxyOnly: getRouteDefault('proxy', false, service, cd?.route),
     autoLaunch:
-      cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch,
+      cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch, // FIXME
     public: isPortal() || getRouteDefault('public', undefined, service, cd?.route),
   }
 
@@ -97,7 +96,9 @@ export function usedPorts(state: ApplicationState) {
 }
 
 export function launchDisabled(connection: IConnection) {
-  return (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink
+  return (
+    (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink || connection.launchType === 'NONE'
+  )
 }
 
 export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -127,18 +128,15 @@ export function clearConnectionError(connection: IConnection) {
   setConnection(connection)
 }
 
-export function getConnectionDeviceIds(state: ApplicationState) {
+export function getConnectionServiceIds(state: ApplicationState) {
   const thisId = state.backend.thisId
-  const connections = selectConnections(state)
-  const networkIds = getNetworkServiceIds(state)
-  const ids = connections.filter(c => !networkIds.includes(c.id)) || []
-  let deviceIds = ids.map(c => c.deviceID || '')
-  if (thisId && !deviceIds.includes(thisId)) deviceIds.push(thisId)
-  return deviceIds
+  const serviceIds = selectConnections(state).map(c => c.id)
+  if (thisId && !serviceIds.includes(thisId)) serviceIds.push(thisId)
+  return serviceIds
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public))
+  return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public || c.connectLink))
 }
 
 export function selectConnection(state: ApplicationState, service?: IService) {
@@ -167,27 +165,18 @@ export function getConnectionLookup(state: ApplicationState) {
   }, {})
 }
 
-export function updateConnections(state: ApplicationState, devices: IDevice[], userId: string) {
-  let lookup = getConnectionLookup(state)
+export function parseLinkData(responseData: any) {
+  if (!responseData.links) return []
 
-  devices.forEach(d => {
-    d.services.forEach(s => {
-      const connection = lookup[s.id]
-      if (connection) {
-        const online = s.state === 'active'
-        if (connection.online !== online || !connection.accountId) {
-          let accountId = connection.accountId
-          if (!accountId) {
-            const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
-            accountId = membership ? membership.account.id : userId
-          }
-          setConnection({ ...connection, deviceID: d.id, online, accountId })
-        }
-      }
-    })
-  })
+  let result: ILinkData[] = responseData.links.map(l => ({
+    ...l,
+    subdomain: l.service.subdomain,
+    serviceId: l.service.id,
+    deviceId: l.service.device.id,
+  }))
 
-  return devices
+  console.log('PARSE LINK DATA RESULT', result)
+  return result
 }
 
 export function cleanOrphanConnections(deviceIds?: string[]) {

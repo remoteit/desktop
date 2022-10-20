@@ -3,7 +3,6 @@ import { List, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../../components/ListItemLocation'
-import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
@@ -21,17 +20,12 @@ export const SettingsPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <>
-          <Gutters bottom={null}>
-            <Typography variant="h2">
-              <Title>Settings</Title>
-              <OutOfBand inline />
-            </Typography>
-          </Gutters>
-          <List>
-            <DeviceSetupItem />
-          </List>
-        </>
+        <Gutters>
+          <Typography variant="h2">
+            <Title>Settings</Title>
+            <OutOfBand inline />
+          </Typography>
+        </Gutters>
       }
     >
       <List>

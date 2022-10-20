@@ -115,7 +115,7 @@ export const DevicePage: React.FC = () => {
       </Typography>
 
       <List className={css.list}>
-        {editable && <LicensingNotice device={device} />}
+        {editable && <LicensingNotice instance={device} />}
         {editable && setupAddingService && (
           <ListItemLocation pathname="" disableIcon disabled dense>
             <ListItemText primary="Registering..." />

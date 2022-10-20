@@ -12,9 +12,9 @@ export const ProgressBar: React.FC<Props> = ({ description, value }) => {
   const css = useStyles()
 
   return (
-    <Box mt={4} mb={2}>
-      <LinearProgress variant="determinate" value={value} className={css.progress} color="primary"></LinearProgress>
-      {description && <Typography variant="body2">{description}</Typography>}
+    <Box mt={2} mb={2}>
+      <LinearProgress variant="determinate" value={value} className={css.progress} color="primary" />
+      {description && <Typography variant="caption">{description}</Typography>}
     </Box>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { makeStyles } from '@mui/styles'
+import { useHistory } from 'react-router-dom'
+import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Button, TextField, Typography } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
@@ -12,6 +13,7 @@ export const ChangePassword = () => {
   const [password, setPassword] = useState<string>('')
   const [isValid, setValid] = useState<boolean>(false)
   const { auth } = useDispatch<Dispatch>()
+  const history = useHistory()
   const css = useStyles()
 
   const evaluateCurrentPassword = (e: { target: { value: React.SetStateAction<string> } }) => {
@@ -34,17 +36,20 @@ export const ChangePassword = () => {
             label="Current Password"
             onChange={e => evaluateCurrentPassword(e)}
           />
-          <PasswordStrengthInput onChange={(password: string, isValid: boolean) => {
-            setPassword(password)
-            setValid(isValid)
-          }
-          } />
+          <PasswordStrengthInput
+            onChange={(password: string, isValid: boolean) => {
+              setPassword(password)
+              setValid(isValid)
+            }}
+          />
         </Gutters>
         <Gutters bottom="xl">
           <Button variant="contained" color="primary" type="submit" size="small" disabled={!isValid}>
             Save
           </Button>
-          <Button size="small">Cancel</Button>
+          <Button size="small" onClick={() => history.goBack()}>
+            Cancel
+          </Button>
         </Gutters>
       </form>
     </>
@@ -53,7 +58,7 @@ export const ChangePassword = () => {
 
 const useStyles = makeStyles({
   form: {
-    maxWidth: 400,
+    maxWidth: 422,
     '& .MuiTextField-root': { marginRight: spacing.lg, minWidth: 350, marginBottom: spacing.sm },
   },
 })

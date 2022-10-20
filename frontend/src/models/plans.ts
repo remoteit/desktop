@@ -158,7 +158,7 @@ export default createModel<RootModel>()({
     async unsubscribe(planId: string | undefined) {
       dispatch.plans.set({ purchasing: planId })
       await graphQLUnsubscribe()
-      dispatch.devices.fetch()
+      dispatch.devices.fetchList()
       console.log('UNSUBSCRIBE')
     },
 
@@ -268,8 +268,8 @@ export function lookupLicenseManagePath(productId?: string) {
   return lookup.managePath
 }
 
-export function lookupLicenseProductId(device?: IDevice) {
-  let lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
+export function lookupLicenseProductId(instance?: IInstance) {
+  let lookup = LicenseLookup.find(l => l.platform === (instance as IDevice)?.targetPlatform)
   if (!lookup) lookup = defaultLicense
   return lookup.productId
 }
