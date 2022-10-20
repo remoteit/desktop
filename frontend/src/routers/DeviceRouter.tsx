@@ -39,27 +39,21 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const [loaded, setLoaded] = useState<boolean>(false)
+  const [loaded, setLoaded] = useState<string | undefined>()
 
   useEffect(() => {
-    console.log('DEVICE ROUTER EFFECT', { deviceID, waiting, device, thisId, loaded })
     if (deviceID && !device?.loaded && !waiting) {
       // check that target device is registered and don't redirect
-      if (loaded && !(remoteUI && thisId)) {
+      if (loaded === deviceID && !(remoteUI && thisId)) {
         if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
         else dispatch.ui.set({ silent: false })
         history.push('/devices')
-      } else if (!loaded) {
+      } else if (loaded !== deviceID) {
         dispatch.devices.fetchSingle({ id: deviceID, hidden: true })
-        setLoaded(true)
+        setLoaded(deviceID)
       }
     }
   }, [waiting, device, thisId, loaded])
-
-  useEffect(() => {
-    console.log('DEVICE ROUTER deviceID change', deviceID, 'setLoaded false')
-    setLoaded(false)
-  }, [deviceID])
 
   if (waiting && !device) return <LoadingMessage message="Fetching device" />
 

@@ -19,7 +19,7 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionPage: React.FC = () => {
-  const { sessionID, serviceID } = useParams<{ sessionID?: string; serviceID?: string }>()
+  const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const { service, device, network, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
@@ -34,26 +34,21 @@ export const ConnectionPage: React.FC = () => {
     }
   })
 
-  const [loaded, setLoaded] = useState<boolean>(false)
+  const [loaded, setLoaded] = useState<string | undefined>()
   const instance: IInstance | undefined = network || device
 
   useEffect(() => {
     if (serviceID && !instance?.loaded && !waiting) {
-      if (loaded) {
+      if (loaded === serviceID) {
         dispatch.ui.set({ errorMessage: `You do not have access to that service. (${serviceID})` })
         if (connection) dispatch.connections.forget(serviceID)
-      } else if (!loaded) {
+      } else {
         if (network) dispatch.networks.fetchSingle(network)
         else dispatch.devices.fetchSingle({ id: serviceID, hidden: true })
-        setLoaded(true)
+        setLoaded(serviceID)
       }
     }
   }, [waiting, instance, loaded])
-
-  useEffect(() => {
-    console.log('CONNECTION PAGE ROUTE change', serviceID, sessionID, 'setLoaded false')
-    setLoaded(false)
-  }, [serviceID, sessionID])
 
   if (!service) return <NoConnectionPage />
 
