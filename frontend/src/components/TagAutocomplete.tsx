@@ -1,5 +1,6 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
+import escapeRegexp from 'escape-string-regexp'
 import { makeStyles } from '@mui/styles'
 import {
   Box,
@@ -116,11 +117,15 @@ export const TagAutocomplete: React.FC<Props> = ({
                 />
               </ListItemIcon>
               <ListItemText
-                primary={reactStringReplace(option.name, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
-                  <span key={i} className={css.spanItem}>
-                    {match}
-                  </span>
-                ))}
+                primary={reactStringReplace(
+                  option.name,
+                  new RegExp(`(${escapeRegexp(inputValue)})`, 'i'),
+                  (match, i) => (
+                    <span key={i} className={css.spanItem}>
+                      {match}
+                    </span>
+                  )
+                )}
               />
             </MenuItem>
           )}

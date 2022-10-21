@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import reactStringReplace from 'react-string-replace'
+import escapeRegexp from 'escape-string-regexp'
 import debounce from 'lodash.debounce'
 import classnames from 'classnames'
 import { getDeviceModel } from '../models/accounts'
@@ -120,11 +121,15 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           />
         )}
         renderOption={(props, option: ISearch, state) => {
-          const parts = reactStringReplace(option.serviceName, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
-            <span key={i} className={css.highlight}>
-              {match}
-            </span>
-          ))
+          const parts = reactStringReplace(
+            option.serviceName,
+            new RegExp(`(${escapeRegexp(query.trim())})`, 'i'),
+            (match, i) => (
+              <span key={i} className={css.highlight}>
+                {match}
+              </span>
+            )
+          )
           const enabled = enabledIds.includes(option.serviceId)
           // console.log('RENDER OPTION', props, option, state)
           return (
@@ -151,7 +156,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
                 ) : (
                   <TargetPlatform id={props['data-platform']} inlineLeft size="md" />
                 )}
-                {reactStringReplace(option.group, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
+                {reactStringReplace(option.group, new RegExp(`(${escapeRegexp(query.trim())})`, 'i'), (match, i) => (
                   <span key={i} className={css.highlight}>
                     {match}
                   </span>
