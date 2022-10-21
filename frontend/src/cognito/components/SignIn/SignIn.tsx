@@ -1,4 +1,5 @@
 import React, { ReactElement, useEffect } from 'react'
+import { rememberMe } from '../../../helpers/userHelper'
 import { makeStyles } from '@mui/styles'
 import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel, Collapse } from '@mui/material'
 import { useTranslation } from 'react-i18next'
@@ -17,7 +18,6 @@ import { GoogleSignInButton } from '../GoogleSignInButton'
 import { Link } from '../../../components/Link'
 import { spacing } from '../../../styling'
 import { useHistory } from 'react-router-dom'
-// import { OktaSignInButton } from '../OktaSignInButton'
 
 const useStyles = makeStyles({
   or: {
@@ -39,9 +39,6 @@ export type SignInProps = {
   onSamlSignIn: SamlSignInFunc
   showLogo?: boolean
   errorMessage?: string
-  showCheckboxRemember?: boolean
-  checkedCheckboxRemember?: boolean
-  onClickCheckboxRemember?: (checked: boolean) => void
   fullWidth?: boolean
 }
 
@@ -55,9 +52,6 @@ export function SignIn({
   onSamlSignIn,
   showLogo = true,
   errorMessage = undefined,
-  showCheckboxRemember,
-  checkedCheckboxRemember,
-  onClickCheckboxRemember,
   fullWidth,
 }: SignInProps): JSX.Element {
   let externalError: Error | null = null
@@ -66,27 +60,15 @@ export function SignIn({
   }
   const { t } = useTranslation()
   const history = useHistory()
-  const [username, setUsername] = React.useState<string>(email ? email : '')
+  const [username, setUsername] = React.useState<string>(email || rememberMe.username)
   const [password, setPassword] = React.useState<string>('')
   const [error, setError] = React.useState<Error | null>(externalError)
   const [notice, setNotice] = React.useState<ReactElement | null>(null)
   const [loading, setLoading] = React.useState<boolean>(false)
   const [emailProcessed, setEmailProcessed] = React.useState<boolean>(false)
-  // const [isSaml, setIsSaml] = React.useState<boolean>(false)
-  const [remember, setRemember] = React.useState<boolean>(checkedCheckboxRemember || false)
+  const [remember, setRemember] = React.useState<boolean>(rememberMe.checked)
   const passRef = React.useRef<HTMLInputElement>()
   const css = useStyles()
-
-  // const orgs: any = {
-  //   'funmusiclessons.com': {
-  //     samlOnly: true,
-  //     name: 'mtme',
-  //   },
-  //   'remote.it': {
-  //     samlOnly: true,
-  //     name: 'remoteit',
-  //   },
-  // }
 
   useEffect(() => {
     if (error && error.name == 'NotAuthorizedException') {
@@ -102,21 +84,20 @@ export function SignIn({
     }
   }, [error])
 
-  async function handleSignIn(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
     setError(null)
 
     if (!username || (!password && emailProcessed)) return alert('Please enter a username and password')
 
     setLoading(true)
-    setError(null)
+    rememberMe.set(remember ? username : '')
 
     if (emailProcessed) {
       try {
         // await onSignIn(username, password)
         const challenge = await onSignIn(username, password)
 
-        if (onClickCheckboxRemember) onClickCheckboxRemember(remember)
         if (onUsernameChange) onUsernameChange(username)
 
         if (challenge) {
@@ -153,28 +134,17 @@ export function SignIn({
     setLoading(false)
   }
 
-  function handleGoogleSignIn(): void {
-    onGoogleSignIn()
-  }
-
-  function handleOktaSignIn(): void {
-    onOktaSignIn()
-  }
-
   return (
     <AuthLayout fullWidth={fullWidth} showLogo={showLogo}>
-      {/* <Box mt={4} textAlign="center">
-          <OktaSignInButton color="primary" fullWidth onClick={handleOktaSignIn} variant="outlined" />
-        </Box> */}
       <Box mt={4} textAlign="center">
-        <GoogleSignInButton color="primary" fullWidth onClick={handleGoogleSignIn} variant="outlined" />
+        <GoogleSignInButton color="primary" fullWidth onClick={onGoogleSignIn} variant="outlined" />
       </Box>
       <Box className={css.or} mb={3} mt={3}>
         <Divider />
         <Typography variant="caption">{t('pages.sign-in.or')?.toLowerCase()}</Typography>
         <Divider />
       </Box>
-      <form onSubmit={handleSignIn}>
+      <form onSubmit={handleSubmit}>
         {error?.message && (
           <Notice severity="danger" fullWidth gutterBottom>
             {error.message}
@@ -233,22 +203,20 @@ export function SignIn({
           </Button>
           <Grid container spacing={3}>
             <Grid item xs={6}>
-              {showCheckboxRemember && (
-                <Box mb={3} ml={1}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={remember}
-                        onChange={() => setRemember(!remember)}
-                        checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-                        icon={<Icon name="square" size="md" type="light" color="grayDark" />}
-                        color="primary"
-                      />
-                    }
-                    label={<Typography variant="caption">Remember me</Typography>}
-                  />
-                </Box>
-              )}
+              <Box mb={3} ml={1}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={remember}
+                      onChange={() => setRemember(!remember)}
+                      checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+                      icon={<Icon name="square" size="md" type="light" color="grayDark" />}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography variant="caption">Remember me</Typography>}
+                />
+              </Box>
             </Grid>
             <Grid item xs={6}>
               <Box mb={3} mt={1} textAlign="right">

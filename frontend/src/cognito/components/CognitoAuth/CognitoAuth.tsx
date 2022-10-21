@@ -7,34 +7,20 @@ import { Auth } from '../Auth'
 export type CognitoAuthProps = {
   onSignInSuccess: SignInSuccessFunc
   clientId?: string
-  showLogo?: boolean
   errorMessage?: string
   redirectURL?: string
-  callbackURL?: string
-  signoutCallbackURL?: string
   hideCaptcha?: boolean
   authService?: AuthService
-  inputEmail?: string
-  showCheckboxRemember?: boolean
-  checkedCheckboxRemember?: boolean
-  onClickCheckboxRemember?: (checked: boolean) => void
   fullWidth?: boolean
 }
 
 export function CognitoAuth({
   onSignInSuccess,
   clientId,
-  showLogo,
   errorMessage,
   redirectURL,
-  callbackURL,
-  signoutCallbackURL,
   authService,
   hideCaptcha,
-  inputEmail,
-  showCheckboxRemember,
-  checkedCheckboxRemember,
-  onClickCheckboxRemember = () => {},
   fullWidth,
 }: CognitoAuthProps): JSX.Element {
   const [authUser, setAuthUser] = React.useState<CognitoUser>()
@@ -44,8 +30,6 @@ export function CognitoAuth({
       new AuthService({
         cognitoClientID: clientId,
         redirectURL: redirectURL,
-        callbackURL: callbackURL,
-        signoutCallbackURL: signoutCallbackURL,
       })
   )
 
@@ -153,8 +137,6 @@ export function CognitoAuth({
       // await cognito.resendSignUp(username)
       throw response.error
     }
-
-    //return { error: { name: 'anerror', message: 'a new error' } }
   }
 
   async function handleResend(username: string): Promise<void> {
@@ -169,14 +151,11 @@ export function CognitoAuth({
 
   return (
     <Auth
-      checkedCheckboxRemember={checkedCheckboxRemember}
       cognitoUser={authUser}
       errorMessage={errorMessage}
       fullWidth={fullWidth}
       hideCaptcha={hideCaptcha}
-      inputEmail={inputEmail}
       onCheckSaml={handleCheckSaml}
-      onClickCheckboxRemember={onClickCheckboxRemember}
       onConfirmSignIn={handleConfirmSignIn}
       onGoogleSignIn={handleGoogleSignIn}
       onOktaSignIn={handleOktaSignIn}
@@ -190,8 +169,6 @@ export function CognitoAuth({
       onSignUp={handleSignUp}
       onVerifyPasswordChange={handleVerifyPasswordChange}
       onVerifyRecoveryCode={handleVerifyRecoveryCode}
-      showCheckboxRemember={showCheckboxRemember}
-      showLogo={showLogo}
     />
   )
 }
