@@ -16,7 +16,6 @@ import {
   VerifyRecoveryCodeFunc,
   ResendFunc,
   OktaSignInFunc,
-  CognitoUserResult,
 } from '../../types'
 import { AccountRecovery } from '../AccountRecovery'
 import { ForgotPassword } from '../ForgotPassword'
@@ -46,10 +45,7 @@ export type AuthProps = {
   showLogo?: boolean
   errorMessage?: string
   hideCaptcha?: boolean
-  inputEmail?: string
-  showCheckboxRemember?: boolean
-  checkedCheckboxRemember?: boolean
-  onClickCheckboxRemember?: (checked: boolean) => void
+  inputEmail?: string // move to global state?
   fullWidth?: boolean
 }
 
@@ -82,9 +78,6 @@ function Routes({
   errorMessage,
   hideCaptcha,
   inputEmail,
-  showCheckboxRemember,
-  checkedCheckboxRemember,
-  onClickCheckboxRemember,
   fullWidth,
 }: AuthProps): JSX.Element {
   const [challenge, setChallenge] = React.useState<ChallengeOption>()
@@ -186,18 +179,15 @@ function Routes({
         <Route
           component={() => (
             <SignIn
-              checkedCheckboxRemember={checkedCheckboxRemember}
               email={email}
               errorMessage={errorMessage}
               fullWidth={fullWidth}
               onCheckSaml={onCheckSaml}
-              onClickCheckboxRemember={onClickCheckboxRemember}
               onGoogleSignIn={onGoogleSignIn}
               onOktaSignIn={onOktaSignIn}
               onSamlSignIn={handleSamlSignIn}
               onSignIn={handleSignIn}
               onUsernameChange={handleUsernameChange}
-              showCheckboxRemember={showCheckboxRemember}
               showLogo={showLogo}
             />
           )}

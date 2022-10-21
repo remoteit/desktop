@@ -11,7 +11,7 @@ import {
   API_URL,
   DEVELOPER_KEY,
 } from '../shared/constants'
-import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
+import { setLocalStorage, removeLocalStorage, isElectron, isPortal } from '../services/Browser'
 import { getToken } from '../services/remote.it'
 import { CognitoUser } from '../cognito/types'
 import { AuthService } from '../cognito/auth'
@@ -24,7 +24,6 @@ import axios from 'axios'
 
 const USER_KEY = 'user'
 const HOSTED_UI_KEY = 'amplify-signin-with-hostedUI'
-export const CHECKBOX_REMEMBER_KEY = 'remember-username'
 
 export interface AWSUser {
   authProvider: string
@@ -45,7 +44,6 @@ export interface AuthState {
   signInError?: string
   authService?: AuthService
   user?: IUser
-  localUsername?: string
   mfaMethod: string
   AWSUser: AWSUser
 }
@@ -57,7 +55,6 @@ const defaultState: AuthState = {
   signInError: undefined,
   user: undefined,
   authService: undefined,
-  localUsername: undefined,
   mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
@@ -169,11 +166,6 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
       if (cognitoUser?.username) {
-        if (cognitoUser?.attributes?.email && getLocalStorage(state, CHECKBOX_REMEMBER_KEY)) {
-          setLocalStorage(state, 'username', cognitoUser?.attributes?.email)
-        } else if (!getLocalStorage(state, CHECKBOX_REMEMBER_KEY)) {
-          window.localStorage.removeItem('username')
-        }
         if (cognitoUser?.authProvider === 'Google') {
           setLocalStorage(state, HOSTED_UI_KEY, 'true')
         }
@@ -182,10 +174,6 @@ export default createModel<RootModel>()({
         await dispatch.mfa.getAWSUser()
         console.log('AUTHENTICATED SUCCESS')
       }
-    },
-    async getUsernameLocal() {
-      const localUsername = localStorage.getItem('username')
-      dispatch.auth.set({ localUsername })
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
