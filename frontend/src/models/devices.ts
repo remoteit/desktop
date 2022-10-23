@@ -274,10 +274,8 @@ export default createModel<RootModel>()({
     },
 
     async rename({ id, name }: { id: string; name: string }) {
-      const result = await graphQLRename(id, name)
-      if (result !== 'ERROR') {
-        await dispatch.devices.fetchList()
-      }
+      await graphQLRename(id, name)
+      await dispatch.devices.fetchSingle({ id })
     },
 
     async setAttributes(device: IDevice) {
