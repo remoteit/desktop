@@ -33,25 +33,9 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
         label="Persistent public url"
         subLabel="Create a fixed public endpoint for anyone to connect to"
         secondaryContent={
-          <>
-            {!connection.connectLink && hadLink && (
-              <IconButton
-                name="trash"
-                color="grayDark"
-                title="Reset URL"
-                onClick={() =>
-                  dispatch.ui.set({
-                    confirm: {
-                      id: 'destroyLink',
-                      callback: () => dispatch.connections.removeConnectLink(connection),
-                    },
-                  })
-                }
-              />
-            )}
-            <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
-          </>
+          <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
         }
+        secondaryContentWidth="140px"
         toggle={!!connection.connectLink}
         onClick={() => {
           if (connection.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
@@ -72,7 +56,24 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
               setSecurity(value as ISecurity)
               if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
             }}
-          />
+          >
+            {hadLink && (
+              <IconButton
+                name="trash"
+                color="grayDark"
+                title="Clear URL"
+                size="md"
+                onClick={() =>
+                  dispatch.ui.set({
+                    confirm: {
+                      id: 'destroyLink',
+                      callback: () => dispatch.connections.removeConnectLink(connection),
+                    },
+                  })
+                }
+              />
+            )}
+          </SelectSetting>
           {security === 'PROTECTED' && (
             <InlineTextFieldSetting
               required

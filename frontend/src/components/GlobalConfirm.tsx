@@ -8,7 +8,7 @@ const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?
   destroyLink: {
     title: 'Reset persistent endpoint?',
     message: 'This will clear your connect link url so that a new one will be created when you restart again.',
-    action: 'Clear',
+    action: 'Reset',
   },
   forceUnregister: {
     title: 'Force removal?',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ListItem, ListItemIcon, MenuItem, TextField } from '@mui/material'
+import { ListItem, ListItemIcon, ListItemSecondaryAction, MenuItem, TextField } from '@mui/material'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -12,6 +12,7 @@ type Props = {
   modified?: boolean
   hideIcon?: boolean
   onChange?: (value: string) => void
+  children?: React.ReactNode
 }
 
 export const SelectSetting: React.FC<Props> = ({
@@ -23,6 +24,7 @@ export const SelectSetting: React.FC<Props> = ({
   disabled,
   modified,
   onChange,
+  children,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const handleClick = () => setOpen(!open)
@@ -50,6 +52,7 @@ export const SelectSetting: React.FC<Props> = ({
           </MenuItem>
         ))}
       </TextField>
+      {children && <ListItemSecondaryAction>{children}</ListItemSecondaryAction>}
     </ListItem>
   )
 }
