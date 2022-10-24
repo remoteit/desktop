@@ -71,7 +71,6 @@ export default class CLI {
   }
 
   configFile: JSONFile<ConfigFile>
-  processing: number = 0
 
   EVENTS = {
     error: 'cli/error',
@@ -144,10 +143,7 @@ export default class CLI {
   }
 
   async readConnections() {
-    if (this.processing) return
     const connections = await this.connectionStatus()
-    if (this.processing) return
-
     return connections.map(c => {
       let error: ISimpleError | undefined
 
@@ -321,7 +317,6 @@ export default class CLI {
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
     if (!quiet) {
-      this.processing++
       commands.onError = (e: Error) => {
         if (typeof onError === 'function') onError(e)
         // @TODO detect signing or service not started error and don't display,
@@ -332,8 +327,6 @@ export default class CLI {
     }
 
     const result = await commands.exec()
-
-    if (!quiet) setTimeout(() => this.processing--, 400)
 
     if (typeof onCommand === 'function') onCommand(commands.toSafeString())
 
