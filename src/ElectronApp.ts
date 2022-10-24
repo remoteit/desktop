@@ -167,8 +167,6 @@ export default class ElectronApp {
       webPreferences: { preload: path.join(__dirname, 'preload.js') },
     })
 
-    this.window.setVisibleOnAllWorkspaces(true)
-
     const startUrl = this.getStartUrl()
 
     this.window.loadURL(startUrl)
