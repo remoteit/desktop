@@ -286,25 +286,21 @@ export const useStyles = makeStyles({
     paddingRight: spacing.lg,
     paddingLeft: spacing.md,
     alignItems: 'flex-start',
-    '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
+    '& > *': {
+      width: '50%',
+      maxWidth: 400,
+    },
+    '& > .MuiTypography-root': {
+      width: `calc(50% - ${spacing.lg}px)`,
+      marginLeft: spacing.lg,
+    },
   },
   fieldSub: {
     padding: `0 ${spacing.lg}px 0 ${spacing.md}px`,
-    '& .MuiFormControl-root': {
-      minWidth: 300 - spacing.lg,
-      width: 300 - spacing.lg,
-      display: 'block',
-      marginRight: spacing.lg,
-    },
-    '& .MuiFormControl-root + .MuiFormControl-root': {
-      marginTop: spacing.sm,
-    },
-  },
-  fieldSubCheckbox: {
-    '& .MuiFormControl-root': {
-      alignSelf: 'flex-start',
-      minWidth: 300 - spacing.xl,
-      width: 300 - spacing.xl,
+    '& .MuiFormControl-root + .MuiFormControl-root': { marginTop: spacing.sm },
+    '& > *': {
+      width: '50%',
+      maxWidth: 400,
     },
   },
 })
