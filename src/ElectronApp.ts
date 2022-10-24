@@ -9,6 +9,7 @@ const d = debug('r3:headless:ElectronApp')
 
 const DEEP_LINK_PROTOCOL = 'remoteit'
 const DEEP_LINK_PROTOCOL_DEV = 'remoteitdev'
+const URL_REGEX = new RegExp('^https?://')
 
 export default class ElectronApp {
   public app: electron.App
@@ -126,17 +127,22 @@ export default class ElectronApp {
     Logger.info('FILE PROMPT RESULT', { result, filePath })
   }
 
-  private setDeepLink(link?: string) {
+  private setDeepLink(url?: string) {
+    if (!url) return
     const scheme = this.protocol + '://'
-    const authCallbackCode = 'authCallback'
-    if (link?.includes(scheme)) {
-      this.deepLinkUrl = link.substring(scheme.length)
+
+    if (url.includes(scheme)) {
+      this.deepLinkUrl = url.substring(scheme.length)
       Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
     }
-    if (link?.includes(authCallbackCode)) {
+
+    if (url.includes('authCallback')) {
       this.authCallback = true
-      Logger.info('Auth Callback', { link })
+      Logger.info('Auth Callback', { link: url })
     }
+
+    const match = URL_REGEX.exec(url)
+    if (match) electron.shell.openExternal(url.substring(match.index))
   }
 
   private handleActivate = () => {
