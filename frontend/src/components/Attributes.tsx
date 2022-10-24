@@ -302,6 +302,12 @@ export const attributes: Attribute[] = [
         multiline: true,
       })
   ),
+  new DeviceAttribute({
+    id: 'initiatorPlatform',
+    label: 'Platform',
+    value: ({ session }) => session && INITIATOR_PLATFORMS[session.platform],
+    column: false,
+  }),
   new ServiceAttribute({
     id: 'connectLink',
     label: 'Connect Link',
@@ -416,12 +422,6 @@ export const attributes: Attribute[] = [
     value: ({ connection }) => {
       if (connection?.ip && lanShared(connection)) return `${replaceHost(connection.ip)}:${connection.port}`
     },
-  }),
-  new DeviceAttribute({
-    id: 'initiatorPlatform',
-    label: 'Platform',
-    value: ({ session }) => session && INITIATOR_PLATFORMS[session.platform],
-    column: false,
   }),
 ]
 
