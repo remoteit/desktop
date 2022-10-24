@@ -18,7 +18,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
 }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
-  const canManage = !permissions.includes('MANAGE')
+  const canManage = permissions.includes('MANAGE')
   const hadLink = connection.host?.includes('connect.remote.it')
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
     <>
       <ListItemSetting
         icon="globe"
-        disabled={canManage || (connection.enabled && !connection.connectLink)}
+        disabled={!canManage || (connection.enabled && !connection.connectLink)}
         label="Persistent public url"
         subLabel="Create a fixed public endpoint for anyone to connect to"
         secondaryContent={
@@ -93,10 +93,10 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
   )
 
   return canManage ? (
+    Setting
+  ) : (
     <Tooltip title="Requires device 'Manage' permission" placement="left" enterDelay={400} arrow>
       <span>{Setting}</span>
     </Tooltip>
-  ) : (
-    Setting
   )
 }
