@@ -42,7 +42,6 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
             await devices.setServiceAttributes(service)
             if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
           }
-          history.push(`/devices/${device?.id}/${service.id}`)
         }}
       />
     </ServiceHeaderMenu>
