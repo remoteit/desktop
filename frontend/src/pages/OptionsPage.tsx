@@ -123,7 +123,7 @@ export const OptionsPage: React.FC = () => {
                 toggle={!!preferences.disableDeepLinks}
                 onClick={() => emit('preferences', { ...preferences, disableDeepLinks: !preferences.disableDeepLinks })}
                 confirm
-                confirmMessage="Please restart the desktop application for changes to take affect. You may also have to re set your default file handler on linux."
+                confirmMessage="Please restart the desktop application for changes to take affect. You may also have to reset your default file handler on Linux."
                 confirmTitle="Restart required"
               />
               <SettingsDisableNetworkItem />
