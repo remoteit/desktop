@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import isEqual from 'lodash/isEqual'
+import cloneDeep from 'lodash/cloneDeep'
 import {
   IP_PRIVATE,
   DEFAULT_SERVICE,
@@ -58,16 +60,19 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
       ...setupAdded,
     }
   }
+  const [defaultForm, setDefaultForm] = useState<IServiceForm>()
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<IServiceForm>(initForm)
-  const appType = findType(applicationTypes, form.typeID)
+  const [form, setForm] = useState<IServiceForm>()
+  const appType = findType(applicationTypes, form?.typeID)
   const css = useStyles()
+  const changed = !isEqual(form, defaultForm)
 
   disabled = disabled || saving
 
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
+    setDefaultForm(cloneDeep(newForm))
   }, [service])
 
   useEffect(() => {
@@ -76,6 +81,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
   }, [form?.port, form?.host])
 
   const checkPort = () => {
+    if (!form) return
     if (REGEX_VALID_IP.test(`${form.host}:${form.port}`) || REGEX_VALID_HOSTNAME.test(`${form.host}:${form.port}`)) {
       backend.set({ reachablePortLoading: true })
       emit('reachablePort', { port: form.port, host: form.host })
@@ -83,6 +89,8 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
       backend.set({ reachablePort: false })
     }
   }
+
+  if (!form) return null
 
   const CheckIcon = () => (
     <Icon
@@ -272,8 +280,8 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
         </List>
       </AccordionMenuItem>
       <Gutters>
-        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
-          {saving ? 'Saving...' : 'Save'}
+        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed}>
+          {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
         </Button>
         <Button onClick={onCancel}>Cancel</Button>
       </Gutters>
