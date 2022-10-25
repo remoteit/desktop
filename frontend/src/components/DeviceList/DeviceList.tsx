@@ -101,8 +101,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
           return row
         })}
+        <LoadMore />
       </List>
-      <LoadMore />
       <ServiceContextualMenu />
     </>
   )
