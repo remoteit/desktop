@@ -34,7 +34,8 @@ export default class ElectronApp {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
       this.app.quit()
     }
-    this.app.setAsDefaultProtocolClient(this.protocol)
+
+    if (!preferences.get().disableDeepLinks) this.app.setAsDefaultProtocolClient(this.protocol)
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
     // Windows event

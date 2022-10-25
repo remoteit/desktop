@@ -657,6 +657,7 @@ declare global {
     webSocketURL?: string
     testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
     windowState?: { x?: number; y?: number; width: number; height: number }
+    disableDeepLinks?: boolean
   }
 
   type SegmentContext = {

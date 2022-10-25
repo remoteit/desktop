@@ -116,6 +116,16 @@ export const OptionsPage: React.FC = () => {
         <DesktopUI>
           <AccordionMenuItem subtitle="Advanced" gutters>
             <List>
+              <ListItemSetting
+                label="Disable deep link handling"
+                subLabel="You can disable deep link handling to fix a bug in Linux where the desktop app is set to open html file types."
+                icon={preferences.disableDeepLinks ? 'link-slash' : 'link'}
+                toggle={!!preferences.disableDeepLinks}
+                onClick={() => emit('preferences', { ...preferences, disableDeepLinks: !preferences.disableDeepLinks })}
+                confirm
+                confirmMessage="Please restart the desktop application for changes to take affect."
+                confirmTitle="Restart required"
+              />
               <SettingsDisableNetworkItem />
               <ListItemSetting
                 confirm
