@@ -403,7 +403,7 @@ export default createModel<RootModel>()({
           successMessage: `"${device.name}" was successfully deleted.`,
         })
       }
-      dispatch.ui.set({ destroying: false, redirect: '/devices' })
+      dispatch.ui.set({ destroying: false })
     },
 
     async leave(device: IDevice, state) {
