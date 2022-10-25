@@ -35,8 +35,15 @@ export default class ElectronApp {
       this.app.quit()
     }
 
-    if (!preferences.get().disableDeepLinks) this.app.setAsDefaultProtocolClient(this.protocol)
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
+
+    if (preferences.get().disableDeepLinks) {
+      this.app.removeAsDefaultProtocolClient(this.protocol)
+      Logger.info('REMOVED AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
+    } else {
+      this.app.setAsDefaultProtocolClient(this.protocol)
+      Logger.info('SET AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
+    }
 
     // Windows event
     this.app.on('ready', this.handleAppReady)
