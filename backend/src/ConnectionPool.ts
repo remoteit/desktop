@@ -233,13 +233,8 @@ export default class ConnectionPool {
   }
 
   toJSON = (): IConnection[] => {
-    return this.pool
-      .map(c => c.params)
-      .sort((a, b) => this.sort(a.name || '', b.name || ''))
-      .sort((a, b) => Number(b.connected || 0) - Number(a.connected || 0))
+    return this.pool.map(c => c.params)
   }
-
-  sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
 
   nextFreePort = async () => {
     const next = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)

@@ -477,6 +477,9 @@ export default createModel<RootModel>()({
     },
 
     async setAll(all: IConnection[], state) {
+      all
+        .sort((a, b) => nameSort(a.name || '', b.name || ''))
+        .sort((a, b) => Number(b.connected || 0) - Number(a.connected || 0))
       setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },
@@ -494,3 +497,7 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function nameSort(a: string, b: string) {
+  return a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0
+}
