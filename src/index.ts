@@ -1,4 +1,5 @@
 import headless from 'remoteit-headless'
 import ElectronApp from './ElectronApp'
 
-headless.recapitate(new ElectronApp())
+// headless.recapitate(new ElectronApp())
+new ElectronApp()

@@ -61,7 +61,6 @@
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
-    "afterSign": "scripts/notarize.js",
     "artifactName": "${productName}-${arch}-installer.${ext}",
     "generateUpdatesFilesForAllChannels": true,
     "publish": [

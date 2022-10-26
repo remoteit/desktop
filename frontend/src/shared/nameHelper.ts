@@ -13,8 +13,7 @@ import {
   IP_OPEN,
   MAX_NAME_LENGTH,
 } from './constants'
-import { getEnvironment } from '../sharedAdaptor'
-import escapeRegexp from 'escape-string-regexp'
+import { getEnvironment, escapeRegex } from '../sharedAdaptor'
 
 const separator = ' - '
 
@@ -42,7 +41,7 @@ export function hostName(connection?: IConnection) {
 }
 
 export function removeDeviceName(deviceName: string, name?: string) {
-  const nameExt = new RegExp(`^${escapeRegexp(deviceName)}[- _]+`, 'gi')
+  const nameExt = new RegExp(`^${escapeRegex(deviceName)}[- _]+`, 'gi')
   return name?.toString().replace(nameExt, '') || ''
 }
 
