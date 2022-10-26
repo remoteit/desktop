@@ -1,4 +1,3 @@
-import { autoUpdater } from 'electron-updater'
 import Controller from './Controller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'

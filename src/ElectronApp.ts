@@ -2,10 +2,7 @@ import { EVENTS, environment, preferences, EventBus, Logger, Command } from 'rem
 import AutoUpdater from './AutoUpdater'
 import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
-import debug from 'debug'
 import path from 'path'
-
-const d = debug('r3:headless:ElectronApp')
 
 const DEEP_LINK_PROTOCOL = 'remoteit'
 const DEEP_LINK_PROTOCOL_DEV = 'remoteitdev'
@@ -158,7 +155,6 @@ export default class ElectronApp {
   }
 
   private handleOpenAtLogin = ({ openAtLogin }: IPreferences) => {
-    d('Handling open at login:', openAtLogin)
     if (this.openAtLogin !== openAtLogin) {
       this.app.setLoginItemSettings({ openAtLogin })
     }
@@ -166,7 +162,6 @@ export default class ElectronApp {
   }
 
   private createMainWindow = () => {
-    d('Create main window')
     if (this.window) return
     this.app.setAppUserModelId('it.remote.desktop')
     const { windowState } = preferences.get()
@@ -186,7 +181,6 @@ export default class ElectronApp {
     this.window.loadURL(startUrl)
 
     this.window.on('close', event => {
-      d('Window closed')
       this.saveWindowState()
       if (!this.quitSelected) {
         event.preventDefault()
@@ -273,7 +267,6 @@ export default class ElectronApp {
 
   private openWindow = (location?: string, openDevTools?: boolean) => {
     if (!this.window || !this.tray) return
-    d('Showing window')
 
     if (!this.window.isVisible()) {
       if (this.app.dock) this.app.dock.show()
