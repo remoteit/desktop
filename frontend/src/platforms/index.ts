@@ -1,5 +1,3 @@
-// import {TARGET_PLATFORMS} from '../helpers/platformHelper'
-
 export interface IPlatform {
   id: string
   name: string

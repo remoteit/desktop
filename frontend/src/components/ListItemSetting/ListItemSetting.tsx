@@ -25,6 +25,7 @@ type Props = {
   modified?: boolean
   content?: React.ReactNode
   secondaryContent?: React.ReactNode
+  secondaryContentWidth?: string
   onClick?: () => void
   onButtonClick?: () => void
 }
@@ -52,6 +53,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
       confirmTitle = '',
       content,
       secondaryContent,
+      secondaryContentWidth,
     },
     ref
   ) => {
@@ -80,6 +82,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
         {content}
       </>
     )
+
     const TooltipWrapper = ({ children }) =>
       tooltip ? (
         <Tooltip title={tooltip} placement="top" open={showTip} arrow>
@@ -99,6 +102,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
           disabled={disabled}
           onMouseEnter={() => setShowTip(true)}
           onMouseLeave={() => setShowTip(false)}
+          {...{ sx: secondaryContentWidth ? { paddingRight: secondaryContentWidth } : undefined }}
         >
           <TooltipWrapper>
             <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
@@ -136,6 +140,4 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
   }
 )
 
-const useStyles = makeStyles({
-  hideIcon: { minWidth: spacing.sm },
-})
+const useStyles = makeStyles({ hideIcon: { minWidth: spacing.sm } })

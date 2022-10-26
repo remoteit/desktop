@@ -272,6 +272,7 @@ function getApplicationType(typeId: number | undefined) {
         launchIcon: 'folder',
         commandIcon: 'clipboard',
         localhost: true,
+        appLaunchType: 'URL',
         appLaunchTemplate: 'smb://[host]:[port]',
         appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
       })

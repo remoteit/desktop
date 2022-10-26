@@ -134,7 +134,7 @@ export default createModel<RootModel>()({
       if (!deviceModel.initialized) await dispatch.devices.init()
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
       const { set, graphQLListProcessor } = dispatch.devices
-      const { setDevices, appendUniqueDevices } = dispatch.accounts
+      const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, tag, owner, filter, size, from, append, searched, platform } = deviceModel
       const options: gqlOptions = {
         size,
@@ -158,7 +158,7 @@ export default createModel<RootModel>()({
       if (append) {
         await appendUniqueDevices({ devices, accountId })
       } else {
-        await setDevices({ devices, accountId })
+        await truncateMergeDevices({ devices, accountId })
       }
 
       if (!error) dispatch.search.updateSearch()
@@ -274,10 +274,8 @@ export default createModel<RootModel>()({
     },
 
     async rename({ id, name }: { id: string; name: string }) {
-      const result = await graphQLRename(id, name)
-      if (result !== 'ERROR') {
-        await dispatch.devices.fetchList()
-      }
+      await graphQLRename(id, name)
+      await dispatch.devices.fetchSingle({ id })
     },
 
     async setAttributes(device: IDevice) {
@@ -405,7 +403,7 @@ export default createModel<RootModel>()({
           successMessage: `"${device.name}" was successfully deleted.`,
         })
       }
-      dispatch.ui.set({ destroying: false, redirect: '/devices' })
+      dispatch.ui.set({ destroying: false })
     },
 
     async leave(device: IDevice, state) {
@@ -490,6 +488,14 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   const devices = gqlData?.data?.data?.login?.account?.devices?.items || []
   const id = gqlData?.data?.data?.login?.id
   return [devices, total, id, error]
+}
+
+export function mergeDevices(params: { overwrite: IDevice[]; keep: IDevice[] }) {
+  const { overwrite, keep } = params
+  return keep.map(k => {
+    const ow = overwrite.find(o => o.id === k.id)
+    return { ...ow, ...k, loaded: ow?.loaded || k.loaded }
+  })
 }
 
 export function selectIsFiltered(state: ApplicationState) {

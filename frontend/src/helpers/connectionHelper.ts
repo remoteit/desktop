@@ -179,22 +179,18 @@ export function parseLinkData(responseData: any) {
   return result
 }
 
-export function cleanOrphanConnections(deviceIds?: string[]) {
-  if (!deviceIds) return
+export function cleanOrphanConnections(expectedIds?: IService['id'][]) {
   const state = store.getState()
-  const connectionIds = state.connections.all.reduce((result: string[], c) => {
-    if (deviceIds.includes(c.deviceID || '')) result.push(c.id)
-    return result
-  }, [])
-  const serviceIds = getAllDevices(state)
+  if (!expectedIds?.length || state.ui.offline) return
+
+  const loadedIds = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
-  if (!state.ui.offline && serviceIds.length) {
-    connectionIds.forEach(id => {
-      if (!serviceIds.includes(id)) {
-        store.dispatch.connections.forget(id)
-        console.log('FORGET ORPHANED CONNECTION', id)
-      }
-    })
-  }
+
+  expectedIds.forEach(id => {
+    if (!loadedIds.includes(id)) {
+      store.dispatch.connections.forget(id)
+      console.log('FORGET ORPHANED CONNECTION', id)
+    }
+  })
 }

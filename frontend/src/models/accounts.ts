@@ -5,6 +5,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
+import { mergeDevices } from './devices'
 import { RootModel } from '.'
 
 const ACCOUNT_KEY = 'account'
@@ -87,21 +88,22 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ successMessage: 'You have successfully left the organization.' })
       }
     },
-    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {
-      accountId = accountId || devices[0]?.accountId
-      if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
+    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }) {
       await dispatch.devices.set({ all: devices, accountId })
+    },
+    async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
+      if (!devices) return
+      const all = getDevices(state, accountId)
+      const mergedDevices = mergeDevices({ overwrite: all, keep: devices })
+      await dispatch.accounts.setDevices({ devices: mergedDevices, accountId })
     },
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
-      accountId = accountId || devices[0]?.accountId
-      if (!accountId) return console.error('MERGE DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const updatedDevices = getDevices(state, accountId).filter(ud => {
-        const index = devices.findIndex(d => d.id === ud.id)
-        return index < 0
-      })
+      const all = getDevices(state, accountId)
+      const unChangedDevices = all.filter(un => !devices.find(d => d.id === un.id))
+      const mergedDevices = mergeDevices({ overwrite: all, keep: devices })
       await dispatch.accounts.setDevices({
-        devices: [...updatedDevices, ...devices],
+        devices: [...unChangedDevices, ...mergedDevices],
         accountId,
       })
     },

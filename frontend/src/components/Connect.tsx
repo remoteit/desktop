@@ -59,7 +59,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    showConnectLink: canUseConnectLink(state, service?.typeID),
+    showConnectLink: canUseConnectLink(state, service?.typeID) && !(!connection.connectLink && connection.enabled),
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'

@@ -321,16 +321,18 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gql
 }
 
 export function graphQLNetworkAdaptor(gqlConnections) {
-  let lookup = {}
+  let devices = {}
 
   gqlConnections.forEach(({ service }) => {
     const id = service.device.id
-    lookup[id] = lookup[id] || service.device
-    lookup[id].services = lookup[id].services || []
-    lookup[id].services.push(service)
+    devices[id] = devices[id] || service.device
+    devices[id].services = devices[id].services || []
+    const index = devices[id].services.findIndex(s => s.id === service.id)
+    if (index >= 0) devices[id].services[index] = service
+    else devices[id].services.push(service)
   })
 
-  return Object.keys(lookup).map(key => lookup[key])
+  return Object.keys(devices).map(key => devices[key])
 }
 
 export function graphQLDeviceAdaptor({

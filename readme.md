@@ -278,3 +278,11 @@ The application should now be signed. It will not support auto-updating.
 ```bash
 DEBUG=electron-builder ./node_modules/.bin/electron-builder -w
 ```
+
+### Update process
+
+Check dependencies
+`npx depcheck`
+
+Check and update dependencies
+`ncu` and `ncu -u`

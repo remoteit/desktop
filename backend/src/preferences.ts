@@ -13,6 +13,7 @@ export class Preferences {
     openAtLogin: true,
     remoteUIOverride: false,
     disableLocalNetwork: !environment.isHeadless,
+    disableDeepLinks: false,
     allowPrerelease: false,
     useCertificate: true,
     switchApi: false,

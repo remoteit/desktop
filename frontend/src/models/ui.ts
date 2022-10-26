@@ -21,9 +21,10 @@ const SAVED_STATES = [
   'columns',
   'columnWidths',
   'limitsOverride',
+  'defaultService',
 ]
 
-type UIState = {
+export type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
@@ -48,6 +49,7 @@ type UIState = {
   limitsOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
+  defaultService: ILookup<string>
   registrationCommand?: string
   redirect?: string
   restoring: boolean
@@ -107,6 +109,7 @@ export const defaultState: UIState = {
   limitsOverride: {},
   serviceContextMenu: undefined,
   globalTooltip: undefined,
+  defaultService: {},
   registrationCommand: undefined,
   redirect: undefined,
   restoring: false,
@@ -232,6 +235,11 @@ export default createModel<RootModel>()({
     async accordion(params: ILookup<boolean>, state) {
       const accordion = { ...state.ui.accordion, ...params }
       dispatch.ui.setPersistent({ accordion })
+    },
+    async setDefaultService({ deviceId, serviceId }: { deviceId: string; serviceId: string }, state) {
+      const all = state.ui.defaultService
+      all[deviceId] = serviceId
+      dispatch.ui.setPersistent({ defaultService: all })
     },
     async setPersistent(params: ILookup<any>, state) {
       Object.keys(params).forEach(key => {

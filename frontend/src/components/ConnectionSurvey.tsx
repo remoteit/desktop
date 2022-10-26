@@ -156,7 +156,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   highlight: {
     animationName: '$highlight',
-    animationIterationCount: '3',
+    animationIterationCount: '6',
     animationTimingFunction: 'ease-out',
     animationDuration: '0.7s',
   },

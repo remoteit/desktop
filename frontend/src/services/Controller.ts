@@ -99,7 +99,7 @@ class Controller extends EventEmitter {
       this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
       return false
     }
-    this.log('Controller emit', event, args)
+    this.log('Controller emit', event, ...args)
     this.socket?.emit(event, ...args)
     return true
   }

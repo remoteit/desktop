@@ -2,13 +2,11 @@ import { EVENTS, environment, preferences, EventBus, Logger, Command } from 'rem
 import AutoUpdater from './AutoUpdater'
 import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
-import debug from 'debug'
 import path from 'path'
-
-const d = debug('r3:headless:ElectronApp')
 
 const DEEP_LINK_PROTOCOL = 'remoteit'
 const DEEP_LINK_PROTOCOL_DEV = 'remoteitdev'
+const URL_REGEX = new RegExp('^https?://')
 
 export default class ElectronApp {
   public app: electron.App
@@ -33,8 +31,16 @@ export default class ElectronApp {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
       this.app.quit()
     }
-    this.app.setAsDefaultProtocolClient(this.protocol)
+
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
+
+    if (preferences.get().disableDeepLinks) {
+      this.app.removeAsDefaultProtocolClient(this.protocol)
+      Logger.info('REMOVED AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
+    } else {
+      this.app.setAsDefaultProtocolClient(this.protocol)
+      Logger.info('SET AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
+    }
 
     // Windows event
     this.app.on('ready', this.handleAppReady)
@@ -126,17 +132,22 @@ export default class ElectronApp {
     Logger.info('FILE PROMPT RESULT', { result, filePath })
   }
 
-  private setDeepLink(link?: string) {
+  private setDeepLink(url?: string) {
+    if (!url) return
     const scheme = this.protocol + '://'
-    const authCallbackCode = 'authCallback'
-    if (link?.includes(scheme)) {
-      this.deepLinkUrl = link.substring(scheme.length)
+
+    if (url.includes(scheme)) {
+      this.deepLinkUrl = url.substring(scheme.length)
       Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
     }
-    if (link?.includes(authCallbackCode)) {
+
+    if (url.includes('authCallback')) {
       this.authCallback = true
-      Logger.info('Auth Callback', { link })
+      Logger.info('Auth Callback', { link: url })
     }
+
+    const match = URL_REGEX.exec(url)
+    if (match) electron.shell.openExternal(url.substring(match.index))
   }
 
   private handleActivate = () => {
@@ -144,7 +155,6 @@ export default class ElectronApp {
   }
 
   private handleOpenAtLogin = ({ openAtLogin }: IPreferences) => {
-    d('Handling open at login:', openAtLogin)
     if (this.openAtLogin !== openAtLogin) {
       this.app.setLoginItemSettings({ openAtLogin })
     }
@@ -152,7 +162,6 @@ export default class ElectronApp {
   }
 
   private createMainWindow = () => {
-    d('Create main window')
     if (this.window) return
     this.app.setAppUserModelId('it.remote.desktop')
     const { windowState } = preferences.get()
@@ -167,14 +176,11 @@ export default class ElectronApp {
       webPreferences: { preload: path.join(__dirname, 'preload.js') },
     })
 
-    this.window.setVisibleOnAllWorkspaces(true)
-
     const startUrl = this.getStartUrl()
 
     this.window.loadURL(startUrl)
 
     this.window.on('close', event => {
-      d('Window closed')
       this.saveWindowState()
       if (!this.quitSelected) {
         event.preventDefault()
@@ -261,7 +267,6 @@ export default class ElectronApp {
 
   private openWindow = (location?: string, openDevTools?: boolean) => {
     if (!this.window || !this.tray) return
-    d('Showing window')
 
     if (!this.window.isVisible()) {
       if (this.app.dock) this.app.dock.show()

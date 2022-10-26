@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
+import { UIState } from '../models/ui'
 
 interface INavigationHook {
   handleBack: () => void
@@ -25,7 +26,16 @@ export function useNavigation(): INavigationHook {
   const menu = match ? match[0] : '/devices'
 
   useEffect(() => {
-    let newValues: ILookup<any> = {}
+    let newValues: {
+      navigation: UIState['navigation']
+      navigationBack: UIState['navigationBack']
+      navigationForward: UIState['navigationForward']
+    } = {
+      navigation: {},
+      navigationBack: [],
+      navigationForward: [],
+    }
+
     if (
       location?.pathname &&
       location?.pathname !== '/' &&
@@ -35,6 +45,7 @@ export function useNavigation(): INavigationHook {
       newValues.navigationBack = navigationBack.concat([location?.pathname])
       newValues.navigationForward = []
     }
+
     if (navigation[menu] !== location.pathname) {
       newValues.navigation = { ...navigation, [menu]: location.pathname }
     }

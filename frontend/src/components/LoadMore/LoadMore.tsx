@@ -36,6 +36,7 @@ export const LoadMore: React.FC = () => {
 
 const useStyles = makeStyles({
   box: {
+    position: 'absolute',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -43,5 +44,7 @@ const useStyles = makeStyles({
     padding: spacing.lg,
     paddingBottom: spacing.xl,
     height: 100,
+    marginLeft: spacing.xl,
+    marginTop: spacing.xl,
   },
 })
