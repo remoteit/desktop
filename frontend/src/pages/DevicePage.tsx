@@ -1,5 +1,7 @@
 import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
 import { DeviceContext } from '../services/Context'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
@@ -11,20 +13,21 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
-import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
+import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
+import { spacing, fontSizes } from '../styling'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
+import { GuideBubble } from '../components/GuideBubble'
 import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
-import { GuideBubble } from '../components/GuideBubble'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { spacing, fontSizes } from '../styling'
 
 export const DevicePage: React.FC = () => {
   const { connections, device } = useContext(DeviceContext)
+  const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -151,6 +154,7 @@ export const DevicePage: React.FC = () => {
                 key={s.id}
                 pathname={`/devices/${device.id}/${s.id}${servicePage}`}
                 match={`/devices/${device.id}/${s.id}`}
+                onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
                 disableIcon
                 dense
               >

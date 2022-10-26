@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { DeviceContext } from '../services/Context'
-import { Switch, Route, useParams, useHistory } from 'react-router-dom'
+import { Switch, Route, Redirect, useParams, useHistory } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { getDeviceModel } from '../models/accounts'
 import { selectDevice } from '../models/devices'
@@ -25,17 +25,20 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { remoteUI, device, connections, thisId, waiting, silent } = useSelector((state: ApplicationState) => {
-    const { fetching, initialized } = getDeviceModel(state)
-    return {
-      waiting: fetching || !initialized,
-      remoteUI: isRemoteUI(state),
-      connections: state.connections.all.filter(c => c.deviceID === deviceID),
-      device: selectDevice(state, deviceID),
-      thisId: state.backend.thisId,
-      silent: state.ui.silent,
+  const { remoteUI, device, connections, defaultServiceLookup, thisId, waiting, silent } = useSelector(
+    (state: ApplicationState) => {
+      const { fetching, initialized } = getDeviceModel(state)
+      return {
+        waiting: fetching || !initialized,
+        remoteUI: isRemoteUI(state),
+        connections: state.connections.all.filter(c => c.deviceID === deviceID),
+        defaultServiceLookup: state.ui.defaultService,
+        device: selectDevice(state, deviceID),
+        thisId: state.backend.thisId,
+        silent: state.ui.silent,
+      }
     }
-  })
+  )
 
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -54,6 +57,12 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       }
     }
   }, [waiting, device, thisId, loaded])
+
+  const defaultService = () => {
+    const serviceId = defaultServiceLookup[deviceID || ''] || device?.services?.[0].id
+    const redirect = serviceId ? `${serviceId}/connect` : 'details'
+    return `/devices/${deviceID}/${redirect}`
+  }
 
   if (waiting && !device) return <LoadingMessage message="Fetching device" />
 
@@ -84,7 +93,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <Route path="/devices/:deviceID/logs">
               <DeviceLogPage device={device} />
             </Route>
-            <Route path={['/devices/:deviceID', '/devices/:deviceID/details']} exact>
+            <Route path="/devices/:deviceID/details">
               <DeviceDetailPage />
             </Route>
             <Route
@@ -110,6 +119,9 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             </Route>
             <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
               <ServiceConnectPage />
+            </Route>
+            <Route path="*">
+              <Redirect to={defaultService()} />
             </Route>
           </Switch>
         }
