@@ -242,10 +242,10 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ defaultService: all })
     },
     async setPersistent(params: ILookup<any>, state) {
+      dispatch.ui.set(params)
       Object.keys(params).forEach(key => {
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
       })
-      dispatch.ui.set(params)
     },
     async deprecated(_: void, state) {
       if (!isElectron() || isHeadless()) return

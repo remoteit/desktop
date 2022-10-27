@@ -11,8 +11,7 @@ import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
-  const { open, selected, feature } = useSelector((state: ApplicationState) => ({
-    open: state.ui.drawerMenu === 'COLUMNS',
+  const { selected, feature } = useSelector((state: ApplicationState) => ({
     selected: state.ui.columns,
     feature: selectLimitsLookup(state),
   }))
@@ -40,7 +39,7 @@ export const ColumnsDrawer: React.FC = () => {
   }
 
   return (
-    <Drawer open={open}>
+    <Drawer menu="COLUMNS">
       <List dense className={css.list}>
         <ListSubheader>
           Columns

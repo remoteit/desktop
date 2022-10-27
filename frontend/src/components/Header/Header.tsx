@@ -118,7 +118,7 @@ const useStyles = makeStyles({
     height: 45,
     maxHeight: 45,
     width: '100%',
-    zIndex: 8,
+    zIndex: 14,
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {

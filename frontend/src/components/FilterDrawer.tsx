@@ -32,9 +32,8 @@ let platformFilter = [{ value: -1, name: 'All' }]
 export const FilterDrawer: React.FC = () => {
   const getColor = useLabel()
   const { devices } = useDispatch<Dispatch>()
-  const { state, open, tags, feature } = useSelector((state: ApplicationState) => ({
+  const { state, tags, feature } = useSelector((state: ApplicationState) => ({
     state: getDeviceModel(state),
-    open: state.ui.drawerMenu === 'FILTER',
     tags: selectTags(state).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
     feature: selectLimitsLookup(state),
   }))
@@ -46,7 +45,7 @@ export const FilterDrawer: React.FC = () => {
   }
 
   return (
-    <Drawer open={open}>
+    <Drawer menu="FILTER">
       <AccordionMenu
         menus={[
           {

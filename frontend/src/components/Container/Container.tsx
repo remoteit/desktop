@@ -6,9 +6,9 @@ import { spacing, Color } from '../../styling'
 import { Body, BodyProps } from '../Body'
 
 type Props = {
-  header?: any
-  sidebar?: any
-  footer?: any
+  header?: React.ReactNode
+  sidebar?: React.ReactNode
+  footer?: React.ReactNode
   integrated?: boolean
   bodyProps?: BodyProps
   bodyRef?: React.RefObject<HTMLDivElement>
@@ -39,18 +39,10 @@ export const Container: React.FC<Props> = ({
           {integrated || !!backgroundColor || <Divider variant="inset" />}
         </div>
       )}
-      {sidebar ? (
-        <div className={css.sidebar}>
-          <Body {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
-            {children}
-          </Body>
-          <div className={css.sideContent}>{sidebar}</div>
-        </div>
-      ) : (
-        <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
-          {children}
-        </Body>
-      )}
+      {sidebar && <div className={css.sidebar}>{sidebar}</div>}
+      <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
+        {children}
+      </Body>
       {footer && (
         <div className={css.footer}>
           <Divider variant="inset" />
@@ -88,12 +80,11 @@ const useStyles = makeStyles(({ palette }) => ({
     flexFlow: 'row',
     flexGrow: 1,
     overflow: 'hidden',
-    position: 'relative',
-  },
-  sideContent: {
-    display: 'flex',
-    position: 'relative',
-    zIndex: 6,
+    position: 'absolute',
+    height: '100%',
+    backgroundColor: palette.white.main,
+    right: 0,
+    zIndex: 12,
   },
   footer: {
     position: 'relative',
