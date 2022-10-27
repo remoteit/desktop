@@ -4,7 +4,7 @@ import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { ListItemSetting } from './ListItemSetting'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { Tooltip, Collapse } from '@mui/material'
+import { Typography, Collapse } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { ColorChip } from './ColorChip'
 import { Dispatch } from '../store'
@@ -25,13 +25,21 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
   }, [connection.password])
 
-  const Setting = (
+  return (
     <>
       <ListItemSetting
         icon="globe"
         disabled={!canManage || (connection.enabled && !connection.connectLink)}
         label="Persistent public url"
-        subLabel="Create a fixed public endpoint for anyone to connect to"
+        subLabel={
+          canManage ? (
+            'Create a fixed public endpoint for anyone to connect to'
+          ) : (
+            <Typography variant="caption" color="grayDarkest.main">
+              Requires device 'Manage' permission
+            </Typography>
+          )
+        }
         secondaryContent={
           <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
         }
@@ -90,13 +98,5 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
         </ListItemQuote>
       </Collapse>
     </>
-  )
-
-  return canManage ? (
-    Setting
-  ) : (
-    <Tooltip title="Requires device 'Manage' permission" placement="left" enterDelay={400} arrow>
-      <span>{Setting}</span>
-    </Tooltip>
   )
 }

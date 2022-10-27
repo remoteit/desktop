@@ -21,7 +21,10 @@ import {
   graphQLSetConnectLink,
   graphQLRemoveConnectLink,
 } from '../services/graphQLMutation'
-import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
+import {
+  graphQLFetchConnectionsAndLinks as graphQLFetchConnectionsLinks,
+  graphQLDeviceAdaptor,
+} from '../services/graphQLDevice'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectNetwork } from './networks'
 import { selectById } from '../models/devices'
@@ -61,16 +64,16 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
       const serviceIds = getConnectionServiceIds(state)
-      const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
+      const gqlResponse = await graphQLFetchConnectionsLinks({ ids: serviceIds })
       if (graphQLGetErrors(gqlResponse)) return
 
-      const devices = await dispatch.connections.parseConnections({ gqlResponse, accountId })
+      const devices = await dispatch.connections.parseConnectionsLinks({ gqlResponse, accountId })
       await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
 
       cleanOrphanConnections(serviceIds)
     },
 
-    async parseConnections({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }) {
+    async parseConnectionsLinks({ gqlResponse, accountId }: { gqlResponse?: AxiosResponse<any>; accountId: string }) {
       const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
       const linkData = parseLinkData(gqlResponse?.data?.data?.login)
@@ -132,7 +135,7 @@ export default createModel<RootModel>()({
           password: link.password,
           createdTime: new Date(link.created).getTime(),
           enabled: link.enabled,
-          connectLink: true,
+          connectLink: link.enabled,
           reverseProxy: true,
           public: true,
         }

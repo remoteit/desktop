@@ -133,6 +133,7 @@ export async function graphQLFetchDeviceList({
   account,
   platform,
 }: gqlOptions) {
+  console.log('DEVICE LIST', deviceQueryColumns())
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
@@ -220,7 +221,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
   )
 }
 
-export async function graphQLFetchConnections(params: { ids: string[] }) {
+export async function graphQLFetchConnectionsAndLinks(params: { ids: string[] }) {
   return await graphQLRequest(
     ` query Connections($ids: [String!]!) {
         login {
@@ -429,16 +430,20 @@ function deviceQueryColumns() {
 }
 
 function attributeQuery(attributes: string[]) {
-  const attributeSet = new Set(attributes)
-  const uniqueAttributes = [...Array.from(attributeSet)]
+  let lookup = new Set<string>()
   let query = ''
 
-  uniqueAttributes.forEach(c => {
+  attributes.forEach(c => {
     const a = getAttribute(c)
-    query += DeviceSelectLookup[a.query || a.id]
+    lookup.add(a.query || a.id)
   })
 
-  console.log('ATTRIBUTE QUERY', { uniqueAttributes, query })
+  lookup.forEach(l => {
+    DeviceSelectLookup[l]
+      ? (query += DeviceSelectLookup[l])
+      : console.warn(`Missing query for attribute %c${l}`, 'font-weight: bold')
+  })
+
   return query
 }
 
