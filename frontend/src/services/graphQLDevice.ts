@@ -120,7 +120,7 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => (k === 'services' ? '' : DeviceSelectLookup[k]))
   .join('')
 
-const DEVICE_PRELOAD = ['id', 'deviceName', 'status', 'owner', 'endpoint', 'services']
+const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'owner', 'quality', 'services']
 
 export async function graphQLFetchDeviceList({
   tag,
@@ -168,7 +168,7 @@ export async function graphQLPreloadDevices(params: { account: string; ids: stri
           id
           account(id: $account) {
             device(id: $ids)  {
-              ${attributeQuery(DEVICE_PRELOAD)}
+              ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
             }
           }
         }
@@ -195,7 +195,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${attributeQuery(DEVICE_PRELOAD)}
+                  ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
                 }          
               }
               name
@@ -226,7 +226,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
         login {
           id
           device(id: $ids)  {
-            ${attributeQuery(DEVICE_PRELOAD)}
+            ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
           }
           links {
             url
@@ -423,21 +423,23 @@ export function graphQLServiceAdaptor(device: any): IService[] {
 }
 
 function deviceQueryColumns() {
-  let columns = DEVICE_PRELOAD
+  let columns = DEVICE_PRELOAD_ATTRIBUTES
   columns = columns.concat(store.getState().ui.columns)
   return attributeQuery(columns)
 }
 
 function attributeQuery(attributes: string[]) {
-  let uniqueAttributes = new Set()
+  const attributeSet = new Set(attributes)
+  const uniqueAttributes = [...Array.from(attributeSet)]
+  let query = ''
 
-  attributes.forEach(c => {
+  uniqueAttributes.forEach(c => {
     const a = getAttribute(c)
-    uniqueAttributes.add(DeviceSelectLookup[a.query || a.id])
+    query += DeviceSelectLookup[a.query || a.id]
   })
 
-  console.log('ATTRIBUTE QUERY', uniqueAttributes)
-  return Array.from(uniqueAttributes).join('')
+  console.log('ATTRIBUTE QUERY', { uniqueAttributes, query })
+  return query
 }
 
 function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
