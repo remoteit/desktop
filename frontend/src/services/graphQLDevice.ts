@@ -133,7 +133,6 @@ export async function graphQLFetchDeviceList({
   account,
   platform,
 }: gqlOptions) {
-  console.log('DEVICE LIST', deviceQueryColumns())
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
