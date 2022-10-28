@@ -20,7 +20,6 @@ const useStyles = makeStyles({
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     flexWrap: 'wrap',
-    marginTop: spacing.sm,
     paddingRight: spacing.xs,
     paddingLeft: spacing.md,
     '& .MuiListItem-root': {

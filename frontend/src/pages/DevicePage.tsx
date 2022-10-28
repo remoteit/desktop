@@ -7,11 +7,20 @@ import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
 import { AddFromNetwork } from '../components/AddFromNetwork'
+import { DeviceTagEditor } from '../components/DeviceTagEditor'
 import { ApplicationState } from '../store'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import {
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  CircularProgress,
+} from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
@@ -75,6 +84,7 @@ export const DevicePage: React.FC = () => {
               }
               subtitle={device.thisDevice ? 'This device' : undefined}
             />
+            <DeviceTagEditor device={device} />
           </List>
           <LinearProgress loading={!device.loaded} />
         </>

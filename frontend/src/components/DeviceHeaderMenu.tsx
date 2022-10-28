@@ -4,7 +4,6 @@ import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
-import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListHorizontal } from './ListHorizontal'
 import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
@@ -40,7 +39,6 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               </Typography>
             </Gutters>
           )}
-          <DeviceTagEditor device={device} />
           <ListHorizontal dense>
             <ListItemLocation
               title="Details"
