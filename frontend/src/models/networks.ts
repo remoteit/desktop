@@ -105,14 +105,17 @@ export default createModel<RootModel>()({
       dispatch.networks.set({ loading: false })
     },
 
-    async fetchSingle(network: INetwork, state) {
+    async fetchSingle({ network, redirect }: { network: INetwork; redirect?: string }, state) {
       if (!network) return
 
       const accountId = getActiveAccountId(state)
       dispatch.devices.set({ fetching: true, accountId })
 
       const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId)
-      if (gqlResponse === 'ERROR') return
+      if (gqlResponse === 'ERROR') {
+        if (redirect) dispatch.ui.set({ redirect })
+        return
+      }
 
       const gqlConnections = gqlResponse?.data?.data?.login?.network?.connections || {}
       await dispatch.networks.parseServices({ gqlConnections, accountId, loaded: true })

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { DeviceContext } from '../services/Context'
-import { Switch, Route, Redirect, useParams, useHistory } from 'react-router-dom'
+import { Switch, Route, Redirect, useParams } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { getDeviceModel } from '../models/accounts'
 import { selectDevice } from '../models/devices'
@@ -25,7 +25,7 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { remoteUI, device, connections, defaultServiceLookup, thisId, waiting, silent } = useSelector(
+  const { remoteUI, device, connections, defaultServiceLookup, thisId, waiting } = useSelector(
     (state: ApplicationState) => {
       const { fetching, initialized } = getDeviceModel(state)
       return {
@@ -35,31 +35,19 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         defaultServiceLookup: state.ui.defaultService,
         device: selectDevice(state, deviceID),
         thisId: state.backend.thisId,
-        silent: state.ui.silent,
       }
     }
   )
-
-  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const [loaded, setLoaded] = useState<string | undefined>()
 
   useEffect(() => {
-    if (deviceID && !device?.loaded && !waiting) {
-      // check that target device is registered and don't redirect
-      if (loaded === deviceID && !(remoteUI && thisId)) {
-        if (!silent) dispatch.ui.set({ errorMessage: 'You do not have access to that device.' })
-        else dispatch.ui.set({ silent: false })
-        history.push('/devices')
-      } else if (loaded !== deviceID) {
-        dispatch.devices.fetchSingle({ id: deviceID, hidden: true })
-        setLoaded(deviceID)
-      }
+    if (deviceID && !device?.loaded && !waiting && !(remoteUI && thisId)) {
+      dispatch.devices.fetchSingle({ id: deviceID, hidden: true, redirect: '/devices' })
     }
-  }, [waiting, device, thisId, loaded])
+  }, [deviceID, waiting, device, thisId])
 
   const defaultService = () => {
-    const serviceId = defaultServiceLookup[deviceID || ''] || device?.services?.[0].id
+    const serviceId = defaultServiceLookup[deviceID || ''] || device?.services?.[0]?.id
     const redirect = serviceId ? `${serviceId}/connect` : 'details'
     return `/devices/${deviceID}/${redirect}`
   }

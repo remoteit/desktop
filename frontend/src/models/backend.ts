@@ -87,7 +87,6 @@ export default createModel<RootModel>()({
             await devices.fetchList()
           }
           ui.set({
-            silent: true,
             setupRegisteringDevice: false,
             successMessage: 'Device registered successfully!',
           })
@@ -101,7 +100,6 @@ export default createModel<RootModel>()({
           await connections.fetch()
 
           ui.set({
-            silent: true,
             setupBusy: false,
             setupDeletingDevice: false,
             redirect: '/devices',

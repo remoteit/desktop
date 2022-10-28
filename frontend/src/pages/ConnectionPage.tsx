@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { REGEX_FIRST_PATH } from '../shared/constants'
+import { useParams, useLocation } from 'react-router-dom'
 import { selectById } from '../models/devices'
 import { Typography } from '@mui/material'
 import { getDeviceModel } from '../models/accounts'
@@ -21,6 +22,7 @@ import { Title } from '../components/Title'
 export const ConnectionPage: React.FC = () => {
   const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
+  const location = useLocation()
   const { service, device, network, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     const { initialized, fetching } = getDeviceModel(state)
@@ -34,21 +36,15 @@ export const ConnectionPage: React.FC = () => {
     }
   })
 
-  const [loaded, setLoaded] = useState<string | undefined>()
   const instance: IInstance | undefined = network || device
 
   useEffect(() => {
     if (serviceID && !instance?.loaded && !waiting) {
-      if (loaded === serviceID) {
-        dispatch.ui.set({ errorMessage: `You do not have access to that service. (${serviceID})` })
-        if (connection) dispatch.connections.forget(serviceID)
-      } else {
-        if (network) dispatch.networks.fetchSingle(network)
-        else dispatch.devices.fetchSingle({ id: serviceID, hidden: true })
-        setLoaded(serviceID)
-      }
+      const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
+      if (network) dispatch.networks.fetchSingle({ network, redirect })
+      else dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
     }
-  }, [waiting, instance, loaded])
+  }, [serviceID, waiting, instance])
 
   if (!service) return <NoConnectionPage />
 

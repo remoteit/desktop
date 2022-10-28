@@ -191,16 +191,21 @@ export default createModel<RootModel>()({
       }
     },
 
-    // by service or device id
     async fetchSingle(
       {
         id,
         hidden,
+        redirect,
         thisDevice,
+        newDevice,
+        isService,
       }: {
-        id: string
+        id: string // service or device id
         hidden?: boolean
+        redirect?: string
         thisDevice?: boolean
+        newDevice?: boolean
+        isService?: boolean
       },
       state
     ) {
@@ -222,10 +227,19 @@ export default createModel<RootModel>()({
 
       if (result) {
         result.thisDevice = result.thisDevice || thisDevice
+        if (newDevice) result.newDevice = true
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
-        await dispatch.accounts.setDevice({ id: result.id, device: result, accountId })
+        await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
         console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
+      } else {
+        if (state.ui.silent !== id)
+          dispatch.ui.set({
+            errorMessage: `You do not have access to that ${isService ? 'service' : 'device'}. (${id})`,
+          })
+        if (redirect) dispatch.ui.set({ redirect })
+        if (isService) dispatch.connections.forget(id)
       }
+
       dispatch.devices.set({ fetching: false, accountId })
       return result
     },
@@ -395,7 +409,7 @@ export default createModel<RootModel>()({
     },
 
     async destroy(device: IDevice) {
-      dispatch.ui.set({ destroying: true, silent: true })
+      dispatch.ui.set({ destroying: true, silent: device.id })
       const result = await graphQLDeleteDevice(device.id)
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup(device.id)
@@ -408,7 +422,7 @@ export default createModel<RootModel>()({
 
     async leave(device: IDevice, state) {
       const { auth } = state
-      dispatch.ui.set({ destroying: true, silent: true })
+      dispatch.ui.set({ destroying: true, silent: device.id })
       const result = await graphQLUnShareDevice({
         deviceId: device.id,
         email: [auth.user?.email || ''],
@@ -429,7 +443,7 @@ export default createModel<RootModel>()({
 
     async transferDevice(data: ITransferProps) {
       if (data.email && data.device) {
-        dispatch.ui.set({ transferring: true, silent: true })
+        dispatch.ui.set({ transferring: true, silent: data.device.id })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
           await dispatch.devices.cleanup(data.device.id)
