@@ -494,7 +494,7 @@ export function mergeDevices(params: { overwrite: IDevice[]; keep: IDevice[] }) 
   const { overwrite, keep } = params
   return keep.map(k => {
     const ow = overwrite.find(o => o.id === k.id)
-    return { ...ow, ...k, loaded: ow?.loaded || k.loaded }
+    return { ...ow, ...k }
   })
 }
 
