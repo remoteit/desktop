@@ -1,6 +1,7 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { Title } from '../Title'
+import { ColorChip } from '../ColorChip'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '../../shared/nameHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
@@ -46,6 +47,11 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
             <Icon name="wifi" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
+      )}
+      {device?.newDevice && (
+        <sup>
+          <ColorChip label="NEW" size="small" typeColor="alwaysWhite" backgroundColor="success" />
+        </sup>
       )}
       {/* {device?.shared && (
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>

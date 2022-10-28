@@ -278,6 +278,7 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
+    newDevice?: boolean
     attributes: ILookup<any> & {
       name?: string
       color?: number
