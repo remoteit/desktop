@@ -29,7 +29,7 @@ export type UIState = {
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
   layout: ILayout
-  silent: boolean
+  silent: string | null
   selected: IDevice['id'][]
   connected: boolean
   offline: boolean
@@ -89,7 +89,7 @@ export const defaultState: UIState = {
   themeMode: 'system',
   themeDark: isDarkMode(),
   layout: { showOrgs: false, hideSidebar: false, singlePanel: false, sidePanelWidth: SIDEBAR_WIDTH },
-  silent: false,
+  silent: null,
   selected: [],
   connected: false,
   offline: !navigator.onLine,

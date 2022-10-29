@@ -126,7 +126,10 @@ export default createModel<RootModel>()({
         accountId,
       })
     },
-    async setDevice({ id, accountId, device }: { id: string; accountId?: string; device?: IDevice }, state) {
+    async setDevice(
+      { id, accountId, device, prepend }: { id: string; accountId?: string; device?: IDevice; prepend?: boolean },
+      state
+    ) {
       accountId = accountId || device?.accountId
       if (!accountId) return console.error('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
       const devices = getDevices(state, accountId)
@@ -141,7 +144,7 @@ export default createModel<RootModel>()({
       })
 
       // Add if new
-      if (!exists && device) devices.push(device)
+      if (!exists && device) prepend ? devices.unshift(device) : devices.push(device)
       await dispatch.accounts.setDevices({ devices, accountId })
     },
     async setActive(id: string, globalState) {

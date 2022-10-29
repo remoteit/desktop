@@ -264,7 +264,7 @@ class CloudController {
                 ui.set({ redirect: `/devices/${target.deviceId}` })
               }
               ui.set({ successMessage: `${target.name} registered successfully!` })
-              devices.fetchSingle({ id: target.deviceId })
+              devices.fetchSingle({ id: target.deviceId, newDevice: true })
             }
           }
         })
