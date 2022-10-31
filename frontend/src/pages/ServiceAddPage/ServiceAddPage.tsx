@@ -44,6 +44,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
         </Body>
       ) : (
         <ServiceForm
+          adding
           thisDevice={!!device?.thisDevice}
           editable={device?.configurable || !!device?.thisDevice}
           disabled={!device?.permissions.includes('MANAGE')}

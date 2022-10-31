@@ -32,11 +32,20 @@ type Props = {
   thisDevice: boolean
   editable: boolean
   disabled?: boolean
+  adding?: boolean
   onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, disabled, onSubmit, onCancel }) => {
+export const ServiceForm: React.FC<Props> = ({
+  service,
+  thisDevice,
+  editable,
+  disabled,
+  adding,
+  onSubmit,
+  onCancel,
+}) => {
   const { backend, ui } = useDispatch<Dispatch>()
   const { applicationTypes, saving, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
@@ -72,7 +81,7 @@ export const ServiceForm: React.FC<Props> = ({ service, thisDevice, editable, di
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
-    setDefaultForm(cloneDeep(newForm))
+    if (!adding) setDefaultForm(cloneDeep(newForm))
   }, [service])
 
   useEffect(() => {
