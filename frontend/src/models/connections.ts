@@ -287,13 +287,12 @@ export default createModel<RootModel>()({
         console.log('PROXY CONNECTED', data)
         setConnection({
           ...proxyConnection,
-          publicId: data.id,
           connecting: false,
           connected: true,
           error: undefined,
           isP2P: false,
           startTime: data.created,
-          sessionId: data.session?.id,
+          sessionId: data.id.toLowerCase(),
           reverseProxy: data.reverseProxy,
           timeout: data.timeout / 60,
           port: data.port,
@@ -306,12 +305,12 @@ export default createModel<RootModel>()({
       let disconnect = { ...connection, enabled: false }
       setConnection(disconnect)
 
-      if (!connection.publicId) {
-        console.warn('No publicId for connection to proxy disconnect', connection)
+      if (!connection.sessionId) {
+        console.warn('No sessionId for connection to proxy disconnect', connection)
         return
       }
 
-      const result = await graphQLDisconnect(connection.id, connection.publicId)
+      const result = await graphQLDisconnect(connection.id, connection.sessionId)
 
       if (result === 'ERROR') {
         setConnection(connection)

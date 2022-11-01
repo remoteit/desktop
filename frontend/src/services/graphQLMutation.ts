@@ -30,7 +30,7 @@ export async function graphQLSetDeviceNotification(
 
 export async function graphQLConnect(serviceId: string, hostIP?: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!, $hostIP: String) {
+    ` mutation Connect($serviceId: String!, $hostIP: String) {
         connect(serviceId: $serviceId, hostIP: $hostIP) {
           id
           created
@@ -38,9 +38,6 @@ export async function graphQLConnect(serviceId: string, hostIP?: string) {
           port
           reverseProxy
           timeout
-          session {
-            id
-          }
         }
       }`,
     { serviceId, hostIP }
@@ -49,7 +46,7 @@ export async function graphQLConnect(serviceId: string, hostIP?: string) {
 
 export async function graphQLDisconnect(serviceId: string, connectionId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!, $connectionId: String!) {
+    ` mutation Disconnect($serviceId: String!, $connectionId: String!) {
         disconnect(serviceId: $serviceId, connectionId: $connectionId)
       }`,
     { serviceId, connectionId }
