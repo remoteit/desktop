@@ -292,7 +292,7 @@ export default createModel<RootModel>()({
           error: undefined,
           isP2P: false,
           startTime: data.created,
-          sessionId: data.id.toLowerCase(),
+          sessionId: data.id,
           reverseProxy: data.reverseProxy,
           timeout: data.timeout / 60,
           port: data.port,
