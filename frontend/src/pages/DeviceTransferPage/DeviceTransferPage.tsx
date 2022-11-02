@@ -39,7 +39,12 @@ export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
         <>
           <Typography variant="h1">Transfer Device</Typography>
           <Gutters top={null}>
-            <ContactSelector contacts={contacts} onChange={handleChange} isTransfer={true} />
+            <ContactSelector
+              contacts={contacts}
+              selected={selected ? [selected] : []}
+              onSelect={handleChange}
+              isMulti={false}
+            />
           </Gutters>
         </>
       }

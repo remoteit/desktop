@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { REGEX_LAST_PATH } from '../../shared/constants'
 import { Divider, List, Typography, Box } from '@mui/material'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
@@ -124,7 +125,11 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           onClick={handleChangeScripting}
         />
       </List>
-      <ShareSaveActions onCancel={() => history.goBack()} onSave={action} disabled={disabled} />
+      <ShareSaveActions
+        onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
+        onSave={action}
+        disabled={disabled}
+      />
     </>
   )
 }

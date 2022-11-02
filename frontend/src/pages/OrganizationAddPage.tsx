@@ -55,7 +55,7 @@ export const OrganizationAddPage = () => {
             <Title>Add Organization Members</Title>
           </Typography>
           <Gutters top={null}>
-            <ContactSelector contacts={contacts} onChange={setEmails} />
+            <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
           </Gutters>
         </>
       }

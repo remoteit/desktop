@@ -46,15 +46,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function contactOptions(all: IUser[]): IReactSelectOption[] {
-  if (!all.length) return []
-
-  const selectedEmails: any[] = []
-
-  return all.map(c => ({
-    value: c.email,
-    label: c.email,
-    isDisabled: selectedEmails.includes(c.email),
-  }))
-}

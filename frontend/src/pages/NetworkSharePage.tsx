@@ -42,7 +42,7 @@ export const NetworkSharePage = () => {
             <Title>Share {network.name || 'Network'}</Title>
           </Typography>
           <Gutters top={null}>
-            <ContactSelector contacts={contacts} onChange={setEmails} />
+            <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
           </Gutters>
         </>
       }

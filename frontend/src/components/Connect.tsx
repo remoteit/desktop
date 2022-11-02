@@ -88,7 +88,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
             So you can connect directly without using Remote.It.
           </Typography>
           <DataCopy
-            label="Connection endpoint"
+            label="Local endpoint"
             value={`${service.host || '127.0.0.1'}:${service.port}`}
             showBackground
             alwaysWhite

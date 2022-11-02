@@ -1,56 +1,70 @@
 import React from 'react'
+import isEmail from 'validator/lib/isEmail'
 import CreatableSelect from 'react-select/creatable'
 import { Theme } from 'react-select'
 import { makeStyles } from '@mui/styles'
-import { contactOptions } from '../models/contacts'
 import { spacing, fontSizes } from '../styling'
 import { Typography, Link } from '@mui/material'
-import isEmail from 'validator/lib/isEmail'
 
-type Props = {
-  contacts: IUserRef[]
-  onChange: (emails: string[]) => void
-  isTransfer?: boolean
+interface Option {
+  readonly label: string
+  readonly value: string
 }
 
-export const ContactSelector: React.FC<Props> = ({ contacts, onChange, isTransfer = false }) => {
-  const options = contactOptions(contacts)
+type Props = {
+  isMulti?: boolean
+  contacts: IUserRef[]
+  selected: string[]
+  onSelect: (emails: string[]) => void
+}
+
+export const ContactSelector: React.FC<Props> = ({ contacts, selected, onSelect, isMulti = true }) => {
+  const [inputValue, setInputValue] = React.useState<string>()
+  const options: Option[] = contacts.map(c => ({ value: c.email, label: c.email }))
+  const uniqueSelected = [...Array.from(new Set(selected))]
+  const value: Option[] = uniqueSelected.map(s => ({ value: s.trim(), label: s.trim() }))
   const css = useStyles()
 
-  const handleChange = (opts?: any) => {
-    if (!isTransfer) {
-      opts = opts?.length ? opts : []
-      onChange(opts.map((r: IReactSelectOption) => r.value))
-    } else {
-      opts = opts?.value ? [opts.value] : []
-      onChange(opts)
-    }
-  }
-
-  const validateEmail = (inputValue: string) => {
-    return (
-      isEmail(inputValue) && (
-        <Typography variant="body2" color="textSecondary">
-          Add <Link>{inputValue}</Link>
-        </Typography>
-      )
-    )
-  }
+  const labelComponent = (inputValue: string) => (
+    <Typography variant="body2" color="textSecondary">
+      Add <Link>{inputValue}</Link>
+    </Typography>
+  )
 
   return (
     <CreatableSelect
-      isMulti={!isTransfer}
-      autoFocus
       // menuIsOpen // debug
+      autoFocus
       isClearable
+      value={value}
+      inputValue={inputValue}
+      isMulti={isMulti}
       options={options}
       theme={selectTheme}
       className={css.select}
       classNamePrefix="select"
-      placeholder={isTransfer ? 'Enter new device owner...' : 'Enter an email...'}
-      onChange={handleChange}
-      isValidNewOption={v => isEmail(v)}
-      formatCreateLabel={validateEmail}
+      placeholder={isMulti ? 'Enter or paste a list of emails...' : 'Enter or paste an email...'}
+      onChange={options => {
+        const result: string[] = Array.isArray(options)
+          ? options.map(o => o.value.trim())
+          : options
+          ? // @ts-ignore
+            [options.value.trim()]
+          : []
+        onSelect(result)
+      }}
+      isValidNewOption={o => isEmail(o.trim())}
+      onInputChange={v => {
+        const parts = v.trim().split(/[, ]+/)
+        const emails = parts.filter(p => isEmail(p))
+        if (emails.length > 1) {
+          onSelect([...selected, ...emails])
+          setInputValue('')
+        } else {
+          setInputValue(v)
+        }
+      }}
+      formatCreateLabel={labelComponent}
       styles={customStyles}
     />
   )
@@ -68,7 +82,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: palette.alwaysWhite.main },
     '& .select__multi-value__remove': { color: palette.white.main },
     '& .select__control': { backgroundColor: palette.white.main, borderColor: palette.primary.main },
-    '& .select__input': { color: palette.grayDarkest.main },
+    '& .select__input': { color: `${palette.grayDarkest.main} !important` },
     '& .select__menu': { backgroundColor: palette.grayLightest.main },
     '& .select__option:active': { backgroundColor: palette.primary.main },
     '& .select__option--is-focused': { backgroundColor: palette.primaryHighlight.main },
@@ -89,7 +103,6 @@ const selectTheme = (theme: Theme) => {
     borderRadius: spacing.xs,
     colors: {
       ...theme.colors,
-      primary25: theme.colors.primaryHighlight,
       primary: theme.colors.primary,
     },
   }
