@@ -5,15 +5,15 @@ import { fullVersion } from './helpers/versionHelper'
 import immer from '@rematch/immer'
 
 console.log(`
-                                               _
-      S t a r t i n g           _             (_)   _
-    ____  _____  ____    ___  _| |_  _____     _  _| |_
-   / ___)| ___ ||    \\  / _ \\(_   _)| ___ |   | |(_   _)
-  | |    | ____|| | | || |_| | | |_ | ____| _ | |  | |_
-  |_|    |_____)|_|_|_| \\___/   \\__)|_____)(_)|_|   \\__)
+
+       s t a r t i n g
+      ______ _____ __________ _______ ________ _____     __ ________
+    /  ____/  ___/          /   _   /__   ___/  ___/   /  /__   ___/
+   /  /   /  ___/   /  /   /  /_/  /  /  /  /  ___/___/  /  /  /
+  /__/   /_____/___/__/___/_______/  /__/  /_____/___/__/  /__/
 
   ${fullVersion()}
-  set window.stateLogging = true to enable redux state logging
+  Set window.stateLogging = true to enable redux state logging
 
   `)
 
