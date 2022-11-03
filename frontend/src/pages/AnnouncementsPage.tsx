@@ -26,6 +26,7 @@ export const AnnouncementsPage = () => {
     <Container
       bodyRef={bodyRef}
       bodyProps={{ inset: true, flex: true, verticalOverflow: true }}
+      gutterBottom
       header={
         <Typography variant="h1">
           <Title>Inbox</Title>
