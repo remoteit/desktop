@@ -12,7 +12,7 @@ import { spacing } from '../../styling'
 export function SignInPage() {
   const css = useStyles()
   const { hostname, protocol } = window.location
-  const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== IP_PRIVATE
+  const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== IP_PRIVATE && hostname
   const secure: boolean = protocol.includes('https')
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
 
@@ -21,11 +21,7 @@ export function SignInPage() {
       <SignInForm />
       {allowSwitch && (
         <div className={css.link}>
-          {secure ? (
-            <div className={css.secure}>
-              <Icon name="lock" type="solid" size="xs" inlineLeft /> Secure Session
-            </div>
-          ) : (
+          {!secure && (
             <div className={css.insecure}>
               <Typography variant="body2" align="center" gutterBottom>
                 On an insecure network?{' '}
@@ -50,7 +46,6 @@ export function SignInPage() {
 
 const useStyles = makeStyles(({ palette }) => ({
   body: { '& > div': { maxWidth: 440 } },
-  secure: { color: palette.success.main },
   insecure: {
     margin: `${spacing.xs}px auto`,
     textAlign: 'center',
