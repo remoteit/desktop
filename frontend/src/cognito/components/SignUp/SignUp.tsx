@@ -31,7 +31,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
   const [isValidPassword, setIsValidPassword] = useState<boolean>(false)
   const [email, setEmail] = useState<string>('')
   const css = useStyles()
-  const defautEmail = decodeURI(params?.email || '')
+  const defaultEmail = decodeURIComponent(params?.email || '')
 
   // const callSignUp = useCallback(() => {
   //   ;(async () => {
@@ -141,7 +141,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
             fullWidth
             id="sign-up-email"
             label="Email Address"
-            value={defautEmail}
+            value={defaultEmail}
             onChange={e => setEmail(e.currentTarget.value.toLowerCase().trim())}
             placeholder="Email address..."
             required
