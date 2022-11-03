@@ -464,7 +464,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               '& .MuiSelect-icon': { marginRight: 2 },
             },
             '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
-            '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.MuiFilledInput-input': { paddingRight: spacing.lg },
+            '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.MuiFilledInput-input': {
+              paddingRight: spacing.lg,
+              '&.Mui-disabled': { '-webkit-text-fill-color': 'inherit' },
+            },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
           },
