@@ -165,11 +165,13 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
           elevation={0}
         >
           <List disablePadding>
-            <Collapse in={!connection.connectLink}>
+            <Collapse in={!connection.public}>
               <DesktopUI>
                 <NameSetting connection={connection} service={service} instance={instance} />
                 <PortSetting connection={connection} service={service} />
               </DesktopUI>
+            </Collapse>
+            <Collapse in={!connection.connectLink}>
               <LaunchSelect connection={connection} service={service} />
             </Collapse>
             <PortalUI>
@@ -230,12 +232,15 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
               onClick={() => dispatch.ui.accordion({ logs: !accordion.logs })}
               elevation={0}
             >
-              <List disablePadding>
+              <List>
                 <ListItem dense>
                   <ListItemIcon>
                     <Icon name="terminal" />
                   </ListItemIcon>
-                  <ListItemText primary="CLI command log" />
+                  <ListItemText
+                    primary="CLI command log"
+                    secondary={connection.commandLog?.length ? undefined : 'Empty'}
+                  />
                 </ListItem>
                 <ListItemQuote>
                   {connection.commandLog?.map((l, i) => (
@@ -244,8 +249,6 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
                     </ListItem>
                   ))}
                 </ListItemQuote>
-              </List>
-              <List>
                 <ConnectionLogSetting connection={connection} service={service} />
               </List>
             </AccordionMenuItem>
