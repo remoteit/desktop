@@ -3,7 +3,7 @@ import Controller from '../services/Controller'
 import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Snackbar, IconButton, Dialog } from '@mui/material'
+import { Snackbar, IconButton, Dialog, Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { getOwnDevices } from '../models/accounts'
 import { DragAppRegion } from '../components/DragAppRegion'
@@ -62,7 +62,15 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <DragAppRegion />
       {children}
       <Dialog open={offline} maxWidth="xs" fullWidth>
-        <Notice severity="warning" fullWidth>
+        <Notice
+          severity="warning"
+          button={
+            <Button size="small" onClick={() => window.location.reload()} color="warning" variant="contained">
+              Retry
+            </Button>
+          }
+          fullWidth
+        >
           Disconnected
           <em>Internet access is required.</em>
         </Notice>
