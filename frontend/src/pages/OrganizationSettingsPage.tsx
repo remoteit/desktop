@@ -6,7 +6,6 @@ import { Dispatch, ApplicationState } from '../store'
 import {
   Typography,
   Button,
-  Chip,
   Box,
   List,
   ListItem,
@@ -21,6 +20,7 @@ import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { FileUpload } from '../components/FileUpload'
 import { Container } from '../components/Container'
+import { ColorChip } from '../components/ColorChip'
 import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -116,9 +116,10 @@ export const OrganizationSettingsPage: React.FC = () => {
                   <ListItemIcon />
                   <ListItemText
                     primary={
-                      <Chip
+                      <ColorChip
                         label="Verified"
-                        color="secondary"
+                        typeColor="alwaysWhite"
+                        backgroundColor="primary"
                         icon={<Icon name="check" size="sm" fixedWidth inline />}
                       />
                     }
@@ -184,9 +185,10 @@ export const OrganizationSettingsPage: React.FC = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        <Chip
+                        <ColorChip
                           label="Enabled"
-                          color="secondary"
+                          typeColor="alwaysWhite"
+                          backgroundColor="primary"
                           icon={<Icon name="shield" size="sm" fixedWidth inline />}
                         />
                       }
