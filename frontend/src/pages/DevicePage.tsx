@@ -12,15 +12,7 @@ import { ApplicationState } from '../store'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  CircularProgress,
-} from '@mui/material'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
@@ -75,6 +67,7 @@ export const DevicePage: React.FC = () => {
                 `/devices/${device.id}`,
               ]}
               icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
+              onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
               exactMatch
               dense
               title={

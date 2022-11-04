@@ -49,7 +49,7 @@ export type UIState = {
   limitsOverride: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
-  defaultService: ILookup<string>
+  defaultService: ILookup<string | null>
   registrationCommand?: string
   redirect?: string
   restoring: boolean
@@ -236,7 +236,7 @@ export default createModel<RootModel>()({
       const accordion = { ...state.ui.accordion, ...params }
       dispatch.ui.setPersistent({ accordion })
     },
-    async setDefaultService({ deviceId, serviceId }: { deviceId: string; serviceId: string }, state) {
+    async setDefaultService({ deviceId, serviceId }: { deviceId: string; serviceId: string | null }, state) {
       const all = state.ui.defaultService
       all[deviceId] = serviceId
       dispatch.ui.setPersistent({ defaultService: all })

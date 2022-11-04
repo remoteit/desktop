@@ -47,7 +47,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   }, [deviceID, waiting, device, thisId])
 
   const defaultService = () => {
-    const serviceId = defaultServiceLookup[deviceID || ''] || device?.services?.[0]?.id
+    const lookupResult = defaultServiceLookup[deviceID || '']
+    const serviceId = lookupResult === null ? null : device?.services?.[0]?.id
     const redirect = serviceId ? `${serviceId}/connect` : 'details'
     return `/devices/${deviceID}/${redirect}`
   }
