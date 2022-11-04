@@ -37,7 +37,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     fullWidth,
   }: DynamicButtonProps = props
 
-  if (loading) {
+  if (loading && size === 'small') {
     icon = 'spinner-third'
     iconType = 'solid'
   }

@@ -59,7 +59,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let title = connection?.public ? 'Connect' : 'Start'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let loading = false
-  let icon = 'play'
+  let icon: string | undefined = 'play'
 
   if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
 
@@ -113,7 +113,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (all) title += ' all'
   if (props.loading) {
     title = 'Loading'
-    disabled = true
+    icon = undefined
   }
   props.loading = props.loading || loading
 

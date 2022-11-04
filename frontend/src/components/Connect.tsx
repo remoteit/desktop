@@ -145,6 +145,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
               size="large"
               service={service}
               connection={connection}
+              loading={!instance.loaded}
               disabled={!instance.loaded}
               permissions={instance.permissions}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
