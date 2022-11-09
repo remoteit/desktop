@@ -120,7 +120,7 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => (k === 'services' ? '' : DeviceSelectLookup[k]))
   .join('')
 
-const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'owner', 'quality', 'services']
+const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'services']
 
 export async function graphQLFetchDeviceList({
   tag,
