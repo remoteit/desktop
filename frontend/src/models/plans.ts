@@ -17,6 +17,9 @@ import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
 
+const PURCHASING_PLAN = 'plans.purchasing'
+const UPDATING_PLAN = 'plans.updating'
+
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
@@ -77,8 +80,8 @@ export default createModel<RootModel>()({
       const planId = license?.plan.id
 
       dispatch.plans.set({
-        purchasing: localStorage.getItem('plans.purchasing') !== planId ? planId : undefined,
-        updating: localStorage.getItem('plans.updating') === last ? last : undefined,
+        purchasing: localStorage.getItem(PURCHASING_PLAN) !== planId ? planId : undefined,
+        updating: localStorage.getItem(UPDATING_PLAN) === last ? last : undefined,
       })
     },
     async fetch() {
@@ -115,21 +118,26 @@ export default createModel<RootModel>()({
 
     async subscribe(form: IPurchase, state) {
       dispatch.plans.set({ purchasing: form.planId })
-      localStorage.setItem('plans.purchasing', form.planId || '')
+      localStorage.setItem(PURCHASING_PLAN, form.planId || '')
 
       const license = selectRemoteitLicense(state)
       if (license?.subscription) {
         await dispatch.plans.unsubscribe(form.planId)
       }
       const result = await graphQLSubscribe(form)
-      if (result !== 'ERROR') {
-        const checkout = result?.data?.data?.createSubscription
-        console.log('PURCHASE', checkout)
-        if (checkout?.url) window.location.href = checkout.url
-        else {
-          dispatch.ui.set({ errorMessage: 'Error purchasing license' })
-          dispatch.plans.set({ purchasing: undefined })
-        }
+
+      if (result === 'ERROR' || !result?.data?.data?.createSubscription) {
+        dispatch.ui.set({ errorMessage: 'Checkout failed, please contact support.' })
+        dispatch.plans.set({ purchasing: undefined })
+        return
+      }
+
+      const checkout = result?.data?.data?.createSubscription
+      console.log('PURCHASE', checkout)
+      if (checkout?.url) window.location.href = checkout.url
+      else {
+        dispatch.ui.set({ errorMessage: 'Error purchasing license' })
+        dispatch.plans.set({ purchasing: undefined })
       }
     },
 
@@ -157,14 +165,19 @@ export default createModel<RootModel>()({
 
     async unsubscribe(planId: string | undefined) {
       dispatch.plans.set({ purchasing: planId })
-      await graphQLUnsubscribe()
+      const result = await graphQLUnsubscribe()
+      if (result === 'ERROR' || !result?.data?.data?.cancelSubscription) {
+        dispatch.ui.set({ errorMessage: 'Subscription cancellation failed, please contact support.' })
+        dispatch.plans.set({ purchasing: undefined })
+        return
+      }
       dispatch.devices.fetchList()
       console.log('UNSUBSCRIBE')
     },
 
     async updateCreditCard(last: string | undefined) {
       dispatch.plans.set({ updating: last || true })
-      localStorage.setItem('plans.updating', last || '')
+      localStorage.setItem(UPDATING_PLAN, last || '')
       const result = await graphQLCreditCard()
       if (result !== 'ERROR') {
         const card = result?.data?.data?.updateCreditCard

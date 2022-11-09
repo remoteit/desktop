@@ -13,7 +13,11 @@ export const PlansPage: React.FC = () => {
   if (!initialized) return <LoadingMessage message="Loading plans..." />
 
   return (
-    <Container gutterBottom header={<Typography variant="h1">Subscriptions</Typography>}>
+    <Container
+      gutterBottom
+      bodyProps={{ verticalOverflow: true }}
+      header={<Typography variant="h1">Subscriptions</Typography>}
+    >
       <Plans />
       <Divider variant="inset" />
       <Gutters>
