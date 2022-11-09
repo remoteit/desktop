@@ -60,7 +60,7 @@ class Controller {
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
-    socket.on('service/disable', this.disable)
+    socket.on('service/disable', this.stop)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.forget)
@@ -110,11 +110,11 @@ class Controller {
   }
 
   disconnect = async (connection: IConnection) => {
-    await this.pool.stop(connection)
+    await this.pool.disconnect(connection)
   }
 
-  disable = async (connection: IConnection) => {
-    await this.pool.disable(connection)
+  stop = async (connection: IConnection) => {
+    await this.pool.stop(connection)
     this.freePort()
   }
 
