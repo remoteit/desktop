@@ -66,7 +66,7 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   return (
     <Box mt={4}>
       {error && (
-        <Notice severity="danger" fullWidth>
+        <Notice severity="error" fullWidth>
           {error}
         </Notice>
       )}

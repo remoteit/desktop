@@ -73,7 +73,7 @@ export const OrganizationSettingsPage: React.FC = () => {
               title="Delete Organization"
               warning={
                 <>
-                  <Notice severity="danger" fullWidth gutterBottom>
+                  <Notice severity="error" fullWidth gutterBottom>
                     You will be permanently deleting <i>{organization.name}. </i>
                   </Notice>
                   This will remove all your members and their access to your devices.

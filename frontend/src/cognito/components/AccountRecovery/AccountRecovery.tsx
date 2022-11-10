@@ -85,7 +85,7 @@ export function AccountRecovery({
           <>
             <form onSubmit={handleSubmit}>
               {error && (
-                <Notice severity="danger" fullWidth gutterBottom>
+                <Notice severity="error" fullWidth gutterBottom>
                   {error}
                 </Notice>
               )}

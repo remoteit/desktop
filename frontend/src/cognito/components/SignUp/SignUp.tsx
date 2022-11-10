@@ -112,7 +112,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
       )}
       <form onSubmit={handleSubmit}>
         {error && (
-          <Notice severity="danger" fullWidth>
+          <Notice severity="error" fullWidth>
             {error.message}
           </Notice>
         )}

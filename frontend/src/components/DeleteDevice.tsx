@@ -27,7 +27,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
   let title: string = 'Delete Device'
   let warning: React.ReactNode = (
     <>
-      <Notice severity="danger" gutterBottom fullWidth>
+      <Notice severity="error" gutterBottom fullWidth>
         Deleting devices can't be undone so may require you to physically access the device if you wish to recover it.
       </Notice>
       <Typography variant="body2">
@@ -59,7 +59,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
     disabled = false
     title = 'Unregister Device'
     warning = (
-      <Notice severity="danger" fullWidth>
+      <Notice severity="error" fullWidth>
         You are about to permanently remove this device and all of its services.
       </Notice>
     )

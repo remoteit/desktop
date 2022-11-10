@@ -76,7 +76,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
         title="Are you sure?"
         action="Transfer"
       >
-        <Notice severity="danger" gutterBottom fullWidth>
+        <Notice severity="error" gutterBottom fullWidth>
           You will lose all access and control of this device upon transfer.
         </Notice>
         <Typography variant="body2">

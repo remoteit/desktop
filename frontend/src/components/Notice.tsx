@@ -6,8 +6,8 @@ import { alpha, Paper, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import classnames from 'classnames'
 
-type Props = {
-  severity?: 'info' | 'warning' | 'danger' | 'success'
+export type NoticeProps = {
+  severity?: 'info' | 'warning' | 'error' | 'success'
   button?: React.ReactNode
   gutterTop?: boolean
   gutterBottom?: boolean
@@ -20,7 +20,7 @@ type Props = {
   children?: React.ReactNode
 }
 
-export const Notice: React.FC<Props> = ({
+export const Notice: React.FC<NoticeProps> = ({
   severity = 'info',
   button,
   fullWidth = false,
@@ -40,7 +40,7 @@ export const Notice: React.FC<Props> = ({
     case 'info':
       iconName = 'info-circle'
       break
-    case 'danger':
+    case 'error':
       iconName = 'exclamation-triangle'
       break
     case 'warning':
@@ -74,7 +74,7 @@ const useStyles = makeStyles(({ palette }) => ({
   dangerSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.danger.main },
   warningSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.warning.main },
   successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
-  notice: ({ fullWidth, gutterBottom, gutterTop }: Props) => ({
+  notice: ({ fullWidth, gutterBottom, gutterTop }: NoticeProps) => ({
     flexGrow: 1,
     alignItems: 'center',
     marginLeft: fullWidth ? 0 : spacing.md,

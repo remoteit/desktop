@@ -30,7 +30,7 @@ export const CreditCard: React.FC = () => {
       <List>
         {expired && (
           <ListItem>
-            <Notice severity="danger" gutterTop>
+            <Notice severity="error" gutterTop>
               Credit Card Expired. <em> Please update your card to continue service.</em>
             </Notice>
           </ListItem>

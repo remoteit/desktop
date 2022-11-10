@@ -47,15 +47,19 @@ class Network extends EventEmitter {
   }
 
   offline = () => {
+    if (navigator.onLine) return
     this.log('DISCONNECT')
-    store.dispatch.ui.set({ offline: !navigator.onLine })
+    store.dispatch.ui.set({
+      offline: { title: 'Disconnected', message: 'Internet access is required.', severity: 'warning' },
+    })
     this.shouldConnect = true
     this.emit('disconnect')
   }
 
   online = () => {
+    if (!navigator.onLine) return
     this.log('NETWORK ONLINE')
-    store.dispatch.ui.set({ offline: !navigator.onLine })
+    store.dispatch.ui.set({ offline: undefined })
     this.connect()
   }
 

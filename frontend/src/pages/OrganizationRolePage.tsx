@@ -72,7 +72,7 @@ export const OrganizationRolePage: React.FC = () => {
             <DeleteButton
               warning={
                 <>
-                  <Notice severity="danger" fullWidth gutterBottom>
+                  <Notice severity="error" fullWidth gutterBottom>
                     You will be permanently deleting the role <i>{role.name}.</i>
                   </Notice>
                   Any members with this role will lose access until they have been set to another role.

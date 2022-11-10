@@ -80,7 +80,7 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
           </>
         )}
         {error && (
-          <Notice severity="danger" fullWidth gutterBottom>
+          <Notice severity="error" fullWidth gutterBottom>
             {error.message}
           </Notice>
         )}
