@@ -5,19 +5,19 @@ import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION, MAX_DESCRIPTION_LENGTH
 import { makeStyles } from '@mui/styles'
 import { AddFromNetwork } from './AddFromNetwork'
 import { ListItemCheckbox } from './ListItemCheckbox'
-import { Typography, TextField, Tooltip, List, ListItem, MenuItem, Button } from '@mui/material'
+import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { serviceNameValidation } from '../shared/nameHelper'
 import { ServiceAttributesForm } from './ServiceAttributesForm'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
 import { validPort } from '../helpers/connectionHelper'
 import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import { Icon } from './Icon'
 
 export type ServiceFormProps = {
   service?: IService
@@ -28,19 +28,6 @@ export type ServiceFormProps = {
   onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
-
-export const PortScanIcon = ({ found }: { found?: boolean }) =>
-  found === undefined ? null : (
-    <Tooltip title={found ? 'Service found!' : 'No service found'} placement="top" arrow>
-      <Icon
-        inlineLeft
-        size="md"
-        fixedWidth
-        name={found ? 'check-circle' : 'exclamation-triangle'}
-        color={found ? 'success' : 'warning'}
-      />
-    </Tooltip>
-  )
 
 export const ServiceForm: React.FC<ServiceFormProps> = ({
   service,
@@ -76,7 +63,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [defaultForm, setDefaultForm] = useState<IServiceForm>()
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IServiceForm>()
-  const [portFound, portScan] = usePortScan({ port: form?.port, host: form?.host })
+  const [portReachable, portScan] = usePortScan()
   const appType = findType(applicationTypes, form?.typeID)
   const css = useStyles()
   const changed = !isEqual(form, defaultForm)
@@ -190,7 +177,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   thisDevice && portScan({ port, host: form.host })
                 }}
                 InputProps={{
-                  endAdornment: thisDevice && <PortScanIcon found={portFound} />,
+                  endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
                 }}
               />
               <Typography variant="caption">
@@ -202,9 +189,9 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               <ListItem className={css.field}>
                 <Notice
                   fullWidth
-                  severity={portFound ? 'success' : 'warning'}
+                  severity={portReachable ? 'success' : 'warning'}
                   button={
-                    portFound ? undefined : (
+                    portReachable === 'REACHABLE' ? undefined : (
                       <Button
                         size="small"
                         color="primary"
@@ -215,7 +202,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                     )
                   }
                 >
-                  {portFound ? (
+                  {portReachable === 'REACHABLE' ? (
                     `Service found on ${form.host}:${form.port}!`
                   ) : (
                     <>
@@ -240,7 +227,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   thisDevice && portScan({ port: form.port, host })
                 }}
                 InputProps={{
-                  endAdornment: thisDevice && <PortScanIcon found={portFound} />,
+                  endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
                 }}
               />
               <Typography variant="caption">

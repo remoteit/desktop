@@ -180,7 +180,7 @@ function getEventHandlers() {
     freePort: (result: number) => backend.set({ freePort: result }),
 
     reachablePort: (result: boolean) => {
-      backend.set({ reachablePort: result, loading: false })
+      backend.set({ reachablePort: result ? 'REACHABLE' : 'UNREACHABLE' })
     },
 
     environment: (result: ILookup<any>) => {

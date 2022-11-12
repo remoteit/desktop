@@ -9,22 +9,26 @@ type Props = {
   host?: string
 }
 
-export function usePortScan(props: Props): [boolean | undefined, (props: Props) => void] {
-  const portFound = useSelector((state: ApplicationState) => state.backend.reachablePort)
+export function usePortScan(): [typeof reachablePort, (props: Props) => void] {
+  const { reachablePort } = useSelector((state: ApplicationState) => state.backend)
   const [lastScan, setLastScan] = useState<Props>({})
   const { backend } = useDispatch<Dispatch>()
 
   function portScan({ port, host }: Props) {
-    if ((lastScan.port === port && lastScan.host === host) || !host || !port) return
+    if ((lastScan.port === port && lastScan.host === host) || !host || !port) {
+      backend.set({ reachablePort: 'INVALID' })
+      return
+    }
 
     if (REGEX_VALID_IP.test(host) || REGEX_VALID_HOSTNAME.test(host)) {
-      backend.set({ reachablePortLoading: true })
+      backend.set({ reachablePort: 'SCANNING' })
       emit('reachablePort', { port, host })
       setLastScan({ port, host })
+      console.log('PORT SCANNING', host, port)
     } else {
-      backend.set({ reachablePort: false })
+      backend.set({ reachablePort: 'INVALID' })
     }
   }
 
-  return [portFound, portScan]
+  return [reachablePort, portScan]
 }

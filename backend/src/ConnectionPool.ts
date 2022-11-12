@@ -24,8 +24,6 @@ export default class ConnectionPool {
   static EVENTS = {
     pool: 'pool',
     updated: 'updated',
-    freePort: 'freePort',
-    reachablePort: 'reachablePort',
     clearErrors: 'clearErrors',
   }
 
@@ -245,10 +243,6 @@ export default class ConnectionPool {
   private assignPort = async (connection: Connection) => {
     if (!connection.params.port) connection.params.port = await this.nextFreePort()
     if (!connection.params.port) throw new Error('No port could be assigned to connection!')
-  }
-
-  reachablePort = async (data: IReachablePort) => {
-    return await PortScanner.isPortReachable(data.port, data.host)
   }
 
   private get usedPorts() {

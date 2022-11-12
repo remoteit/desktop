@@ -9,7 +9,8 @@ import { getApplicationType } from '../shared/applications'
 import { Typography, TextField, Divider, Button, Box, Chip } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { selectUniqueSchemeTypes } from '../models/applicationTypes'
-import { PortScanIcon, ServiceFormProps } from './ServiceForm'
+import { ServiceFormProps } from './ServiceForm'
+import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
 import { spacing } from '../styling'
 import { Gutters } from './Gutters'
@@ -21,7 +22,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
     saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
   }))
 
-  const [portFound, portScan] = usePortScan({})
+  const [portReachable, portScan] = usePortScan()
   const [field, setField] = useState<string>('http://')
   const css = useStyles()
 
@@ -48,7 +49,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
   }
 
   useEffect(() => {
-    thisDevice && portScan({ port, host: form.host })
+    if (thisDevice) portScan({ port, host: form.host })
   }, [field])
 
   return (
@@ -75,7 +76,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
           placeholder={application.example}
           onChange={event => setField(event.target.value)}
           InputProps={{
-            endAdornment: thisDevice && <PortScanIcon found={portFound} />,
+            endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
           }}
         />
         <Button type="submit" variant="contained" color="primary" size="large" disabled={!isValid || disabled}>

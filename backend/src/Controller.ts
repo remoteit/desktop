@@ -10,6 +10,7 @@ import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
+import PortScanner from './PortScanner'
 import environment from './environment'
 import Binary from './Binary'
 import EventBus from './EventBus'
@@ -154,12 +155,12 @@ class Controller {
 
   freePort = async () => {
     const freePort = await this.pool.nextFreePort()
-    this.io.emit(ConnectionPool.EVENTS.freePort, freePort)
+    this.io.emit(PortScanner.EVENTS.freePort, freePort)
   }
 
   isReachablePort = async (data: IReachablePort) => {
-    const result = await this.pool.reachablePort(data)
-    this.io.emit(ConnectionPool.EVENTS.reachablePort, result)
+    const result = await PortScanner.isPortReachable(data.port, data.host)
+    this.io.emit(PortScanner.EVENTS.reachablePort, result)
   }
 
   useCertificate = async (use: boolean) => {

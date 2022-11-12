@@ -7,6 +7,11 @@ export interface ServerError extends Error {
 }
 
 export default class PortScanner {
+  static EVENTS = {
+    freePort: 'freePort',
+    reachablePort: 'reachablePort',
+  }
+
   public static async findFreePortInRange(
     start: number,
     end: number,
@@ -46,10 +51,10 @@ export default class PortScanner {
     let isReachable = false
     try {
       isReachable = await isPortReachable(port, { host })
-      Logger.warn('VALID PORT', { isReachable, port, host })
+      // Logger.info('VALID PORT', { isReachable, port, host })
     } catch (error) {
       isReachable = false
-      Logger.warn('NOT VALID PORT', { error, port, host })
+      // Logger.warn('NOT VALID PORT', { error, port, host })
     }
     return isReachable
   }

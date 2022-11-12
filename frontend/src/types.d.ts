@@ -11,27 +11,14 @@ declare global {
 
   type Route = { [key in Page]: React.ReactNode }
 
-  type ServerMessageType =
-    | 'service/error'
-    | 'service/status'
-    | 'service/updated'
-    | 'service/request'
-    | 'service/connected'
-    | 'reachablePort'
-    | 'service/tunnel/opened'
-    | 'service/tunnel/closed'
-    | 'service/disconnected'
-    | 'service/unknown-event'
-    | 'service/throughput'
-    | 'service/uptime'
-    | 'connectd/install/error'
-
   interface IDeviceContext {
     device?: IDevice
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
   }
+
+  type IPortScan = 'REACHABLE' | 'UNREACHABLE' | 'SCANNING' | 'INVALID'
 
   type IOrganizationProvider = 'SAML'
 
