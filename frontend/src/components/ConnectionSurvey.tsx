@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import classnames from 'classnames'
 import sleep from '../services/sleep'
-import { Dispatch, ApplicationState } from '../store'
+import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { useDispatch, useSelector } from 'react-redux'
 import { setConnection } from '../helpers/connectionHelper'
 import { Typography, Collapse, Paper, Button } from '@mui/material'
+import { Dispatch, ApplicationState } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { windowOpen } from '../services/Browser'
 import { IconButton } from '../buttons/IconButton'
 import { Countdown } from './Countdown'
@@ -25,7 +25,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
   const user = useSelector((state: ApplicationState) => state.user)
   const dispatch = useDispatch<Dispatch>()
   const [rated, setRated] = useState<number | null>(null)
-  const css = useStyles({ highlight: true })
+  const css = useStyles()
 
   if (!connection) return null
 

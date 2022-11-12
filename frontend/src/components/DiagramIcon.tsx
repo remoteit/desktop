@@ -4,8 +4,10 @@ import { Icon, IconProps } from './Icon'
 
 export type DiagramIconType = 'listener' | 'service' | 'entrance' | 'exit'
 
+type Props = { type: DiagramIconType; state?: IConnectionState }
+
 // @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
-export const DiagramIcon: React.FC<{ type: DiagramIconType }> = ({ type }) => {
+export const DiagramIcon: React.FC<Props> = ({ type, state }) => {
   let props: IconProps = { type: 'light', color: 'grayDarkest.main' }
 
   switch (type) {

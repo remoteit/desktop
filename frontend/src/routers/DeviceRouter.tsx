@@ -67,6 +67,9 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <Route path="/devices/:deviceID/add">
               <ServiceAddPage device={device} />
             </Route>
+            <Route path="/devices/:deviceID/addForm">
+              <ServiceAddPage device={device} form />
+            </Route>
             <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
               <SharePage />
             </Route>

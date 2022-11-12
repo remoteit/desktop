@@ -5,15 +5,16 @@ import { Divider, DividerProps } from '@mui/material'
 
 type Props = {
   // type?: DiagramPathType
-  state?: 'connected' | 'disconnected' | 'active'
+  active?: boolean
+  state?: IConnectionState //'connected' | 'disconnected' | 'active'
 }
 
 // @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
-export const DiagramPath: React.FC<Props> = ({ state = 'disconnected' }) => {
+export const DiagramPath: React.FC<Props> = ({ state = 'disconnected', active }) => {
   let sx: DividerProps['sx'] = {
     flexGrow: 1,
     borderBottomWidth: 1,
-    borderBottomColor: 'grayDarkest.main',
+    borderColor: 'grayDarkest.main',
   }
 
   // switch (type) {
@@ -22,18 +23,16 @@ export const DiagramPath: React.FC<Props> = ({ state = 'disconnected' }) => {
   //   case 'tunnel':
   //     break
   // }
-
   switch (state) {
     case 'connected':
+      sx.borderColor = 'primary.main'
       break
     case 'disconnected':
       sx.borderBottomStyle = 'dotted'
-      sx.borderBottomColor = 'gray.main'
-      break
-    case 'active':
-      sx.borderBottomColor = 'primary'
+      sx.borderColor = 'gray.main'
       break
   }
+  // console.log('DIAGRAM PATH', sx, state, active)
 
   return <Divider sx={sx} />
 }

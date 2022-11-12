@@ -1,8 +1,6 @@
 import net from 'net'
-import debug from 'debug'
+import Logger from './Logger'
 import isPortReachable from 'is-port-reachable'
-
-const d = debug('r3:desktop:PortScanner')
 
 export interface ServerError extends Error {
   code?: string
@@ -14,8 +12,6 @@ export default class PortScanner {
     end: number,
     reservedPorts: number[] = []
   ): Promise<number | undefined> {
-    d('Checking port range:', { start, end })
-
     if (start > end) end = start + 1
 
     for (let port = start; port < end; port++) {
@@ -50,10 +46,10 @@ export default class PortScanner {
     let isReachable = false
     try {
       isReachable = await isPortReachable(port, { host })
-      d('IS PORT REACHABLE?', { isReachable })
+      Logger.warn('VALID PORT', { isReachable, port, host })
     } catch (error) {
-      d('NOT VALID PORT', { error })
       isReachable = false
+      Logger.warn('NOT VALID PORT', { error, port, host })
     }
     return isReachable
   }

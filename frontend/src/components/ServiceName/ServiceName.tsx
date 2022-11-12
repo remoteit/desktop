@@ -19,7 +19,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
-  const configurable = device?.configurable //&& device?.permissions.includes('MANAGE')
+  const configurable = device?.configurable && device?.permissions.includes('MANAGE')
   const unlicensed = instance?.license === 'EVALUATION' || instance?.license === 'UNLICENSED'
 
   let name = ''

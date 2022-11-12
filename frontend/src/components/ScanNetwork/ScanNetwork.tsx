@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { Icon } from '../Icon'
 import { makeStyles } from '@mui/styles'
-import { getTypeId } from '../../models/applicationTypes'
+import { getType } from '../../models/applicationTypes'
 import { DEFAULT_SERVICE, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -129,7 +129,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
                           ui.set({
                             setupAdded: {
                               ...DEFAULT_SERVICE,
-                              typeID: getTypeId(applicationTypes, port[0]),
+                              typeID: getType(applicationTypes, port[0]),
                               host: ip[0] === privateIP ? IP_PRIVATE : ip[0],
                               port: port[0],
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),

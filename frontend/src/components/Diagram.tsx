@@ -1,10 +1,11 @@
 import React from 'react'
-import { Box } from '@mui/material'
+import { Paper } from '@mui/material'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
-import { DeviceContext } from '../services/Context'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
+import { DeviceContext } from '../services/Context'
+import { connectionState } from '../helpers/connectionHelper'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
 
 // import { useSelector } from 'react-redux'
@@ -22,29 +23,31 @@ export const Diagram: React.FC<Props> = ({ active = [], ...props }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
   const css = useStyles()
 
-  const service = device?.services.find(s => s.id === serviceID)
+  const service = device?.services?.find(s => s.id === serviceID)
   const connection = connections?.find(c => c.id === serviceID)
+
+  const state = connectionState(service, connection)
 
   // const { connection } = useSelector((state: ApplicationState) => ({
   //   connection: selectConnection(state, service),
   // }))
 
   return (
-    <Box className={css.diagram}>
+    <Paper elevation={0} className={css.diagram}>
       <DiagramGroup type="initiator" active={active.includes('initiator')}>
-        <DiagramIcon type="listener" />
-        <DiagramPath state="connected" />
+        <DiagramIcon state={state} type="listener" />
+        <DiagramPath state={state} />
       </DiagramGroup>
       <DiagramGroup type="tunnel" active={active.includes('tunnel')}>
-        <DiagramIcon type="entrance" />
-        <DiagramPath />
-        <DiagramIcon type="exit" />
+        <DiagramIcon state={state} type="entrance" />
+        <DiagramPath state={state} />
+        <DiagramIcon state={state} type="exit" />
       </DiagramGroup>
       <DiagramGroup type="target" active={active.includes('target')}>
-        <DiagramPath state="connected" />
-        <DiagramIcon type="service" />
+        <DiagramPath state={state} />
+        <DiagramIcon state={state} type="service" />
       </DiagramGroup>
-    </Box>
+    </Paper>
   )
 }
 

@@ -27,10 +27,8 @@ export const ScanPage: React.FC = () => {
       header={
         <>
           <OutOfBand />
-          <Gutters>
-            <Typography variant="h1" gutterBottom>
-              Network Scan
-            </Typography>
+          <Typography variant="h1">Network Scan</Typography>
+          <Gutters top={null}>
             <Typography variant="body2" color="textSecondary">
               Scan your system and local network for available ports to host.
             </Typography>

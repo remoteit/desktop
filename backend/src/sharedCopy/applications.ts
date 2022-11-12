@@ -12,6 +12,7 @@ export const DEVICE_TYPE = 35
 
 export class Application {
   title: string = ''
+  example: string = '127.0.0.1' // @TODO @benoit to add to applicationTypes api?
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   appLaunchType: IConnection['launchType'] = 'NONE'
@@ -214,7 +215,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   return app
 }
 
-function getApplicationType(typeId: number | undefined) {
+export function getApplicationType(typeId: number | undefined) {
   const { portal, os } = getEnvironment()
   const windows = os === 'windows'
 
@@ -226,6 +227,7 @@ function getApplicationType(typeId: number | undefined) {
     case 4:
       return new Application({
         title: 'VNC',
+        example: 'ssh://localhost:5900',
         launchIcon: 'desktop',
         appLaunchType: 'COMMAND',
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
@@ -236,6 +238,7 @@ function getApplicationType(typeId: number | undefined) {
     case 28:
       return new Application({
         title: 'SSH',
+        example: 'ssh://127.0.0.1:22',
         appLaunchType: portal ? 'URL' : windows ? 'COMMAND' : 'URL',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: windows
@@ -245,6 +248,7 @@ function getApplicationType(typeId: number | undefined) {
     case 5:
       return new Application({
         title: 'RDP',
+        example: 'rdp://localhost:3389',
         appLaunchType: windows ? 'COMMAND' : 'URL',
         appLaunchTemplate: 'rdp://[username]@[host]:[port]',
         appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : '[host]:[port]',
@@ -254,6 +258,7 @@ function getApplicationType(typeId: number | undefined) {
     case 33:
       return new Application({
         title: 'Secure Browser',
+        example: 'https://192.168.0.110:9000/admin',
         appLaunchType: 'URL',
         appLaunchTemplate: 'https://[host]:[port]',
       })
@@ -264,11 +269,13 @@ function getApplicationType(typeId: number | undefined) {
     case 42:
       return new Application({
         title: 'Browser',
+        example: 'http://localhost:8001/api/dashboard',
         appLaunchType: 'URL',
       })
     case 34:
       return new Application({
         title: 'Samba',
+        example: 'smb://localhost:445',
         launchIcon: 'folder',
         commandIcon: 'clipboard',
         localhost: true,

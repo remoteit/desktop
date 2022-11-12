@@ -28,7 +28,7 @@ type IBackendState = {
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
-  reachablePort: boolean
+  reachablePort?: boolean
   reachablePortLoading: boolean
   filePath?: string
 }
@@ -56,7 +56,7 @@ const defaultState: IBackendState = {
     cliVersion: '',
   },
   deferredAttributes: undefined,
-  reachablePort: true,
+  reachablePort: undefined,
   reachablePortLoading: false,
   filePath: undefined,
 }

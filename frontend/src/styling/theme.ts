@@ -170,10 +170,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             backgroundColor: palette.grayLightest.main,
             textTransform: 'initial',
           },
-          colorPrimary: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
-          colorSecondary: { color: palette.alwaysWhite.main },
           clickable: {
-            '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
+            '&:hover': { backgroundColor: palette.primaryLighter.main },
+            '&.MuiChip-colorPrimary:hover': { backgroundColor: palette.grayDarker.main },
+            '&.MuiChip-colorPrimary:focus': { backgroundColor: palette.primary.main },
+          },
+          colorPrimary: {
+            color: palette.alwaysWhite.main,
+            backgroundColor: palette.primary.main,
           },
           sizeSmall: {
             height: 20,
@@ -466,7 +470,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.MuiFilledInput-input': {
               paddingRight: spacing.lg,
-              '&.Mui-disabled': { '-webkit-text-fill-color': 'inherit' },
+              '&.Mui-disabled': { WebkitTextFillColor: 'inherit' },
             },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
@@ -577,6 +581,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             textTransform: 'uppercase',
             letterSpacing: 1.5,
             fontWeight: 500,
+          },
+          body1: {
+            fontSize: fontSizes.md,
+            '& b': { fontWeight: 500, color: palette.grayDarker.main },
           },
           body2: {
             fontSize: fontSizes.base,

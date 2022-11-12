@@ -3,16 +3,18 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
+import { ServiceSmartForm } from '../../components/ServiceSmartForm'
 import { REGEX_LAST_PATH } from '../../shared/constants'
+import { ServiceForm } from '../../components/ServiceForm'
 import { Typography } from '@mui/material'
 import { Container } from '../../components/Container'
-import { ServiceForm } from '../../components/ServiceForm'
+import { Diagram } from '../../components/Diagram'
+import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
-import { Body } from '../../components/Body'
 
-type Props = { device?: IDevice }
+type Props = { device?: IDevice; form?: boolean }
 
-export const ServiceAddPage: React.FC<Props> = ({ device }) => {
+export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
   const { applicationTypes, devices } = useDispatch<Dispatch>()
   const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
   const location = useLocation()
@@ -23,27 +25,31 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
   }, [])
 
   const maxReached = device && device.services.length >= setupServicesLimit
+  const Form = form ? ServiceForm : ServiceSmartForm
 
   return (
     <Container
       gutterBottom
+      bodyProps={{ center: true }}
+      integrated
       header={
         <>
           <Typography variant="h1">
-            <Title>Add service</Title>
+            <Title>New service</Title>
           </Typography>
+          <Gutters>
+            <Diagram active={['target']} />
+          </Gutters>
           <LicensingServiceNotice device={device} />
         </>
       }
     >
       {maxReached ? (
-        <Body center>
-          <Typography variant="body2" color="textSecondary">
-            Desktop currently supports a maximum of {setupServicesLimit} services.
-          </Typography>
-        </Body>
+        <Typography variant="body2" color="textSecondary">
+          Desktop currently supports a maximum of {setupServicesLimit} services.
+        </Typography>
       ) : (
-        <ServiceForm
+        <Form
           adding
           thisDevice={!!device?.thisDevice}
           editable={device?.configurable || !!device?.thisDevice}
@@ -57,4 +63,4 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
       )}
     </Container>
   )
-} // }
+}

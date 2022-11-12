@@ -16,7 +16,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
   if (connection) {
     if (connection.starting) return 'starting'
     if (connection.disconnecting) return 'disconnecting'
-    if ((connection.connected || connection.connecting) && !connection.enabled) return 'stopping'
+    if (connection.stopping) return 'stopping'
     if (connection.connecting) return 'connecting'
     if (connection.connected) return 'connected'
     if (connection.enabled) return 'ready'

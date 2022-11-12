@@ -67,11 +67,11 @@ export const Notice: React.FC<NoticeProps> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   info: { color: palette.primary.main, backgroundColor: alpha(palette.primary.main, 0.1) },
-  danger: { color: palette.danger.main, backgroundColor: alpha(palette.danger.main, 0.1) },
+  error: { color: palette.error.main, backgroundColor: alpha(palette.error.main, 0.1) },
   warning: { color: palette.warning.main, backgroundColor: alpha(palette.warning.main, 0.1) },
   success: { color: palette.success.main, backgroundColor: alpha(palette.success.main, 0.1) },
   infoSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
-  dangerSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.danger.main },
+  errorSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.error.main },
   warningSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.warning.main },
   successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
   notice: ({ fullWidth, gutterBottom, gutterTop }: NoticeProps) => ({

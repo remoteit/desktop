@@ -28,7 +28,7 @@
     "express": "4.17.1",
     "is-electron": "^2.2.0",
     "is-elevated": "^3.0.0",
-    "is-port-reachable": "^3.0.0",
+    "is-port-reachable": "^3.1.0",
     "netmask": "^2.0.2",
     "network": "^0.6.1",
     "plist": "^3.0.5",

@@ -459,6 +459,7 @@ declare global {
     name: string
     port: number
     proxy: boolean
+    scheme: string
     protocol: 'TCP' | 'UDP'
     description: string
   }
