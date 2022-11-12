@@ -68,11 +68,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
           disabled={disabled}
           variant="filled"
           InputLabelProps={{ shrink: !!field }}
-          helperText={
-            <Typography variant="caption">
-              Example: <b>{application.example}</b>
-            </Typography>
-          }
+          helperText={<Typography variant="caption">Example: {application.example}</Typography>}
           placeholder={application.example}
           onChange={event => setField(event.target.value)}
           InputProps={{

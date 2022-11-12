@@ -185,35 +185,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 custom port.
               </Typography>
             </ListItem>
-            {thisDevice && (
-              <ListItem className={css.field}>
-                <Notice
-                  fullWidth
-                  severity={portReachable ? 'success' : 'warning'}
-                  button={
-                    portReachable === 'REACHABLE' ? undefined : (
-                      <Button
-                        size="small"
-                        color="primary"
-                        onClick={() => portScan({ port: form.port, host: form.host })}
-                      >
-                        Retry
-                      </Button>
-                    )
-                  }
-                >
-                  {portReachable === 'REACHABLE' ? (
-                    `Service found on ${form.host}:${form.port}!`
-                  ) : (
-                    <>
-                      No service found running on {form.host}:{form.port}.
-                      <AddFromNetwork allowScanning={thisDevice} />
-                      <em>Double check that the host application running.</em>
-                    </>
-                  )}
-                </Notice>
-              </ListItem>
-            )}
             <ListItem className={css.field}>
               <TextField
                 required
@@ -238,6 +209,35 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
               </Typography>
             </ListItem>
+            {thisDevice && (
+              <ListItem>
+                <Notice
+                  fullWidth
+                  severity={portReachable === 'REACHABLE' ? 'success' : 'warning'}
+                  button={
+                    portReachable === 'REACHABLE' ? undefined : (
+                      <Button
+                        size="small"
+                        color="primary"
+                        onClick={() => portScan({ port: form.port, host: form.host })}
+                      >
+                        Retry
+                      </Button>
+                    )
+                  }
+                >
+                  {portReachable === 'REACHABLE' ? (
+                    `Service found on ${form.host}:${form.port}!`
+                  ) : (
+                    <>
+                      No service found running on {form.host}:{form.port}.
+                      <AddFromNetwork allowScanning={thisDevice} />
+                      <em>Double check that the host application running.</em>
+                    </>
+                  )}
+                </Notice>
+              </ListItem>
+            )}
             <ListItemCheckbox
               checked={form.enabled}
               label="Enable service"
