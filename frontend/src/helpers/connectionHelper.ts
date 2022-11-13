@@ -21,7 +21,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
     if (connection.connected) return 'connected'
     if (connection.enabled) return 'ready'
   }
-  return 'disconnected'
+  return 'online'
 }
 
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {

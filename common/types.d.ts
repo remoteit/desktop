@@ -157,7 +157,7 @@ declare global {
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
     failover?: boolean // allow proxy failover
-    host?: ipAddress // returned hostname from cli
+    host?: string // returned hostname from cli
     id: string
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
@@ -190,7 +190,7 @@ declare global {
 
   type IConnectionState =
     | 'offline'
-    | 'disconnected'
+    | 'online'
     | 'connected'
     | 'connecting'
     | 'disconnecting'

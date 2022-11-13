@@ -38,7 +38,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
             <Title>New service</Title>
           </Typography>
           <Gutters>
-            <Diagram active={['target']} />
+            <Diagram activeTypes={['target']} />
           </Gutters>
           <LicensingServiceNotice device={device} />
         </>

@@ -1,16 +1,15 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { DiagramGroupType } from './DiagramGroup'
+import { DiagramContext } from '../services/Context'
 import { Divider, DividerProps } from '@mui/material'
 
-// export type DiagramPathType = 'basic' | 'tunnel'
-
 type Props = {
-  // type?: DiagramPathType
-  active?: boolean
-  state?: IConnectionState //'connected' | 'disconnected' | 'active'
+  type?: DiagramGroupType
 }
 
-// @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
-export const DiagramPath: React.FC<Props> = ({ state = 'disconnected', active }) => {
+export const DiagramPath: React.FC<Props> = ({ type }) => {
+  const { activeTypes, state } = useContext(DiagramContext)
+  const active = type ? activeTypes.includes(type) : false
   let sx: DividerProps['sx'] = {
     flexGrow: 1,
     borderBottomWidth: 1,
@@ -23,16 +22,26 @@ export const DiagramPath: React.FC<Props> = ({ state = 'disconnected', active })
   //   case 'tunnel':
   //     break
   // }
+
   switch (state) {
+    case 'ready':
+      sx.borderColor = 'gray.main'
+      if (active) {
+        sx.borderColor = 'primary.main'
+        sx.borderBottomWidth = 2
+      }
+      break
     case 'connected':
       sx.borderColor = 'primary.main'
+      sx.borderBottomWidth = 2
       break
-    case 'disconnected':
-      sx.borderBottomStyle = 'dotted'
+    case 'online':
       sx.borderColor = 'gray.main'
       break
+    case 'offline':
+      sx.borderColor = 'grayLight.main'
   }
-  // console.log('DIAGRAM PATH', sx, state, active)
 
+  console.log('line', { active, activeTypes, state })
   return <Divider sx={sx} />
 }

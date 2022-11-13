@@ -1,26 +1,29 @@
-import React from 'react'
-import { Tooltip } from '@mui/material'
+import React, { useContext } from 'react'
+import { DiagramGroupType } from './DiagramGroup'
+import { DiagramContext } from '../services/Context'
+// import { Tooltip } from '@mui/material'
 import { Icon, IconProps } from './Icon'
 
-export type DiagramIconType = 'listener' | 'service' | 'entrance' | 'exit'
+export type DiagramIconType = 'listener' | 'service' | 'entrance' | 'exit' | 'forward'
 
-type Props = { type: DiagramIconType; state?: IConnectionState }
+type Props = { type: DiagramGroupType; icon: DiagramIconType }
 
 // @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
-export const DiagramIcon: React.FC<Props> = ({ type, state }) => {
-  let props: IconProps = { type: 'light', color: 'grayDarkest.main' }
+export const DiagramIcon: React.FC<Props> = ({ type, icon }) => {
+  const { activeTypes, state } = useContext(DiagramContext)
+  const active = type ? activeTypes.includes(type) : false
+  let props: IconProps = { type: 'regular', color: 'grayDarkest.main' }
 
-  switch (type) {
+  switch (icon) {
     case 'listener':
       props.name = 'circle-half'
       props.rotate = 180
-      props.scale = 0.9
-
       break
     case 'service':
       props.name = 'circle'
-      props.scale = 0.8
-      props.type = 'regular'
+      break
+    case 'forward':
+      props.name = 'diamond'
       break
     case 'entrance':
       props.name = 'play'
@@ -31,9 +34,26 @@ export const DiagramIcon: React.FC<Props> = ({ type, state }) => {
       break
   }
 
+  switch (state) {
+    case 'ready':
+      props.color = 'grayDark'
+      if (active) props.color = 'primary'
+      break
+    case 'connected':
+      props.color = 'primary'
+      props.type = 'solid'
+      break
+    case 'online':
+      props.color = 'grayDark'
+      break
+    case 'offline':
+      props.color = 'grayLight'
+      break
+  }
+
   return (
-    <Tooltip title={type} placement="top" arrow>
-      <Icon {...props} size="lg" />
-    </Tooltip>
+    // <Tooltip title={type} placement="top" arrow>
+    <Icon {...props} size="md" />
+    // </Tooltip>
   )
 }

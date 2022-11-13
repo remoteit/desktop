@@ -1,4 +1,5 @@
 import { AnalyticsJS } from 'segment-analytics'
+import { DiagramGroupType } from './components/DiagramGroup'
 import { Attribute } from './components/Attributes'
 import { Color } from './styling'
 
@@ -16,6 +17,11 @@ declare global {
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
+  }
+
+  interface IDiagramContext {
+    activeTypes: DiagramGroupType[]
+    state?: IConnectionState
   }
 
   type IPortScan = 'REACHABLE' | 'UNREACHABLE' | 'SCANNING' | 'INVALID'
