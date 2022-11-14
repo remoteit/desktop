@@ -8,6 +8,7 @@ import { DiagramPath } from './DiagramPath'
 import { connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
+import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
 // import { useSelector } from 'react-redux'
@@ -30,6 +31,7 @@ export const Diagram: React.FC<Props> = ({ activeTypes = [] }) => {
 
   const state = connectionState(service, connection)
   const forward = isForward(service)
+  const proxy = connection && (!connection.isP2P || connection.public)
 
   switch (state) {
     case 'ready':
@@ -49,36 +51,45 @@ export const Diagram: React.FC<Props> = ({ activeTypes = [] }) => {
   // }))
 
   return (
-    <DiagramContext.Provider value={{ state, activeTypes }}>
-      {/* <Pre {...{ state, activeTypes }} /> */}
-      <Paper elevation={0} className={css.diagram}>
-        <DiagramGroup type="initiator">
-          <DiagramIcon type="initiator" icon="listener" />
-          <DiagramPath type="initiator" />
-        </DiagramGroup>
-        <DiagramGroup type="tunnel">
-          <DiagramIcon type="tunnel" icon="entrance" />
-          <DiagramPath type="tunnel" />
-          <DiagramIcon type="tunnel" icon="exit" />
-        </DiagramGroup>
-        <DiagramGroup type={forward ? 'forward' : 'target'}>
-          <DiagramPath type={forward ? 'forward' : 'target'} />
-          <DiagramIcon type={forward ? 'forward' : 'target'} icon={forward ? 'forward' : 'service'} />
-          {forward && <DiagramPath type="forward" />}
-        </DiagramGroup>
-        {forward && (
+    <TestUI>
+      <DiagramContext.Provider value={{ state, activeTypes }}>
+        {/* <Pre {...{ service }} /> */}
+        <Paper elevation={0} className={css.diagram}>
+          <DiagramGroup type="initiator">
+            <DiagramIcon type="initiator" icon="listener" />
+            <DiagramPath type="initiator" />
+          </DiagramGroup>
+          {proxy && (
+            <DiagramGroup type="proxy">
+              <DiagramPath type="proxy" />
+              <DiagramIcon type="proxy" icon="proxy" />
+              <DiagramPath type="proxy" />
+            </DiagramGroup>
+          )}
+          <DiagramGroup type="tunnel">
+            <DiagramIcon type="tunnel" icon="entrance" />
+            <DiagramPath type="tunnel" />
+            <DiagramIcon type="tunnel" icon="exit" />
+          </DiagramGroup>
+          {forward && (
+            <DiagramGroup type="forward">
+              <DiagramPath type="forward" />
+              <DiagramIcon type="forward" icon="forward" />
+              <DiagramPath type="forward" />
+            </DiagramGroup>
+          )}
           <DiagramGroup type="target">
             <DiagramPath type="target" />
             <DiagramIcon type="target" icon="service" />
           </DiagramGroup>
-        )}
-      </Paper>
-    </DiagramContext.Provider>
+        </Paper>
+      </DiagramContext.Provider>
+    </TestUI>
   )
 }
 
 function isForward(service?: IService) {
-  return service && service.host !== IP_PRIVATE && service.host !== 'localhost'
+  return service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost'
 }
 
 const useStyles = makeStyles(({ palette }) => ({

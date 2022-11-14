@@ -4,7 +4,7 @@ import { alpha, Box, Paper, PaperProps, Tooltip, InputLabel } from '@mui/materia
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
-export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward'
+export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward' | 'proxy'
 
 type Props = {
   disabled?: boolean
@@ -28,6 +28,11 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
   }
 
   switch (type) {
+    case 'proxy':
+      title = `Secure tunnel - ${active ? 'Active' : 'Inactive'}`
+      sx.backgroundColor = 'grayLightest.main'
+      sx.maxWidth = 80
+      break
     case 'tunnel':
       title = `Secure tunnel - ${active ? 'Active' : 'Inactive'}`
       break

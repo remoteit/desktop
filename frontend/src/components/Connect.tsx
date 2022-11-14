@@ -32,7 +32,6 @@ import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
 import { DataCopy } from './DataCopy'
 import { PortalUI } from './PortalUI'
-import { Diagram } from './Diagram'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
@@ -104,9 +103,6 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
         show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
-      <Gutters size="md" bottom={null}>
-        <Diagram />
-      </Gutters>
       {!ownDevice && !connection.connectLink && (
         <GuideBubble
           guide="connectButton"

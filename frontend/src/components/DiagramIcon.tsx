@@ -4,7 +4,7 @@ import { DiagramContext } from '../services/Context'
 // import { Tooltip } from '@mui/material'
 import { Icon, IconProps } from './Icon'
 
-export type DiagramIconType = 'listener' | 'service' | 'entrance' | 'exit' | 'forward'
+export type DiagramIconType = 'listener' | 'proxy' | 'service' | 'entrance' | 'exit' | 'forward'
 
 type Props = { type: DiagramGroupType; icon: DiagramIconType }
 
@@ -18,6 +18,9 @@ export const DiagramIcon: React.FC<Props> = ({ type, icon }) => {
     case 'listener':
       props.name = 'circle-half'
       props.rotate = 180
+      break
+    case 'proxy':
+      props.name = 'cloud'
       break
     case 'service':
       props.name = 'circle'
