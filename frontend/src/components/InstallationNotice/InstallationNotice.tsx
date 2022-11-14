@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
-import { connect } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
 import { Button, Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
@@ -10,34 +10,24 @@ import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 
-const mapState = (state: ApplicationState, props: any) => ({
-  error: state.binaries.error,
-  installing: state.binaries.installing,
-  connected: state.ui.connected,
-})
-
-const mapDispatch = (dispatch: any) => ({
-  install: dispatch.binaries.install,
-  clearError: dispatch.binaries.clearError,
-})
-
-export type InstallationNoticeProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
-
-export const InstallationNotice = connect(
-  mapState,
-  mapDispatch
-)(({ connected, clearError, error, installing, install }: InstallationNoticeProps) => {
+export const InstallationNotice: React.FC = () => {
+  const { connected, error, installing } = useSelector((state: ApplicationState) => ({
+    error: state.binaries.error,
+    installing: state.binaries.installing,
+    connected: state.ui.connected,
+  }))
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
-
-  if (!connected) return null
-  if (error) console.error(error)
-
-  const isError = error && JSON.stringify(error) !== JSON.stringify({})
 
   useEffect(() => {
     heartbeat.checkAll = true
     return () => (heartbeat.checkAll = undefined)
   }, [])
+
+  if (!connected) return null
+  if (error) console.error(error)
+
+  const isError = error && JSON.stringify(error) !== JSON.stringify({})
 
   return (
     <Body center>
@@ -46,7 +36,7 @@ export const InstallationNotice = connect(
       </Typography>
       <Logo className={css.space} />
       {isError && (
-        <Notice onClose={() => clearError()}>
+        <Notice onClose={() => dispatch.binaries.clearError()}>
           {error === 'User did not grant permission.'
             ? 'Please grant permissions to install CLI tools'
             : JSON.stringify(error)}
@@ -63,7 +53,7 @@ export const InstallationNotice = connect(
         color="primary"
         size="large"
         disabled={installing}
-        onClick={() => install()}
+        onClick={() => dispatch.binaries.install()}
       >
         {installing ? (
           <>
@@ -83,7 +73,7 @@ export const InstallationNotice = connect(
       </Typography>
     </Body>
   )
-})
+}
 
 const useStyles = makeStyles({
   welcome: { marginBottom: spacing.md, letterSpacing: 3 },
