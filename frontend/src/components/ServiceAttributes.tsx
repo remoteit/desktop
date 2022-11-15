@@ -3,8 +3,14 @@ import { getAttributes } from './Attributes'
 import { DataDisplay } from './DataDisplay'
 import { Gutters } from './Gutters'
 
-export const ServiceAttributes: React.FC<{ service?: IService; disablePadding?: boolean }> = props => {
+export const ServiceAttributes: React.FC<{
+  device?: IDevice
+  service?: IService
+  disablePadding?: boolean
+}> = props => {
   const attributes = getAttributes([
+    'license',
+    'owner',
     'serviceLastReported',
     'serviceCreated',
     'serviceName',
@@ -12,9 +18,8 @@ export const ServiceAttributes: React.FC<{ service?: IService; disablePadding?: 
     'serviceHost',
     'serviceProtocol',
     'serviceType',
-    'owner',
     'serviceId',
-    'license',
+    'id',
   ])
 
   return (

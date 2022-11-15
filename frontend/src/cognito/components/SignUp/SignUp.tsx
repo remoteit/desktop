@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Box, Button, Checkbox, TextField, Typography, FormControlLabel } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { SignUpFunc, ResendFunc } from '../../types'
 import { AuthLayout } from '../AuthLayout'
 import { Captcha } from '../Captcha'
@@ -21,6 +21,7 @@ export type SignUpProps = {
 export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpProps): JSX.Element {
   const { t } = useTranslation()
   const history = useHistory()
+  const params = useParams<{ email?: string }>()
   const [error, setError] = useState<Error | null>(null)
   const [showResend, setShowResend] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
@@ -30,6 +31,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
   const [isValidPassword, setIsValidPassword] = useState<boolean>(false)
   const [email, setEmail] = useState<string>('')
   const css = useStyles()
+  const defaultEmail = decodeURIComponent(params?.email || '')
 
   // const callSignUp = useCallback(() => {
   //   ;(async () => {
@@ -110,7 +112,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
       )}
       <form onSubmit={handleSubmit}>
         {error && (
-          <Notice severity="danger" fullWidth>
+          <Notice severity="error" fullWidth>
             {error.message}
           </Notice>
         )}
@@ -138,8 +140,8 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
             disabled={loading}
             fullWidth
             id="sign-up-email"
-            InputProps={{ disableUnderline: true }}
             label="Email Address"
+            value={defaultEmail}
             onChange={e => setEmail(e.currentTarget.value.toLowerCase().trim())}
             placeholder="Email address..."
             required

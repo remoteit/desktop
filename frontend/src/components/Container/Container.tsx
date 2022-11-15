@@ -34,7 +34,7 @@ export const Container: React.FC<Props> = ({
   return (
     <div className={classnames(className, css.container)}>
       {header && (
-        <div className={integrated ? undefined : css.header}>
+        <div className={css.header}>
           {header}
           {integrated || !!backgroundColor || <Divider variant="inset" />}
         </div>
@@ -65,7 +65,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }),
   header: ({ backgroundColor }: any) => ({
     position: 'relative',
-    zIndex: 7,
+    zIndex: 10,
     backgroundColor: palette.white.main,
     borderBottom: backgroundColor && `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-h1': {

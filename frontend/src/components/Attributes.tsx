@@ -437,7 +437,7 @@ export function getAttribute(id: string): Attribute {
 }
 
 export function getAttributes(ids: string[]): Attribute[] {
-  return ids.map(id => attributeLookup[id])
+  return ids.map(id => getAttribute(id))
 }
 
 export function getColumns(feature?: ILookup<boolean>) {

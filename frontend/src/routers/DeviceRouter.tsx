@@ -47,7 +47,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   }, [deviceID, waiting, device, thisId])
 
   const defaultService = () => {
-    const serviceId = defaultServiceLookup[deviceID || ''] || device?.services?.[0]?.id
+    const lookupResult = defaultServiceLookup[deviceID || '']
+    const serviceId = lookupResult === undefined ? device?.services?.[0]?.id : lookupResult
     const redirect = serviceId ? `${serviceId}/connect` : 'details'
     return `/devices/${deviceID}/${redirect}`
   }
@@ -65,6 +66,9 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             </Route>
             <Route path="/devices/:deviceID/add">
               <ServiceAddPage device={device} />
+            </Route>
+            <Route path="/devices/:deviceID/addForm">
+              <ServiceAddPage device={device} form />
             </Route>
             <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
               <SharePage />

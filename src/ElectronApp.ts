@@ -15,7 +15,6 @@ export default class ElectronApp {
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private isMaximized: boolean
-  private openAtLogin?: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
   private protocol: string
@@ -74,7 +73,7 @@ export default class ElectronApp {
     this.setDeepLink(process.argv.pop())
     this.createSystemTray()
     this.createMainWindow()
-    this.handleOpenAtLogin(preferences.data || {})
+    this.handleOpenAtLogin(preferences.get() || {})
     this.openWindow()
     EventBus.emit(EVENTS.ready, this.tray)
   }
@@ -154,11 +153,12 @@ export default class ElectronApp {
     this.openWindow()
   }
 
-  private handleOpenAtLogin = ({ openAtLogin }: IPreferences) => {
-    if (this.openAtLogin !== openAtLogin) {
-      this.app.setLoginItemSettings({ openAtLogin })
+  private handleOpenAtLogin = (preferences: IPreferences) => {
+    const { openAtLogin } = this.app.getLoginItemSettings()
+    if (preferences.openAtLogin !== openAtLogin) {
+      Logger.info('SET OPEN AT LOGIN', { openAtLogin: preferences.openAtLogin })
+      this.app.setLoginItemSettings({ openAtLogin: preferences.openAtLogin })
     }
-    this.openAtLogin = openAtLogin
   }
 
   private createMainWindow = () => {

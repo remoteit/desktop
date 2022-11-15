@@ -17,6 +17,7 @@ class Controller extends EventEmitter {
     const isDev = host === 'localhost:3000'
     this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
     this.onNetworkConnect()
+    if (!navigator.onLine) network.offline()
     network.on('connect', this.onNetworkConnect)
     network.on('disconnect', this.close)
   }
@@ -45,12 +46,15 @@ class Controller extends EventEmitter {
     this.credentials = credentials
     this.handlers = getEventHandlers()
 
-    if (!isPortal())
-      this.socket = io(this.url, {
-        transports: ['websocket'],
-        forceNew: true,
-        reconnectionDelay: FRONTEND_RETRY_DELAY,
-      })
+    if (isPortal()) return
+
+    this.socket = io(this.url, {
+      transports: ['websocket'],
+      forceNew: true,
+      reconnectionDelay: FRONTEND_RETRY_DELAY,
+    })
+
+    this.logErrors()
 
     for (const eventName in this.handlers) {
       if (this.handlers.hasOwnProperty(eventName)) {
@@ -58,6 +62,17 @@ class Controller extends EventEmitter {
         const handler = this.handlers[name]
         this.on(name, handler)
       }
+    }
+  }
+
+  logErrors() {
+    for (const errorEvent of ['error', 'reconnect_error', 'connect_error']) {
+      this.socket?.on(errorEvent, error => {
+        this.log(errorEvent.toUpperCase(), error.message)
+        store.dispatch.ui.set({
+          offline: { title: 'Network Error', message: error.message, severity: 'danger' },
+        })
+      })
     }
   }
 
@@ -73,6 +88,7 @@ class Controller extends EventEmitter {
           this.log('Retrying local socket.io connection')
           this.retrying = undefined
           this.socket?.open()
+          store.dispatch.ui.set({ offline: undefined })
         },
         retry ? FRONTEND_RETRY_DELAY : 0
       )
@@ -164,7 +180,7 @@ function getEventHandlers() {
     freePort: (result: number) => backend.set({ freePort: result }),
 
     reachablePort: (result: boolean) => {
-      backend.set({ reachablePort: result, loading: false })
+      backend.set({ reachablePort: result ? 'REACHABLE' : 'UNREACHABLE' })
     },
 
     environment: (result: ILookup<any>) => {

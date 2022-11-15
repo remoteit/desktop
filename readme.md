@@ -116,21 +116,27 @@ Windows  C:\Users\%username%\AppData\Local\temp\remoteit.log
 
 ## Development
 
-- Create your .env file
-- cd into the backend directory and run `npm run build` to create the backend module
-- Start the frontend server
+_See setup instructions below_
+Installation
+
+```shell
+nvm install
+nvm use
+npm install -g npm@latest
+cd backend && npm run build && cd ../
+npm install
+```
+
+Start web app
 
 ```shell
 cd frontend
 npm start
 ```
 
-- Start the app
+Start electron app
 
 ```shell
-nvm install
-nvm use
-npm install
 npm start
 ```
 
@@ -143,7 +149,7 @@ Tests are written using Jest.
 ### Setup
 
 Get a copy of the .env file
-place the .env file at the root (/) and in frontend /frontend
+place the .env file in the root directory - it will be copied into the sub projects at start
 
 To use the fontawesome fonts:
 [Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
@@ -231,6 +237,7 @@ to publish `npm run publish`
 - Token password for the certificate
 - Optionally add the signtool to your path:
   - Find the path to the signtool.exe by searching in "\Program Files (x86)"
+  - example location: `/c/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64/signtool`
   - Open the Environment Variables control panel
   - Find the 'Path' variable
   - Add the signtool directory

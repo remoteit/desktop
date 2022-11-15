@@ -53,6 +53,7 @@ export default createModel<RootModel>()({
       return state
     },
     installError(state: BinariesState, error: string) {
+      console.error('BINARY INSTALL ERROR', error)
       state.error = error
       state.installing = false
       return state

@@ -39,7 +39,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         </Button>
       </Link>
       <Tooltip title="Close">
-        <IconButton onClick={onClose} size="large">
+        <IconButton onClick={onClose}>
           <Icon name="times" size="md" color="primary" />
         </IconButton>
       </Tooltip>
@@ -60,7 +60,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
       break
     case 'PAST_DUE':
       notice = (
-        <Notice severity="danger">
+        <Notice severity="error">
           {title} is past due.
           <em>
             Please update your payment method. <Link to={managePath}>Learn more.</Link>

@@ -1,26 +1,16 @@
 import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
 import { DeviceContext } from '../services/Context'
 import { makeStyles } from '@mui/styles'
-import { useSelector } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
 import { AddFromNetwork } from '../components/AddFromNetwork'
 import { DeviceTagEditor } from '../components/DeviceTagEditor'
-import { ApplicationState } from '../store'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  CircularProgress,
-} from '@mui/material'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
@@ -75,6 +65,7 @@ export const DevicePage: React.FC = () => {
                 `/devices/${device.id}`,
               ]}
               icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
+              onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
               exactMatch
               dense
               title={

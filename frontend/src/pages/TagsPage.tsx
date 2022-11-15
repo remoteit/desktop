@@ -81,7 +81,7 @@ export const TagsPage: React.FC = () => {
             disabled={!canEdit || deleting === tag.name || updating === tag.name}
             warning={
               <>
-                <Notice severity="danger" gutterBottom fullWidth>
+                <Notice severity="error" gutterBottom fullWidth>
                   You are deleting the tag&nbsp;
                   <i>
                     <b>{tag.name}</b>

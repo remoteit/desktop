@@ -91,7 +91,7 @@ export function MFACode({
   if (!localCognitoUser)
     return (
       <Container maxWidth="sm">
-        <Notice severity="danger" fullWidth>
+        <Notice severity="error" fullWidth>
           Sorry, something went wrong, please try again.
         </Notice>
       </Container>
@@ -101,7 +101,7 @@ export function MFACode({
     <AuthLayout i18nKey={title}>
       <form onSubmit={handleSubmit}>
         {error && (
-          <Notice severity="danger" fullWidth gutterBottom>
+          <Notice severity="error" fullWidth gutterBottom>
             {error}
           </Notice>
         )}

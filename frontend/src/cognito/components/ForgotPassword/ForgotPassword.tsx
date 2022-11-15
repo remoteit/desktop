@@ -61,7 +61,7 @@ export function ForgotPassword({
     <AuthLayout back backLink="/sign-in" fullWidth={fullWidth} i18nKey={titleKey}>
       <form onSubmit={handleForgotPassword}>
         {error && (
-          <Notice severity="danger" fullWidth gutterBottom>
+          <Notice severity="error" fullWidth gutterBottom>
             {error.message}
           </Notice>
         )}

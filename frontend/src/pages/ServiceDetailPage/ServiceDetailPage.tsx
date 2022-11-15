@@ -11,7 +11,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) =>
 
   return (
     <ServiceHeaderMenu device={device} service={service}>
-      <ServiceAttributes service={service} />
+      <ServiceAttributes device={device} service={service} />
     </ServiceHeaderMenu>
   )
 }

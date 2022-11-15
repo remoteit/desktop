@@ -84,6 +84,12 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         )}
+        {/* <ListItemLink
+          title="System Status &nbsp; &nbsp; "
+          icon="badge-check"
+          href="https://link.remote.it/documentation-desktop/overview"
+          dense
+        /> */}
         <Divider />
         <DesktopUI>
           <ListItemSetting

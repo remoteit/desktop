@@ -157,7 +157,7 @@ declare global {
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
     failover?: boolean // allow proxy failover
-    host?: ipAddress // returned hostname from cli
+    host?: string // returned hostname from cli
     id: string
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
@@ -178,6 +178,7 @@ declare global {
     restriction?: ipAddress // Restriction IP address
     reverseProxy?: boolean // if the connection is a reverse proxy
     sessionId?: string //the connection session id
+    stopping?: boolean // service stopping the listener
     starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
     surveyed?: string // the session ID of the survey that has been answered
@@ -189,7 +190,7 @@ declare global {
 
   type IConnectionState =
     | 'offline'
-    | 'disconnected'
+    | 'online'
     | 'connected'
     | 'connecting'
     | 'disconnecting'
@@ -458,6 +459,7 @@ declare global {
     name: string
     port: number
     proxy: boolean
+    scheme: string
     protocol: 'TCP' | 'UDP'
     description: string
   }

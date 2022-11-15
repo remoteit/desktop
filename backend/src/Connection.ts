@@ -24,12 +24,12 @@ export default class Connection {
     await cli.addConnection(this.params, this.error, this.log)
   }
 
-  async stop() {
+  async disconnect() {
     this.params.disconnecting = true
     await cli.stopConnection(this.params, this.error, this.log)
   }
 
-  async disable() {
+  async stop() {
     this.params.enabled = false
     await cli.removeConnection(this.params, this.error, this.log)
   }

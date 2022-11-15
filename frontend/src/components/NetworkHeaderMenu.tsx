@@ -38,7 +38,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
                 size="md"
                 confirmMessage={
                   <>
-                    <Notice severity="danger" fullWidth gutterBottom>
+                    <Notice severity="error" fullWidth gutterBottom>
                       You will be leaving <i>{network.name}. </i>
                     </Notice>
                     The network will have to be re-shared to you if you wish to access it again.
@@ -57,7 +57,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
                     title="Delete Network"
                     warning={
                       <>
-                        <Notice severity="danger" fullWidth gutterBottom>
+                        <Notice severity="error" fullWidth gutterBottom>
                           You will be permanently deleting <i>{network.name}. </i>
                         </Notice>
                         This will remove this network for you and all of the network's users.

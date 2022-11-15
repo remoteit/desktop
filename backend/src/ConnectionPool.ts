@@ -24,8 +24,6 @@ export default class ConnectionPool {
   static EVENTS = {
     pool: 'pool',
     updated: 'updated',
-    freePort: 'freePort',
-    reachablePort: 'reachablePort',
     clearErrors: 'clearErrors',
   }
 
@@ -59,7 +57,7 @@ export default class ConnectionPool {
     cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params || DEFAULT_CONNECTION
       if (connection.public) {
-        this.disable(connection)
+        this.stop(connection)
       } else if (this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
         this.set({ ...connection, ...cliConnection })
@@ -167,17 +165,17 @@ export default class ConnectionPool {
     this.updated(instance)
   }
 
-  stop = async ({ id }: IConnection) => {
+  disconnect = async ({ id }: IConnection) => {
     Logger.info('DISCONNECT', { id })
     const instance = this.find(id)
-    instance && (await instance.stop())
+    instance && (await instance.disconnect())
     this.updated(instance)
   }
 
-  disable = async ({ id }: IConnection) => {
+  stop = async ({ id }: IConnection) => {
     Logger.info('REMOVE', { id })
     const instance = this.find(id)
-    instance && (await instance.disable())
+    instance && (await instance.stop())
     this.updated(instance)
   }
 
@@ -245,10 +243,6 @@ export default class ConnectionPool {
   private assignPort = async (connection: Connection) => {
     if (!connection.params.port) connection.params.port = await this.nextFreePort()
     if (!connection.params.port) throw new Error('No port could be assigned to connection!')
-  }
-
-  reachablePort = async (data: IReachablePort) => {
-    return await PortScanner.isPortReachable(data.port, data.host)
   }
 
   private get usedPorts() {

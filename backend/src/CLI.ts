@@ -36,18 +36,25 @@ type IExec = {
 
 type IConnectionStatus = {
   id: string
-  isDisabled?: boolean
-  state?: 'offline' | 'starting' | 'connecting' | 'connected' | 'disconnecting'
+  isEnabled?: boolean
+  state?: number
+  /* 0 - offline
+	   1 - starting
+	   2 - ready
+	   3 - connecting
+	   4 - connected
+	   5 - disconnecting
+	   6 - disconnected
+	   7 - stopping  */
   isP2P?: boolean
   error?: ISimpleError
-  reachable: boolean
+  isReachable: boolean
   sessionID?: string
   createdAt: string
   startedAt?: string
   stoppedAt?: string
-  address?: string
-  namedPort?: number
-  namedHost?: string
+  addressPort?: number
+  addressHost?: string
   restrict?: ipAddress
   timeout?: number
 }
@@ -147,12 +154,12 @@ export default class CLI {
     return connections.map(c => {
       let error: ISimpleError | undefined
 
-      if (c.reachable === false) {
+      if (c.isReachable === false) {
         error = {
           message: 'Remote.It connected, but there is no service running on the remote machine.',
           code: REACHABLE_ERROR_CODE,
         }
-      } else if (c.reachable === true) {
+      } else if (c.isReachable === true) {
         if (error && error?.code === REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
 
@@ -164,18 +171,19 @@ export default class CLI {
 
       let result: IConnection = {
         id: c.id,
-        host: c.namedHost,
-        port: c.namedPort === -1 ? undefined : c.namedPort,
-        enabled: !c.isDisabled,
+        host: c.addressHost,
+        port: c.addressPort === -1 ? undefined : c.addressPort,
+        enabled: !!c.isEnabled,
         createdTime: Date.parse(c.createdAt),
         startTime: c.startedAt ? Date.parse(c.startedAt) : undefined,
         endTime: c.stoppedAt ? Date.parse(c.stoppedAt) : undefined,
-        starting: c.state === 'starting',
-        connected: c.state === 'connected',
-        connecting: c.state === 'connecting',
-        disconnecting: c.state === 'disconnecting',
+        starting: c.state === 1, //      starting
+        connecting: c.state === 3, //    connecting
+        connected: c.state === 4, //     connected
+        disconnecting: c.state === 5, // disconnecting
+        stopping: c.state === 7, //      stopping
         isP2P: c.isP2P,
-        reachable: c.reachable,
+        reachable: c.isReachable,
         restriction: c.restrict,
         timeout: c.timeout,
         default: false,
@@ -338,7 +346,7 @@ export default class CLI {
         return parsed.data
       } catch (error) {
         if (error instanceof Error) {
-          Logger.warn('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
+          Logger.error('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
         }
       }
     }

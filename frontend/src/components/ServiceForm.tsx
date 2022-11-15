@@ -1,43 +1,36 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import {
-  IP_PRIVATE,
-  DEFAULT_SERVICE,
-  REGEX_VALID_IP,
-  REGEX_VALID_HOSTNAME,
-  DEFAULT_CONNECTION,
-  MAX_DESCRIPTION_LENGTH,
-} from '../../shared/constants'
+import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION, MAX_DESCRIPTION_LENGTH } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
+import { AddFromNetwork } from './AddFromNetwork'
+import { ListItemCheckbox } from './ListItemCheckbox'
 import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
-import { Dispatch } from '../../store'
-import { AddFromNetwork } from '../AddFromNetwork'
-import { ListItemCheckbox } from '../ListItemCheckbox'
-import { ApplicationState } from '../../store'
+import { ApplicationState, Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { serviceNameValidation } from '../../shared/nameHelper'
-import { ServiceAttributesForm } from '../ServiceAttributesForm'
-import { AccordionMenuItem } from '../AccordionMenuItem'
-import { validPort } from '../../helpers/connectionHelper'
-import { findType } from '../../models/applicationTypes'
-import { Gutters } from '../Gutters'
-import { spacing } from '../../styling'
-import { Notice } from '../Notice'
-import { emit } from '../../services/Controller'
-import { Icon } from '../Icon'
+import { serviceNameValidation } from '../shared/nameHelper'
+import { ServiceAttributesForm } from './ServiceAttributesForm'
+import { AccordionMenuItem } from './AccordionMenuItem'
+import { PortScanIcon } from './PortScanIcon'
+import { usePortScan } from '../hooks/usePortScan'
+import { validPort } from '../helpers/connectionHelper'
+import { findType } from '../models/applicationTypes'
+import { Gutters } from './Gutters'
+import { spacing } from '../styling'
+import { Notice } from './Notice'
 
-type Props = {
+export type ServiceFormProps = {
   service?: IService
   thisDevice: boolean
   editable: boolean
   disabled?: boolean
   adding?: boolean
+  onChange?: (form: IServiceForm) => void
   onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({
+export const ServiceForm: React.FC<ServiceFormProps> = ({
   service,
   thisDevice,
   editable,
@@ -46,12 +39,11 @@ export const ServiceForm: React.FC<Props> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { backend, ui } = useDispatch<Dispatch>()
-  const { applicationTypes, saving, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
+  const { ui } = useDispatch<Dispatch>()
+  const { applicationTypes, saving, setupAdded } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
     saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,
-    isValid: state.backend.reachablePort,
   }))
   const initForm = () => {
     setError(undefined)
@@ -72,6 +64,7 @@ export const ServiceForm: React.FC<Props> = ({
   const [defaultForm, setDefaultForm] = useState<IServiceForm>()
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IServiceForm>()
+  const [portReachable, portScan] = usePortScan()
   const appType = findType(applicationTypes, form?.typeID)
   const css = useStyles()
   const changed = !isEqual(form, defaultForm)
@@ -81,34 +74,12 @@ export const ServiceForm: React.FC<Props> = ({
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
+    portScan({ port: newForm.port, host: newForm.host })
     if (!adding) setDefaultForm(cloneDeep(newForm))
+    if (setupAdded) ui.set({ setupAdded: undefined })
   }, [service])
 
-  useEffect(() => {
-    checkPort()
-    if (setupAdded) ui.set({ setupAdded: undefined })
-  }, [form?.port, form?.host])
-
-  const checkPort = () => {
-    if (!form) return
-    if (REGEX_VALID_IP.test(`${form.host}:${form.port}`) || REGEX_VALID_HOSTNAME.test(`${form.host}:${form.port}`)) {
-      backend.set({ reachablePortLoading: true })
-      emit('reachablePort', { port: form.port, host: form.host })
-    } else {
-      backend.set({ reachablePort: false })
-    }
-  }
-
   if (!form) return null
-
-  const CheckIcon = () => (
-    <Icon
-      name={isValid ? 'check-circle' : 'exclamation-triangle'}
-      size="md"
-      color={isValid ? 'success' : 'warning'}
-      fixedWidth
-    />
-  )
 
   return (
     <form
@@ -118,45 +89,6 @@ export const ServiceForm: React.FC<Props> = ({
       }}
     >
       <List>
-        {editable && (
-          <ListItem className={css.field}>
-            <TextField
-              select
-              label="Service Type"
-              value={form.typeID}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => {
-                const typeID = Number(event.target.value)
-                const updatedAppType = findType(applicationTypes, typeID)
-                setForm({
-                  ...form,
-                  typeID: typeID,
-                  port: findType(applicationTypes, typeID).port || 0,
-                  name: serviceNameValidation(updatedAppType.name).value,
-                  attributes: {
-                    ...form.attributes,
-                    commandTemplate: undefined,
-                    launchTemplate: undefined,
-                  },
-                })
-              }}
-            >
-              {applicationTypes.map(type => (
-                <MenuItem value={type.id} key={type.id}>
-                  {type.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Typography variant="caption">
-              {appType.description}
-              <br />
-              <em>
-                {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
-              </em>
-            </Typography>
-          </ListItem>
-        )}
         <ListItem className={css.field}>
           <TextField
             required
@@ -196,14 +128,55 @@ export const ServiceForm: React.FC<Props> = ({
           <>
             <ListItem className={css.field}>
               <TextField
+                select
+                label="Service Type"
+                value={form.typeID}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => {
+                  const typeID = Number(event.target.value)
+                  const updatedAppType = findType(applicationTypes, typeID)
+                  setForm({
+                    ...form,
+                    typeID: typeID,
+                    port: findType(applicationTypes, typeID).port || 0,
+                    name: serviceNameValidation(updatedAppType.name).value,
+                    attributes: {
+                      ...form.attributes,
+                      commandTemplate: undefined,
+                      launchTemplate: undefined,
+                    },
+                  })
+                }}
+              >
+                {applicationTypes.map(type => (
+                  <MenuItem value={type.id} key={type.id}>
+                    {type.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Typography variant="caption">
+                {appType.description}
+                <br />
+                <em>
+                  {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
+                </em>
+              </Typography>
+            </ListItem>
+            <ListItem className={css.field}>
+              <TextField
                 required
                 label="Service Port"
                 value={form.port || ''}
                 disabled={disabled}
                 variant="filled"
-                onChange={event => setForm({ ...form, port: validPort(event) })}
+                onChange={event => {
+                  const port = validPort(event)
+                  setForm({ ...form, port })
+                  thisDevice && portScan({ port, host: form.host })
+                }}
                 InputProps={{
-                  endAdornment: thisDevice && <CheckIcon />,
+                  endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
                 }}
               />
               <Typography variant="caption">
@@ -211,20 +184,48 @@ export const ServiceForm: React.FC<Props> = ({
                 custom port.
               </Typography>
             </ListItem>
+            <ListItem className={css.field}>
+              <TextField
+                required
+                label="Service Host"
+                value={form.host}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => {
+                  const host = event.target.value
+                  setForm({ ...form, host })
+                  thisDevice && portScan({ port: form.port, host })
+                }}
+                InputProps={{
+                  endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
+                }}
+              />
+              <Typography variant="caption">
+                Enter a local network IP address or fully qualified domain name to configure this as a jump service to a
+                system on your local network.
+                <br />
+                <i>AWS example:</i>
+                <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+              </Typography>
+            </ListItem>
             {thisDevice && (
-              <ListItem className={css.field}>
+              <ListItem>
                 <Notice
                   fullWidth
-                  severity={isValid ? 'success' : 'warning'}
+                  severity={portReachable === 'REACHABLE' ? 'success' : 'warning'}
                   button={
-                    isValid ? undefined : (
-                      <Button size="small" color="primary" onClick={checkPort}>
+                    portReachable === 'REACHABLE' ? undefined : (
+                      <Button
+                        size="small"
+                        color="primary"
+                        onClick={() => portScan({ port: form.port, host: form.host })}
+                      >
                         Retry
                       </Button>
                     )
                   }
                 >
-                  {isValid ? (
+                  {portReachable === 'REACHABLE' ? (
                     `Service found on ${form.host}:${form.port}!`
                   ) : (
                     <>
@@ -236,26 +237,6 @@ export const ServiceForm: React.FC<Props> = ({
                 </Notice>
               </ListItem>
             )}
-            <ListItem className={css.field}>
-              <TextField
-                required
-                label="Service Host"
-                value={form.host}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => setForm({ ...form, host: event.target.value })}
-                InputProps={{
-                  endAdornment: thisDevice && <CheckIcon />,
-                }}
-              />
-              <Typography variant="caption">
-                Enter a local network IP address or fully qualified domain name to configure this as a jump service to a
-                system on your local network.
-                <br />
-                <i>AWS example:</i>
-                <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
-              </Typography>
-            </ListItem>
             <ListItemCheckbox
               checked={form.enabled}
               label="Enable service"

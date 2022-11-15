@@ -6,8 +6,8 @@ import { alpha, Paper, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import classnames from 'classnames'
 
-type Props = {
-  severity?: 'info' | 'warning' | 'danger' | 'success'
+export type NoticeProps = {
+  severity?: 'info' | 'warning' | 'error' | 'success'
   button?: React.ReactNode
   gutterTop?: boolean
   gutterBottom?: boolean
@@ -20,7 +20,7 @@ type Props = {
   children?: React.ReactNode
 }
 
-export const Notice: React.FC<Props> = ({
+export const Notice: React.FC<NoticeProps> = ({
   severity = 'info',
   button,
   fullWidth = false,
@@ -40,7 +40,7 @@ export const Notice: React.FC<Props> = ({
     case 'info':
       iconName = 'info-circle'
       break
-    case 'danger':
+    case 'error':
       iconName = 'exclamation-triangle'
       break
     case 'warning':
@@ -58,35 +58,52 @@ export const Notice: React.FC<Props> = ({
   return (
     <Paper elevation={0} className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}>
       {icon}
-      <Box>{children}</Box>
+      <Box>
+        <span>{children}</span>
+      </Box>
       {button}
-      {onClose && <IconButton name="times" onClick={onClose} title="Close" />}
+      {onClose && <IconButton name="times" onClick={onClose} color={solid ? 'alwaysWhite' : undefined} title="Close" />}
     </Paper>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
   info: { color: palette.primary.main, backgroundColor: alpha(palette.primary.main, 0.1) },
-  danger: { color: palette.danger.main, backgroundColor: alpha(palette.danger.main, 0.1) },
+  error: { color: palette.error.main, backgroundColor: alpha(palette.error.main, 0.1) },
   warning: { color: palette.warning.main, backgroundColor: alpha(palette.warning.main, 0.1) },
   success: { color: palette.success.main, backgroundColor: alpha(palette.success.main, 0.1) },
   infoSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
-  dangerSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.danger.main },
+  errorSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.error.main },
   warningSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.warning.main },
   successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
-  notice: ({ fullWidth, gutterBottom, gutterTop }: Props) => ({
+  notice: ({ fullWidth, gutterBottom, gutterTop }: NoticeProps) => ({
     flexGrow: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginLeft: fullWidth ? 0 : spacing.md,
     marginRight: fullWidth ? 0 : spacing.md,
     marginBottom: gutterBottom ? spacing.md : 0,
     marginTop: gutterTop ? spacing.md : 0,
     padding: `${spacing.sm}px ${spacing.md}px`,
     display: 'flex',
+    position: 'relative',
     fontWeight: 500,
-    '& .MuiBox-root': { flexGrow: 1, marginTop: spacing.xxs, marginRight: spacing.xs },
-    '& > .MuiIconButton-root': { minWidth: 90, marginLeft: spacing.md },
-    '& > svg': { marginLeft: spacing.xxs, marginRight: spacing.md, width: 21 },
+    '& > .MuiBox-root': {
+      flexGrow: 1,
+      marginTop: spacing.xxs,
+      marginRight: spacing.xs,
+      minHeight: 34,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
+    '& > .MuiIconButton-root': { marginLeft: spacing.sm },
+    '& > svg': {
+      marginLeft: spacing.xxs,
+      marginRight: spacing.md,
+      width: 21,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
+    },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
   }),

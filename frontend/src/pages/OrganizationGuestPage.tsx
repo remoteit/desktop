@@ -71,6 +71,29 @@ export const OrganizationGuestPage: React.FC = () => {
             <Avatar email={user?.email} inline />
             {user?.email}
           </Title>
+          {member && (
+            <ConfirmButton
+              confirm
+              confirmMessage={
+                <>
+                  This will remove <b>{member.user.email}’s </b>
+                  access to all the organization’s devices
+                </>
+              }
+              confirmTitle="Are you sure?"
+              title="Remove Member"
+              icon="trash"
+              size="md"
+              color={removing ? 'danger' : undefined}
+              loading={removing}
+              disabled={removing}
+              onClick={async () => {
+                setRemoving(true)
+                await dispatch.organization.removeMember(member)
+                setRemoving(false)
+              }}
+            />
+          )}
         </Typography>
       }
     >
@@ -96,28 +119,6 @@ export const OrganizationGuestPage: React.FC = () => {
               </Box>
               <Box display="flex">
                 <RoleAccessCounts role={role} />
-                <ConfirmButton
-                  confirm
-                  confirmMessage={
-                    <>
-                      This will remove <b>{member.user.email}’s </b>
-                      access to all the organization’s devices
-                    </>
-                  }
-                  confirmTitle="Are you sure?"
-                  title="Remove Member"
-                  icon="remove"
-                  size="lg"
-                  inline
-                  color={removing ? 'danger' : undefined}
-                  loading={removing}
-                  disabled={removing}
-                  onClick={async () => {
-                    setRemoving(true)
-                    await dispatch.organization.removeMember(member)
-                    setRemoving(false)
-                  }}
-                />
               </Box>
             </Box>
           </Gutters>

@@ -3,7 +3,7 @@ jobs: # a collection of steps
   build: # runs not using Workflows must have a `build` job as entry point
     working_directory: ~/mern-starter # directory where steps will run
     docker: # run the steps with Docker
-      - image: circleci/node:14.17.0 # ...with this image as the primary container; this is where all `steps` will run
+      - image: circleci/node:14.18.0 # ...with this image as the primary container; this is where all `steps` will run
     #   - image: mongo:4.2.0 # and this image as the secondary service container
     steps: # a collection of executable commands
       - checkout # special step to check out source code to working directory
@@ -12,13 +12,13 @@ jobs: # a collection of steps
           command: npm config set '//npm.fontawesome.com/:_authToken' "${FONTAWESOME_NPM_AUTH_TOKEN}"
       - run:
           name: update-npm
-          command: 'sudo npm install -g npm@latest'
+          command: 'sudo npm install -g npm@8'
       - restore_cache: # special step to restore the dependency cache
           # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
-          name: install-npm-wee
-          command: npm install --legacy-peer-deps
+          name: install-npm
+          command: npm install
       - save_cache: # special step to save the dependency cache
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:

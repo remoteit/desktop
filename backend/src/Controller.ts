@@ -10,6 +10,7 @@ import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
+import PortScanner from './PortScanner'
 import environment from './environment'
 import Binary from './Binary'
 import EventBus from './EventBus'
@@ -60,7 +61,7 @@ class Controller {
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
-    socket.on('service/disable', this.disable)
+    socket.on('service/disable', this.stop)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.forget)
@@ -110,11 +111,11 @@ class Controller {
   }
 
   disconnect = async (connection: IConnection) => {
-    await this.pool.stop(connection)
+    await this.pool.disconnect(connection)
   }
 
-  disable = async (connection: IConnection) => {
-    await this.pool.disable(connection)
+  stop = async (connection: IConnection) => {
+    await this.pool.stop(connection)
     this.freePort()
   }
 
@@ -154,12 +155,12 @@ class Controller {
 
   freePort = async () => {
     const freePort = await this.pool.nextFreePort()
-    this.io.emit(ConnectionPool.EVENTS.freePort, freePort)
+    this.io.emit(PortScanner.EVENTS.freePort, freePort)
   }
 
   isReachablePort = async (data: IReachablePort) => {
-    const result = await this.pool.reachablePort(data)
-    this.io.emit(ConnectionPool.EVENTS.reachablePort, result)
+    const result = await PortScanner.isPortReachable(data.port, data.host)
+    this.io.emit(PortScanner.EVENTS.reachablePort, result)
   }
 
   useCertificate = async (use: boolean) => {

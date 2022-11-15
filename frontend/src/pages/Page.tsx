@@ -3,7 +3,7 @@ import Controller from '../services/Controller'
 import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Snackbar, IconButton, Dialog } from '@mui/material'
+import { Snackbar, IconButton, Dialog, Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { getOwnDevices } from '../models/accounts'
 import { DragAppRegion } from '../components/DragAppRegion'
@@ -61,12 +61,28 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
       <DragAppRegion />
       {children}
-      <Dialog open={offline} maxWidth="xs" fullWidth>
-        <Notice severity="warning" fullWidth>
-          Disconnected
-          <em>Internet access is required.</em>
-        </Notice>
-      </Dialog>
+      {offline && (
+        <Dialog open maxWidth="xs" fullWidth>
+          <Notice
+            severity={offline.severity}
+            button={
+              <Button
+                size="small"
+                onClick={() => window.location.reload()}
+                color={offline.severity}
+                variant="contained"
+              >
+                Reload
+              </Button>
+            }
+            onClose={() => ui.set({ offline: undefined })}
+            fullWidth
+          >
+            {offline.title}
+            {offline.message && <em>{offline.message}</em>}
+          </Notice>
+        </Dialog>
+      )}
       <GlobalConfirm />
       <Snackbar
         className={css.snackbar}

@@ -64,7 +64,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
           title="Are you sure?"
           action="Restart"
         >
-          <Notice severity="danger" fullWidth gutterBottom>
+          <Notice severity="error" fullWidth gutterBottom>
             Restarting while connected over a remote.it connection will cause the connection to be permanently lost.
           </Notice>
           You must be at the computer locally to update.

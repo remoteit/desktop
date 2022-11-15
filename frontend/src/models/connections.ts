@@ -398,6 +398,7 @@ export default createModel<RootModel>()({
       connection.name = sanitizeName(connection?.name || '')
       connection.online = service ? service?.state === 'active' : connection.online
       connection.host = ''
+      connection.error = undefined
       connection.reverseProxy = undefined
       connection.autoStart = undefined
       connection.public = connection.public || isPortal()

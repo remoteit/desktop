@@ -2,18 +2,18 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { List, Typography, Chip } from '@mui/material'
-import { Redirect, useParams, useHistory } from 'react-router-dom'
+import { List, Typography } from '@mui/material'
+import { Redirect, useParams } from 'react-router-dom'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectRemoteitLicense } from '../models/plans'
 import { selectLimitsLookup } from '../models/organization'
+import { PlanActionChip } from '../components/PlanActionChip'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const OrganizationPage: React.FC = () => {
-  const history = useHistory()
   const { userID = '', deviceID = '' } = useParams<{ userID: string; deviceID: string }>()
   const { initialized, permissions, limits, organization, license } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
@@ -35,7 +35,7 @@ export const OrganizationPage: React.FC = () => {
           {license && (
             <Typography variant="subtitle1" component="span">
               <Title>{license?.plan.description} Plan</Title>
-              <Chip label="Update" size="small" onClick={() => history.push('/account/plans')} />
+              <PlanActionChip license={license} />
             </Typography>
           )}
           <Gutters top={null}>

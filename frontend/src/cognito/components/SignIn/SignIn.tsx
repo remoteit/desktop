@@ -146,7 +146,7 @@ export function SignIn({
       </Box>
       <form onSubmit={handleSubmit}>
         {error?.message && (
-          <Notice severity="danger" fullWidth gutterBottom>
+          <Notice severity="error" fullWidth gutterBottom>
             {error.message}
             {notice}
           </Notice>

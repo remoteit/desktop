@@ -4,7 +4,7 @@ import { graphQLBasicRequest } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
-type IApplicationTypeState = ILookup<IApplicationType[]> & {
+type IApplicationTypeState = {
   all: IApplicationType[]
 }
 
@@ -23,6 +23,7 @@ export default createModel<RootModel>()({
               id
               port
               proxy
+              scheme
               protocol
               description
             }
@@ -45,9 +46,18 @@ export function findType(all: IApplicationType[], typeId?: number) {
   return all.find(t => t.id === typeId) || all[0] || emptyServiceType
 }
 
-export function getTypeId(all: IApplicationType[], port: number) {
+export function getType(all: IApplicationType[], port?: number) {
   const type = all?.find(t => t.port === port)
   return type ? type.id : DEFAULT_SERVICE.typeID
+}
+
+export function selectUniqueSchemeTypes(state: ApplicationState) {
+  let schemes: string[] = []
+  return state.applicationTypes.all.filter(t => {
+    if (schemes.includes(t.scheme)) return false
+    schemes.push(t.scheme)
+    return true
+  })
 }
 
 export function canUseConnectLink(state: ApplicationState, typeId?: number) {

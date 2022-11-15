@@ -24,7 +24,7 @@ class Zendesk {
     window.zESettings = {
       webWidget: {
         launcher: {
-          chatLabel: { '*': 'Online' },
+          chatLabel: { '*': 'Chat' },
           mobile: {
             labelVisible: false,
           },

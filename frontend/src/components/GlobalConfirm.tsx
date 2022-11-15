@@ -14,7 +14,7 @@ const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?
     title: 'Force removal?',
     message: (
       <>
-        <Notice severity="danger" fullWidth gutterBottom>
+        <Notice severity="error" fullWidth gutterBottom>
           This device is owned by another user. You will be permanently removing it.
         </Notice>
         Use your system admin privileges to unregister this device?

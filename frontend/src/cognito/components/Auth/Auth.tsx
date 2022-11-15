@@ -151,7 +151,7 @@ function Routes({
           component={() => (
             <SignUp fullWidth={fullWidth} onResend={handleResend} hideCaptcha={hideCaptcha} onSignUp={handleSignup} />
           )}
-          path="/sign-up"
+          path="/sign-up/:email?"
         />
         <Route
           component={() => (

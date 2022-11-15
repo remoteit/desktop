@@ -35,6 +35,7 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
+import { Title } from './Title'
 import { Icon } from './Icon'
 
 type Props = {
@@ -53,9 +54,10 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
   }>()
   const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
+  const [connectThisDevice, setConnectThisDevice] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, ownDevice, showConnectLink } = useSelector((state: ApplicationState) => ({
-    ownDevice: (instance as IDevice)?.thisDevice && instance?.owner.id === state.user.id,
+  const { session, accordion, thisDevice, showConnectLink } = useSelector((state: ApplicationState) => ({
+    thisDevice: (instance as IDevice)?.thisDevice && instance?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
@@ -63,6 +65,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
   }))
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
+  const displayThisDevice = thisDevice && !connectThisDevice
 
   useEffect(() => {
     // FIXME - move this up to the router level - for connection display now
@@ -81,8 +84,8 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
 
   return (
     <>
-      {ownDevice && (
-        <Notice gutterTop solid>
+      {displayThisDevice && (
+        <Notice gutterTop solid onClose={() => setConnectThisDevice(true)}>
           <Typography variant="h3">You are on the same device as this service.</Typography>
           <Typography variant="body2" gutterBottom>
             So you can connect directly without using Remote.It.
@@ -103,7 +106,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
         show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
-      {!ownDevice && !connection.connectLink && (
+      {!displayThisDevice && !connection.connectLink && (
         <GuideBubble
           guide="connectButton"
           enterDelay={400}
@@ -145,6 +148,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
               size="large"
               service={service}
               connection={connection}
+              loading={!instance.loaded}
               disabled={!instance.loaded}
               permissions={instance.permissions}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
@@ -165,11 +169,13 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
           elevation={0}
         >
           <List disablePadding>
-            <Collapse in={!connection.connectLink}>
+            <Collapse in={!connection.public}>
               <DesktopUI>
                 <NameSetting connection={connection} service={service} instance={instance} />
                 <PortSetting connection={connection} service={service} />
               </DesktopUI>
+            </Collapse>
+            <Collapse in={!connection.connectLink}>
               <LaunchSelect connection={connection} service={service} />
             </Collapse>
             <PortalUI>
@@ -230,12 +236,15 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
               onClick={() => dispatch.ui.accordion({ logs: !accordion.logs })}
               elevation={0}
             >
-              <List disablePadding>
+              <List>
                 <ListItem dense>
                   <ListItemIcon>
                     <Icon name="terminal" />
                   </ListItemIcon>
-                  <ListItemText primary="CLI command log" />
+                  <ListItemText
+                    primary="CLI command log"
+                    secondary={connection.commandLog?.length ? undefined : 'Empty'}
+                  />
                 </ListItem>
                 <ListItemQuote>
                   {connection.commandLog?.map((l, i) => (
@@ -244,8 +253,6 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
                     </ListItem>
                   ))}
                 </ListItemQuote>
-              </List>
-              <List>
                 <ConnectionLogSetting connection={connection} service={service} />
               </List>
             </AccordionMenuItem>

@@ -3,9 +3,11 @@ import user from './User'
 import Logger from './Logger'
 import environment from './environment'
 import { promisify } from 'util'
-import { exec } from 'child_process'
+import { exec, ExecException } from 'child_process'
 import { sudoPromise } from './sudoPromise'
 import cli from './cliInterface'
+
+type StdExecException = ExecException & { stderr: string; stdout: string }
 
 const execPromise = promisify(exec)
 
@@ -30,29 +32,33 @@ export default class Command {
     return this.commands.join(' && ')
   }
 
-  log(message: string, params: ILookup<string | boolean>, type: 'info' | 'warn' | 'error' = 'info') {
+  log(
+    message: string,
+    params: ILookup<object | string | boolean | undefined>,
+    type: 'info' | 'warn' | 'error' = 'info'
+  ) {
     if (this.quiet) return
     Logger[type](message, this.sanitize(params))
   }
 
-  sanitize(params: ILookup<string | boolean>) {
+  sanitize(params: ILookup<object | string | boolean | undefined>) {
     if (user.authHash) {
       Object.keys(params).forEach(key => {
-        if (typeof params[key] === 'string' && params[key].toString().includes(user.authHash))
-          params[key] = params[key].toString().replace(new RegExp(user.authHash, 'g'), '[CLEARED]')
+        if (typeof params[key] === 'string' && params[key]?.toString().includes(user.authHash))
+          params[key] = params[key]?.toString().replace(new RegExp(user.authHash, 'g'), '[CLEARED]')
       })
     }
     return params
   }
 
   toSafeString() {
-    return this.sanitize({ string: this.commands.join(' && ') }).string.toString()
+    return this.sanitize({ string: this.commands.join(' && ') }).string?.toString() || ''
   }
 
-  parseJSONError(error: string) {
-    const jsonError = error.match(/{.*}/)
-    if (jsonError) {
-      const { message }: CliStderr = JSON.parse(jsonError[0])
+  parseStdError(error: string) {
+    const cliError = error.match(/{.*}/)
+    if (cliError) {
+      const { message }: CliStderr = toJson(cliError[0])
       return message
     }
     return error
@@ -65,7 +71,7 @@ export default class Command {
 
     try {
       this.log('EXEC', {
-        quiet: !this.onError,
+        displayed: !!this.onError,
         exec: this.toString(),
         admin: this.admin,
         elevated: environment.isElevated,
@@ -77,45 +83,62 @@ export default class Command {
           : await execPromise(this.toString())
 
       if (stderr) {
-        this.log(`EXEC *** ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error')
-        if (this.isErrorReportable(stderr)) {
+        this.log(`EXEC *** STD ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error')
+        if (isErrorReportable(stderr)) {
           AirBrake.notify({
             params: { type: 'COMMAND STDERR', exec: this.toString() },
             context: { version: environment.version },
             error: stderr.toString(),
           })
         }
-        result = this.parseJSONError(stderr)
+        result = this.parseStdError(stderr)
         this.onError(new Error(result))
       }
 
       if (stdout) {
-        this.log(`EXEC SUCCESS`, { stdout: stdout.toString().trim() })
         result = stdout.toString()
+        this.log(`EXEC SUCCESS`, { stdout: toJson(stdout) })
       }
     } catch (error) {
-      if (this.isErrorReportable(error, error.code)) {
-        AirBrake.notify({
-          params: { type: 'COMMAND ERROR', exec: this.toString() },
-          context: { version: environment.version },
-          error,
-        })
-        cli.data.errorCodes.push(error.code)
+      if (isStdExecException(error)) {
+        if (isErrorReportable(error.stderr, error.code)) {
+          AirBrake.notify({
+            params: { type: 'COMMAND ERROR', exec: this.toString() },
+            context: { version: environment.version },
+            error,
+          })
+          if (error.code) cli.data.errorCodes.push(error.code)
+        }
+        this.log(`EXEC CAUGHT *** STD ERROR ***`, { error, errorStack: error.stack }, 'error')
+        result = this.parseStdError(error.stderr || error.stdout || error.message)
+        this.onError(new Error(result))
+      } else if (error instanceof Error) {
+        this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorStack: error.stack }, 'error')
+      } else {
+        Logger.error(`EXEC CAUGHT *** UNKNOWN ERROR ***`, { error }, 'error')
       }
-      this.log(
-        `EXEC CAUGHT *** ERROR ***`,
-        { error, errorMessage: error.message, errorCode: error.code, errorStack: error.stack },
-        'error'
-      )
-      result = this.parseJSONError(error.message)
-      this.onError(new Error(result))
     }
 
     return result
   }
+}
 
-  isErrorReportable(stderr: string, code?: number) {
-    const isErrorCode = code ? !cli.data.errorCodes.includes(code) : true
-    return !stderr.toString().includes('read-only file system') && isErrorCode
+// isStdExecException Type Guard
+function isStdExecException(error: any): error is StdExecException {
+  return !!error.stdout || !!error.stderr
+}
+
+function isErrorReportable(stderr: string, code?: number) {
+  const isErrorCode = code ? !cli.data.errorCodes.includes(code) : true
+  return !stderr.toString().includes('read-only file system') && isErrorCode
+}
+
+function toJson(string: string) {
+  let result
+  try {
+    result = JSON.parse(string)
+  } catch (error) {
+    return string
   }
+  return result
 }

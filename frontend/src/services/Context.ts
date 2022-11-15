@@ -7,3 +7,9 @@ export const DeviceContext = createContext<IDeviceContext>({
   attributes: [],
   required: {} as Attribute,
 })
+
+export const DiagramContext = createContext<IDiagramContext>({
+  activeTypes: [],
+  selectedTypes: [],
+  state: undefined,
+})

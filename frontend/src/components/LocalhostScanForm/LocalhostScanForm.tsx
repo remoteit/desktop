@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { DEFAULT_SERVICE, REGEX_NAME_SAFE } from '../../shared/constants'
 import { List, Chip, Typography } from '@mui/material'
-import { getTypeId, findType } from '../../models/applicationTypes'
+import { getType, findType } from '../../models/applicationTypes'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { ListItemCheckbox } from '../ListItemCheckbox'
@@ -32,7 +32,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
         localhost?.data[0] &&
         localhost?.data[0][1].map(row => ({
           ...DEFAULT_SERVICE,
-          typeID: getTypeId(applicationTypes, row[0]),
+          typeID: getType(applicationTypes, row[0]),
           port: row[0],
           name: row[1].replace(REGEX_NAME_SAFE, ''),
         })),

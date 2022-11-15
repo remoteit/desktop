@@ -29,7 +29,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
         <DialogTitle>Delete Access Key</DialogTitle>
         <form onSubmit={confirmDelete}>
           <DialogContent>
-            <Notice severity="danger" fullWidth gutterBottom>
+            <Notice severity="error" fullWidth gutterBottom>
               This action is permanent and cannot be undone.
             </Notice>
             <Typography variant="body1" gutterBottom>

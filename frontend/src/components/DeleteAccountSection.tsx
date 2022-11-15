@@ -78,7 +78,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
               checked={contact}
               onClick={checked => setContact(checked)}
             />
-            <Notice severity="danger" fullWidth gutterTop>
+            <Notice severity="error" fullWidth gutterTop>
               I understand that this is permanent and that accounts and related devices can not be recovered.
             </Notice>
           </Confirm>
