@@ -10,7 +10,8 @@ type Props = { type: DiagramGroupType; icon: DiagramIconType }
 
 // @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
 export const DiagramIcon: React.FC<Props> = ({ type, icon }) => {
-  const { activeTypes, state } = useContext(DiagramContext)
+  const { activeTypes, selectedTypes, state } = useContext(DiagramContext)
+  const selected = type ? selectedTypes.includes(type) : false
   const active = type ? activeTypes.includes(type) : false
   let props: IconProps = { type: 'regular', color: 'grayDarkest.main' }
 
@@ -40,7 +41,6 @@ export const DiagramIcon: React.FC<Props> = ({ type, icon }) => {
   switch (state) {
     case 'ready':
       props.color = 'grayDark'
-      if (active) props.color = 'primary'
       break
     case 'connected':
       props.color = 'primary'
@@ -52,6 +52,14 @@ export const DiagramIcon: React.FC<Props> = ({ type, icon }) => {
     case 'offline':
       props.color = 'grayLight'
       break
+  }
+
+  if (active) {
+    props.color = 'primary'
+  }
+
+  if (selected) {
+    props.color = 'alwaysWhite'
   }
 
   return (

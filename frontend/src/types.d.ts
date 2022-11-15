@@ -21,6 +21,7 @@ declare global {
 
   interface IDiagramContext {
     activeTypes: DiagramGroupType[]
+    selectedTypes: DiagramGroupType[]
     state?: IConnectionState
   }
 

@@ -10,5 +10,6 @@ export const DeviceContext = createContext<IDeviceContext>({
 
 export const DiagramContext = createContext<IDiagramContext>({
   activeTypes: [],
+  selectedTypes: [],
   state: undefined,
 })

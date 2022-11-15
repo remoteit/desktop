@@ -14,11 +14,13 @@ type Props = {
 
 // @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
 export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
-  const { activeTypes } = useContext(DiagramContext)
+  const { activeTypes, selectedTypes, state } = useContext(DiagramContext)
+  const selected = type ? selectedTypes.includes(type) : false
   const active = type ? activeTypes.includes(type) : false
   const css = useStyles()
 
-  let title = ''
+  let tooltip = ''
+  let titleColor: string | undefined = undefined
   let sx: PaperProps['sx'] = {
     flexGrow: 1,
     paddingBottom: 2,
@@ -27,47 +29,59 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
     backgroundColor: 'transparent',
   }
 
+  switch (state) {
+    case 'connected':
+      titleColor = 'primary.main'
+      break
+  }
+
   switch (type) {
     case 'proxy':
-      title = `Secure tunnel - ${active ? 'Active' : 'Inactive'}`
+      tooltip = 'Cloud proxy initiator'
       sx.backgroundColor = 'grayLightest.main'
       sx.maxWidth = 80
       break
     case 'tunnel':
-      title = `Secure tunnel - ${active ? 'Active' : 'Inactive'}`
+      tooltip = 'Remote.It Secure tunnel'
       break
     case 'forward':
-      title = 'System running the remoteit agent'
+      tooltip = 'System running the remoteit agent'
       sx.maxWidth = 80
       sx.backgroundColor = 'grayLightest.main'
       break
     case 'initiator':
-      title = 'This system'
+      tooltip = 'This system'
       sx.paddingLeft = 1
       sx.maxWidth = 100
       sx.backgroundColor = 'grayLightest.main'
       break
     case 'target':
-      title = 'System hosting the service'
+      tooltip = 'System hosting the service'
       sx.maxWidth = 100
       sx.backgroundColor = 'grayLightest.main'
       sx.paddingRight = 1.5
   }
 
   if (active) {
-    // sx.backgroundColor = 'primaryHighlight.main'
+    sx.backgroundColor = 'primaryHighlight.main'
+    titleColor = 'primary.main'
+  }
+
+  if (selected) {
+    sx.backgroundColor = 'primary.main'
+    titleColor = 'alwaysWhite.main'
   }
 
   return (
-    <Tooltip title={title} placement="top" arrow>
-      <Paper sx={sx} elevation={0} /* className={active ? css.active : undefined} */>
+    <Tooltip title={tooltip} placement="top" arrow>
+      <Paper sx={sx} elevation={0}>
         <InputLabel
           shrink
           sx={{
             position: 'absolute',
             top: spacing.sm,
             left: spacing.md,
-            color: active ? 'primary.main' : undefined,
+            color: titleColor,
           }}
         >
           {type}

@@ -58,7 +58,9 @@ export const Notice: React.FC<NoticeProps> = ({
   return (
     <Paper elevation={0} className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}>
       {icon}
-      <Box>{children}</Box>
+      <Box>
+        <span>{children}</span>
+      </Box>
       {button}
       {onClose && <IconButton name="times" onClick={onClose} color={solid ? 'alwaysWhite' : undefined} title="Close" />}
     </Paper>

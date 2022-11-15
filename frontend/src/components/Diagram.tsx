@@ -11,17 +11,12 @@ import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
 import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
-// import { useSelector } from 'react-redux'
-// import { selectConnection } from '../helpers/connectionHelper'
-// import { ApplicationState } from '../store'
-
-// type DiagramState = IConnectionState | 'setup' | 'unknown'
-
 type Props = {
   activeTypes?: DiagramGroupType[]
+  selectedTypes?: DiagramGroupType[]
 }
 
-export const Diagram: React.FC<Props> = ({ activeTypes = [] }) => {
+export const Diagram: React.FC<Props> = ({ activeTypes = [], selectedTypes = [] }) => {
   const { connections, device } = React.useContext(DeviceContext)
   const { serviceID } = useParams<{ serviceID: string }>()
   const css = useStyles()
@@ -31,7 +26,7 @@ export const Diagram: React.FC<Props> = ({ activeTypes = [] }) => {
 
   const state = connectionState(service, connection)
   const forward = isForward(service)
-  const proxy = connection && (!connection.isP2P || connection.public)
+  const proxy = connection && ((connection.isP2P !== undefined && !connection.isP2P) || connection.public)
 
   switch (state) {
     case 'ready':
@@ -52,8 +47,8 @@ export const Diagram: React.FC<Props> = ({ activeTypes = [] }) => {
 
   return (
     <TestUI>
-      <DiagramContext.Provider value={{ state, activeTypes }}>
-        {/* <Pre {...{ service }} /> */}
+      <DiagramContext.Provider value={{ state, activeTypes, selectedTypes }}>
+        {/* <Pre {...{ connection }} /> */}
         <Paper elevation={0} className={css.diagram}>
           <DiagramGroup type="initiator">
             <DiagramIcon type="initiator" icon="listener" />
@@ -97,5 +92,6 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'stretch',
+    '& .MuiPaper-root + .MuiPaper-root': { marginLeft: 1 },
   }),
 }))

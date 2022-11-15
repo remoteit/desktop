@@ -88,45 +88,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       }}
     >
       <List>
-        {editable && (
-          <ListItem className={css.field}>
-            <TextField
-              select
-              label="Service Type"
-              value={form.typeID}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => {
-                const typeID = Number(event.target.value)
-                const updatedAppType = findType(applicationTypes, typeID)
-                setForm({
-                  ...form,
-                  typeID: typeID,
-                  port: findType(applicationTypes, typeID).port || 0,
-                  name: serviceNameValidation(updatedAppType.name).value,
-                  attributes: {
-                    ...form.attributes,
-                    commandTemplate: undefined,
-                    launchTemplate: undefined,
-                  },
-                })
-              }}
-            >
-              {applicationTypes.map(type => (
-                <MenuItem value={type.id} key={type.id}>
-                  {type.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Typography variant="caption">
-              {appType.description}
-              <br />
-              <em>
-                {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
-              </em>
-            </Typography>
-          </ListItem>
-        )}
         <ListItem className={css.field}>
           <TextField
             required
@@ -164,6 +125,43 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
         </ListItem>
         {editable && (
           <>
+            <ListItem className={css.field}>
+              <TextField
+                select
+                label="Service Type"
+                value={form.typeID}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => {
+                  const typeID = Number(event.target.value)
+                  const updatedAppType = findType(applicationTypes, typeID)
+                  setForm({
+                    ...form,
+                    typeID: typeID,
+                    port: findType(applicationTypes, typeID).port || 0,
+                    name: serviceNameValidation(updatedAppType.name).value,
+                    attributes: {
+                      ...form.attributes,
+                      commandTemplate: undefined,
+                      launchTemplate: undefined,
+                    },
+                  })
+                }}
+              >
+                {applicationTypes.map(type => (
+                  <MenuItem value={type.id} key={type.id}>
+                    {type.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Typography variant="caption">
+                {appType.description}
+                <br />
+                <em>
+                  {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
+                </em>
+              </Typography>
+            </ListItem>
             <ListItem className={css.field}>
               <TextField
                 required

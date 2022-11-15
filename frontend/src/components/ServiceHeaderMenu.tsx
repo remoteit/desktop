@@ -79,7 +79,7 @@ export const ServiceHeaderMenu: React.FC<{
             <UsersTab instance={device} service={service} to={`/devices/${device.id}/${service.id}/users`} />
           </ListHorizontal>
           <Gutters size="md" top={null}>
-            <Diagram />
+            <Diagram /* selectedTypes={['initiator', 'proxy']}  */ />
           </Gutters>
         </>
       }

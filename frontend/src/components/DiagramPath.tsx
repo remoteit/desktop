@@ -8,7 +8,8 @@ type Props = {
 }
 
 export const DiagramPath: React.FC<Props> = ({ type }) => {
-  const { activeTypes, state } = useContext(DiagramContext)
+  const { activeTypes, selectedTypes, state } = useContext(DiagramContext)
+  const selected = type ? selectedTypes.includes(type) : false
   const active = type ? activeTypes.includes(type) : false
   let sx: DividerProps['sx'] = {
     flexGrow: 1,
@@ -26,10 +27,6 @@ export const DiagramPath: React.FC<Props> = ({ type }) => {
   switch (state) {
     case 'ready':
       sx.borderColor = 'gray.main'
-      if (active) {
-        sx.borderColor = 'primary.main'
-        sx.borderBottomWidth = 2
-      }
       break
     case 'connected':
       sx.borderColor = 'primary.main'
@@ -40,6 +37,14 @@ export const DiagramPath: React.FC<Props> = ({ type }) => {
       break
     case 'offline':
       sx.borderColor = 'grayLight.main'
+  }
+
+  if (active) {
+    sx.borderColor = 'primary.main'
+  }
+
+  if (selected) {
+    sx.borderColor = 'alwaysWhite.main'
   }
 
   console.log('line', { active, activeTypes, state })
