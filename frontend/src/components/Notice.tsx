@@ -60,7 +60,7 @@ export const Notice: React.FC<NoticeProps> = ({
       {icon}
       <Box>{children}</Box>
       {button}
-      {onClose && <IconButton name="times" onClick={onClose} title="Close" />}
+      {onClose && <IconButton name="times" onClick={onClose} color={solid ? 'alwaysWhite' : undefined} title="Close" />}
     </Paper>
   )
 }
@@ -76,17 +76,32 @@ const useStyles = makeStyles(({ palette }) => ({
   successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
   notice: ({ fullWidth, gutterBottom, gutterTop }: NoticeProps) => ({
     flexGrow: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginLeft: fullWidth ? 0 : spacing.md,
     marginRight: fullWidth ? 0 : spacing.md,
     marginBottom: gutterBottom ? spacing.md : 0,
     marginTop: gutterTop ? spacing.md : 0,
     padding: `${spacing.sm}px ${spacing.md}px`,
     display: 'flex',
+    position: 'relative',
     fontWeight: 500,
-    '& .MuiBox-root': { flexGrow: 1, marginTop: spacing.xxs, marginRight: spacing.xs },
+    '& > .MuiBox-root': {
+      flexGrow: 1,
+      marginTop: spacing.xxs,
+      marginRight: spacing.xs,
+      minHeight: 34,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
     '& > .MuiIconButton-root': { marginLeft: spacing.sm },
-    '& > svg': { marginLeft: spacing.xxs, marginRight: spacing.md, width: 21 },
+    '& > svg': {
+      marginLeft: spacing.xxs,
+      marginRight: spacing.md,
+      width: 21,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
+    },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
   }),
