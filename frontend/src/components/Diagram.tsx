@@ -1,22 +1,23 @@
 import React from 'react'
-import { IP_PRIVATE } from '../shared/constants'
+import {} from '../shared/constants'
 import { Paper } from '@mui/material'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
-import { connectionState } from '../helpers/connectionHelper'
+import { isForward, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
 import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
 type Props = {
+  forward?: boolean
   activeTypes?: DiagramGroupType[]
   selectedTypes?: DiagramGroupType[]
 }
 
-export const Diagram: React.FC<Props> = ({ activeTypes = [], selectedTypes = [] }) => {
+export const Diagram: React.FC<Props> = ({ forward, activeTypes = [], selectedTypes = [] }) => {
   const { connections, device } = React.useContext(DeviceContext)
   const { serviceID } = useParams<{ serviceID: string }>()
   const css = useStyles()
@@ -25,8 +26,8 @@ export const Diagram: React.FC<Props> = ({ activeTypes = [], selectedTypes = [] 
   const connection = connections?.find(c => c.id === serviceID)
 
   const state = connectionState(service, connection)
-  const forward = isForward(service)
   const proxy = connection && ((connection.isP2P !== undefined && !connection.isP2P) || connection.public)
+  forward = forward || isForward(service)
 
   switch (state) {
     case 'ready':
@@ -81,10 +82,6 @@ export const Diagram: React.FC<Props> = ({ activeTypes = [], selectedTypes = [] 
       </DiagramContext.Provider>
     </TestUI>
   )
-}
-
-function isForward(service?: IService) {
-  return service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost'
 }
 
 const useStyles = makeStyles(({ palette }) => ({

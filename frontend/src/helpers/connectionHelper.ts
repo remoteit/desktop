@@ -1,5 +1,6 @@
 import { emit } from '../services/Controller'
 import {
+  IP_PRIVATE,
   DEFAULT_CONNECTION,
   REGEX_CONNECTION_NAME,
   REGEX_CONNECTION_TRIM,
@@ -22,6 +23,10 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
     if (connection.enabled) return 'ready'
   }
   return 'online'
+}
+
+export function isForward(service?: IService) {
+  return !!(service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost')
 }
 
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {

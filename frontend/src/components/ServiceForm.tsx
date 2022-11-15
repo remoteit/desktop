@@ -25,6 +25,7 @@ export type ServiceFormProps = {
   editable: boolean
   disabled?: boolean
   adding?: boolean
+  onChange?: (form: IServiceForm) => void
   onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }

@@ -47,6 +47,5 @@ export const DiagramPath: React.FC<Props> = ({ type }) => {
     sx.borderColor = 'alwaysWhite.main'
   }
 
-  console.log('line', { active, activeTypes, state })
   return <Divider sx={sx} />
 }
