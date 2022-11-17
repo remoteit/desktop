@@ -1,5 +1,6 @@
 import { emit } from '../services/Controller'
 import {
+  IP_OPEN,
   IP_PRIVATE,
   DEFAULT_CONNECTION,
   REGEX_CONNECTION_NAME,
@@ -55,15 +56,14 @@ export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
   const cd = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
+  const routeType: IRouteType = service?.attributes.route || cd?.route || isPortal() ? 'public' : 'failover'
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
+    ...routeTypeToSettings(routeType, DEFAULT_CONNECTION),
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    failover: getRouteDefault('failover', true, service, cd?.route),
-    proxyOnly: getRouteDefault('proxy', false, service, cd?.route),
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch, // FIXME
-    public: isPortal() || getRouteDefault('public', undefined, service, cd?.route),
   }
 
   if (service) {
@@ -85,15 +85,15 @@ export function newConnection(service?: IService | null) {
   return connection
 }
 
-function getRouteDefault(
-  type: IRouteType,
-  actualDefault?: boolean,
-  service?: IService | null,
-  connectionDefaults?: IRouteType
-) {
-  if (service?.attributes.route) return service?.attributes.route === type
-  if (connectionDefaults) return connectionDefaults === type
-  return actualDefault
+export function routeTypeToSettings(route: IRouteType, defaults?: IConnection) {
+  return {
+    failover: route !== 'p2p',
+    proxyOnly: route === 'proxy',
+    public: route === 'public',
+    enabled: route === 'public' ? false : !!defaults?.enabled,
+    publicRestriction: route === 'public' ? IP_OPEN : undefined,
+    reverseProxy: route !== 'public' ? undefined : defaults?.reverseProxy,
+  }
 }
 
 export function usedPorts(state: ApplicationState) {

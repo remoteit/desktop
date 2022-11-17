@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import { ROUTES } from '../models/devices'
-import { IP_OPEN } from '../shared/constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { ListItem, ListItemIcon, TextField, MenuItem, Typography, Chip, Box } from '@mui/material'
-import { newConnection, setConnection, getRoute } from '../helpers/connectionHelper'
+import { newConnection, setConnection, getRoute, routeTypeToSettings } from '../helpers/connectionHelper'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -43,15 +42,7 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
         onChange={e => {
           const route = e.target.value as IRouteType
           setOpen(!open)
-          const updated = {
-            ...connection,
-            failover: route !== 'p2p',
-            proxyOnly: route === 'proxy',
-            public: route === 'public',
-            enabled: route === 'public' ? false : connection.enabled,
-            publicRestriction: route === 'public' ? IP_OPEN : undefined,
-            reverseProxy: route !== 'public' ? undefined : connection.reverseProxy,
-          }
+          const updated = { ...connection, ...routeTypeToSettings(route, connection) }
           if (updated.public && connection.enabled) {
             dispatch.connections.disconnect(connection)
           }
