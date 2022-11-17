@@ -38,24 +38,33 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        {service ? (
-          <>
-            <ListItemLocation
-              dense
-              menuItem
-              title="Details"
-              icon="info-circle"
-              pathname={`/devices/${device.id}/${service.id}/details`}
-            />
-            <UsersTab instance={device} service={service} to={`/devices/${device.id}/${service.id}/users`} />
-            <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service.id}`} />
-          </>
-        ) : (
-          <>
-            <UsersTab instance={device} service={service} to={`/devices/${device.id}/users`} />
-            <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
-          </>
-        )}
+        {service
+          ? [
+              <ListItemLocation
+                dense
+                menuItem
+                key="info"
+                title="Details"
+                icon="info-circle"
+                pathname={`/devices/${device.id}/${service.id}/details`}
+              />,
+              <UsersTab
+                key="users"
+                instance={device}
+                service={service}
+                to={`/devices/${device.id}/${service.id}/users`}
+              />,
+              <CopyMenuItem
+                key="link"
+                icon="link"
+                title="Service Link"
+                value={`${PROTOCOL}device/${device.id}/${service.id}`}
+              />,
+            ]
+          : [
+              <UsersTab key="users" instance={device} service={service} to={`/devices/${device.id}/users`} />,
+              <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />,
+            ]}
         {manage && [
           <MenuItem
             dense
