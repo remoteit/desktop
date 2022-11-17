@@ -156,9 +156,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             borderRadius: radius,
-            '& .MuiTouchRipple-root': {
-              color: palette.primary.main,
-            },
+            '& .MuiTouchRipple-root': { color: palette.primary.main },
           },
         },
       },
@@ -298,9 +296,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginTop: 1,
             marginBottom: 1,
             borderRadius: radius,
-            '&.Mui-selected': {
-              backgroundColor: palette.primaryHighlight.main,
-            },
+            '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
             '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
             '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },

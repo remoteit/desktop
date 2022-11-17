@@ -2,15 +2,12 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
-import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
-import { ListItemLocation } from './ListItemLocation'
 import { Typography } from '@mui/material'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { LoadingMessage } from './LoadingMessage'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
-import { UsersTab } from './UsersTab'
 import { Gutters } from './Gutters'
 import { Color } from '../styling'
 import { Diagram } from './Diagram'
@@ -50,7 +47,7 @@ export const ServiceHeaderMenu: React.FC<{
             </Gutters>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          <ListHorizontal disablePadding dense>
+          {/* <ListHorizontal disablePadding dense>
             <ListItemLocation
               title="Connection"
               icon="arrow-right"
@@ -77,9 +74,14 @@ export const ServiceHeaderMenu: React.FC<{
               />
             )}
             <UsersTab instance={device} service={service} to={`/devices/${device.id}/${service.id}/users`} />
-          </ListHorizontal>
-          <Gutters size="md" top={null}>
-            <Diagram /* selectedTypes={['initiator', 'proxy']}  */ />
+          </ListHorizontal> */}
+          <Gutters top="xl" size="md">
+            <Diagram
+              to={{
+                initiator: `/devices/${device?.id}/${serviceID}/connect`,
+                target: `/devices/${device?.id}/${serviceID}/edit`,
+              }}
+            />
           </Gutters>
         </>
       }

@@ -2,7 +2,6 @@ import url from 'url'
 import classnames from 'classnames'
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { validPort } from '../helpers/connectionHelper'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { DEFAULT_SERVICE } from '../shared/constants'
@@ -21,16 +20,15 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
   const { applicationTypes, keyApplications, saving } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
     keyApplications: selectUniqueSchemeTypes(state),
-    saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    saving: !!(state.ui.setupServiceBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
   }))
 
   const [portReachable, portScan] = usePortScan()
-  const [field, setField] = useState<string>('http://')
+  const [field, setField] = useState<string>('http://127.0.0.1')
   const css = useStyles()
 
   disabled = disabled || saving
 
-  let InputFields: React.ReactNode
   const parsed = url.parse(field)
   const scheme = parsed.protocol?.slice(0, -1)
   const applicationType = applicationTypes.find(a => a.scheme === scheme)
@@ -40,13 +38,14 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
   const form = {
     ...DEFAULT_SERVICE,
     port,
+    id: service?.id || '',
     typeID: applicationType?.id || DEFAULT_SERVICE.typeID,
     deviceId: service?.deviceID,
-    name: application.title,
+    name: applicationType?.name || application.title,
     host: parsed.hostname || '',
     enabled: true,
     attributes: {
-      targetHost: applicationType?.proxy && parsed.href ? parsed.href : undefined,
+      targetHost: applicationType?.proxy && parsed.host ? parsed.host : undefined,
       launchTemplate: application.launchTemplate + (parsed.path ? parsed.path : ''),
     },
   }
@@ -56,12 +55,15 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
     if (onChange) onChange(form)
   }, [field])
 
-  // select form type
-  switch (parsed.protocol) {
-    case 'http:':
-    case 'https:':
-    case 'smb:':
-      InputFields = (
+  return (
+    <>
+      <form
+        className={classnames(css.item)}
+        onSubmit={event => {
+          event.preventDefault()
+          onSubmit(form)
+        }}
+      >
         <TextField
           required
           value={field}
@@ -76,64 +78,11 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
             endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
           }}
         />
-      )
-      break
-    default:
-      InputFields = (
-        <>
-          <TextField
-            required
-            label="Service Host"
-            value={form.host}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => {
-              parsed.host = null
-              parsed.hostname = event.target.value.toString()
-              parsed.port = form.port?.toString() || null
-              setField(url.format(parsed))
-            }}
-            InputProps={{
-              endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
-            }}
-          />
-          <TextField
-            required
-            label="Service Port"
-            value={form.port || ''}
-            disabled={disabled}
-            variant="filled"
-            helperText={<Typography variant="caption">Example: {application.example}</Typography>}
-            onChange={event => {
-              parsed.host = null
-              parsed.hostname = form.host
-              parsed.port = validPort(event).toString()
-              console.log('parsed port', parsed, url.format(parsed))
-              setField(url.format(parsed))
-            }}
-          />
-        </>
-      )
-  }
-
-  return (
-    <>
-      <form
-        className={classnames(css.item)}
-        onSubmit={event => {
-          event.preventDefault()
-          onSubmit(form)
-        }}
-      >
-        {InputFields}
         <Button type="submit" variant="contained" color="primary" size="large" disabled={!isValid || disabled}>
           {saving ? 'Adding...' : 'Add'}
         </Button>
       </form>
       <Gutters inset="sm" className={css.item}>
-        {/* <Typography variant="caption" textAlign="center" className={css.fullWidth}>
-          Service Types
-        </Typography> */}
         <Box className={css.item}>
           {keyApplications.map(
             t =>
@@ -143,6 +92,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
                   key={t.id}
                   onClick={() => {
                     parsed.protocol = t.scheme + ':'
+                    if (parsed.pathname === '/') parsed.pathname = null
                     setField(url.format(parsed))
                   }}
                   color={t.id === applicationType?.id ? 'primary' : undefined}

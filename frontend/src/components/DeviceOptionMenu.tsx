@@ -5,9 +5,11 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
+import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
+import { UsersTab } from './UsersTab'
 import { Icon } from './Icon'
 
 type Props = { device?: IDevice; service?: IService }
@@ -37,9 +39,22 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         elevation={2}
       >
         {service ? (
-          <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service?.id}`} />
+          <>
+            <ListItemLocation
+              dense
+              menuItem
+              title="Details"
+              icon="info-circle"
+              pathname={`/devices/${device.id}/${service.id}/details`}
+            />
+            <UsersTab instance={device} service={service} to={`/devices/${device.id}/${service.id}/users`} />
+            <CopyMenuItem icon="link" title="Service Link" value={`${PROTOCOL}device/${device.id}/${service.id}`} />
+          </>
         ) : (
-          <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+          <>
+            <UsersTab instance={device} service={service} to={`/devices/${device.id}/users`} />
+            <CopyMenuItem icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+          </>
         )}
         {manage && [
           <MenuItem

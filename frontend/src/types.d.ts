@@ -20,8 +20,9 @@ declare global {
   }
 
   interface IDiagramContext {
+    toTypes?: { [key in DiagramGroupType]?: string }
     activeTypes: DiagramGroupType[]
-    selectedTypes: DiagramGroupType[]
+    highlightTypes: DiagramGroupType[]
     state?: IConnectionState
   }
 

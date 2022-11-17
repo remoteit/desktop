@@ -15,6 +15,7 @@ import { LinearProgress } from '../components/LinearProgress'
 import { ConnectionName } from '../components/ConnectionName'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
+import { Diagram } from '../components/Diagram'
 import { Connect } from '../components/Connect'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
@@ -68,6 +69,14 @@ export const ConnectionPage: React.FC = () => {
               </Typography>
             </Gutters>
           )}
+          <Gutters size="md">
+            <Diagram
+              to={{
+                initiator: `/connections/${serviceID}`,
+                target: `/devices/${device?.id}/${serviceID}/edit`,
+              }}
+            />
+          </Gutters>
           <LinearProgress loading={waiting} />
         </>
       }

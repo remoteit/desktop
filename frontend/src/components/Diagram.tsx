@@ -8,16 +8,17 @@ import { DiagramPath } from './DiagramPath'
 import { isForward, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
+import { DiagramDivider } from './DiagramDivider'
 import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
 type Props = {
+  to?: { [key in DiagramGroupType]?: string }
   forward?: boolean
-  activeTypes?: DiagramGroupType[]
-  selectedTypes?: DiagramGroupType[]
+  highlightTypes?: DiagramGroupType[]
 }
 
-export const Diagram: React.FC<Props> = ({ forward, activeTypes = [], selectedTypes = [] }) => {
+export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes = [] }) => {
   const { connections, device } = React.useContext(DeviceContext)
   const { serviceID } = useParams<{ serviceID: string }>()
   const css = useStyles()
@@ -26,8 +27,10 @@ export const Diagram: React.FC<Props> = ({ forward, activeTypes = [], selectedTy
   const connection = connections?.find(c => c.id === serviceID)
 
   const state = connectionState(service, connection)
-  const proxy = connection && ((connection.isP2P !== undefined && !connection.isP2P) || connection.public)
+  const proxy =
+    connection && ((connection.isP2P !== undefined && !connection.isP2P && connection.enabled) || connection.public)
   forward = forward || isForward(service)
+  let activeTypes: DiagramGroupType[] = []
 
   switch (state) {
     case 'ready':
@@ -48,35 +51,35 @@ export const Diagram: React.FC<Props> = ({ forward, activeTypes = [], selectedTy
 
   return (
     <TestUI>
-      <DiagramContext.Provider value={{ state, activeTypes, selectedTypes }}>
+      <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
         {/* <Pre {...{ connection }} /> */}
         <Paper elevation={0} className={css.diagram}>
           <DiagramGroup type="initiator">
-            <DiagramIcon type="initiator" icon="listener" />
+            <DiagramIcon type="initiator" />
             <DiagramPath type="initiator" />
           </DiagramGroup>
           {proxy && (
             <DiagramGroup type="proxy">
               <DiagramPath type="proxy" />
-              <DiagramIcon type="proxy" icon="proxy" />
-              <DiagramPath type="proxy" />
+              <DiagramIcon type="proxy" />
+              <DiagramPath type="proxy" flexGrow={2} />
             </DiagramGroup>
           )}
+          <DiagramDivider start />
           <DiagramGroup type="tunnel">
-            <DiagramIcon type="tunnel" icon="entrance" />
             <DiagramPath type="tunnel" />
-            <DiagramIcon type="tunnel" icon="exit" />
           </DiagramGroup>
+          <DiagramDivider end />
           {forward && (
             <DiagramGroup type="forward">
               <DiagramPath type="forward" />
-              <DiagramIcon type="forward" icon="forward" />
-              <DiagramPath type="forward" />
+              <DiagramIcon type="forward" />
+              <DiagramPath type="forward" flexGrow={2} />
             </DiagramGroup>
           )}
           <DiagramGroup type="target">
             <DiagramPath type="target" />
-            <DiagramIcon type="target" icon="service" />
+            <DiagramIcon type="target" />
           </DiagramGroup>
         </Paper>
       </DiagramContext.Provider>
@@ -87,8 +90,9 @@ export const Diagram: React.FC<Props> = ({ forward, activeTypes = [], selectedTy
 const useStyles = makeStyles(({ palette }) => ({
   diagram: () => ({
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'stretch',
+    position: 'relative',
     '& .MuiPaper-root + .MuiPaper-root': { marginLeft: 1 },
   }),
 }))

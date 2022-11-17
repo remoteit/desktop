@@ -9,7 +9,8 @@ export const DeviceContext = createContext<IDeviceContext>({
 })
 
 export const DiagramContext = createContext<IDiagramContext>({
+  toTypes: undefined,
   activeTypes: [],
-  selectedTypes: [],
+  highlightTypes: [],
   state: undefined,
 })

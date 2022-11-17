@@ -30,6 +30,7 @@ export default class Connection {
   }
 
   async stop() {
+    this.params.stopping = true
     this.params.enabled = false
     await cli.removeConnection(this.params, this.error, this.log)
   }
@@ -38,6 +39,8 @@ export default class Connection {
     this.params.enabled = false
     this.params.connecting = false
     this.params.disconnecting = false
+    this.params.stopping = false
+    this.params.starting = false
     this.params.createdTime = undefined
     this.params.error = undefined
     await cli.removeConnection(this.params, this.error, this.log)

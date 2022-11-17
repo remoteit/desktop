@@ -237,6 +237,27 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 </Notice>
               </ListItem>
             )}
+            {appType.proxy && (
+              <ListItem className={css.field}>
+                <TextField
+                  label="Target Host Name"
+                  value={form.attributes.targetHost || ''}
+                  disabled={disabled}
+                  variant="filled"
+                  onChange={event =>
+                    setForm({ ...form, attributes: { ...form.attributes, targetHost: event.target.value.toString() } })
+                  }
+                />
+                <Typography variant="caption">
+                  <i>Optional. </i>
+                  Override the target host name when accessing this service. Needed by host name dependant web sites.{' '}
+                  <i>
+                    Example
+                    <b> webui.company.com</b> or <b>google.com</b>
+                  </i>
+                </Typography>
+              </ListItem>
+            )}
             <ListItemCheckbox
               checked={form.enabled}
               label="Enable service"

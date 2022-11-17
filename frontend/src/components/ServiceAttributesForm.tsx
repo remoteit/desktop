@@ -79,24 +79,6 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           <b> Default peer to peer with proxy failover</b>
         </Typography>
       </ListItem>
-      {!globalDefaults && (
-        <ListItem className={css.field}>
-          <TextField
-            label="Target Host Name"
-            value={attributes.targetHost || ''}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
-          />
-          <Typography variant="caption">
-            Override the target host name when accessing this service. Needed by host name dependant web sites.{' '}
-            <i>
-              Example
-              <b> webui.company.com</b> or <b>google.com</b>
-            </i>
-          </Typography>
-        </ListItem>
-      )}
       {globalDefaults && (
         <>
           <ListItem className={css.field}>

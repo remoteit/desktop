@@ -1,7 +1,8 @@
 import React from 'react'
 import classnames from 'classnames'
-import { useHistory, useLocation } from 'react-router-dom'
-import { ListItem, ListItemIcon, ListItemText, Badge } from '@mui/material'
+import { useHistory } from 'react-router-dom'
+import { useMatches } from '../../hooks/useMatches'
+import { MenuItem, ListItem, ListItemIcon, ListItemText, Badge } from '@mui/material'
 import { Color, FontSize, spacing } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Icon } from '../Icon'
@@ -21,6 +22,7 @@ export type Props = {
   disableIcon?: boolean
   dense?: boolean
   className?: string
+  menuItem?: boolean
   match?: string | string[]
   exactMatch?: boolean
   badge?: number
@@ -40,6 +42,7 @@ export const ListItemLocation: React.FC<Props> = ({
   disabled,
   disableIcon,
   showDisabled,
+  menuItem,
   match,
   exactMatch,
   badge,
@@ -48,12 +51,8 @@ export const ListItemLocation: React.FC<Props> = ({
   ...props
 }) => {
   const history = useHistory()
-  const location = useLocation()
+  const matches = useMatches({ to: pathname, match, exactMatch })
   const css = useStyles({ disableIcon: !!disableIcon })
-
-  if (!match) match = pathname
-  if (typeof match === 'string') match = [match]
-  const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
 
   const onClick = () => {
     props.onClick?.()
@@ -73,10 +72,13 @@ export const ListItemLocation: React.FC<Props> = ({
       icon
     )
 
+  const Item = menuItem ? MenuItem : ListItem
+
   return (
-    <ListItem
+    <Item
       {...props}
       button
+      href=""
       className={classnames(css.root, className)}
       selected={!!matches}
       onClick={onClick}
@@ -96,7 +98,7 @@ export const ListItemLocation: React.FC<Props> = ({
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
       {children}
-    </ListItem>
+    </Item>
   )
 }
 

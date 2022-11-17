@@ -66,13 +66,16 @@ export default class ConnectionPool {
 
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
-      if (!(connection.params.enabled || connection.params.connected) || connection.params.public) return
+      if (!(connection.params.enabled || connection.params.connected) || connection.params.public) {
+        this.clearTransitions(connection)
+        return
+      }
 
       const cliConnection = cliData.find(c => c.id === connection.params.id)
 
       if (!cliConnection) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
-        connection.start()
+        this.start(connection.params)
         this.updated(connection)
       }
 
@@ -158,7 +161,7 @@ export default class ConnectionPool {
   start = async (connection: IConnection) => {
     Logger.info('CONNECT', { id: connection.id })
     if (!connection) return new Error('No connection data!')
-    const instance = this.set(connection)
+    const instance = this.set(connection, false, true)
     if (!instance) return
     await this.assignPort(instance)
     await instance.start()
@@ -196,6 +199,22 @@ export default class ConnectionPool {
     if (connection) {
       await connection.clear()
       this.updated()
+    }
+  }
+
+  clearTransitions = (instance: Connection) => {
+    if (
+      instance.params.stopping ||
+      instance.params.disconnecting ||
+      instance.params.starting ||
+      instance.params.connecting
+    ) {
+      Logger.info('CLEAR CONNECTION TRANSITION STATE')
+      instance.params.connecting = false
+      instance.params.disconnecting = false
+      instance.params.stopping = false
+      instance.params.starting = false
+      this.updated(instance)
     }
   }
 

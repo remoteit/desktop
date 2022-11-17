@@ -4,41 +4,32 @@ import { DiagramContext } from '../services/Context'
 import { Divider, DividerProps } from '@mui/material'
 
 type Props = {
+  start?: boolean
+  end?: boolean
   type?: DiagramGroupType
-  flexGrow?: number
 }
 
-export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
+export const DiagramDivider: React.FC<Props> = ({ start, end, type }) => {
   const { highlightTypes, state } = useContext(DiagramContext)
   const highlight = type ? highlightTypes.includes(type) : false
   let sx: DividerProps['sx'] = {
-    flexGrow,
-    borderBottomWidth: 1,
     borderColor: 'grayDarkest.main',
-    marginBottom: '8px',
-    marginTop: '9px',
-  }
-
-  switch (type) {
-    case 'tunnel':
-      if (state === 'connected') {
-        sx.borderTopWidth = 1
-        sx.borderBottomWidth = 1
-        sx.minHeight = '5px'
-        sx.marginBottom = '6px'
-        sx.marginTop = '7px'
-      } else {
-        sx.borderStyle = 'dotted'
-      }
-      break
+    borderStyle: 'dashed',
+    height: 'inherit',
+    marginBottom: 1.5,
+    marginTop: 3.5,
+    marginLeft: start ? 0.6 : undefined,
+    marginRight: end ? 0.6 : undefined,
   }
 
   switch (state) {
     case 'ready':
-      sx.borderColor = type === 'initiator' ? 'primary.main' : 'grayDarker.main'
+    case 'online':
+      sx.borderColor = 'grayDarker.main'
       break
     case 'connected':
       sx.borderColor = 'primary.main'
+      sx.borderBottomWidth = 2
       break
     case 'offline':
       sx.borderColor = 'grayLight.main'
@@ -48,5 +39,5 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
     sx.borderColor = 'alwaysWhite.main'
   }
 
-  return <Divider sx={sx} />
+  return <Divider orientation="vertical" sx={sx} />
 }

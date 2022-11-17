@@ -17,9 +17,9 @@ export const PortScanIcon: React.FC<{ state?: IPortScan; port?: number; host?: s
     case 'REACHABLE':
       title = (
         <>
-          {host}:{port}
+          Service found!
           <br />
-          service found
+          {host}:{port}
         </>
       )
       props.name = 'check-circle'
@@ -29,7 +29,7 @@ export const PortScanIcon: React.FC<{ state?: IPortScan; port?: number; host?: s
     case 'UNREACHABLE':
       title = (
         <>
-          Service not found
+          Service not found.
           <br />
           {host}:{port}
         </>

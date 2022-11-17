@@ -47,7 +47,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, to }) => {
         </>
       }
     >
-      <ListItemLocation pathname={to} dense>
+      <ListItemLocation pathname={to} menuItem dense>
         <ListItemIcon>
           <Icon name="user-group" color="grayDarker" size="md" />
         </ListItemIcon>
