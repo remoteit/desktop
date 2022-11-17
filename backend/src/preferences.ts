@@ -19,7 +19,6 @@ export class Preferences {
     switchApi: false,
     apiURL: '',
     apiGraphqlURL: '',
-    testUI: 'OFF',
     windowState: { width: 1280, height: 800 },
   }
 
@@ -54,6 +53,13 @@ export class Preferences {
     this.data = preferences
     Logger.info('SET PREFERENCES', { preferences })
     EventBus.emit(this.EVENTS.update, this.data)
+  }
+
+  getTestHeader(): { [key: string]: string } {
+    const testHeader = this.data.testHeader
+    if (!testHeader) return {}
+    const parts = testHeader.split(':')
+    return { [parts[0].trim()]: parts[1].trim() }
   }
 }
 

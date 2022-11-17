@@ -1,4 +1,5 @@
 import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
+import preferences from './preferences'
 import environment from './environment'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
@@ -45,6 +46,7 @@ export class User {
         headers: {
           'Content-Type': 'application/json',
           developerKey: DEVELOPER_KEY,
+          ...preferences.getTestHeader(),
         },
       }
     )

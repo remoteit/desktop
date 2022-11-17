@@ -79,7 +79,7 @@ export const AvatarMenu: React.FC = () => {
             confirmTitle="Are you sure?"
             confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
             onClick={() => {
-              emit('preferences', { ...preferences, testUI: 'HIGHLIGHT' })
+              dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
               handleClose()
             }}
           />

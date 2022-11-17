@@ -23,12 +23,14 @@ const SAVED_STATES = [
   'columnWidths',
   'limitsOverride',
   'defaultService',
+  'testUI',
 ]
 
 export type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
+  testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
   layout: ILayout
   silent: string | null
   selected: IDevice['id'][]
@@ -89,6 +91,7 @@ export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
   themeDark: isDarkMode(),
+  testUI: undefined,
   layout: { showOrgs: false, hideSidebar: false, singlePanel: false, sidePanelWidth: SIDEBAR_WIDTH },
   silent: null,
   selected: [],

@@ -1,6 +1,6 @@
+import axios, { AxiosResponse } from 'axios'
 import { LANGUAGES } from '../shared/constants'
 import { createModel } from '@rematch/core'
-import axios, { AxiosResponse } from 'axios'
 import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from '.'

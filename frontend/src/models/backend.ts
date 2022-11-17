@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { TEST_HEADER } from '../shared/constants'
 import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
@@ -136,6 +137,10 @@ export default createModel<RootModel>()({
     async restart() {
       dispatch.ui.set({ waitMessage: 'updating' })
       emit('restart')
+    },
+    async setHeader(testHeader: string, state) {
+      setLocalStorage(state, TEST_HEADER, testHeader)
+      emit('preferences', { ...state.backend.preferences, testHeader })
     },
   }),
 

@@ -1,4 +1,5 @@
 import React from 'react'
+import { TEST_HEADER } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
@@ -7,40 +8,24 @@ import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { selectBaseLimits } from '../models/plans'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { selectLimitsLookup } from '../models/organization'
+import { getLocalStorage } from '../services/Browser'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
-  const { tests, informed, preferences, limits, limitsOverride } = useSelector((state: ApplicationState) => ({
-    ...state.plans,
-    preferences: state.backend.preferences,
-    limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
-    limits: selectBaseLimits(state, state.auth.user?.id),
-  }))
-  const { plans, ui } = useDispatch<Dispatch>()
-
-  const onSave = (url: string) => {
-    emit('preferences', { ...preferences, apiGraphqlURL: url })
-    emit('binaries/install')
-    ui.refreshAll()
-  }
-
-  const onSaveRest = (url: string) => {
-    emit('preferences', { ...preferences, apiURL: url })
-    emit('binaries/install')
-  }
-
-  const onSaveWebSocket = (url: string) => {
-    emit('preferences', { ...preferences, webSocketURL: url })
-    emit('binaries/install')
-  }
-
-  const onToggleAPIs = () => {
-    emit('preferences', { ...preferences, switchApi: !preferences.switchApi })
-    emit('binaries/install')
-  }
+  const { backend, plans, ui } = useDispatch<Dispatch>()
+  const { tests, informed, testUI, preferences, limits, limitsOverride, testHeader } = useSelector(
+    (state: ApplicationState) => ({
+      ...state.plans,
+      testUI: state.ui.testUI,
+      preferences: state.backend.preferences,
+      limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
+      limits: selectBaseLimits(state, state.auth.user?.id),
+      testHeader: state.backend.preferences.testHeader || getLocalStorage(state, TEST_HEADER),
+    })
+  )
 
   return (
     <Container
@@ -55,23 +40,36 @@ export const TestPage: React.FC = () => {
         <ListItemSetting
           hideIcon
           label="Hide test UI backgrounds"
-          toggle={preferences.testUI === 'ON'}
-          onClick={() =>
-            emit('preferences', { ...preferences, testUI: preferences.testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })
-          }
+          toggle={testUI === 'ON'}
+          onClick={() => ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
         />
         <ListItemSetting
           hideIcon
           label="Disable Test UI"
           subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
-          onClick={() =>
-            emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
-          }
+          onClick={() => {
+            ui.setPersistent({ testUI: 'OFF' })
+            emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
+          }}
         />
+
+        <InlineTextFieldSetting
+          value={testHeader}
+          label="Add query header"
+          displayValue={testHeader ? undefined : "<empty> Enter header as 'key:value'"}
+          resetValue=""
+          maxLength={200}
+          onSave={result => backend.setHeader(result.toString())}
+          hideIcon
+        />
+
         <ListItemSetting
           hideIcon
           label="Override default APIs"
-          onClick={onToggleAPIs}
+          onClick={() => {
+            emit('preferences', { ...preferences, switchApi: !preferences.switchApi })
+            emit('binaries/install')
+          }}
           toggle={!!preferences.switchApi}
         />
         <ListItem>
@@ -83,7 +81,11 @@ export const TestPage: React.FC = () => {
                 disabled={!preferences.switchApi}
                 resetValue={getGraphQLApi()}
                 maxLength={200}
-                onSave={url => onSave(url.toString())}
+                onSave={url => {
+                  emit('preferences', { ...preferences, apiGraphqlURL: url })
+                  emit('binaries/install')
+                  ui.refreshAll()
+                }}
                 hideIcon
               />
               <InlineTextFieldSetting
@@ -92,7 +94,10 @@ export const TestPage: React.FC = () => {
                 disabled={!preferences.switchApi}
                 resetValue={getRestApi()}
                 maxLength={200}
-                onSave={url => onSaveRest(url.toString())}
+                onSave={url => {
+                  emit('preferences', { ...preferences, apiURL: url })
+                  emit('binaries/install')
+                }}
                 hideIcon
               />
               <InlineTextFieldSetting
@@ -101,7 +106,10 @@ export const TestPage: React.FC = () => {
                 disabled={!preferences.switchApi}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
-                onSave={url => onSaveWebSocket(url.toString())}
+                onSave={url => {
+                  emit('preferences', { ...preferences, webSocketURL: url })
+                  emit('binaries/install')
+                }}
                 hideIcon
               />
             </List>
