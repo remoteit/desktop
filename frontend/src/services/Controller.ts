@@ -70,7 +70,7 @@ class Controller extends EventEmitter {
       this.socket?.on(errorEvent, error => {
         this.log(errorEvent.toUpperCase(), error.message)
         store.dispatch.ui.set({
-          offline: { title: 'Network Error', message: error.message, severity: 'danger' },
+          offline: { title: 'Network Error', message: error.message, severity: 'error' },
         })
       })
     }

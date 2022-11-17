@@ -97,6 +97,7 @@ const useStyles = makeStyles(({ palette }) => ({
       justifyContent: 'center',
     },
     '& > .MuiIconButton-root': { marginLeft: spacing.sm },
+    '& > .MuiButton-root': { alignSelf: 'center' },
     '& > svg': {
       marginLeft: spacing.xxs,
       marginRight: spacing.md,
