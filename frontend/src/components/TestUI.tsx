@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 
 export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
-  const { testUI } = useSelector((state: ApplicationState) => state.backend.preferences)
+  const { testUI } = useSelector((state: ApplicationState) => state.ui)
   const css = useStyles()
 
   if (!testUI || testUI === 'OFF') return null

@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios'
-import { getGraphQLApi } from '../helpers/apiHelper'
+import { getGraphQLApi, getTestHeader } from '../helpers/apiHelper'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
 import sleep from './sleep'
@@ -28,10 +28,10 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   const request = {
     url: getGraphQLApi(),
     method: 'post' as 'post',
-    headers: { Authorization: token },
+    headers: { Authorization: token, ...getTestHeader() },
     data: { query, variables },
   }
-  console.log('GRAPHQL REQUEST', { query, variables, url: request.url })
+  console.log('GRAPHQL REQUEST', { query, variables, request })
   return await axios.request(request)
 }
 

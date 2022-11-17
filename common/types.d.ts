@@ -658,7 +658,6 @@ declare global {
     apiURL?: string
     apiGraphqlURL?: string
     webSocketURL?: string
-    testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
   }

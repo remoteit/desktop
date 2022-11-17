@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { TEST_HEADER } from '../shared/constants'
 import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'

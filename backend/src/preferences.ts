@@ -19,7 +19,6 @@ export class Preferences {
     switchApi: false,
     apiURL: '',
     apiGraphqlURL: '',
-    testUI: 'OFF',
     windowState: { width: 1280, height: 800 },
   }
 

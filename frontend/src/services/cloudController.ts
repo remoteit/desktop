@@ -2,7 +2,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 import network from '../services/Network'
 import { getToken } from './remote.it'
 import { AxiosResponse } from 'axios'
-import { getWebSocketURL } from '../helpers/apiHelper'
+import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -102,6 +102,7 @@ class CloudController {
       headers: {
         authorization: await getToken(),
         'User-Agent': `remoteit/${version} ${agent()}`,
+        ...getTestHeader(),
       },
       query: `
       {

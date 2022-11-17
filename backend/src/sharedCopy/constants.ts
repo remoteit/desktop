@@ -26,6 +26,7 @@ export const WEBSOCKET_BETA_URL = env.REACT_APP_WEBSOCKET_BETA_URL
 export const PORT = env.REACT_APP_PORT || 29999
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
+export const TEST_HEADER = 'test-header'
 
 //API Zendesk
 export const ZENDESK_URL = env.ZENDESK_URL || env.REACT_APP_ZENDESK_URL
