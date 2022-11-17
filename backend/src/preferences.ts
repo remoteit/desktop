@@ -54,13 +54,6 @@ export class Preferences {
     Logger.info('SET PREFERENCES', { preferences })
     EventBus.emit(this.EVENTS.update, this.data)
   }
-
-  getTestHeader(): { [key: string]: string } {
-    const testHeader = this.data.testHeader
-    if (!testHeader) return {}
-    const parts = testHeader.split(':')
-    return { [parts[0].trim()]: parts[1].trim() }
-  }
 }
 
 export default new Preferences()

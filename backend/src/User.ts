@@ -46,7 +46,6 @@ export class User {
         headers: {
           'Content-Type': 'application/json',
           developerKey: DEVELOPER_KEY,
-          ...preferences.getTestHeader(),
         },
       }
     )

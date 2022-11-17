@@ -660,7 +660,6 @@ declare global {
     webSocketURL?: string
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
-    testHeader?: string
   }
 
   type SegmentContext = {

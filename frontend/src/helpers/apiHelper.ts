@@ -5,10 +5,8 @@ import {
   WEBSOCKET_BETA_URL,
   WEBSOCKET_URL,
   TEST_HEADER,
-  DEVELOPER_KEY,
 } from '../shared/constants'
-import { getLocalStorage, agent } from '../services/Browser'
-import { getToken } from '../services/remote.it'
+
 import { version } from './versionHelper'
 import { store } from '../store'
 
@@ -42,22 +40,11 @@ export function getWebSocketURL(): string | undefined {
   return webSocketURL && switchApi ? webSocketURL : defaultURL
 }
 
-export async function XgetHeaders(developer?: boolean, testHeader?: boolean) {
-  let header: ILookup<string> = {
-    'Content-Type': 'application/json',
-    'User-Agent': `remoteit/${version} ${agent()}`,
-    Authorization: await getToken(),
-  }
-  if (developer) header.developerKey = DEVELOPER_KEY
-  if (testHeader) header = { ...header, ...getTestHeader() }
-  return header
-}
-
 export function getTestHeader(): { [key: string]: string } {
-  const state = store.getState()
-  const testHeader = getLocalStorage(state, TEST_HEADER)
+  const testHeader = window.localStorage.getItem(TEST_HEADER)
   if (!testHeader) return {}
   const parts = testHeader.split(':')
+  console.log('USING TEST HEADER', { [parts[0].trim()]: parts[1].trim() })
   return { [parts[0].trim()]: parts[1].trim() }
 }
 

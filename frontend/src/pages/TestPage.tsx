@@ -8,14 +8,13 @@ import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { selectBaseLimits } from '../models/plans'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { selectLimitsLookup } from '../models/organization'
-import { getLocalStorage } from '../services/Browser'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
-  const { backend, plans, ui } = useDispatch<Dispatch>()
+  const { plans, ui } = useDispatch<Dispatch>()
   const { tests, informed, testUI, preferences, limits, limitsOverride, testHeader } = useSelector(
     (state: ApplicationState) => ({
       ...state.plans,
@@ -23,7 +22,7 @@ export const TestPage: React.FC = () => {
       preferences: state.backend.preferences,
       limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
       limits: selectBaseLimits(state, state.auth.user?.id),
-      testHeader: state.backend.preferences.testHeader || getLocalStorage(state, TEST_HEADER),
+      testHeader: window.localStorage.getItem(TEST_HEADER) || '',
     })
   )
 
@@ -59,7 +58,7 @@ export const TestPage: React.FC = () => {
           displayValue={testHeader ? undefined : "<empty> Enter header as 'key:value'"}
           resetValue=""
           maxLength={200}
-          onSave={result => backend.setHeader(result.toString())}
+          onSave={result => window.localStorage.setItem(TEST_HEADER, result.toString())}
           hideIcon
         />
 

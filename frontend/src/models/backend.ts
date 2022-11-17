@@ -138,10 +138,6 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ waitMessage: 'updating' })
       emit('restart')
     },
-    async setHeader(testHeader: string, state) {
-      setLocalStorage(state, TEST_HEADER, testHeader)
-      emit('preferences', { ...state.backend.preferences, testHeader })
-    },
   }),
 
   reducers: {
