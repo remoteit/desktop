@@ -1,5 +1,4 @@
 import React from 'react'
-import {} from '../shared/constants'
 import { Paper } from '@mui/material'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
@@ -8,8 +7,8 @@ import { DiagramPath } from './DiagramPath'
 import { isForward, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
+import { lanShared } from '../helpers/lanSharing'
 import { DiagramDivider } from './DiagramDivider'
-import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
 type Props = {
@@ -27,8 +26,9 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
   const connection = connections?.find(c => c.id === serviceID)
 
   const state = connectionState(service, connection)
-  const proxy =
-    connection && ((connection.isP2P !== undefined && !connection.isP2P && connection.enabled) || connection.public)
+  const lan = lanShared(connection)
+
+  const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
   forward = forward || isForward(service)
   let activeTypes: DiagramGroupType[] = []
 
@@ -50,40 +50,44 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
   // }))
 
   return (
-    <TestUI>
-      <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
-        {/* <Pre {...{ connection }} /> */}
-        <Paper elevation={0} className={css.diagram}>
-          <DiagramGroup type="initiator">
-            <DiagramIcon type="initiator" />
-            <DiagramPath type="initiator" />
+    <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
+      {/* <Pre {...{ connection }} /> */}
+      <Paper elevation={0} className={css.diagram}>
+        {lan && (
+          <DiagramGroup type="lan">
+            <DiagramIcon type="lan" />
+            <DiagramPath type="lan" />
           </DiagramGroup>
-          {proxy && (
-            <DiagramGroup type="proxy">
-              <DiagramPath type="proxy" />
-              <DiagramIcon type="proxy" />
-              <DiagramPath type="proxy" flexGrow={2} />
-            </DiagramGroup>
-          )}
-          <DiagramDivider start />
-          <DiagramGroup type="tunnel">
-            <DiagramPath type="tunnel" />
+        )}
+        <DiagramGroup type="initiator">
+          <DiagramIcon type="initiator" />
+          <DiagramPath type="initiator" />
+        </DiagramGroup>
+        {proxy && (
+          <DiagramGroup type="proxy">
+            <DiagramPath type="proxy" />
+            <DiagramIcon type="proxy" />
+            <DiagramPath type="proxy" flexGrow={2} />
           </DiagramGroup>
-          <DiagramDivider end />
-          {forward && (
-            <DiagramGroup type="forward">
-              <DiagramPath type="forward" />
-              <DiagramIcon type="forward" />
-              <DiagramPath type="forward" flexGrow={2} />
-            </DiagramGroup>
-          )}
-          <DiagramGroup type="target">
-            <DiagramPath type="target" />
-            <DiagramIcon type="target" />
+        )}
+        <DiagramDivider start />
+        <DiagramGroup type="tunnel">
+          <DiagramPath type="tunnel" />
+        </DiagramGroup>
+        <DiagramDivider end />
+        {forward && (
+          <DiagramGroup type="forward">
+            <DiagramPath type="forward" flexGrow={2} />
+            <DiagramIcon type="forward" />
+            <DiagramPath type="forward" />
           </DiagramGroup>
-        </Paper>
-      </DiagramContext.Provider>
-    </TestUI>
+        )}
+        <DiagramGroup type="target">
+          <DiagramPath type="target" />
+          <DiagramIcon type="target" />
+        </DiagramGroup>
+      </Paper>
+    </DiagramContext.Provider>
   )
 }
 

@@ -15,6 +15,7 @@ import { AddPlatformPage } from '../pages/AddPlatformPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
+import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
@@ -114,6 +115,10 @@ export const Router: React.FC = () => {
           primary={<ConnectionsPage />}
           secondary={
             <Switch>
+              <Route path="/connections/:serviceID/lan">
+                <LanSharePage />
+              </Route>
+
               <Route path="/connections/:serviceID/:sessionID/other">
                 <ConnectionOtherPage />
               </Route>

@@ -27,7 +27,7 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
     <InlineTextFieldSetting
       value={connection.targetHost}
       displayValue={connection.targetHost}
-      modified={connection.targetHost !== resetValue}
+      modified={!connection.targetHost !== !resetValue}
       icon="bullseye"
       label={
         <>

@@ -29,6 +29,10 @@ export const DiagramIcon: React.FC<Props> = ({ type }) => {
     case 'forward':
       props.name = 'diamond'
       break
+    case 'lan':
+      props.name = 'play'
+      props.rotate = 180
+      break
     // case 'entrance':
     //   props.name = 'play'
     //   break

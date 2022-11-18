@@ -5,7 +5,7 @@ import { DiagramContext } from '../services/Context'
 import { Box, ListItemButton, ListItemButtonProps, Tooltip, InputLabel } from '@mui/material'
 import { spacing } from '../styling'
 
-export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward' | 'proxy'
+export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward' | 'proxy' | 'lan'
 
 type Props = MatchesProps & {
   type: DiagramGroupType
@@ -19,6 +19,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
   const selected = useMatches({ to })
   const highlight = highlightTypes.includes(type)
 
+  let label: string = type
   let tooltip = ''
   let titleColor: string | undefined = undefined
   let sx: ListItemButtonProps['sx'] = {
@@ -43,11 +44,17 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
       tooltip = 'Remote.It Secure tunnel'
       break
     case 'forward':
+      label = 'Host'
       tooltip = 'System running the remoteit agent'
       sx.maxWidth = 80
       break
+    case 'lan':
+      sx.paddingLeft = 2
+      sx.maxWidth = 100
+      break
     case 'initiator':
-      tooltip = 'This system'
+      label = 'Source'
+      tooltip = 'Initiator'
       sx.paddingLeft = 2
       sx.maxWidth = 100
       break
@@ -86,7 +93,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
             color: titleColor,
           }}
         >
-          {type}
+          {label}
         </InputLabel>
         <Box
           sx={{

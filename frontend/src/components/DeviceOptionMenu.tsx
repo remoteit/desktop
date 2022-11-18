@@ -50,6 +50,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               />,
               <UsersTab
                 key="users"
+                menuItem
                 instance={device}
                 service={service}
                 to={`/devices/${device.id}/${service.id}/users`}
@@ -61,10 +62,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
                 value={`${PROTOCOL}device/${device.id}/${service.id}`}
               />,
             ]
-          : [
-              <UsersTab key="users" instance={device} service={service} to={`/devices/${device.id}/users`} />,
-              <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />,
-            ]}
+          : [<CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />]}
         {manage && [
           <MenuItem
             dense

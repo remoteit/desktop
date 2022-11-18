@@ -12,31 +12,20 @@ import { LanSharePage } from '../pages/LanSharePage'
 import { DynamicPanel } from '../components/DynamicPanel'
 
 export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const { serviceID } = useParams<{ serviceID?: string }>()
-  const dispatch = useDispatch<Dispatch>()
-  const {} = useSelector((state: ApplicationState) => ({}))
-
-  useEffect(() => {
-    // TODO: load network service on demand
-    //   const id = serviceID
-    //   if (id && !service) dispatch.devices.fetchService({ id, hidden: true })
-    //   console.log('CONNECT PAGE EFFECT', { device, id })
-  }, [serviceID])
-
   return (
     <DynamicPanel
       primary={<NetworksPage />}
       secondary={
         <Switch>
-          <Route path="/networks/view/:networkID/share">
+          <Route exact path="/networks/view/:networkID/share">
             <NetworkSharePage />
           </Route>
 
-          <Route path="/networks/view/:networkID/users">
+          <Route exact path="/networks/view/:networkID/users">
             <NetworkUsersPage />
           </Route>
 
-          <Route path="/networks/view/:networkID">
+          <Route exact path="/networks/view/:networkID">
             <NetworkPage />
           </Route>
 

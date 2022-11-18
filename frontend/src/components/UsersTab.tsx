@@ -12,10 +12,11 @@ import { Icon } from './Icon'
 type Props = {
   instance?: IInstance
   service?: IService
+  menuItem?: boolean
   to: string
 }
 
-export const UsersTab: React.FC<Props> = ({ instance, service, to }) => {
+export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to }) => {
   const css = useStyles()
   const { connected, access } = useSelector((state: ApplicationState) => ({
     connected: selectSessionUsers(state, service ? service.id : instance?.id).length,
@@ -47,7 +48,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, to }) => {
         </>
       }
     >
-      <ListItemLocation pathname={to} menuItem dense>
+      <ListItemLocation pathname={to} menuItem={menuItem} dense>
         <ListItemIcon>
           <Icon name="user-group" color="grayDarker" size="md" />
         </ListItemIcon>
