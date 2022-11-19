@@ -1,5 +1,5 @@
 import React from 'react'
-import { Paper } from '@mui/material'
+import { Box } from '@mui/material'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
@@ -52,14 +52,14 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
   return (
     <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
-      <Paper elevation={0} className={css.diagram}>
+      <Box className={css.diagram}>
         {lan && (
           <DiagramGroup type="lan">
             <DiagramIcon type="lan" />
             <DiagramPath type="lan" />
           </DiagramGroup>
         )}
-        <DiagramGroup type="initiator">
+        <DiagramGroup type="initiator" indicator={{ border: false }}>
           <DiagramIcon type="initiator" />
           <DiagramPath type="initiator" />
         </DiagramGroup>
@@ -82,21 +82,22 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
             <DiagramPath type="forward" />
           </DiagramGroup>
         )}
-        <DiagramGroup type="target">
+        <DiagramGroup type="target" indicator={{ placement: 'right' }}>
           <DiagramPath type="target" />
           <DiagramIcon type="target" />
         </DiagramGroup>
-      </Paper>
+      </Box>
+      {/* <DiagramSelection /> */}
     </DiagramContext.Provider>
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  diagram: () => ({
+const useStyles = makeStyles({
+  diagram: {
     display: 'flex',
     alignItems: 'stretch',
     justifyContent: 'stretch',
     position: 'relative',
-    '& .MuiPaper-root + .MuiPaper-root': { marginLeft: 1 },
-  }),
-}))
+    overflow: 'visible',
+  },
+})

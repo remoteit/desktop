@@ -52,7 +52,7 @@ export const ConnectionPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
       header={
         <>
@@ -69,11 +69,13 @@ export const ConnectionPage: React.FC = () => {
               </Typography>
             </Gutters>
           )}
-          <Gutters size="md">
+          <Gutters size="md" bottom="sm">
             <Diagram
               to={{
                 initiator: `/connections/${serviceID}`,
-                target: `/devices/${device?.id}/${serviceID}/edit`,
+                target: instance?.permissions.includes('MANAGE')
+                  ? `/devices/${device?.id}/${serviceID}/edit`
+                  : undefined,
               }}
             />
           </Gutters>

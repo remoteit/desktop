@@ -27,7 +27,7 @@ export const ServiceHeaderMenu: React.FC<{
     <Container
       gutterBottom
       backgroundColor={backgroundColor}
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={
         <>
           <OutOfBand />
@@ -47,39 +47,11 @@ export const ServiceHeaderMenu: React.FC<{
             </Gutters>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          {/* <ListHorizontal disablePadding dense>
-            <ListItemLocation
-              title="Connection"
-              icon="arrow-right"
-              iconColor="grayDarker"
-              pathname={`/devices/${device.id}/${serviceID}/connect`}
-              match={[`/devices/${device.id}/${serviceID}/connect`, `/devices/${device.id}/${serviceID}`]}
-              exactMatch
-              dense
-            />
-            <ListItemLocation
-              title="Details"
-              icon="info-circle"
-              iconColor="grayDarker"
-              pathname={`/devices/${device.id}/${serviceID}/details`}
-              dense
-            />
-            {device.permissions.includes('MANAGE') && (
-              <ListItemLocation
-                title="Setup"
-                icon="pen"
-                iconColor="grayDarker"
-                pathname={`/devices/${device.id}/${serviceID}/edit`}
-                dense
-              />
-            )}
-            <UsersTab instance={device} service={service} to={`/devices/${device.id}/${service.id}/users`} />
-          </ListHorizontal> */}
-          <Gutters top="xl" size="md">
+          <Gutters top="xl" size="md" bottom="sm">
             <Diagram
               to={{
                 initiator: `/devices/${device?.id}/${serviceID}/connect`,
-                target: `/devices/${device?.id}/${serviceID}/edit`,
+                target: device.permissions.includes('MANAGE') ? `/devices/${device?.id}/${serviceID}/edit` : undefined,
               }}
             />
           </Gutters>
