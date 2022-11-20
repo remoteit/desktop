@@ -53,6 +53,7 @@ export type UIState = {
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   defaultService: ILookup<string | null>
+  defaultSelection: ILookup<string>
   registrationCommand?: string
   redirect?: string
   restoring: boolean
@@ -114,6 +115,7 @@ export const defaultState: UIState = {
   serviceContextMenu: undefined,
   globalTooltip: undefined,
   defaultService: {},
+  defaultSelection: {},
   registrationCommand: undefined,
   redirect: undefined,
   restoring: false,

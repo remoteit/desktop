@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Redirect } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
@@ -20,10 +20,17 @@ export const ConnectionPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const { connection, device, service, network, instance } = React.useContext(DeviceContext)
-  const { accordion } = useSelector((state: ApplicationState) => state.ui)
-  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
+  const { accordion, defaultSelection } = useSelector((state: ApplicationState) => state.ui)
+  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
 
-  if (!service) return <NoConnectionPage />
+  React.useEffect(() => {
+    if (service) dispatch.ui.set({ defaultSelection: { ...defaultSelection, [menu]: location.pathname } })
+  }, [service])
+
+  if (!service) {
+    if (defaultSelection[menu]) return <Redirect to={defaultSelection[menu]} push={false} />
+    return <NoConnectionPage />
+  }
 
   return (
     <Container

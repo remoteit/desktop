@@ -67,7 +67,6 @@ export const DevicePage: React.FC = () => {
               icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
               onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
               exactMatch
-              dense
               title={
                 <Typography variant="h3">
                   <ServiceName device={device} connection={connection} />
@@ -190,6 +189,5 @@ const useStyles = makeStyles({
     marginLeft: -spacing.sm,
     marginRight: spacing.xs,
   },
-  show: { opacity: 1 },
   list: { marginRight: 1 },
 })
