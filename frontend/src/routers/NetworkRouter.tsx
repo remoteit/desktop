@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
-import { Switch, Route, useParams } from 'react-router-dom'
+import React from 'react'
+import { Switch, Route } from 'react-router-dom'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { NetworksPage } from '../pages/NetworksPage'
+import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
 import { NetworkAddPage } from '../pages/NetworkAddPage'
@@ -34,11 +33,15 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           </Route>
 
           <Route path="/networks/:serviceID/lan">
-            <LanSharePage />
+            <DeviceContextWrapper>
+              <LanSharePage />
+            </DeviceContextWrapper>
           </Route>
 
           <Route path="/networks/:serviceID?">
-            <ConnectionPage />
+            <DeviceContextWrapper>
+              <ConnectionPage />
+            </DeviceContextWrapper>
           </Route>
         </Switch>
       }

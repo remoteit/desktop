@@ -1,17 +1,13 @@
-import React, { useEffect } from 'react'
-import { REGEX_FIRST_PATH } from '../shared/constants'
-import { useParams, useLocation } from 'react-router-dom'
-import { selectById } from '../models/devices'
+import React from 'react'
 import { Typography } from '@mui/material'
-import { getDeviceModel } from '../models/accounts'
-import { selectSharedNetwork } from '../models/networks'
-import { selectConnection } from '../helpers/connectionHelper'
+import { useLocation } from 'react-router-dom'
+import { DeviceContext } from '../services/Context'
+import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { ServiceAttributes } from '../components/ServiceAttributes'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
-import { LinearProgress } from '../components/LinearProgress'
 import { ConnectionName } from '../components/ConnectionName'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
@@ -21,31 +17,11 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionPage: React.FC = () => {
-  const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { service, device, network, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceID)
-    const { initialized, fetching } = getDeviceModel(state)
-    return {
-      service,
-      device,
-      waiting: !initialized || fetching,
-      network: selectSharedNetwork(state, serviceID),
-      connection: selectConnection(state, service),
-      accordion: state.ui.accordion,
-    }
-  })
-
-  const instance: IInstance | undefined = network || device
-
-  useEffect(() => {
-    if (serviceID && !instance?.loaded && !waiting) {
-      const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
-      if (network) dispatch.networks.fetchSingle({ network, redirect })
-      else dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
-    }
-  }, [serviceID, waiting, instance])
+  const { connection, device, service, network, instance } = React.useContext(DeviceContext)
+  const { accordion } = useSelector((state: ApplicationState) => state.ui)
+  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
 
   if (!service) return <NoConnectionPage />
 
@@ -72,14 +48,13 @@ export const ConnectionPage: React.FC = () => {
           <Gutters size="md" bottom="sm">
             <Diagram
               to={{
-                initiator: `/connections/${serviceID}`,
+                initiator: `${menu}/${service.id}`,
                 target: instance?.permissions.includes('MANAGE')
-                  ? `/devices/${device?.id}/${serviceID}/edit`
+                  ? `/devices/${device?.id}/${service.id}/edit`
                   : undefined,
               }}
             />
           </Gutters>
-          <LinearProgress loading={waiting} />
         </>
       }
     >

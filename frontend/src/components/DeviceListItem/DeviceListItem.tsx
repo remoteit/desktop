@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { DeviceContext } from '../../services/Context'
+import { DeviceListContext } from '../../services/Context'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
 import { makeStyles } from '@mui/styles'
@@ -18,7 +18,7 @@ type Props = {
 }
 
 export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, onSelect }) => {
-  const { connections, device, attributes, required } = useContext(DeviceContext)
+  const { connections, device, attributes, required } = useContext(DeviceListContext)
   const connection = connections && connections.find(c => c.enabled)
   const history = useHistory()
   const offline = device?.state === 'inactive'

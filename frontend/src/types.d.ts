@@ -12,11 +12,21 @@ declare global {
 
   type Route = { [key in Page]: React.ReactNode }
 
-  interface IDeviceContext {
+  interface IDeviceListContext {
     device?: IDevice
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
+  }
+
+  interface IDeviceContext {
+    device?: IDevice
+    network?: INetwork
+    connections: IConnection[]
+    service?: IService
+    connection: IConnection
+    instance?: IInstance
+    waiting: boolean
   }
 
   interface IDiagramContext {

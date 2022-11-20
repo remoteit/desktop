@@ -1,14 +1,14 @@
 import React, { useContext } from 'react'
 import { Box } from '@mui/material'
 import { Attribute } from './Attributes'
-import { DeviceContext } from '../services/Context'
+import { DeviceListContext } from '../services/Context'
 import { spacing } from '../styling'
 
 export const AttributeValue: React.FC<{
   attribute?: Attribute
   connection?: IConnection
 }> = ({ attribute, connection }) => {
-  const { connections, device } = useContext(DeviceContext)
+  const { connections, device } = useContext(DeviceListContext)
   const value = attribute?.value({ device, connection, connections }) || ''
   return (
     <Box

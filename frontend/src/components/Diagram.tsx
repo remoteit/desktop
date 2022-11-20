@@ -1,6 +1,5 @@
 import React from 'react'
 import { Box } from '@mui/material'
-import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
@@ -18,17 +17,12 @@ type Props = {
 }
 
 export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes = [] }) => {
-  const { connections, device } = React.useContext(DeviceContext)
-  const { serviceID } = useParams<{ serviceID: string }>()
-  const css = useStyles()
-
-  const service = device?.services?.find(s => s.id === serviceID)
-  const connection = connections?.find(c => c.id === serviceID)
-
+  const { service, connection } = React.useContext(DeviceContext)
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
-
+  const css = useStyles()
   const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
+
   forward = forward || isForward(service)
   let activeTypes: DiagramGroupType[] = []
 
@@ -45,10 +39,6 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
     case 'offline':
   }
 
-  // const { connection } = useSelector((state: ApplicationState) => ({
-  //   connection: selectConnection(state, service),
-  // }))
-
   return (
     <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
@@ -59,7 +49,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
             <DiagramPath type="lan" />
           </DiagramGroup>
         )}
-        <DiagramGroup type="initiator" indicator={{ border: false }}>
+        <DiagramGroup type="initiator">
           <DiagramIcon type="initiator" />
           <DiagramPath type="initiator" />
         </DiagramGroup>
@@ -87,7 +77,6 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
           <DiagramIcon type="target" />
         </DiagramGroup>
       </Box>
-      {/* <DiagramSelection /> */}
     </DiagramContext.Provider>
   )
 }
