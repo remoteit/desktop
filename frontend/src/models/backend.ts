@@ -1,5 +1,4 @@
 import { createModel } from '@rematch/core'
-import { TEST_HEADER } from '../shared/constants'
 import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
@@ -30,6 +29,7 @@ type IBackendState = {
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
   reachablePort?: IPortScan
+  canNavigate: { canGoBack: boolean; canGoForward: boolean }
   filePath?: string
 }
 
@@ -57,6 +57,7 @@ const defaultState: IBackendState = {
   },
   deferredAttributes: undefined,
   reachablePort: undefined,
+  canNavigate: { canGoBack: false, canGoForward: false },
   filePath: undefined,
 }
 

@@ -83,6 +83,7 @@ class Controller {
     socket.on('forceUnregister', this.forceUnregister)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
+    socket.on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
   }
@@ -185,6 +186,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
+    EventBus.emit(electronInterface.EVENTS.navigate, 'STATUS')
   }
 
   showFolder = (type: IShowFolderType) => {

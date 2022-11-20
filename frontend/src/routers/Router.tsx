@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
+import { emit } from '../services/Controller'
 import { DeviceRouter } from './DeviceRouter'
 import { NetworkRouter } from './NetworkRouter'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
+import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
@@ -50,6 +51,7 @@ import { NotificationsPage } from '../pages/NotificationsPage'
 
 export const Router: React.FC = () => {
   const history = useHistory()
+  const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const { remoteUI, redirect, thisId, registered, os, layout } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
@@ -66,7 +68,8 @@ export const Router: React.FC = () => {
       history.push(redirect)
       ui.set({ redirect: undefined })
     }
-  }, [history, ui, redirect])
+    emit('navigate', 'STATUS')
+  }, [history, ui, redirect, location.pathname])
 
   return (
     <Switch>

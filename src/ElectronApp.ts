@@ -51,6 +51,7 @@ export default class ElectronApp {
     EventBus.on(EVENTS.update, this.autoUpdater.update)
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.filePrompt, this.handleFilePrompt)
+    EventBus.on(EVENTS.navigate, this.handleNavigate)
     EventBus.on(EVENTS.maximize, this.handleMaximize)
     EventBus.on(EVENTS.open, this.openWindow)
   }
@@ -97,6 +98,26 @@ export default class ElectronApp {
     this.openWindow()
   }
 
+  private handleNavigate = (action: 'BACK' | 'FORWARD' | 'STATUS') => {
+    if (!this.window) return
+    const canNavigate = {
+      canGoBack: this.window.webContents.canGoBack(),
+      canGoForward: this.window.webContents.canGoForward(),
+    }
+
+    Logger.info('NAVIGATE', { action, canNavigate })
+
+    switch (action) {
+      case 'BACK':
+        this.window.webContents.goBack()
+        break
+      case 'FORWARD':
+        this.window.webContents.goForward()
+        break
+    }
+    EventBus.emit(EVENTS.canNavigate, canNavigate)
+  }
+
   private handleMaximize = () => {
     if (this.isMaximized) {
       this.window?.unmaximize()
@@ -131,6 +152,18 @@ export default class ElectronApp {
     Logger.info('FILE PROMPT RESULT', { result, filePath })
   }
 
+  private handleActivate = () => {
+    this.openWindow()
+  }
+
+  private handleOpenAtLogin = (preferences: IPreferences) => {
+    const { openAtLogin } = this.app.getLoginItemSettings()
+    if (preferences.openAtLogin !== openAtLogin) {
+      Logger.info('SET OPEN AT LOGIN', { openAtLogin: preferences.openAtLogin })
+      this.app.setLoginItemSettings({ openAtLogin: preferences.openAtLogin })
+    }
+  }
+
   private setDeepLink(url?: string) {
     if (!url) return
     const scheme = this.protocol + '://'
@@ -147,18 +180,6 @@ export default class ElectronApp {
 
     const match = URL_REGEX.exec(url)
     if (match) electron.shell.openExternal(url.substring(match.index))
-  }
-
-  private handleActivate = () => {
-    this.openWindow()
-  }
-
-  private handleOpenAtLogin = (preferences: IPreferences) => {
-    const { openAtLogin } = this.app.getLoginItemSettings()
-    if (preferences.openAtLogin !== openAtLogin) {
-      Logger.info('SET OPEN AT LOGIN', { openAtLogin: preferences.openAtLogin })
-      this.app.setLoginItemSettings({ openAtLogin: preferences.openAtLogin })
-    }
   }
 
   private createMainWindow = () => {
