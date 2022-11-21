@@ -173,7 +173,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
               >
                 <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
                   <span>
-                    <InputLabel shrink>Copy {hover === 'copyLaunch' ? app.contextTitle : hover}</InputLabel>
+                    <InputLabel shrink>
+                      Copy {hover === 'launch' ? '' : hover === 'copyLaunch' ? app.contextTitle : hover}
+                    </InputLabel>
                     <CopyButton
                       ref={buttonRef}
                       color="alwaysWhite"

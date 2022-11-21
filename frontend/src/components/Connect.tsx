@@ -35,7 +35,6 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import { Title } from './Title'
 import { Icon } from './Icon'
 
 type Props = {
@@ -148,8 +147,6 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
               size="large"
               service={service}
               connection={connection}
-              loading={!instance.loaded}
-              disabled={!instance.loaded}
               permissions={instance.permissions}
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
               fullWidth

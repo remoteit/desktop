@@ -6,6 +6,7 @@ import { selectConnections } from '../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../models/accounts'
+import { LinearProgress } from '../components/LinearProgress'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
 import { Container } from '../components/Container'
@@ -16,10 +17,11 @@ import { Icon } from '../components/Icon'
 
 export const ConnectionsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { other, recent, active, initialized } = useSelector((state: ApplicationState) => {
+  const { other, recent, active, initialized, loading } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
+    const deviceModel = getDeviceModel(state)
     let other: ILookup<INetwork> = {}
 
     otherSessions.forEach(s => {
@@ -46,7 +48,8 @@ export const ConnectionsPage: React.FC = () => {
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
       active: selectActiveNetworks(state),
-      initialized: getDeviceModel(state).initialized,
+      initialized: deviceModel.initialized,
+      loading: deviceModel.fetching,
     }
   })
 
@@ -57,9 +60,12 @@ export const ConnectionsPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true, gutterTop: true }}
       gutterBottom
       header={
-        <Typography variant="subtitle1">
-          <Title>Connections</Title>
-        </Typography>
+        <>
+          <Typography variant="subtitle1">
+            <Title>Connections</Title>
+          </Typography>
+          <LinearProgress loading={loading} />
+        </>
       }
     >
       {initialized ? (
