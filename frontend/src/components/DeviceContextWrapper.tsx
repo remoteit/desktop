@@ -11,7 +11,9 @@ import { getDeviceModel } from '../models/accounts'
 import { isRemoteUI } from '../helpers/uiHelper'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { deviceID, serviceID } = useParams<{ deviceID?: string; serviceID?: string }>()
+  let { deviceID, serviceID } = useParams<{ deviceID?: string; serviceID?: string }>()
+  if (!deviceID?.includes(':')) deviceID = undefined
+  if (!serviceID?.includes(':')) serviceID = undefined
   const { device, network, connections, service, connection, remoteUI, thisId, waiting } = useSelector(
     (state: ApplicationState) => {
       const { fetching, initialized } = getDeviceModel(state)
