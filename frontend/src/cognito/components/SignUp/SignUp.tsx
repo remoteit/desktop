@@ -141,7 +141,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
             fullWidth
             id="sign-up-email"
             label="Email Address"
-            value={defaultEmail}
+            defaultValue={defaultEmail}
             onChange={e => setEmail(e.currentTarget.value.toLowerCase().trim())}
             placeholder="Email address..."
             required
