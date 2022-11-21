@@ -29,7 +29,7 @@ export const OrganizationSelect: React.FC = () => {
     userId: state.user.id,
   }))
 
-  const ownOrgId = ownOrg?.id || userId
+  const ownOrgId = ownOrg?.id
   const onSelect = async id => {
     const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
     if (id) {
