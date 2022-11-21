@@ -33,6 +33,7 @@ declare global {
     | 'launch/app'
 
     // App/settings
+    | 'navigate'
     | 'maximize'
     | 'showFolder'
     | 'filePrompt'
@@ -88,6 +89,7 @@ declare global {
     | 'privateIP'
     | 'preferences'
     | 'reachablePort'
+    | 'canNavigate'
 
   type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
 

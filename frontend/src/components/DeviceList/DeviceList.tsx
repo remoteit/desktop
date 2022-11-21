@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { DeviceContext } from '../../services/Context'
+import { DeviceListContext } from '../../services/Context'
 import { isPortal } from '../../services/Browser'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
@@ -50,7 +50,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           if (restore && !canRestore) return null
 
           const row = (
-            <DeviceContext.Provider
+            <DeviceListContext.Provider
               key={device.id}
               value={{ device, connections: connections[device.id], required, attributes }}
             >
@@ -68,7 +68,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                   dispatch.ui.set({ selected: [...selected] })
                 }}
               />
-            </DeviceContext.Provider>
+            </DeviceListContext.Provider>
           )
 
           if (!index)

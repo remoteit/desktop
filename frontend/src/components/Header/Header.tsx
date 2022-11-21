@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
+import { emit } from '../../services/Controller'
 import { makeStyles } from '@mui/styles'
 import { getActiveAccountId } from '../../models/accounts'
 import { useMediaQuery } from '@mui/material'
@@ -8,7 +9,6 @@ import { getDeviceModel } from '../../models/accounts'
 import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
 import { selectLimitsLookup } from '../../models/organization'
 import { canEditTags } from '../../models/tags'
-import { useNavigation } from '../../hooks/useNavigation'
 import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -21,30 +21,21 @@ import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
-  const { searched, navigationBack, navigationForward, feature, editTags } = useSelector((state: ApplicationState) => {
+  const { searched, canNavigate, feature, editTags } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     return {
       feature: selectLimitsLookup(state),
       selected: state.ui.selected,
       searched: deviceModel.searched, // debug make true
-      navigationBack: state.ui.navigationBack,
-      navigationForward: state.ui.navigationForward,
+      canNavigate: state.backend.canNavigate,
       editTags: canEditTags(state, getActiveAccountId(state)),
     }
   })
-  const { handleBack, handleForward } = useNavigation()
-  const [disabledForward, setDisabledForward] = useState<boolean>(false)
-  const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
-
-  useEffect(() => {
-    setDisabledBack(!(navigationBack?.length > 1))
-    setDisabledForward(!navigationForward?.length)
-  }, [navigationBack, navigationForward])
 
   return (
     <>
@@ -57,19 +48,19 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           <>
             <IconButton
               title="Back"
-              disabled={disabledBack}
-              onClick={handleBack}
+              disabled={!canNavigate.canGoBack}
+              onClick={() => emit('navigate', 'BACK')}
               icon="chevron-left"
               size="md"
-              color={disabledBack ? 'grayLight' : 'grayDarker'}
+              color={canNavigate.canGoBack ? 'grayDarker' : 'grayLight'}
             />
             <IconButton
               title="Forward"
-              disabled={disabledForward}
-              onClick={handleForward}
+              disabled={!canNavigate.canGoForward}
+              onClick={() => emit('navigate', 'FORWARD')}
               icon="chevron-right"
               size="md"
-              color={disabledForward ? 'grayLight' : 'grayDarker'}
+              color={canNavigate.canGoForward ? 'grayDarker' : 'grayLight'}
             />
           </>
         )}

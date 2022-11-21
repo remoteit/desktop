@@ -53,6 +53,7 @@ export type UIState = {
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   defaultService: ILookup<string | null>
+  defaultSelection: ILookup<string>
   registrationCommand?: string
   redirect?: string
   restoring: boolean
@@ -74,9 +75,6 @@ export type UIState = {
   noticeMessage: string
   errorMessage: string
   panelWidth: ILookup<number>
-  navigation: ILookup<string>
-  navigationBack: string[]
-  navigationForward: string[]
   guides: ILookup<IGuide>
   poppedBubbles: string[]
   unExpireBubbles: boolean
@@ -114,6 +112,7 @@ export const defaultState: UIState = {
   serviceContextMenu: undefined,
   globalTooltip: undefined,
   defaultService: {},
+  defaultSelection: {},
   registrationCommand: undefined,
   redirect: undefined,
   restoring: false,
@@ -135,9 +134,6 @@ export const defaultState: UIState = {
   noticeMessage: '',
   errorMessage: '',
   panelWidth: { devices: 400, networks: 450, connections: 450, settings: 350, account: 300, organization: 350 },
-  navigation: {},
-  navigationBack: [],
-  navigationForward: [],
   guides: {
     // all multi-step guides disabled while testing the guide bubbles
     // - consider removing guide steps feature if not needed any longer

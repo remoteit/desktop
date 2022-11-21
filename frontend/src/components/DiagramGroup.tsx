@@ -1,19 +1,21 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
 import { useMatches, MatchesProps } from '../hooks/useMatches'
-import { DiagramContext } from '../services/Context'
 import { Box, ListItemButton, ListItemButtonProps, Tooltip, InputLabel } from '@mui/material'
+import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
+import { DiagramContext } from '../services/Context'
 import { spacing } from '../styling'
+import { Link } from 'react-router-dom'
 
 export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward' | 'proxy' | 'lan'
 
 type Props = MatchesProps & {
   type: DiagramGroupType
   disabled?: boolean
+  indicator?: Omit<IndicatorProps, 'top'>
   children?: React.ReactNode
 }
 
-export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
+export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, children }) => {
   const { highlightTypes, state, toTypes } = useContext(DiagramContext)
   const to = toTypes?.[type] || ''
   const selected = useMatches({ to })
@@ -65,7 +67,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
   }
 
   if (selected) {
-    titleColor = 'primary.main'
+    titleColor = 'grayDarkest.main'
   }
 
   if (highlight) {
@@ -74,38 +76,39 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, children }) => {
   }
 
   return (
-    <Tooltip title={tooltip} placement="top" arrow>
-      <ListItemButton
-        sx={sx}
-        to={to}
-        selected={selected}
-        disabled={!to}
-        style={{ opacity: 1 }}
-        component={Link}
-        disableGutters
+    // <Tooltip title={tooltip} placement="top" arrow>
+    <ListItemButton
+      sx={sx}
+      to={to}
+      selected={selected}
+      disabled={!to}
+      style={{ opacity: 1 }}
+      component={Link}
+      disableGutters
+    >
+      <InputLabel
+        shrink
+        sx={{
+          position: 'absolute',
+          top: spacing.sm,
+          left: spacing.md,
+          color: titleColor,
+        }}
       >
-        <InputLabel
-          shrink
-          sx={{
-            position: 'absolute',
-            top: spacing.sm,
-            left: spacing.md,
-            color: titleColor,
-          }}
-        >
-          {label}
-        </InputLabel>
-        <Box
-          sx={{
-            opacity: disabled ? 0.5 : 1,
-            alignItems: 'center',
-            display: 'flex',
-            justifyContent: 'stretch',
-          }}
-        >
-          {children}
-        </Box>
-      </ListItemButton>
-    </Tooltip>
+        {label}
+      </InputLabel>
+      <Box
+        sx={{
+          opacity: disabled ? 0.5 : 1,
+          alignItems: 'center',
+          display: 'flex',
+          justifyContent: 'stretch',
+        }}
+      >
+        {selected && <DiagramIndicator top="sm" {...indicator} />}
+        {children}
+      </Box>
+    </ListItemButton>
+    // </Tooltip>
   )
 }

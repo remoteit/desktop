@@ -31,14 +31,14 @@ export const OrganizationSelect: React.FC = () => {
 
   const ownOrgId = ownOrg?.id || userId
   const onSelect = async id => {
-    const menu = location.pathname.match(REGEX_FIRST_PATH)
+    const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
     if (id) {
       await logs.reset()
       await accounts.setActive(id.toString())
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()
-      if (menu && menu[0] === '/devices') history.push('/devices')
+      if (menu === '/devices') history.push('/devices')
     }
   }
 

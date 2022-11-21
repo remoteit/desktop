@@ -1,6 +1,5 @@
 import React from 'react'
-import { Paper } from '@mui/material'
-import { useParams } from 'react-router-dom'
+import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
@@ -18,17 +17,12 @@ type Props = {
 }
 
 export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes = [] }) => {
-  const { connections, device } = React.useContext(DeviceContext)
-  const { serviceID } = useParams<{ serviceID: string }>()
-  const css = useStyles()
-
-  const service = device?.services?.find(s => s.id === serviceID)
-  const connection = connections?.find(c => c.id === serviceID)
-
+  const { service, connection } = React.useContext(DeviceContext)
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
-
+  const css = useStyles()
   const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
+
   forward = forward || isForward(service)
   let activeTypes: DiagramGroupType[] = []
 
@@ -45,14 +39,10 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
     case 'offline':
   }
 
-  // const { connection } = useSelector((state: ApplicationState) => ({
-  //   connection: selectConnection(state, service),
-  // }))
-
   return (
     <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
-      <Paper elevation={0} className={css.diagram}>
+      <Box className={css.diagram}>
         {lan && (
           <DiagramGroup type="lan">
             <DiagramIcon type="lan" />
@@ -82,21 +72,21 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
             <DiagramPath type="forward" />
           </DiagramGroup>
         )}
-        <DiagramGroup type="target">
+        <DiagramGroup type="target" indicator={{ placement: 'right' }}>
           <DiagramPath type="target" />
           <DiagramIcon type="target" />
         </DiagramGroup>
-      </Paper>
+      </Box>
     </DiagramContext.Provider>
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  diagram: () => ({
+const useStyles = makeStyles({
+  diagram: {
     display: 'flex',
     alignItems: 'stretch',
     justifyContent: 'stretch',
     position: 'relative',
-    '& .MuiPaper-root + .MuiPaper-root': { marginLeft: 1 },
-  }),
-}))
+    overflow: 'visible',
+  },
+})

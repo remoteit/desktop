@@ -385,6 +385,7 @@ export function selectAccessibleNetworks(
 }
 
 export function selectSharedNetwork(state: ApplicationState, serviceId?: string): INetwork | undefined {
+  if (!serviceId) return
   const networks = selectNetworkByService(state, serviceId)
   if (!networks.length) return
   return networks.find(n => n.shared)

@@ -1,17 +1,13 @@
-import React, { useEffect } from 'react'
-import { REGEX_FIRST_PATH } from '../shared/constants'
-import { useParams, useLocation } from 'react-router-dom'
-import { selectById } from '../models/devices'
+import React from 'react'
 import { Typography } from '@mui/material'
-import { getDeviceModel } from '../models/accounts'
-import { selectSharedNetwork } from '../models/networks'
-import { selectConnection } from '../helpers/connectionHelper'
+import { useLocation, Redirect } from 'react-router-dom'
+import { DeviceContext } from '../services/Context'
+import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { ServiceAttributes } from '../components/ServiceAttributes'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
-import { LinearProgress } from '../components/LinearProgress'
 import { ConnectionName } from '../components/ConnectionName'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
@@ -21,38 +17,25 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionPage: React.FC = () => {
-  const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { service, device, network, connection, waiting, accordion } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceID)
-    const { initialized, fetching } = getDeviceModel(state)
-    return {
-      service,
-      device,
-      waiting: !initialized || fetching,
-      network: selectSharedNetwork(state, serviceID),
-      connection: selectConnection(state, service),
-      accordion: state.ui.accordion,
-    }
-  })
+  const { connection, device, service, network, instance } = React.useContext(DeviceContext)
+  const { accordion, defaultSelection } = useSelector((state: ApplicationState) => state.ui)
+  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
 
-  const instance: IInstance | undefined = network || device
+  React.useEffect(() => {
+    if (service) dispatch.ui.set({ defaultSelection: { ...defaultSelection, [menu]: location.pathname } })
+  }, [service])
 
-  useEffect(() => {
-    if (serviceID && !instance?.loaded && !waiting) {
-      const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
-      if (network) dispatch.networks.fetchSingle({ network, redirect })
-      else dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
-    }
-  }, [serviceID, waiting, instance])
-
-  if (!service) return <NoConnectionPage />
+  if (!service) {
+    if (defaultSelection[menu]) return <Redirect to={defaultSelection[menu]} push={false} />
+    return <NoConnectionPage />
+  }
 
   return (
     <Container
       gutterBottom
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
       header={
         <>
@@ -69,15 +52,16 @@ export const ConnectionPage: React.FC = () => {
               </Typography>
             </Gutters>
           )}
-          <Gutters size="md">
+          <Gutters size="md" bottom="sm">
             <Diagram
               to={{
-                initiator: `/connections/${serviceID}`,
-                target: `/devices/${device?.id}/${serviceID}/edit`,
+                initiator: `${menu}/${service.id}`,
+                target: instance?.permissions.includes('MANAGE')
+                  ? `/devices/${device?.id}/${service.id}/edit`
+                  : undefined,
               }}
             />
           </Gutters>
-          <LinearProgress loading={waiting} />
         </>
       }
     >
