@@ -3,11 +3,12 @@ import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
+import { DiagramDivider } from './DiagramDivider'
 import { isForward, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
+import { DiagramGuide } from './DiagramGuide'
 import { lanShared } from '../helpers/lanSharing'
-import { DiagramDivider } from './DiagramDivider'
 import { Pre } from './Pre'
 
 type Props = {
@@ -72,10 +73,12 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
             <DiagramPath type="forward" />
           </DiagramGroup>
         )}
-        <DiagramGroup type="target" indicator={{ placement: 'right' }}>
-          <DiagramPath type="target" />
-          <DiagramIcon type="target" />
-        </DiagramGroup>
+        <DiagramGuide type="target">
+          <DiagramGroup type="target" indicator={{ placement: 'right' }}>
+            <DiagramPath type="target" />
+            <DiagramIcon type="target" />
+          </DiagramGroup>
+        </DiagramGuide>
       </Box>
     </DiagramContext.Provider>
   )

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { useMatches, MatchesProps } from '../hooks/useMatches'
-import { Box, ListItemButton, ListItemButtonProps, Tooltip, InputLabel } from '@mui/material'
+import { Box, ListItemButton, ListItemButtonProps, InputLabel } from '@mui/material'
 import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
 import { DiagramContext } from '../services/Context'
 import { spacing } from '../styling'
