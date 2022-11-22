@@ -11,6 +11,13 @@ export function dedupe<T>(collection: T[], id: string) {
   }, [])
 }
 
+export function pickTruthy(keys: string[], object: object) {
+  return keys.reduce((result, key) => {
+    if (object[key]) result[key] = object[key]
+    return result
+  }, {})
+}
+
 export const currencyFormatter = (currency?: string, value?: number, digits: number = 2) => {
   if (!currency || !value) return '-'
   const result = new Intl.NumberFormat('en-US', {

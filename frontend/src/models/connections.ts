@@ -1,4 +1,5 @@
 import { parse as urlParse } from 'url'
+import { pickTruthy } from '../helpers/utilHelper'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { DEFAULT_CONNECTION } from '../shared/constants'
@@ -214,7 +215,22 @@ export default createModel<RootModel>()({
             delete connections[index]
             console.warn('No id found in connection', { connection })
           } else if (service) {
-            connection = { ...newConnection(service), ...connection }
+            let keep: string[] = [
+              'host',
+              'port',
+              'enabled',
+              'createdTime',
+              'startTime',
+              'endTime',
+              'connected',
+              'isP2P',
+              'reachable',
+              'restriction',
+              'sessionId',
+              'default',
+            ]
+            const picked = pickTruthy(keep, connection)
+            connection = { ...newConnection(service), ...picked }
             setConnection(connection)
           } else {
             console.warn(`No service found for connection ${connection.id}`, { connection })
