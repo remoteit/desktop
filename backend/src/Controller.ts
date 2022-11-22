@@ -61,7 +61,7 @@ class Controller {
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
-    socket.on('service/disable', this.stop)
+    socket.on('service/stop', this.stop)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.forget)

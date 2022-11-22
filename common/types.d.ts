@@ -25,7 +25,7 @@ declare global {
     // individual actions
     | 'service/connect'
     | 'service/disconnect'
-    | 'service/disable'
+    | 'service/stop'
     | 'service/forget'
     | 'service/restart'
     | 'service/clear'

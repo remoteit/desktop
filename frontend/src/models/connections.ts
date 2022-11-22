@@ -430,8 +430,9 @@ export default createModel<RootModel>()({
         return
       }
 
+      dispatch.connections.updateConnection({ ...connection, starting: true })
       emit('service/connect', connection)
-      heartbeat.caffeinate()
+      heartbeat.connect()
     },
 
     async disconnect(connection: IConnection | undefined) {
@@ -450,9 +451,14 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connection.connected) emit('service/disconnect', connection)
-      else emit('service/disable', connection)
-      heartbeat.caffeinate()
+      if (connection.connected) {
+        dispatch.connections.updateConnection({ ...connection, disconnecting: true })
+        emit('service/disconnect', connection)
+      } else {
+        dispatch.connections.updateConnection({ ...connection, stopping: true })
+        emit('service/stop', connection)
+      }
+      heartbeat.disconnect()
     },
 
     async survey({ rating, connection }: { rating: number; connection: IConnection }) {
