@@ -179,7 +179,6 @@ export const DevicePage: React.FC = () => {
           })}
         </GuideBubble>
       </List>
-      <ServiceContextualMenu />
     </Container>
   )
 }

@@ -23,7 +23,7 @@ export const ForgetMenuItem: React.FC<Props> = ({ connection, onClick }) => {
       <ListItemIcon>
         <Icon name="undo" size="md" />
       </ListItemIcon>
-      <ListItemText primary="Reset Settings" />
+      <ListItemText primary="Reset connection" />
     </MenuItem>
   )
 }

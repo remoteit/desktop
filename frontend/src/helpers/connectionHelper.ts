@@ -55,8 +55,8 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
 export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
-  const cd = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
-  const routeType: IRouteType = service?.attributes.route || cd?.route || isPortal() ? 'public' : 'failover'
+  const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
+  const routeType: IRouteType = service?.attributes.route || cd?.route || (isPortal() ? 'public' : 'failover')
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
