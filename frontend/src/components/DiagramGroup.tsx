@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { useMatches, MatchesProps } from '../hooks/useMatches'
-import { Box, ListItemButton, ListItemButtonProps, InputLabel } from '@mui/material'
+import { Box, ListItemButton, ListItemButtonProps, Typography } from '@mui/material'
 import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
 import { DiagramContext } from '../services/Context'
 import { spacing } from '../styling'
@@ -28,7 +28,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
     display: 'block',
     flexGrow: 1,
     paddingBottom: 2,
-    paddingTop: 4,
+    paddingTop: 5,
   }
 
   switch (state) {
@@ -39,18 +39,18 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
 
   switch (type) {
     case 'proxy':
-      tooltip = 'Cloud proxy initiator'
+      label = 'Proxy'
       sx.maxWidth = 80
       break
     case 'tunnel':
-      tooltip = 'Remote.It Secure tunnel'
+      label = 'Tunnel'
       break
     case 'forward':
       label = 'Host'
-      tooltip = 'System running the remoteit agent'
       sx.maxWidth = 80
       break
     case 'lan':
+      label = 'LAN'
       sx.paddingLeft = 2
       sx.maxWidth = 100
       break
@@ -61,7 +61,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
       sx.maxWidth = 100
       break
     case 'target':
-      tooltip = 'System hosting the service'
+      label = 'Target'
       sx.maxWidth = 100
       sx.paddingRight = 2
   }
@@ -86,8 +86,8 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
       component={Link}
       disableGutters
     >
-      <InputLabel
-        shrink
+      <Typography
+        variant="body2"
         sx={{
           position: 'absolute',
           top: spacing.sm,
@@ -96,7 +96,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
         }}
       >
         {label}
-      </InputLabel>
+      </Typography>
       <Box
         sx={{
           opacity: disabled ? 0.5 : 1,

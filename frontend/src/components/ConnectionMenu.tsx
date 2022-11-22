@@ -50,11 +50,17 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           </ListItemIcon>
           <ListItemText primary="Report Issue" />
         </MenuItem>
+        {/* <MenuItem dense onClick={() => history.push(`/settings/defaults/${service?.typeID}`)}>
+          <ListItemIcon>
+            <Icon name="circle-dashed" size="md" />
+          </ListItemIcon>
+          <ListItemText primary="Edit Service Defaults" />
+        </MenuItem> */}
         <MenuItem dense onClick={() => history.push(`/settings/defaults/${service?.typeID}`)}>
           <ListItemIcon>
             <Icon name="square-dashed" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Edit Defaults" />
+          <ListItemText primary="Edit App Defaults" />
         </MenuItem>
       </Menu>
     </>

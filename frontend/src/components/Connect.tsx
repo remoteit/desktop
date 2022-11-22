@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { canUseConnectLink } from '../models/applicationTypes'
 import { getDeviceModel } from '../models/accounts'
+import { DeviceContext } from '../services/Context'
 import { windowOpen } from '../services/Browser'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
@@ -37,13 +38,7 @@ import { spacing } from '../styling'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
-type Props = {
-  service?: IService
-  instance?: IInstance
-  connection: IConnection
-}
-
-export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
+export const Connect: React.FC = () => {
   const css = useStyles()
   const location = useLocation<{
     autoConnect?: boolean
@@ -51,12 +46,13 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
     autoCopy?: boolean
     autoFeedback?: boolean
   }>()
-  const { deviceID, sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
+  const { sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
+  const { connection, device, service, instance } = React.useContext(DeviceContext)
   const [showError, setShowError] = useState<boolean>(true)
   const [connectThisDevice, setConnectThisDevice] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const { session, accordion, thisDevice, showConnectLink } = useSelector((state: ApplicationState) => ({
-    thisDevice: (instance as IDevice)?.thisDevice && instance?.owner.id === state.user.id,
+    thisDevice: device?.thisDevice && instance?.owner.id === state.user.id,
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
@@ -65,12 +61,6 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
 
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
   const displayThisDevice = thisDevice && !connectThisDevice
-
-  useEffect(() => {
-    // FIXME - move this up to the router level - for connection display now
-    const id = connection?.deviceID || deviceID
-    if (!instance && id) dispatch.devices.fetchSingle({ id, hidden: true })
-  }, [deviceID])
 
   useEffect(() => {
     if (!location.state) return
@@ -111,7 +101,7 @@ export const Connect: React.FC<Props> = ({ service, instance, connection }) => {
           enterDelay={400}
           placement="left"
           startDate={new Date('2022-09-20')}
-          queueAfter={deviceID ? 'availableServices' : 'addNetwork'}
+          queueAfter={device ? 'availableServices' : 'addNetwork'}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
