@@ -158,10 +158,10 @@ export async function graphQLSetOrganization(params: IOrganizationSettings) {
   )
 }
 
-export async function graphQLSetSAML(params: { enabled: boolean; metadata?: string }) {
+export async function graphQLSetSAML(params: { accountId: string; enabled: boolean; metadata?: string }) {
   return await graphQLBasicRequest(
-    ` mutation query($enabled: Boolean, $metadata: String) {
-        configureSAML(enabled: $enabled, metadata: $metadata)
+    ` mutation query($accountId: String, $enabled: Boolean, $metadata: String) {
+        configureSAML(accountId: $accountId, enabled: $enabled, metadata: $metadata)
       }`,
     params
   )

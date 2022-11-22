@@ -281,7 +281,7 @@ export default createModel<RootModel>()({
       await dispatch.organization.fetch()
     },
 
-    async setSAML(params: { enabled: boolean; metadata?: string }) {
+    async setSAML(params: { accountId: string; enabled: boolean; metadata?: string }) {
       dispatch.organization.set({ updating: true })
       const result = await graphQLSetSAML(params)
       if (result !== 'ERROR') {

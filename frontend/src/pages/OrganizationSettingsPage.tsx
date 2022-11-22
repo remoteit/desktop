@@ -53,11 +53,11 @@ export const OrganizationSettingsPage: React.FC = () => {
 
   const enable = () => {
     if (!form.metadata) return
-    dispatch.organization.setSAML({ enabled: true, metadata: form.metadata })
+    dispatch.organization.setSAML({ accountId: organization?.id, enabled: true, metadata: form.metadata })
   }
 
   const disable = () => {
-    dispatch.organization.setSAML({ enabled: false })
+    dispatch.organization.setSAML({ accountId: organization?.id, enabled: false })
   }
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
