@@ -14,7 +14,7 @@ export const ServiceConnectPage: React.FC = () => {
       service={service}
       backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
     >
-      <Connect service={service} instance={device} connection={connection} />
+      <Connect />
     </ServiceHeaderMenu>
   )
 }

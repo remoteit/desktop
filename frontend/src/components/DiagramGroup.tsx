@@ -46,7 +46,7 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
       label = 'Tunnel'
       break
     case 'forward':
-      label = 'Host'
+      label = 'Relay'
       sx.maxWidth = 80
       break
     case 'lan':
@@ -55,13 +55,13 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
       sx.maxWidth = 100
       break
     case 'initiator':
-      label = 'Source'
+      label = 'Local'
       tooltip = 'Initiator'
       sx.paddingLeft = 2
       sx.maxWidth = 100
       break
     case 'target':
-      label = 'Target'
+      label = 'Remote'
       sx.maxWidth = 100
       sx.paddingRight = 2
   }

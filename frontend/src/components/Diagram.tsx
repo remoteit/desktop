@@ -66,14 +66,14 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
           <DiagramPath type="tunnel" />
         </DiagramGroup>
         <DiagramDivider end />
-        {forward && (
-          <DiagramGroup type="forward">
-            <DiagramPath type="forward" flexGrow={2} />
-            <DiagramIcon type="forward" />
-            <DiagramPath type="forward" />
-          </DiagramGroup>
-        )}
         <DiagramGuide type="target">
+          {forward && (
+            <DiagramGroup type="forward">
+              <DiagramPath type="forward" flexGrow={2} />
+              <DiagramIcon type="forward" />
+              <DiagramPath type="forward" />
+            </DiagramGroup>
+          )}
           <DiagramGroup type="target" indicator={{ placement: 'right' }}>
             <DiagramPath type="target" />
             <DiagramIcon type="target" />

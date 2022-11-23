@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
+import { ServiceAttributes } from '../../components/ServiceAttributes'
+import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,20 +32,25 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
 
   return (
     <ServiceHeaderMenu device={device} service={service}>
-      <ServiceForm
-        service={service}
-        thisDevice={thisDevice}
-        editable={!!device?.configurable || thisDevice}
-        disabled={!device?.permissions.includes('MANAGE')}
-        onCancel={exit}
-        onSubmit={async form => {
-          if (device?.permissions.includes('MANAGE')) {
-            service.attributes = { ...service.attributes, ...form.attributes }
-            await devices.setServiceAttributes(service)
-            if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
-          }
-        }}
-      />
+      <AccordionMenuItem gutters subtitle="Service Details" defaultExpanded>
+        <ServiceAttributes device={device} service={service} disablePadding />
+      </AccordionMenuItem>
+      <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
+        <ServiceForm
+          service={service}
+          thisDevice={thisDevice}
+          editable={!!device?.configurable || thisDevice}
+          disabled={!device?.permissions.includes('MANAGE')}
+          onCancel={exit}
+          onSubmit={async form => {
+            if (device?.permissions.includes('MANAGE')) {
+              service.attributes = { ...service.attributes, ...form.attributes }
+              await devices.setServiceAttributes(service)
+              if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
+            }
+          }}
+        />
+      </AccordionMenuItem>
     </ServiceHeaderMenu>
   )
 }

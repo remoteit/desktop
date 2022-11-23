@@ -51,6 +51,7 @@ export const ServiceHeaderMenu: React.FC<{
             <Diagram
               to={{
                 initiator: `/devices/${device?.id}/${serviceID}/connect`,
+                // tunnel: `/devices/${device?.id}/${serviceID}/connect`,
                 target: `/devices/${device?.id}/${serviceID}/edit`,
               }}
             />

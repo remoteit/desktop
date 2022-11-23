@@ -20,7 +20,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
   const { applicationTypes, keyApplications, saving } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
     keyApplications: selectUniqueSchemeTypes(state),
-    saving: !!(state.ui.setupServiceBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    saving: !!(state.ui.setupAddingService || (service && state.ui.setupServiceBusy === service.id)),
   }))
 
   const [portReachable, portScan] = usePortScan()
@@ -78,7 +78,13 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
             endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
           }}
         />
-        <Button type="submit" variant="contained" color="primary" size="large" disabled={!isValid || disabled}>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          size="large"
+          disabled={!isValid || disabled || saving}
+        >
           {saving ? 'Adding...' : 'Add'}
         </Button>
       </form>

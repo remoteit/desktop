@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
-import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -56,6 +55,7 @@ export const DevicePage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
+              className={css.title}
               pathname={`/devices/${device.id}/details`}
               match={[
                 `/devices/${device.id}/details`,
@@ -184,9 +184,7 @@ export const DevicePage: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  connect: {
-    marginLeft: -spacing.sm,
-    marginRight: spacing.xs,
-  },
+  connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
+  title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
   list: { marginRight: 1 },
 })
