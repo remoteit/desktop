@@ -54,7 +54,7 @@ export function getType(all: IApplicationType[], port?: number) {
 export function selectUniqueSchemeTypes(state: ApplicationState) {
   let schemes: string[] = []
   return state.applicationTypes.all.filter(t => {
-    if (schemes.includes(t.scheme)) return false
+    if (schemes.includes(t.scheme) || !t.port) return false
     schemes.push(t.scheme)
     return true
   })

@@ -51,7 +51,7 @@ export const DiagramIcon: React.FC<Props> = ({ type }) => {
       props.type = 'solid'
       break
     case 'offline':
-      props.color = 'grayLight'
+      props.color = type === 'initiator' ? undefined : 'grayLight'
       break
   }
 

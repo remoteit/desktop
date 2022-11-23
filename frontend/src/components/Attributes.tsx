@@ -184,7 +184,7 @@ export const attributes: Attribute[] = [
         </Avatar>
       ),
   }),
-  new Attribute({
+  new DeviceAttribute({
     id: 'access',
     label: 'Users',
     defaultWidth: 200,
@@ -333,6 +333,12 @@ export const attributes: Attribute[] = [
     label: 'Service Protocol',
     value: ({ service }) => service?.protocol,
   }),
+  // new ServiceAttribute({
+  //   id: 'serviceAccess',
+  //   label: 'Users',
+  //   defaultWidth: 200,
+  //   value: ({ device, service }) => <AvatarList users={device?.shared ? [device.owner] : service?.access} size={22} />,
+  // }),
   new ServiceAttribute({
     id: 'serviceLastReported',
     label: 'Last Reported',

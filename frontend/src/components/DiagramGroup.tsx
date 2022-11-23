@@ -10,12 +10,11 @@ export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward' | '
 
 type Props = MatchesProps & {
   type: DiagramGroupType
-  disabled?: boolean
   indicator?: Omit<IndicatorProps, 'top'>
   children?: React.ReactNode
 }
 
-export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, children }) => {
+export const DiagramGroup: React.FC<Props> = ({ type, indicator, children }) => {
   const { highlightTypes, state, toTypes } = useContext(DiagramContext)
   const to = toTypes?.[type] || ''
   const selected = useMatches({ to })
@@ -99,7 +98,6 @@ export const DiagramGroup: React.FC<Props> = ({ disabled, type, indicator, child
       </Typography>
       <Box
         sx={{
-          opacity: disabled ? 0.5 : 1,
           alignItems: 'center',
           display: 'flex',
           justifyContent: 'stretch',
