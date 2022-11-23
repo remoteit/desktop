@@ -29,8 +29,9 @@ export const DevicePage: React.FC = () => {
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
-  const { setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
+  const { setupAddingService, setupDeletingService, sortService } = useSelector((state: ApplicationState) => ({
     setupAddingService: state.ui.setupAddingService,
+    setupDeletingService: state.ui.setupDeletingService,
     sortService: getDeviceModel(state).sortServiceOption,
   }))
 
@@ -155,6 +156,7 @@ export const DevicePage: React.FC = () => {
                 pathname={`/devices/${device.id}/${s.id}${servicePage}`}
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
+                disabled={setupDeletingService === s.id}
                 disableIcon
                 dense
               >
@@ -172,7 +174,11 @@ export const DevicePage: React.FC = () => {
                 />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
                 <ListItemSecondaryAction>
-                  <ServiceMiniState service={s} connection={c} />
+                  {setupDeletingService === s.id ? (
+                    <CircularProgress color="error" size={fontSizes.md} />
+                  ) : (
+                    <ServiceMiniState service={s} connection={c} />
+                  )}
                 </ListItemSecondaryAction>
               </ListItemLocation>
             )

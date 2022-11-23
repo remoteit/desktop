@@ -38,10 +38,16 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (serviceID && !instance?.loaded && !waiting) {
       const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
-      if (network) dispatch.networks.fetchSingle({ network, redirect })
-      else dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
+      if (network) {
+        dispatch.networks.fetchSingle({ network, redirect })
+        console.log('LOADING NETWORK DATA', network, redirect)
+      } else {
+        dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
+        console.log('LOADING SERVICE DATA', serviceID, redirect)
+      }
     } else if (deviceID && !device?.loaded && !waiting && !(remoteUI && thisId)) {
       dispatch.devices.fetchSingle({ id: deviceID, hidden: true, redirect: '/devices' })
+      console.log('LOADING DEVICE DATA', deviceID)
     }
   }, [deviceID, serviceID, waiting, device, thisId, instance])
 
