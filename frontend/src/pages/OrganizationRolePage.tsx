@@ -105,7 +105,9 @@ export const OrganizationRolePage: React.FC = () => {
             }}
           />
         </ListItem>
-        <Typography variant="subtitle1">User Permissions</Typography>
+        <Typography variant="subtitle1" gutterBottom>
+          User Permissions
+        </Typography>
         <PermissionsList
           locked={systemRole}
           disabled={disabled}
@@ -113,7 +115,9 @@ export const OrganizationRolePage: React.FC = () => {
           permissions={Object.keys(PERMISSION).filter(p => PERMISSION[p].user)}
           onChange={handlePermissionChange}
         />
-        <Typography variant="subtitle1">Device and Network Permissions</Typography>
+        <Typography variant="subtitle1" gutterBottom>
+          Device and Network Permissions
+        </Typography>
         <ListItem>
           <ListItemIcon>
             <Icon name={form.access === 'NONE' ? 'ban' : form.access === 'TAG' ? 'tag' : 'key'} size="md" fixedWidth />

@@ -140,8 +140,10 @@ export const Router: React.FC = () => {
       </Route>
 
       {/* Networks */}
-      <Route path="/networks">
-        <NetworkRouter layout={layout} />
+      <Route path="/networks/:serviceID?">
+        <DeviceContextWrapper>
+          <NetworkRouter layout={layout} />
+        </DeviceContextWrapper>
       </Route>
 
       {/* Add */}

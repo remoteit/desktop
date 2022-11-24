@@ -1,5 +1,6 @@
 import { AnalyticsJS } from 'segment-analytics'
 import { DiagramGroupType } from './components/DiagramGroup'
+import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
 import { Color } from './styling'
 
@@ -220,6 +221,7 @@ declare global {
   }
 
   type IDataOptions = {
+    application?: Application
     device?: IDevice
     service?: IService
     connection?: IConnection

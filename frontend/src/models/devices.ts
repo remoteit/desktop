@@ -232,10 +232,11 @@ export default createModel<RootModel>()({
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
         console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
       } else {
-        if (state.ui.silent !== id)
+        if (state.ui.silent !== id) {
           dispatch.ui.set({
-            errorMessage: `You do not have access to that ${isService ? 'service' : 'device'}. (${id})`,
+            errorMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
           })
+        }
         if (redirect) dispatch.ui.set({ redirect })
         if (isService) dispatch.connections.forget(id)
       }
@@ -354,7 +355,12 @@ export default createModel<RootModel>()({
 
     async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId: string }) {
       console.log('REMOVING SERVICE', serviceId, deviceId)
-      dispatch.ui.set({ setupServiceBusy: serviceId, setupDeletingService: serviceId })
+      dispatch.ui.set({
+        setupServiceBusy: serviceId,
+        setupDeletingService: serviceId,
+        silent: serviceId,
+        redirect: `/devices/${deviceId}/details`,
+      })
       await graphQLRemoveService(serviceId)
       await dispatch.devices.fetchSingle({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
@@ -433,7 +439,7 @@ export default createModel<RootModel>()({
           successMessage: `"${device.name}" was successfully removed.`,
         })
       }
-      dispatch.ui.set({ destroying: false, redirect: '/devices' })
+      dispatch.ui.set({ destroying: false })
     },
 
     async customAttributes({ customAttributes }: { customAttributes: string[] }, state) {

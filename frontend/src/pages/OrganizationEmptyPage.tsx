@@ -1,7 +1,9 @@
 import React from 'react'
+import { Redirect } from 'react-router-dom'
 import { useHistory } from 'react-router-dom'
-import { Dispatch, ApplicationState } from '../store'
 import { makeStyles } from '@mui/styles'
+import { Dispatch, ApplicationState } from '../store'
+import { getOrganization } from '../models/organization'
 import { TextField, Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing } from '../styling'
@@ -9,11 +11,16 @@ import { Gutters } from '../components/Gutters'
 import { Body } from '../components/Body'
 
 export const OrganizationEmptyPage: React.FC = () => {
-  const username = useSelector((state: ApplicationState) => (state.auth.user?.email || '').split('@')[0])
+  const { username, hasOrganization } = useSelector((state: ApplicationState) => ({
+    username: (state.auth.user?.email || '').split('@')[0],
+    hasOrganization: getOrganization(state)?.id && state.organization.initialized,
+  }))
   const [name, setName] = React.useState<string>(`${username}'s org`)
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
+
+  if (hasOrganization) return <Redirect to="/organization" />
 
   return (
     <Body center>

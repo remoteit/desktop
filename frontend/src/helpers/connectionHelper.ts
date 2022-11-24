@@ -12,6 +12,7 @@ import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { selectById } from '../models/devices'
 import { isPortal } from '../services/Browser'
+import { findType } from '../models/applicationTypes'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -55,8 +56,8 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
 export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
-  const cd = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
-  const routeType: IRouteType = service?.attributes.route || cd?.route || isPortal() ? 'public' : 'failover'
+  const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
+  const routeType: IRouteType = service?.attributes.route || cd?.route || (isPortal() ? 'public' : 'failover')
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
@@ -92,7 +93,6 @@ export function routeTypeToSettings(route: IRouteType, defaults?: IConnection) {
     public: route === 'public',
     enabled: route === 'public' ? false : !!defaults?.enabled,
     publicRestriction: route === 'public' ? IP_OPEN : undefined,
-    reverseProxy: route !== 'public' ? undefined : defaults?.reverseProxy,
   }
 }
 

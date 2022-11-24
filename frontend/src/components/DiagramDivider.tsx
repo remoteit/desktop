@@ -17,7 +17,7 @@ export const DiagramDivider: React.FC<Props> = ({ start, end, type }) => {
     borderStyle: 'dashed',
     height: 'inherit',
     marginBottom: 1.5,
-    marginTop: 3.5,
+    marginTop: 4.5,
     marginLeft: start ? 0.6 : undefined,
     marginRight: end ? 0.6 : undefined,
   }

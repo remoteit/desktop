@@ -51,7 +51,8 @@ export const ServiceHeaderMenu: React.FC<{
             <Diagram
               to={{
                 initiator: `/devices/${device?.id}/${serviceID}/connect`,
-                target: device.permissions.includes('MANAGE') ? `/devices/${device?.id}/${serviceID}/edit` : undefined,
+                // tunnel: `/devices/${device?.id}/${serviceID}/connect`,
+                target: `/devices/${device?.id}/${serviceID}/edit`,
               }}
             />
           </Gutters>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
@@ -50,11 +50,17 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           </ListItemIcon>
           <ListItemText primary="Report Issue" />
         </MenuItem>
-        <MenuItem dense onClick={() => history.push(`/settings/defaults/${service?.typeID}`)}>
+        <MenuItem dense component={Link} to="defaults">
+          <ListItemIcon>
+            <Icon name="play" size="md" />
+          </ListItemIcon>
+          <ListItemText primary="Service Connect Defaults" />
+        </MenuItem>
+        <MenuItem dense component={Link} to={`/settings/defaults/${service?.typeID}`}>
           <ListItemIcon>
             <Icon name="square-dashed" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Edit Defaults" />
+          <ListItemText primary="App Defaults" />
         </MenuItem>
       </Menu>
     </>

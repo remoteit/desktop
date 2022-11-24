@@ -7,7 +7,7 @@ import { ScanPage } from '../pages/ScanPage'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
-import { ServiceDetailPage } from '../pages/ServiceDetailPage'
+import { ServiceDefaultsPage } from '../pages/ServiceDefaultsPage'
 import { ServiceConnectPage } from '../pages/ServiceConnectPage'
 import { ServiceUsersPage } from '../pages/ServiceUsersPage'
 import { DeviceUsersPage } from '../pages/DeviceUsersPage'
@@ -34,7 +34,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   const defaultService = () => {
     const lookupResult = defaultServiceLookup[device?.id || '']
-    const serviceId = lookupResult === undefined ? device?.services?.[0]?.id : lookupResult
+    const validLookup = lookupResult === null || device?.services.find(s => s.id === lookupResult)
+    const serviceId = validLookup ? lookupResult : device?.services?.[0]?.id
     const redirect = serviceId ? `${serviceId}/connect` : 'details'
     return `/devices/${device?.id}/${redirect}`
   }
@@ -88,8 +89,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/:serviceID/edit">
             <ServiceEditPage device={device} />
           </Route>
-          <Route path="/devices/:deviceID/:serviceID/details">
-            <ServiceDetailPage device={device} />
+          <Route path="/devices/:deviceID/:serviceID/defaults">
+            <ServiceDefaultsPage />
           </Route>
           <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
             <LanSharePage />

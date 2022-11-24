@@ -23,7 +23,7 @@ export const OrganizationPage: React.FC = () => {
     license: selectRemoteitLicense(state),
   }))
 
-  if (initialized && !organization.id) return <Redirect to={'/organization/empty'} />
+  if (initialized && !organization.id) return <Redirect to="/organization/empty" />
 
   const admin = !!permissions?.includes('ADMIN')
 

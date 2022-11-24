@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button } from '@mui/material'
+import { Box, Tooltip, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { useStyles } from './GuideStep'
@@ -15,6 +15,7 @@ type Props = {
   hide?: boolean
   enterDelay?: number
   queueAfter?: string
+  sx?: BoxProps['sx']
   children?: React.ReactNode
 }
 
@@ -29,6 +30,7 @@ export const GuideBubble: React.FC<Props> = ({
   hide,
   enterDelay,
   queueAfter,
+  sx,
   children,
 }) => {
   const { poppedBubbles, expired } = useSelector((state: ApplicationState) => ({
@@ -61,12 +63,12 @@ export const GuideBubble: React.FC<Props> = ({
             Ok
           </Button>
           {/* <Box fontSize={10} marginLeft={2} component="span">
-              {guide}
-            </Box> */}
+            {guide}
+          </Box> */}
         </>
       }
     >
-      <Box className={css.box} onClick={() => ui.pop(guide)} component={component}>
+      <Box className={css.box} sx={sx} onClick={() => ui.pop(guide)} component={component}>
         {children}
       </Box>
     </Tooltip>

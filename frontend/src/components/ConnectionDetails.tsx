@@ -258,7 +258,14 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
         </Paper>
         <Paper className={css.details} elevation={0}>
           <Gutters bottom="xs">
-            <DataDisplay attributes={attributes} connection={connection} session={session} width={100} disablePadding />
+            <DataDisplay
+              attributes={attributes}
+              connection={connection}
+              session={session}
+              application={app}
+              width={100}
+              disablePadding
+            />
           </Gutters>
         </Paper>
       </Gutters>

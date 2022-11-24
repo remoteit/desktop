@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION, MAX_DESCRIPTION_LENGTH } from '../shared/constants'
+import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { AddFromNetwork } from './AddFromNetwork'
 import { ListItemCheckbox } from './ListItemCheckbox'
@@ -9,8 +9,6 @@ import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/ma
 import { ApplicationState, Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { serviceNameValidation } from '../shared/nameHelper'
-import { ServiceAttributesForm } from './ServiceAttributesForm'
-import { AccordionMenuItem } from './AccordionMenuItem'
 import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
 import { validPort } from '../helpers/connectionHelper'
@@ -276,20 +274,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           </>
         )}
       </List>
-      <AccordionMenuItem subtitle="Connection defaults" gutters>
-        <List>
-          <ServiceAttributesForm
-            connection={{
-              ...DEFAULT_CONNECTION,
-              ...form.attributes,
-              typeID: form.typeID,
-            }}
-            disabled={disabled}
-            attributes={form.attributes}
-            onUpdate={attributes => setForm({ ...form, attributes })}
-          />
-        </List>
-      </AccordionMenuItem>
+      {/* Connection defaults form? */}
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed}>
           {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}

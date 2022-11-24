@@ -53,6 +53,8 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
         }}
         onDeny={() => setOpen(false)}
         title="Are you sure?"
+        color="error"
+        action="Delete"
       >
         {message}
       </Confirm>

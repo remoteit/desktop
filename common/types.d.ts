@@ -25,7 +25,7 @@ declare global {
     // individual actions
     | 'service/connect'
     | 'service/disconnect'
-    | 'service/disable'
+    | 'service/stop'
     | 'service/forget'
     | 'service/restart'
     | 'service/clear'
@@ -178,7 +178,6 @@ declare global {
     publicRestriction?: ipAddress // public proxy restriction IP
     reachable?: boolean // if remote connection resource is reachable
     restriction?: ipAddress // Restriction IP address
-    reverseProxy?: boolean // if the connection is a reverse proxy
     sessionId?: string //the connection session id
     stopping?: boolean // service stopping the listener
     starting?: boolean // if the connection listening is starting up

@@ -2,7 +2,6 @@ import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { NetworksPage } from '../pages/NetworksPage'
-import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
 import { NetworkAddPage } from '../pages/NetworkAddPage'
@@ -33,15 +32,11 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           </Route>
 
           <Route path="/networks/:serviceID/lan">
-            <DeviceContextWrapper>
-              <LanSharePage />
-            </DeviceContextWrapper>
+            <LanSharePage />
           </Route>
 
           <Route path="/networks/:serviceID?">
-            <DeviceContextWrapper>
-              <ConnectionPage />
-            </DeviceContextWrapper>
+            <ConnectionPage />
           </Route>
         </Switch>
       }

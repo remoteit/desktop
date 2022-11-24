@@ -1,5 +1,6 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@mui/material'
+import { Application } from '../../shared/applications'
 import { fontSizes } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Attribute } from '../Attributes'
@@ -10,6 +11,7 @@ type Props = IDataOptions & {
   limits?: ILookup<boolean>
   device?: IDevice
   service?: IService
+  application?: Application
   disablePadding?: boolean
   width?: number
 }

@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
-import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -30,8 +29,9 @@ export const DevicePage: React.FC = () => {
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
-  const { setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
+  const { setupAddingService, setupDeletingService, sortService } = useSelector((state: ApplicationState) => ({
     setupAddingService: state.ui.setupAddingService,
+    setupDeletingService: state.ui.setupDeletingService,
     sortService: getDeviceModel(state).sortServiceOption,
   }))
 
@@ -56,6 +56,7 @@ export const DevicePage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
+              className={css.title}
               pathname={`/devices/${device.id}/details`}
               match={[
                 `/devices/${device.id}/details`,
@@ -155,6 +156,7 @@ export const DevicePage: React.FC = () => {
                 pathname={`/devices/${device.id}/${s.id}${servicePage}`}
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
+                disabled={setupDeletingService === s.id}
                 disableIcon
                 dense
               >
@@ -172,22 +174,23 @@ export const DevicePage: React.FC = () => {
                 />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
                 <ListItemSecondaryAction>
-                  <ServiceMiniState service={s} connection={c} />
+                  {setupDeletingService === s.id ? (
+                    <CircularProgress color="error" size={fontSizes.md} />
+                  ) : (
+                    <ServiceMiniState service={s} connection={c} />
+                  )}
                 </ListItemSecondaryAction>
               </ListItemLocation>
             )
           })}
         </GuideBubble>
       </List>
-      <ServiceContextualMenu />
     </Container>
   )
 }
 
 const useStyles = makeStyles({
-  connect: {
-    marginLeft: -spacing.sm,
-    marginRight: spacing.xs,
-  },
+  connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
+  title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
   list: { marginRight: 1 },
 })

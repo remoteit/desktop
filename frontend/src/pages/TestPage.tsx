@@ -15,10 +15,11 @@ import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
   const { plans, ui } = useDispatch<Dispatch>()
-  const { tests, informed, testUI, preferences, limits, limitsOverride, testHeader } = useSelector(
+  const { tests, informed, testUI, unExpireBubbles, preferences, limits, limitsOverride, testHeader } = useSelector(
     (state: ApplicationState) => ({
       ...state.plans,
       testUI: state.ui.testUI,
+      unExpireBubbles: state.ui.unExpireBubbles,
       preferences: state.backend.preferences,
       limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
       limits: selectBaseLimits(state, state.auth.user?.id),
@@ -117,7 +118,8 @@ export const TestPage: React.FC = () => {
         <ListItemSetting
           hideIcon
           label="Display expired guide bubbles"
-          onClick={() => ui.set({ unExpireBubbles: true })}
+          toggle={unExpireBubbles}
+          onClick={() => ui.set({ unExpireBubbles: !unExpireBubbles })}
         />
       </List>
       <Typography variant="subtitle1">Features</Typography>

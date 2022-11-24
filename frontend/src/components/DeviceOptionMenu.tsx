@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
-import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
@@ -40,14 +39,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
       >
         {service
           ? [
-              <ListItemLocation
-                dense
-                menuItem
-                key="info"
-                title="Details"
-                icon="info-circle"
-                pathname={`/devices/${device.id}/${service.id}/details`}
-              />,
               <UsersTab
                 key="users"
                 menuItem

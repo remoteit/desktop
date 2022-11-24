@@ -21,14 +21,16 @@ export const ServiceContextualMenu: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
   const { el, remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
     const { el, serviceID } = state.ui.serviceContextMenu || {}
-    const [service, device] = findById(getDevices(state), serviceID)
-    return {
-      el,
-      remoteUI: isRemoteUI(state),
-      connection: selectConnection(state, service),
-      service,
-      device,
-    }
+    if (serviceID) {
+      const [service, device] = findById(getDevices(state), serviceID)
+      return {
+        el,
+        remoteUI: isRemoteUI(state),
+        connection: selectConnection(state, service),
+        service,
+        device,
+      }
+    } else return {}
   })
   const app = useApplication(service, connection)
   const history = useHistory()

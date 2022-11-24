@@ -5,7 +5,6 @@ import { emit } from './Controller'
 
 const HEARTBEAT_INTERVAL = 1000 * 20 // 20 SEC
 const CAFFEINATE_INTERVAL = 1000 // 1 SEC
-const CAFFEINATE_COUNT = 12
 
 class Heartbeat {
   count = 0
@@ -44,12 +43,20 @@ class Heartbeat {
     }
   }
 
-  caffeinate = () => {
+  connect = () => {
+    this.caffeinate(12)
+  }
+
+  disconnect = () => {
+    setTimeout(() => this.caffeinate(6), 2000)
+  }
+
+  caffeinate = (count: number) => {
     this.count = 0
     console.log('START CAFFEINATE')
     if (this.caffeineInterval) window.clearInterval(this.caffeineInterval)
     this.caffeineInterval = window.setInterval(() => {
-      if (this.count++ > CAFFEINATE_COUNT) {
+      if (this.count++ > count) {
         window.clearInterval(this.caffeineInterval)
         this.caffeineInterval = undefined
       }

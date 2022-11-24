@@ -144,7 +144,7 @@ export const defaultState: UIState = {
   },
   poppedBubbles: [],
   unExpireBubbles: false,
-  accordion: { config: true, configConnected: false, options: false, service: false, networks: false, logs: false },
+  accordion: { config: false, configConnected: false, options: false, service: false, networks: false, logs: false },
   confirm: undefined,
   autoConnect: false,
   autoLaunch: false,

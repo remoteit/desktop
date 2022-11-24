@@ -1,4 +1,5 @@
 import { parse as urlParse } from 'url'
+import { pickTruthy } from '../helpers/utilHelper'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { DEFAULT_CONNECTION } from '../shared/constants'
@@ -136,7 +137,6 @@ export default createModel<RootModel>()({
           createdTime: new Date(link.created).getTime(),
           enabled: link.enabled,
           connectLink: link.enabled,
-          reverseProxy: true,
           public: true,
         }
 
@@ -153,7 +153,6 @@ export default createModel<RootModel>()({
           result.push({
             ...lookup[key],
             connectLink: DEFAULT_CONNECTION.connectLink,
-            reverseProxy: DEFAULT_CONNECTION.reverseProxy,
             enabled: DEFAULT_CONNECTION.enabled,
             public: DEFAULT_CONNECTION.public,
           })
@@ -214,7 +213,22 @@ export default createModel<RootModel>()({
             delete connections[index]
             console.warn('No id found in connection', { connection })
           } else if (service) {
-            connection = { ...newConnection(service), ...connection }
+            let keep: string[] = [
+              'host',
+              'port',
+              'enabled',
+              'createdTime',
+              'startTime',
+              'endTime',
+              'connected',
+              'isP2P',
+              'reachable',
+              'restriction',
+              'sessionId',
+              'default',
+            ]
+            const picked = pickTruthy(keep, connection)
+            connection = { ...newConnection(service), ...picked }
             setConnection(connection)
           } else {
             console.warn(`No service found for connection ${connection.id}`, { connection })
@@ -293,7 +307,6 @@ export default createModel<RootModel>()({
           isP2P: false,
           startTime: data.created,
           sessionId: data.id,
-          reverseProxy: data.reverseProxy,
           timeout: data.timeout / 60,
           port: data.port,
           host: data.host,
@@ -329,8 +342,8 @@ export default createModel<RootModel>()({
 
     async setConnectLink(connection: IConnection) {
       const creating: IConnection = connection.enabled
-        ? { ...connection, public: true, reverseProxy: true, connectLink: true }
-        : { ...connection, public: false, reverseProxy: false, connectLink: false }
+        ? { ...connection, public: true, connectLink: true }
+        : { ...connection, public: false, connectLink: false }
 
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
@@ -370,7 +383,6 @@ export default createModel<RootModel>()({
         connectLink: false,
         enabled: false,
         public: false || isPortal(),
-        reverseProxy: undefined,
         disconnecting: true,
       }
       dispatch.connections.updateConnection(removing)
@@ -388,7 +400,6 @@ export default createModel<RootModel>()({
         password: undefined,
         disconnecting: false,
         connected: false,
-        reverseProxy: false,
       })
     },
 
@@ -399,7 +410,6 @@ export default createModel<RootModel>()({
       connection.online = service ? service?.state === 'active' : connection.online
       connection.host = ''
       connection.error = undefined
-      connection.reverseProxy = undefined
       connection.autoStart = undefined
       connection.public = connection.public || isPortal()
       connection.starting = !connection.public
@@ -414,8 +424,9 @@ export default createModel<RootModel>()({
         return
       }
 
+      dispatch.connections.updateConnection({ ...connection, starting: true })
       emit('service/connect', connection)
-      heartbeat.caffeinate()
+      heartbeat.connect()
     },
 
     async disconnect(connection: IConnection | undefined) {
@@ -434,9 +445,14 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connection.connected) emit('service/disconnect', connection)
-      else emit('service/disable', connection)
-      heartbeat.caffeinate()
+      if (connection.connected) {
+        dispatch.connections.updateConnection({ ...connection, disconnecting: true })
+        emit('service/disconnect', connection)
+      } else {
+        dispatch.connections.updateConnection({ ...connection, stopping: true })
+        emit('service/stop', connection)
+      }
+      heartbeat.disconnect()
     },
 
     async survey({ rating, connection }: { rating: number; connection: IConnection }) {

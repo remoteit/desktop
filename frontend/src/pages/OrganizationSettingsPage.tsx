@@ -28,13 +28,13 @@ import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 
 export const OrganizationSettingsPage: React.FC = () => {
-  const { updating, domain, defaultDomain, samlOnly, isThisOrg, organization, limits, permissions } = useSelector(
+  const { updating, domain, defaultDomain, samlOnly, isOrgOwner, organization, limits, permissions } = useSelector(
     (state: ApplicationState) => {
       const membership = getMembership(state)
       const organization = memberOrganization(state.organization.accounts, membership.account.id)
       return {
         organization,
-        isThisOrg: organization.id === state.auth.user?.id,
+        isOrgOwner: organization.id === state.auth.user?.id,
         updating: state.organization.updating,
         domain: organization.domain || '',
         defaultDomain: state.auth.user?.email.split('@')[1],
@@ -53,11 +53,11 @@ export const OrganizationSettingsPage: React.FC = () => {
 
   const enable = () => {
     if (!form.metadata) return
-    dispatch.organization.setSAML({ enabled: true, metadata: form.metadata })
+    dispatch.organization.setSAML({ accountId: organization?.id, enabled: true, metadata: form.metadata })
   }
 
   const disable = () => {
-    dispatch.organization.setSAML({ enabled: false })
+    dispatch.organization.setSAML({ accountId: organization?.id, enabled: false })
   }
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
@@ -68,7 +68,7 @@ export const OrganizationSettingsPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>Settings</Title>
-          {isThisOrg && (
+          {isOrgOwner && (
             <DeleteButton
               title="Delete Organization"
               warning={
@@ -95,7 +95,7 @@ export const OrganizationSettingsPage: React.FC = () => {
           onSave={name => dispatch.organization.setOrganization({ name: name.toString(), accountId: organization.id })}
         />
       </List>
-      {isThisOrg && limits.saml && (
+      {limits.saml && (
         <>
           <List>
             <InlineTextFieldSetting

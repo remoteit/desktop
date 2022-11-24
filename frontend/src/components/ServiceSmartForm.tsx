@@ -7,24 +7,31 @@ import { useSelector } from 'react-redux'
 import { DEFAULT_SERVICE } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { getApplicationType } from '../shared/applications'
+import { serviceNameValidation } from '../shared/nameHelper'
 import { Typography, TextField, Divider, Button, Box, Chip } from '@mui/material'
 import { selectUniqueSchemeTypes } from '../models/applicationTypes'
 import { ServiceFormProps } from './ServiceForm'
 import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
-import { spacing } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { Gutters } from './Gutters'
 import { Pre } from './Pre'
 
-export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevice, disabled, onSubmit, onChange }) => {
+type Props = ServiceFormProps & {
+  nameField?: boolean
+}
+
+export const ServiceSmartForm: React.FC<Props> = ({ nameField, service, thisDevice, disabled, onSubmit, onChange }) => {
   const { applicationTypes, keyApplications, saving } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
     keyApplications: selectUniqueSchemeTypes(state),
-    saving: !!(state.ui.setupServiceBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    saving: !!(state.ui.setupAddingService || (service && state.ui.setupServiceBusy === service.id)),
   }))
 
   const [portReachable, portScan] = usePortScan()
   const [field, setField] = useState<string>('http://127.0.0.1')
+  const [error, setError] = useState<string>()
+  const [name, setName] = useState<string>()
   const css = useStyles()
 
   disabled = disabled || saving
@@ -41,7 +48,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
     id: service?.id || '',
     typeID: applicationType?.id || DEFAULT_SERVICE.typeID,
     deviceId: service?.deviceID,
-    name: applicationType?.name || application.title,
+    name: name || applicationType?.name || application.title,
     host: parsed.hostname || '',
     enabled: true,
     attributes: {
@@ -67,7 +74,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
         <TextField
           required
           value={field}
-          label="Target Endpoint"
+          label="Service Endpoint"
           disabled={disabled}
           variant="filled"
           InputLabelProps={{ shrink: !!field }}
@@ -78,7 +85,31 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
             endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
           }}
         />
-        <Button type="submit" variant="contained" color="primary" size="large" disabled={!isValid || disabled}>
+        {nameField && (
+          <TextField
+            required
+            label="Service Name"
+            value={name}
+            disabled={disabled}
+            error={!!error}
+            variant="filled"
+            InputLabelProps={{ shrink: true }}
+            helperText={error || ''}
+            placeholder={applicationType?.name || application.title}
+            onChange={event => {
+              const validation = serviceNameValidation(event.target.value)
+              setName(validation.value)
+              validation.error ? setError(validation.error) : setError(undefined)
+            }}
+          />
+        )}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          size="large"
+          disabled={!isValid || disabled || saving}
+        >
           {saving ? 'Adding...' : 'Add'}
         </Button>
       </form>
@@ -112,7 +143,7 @@ export const ServiceSmartForm: React.FC<ServiceFormProps> = ({ service, thisDevi
           />
         </Box>
       </Gutters>
-      {/* <Pre {...{ parsed: { field, ...parsed } }} /> */}
+      {/* <Pre {...{ field }} /> */}
     </>
   )
 }
@@ -138,5 +169,9 @@ const useStyles = makeStyles(({ palette }) => ({
       marginRight: spacing.sm,
       borderColor: palette.gray.main,
     },
+  },
+  preview: {
+    fontSize: fontSizes.xxxs,
+    textTransform: 'uppercase',
   },
 }))
