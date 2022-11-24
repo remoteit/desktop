@@ -381,13 +381,13 @@ export const attributes: Attribute[] = [
   new ConnectionAttribute({
     id: 'connection',
     label: 'Connection',
-    value: ({ connection, session }) =>
+    value: ({ connection, session, application }) =>
       connection?.connecting
         ? 'Connecting...'
         : connection?.public
         ? connection?.connectLink
           ? 'Persistent Public Endpoint'
-          : connection?.reverseProxy
+          : application?.reverseProxy
           ? 'Public Reverse Proxy'
           : 'Public Proxy'
         : !connection?.connected && !session
@@ -399,12 +399,12 @@ export const attributes: Attribute[] = [
   new ConnectionAttribute({
     id: 'security',
     label: 'Security',
-    value: ({ connection }) => {
+    value: ({ connection, application }) => {
       if (!connection) return undefined
 
       if (connection.public)
         return connection.publicRestriction === IP_LATCH
-          ? connection.reverseProxy
+          ? application?.reverseProxy
             ? 'Public randomized url'
             : 'This IP address only'
           : 'Public'

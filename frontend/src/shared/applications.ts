@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment } from '../sharedAdaptor'
+import { getEnvironment, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 
@@ -22,6 +22,7 @@ export class Application {
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
+  cloudData?: IApplicationType
   localhost?: boolean
 
   connection?: IConnection
@@ -170,8 +171,12 @@ export class Application {
     return lookup
   }
 
+  get reverseProxy() {
+    return !!this.cloudData?.proxy
+  }
+
   private get resolvedDefaultLaunchTemplate() {
-    return this.connection?.reverseProxy
+    return this.reverseProxy
       ? this.reverseProxyTemplate
       : this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.appLaunchTemplate
   }
@@ -211,6 +216,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   app.service = service
   app.connection = connection
   app.globalDefaults = globalDefaults?.[typeID || ''] || {}
+  app.cloudData = getCloudData(typeID)
 
   return app
 }

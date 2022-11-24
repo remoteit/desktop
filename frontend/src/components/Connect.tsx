@@ -37,6 +37,7 @@ import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
+import { Pre } from './Pre'
 
 export const Connect: React.FC = () => {
   const css = useStyles()

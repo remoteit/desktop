@@ -12,6 +12,7 @@ import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { selectById } from '../models/devices'
 import { isPortal } from '../services/Browser'
+import { findType } from '../models/applicationTypes'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -92,7 +93,6 @@ export function routeTypeToSettings(route: IRouteType, defaults?: IConnection) {
     public: route === 'public',
     enabled: route === 'public' ? false : !!defaults?.enabled,
     publicRestriction: route === 'public' ? IP_OPEN : undefined,
-    reverseProxy: route !== 'public' ? undefined : defaults?.reverseProxy,
   }
 }
 
