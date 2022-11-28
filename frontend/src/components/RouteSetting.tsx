@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { IP_OPEN } from '../shared/constants'
 import { ROUTES } from '../models/devices'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
@@ -42,7 +43,13 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
         onChange={e => {
           const route = e.target.value as IRouteType
           setOpen(!open)
-          const updated = { ...connection, ...routeTypeToSettings(route, connection) }
+          const updated = {
+            ...connection,
+            ...routeTypeToSettings(route),
+            publicRestriction: route === 'public' ? IP_OPEN : undefined,
+            enabled: route === 'public' ? false : !!connection.enabled,
+          }
+
           if (updated.public && connection.enabled) {
             dispatch.connections.disconnect(connection)
           }
