@@ -104,9 +104,6 @@ export default class ElectronApp {
       canGoBack: this.window.webContents.canGoBack(),
       canGoForward: this.window.webContents.canGoForward(),
     }
-
-    Logger.info('NAVIGATE', { action, canNavigate })
-
     switch (action) {
       case 'BACK':
         this.window.webContents.goBack()

@@ -104,7 +104,7 @@ export const ConnectionsPage: React.FC = () => {
           )}
         </>
       ) : (
-        <LoadingMessage />
+        <LoadingMessage message="Loading..." spinner={false} />
       )}
     </Container>
   )
