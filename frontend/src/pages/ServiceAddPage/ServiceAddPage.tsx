@@ -40,7 +40,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
             <Title>New service</Title>
           </Typography>
           <Gutters>
-            <Diagram highlightTypes={['target', 'forward']} forward={forward} />
+            <Diagram highlightTypes={['target', 'relay']} forward={forward} />
           </Gutters>
           <LicensingServiceNotice device={device} />
         </>

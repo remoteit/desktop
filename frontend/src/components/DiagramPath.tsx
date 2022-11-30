@@ -9,7 +9,7 @@ type Props = {
 }
 
 export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
-  const { highlightTypes, state } = useContext(DiagramContext)
+  const { highlightTypes, state, proxy } = useContext(DiagramContext)
   const highlight = type ? highlightTypes.includes(type) : false
   let sx: DividerProps['sx'] = {
     flexGrow,
@@ -17,10 +17,14 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
     borderColor: 'grayDarkest.main',
     marginBottom: '8px',
     marginTop: '9px',
+    maxWidth: 40,
+    width: 40,
   }
 
   switch (type) {
     case 'tunnel':
+      sx.flexGrow = 1
+      sx.maxWidth = 'initial'
       if (state === 'connected') {
         sx.borderTopWidth = 1
         sx.borderBottomWidth = 1
@@ -30,6 +34,15 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
       } else {
         sx.borderStyle = 'dotted'
       }
+      break
+    case 'initiator':
+      if (proxy) sx.borderStyle = 'dotted'
+      break
+    case 'relay':
+      sx.width = 40
+      break
+    case 'target':
+      sx.width = 40
       break
   }
 

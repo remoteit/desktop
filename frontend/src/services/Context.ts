@@ -23,4 +23,6 @@ export const DiagramContext = createContext<IDiagramContext>({
   activeTypes: [],
   highlightTypes: [],
   state: undefined,
+  proxy: undefined,
+  forward: undefined,
 })

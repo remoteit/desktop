@@ -7,6 +7,7 @@ import { DiagramDivider } from './DiagramDivider'
 import { isForward, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
+import { DiagramLabel } from './DiagramLabel'
 import { DiagramGuide } from './DiagramGuide'
 import { lanShared } from '../helpers/lanSharing'
 import { Pre } from './Pre'
@@ -32,51 +33,48 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
       activeTypes = ['initiator']
       break
     case 'connected':
-      activeTypes = ['target', 'initiator', 'tunnel', 'forward']
+      activeTypes = ['target', 'initiator', 'tunnel', 'relay']
       break
     case 'online':
-      activeTypes = ['target', 'forward']
+      activeTypes = ['target', 'relay']
       break
     case 'offline':
   }
 
   return (
-    <DiagramContext.Provider value={{ state, toTypes, activeTypes, highlightTypes }}>
+    <DiagramContext.Provider value={{ state, proxy, forward, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
       <Box className={css.diagram}>
-        {lan && (
-          <DiagramGroup type="lan">
-            <DiagramIcon type="lan" />
-            <DiagramPath type="lan" />
-          </DiagramGroup>
-        )}
-        <DiagramGroup type="initiator">
+        <DiagramGroup type="initiator" flexGrow={1}>
+          {lan && (
+            <>
+              <DiagramIcon type="lan" />
+              <DiagramPath type="lan" />
+            </>
+          )}
+          <DiagramLabel name="Local" />
           <DiagramIcon type="initiator" />
           <DiagramPath type="initiator" />
-        </DiagramGroup>
-        {proxy && (
-          <DiagramGroup type="proxy">
-            <DiagramPath type="proxy" />
-            <DiagramIcon type="proxy" />
-            <DiagramPath type="proxy" flexGrow={2} />
-          </DiagramGroup>
-        )}
-        <DiagramDivider start />
-        <DiagramGroup type="tunnel">
+          {proxy && (
+            <>
+              <DiagramIcon type="proxy" />
+              <DiagramPath type="proxy" />
+            </>
+          )}
+          <DiagramIcon type="relay" />
+          <DiagramDivider start />
+          <DiagramLabel name="Tunnel" />
           <DiagramPath type="tunnel" />
         </DiagramGroup>
-        <DiagramDivider end />
         <DiagramGuide type="target">
-          {forward && (
-            <DiagramGroup type="forward">
-              <DiagramPath type="forward" flexGrow={2} />
-              <DiagramIcon type="forward" />
-              <DiagramPath type="forward" />
-            </DiagramGroup>
-          )}
           <DiagramGroup type="target" indicator={{ placement: 'right' }}>
+            <DiagramDivider end />
+            <DiagramLabel name="Relay" />
+            <DiagramIcon type="relay" rotate={180} />
+            <DiagramPath type="relay" />
             <DiagramPath type="target" />
             <DiagramIcon type="target" />
+            <DiagramLabel name="Service" right />
           </DiagramGroup>
         </DiagramGuide>
       </Box>

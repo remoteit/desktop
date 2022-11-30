@@ -15,11 +15,9 @@ export const DiagramDivider: React.FC<Props> = ({ start, end, type }) => {
   let sx: DividerProps['sx'] = {
     borderColor: 'grayDarkest.main',
     borderStyle: 'dashed',
-    height: 'inherit',
-    marginBottom: 1.5,
-    marginTop: 4.5,
-    marginLeft: start ? 0.6 : undefined,
-    marginRight: end ? 0.6 : undefined,
+    height: '24px',
+    marginLeft: start ? 1 : undefined,
+    marginRight: end ? 1 : undefined,
   }
 
   switch (state) {
