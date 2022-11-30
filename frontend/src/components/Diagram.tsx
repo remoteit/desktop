@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
 import { DiagramDivider } from './DiagramDivider'
-import { isForward, connectionState } from '../helpers/connectionHelper'
+import { isRelay, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
 import { DiagramLabel } from './DiagramLabel'
@@ -14,23 +14,23 @@ import { Pre } from './Pre'
 
 type Props = {
   to?: { [key in DiagramGroupType]?: string }
-  forward?: boolean
+  relay?: boolean
   highlightTypes?: DiagramGroupType[]
 }
 
-export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes = [] }) => {
+export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = [] }) => {
   const { service, connection } = React.useContext(DeviceContext)
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
   const css = useStyles()
   const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
 
-  forward = forward || isForward(service)
+  relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
 
   switch (state) {
     case 'ready':
-      activeTypes = ['initiator']
+      activeTypes = ['lan', 'initiator']
       break
     case 'connected':
       activeTypes = ['target', 'initiator', 'tunnel', 'relay']
@@ -42,12 +42,13 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
   }
 
   return (
-    <DiagramContext.Provider value={{ state, proxy, forward, toTypes, activeTypes, highlightTypes }}>
+    <DiagramContext.Provider value={{ state, proxy, relay, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
       <Box className={css.diagram}>
         <DiagramGroup type="initiator" flexGrow={1}>
           {lan && (
             <>
+              <DiagramLabel name="LAN" />
               <DiagramIcon type="lan" />
               <DiagramPath type="lan" />
             </>
@@ -69,9 +70,9 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, forward, highlightTypes 
         <DiagramGuide type="target">
           <DiagramGroup type="target" indicator={{ placement: 'right' }}>
             <DiagramDivider end />
-            <DiagramLabel name="Relay" />
-            <DiagramIcon type="relay" rotate={180} />
-            <DiagramPath type="relay" />
+            {relay && <DiagramLabel name="Relay" />}
+            <DiagramIcon type="relay" end />
+            {relay && <DiagramPath type="relay" />}
             <DiagramPath type="target" />
             <DiagramIcon type="target" />
             <DiagramLabel name="Service" right />

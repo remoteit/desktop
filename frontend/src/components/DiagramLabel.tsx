@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import { Typography, Box } from '@mui/material'
 import { DiagramContext } from '../services/Context'
-import { spacing } from '../styling'
 
 export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'forward' | 'proxy' | 'lan'
 

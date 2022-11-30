@@ -16,7 +16,7 @@ type Props = MatchesProps & {
 }
 
 export const DiagramGroup: React.FC<Props> = ({ type, indicator, flexGrow = 'inherit', children }) => {
-  const { highlightTypes, state, toTypes, forward } = useContext(DiagramContext)
+  const { highlightTypes, state, toTypes, relay: forward } = useContext(DiagramContext)
   const to = toTypes?.[type] || ''
   const selected = useMatches({ to })
   const highlight = highlightTypes.includes(type)

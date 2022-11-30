@@ -4,20 +4,18 @@ import { Tooltip, Box } from '@mui/material'
 import { DiagramContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'
 
-// export type DiagramIconType = 'listener' | 'proxy' | 'service' | 'entrance' | 'exit' | 'forward'
+type Props = { type: DiagramGroupType; end?: boolean }
 
-type Props = { type: DiagramGroupType; rotate?: IconProps['rotate'] }
-
-// @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
-export const DiagramIcon: React.FC<Props> = ({ type, rotate }) => {
+export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   const [hover, setHover] = React.useState<boolean>(false)
-  const { highlightTypes, state } = useContext(DiagramContext)
+  const { highlightTypes, activeTypes, state } = useContext(DiagramContext)
+  const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
   let tooltip = ''
   let props: IconProps = {
     type: hover ? 'solid' : 'regular',
     color: 'grayDarkest',
-    rotate,
+    rotate: end ? 180 : undefined,
   }
 
   switch (type) {
@@ -35,32 +33,22 @@ export const DiagramIcon: React.FC<Props> = ({ type, rotate }) => {
       break
     case 'relay':
       props.name = 'play'
-      tooltip = 'Remote agent'
+      tooltip = end ? 'End agent' : 'Start agent'
       break
     case 'lan':
-      props.name = 'play'
+      props.name = 'chart-network'
       tooltip = 'Any system on the local network'
       break
-    // case 'entrance':
-    //   props.name = 'play'
-    //   break
-    // case 'exit':
-    //   props.name = 'play'
-    //   props.rotate = 180
-    //   break
   }
 
   switch (state) {
-    case 'ready':
-      props.color = type === 'initiator' ? 'primary' : 'grayDarkest'
-      break
     case 'connected':
-      props.color = 'primary'
       props.type = hover ? 'regular' : 'solid'
       break
-    case 'offline':
-      props.color = type === 'initiator' ? undefined : 'grayLight'
-      break
+  }
+
+  if (active) {
+    props.color = 'primary'
   }
 
   if (highlight) {

@@ -6,7 +6,7 @@ import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
 import { ServiceSmartForm } from '../../components/ServiceSmartForm'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
-import { isForward } from '../../helpers/connectionHelper'
+import { isRelay } from '../../helpers/connectionHelper'
 import { Typography } from '@mui/material'
 import { Container } from '../../components/Container'
 import { Diagram } from '../../components/Diagram'
@@ -40,7 +40,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
             <Title>New service</Title>
           </Typography>
           <Gutters>
-            <Diagram highlightTypes={['target', 'relay']} forward={forward} />
+            <Diagram highlightTypes={['target', 'relay']} relay={forward} />
           </Gutters>
           <LicensingServiceNotice device={device} />
         </>
@@ -60,7 +60,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
             if (device?.configurable) await devices.cloudAddService({ form, deviceId: device?.id })
             history.push(`/devices/${device?.id}`)
           }}
-          onChange={form => setForward(isForward(form))}
+          onChange={form => setForward(isRelay(form))}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />
       )}

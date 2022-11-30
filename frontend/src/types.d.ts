@@ -36,7 +36,7 @@ declare global {
     highlightTypes: DiagramGroupType[]
     state?: IConnectionState
     proxy?: boolean
-    forward?: boolean
+    relay?: boolean
   }
 
   type IPortScan = 'REACHABLE' | 'UNREACHABLE' | 'SCANNING' | 'INVALID'

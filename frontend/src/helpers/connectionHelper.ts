@@ -25,7 +25,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
   return 'online'
 }
 
-export function isForward(service?: IService) {
+export function isRelay(service?: IService) {
   return !!(service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost')
 }
 
