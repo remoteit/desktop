@@ -12,9 +12,10 @@ type Props = {
 export const DiagramDivider: React.FC<Props> = ({ start, end, type }) => {
   const { highlightTypes, state } = useContext(DiagramContext)
   const highlight = type ? highlightTypes.includes(type) : false
+
   let sx: DividerProps['sx'] = {
     borderColor: 'grayDarkest.main',
-    borderStyle: 'dashed',
+    borderStyle: 'dotted',
     height: '24px',
     marginLeft: start ? 1 : undefined,
     marginRight: end ? 1 : undefined,
@@ -27,7 +28,7 @@ export const DiagramDivider: React.FC<Props> = ({ start, end, type }) => {
       break
     case 'connected':
       sx.borderColor = 'primary.main'
-      sx.borderBottomWidth = 2
+      sx.borderRightWidth = 2
       break
     case 'offline':
       sx.borderColor = 'grayLight.main'

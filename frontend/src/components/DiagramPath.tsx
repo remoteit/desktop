@@ -14,7 +14,7 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
   const highlight = type ? highlightTypes.includes(type) : false
   let sx: DividerProps['sx'] = {
     flexGrow,
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
     borderColor: 'grayDarkest.main',
     marginBottom: '8px',
     marginTop: '9px',
@@ -27,11 +27,11 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
       sx.flexGrow = 1
       sx.maxWidth = 'initial'
       if (state === 'connected') {
-        sx.borderTopWidth = 1
-        sx.borderBottomWidth = 1
-        sx.minHeight = '5px'
+        sx.borderTopWidth = 1.5
+        sx.borderBottomWidth = 1.5
+        sx.minHeight = '6px'
         sx.marginBottom = '6px'
-        sx.marginTop = '7px'
+        sx.marginTop = '6px'
       } else {
         sx.borderStyle = 'dotted'
       }
