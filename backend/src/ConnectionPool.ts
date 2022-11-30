@@ -163,7 +163,7 @@ export default class ConnectionPool {
     if (!connection) return new Error('No connection data!')
     const instance = this.set(connection, false, true)
     if (!instance) return
-    await this.assignPort(instance)
+    instance.params = await this.assignPort(instance.params)
     await instance.start()
     this.updated(instance)
   }
@@ -259,9 +259,10 @@ export default class ConnectionPool {
     return next
   }
 
-  private assignPort = async (connection: Connection) => {
-    if (!connection.params.port) connection.params.port = await this.nextFreePort()
-    if (!connection.params.port) throw new Error('No port could be assigned to connection!')
+  private assignPort = async (connection: IConnection) => {
+    if (!connection.port) connection.port = await this.nextFreePort()
+    if (!connection.port) throw new Error('No port could be assigned to connection!')
+    return connection
   }
 
   private get usedPorts() {

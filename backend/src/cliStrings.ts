@@ -40,7 +40,7 @@ export default {
     return `-j connection add \
       --id ${c.id} \
       --name "${c.name}" \
-      ${c.port ? `--port ${c.port}` : ''} \
+      --port ${c.port} \
       --ip ${c.ip} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
