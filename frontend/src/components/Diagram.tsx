@@ -33,7 +33,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
       activeTypes = ['lan', 'initiator']
       break
     case 'connected':
-      activeTypes = ['target', 'proxy', 'initiator', 'tunnel', 'relay']
+      activeTypes = ['target', 'proxy', 'agent', 'initiator', 'tunnel', 'relay']
       break
     case 'online':
       activeTypes = ['target', 'relay']
@@ -62,7 +62,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
               <DiagramPath type="proxy" />
             </>
           )}
-          <DiagramIcon type="relay" />
+          <DiagramIcon type="agent" />
           <DiagramDivider start />
           <DiagramLabel name="Tunnel" />
           <DiagramPath type="tunnel" />
@@ -71,7 +71,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
           <DiagramGroup type="target" indicator={{ placement: 'right' }}>
             <DiagramDivider end />
             {relay && <DiagramLabel name="Relay" />}
-            <DiagramIcon type="relay" end />
+            <DiagramIcon type="relay" />
             {relay && <DiagramPath type="relay" />}
             <DiagramPath type="target" />
             <DiagramIcon type="target" />

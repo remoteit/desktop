@@ -6,7 +6,7 @@ import { DiagramContext } from '../services/Context'
 import { spacing } from '../styling'
 import { Link } from 'react-router-dom'
 
-export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'relay' | 'proxy' | 'lan' | 'endpoint'
+export type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'relay' | 'agent' | 'proxy' | 'lan' | 'endpoint'
 
 type Props = MatchesProps & {
   type: DiagramGroupType

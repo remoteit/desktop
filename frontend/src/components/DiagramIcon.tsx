@@ -15,7 +15,6 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   let props: IconProps = {
     type: hover ? 'solid' : 'regular',
     color: 'grayDarkest',
-    rotate: end ? 180 : undefined,
   }
 
   switch (type) {
@@ -31,9 +30,14 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       props.name = 'bullseye'
       tooltip = 'Remote target endpoint'
       break
+    case 'agent':
+      props.name = 'play'
+      tooltip = 'Start agent'
+      break
     case 'relay':
       props.name = 'play'
-      tooltip = end ? 'End agent' : 'Start agent'
+      props.rotate = 180
+      tooltip = 'End agent'
       break
     case 'lan':
       props.name = 'chart-network'
