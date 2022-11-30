@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { isPortal } from '../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { connectionState, newConnection, launchDisabled } from '../helpers/connectionHelper'
@@ -119,7 +120,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
   props.loading = props.loading || loading
 
-  if (service?.attributes.route === 'p2p' && connection?.public) disabled = true
+  if (service?.attributes.route === 'p2p' && isPortal()) disabled = true
   if (disabled && props.size === 'icon') title = ''
   if (connection?.connectLink && state !== 'offline') {
     title = connection.enabled ? 'Disable' : 'Enable'

@@ -22,7 +22,7 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
   const css = useStyles(props.fullWidth)()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
-      {props.service?.attributes.route === 'p2p' && props.connection?.public ? (
+      {props.service?.attributes.route === 'p2p' && isPortal() ? (
         <div>
           <Notice fullWidth severity="info" gutterBottom>
             {props.size === 'small' ? (
