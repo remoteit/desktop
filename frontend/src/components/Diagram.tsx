@@ -33,7 +33,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
       activeTypes = ['lan', 'initiator']
       break
     case 'connected':
-      activeTypes = ['target', 'initiator', 'tunnel', 'relay']
+      activeTypes = ['target', 'proxy', 'initiator', 'tunnel', 'relay']
       break
     case 'online':
       activeTypes = ['target', 'relay']
