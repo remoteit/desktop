@@ -232,11 +232,10 @@ export default createModel<RootModel>()({
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
         console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
       } else {
-        if (state.ui.silent !== id) {
+        if (!isService && state.ui.silent !== id)
           dispatch.ui.set({
             errorMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
           })
-        }
         if (redirect) dispatch.ui.set({ redirect })
         if (isService) dispatch.connections.forget(id)
       }
@@ -419,7 +418,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: true, silent: device.id })
       const result = await graphQLDeleteDevice(device.id)
       if (result !== 'ERROR') {
-        await dispatch.devices.cleanup(device.id)
+        dispatch.devices.cleanup(device.id)
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully deleted.`,
         })
@@ -435,7 +434,7 @@ export default createModel<RootModel>()({
         email: [auth.user?.email || ''],
       })
       if (result !== 'ERROR') {
-        await dispatch.devices.cleanup(device.id)
+        dispatch.devices.cleanup(device.id)
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully removed.`,
         })

@@ -78,8 +78,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
               title="Details"
               icon="circle-info"
               iconColor="grayDarker"
-              pathname={`/networks/view/${network.id}/edit`}
-              match={[`/networks/view/${network.id}`, `/networks/view/${network.id}/edit`]}
+              pathname={`/networks/view/${network.id}`}
               exactMatch
               dense
             />

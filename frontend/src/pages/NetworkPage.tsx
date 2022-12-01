@@ -1,6 +1,5 @@
 import React from 'react'
-import { useParams } from 'react-router-dom'
-import { selectNetwork } from '../models/networks'
+import { DeviceContext } from '../services/Context'
 import { NoConnectionPage } from './NoConnectionPage'
 import { Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -13,15 +12,11 @@ import { Gutters } from '../components/Gutters'
 
 export const NetworkPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { networkID } = useParams<{ networkID?: string }>()
-  const { network, orgName, email } = useSelector((state: ApplicationState) => {
-    const network = selectNetwork(state, networkID)
-    return {
-      network,
-      orgName: getOrganizationName(state, network.owner.id),
-      email: state.user.email,
-    }
-  })
+  const { network } = React.useContext(DeviceContext)
+  const { orgName, email } = useSelector((state: ApplicationState) => ({
+    orgName: getOrganizationName(state, network?.owner.id),
+    email: state.user.email,
+  }))
 
   if (!network) return <NoConnectionPage />
 

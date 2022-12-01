@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
-import { useLocation, Redirect } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
