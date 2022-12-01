@@ -249,7 +249,8 @@ export default class ElectronApp {
       Logger.error('ELECTRON WEB CONSOLE preload-error', { preloadPath, error })
     )
     webContents.on('console-message', (event, level, message, line, sourceId) => {
-      if (level > 2) Logger.error('ELECTRON WEB console error', { level, message, line, sourceId })
+      if (level > 2 && !message.includes('unsafe-inline'))
+        Logger.error('ELECTRON WEB console error', { level, message, line, sourceId })
     })
   }
 

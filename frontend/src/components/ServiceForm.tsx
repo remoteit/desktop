@@ -16,6 +16,7 @@ import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
+import { TestUI } from './TestUI'
 
 export type ServiceFormProps = {
   service?: IService
@@ -23,8 +24,8 @@ export type ServiceFormProps = {
   editable: boolean
   disabled?: boolean
   adding?: boolean
-  onChange?: (form: IServiceForm) => void
-  onSubmit: (form: IServiceForm) => void
+  onChange?: (form: IService) => void
+  onSubmit: (form: IService) => void
   onCancel: () => void
 }
 
@@ -54,14 +55,15 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       type: defaultType.name,
       typeID: defaultType.id,
       enabled: !service || service.enabled,
+      presenceAddress: service?.presenceAddress,
       name: service?.name || serviceNameValidation(defaultType.name).value,
       attributes: service?.attributes || {},
       ...setupAdded,
     }
   }
-  const [defaultForm, setDefaultForm] = useState<IServiceForm>()
+  const [defaultForm, setDefaultForm] = useState<IService>()
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<IServiceForm>()
+  const [form, setForm] = useState<IService>()
   const [portReachable, portScan] = usePortScan()
   const appType = findType(applicationTypes, form?.typeID)
   const css = useStyles()
@@ -256,6 +258,17 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 </Typography>
               </ListItem>
             )}
+            <TestUI>
+              <ListItem className={css.field}>
+                <TextField
+                  label="Presence address"
+                  value={form.presenceAddress || ''}
+                  variant="filled"
+                  onChange={event => setForm({ ...form, presenceAddress: event.target.value })}
+                />
+                <Typography variant="caption">Example: prod-presence.remote.it:6960</Typography>
+              </ListItem>
+            </TestUI>
             <ListItemCheckbox
               checked={form.enabled}
               label="Enable service"

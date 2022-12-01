@@ -3,7 +3,7 @@ import { addConnectionProps } from '../models/networks'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
-    ` mutation query($attributes: Object!, $serviceId: String) {
+    ` mutation SetAttributes($attributes: Object!, $serviceId: String) {
         setAttributes(attributes: $attributes, serviceId: $serviceId)
       }`,
     { attributes: { $remoteit: attributes }, serviceId }
@@ -16,7 +16,7 @@ export async function graphQLSetDeviceNotification(
   desktopNotifications?: boolean | null
 ) {
   return await graphQLBasicRequest(
-    ` mutation query($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
+    ` mutation SetDeviceNotification($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
         setNotificationSettings(
           serviceId: $deviceID, 
           emailNotifications: $emailNotifications, 
@@ -55,7 +55,7 @@ export async function graphQLDisconnect(serviceId: string, connectionId: string)
 
 export async function graphQLSurvey(serviceId: string, sessionId: string, quality: number) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!, $sessionId: String!, $quality: Int!) {
+    ` mutation Survey($serviceId: String!, $sessionId: String!, $quality: Int!) {
         rateConnection(serviceId: $serviceId, sessionId: $sessionId, quality: $quality)
       }`,
     { serviceId, sessionId, quality }
@@ -68,7 +68,7 @@ export async function graphQLSetConnectLink(params: {
   enabled?: boolean
 }) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!, $password: String, $enabled: Boolean) {
+    ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean) {
         setConnectLink(serviceId: $serviceId, password: $password, enabled: $enabled) {
           url
           password
@@ -82,7 +82,7 @@ export async function graphQLSetConnectLink(params: {
 
 export async function graphQLRemoveConnectLink(serviceId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!) {
+    ` mutation RemoveLink($serviceId: String!) {
         removeConnectLink(serviceId: $serviceId)
       }`,
     { serviceId }
@@ -110,7 +110,7 @@ export async function graphQLRegistration(props: {
 
 export async function graphQLRename(serviceId: string, name: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: String!, $name: String!) {
+    ` mutation Rename($serviceId: String!, $name: String!) {
         renameService(serviceId: $serviceId, name: $name)
       }`,
     { serviceId, name }
@@ -119,7 +119,7 @@ export async function graphQLRename(serviceId: string, name: string) {
 
 export async function graphQLDeleteDevice(deviceId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($deviceId: String!) {
+    ` mutation Delete($deviceId: String!) {
         deleteDevice(deviceId: $deviceId)
       }`,
     { deviceId }
@@ -128,7 +128,7 @@ export async function graphQLDeleteDevice(deviceId: string) {
 
 export async function graphQLUnShareDevice(params: IShareProps) {
   return await graphQLBasicRequest(
-    ` mutation query($deviceId: String!, $email: [String!]!) {
+    ` mutation UnShare($deviceId: String!, $email: [String!]!) {
         share(deviceId: $deviceId, email: $email, action: REMOVE)
       }`,
     params
@@ -137,7 +137,7 @@ export async function graphQLUnShareDevice(params: IShareProps) {
 
 export async function graphQLShareDevice(params: IShareProps) {
   return await graphQLBasicRequest(
-    ` mutation query($deviceId: String!, $email: [String!]!, $scripting: Boolean, $services: [ServiceSharingOptions!]) {
+    ` mutation Share($deviceId: String!, $email: [String!]!, $scripting: Boolean, $services: [ServiceSharingOptions!]) {
         share(
           deviceId: $deviceId, 
           email: $email, 
@@ -151,7 +151,7 @@ export async function graphQLShareDevice(params: IShareProps) {
 
 export async function graphQLSetOrganization(params: IOrganizationSettings) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $name: String, $domain: String, $providers: [AuthenticationProvider!]) {
+    ` mutation SetOrganization($accountId: String, $name: String, $domain: String, $providers: [AuthenticationProvider!]) {
         setOrganization(accountId: $accountId, name: $name, domain: $domain, providers: $providers)
       }`,
     params
@@ -160,7 +160,7 @@ export async function graphQLSetOrganization(params: IOrganizationSettings) {
 
 export async function graphQLSetSAML(params: { accountId: string; enabled: boolean; metadata?: string }) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $enabled: Boolean, $metadata: String) {
+    ` mutation SetSAML($accountId: String, $enabled: Boolean, $metadata: String) {
         configureSAML(accountId: $accountId, enabled: $enabled, metadata: $metadata)
       }`,
     params
@@ -182,7 +182,7 @@ export async function graphQLSetMembers(
   license?: ILicenseTypes
 ) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $email: [String!]!, $roleId: ID, $license: LicenseOption) {
+    ` mutation SetMember($accountId: String, $email: [String!]!, $roleId: ID, $license: LicenseOption) {
         setMember(accountId: $accountId, email: $email, roleId: $roleId, license: $license)
       }`,
     { accountId, email, roleId, license }
@@ -191,7 +191,7 @@ export async function graphQLSetMembers(
 
 export async function graphQLRemoveMembers(email: string[], accountId?: string) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $email: [String!]!) {
+    ` mutation RemoveMembers($accountId: String, $email: [String!]!) {
         removeMember(accountId: $accountId, email: $email)
       }`,
     { accountId, email }
@@ -200,7 +200,7 @@ export async function graphQLRemoveMembers(email: string[], accountId?: string) 
 
 export async function graphQLLeaveMembership(id: string) {
   return await graphQLBasicRequest(
-    ` mutation query($id: ID!) {
+    ` mutation LeaveMembership($id: ID!) {
         leaveOrganization(id: $id)
       }`,
     { id }
@@ -209,7 +209,7 @@ export async function graphQLLeaveMembership(id: string) {
 
 export async function graphQLClaimDevice(code: string, accountId?: string) {
   return await graphQLBasicRequest(
-    ` mutation query($code: String!, $accountId: String) {
+    ` mutation Claim($code: String!, $accountId: String) {
         claimDevice(code: $code, accountId: $accountId) {
           id
           name
@@ -221,7 +221,7 @@ export async function graphQLClaimDevice(code: string, accountId?: string) {
 
 export async function graphQLConfigureSAML(params: { enabled: boolean; metadata: string }) {
   return await graphQLBasicRequest(
-    ` mutation query($enabled: Boolean!, $metadata: String!)) {
+    ` mutation SAML($enabled: Boolean!, $metadata: String!)) {
         configureSAML(enabled: $enabled, metadata: $metadata)
       }`,
     params
@@ -230,7 +230,7 @@ export async function graphQLConfigureSAML(params: { enabled: boolean; metadata:
 
 export async function graphQLSubscribe(params: IPurchase) {
   return await graphQLBasicRequest(
-    ` mutation query($priceId: String!, $quantity: Int, $successUrl: String!, $cancelUrl: String!) {
+    ` mutation Subscribe($priceId: String!, $quantity: Int, $successUrl: String!, $cancelUrl: String!) {
         createSubscription(priceId: $priceId, quantity: $quantity, successUrl: $successUrl, cancelUrl: $cancelUrl) {
           url
         }
@@ -245,7 +245,7 @@ export async function graphQLSubscribe(params: IPurchase) {
 
 export async function graphQLCreditCard() {
   return await graphQLBasicRequest(
-    ` mutation query($successUrl: String!, $cancelUrl: String!) {
+    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!) {
         updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
           url
         }
@@ -259,7 +259,7 @@ export async function graphQLCreditCard() {
 
 export async function graphQLUpdateSubscription(params: { priceId: string; quantity: number; accountId: string }) {
   return await graphQLBasicRequest(
-    ` mutation query($priceId: String!, $quantity: Int, $accountId: String!) {
+    ` mutation UpdateSubscription($priceId: String!, $quantity: Int, $accountId: String!) {
         updateSubscription(priceId: $priceId, quantity: $quantity, accountId: $accountId)
       }`,
     params
@@ -276,7 +276,7 @@ export async function graphQLUnsubscribe() {
 
 export async function graphQLAddService(form: ICloudAddService) {
   return await graphQLBasicRequest(
-    ` mutation query($deviceId: String!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean) {
+    ` mutation AddService($deviceId: String!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean) {
         addService(
           deviceId: $deviceId,
           name: $name,
@@ -294,7 +294,7 @@ export async function graphQLAddService(form: ICloudAddService) {
 
 export async function graphQLUpdateService(form: ICloudUpdateService) {
   return await graphQLBasicRequest(
-    ` mutation query($id: ID!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean) {
+    ` mutation UpdateService($id: ID!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean, $presenceAddress: String) {
         updateService(
           id: $id,
           name: $name,
@@ -302,6 +302,7 @@ export async function graphQLUpdateService(form: ICloudUpdateService) {
           host: $host,
           port: $port,
           enabled: $enabled,
+          presenceAddress: $presenceAddress
         ) {
           id
         }
@@ -312,7 +313,7 @@ export async function graphQLUpdateService(form: ICloudUpdateService) {
 
 export async function graphQLRemoveService(id: string) {
   return await graphQLBasicRequest(
-    ` mutation query($id: ID!) {
+    ` mutation RemoveService($id: ID!) {
         removeService(id: $id)
       }`,
     { id }
@@ -321,7 +322,7 @@ export async function graphQLRemoveService(id: string) {
 
 export async function graphQLReadNotice(id: string) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!) {
+    ` mutation ReadNotice($id: String!) {
         readNotice(id: $id)
       }`,
     { id }
@@ -330,7 +331,7 @@ export async function graphQLReadNotice(id: string) {
 
 export async function graphQLCreateRole(params: ICreateRole) {
   return await graphQLBasicRequest(
-    ` mutation query($name: String, $grant: [RolePermission!], $revoke: [RolePermission!], $tag: ListFilter, $accountId: String) {
+    ` mutation CreateRole($name: String, $grant: [RolePermission!], $revoke: [RolePermission!], $tag: ListFilter, $accountId: String) {
         createRole(name: $name, grant: $grant, revoke: $revoke, tag: $tag, accountId: $accountId) {
           id
         }
@@ -341,7 +342,7 @@ export async function graphQLCreateRole(params: ICreateRole) {
 
 export async function graphQLUpdateRole(params: ICreateRole) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!, $name: String, $grant: [RolePermission!], $revoke: [RolePermission!], $tag: ListFilter, $access: CustomRoleAccess, $accountId: String) {
+    ` mutation UpdateRole($id: String!, $name: String, $grant: [RolePermission!], $revoke: [RolePermission!], $tag: ListFilter, $access: CustomRoleAccess, $accountId: String) {
         updateRole(id: $id, name: $name, grant: $grant, revoke: $revoke, tag: $tag, access: $access, accountId: $accountId) {
           id
         }
@@ -352,7 +353,7 @@ export async function graphQLUpdateRole(params: ICreateRole) {
 
 export async function graphQLRemoveRole(id: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!, $accountId: String) {
+    ` mutation RemoveRole($id: String!, $accountId: String) {
         deleteRole(id: $id, accountId: $accountId)
       }`,
     { id, accountId }
@@ -361,7 +362,7 @@ export async function graphQLRemoveRole(id: string, accountId: string) {
 
 export async function graphQLSetTag(tag: { name: string; color: number }, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($tag: [TagInput!]!, $accountId: String) {
+    ` mutation SetTag($tag: [TagInput!]!, $accountId: String) {
         setTag(tag: $tag, accountId: $accountId)
       }`,
     { tag, accountId }
@@ -370,7 +371,7 @@ export async function graphQLSetTag(tag: { name: string; color: number }, accoun
 
 export async function graphQLAddDeviceTag(serviceId: string | string[], name: string | string[], accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
+    ` mutation AddTag($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
         addTag(serviceId: $serviceId, name: $name, accountId: $accountId)
     }`,
     { serviceId, name, accountId }
@@ -379,7 +380,7 @@ export async function graphQLAddDeviceTag(serviceId: string | string[], name: st
 
 export async function graphQLAddNetworkTag(networkId: string, name: string | string[]) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: String!, $name: [String!]!) {
+    ` mutation AddNetworkTag($networkId: String!, $name: [String!]!) {
         addNetworkTag(networkId: $networkId, name: $name)
     }`,
     { networkId, name }
@@ -388,7 +389,7 @@ export async function graphQLAddNetworkTag(networkId: string, name: string | str
 
 export async function graphQLRemoveDeviceTag(serviceId: string | string[], name: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
+    ` mutation RemoveTag($serviceId: [String!]!, $name: [String!]!, $accountId: String) {
         removeTag(serviceId: $serviceId, name: $name, accountId: $accountId)
     }`,
     { serviceId, name, accountId }
@@ -397,7 +398,7 @@ export async function graphQLRemoveDeviceTag(serviceId: string | string[], name:
 
 export async function graphQLRemoveNetworkTag(networkId: string | string[], name: string) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: String!, $name: [String!]!) {
+    ` mutation RemoveNetworkTag($networkId: String!, $name: [String!]!) {
         removeNetworkTag(networkId: $networkId, name: $name)
     }`,
     { networkId, name }
@@ -406,7 +407,7 @@ export async function graphQLRemoveNetworkTag(networkId: string | string[], name
 
 export async function graphQLRenameTag(from: string, to: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($from: String!, $to: String!, $accountId: String) {
+    ` mutation RenameTag($from: String!, $to: String!, $accountId: String) {
         renameTag(from: $from, to: $to, accountId: $accountId)
     }`,
     { from, to, accountId }
@@ -415,7 +416,7 @@ export async function graphQLRenameTag(from: string, to: string, accountId: stri
 
 export async function graphQLMergeTag(from: string, to: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($from: String!, $to: String!, $accountId: String) {
+    ` mutation MergeTag($from: String!, $to: String!, $accountId: String) {
         mergeTag(from: $from, to: $to, accountId: $accountId)
     }`,
     { from, to, accountId }
@@ -424,7 +425,7 @@ export async function graphQLMergeTag(from: string, to: string, accountId: strin
 
 export async function graphQLDeleteTag(name: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($name: [String!]!, $accountId: String) {
+    ` mutation DeleteTag($name: [String!]!, $accountId: String) {
         deleteTag(name: $name, accountId: $accountId)
       }`,
     { name, accountId }
@@ -433,7 +434,7 @@ export async function graphQLDeleteTag(name: string, accountId: string) {
 
 export async function graphQLNotificationSettings(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    ` mutation query($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
+    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
         setNotificationSettings(
           emailNotifications: $emailNotifications, 
           desktopNotifications: $desktopNotifications, 
@@ -447,7 +448,7 @@ export async function graphQLNotificationSettings(params: INotificationSetting) 
 
 export async function graphQLTransferDevice(params: ITransferProps) {
   return await graphQLBasicRequest(
-    ` mutation query($deviceId: String!, $email: String!) {
+    ` mutation TransferDevice($deviceId: String!, $email: String!) {
         transfer(
             deviceId: $deviceId, 
             email: $email
@@ -462,7 +463,7 @@ export async function graphQLTransferDevice(params: ITransferProps) {
 
 export async function graphQLUpdateNetwork(params: INetwork) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!, $name: String) {
+    ` mutation UpdateNetwork($id: String!, $name: String) {
         updateNetwork(id: $id, name: $name) {
           id
         }
@@ -473,7 +474,7 @@ export async function graphQLUpdateNetwork(params: INetwork) {
 
 export async function graphQLAddNetwork(name: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($accountId: String, $name: String) {
+    ` mutation CreateNetwork($accountId: String, $name: String) {
         createNetwork(accountId: $accountId, name: $name) {
           id
         }
@@ -487,7 +488,7 @@ export async function graphQLAddNetwork(name: string, accountId: string) {
 
 export async function graphQLDeleteNetwork(networkId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: String!) {
+    ` mutation DeleteNetwork($networkId: String!) {
         deleteNetwork(id: $networkId) 
       }`,
     {
@@ -498,7 +499,7 @@ export async function graphQLDeleteNetwork(networkId: string) {
 
 export async function graphQLSetConnection(props: addConnectionProps) {
   return await graphQLBasicRequest(
-    ` mutation query(
+    ` mutation SetConnection(
         $networkId: String!,
         $serviceId: String!,
         $port: Int,
@@ -512,7 +513,7 @@ export async function graphQLSetConnection(props: addConnectionProps) {
 
 export async function graphQLRemoveConnection(networkId: string, serviceId: string) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: String!, $serviceId: String!) {
+    ` mutation RemoveConnection($networkId: String!, $serviceId: String!) {
         removeNetworkConnection(networkId: $networkId, serviceId: $serviceId)
       }`,
     { networkId, serviceId }
@@ -521,7 +522,7 @@ export async function graphQLRemoveConnection(networkId: string, serviceId: stri
 
 export async function graphQLAddNetworkShare(networkId: string, email: string[] | string) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: String!, $email: [String!]!) {
+    ` mutation AddNetworkShare($networkId: String!, $email: [String!]!) {
         addNetworkShare(networkId: $networkId, email: $email)
       }`,
     { networkId, email }
@@ -530,7 +531,7 @@ export async function graphQLAddNetworkShare(networkId: string, email: string[] 
 
 export async function graphQLRemoveNetworkShare(networkId: string, email: string[] | string) {
   return await graphQLBasicRequest(
-    ` mutation query($networkId: String!, $email: [String!]!) {
+    ` mutation RemoveNetworkShare($networkId: String!, $email: [String!]!) {
         removeNetworkShare(networkId: $networkId, email: $email)
       }`,
     { networkId, email }

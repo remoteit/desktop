@@ -19,6 +19,7 @@ export const SERVICE_SELECT = `
   protocol
   license
   attributes
+  presenceAddress
   access {
     user {
       id
@@ -422,6 +423,7 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         port: s.port,
         host: s.host,
         protocol: s.protocol,
+        presenceAddress: s.presenceAddress,
         access: s.access?.map(e => ({
           email: e.user?.email || e.user?.id,
           id: e.user?.id,

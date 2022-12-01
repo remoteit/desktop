@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '../shared/constants'
-import { List, Button, Typography } from '@mui/material'
+import { List, Button } from '@mui/material'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { serviceNameValidation } from '../shared/nameHelper'
@@ -14,7 +14,7 @@ export type ServiceFormProps = {
   service?: IService
   editable: boolean
   disabled?: boolean
-  onSubmit: (form: IServiceForm) => void
+  onSubmit: (form: IService) => void
   onCancel?: () => void
 }
 
@@ -40,9 +40,9 @@ export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, di
       ...setupAdded,
     }
   }
-  const [defaultForm, setDefaultForm] = useState<IServiceForm>()
+  const [defaultForm, setDefaultForm] = useState<IService>()
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<IServiceForm>()
+  const [form, setForm] = useState<IService>()
   const changed = !isEqual(form, defaultForm)
 
   disabled = disabled || saving

@@ -317,7 +317,7 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async cloudAddService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
+    async cloudAddService({ form, deviceId }: { form: IService; deviceId: string }) {
       if (!form.host || !form.port) return
       dispatch.ui.set({ setupServiceBusy: form.id, setupAddingService: true })
       const result = await graphQLAddService({
@@ -338,7 +338,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
     },
 
-    async cloudUpdateService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
+    async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
       if (!form.host || !form.port) return
       dispatch.ui.set({ setupServiceBusy: form.id })
       await graphQLUpdateService({
@@ -348,6 +348,7 @@ export default createModel<RootModel>()({
         host: form.host,
         port: form.port,
         enabled: !!form.enabled,
+        presenceAddress: form.presenceAddress,
       })
       await dispatch.devices.fetchSingle({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })

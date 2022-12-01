@@ -18,6 +18,7 @@ export const ServiceAttributes: React.FC<{
     // 'serviceHost',
     // 'serviceProtocol',
     // 'serviceType',
+    'presenceAddress',
     'serviceId',
     'id',
   ])

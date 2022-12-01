@@ -363,6 +363,11 @@ export const attributes: Attribute[] = [
     value: ({ service }) => service?.id,
   }),
   new ServiceAttribute({
+    id: 'presenceAddress',
+    label: 'Presence',
+    value: ({ service }) => service?.presenceAddress,
+  }),
+  new ServiceAttribute({
     id: 'license',
     label: 'License',
     defaultWidth: 100,
