@@ -8,7 +8,7 @@ type Props = { type: DiagramGroupType; end?: boolean }
 
 export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   const [hover, setHover] = React.useState<boolean>(false)
-  const { highlightTypes, activeTypes, state } = useContext(DiagramContext)
+  const { highlightTypes, activeTypes, state, proxy } = useContext(DiagramContext)
   const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
   let tooltip = ''
@@ -20,32 +20,35 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   switch (type) {
     case 'initiator':
       props.name = 'circle'
-      tooltip = 'Local endpoint on this system'
+      tooltip = 'Endpoint on this system'
       break
     case 'proxy':
       props.name = 'cloud'
-      tooltip = 'Agent in the cloud'
+      tooltip = 'Proxy server'
       break
     case 'target':
       props.name = 'bullseye'
-      tooltip = 'Remote target endpoint'
+      tooltip = 'Remote endpoint'
       break
     case 'agent':
       props.name = 'play'
-      tooltip = 'Start agent'
+      tooltip = proxy ? 'Proxy agent' : 'Local agent'
       break
     case 'relay':
       props.name = 'play'
       props.rotate = 180
-      tooltip = 'End agent'
+      tooltip = 'Remote agent'
       break
     case 'lan':
       props.name = 'chart-network'
-      tooltip = 'Any system on the local network'
+      tooltip = 'The local network'
       break
   }
 
   switch (state) {
+    case 'offline':
+      if (!['initiator', 'lan'].includes(type)) props.color = 'gray'
+      break
     case 'connected':
       props.type = hover ? 'regular' : 'solid'
       break
