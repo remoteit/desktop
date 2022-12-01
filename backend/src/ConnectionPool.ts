@@ -30,7 +30,6 @@ export default class ConnectionPool {
   constructor() {
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
     EventBus.on(electronInterface.EVENTS.clear, this.clear)
-    EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
     EventBus.on(ConnectionPool.EVENTS.clearErrors, this.clearErrors)
   }
 
