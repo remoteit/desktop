@@ -150,10 +150,12 @@ export const DevicePage: React.FC = () => {
         >
           {device.services.sort(getSortOptions(sortService).sortService).map(s => {
             const c = connections?.find(c => c.id === s.id)
+            let pathname = `/devices/${device.id}/${s.id}${servicePage}`
+            if (pathname === location.pathname) pathname = `/devices/${device.id}/${s.id}/connect`
             return (
               <ListItemLocation
                 key={s.id}
-                pathname={`/devices/${device.id}/${s.id}${servicePage}`}
+                pathname={pathname}
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
                 disabled={setupDeletingService === s.id}
