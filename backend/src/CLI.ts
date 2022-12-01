@@ -53,6 +53,7 @@ type IConnectionStatus = {
   createdAt: string
   startedAt?: string
   stoppedAt?: string
+  serviceType?: number
   addressPort?: number
   addressHost?: string
   restrict?: ipAddress
@@ -182,6 +183,7 @@ export default class CLI {
         connected: c.state === 4, //     connected
         disconnecting: c.state === 5, // disconnecting
         stopping: c.state === 7, //      stopping
+        typeID: c.serviceType,
         isP2P: c.isP2P,
         reachable: c.isReachable,
         restriction: c.restrict,
