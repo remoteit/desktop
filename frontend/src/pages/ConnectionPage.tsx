@@ -17,7 +17,7 @@ import { Title } from '../components/Title'
 export const ConnectionPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { connection, device, service, network, instance } = React.useContext(DeviceContext)
+  const { connection, device, service, network } = React.useContext(DeviceContext)
   const { defaultSelection } = useSelector((state: ApplicationState) => state.ui)
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
 
@@ -25,10 +25,7 @@ export const ConnectionPage: React.FC = () => {
     if (service) dispatch.ui.set({ defaultSelection: { ...defaultSelection, [menu]: location.pathname } })
   }, [service])
 
-  if (!service) {
-    if (defaultSelection[menu]) return <Redirect to={defaultSelection[menu]} push={false} />
-    return <NoConnectionPage />
-  }
+  if (!service) return <NoConnectionPage />
 
   return (
     <Container

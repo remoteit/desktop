@@ -313,6 +313,7 @@ declare global {
     protocol?: string
     access: IUserRef[]
     license: ILicenseTypes
+    presenceAddress?: string
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -591,11 +592,6 @@ declare global {
     protocol: string
   }
 
-  type IServiceForm = IService & {
-    name: string
-    attributes: IService['attributes']
-  }
-
   type ICloudAddService = {
     deviceId: string
     name: string
@@ -612,6 +608,7 @@ declare global {
     host: string
     port: number
     enabled: boolean
+    presenceAddress?: string
   }
 
   type ISimpleError = { code?: number; message: string }

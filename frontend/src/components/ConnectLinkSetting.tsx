@@ -19,7 +19,6 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
-  const hadLink = connection.host?.includes('connect.remote.it')
 
   useEffect(() => {
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
@@ -64,24 +63,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
               setSecurity(value as ISecurity)
               if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
             }}
-          >
-            {hadLink && (
-              <IconButton
-                name="trash"
-                color="grayDark"
-                title="Clear URL"
-                size="md"
-                onClick={() =>
-                  dispatch.ui.set({
-                    confirm: {
-                      id: 'destroyLink',
-                      callback: () => dispatch.connections.removeConnectLink(connection),
-                    },
-                  })
-                }
-              />
-            )}
-          </SelectSetting>
+          />
           {security === 'PROTECTED' && (
             <InlineTextFieldSetting
               required

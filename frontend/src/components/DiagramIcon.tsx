@@ -1,63 +1,72 @@
 import React, { useContext } from 'react'
 import { DiagramGroupType } from './DiagramGroup'
+import { Tooltip, Box } from '@mui/material'
 import { DiagramContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'
 
-// export type DiagramIconType = 'listener' | 'proxy' | 'service' | 'entrance' | 'exit' | 'forward'
+type Props = { type: DiagramGroupType; end?: boolean }
 
-type Props = { type: DiagramGroupType }
-
-// @TODO add other custom icon types and rename CustomIcon? SpecialIcon?
-export const DiagramIcon: React.FC<Props> = ({ type }) => {
-  const { highlightTypes, state } = useContext(DiagramContext)
+export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
+  const [hover, setHover] = React.useState<boolean>(false)
+  const { highlightTypes, activeTypes, state, proxy } = useContext(DiagramContext)
+  const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
+  let tooltip = ''
   let props: IconProps = {
-    type: 'regular',
+    type: hover ? 'solid' : 'regular',
     color: 'grayDarkest',
   }
 
   switch (type) {
     case 'initiator':
-      props.name = 'play'
+      props.name = 'circle'
+      tooltip = 'Endpoint on this system'
       break
     case 'proxy':
       props.name = 'cloud'
+      tooltip = 'Proxy server'
       break
     case 'target':
-      props.name = 'circle'
+      props.name = 'bullseye'
+      tooltip = 'Remote endpoint'
       break
-    case 'forward':
+    case 'agent':
       props.name = 'play'
+      tooltip = proxy ? 'Proxy agent' : 'Local agent'
       break
-    case 'lan':
+    case 'relay':
       props.name = 'play'
       props.rotate = 180
+      tooltip = 'Remote agent'
       break
-    // case 'entrance':
-    //   props.name = 'play'
-    //   break
-    // case 'exit':
-    //   props.name = 'play'
-    //   props.rotate = 180
-    //   break
+    case 'lan':
+      props.name = 'chart-network'
+      tooltip = 'The local network'
+      break
   }
 
   switch (state) {
-    case 'ready':
-      props.color = type === 'initiator' ? 'primary' : 'grayDarkest'
+    case 'offline':
+      if (!['initiator', 'lan'].includes(type)) props.color = 'gray'
       break
     case 'connected':
-      props.color = 'primary'
-      props.type = 'solid'
+      props.type = hover ? 'regular' : 'solid'
       break
-    case 'offline':
-      props.color = type === 'initiator' ? undefined : 'grayLight'
-      break
+  }
+
+  if (active) {
+    props.color = 'primary'
   }
 
   if (highlight) {
     props.color = 'alwaysWhite'
   }
 
-  return <Icon {...props} />
+  return (
+    <Tooltip title={tooltip} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <Box padding={1} margin={-1}>
+        <Icon {...props} />
+      </Box>
+    </Tooltip>
+  )
 }

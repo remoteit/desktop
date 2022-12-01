@@ -20,7 +20,7 @@ export const DiagramGuide: React.FC<Props> = ({ type, children }) => {
       enterDelay={100}
       placement="bottom"
       hide={!to}
-      sx={{ flexGrow: 1, maxWidth: '100px' }}
+      sx={{ maxWidth: '100px' }}
       instructions={
         <>
           <Typography variant="h3" gutterBottom>

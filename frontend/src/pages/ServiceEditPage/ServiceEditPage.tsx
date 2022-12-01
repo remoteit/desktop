@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
-import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
 
 type Props = { device?: IDevice }
 

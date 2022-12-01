@@ -13,10 +13,11 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
+  const { defaultSelection, unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
     (state: ApplicationState) => {
       const connections = selectEnabledConnections(state)
       return {
+        defaultSelection: state.ui.defaultSelection,
         unreadAnnouncements: selectAnnouncements(state, true).length,
         connections: connections.length,
         networks: selectNetworks(state).length,
@@ -28,6 +29,7 @@ export const SidebarNav: React.FC = () => {
   )
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active })
+  const pathname = path => defaultSelection[path] || path
 
   if (remoteUI)
     return (
@@ -48,7 +50,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation
         title="Connections"
         icon="arrow-right-arrow-left"
-        pathname="/connections"
+        pathname={pathname('/connections')}
         match="/connections"
         dense
       >
@@ -84,7 +86,7 @@ export const SidebarNav: React.FC = () => {
           </ListItemSecondaryAction>
         )}
       </ListItemLocation>
-      <ListItemLocation title="Networks" icon="chart-network" pathname="/networks" match="/networks" dense>
+      <ListItemLocation title="Networks" icon="chart-network" pathname={pathname('/networks')} match="/networks" dense>
         <ListItemSecondaryAction>
           {!!networks && (
             <Tooltip title="Total Networks" placement="top" arrow>

@@ -16,6 +16,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
+  const hadLink = connection?.host?.includes('connect.remote.it')
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
@@ -50,11 +51,29 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           </ListItemIcon>
           <ListItemText primary="Report Issue" />
         </MenuItem>
+        {hadLink && (
+          <MenuItem
+            dense
+            onClick={() =>
+              dispatch.ui.set({
+                confirm: {
+                  id: 'destroyLink',
+                  callback: () => dispatch.connections.removeConnectLink(connection),
+                },
+              })
+            }
+          >
+            <ListItemIcon>
+              <Icon name="link-slash" size="md" />
+            </ListItemIcon>
+            <ListItemText primary="Forget persistent public url" />
+          </MenuItem>
+        )}
         <MenuItem dense component={Link} to="defaults">
           <ListItemIcon>
-            <Icon name="play" size="md" />
+            <Icon name="object-intersect" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Service Connect Defaults" />
+          <ListItemText primary="Service Defaults" />
         </MenuItem>
         <MenuItem dense component={Link} to={`/settings/defaults/${service?.typeID}`}>
           <ListItemIcon>

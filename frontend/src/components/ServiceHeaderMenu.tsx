@@ -47,7 +47,7 @@ export const ServiceHeaderMenu: React.FC<{
             </Gutters>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          <Gutters top="xl" size="md" bottom="sm">
+          <Gutters top="lg" size="md" bottom="sm">
             <Diagram
               to={{
                 initiator: `/devices/${device?.id}/${serviceID}/connect`,

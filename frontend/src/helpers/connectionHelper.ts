@@ -1,6 +1,5 @@
 import { emit } from '../services/Controller'
 import {
-  IP_OPEN,
   IP_PRIVATE,
   DEFAULT_CONNECTION,
   REGEX_CONNECTION_NAME,
@@ -12,7 +11,6 @@ import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { selectById } from '../models/devices'
 import { isPortal } from '../services/Browser'
-import { findType } from '../models/applicationTypes'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -27,7 +25,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
   return 'online'
 }
 
-export function isForward(service?: IService) {
+export function isRelay(service?: IService) {
   return !!(service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost')
 }
 
@@ -57,11 +55,12 @@ export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
   const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
-  const routeType: IRouteType = service?.attributes.route || cd?.route || (isPortal() ? 'public' : 'failover')
+  let routeType: IRouteType = service?.attributes.route || cd?.route || 'failover'
+  if (isPortal() && routeType === 'failover') routeType = 'public'
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
-    ...routeTypeToSettings(routeType, DEFAULT_CONNECTION),
+    ...routeTypeToSettings(routeType),
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     autoLaunch:
       cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch, // FIXME
@@ -86,13 +85,11 @@ export function newConnection(service?: IService | null) {
   return connection
 }
 
-export function routeTypeToSettings(route: IRouteType, defaults?: IConnection) {
+export function routeTypeToSettings(route: IRouteType) {
   return {
     failover: route !== 'p2p',
     proxyOnly: route === 'proxy',
     public: route === 'public',
-    enabled: route === 'public' ? false : !!defaults?.enabled,
-    publicRestriction: route === 'public' ? IP_OPEN : undefined,
   }
 }
 

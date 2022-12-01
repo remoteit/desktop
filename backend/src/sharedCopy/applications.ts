@@ -18,7 +18,6 @@ export class Application {
   appLaunchType: IConnection['launchType'] = 'NONE'
   appCommandTemplate: string = '[host]:[port]'
   appLaunchTemplate: string = 'http://[host]:[port]'
-  reverseProxyTemplate: string = 'https://[host]'
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
@@ -176,9 +175,9 @@ export class Application {
   }
 
   private get resolvedDefaultLaunchTemplate() {
-    return this.reverseProxy
-      ? this.reverseProxyTemplate
-      : this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.appLaunchTemplate
+    const template =
+      this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.appLaunchTemplate
+    return this.reverseProxy ? template.replace('http:', 'https:') : template
   }
 
   private get resolvedDefaultCommandTemplate() {
@@ -199,6 +198,7 @@ export class Application {
       }
     })
     template = replaceHost(template, this.localhost)
+    if (!lookup.port) template = template.replace(':[port]', '')
     return template
   }
 

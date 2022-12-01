@@ -87,7 +87,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div className={hover === 'host' ? css.show : css.hide}>
       <InputLabel shrink>Host</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        {name && <span className={css.active}>{name}</span>}
+        {name && <span>{name}</span>}
         {port && <span className={css.inactive}>:{port}</span>}
       </Typography>
     </div>
@@ -98,7 +98,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       <InputLabel shrink>Port</InputLabel>
       <Typography variant="h3" className={css.h3}>
         <span className={css.inactive}>{name}:</span>
-        <span className={css.active}>{port}</span>
+        <span>{port}</span>
       </Typography>
     </div>
   )
@@ -107,7 +107,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
       <InputLabel shrink>{endpointName}</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={css.active}>{endpoint}</span>
+        <span>{endpoint}</span>
       </Typography>
     </div>
   )
@@ -116,7 +116,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div ref={launchRef} className={hover === 'launch' || hover === 'copyLaunch' ? css.show : css.hide}>
       <InputLabel shrink>{app.contextTitle}</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        <span className={hover === 'copyLaunch' ? css.active : ''}>{app.string}</span>
+        <span>{app.string}</span>
       </Typography>
     </div>
   )
@@ -277,27 +277,16 @@ const useStyles = makeStyles(({ palette }) => ({
   show: {
     opacity: 1,
     position: 'absolute',
-    // transition: 'opacity 100ms',
   },
   hide: {
     opacity: 0,
     position: 'absolute',
     pointerEvents: 'none',
-    // transitionProperty: 'opacity',
-    // transitionDuration: '100ms',
-    // transitionDelay: '50ms',
-  },
-  active: {
-    // display: 'inline-block',
-    // backgroundColor: palette.screen.main,
-    // borderRadius: spacing.xs,
-    // color: palette.alwaysWhite.main,
   },
   inactive: {
     color: alpha(palette.alwaysWhite.main, 0.25),
   },
   h3: {
-    // cursor: 'pointer',
     wordBreak: 'break-word',
     overflow: 'hidden',
     fontWeight: 500,
