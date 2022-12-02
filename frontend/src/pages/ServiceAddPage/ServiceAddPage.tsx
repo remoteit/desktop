@@ -56,10 +56,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
           thisDevice={!!device?.thisDevice}
           editable={device?.configurable || !!device?.thisDevice}
           disabled={!device?.permissions.includes('MANAGE')}
-          onSubmit={async form => {
-            if (device?.configurable) await devices.cloudAddService({ form, deviceId: device?.id })
-            history.push(`/devices/${device?.id}`)
-          }}
+          onSubmit={form => device?.configurable && devices.cloudAddService({ form, deviceId: device?.id })}
           onChange={form => setForward(isRelay(form))}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />
