@@ -38,13 +38,6 @@ export const UserListItem: React.FC<Props> = ({ user, remove, isConnected, membe
       ) : (
         <ListItemText primary={user.email} />
       )}
-      {/* 
-      
-      TODO ADD REMOVE USER OPTION TO SUPPORT NETWORKS AND DON'T LINK TO USER PAGE
-
-      make hover icon same as in the network list item
-      
-      */}
       {!member && children}
       {remove && (
         <ListItemSecondaryAction>

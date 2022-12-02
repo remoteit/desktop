@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { DiagramGroupType } from './DiagramGroup'
 import { Tooltip, Box } from '@mui/material'
 import { DiagramContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'

@@ -6,7 +6,7 @@ import { DiagramPath } from './DiagramPath'
 import { DiagramDivider } from './DiagramDivider'
 import { isRelay, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
-import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
+import { DiagramGroup } from './DiagramGroup'
 import { DiagramLabel } from './DiagramLabel'
 import { DiagramGuide } from './DiagramGuide'
 import { lanShared } from '../helpers/lanSharing'
@@ -52,12 +52,12 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
         <DiagramGroup type="initiator" flexGrow={1}>
           {lan && (
             <>
-              <DiagramLabel name="LAN" />
+              <DiagramLabel type="lan" />
               <DiagramIcon type="lan" />
               <DiagramPath type="lan" />
             </>
           )}
-          <DiagramLabel name="Local" />
+          <DiagramLabel type="initiator" />
           <DiagramIcon type="initiator" />
           <DiagramPath type="initiator" />
           {proxy && (
@@ -68,18 +68,18 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
           )}
           <DiagramIcon type="agent" />
           <DiagramDivider start />
-          <DiagramLabel name="Tunnel" />
+          <DiagramLabel type="tunnel" />
           <DiagramPath type="tunnel" />
         </DiagramGroup>
         <DiagramGuide type="target">
           <DiagramGroup type="target" indicator={{ placement: 'right' }}>
             <DiagramDivider end />
-            {relay && <DiagramLabel name="Relay" />}
+            {relay && <DiagramLabel type="relay" />}
             <DiagramIcon type="relay" />
             {relay && <DiagramPath type="relay" />}
             <DiagramPath type="target" />
             <DiagramIcon type="target" />
-            <DiagramLabel name="Service" right />
+            <DiagramLabel type="target" right />
           </DiagramGroup>
         </DiagramGuide>
       </Box>

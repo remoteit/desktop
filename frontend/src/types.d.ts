@@ -1,5 +1,4 @@
 import { AnalyticsJS } from 'segment-analytics'
-import { DiagramGroupType } from './components/DiagramGroup'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
 import { Color } from './styling'
@@ -12,6 +11,8 @@ declare global {
   type Page = 'connections' | 'devices' | 'setup' | 'settings' | 'network'
 
   type Route = { [key in Page]: React.ReactNode }
+
+  type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'relay' | 'agent' | 'proxy' | 'lan' | 'endpoint'
 
   interface IDeviceListContext {
     device?: IDevice
