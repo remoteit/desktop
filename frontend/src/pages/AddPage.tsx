@@ -157,7 +157,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   list: {
     '& .MuiListItem-root': { width: 140 },
-    '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm, color: palette.grayDark.main },
+    '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
   },
   third: {
