@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { selectById } from '../models/devices'
+import { selectById, selectDevice } from '../models/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'
 import { REGEX_FIRST_PATH } from '../shared/constants'
@@ -17,8 +17,15 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   if (!serviceID?.includes(':')) serviceID = undefined
   const { device, network, connections, service, connection, remoteUI, thisId, waiting } = useSelector(
     (state: ApplicationState) => {
+      let device: IDevice | undefined
+      let service: IService | undefined
       const { fetching, initialized } = getDeviceModel(state)
-      const [service, device] = selectById(state, serviceID || deviceID)
+      if (deviceID) {
+        device = selectDevice(state, deviceID)
+        if (device && serviceID) service = device.services.find(s => s.id === serviceID)
+      } else if (serviceID) {
+        ;[service, device] = selectById(state, serviceID)
+      }
       return {
         device,
         service,
@@ -36,6 +43,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const instance: IInstance | undefined = network || device
 
   useEffect(() => {
+    console.log('instance', instance?.loaded, device?.loaded)
     if (instance?.loaded || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {
