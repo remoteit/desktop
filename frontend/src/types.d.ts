@@ -12,7 +12,16 @@ declare global {
 
   type Route = { [key in Page]: React.ReactNode }
 
-  type DiagramGroupType = 'target' | 'initiator' | 'tunnel' | 'relay' | 'agent' | 'proxy' | 'lan' | 'endpoint'
+  type DiagramGroupType =
+    | 'target'
+    | 'initiator'
+    | 'public'
+    | 'tunnel'
+    | 'relay'
+    | 'agent'
+    | 'proxy'
+    | 'lan'
+    | 'endpoint'
 
   interface IDeviceListContext {
     device?: IDevice

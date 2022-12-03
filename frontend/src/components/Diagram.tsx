@@ -3,7 +3,6 @@ import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
-import { DiagramDivider } from './DiagramDivider'
 import { isRelay, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramGroup } from './DiagramGroup'
@@ -24,6 +23,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const lan = lanShared(connection)
   const css = useStyles()
   const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
+  const exposed = connection.public
 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
@@ -57,23 +57,32 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
               <DiagramPath type="lan" />
             </>
           )}
-          <DiagramLabel type="initiator" />
-          <DiagramIcon type="initiator" />
-          <DiagramPath type="initiator" />
+          {exposed ? (
+            <>
+              <DiagramLabel type="public" />
+              <DiagramIcon type="public" />
+              <DiagramPath type="public" />
+            </>
+          ) : (
+            <>
+              <DiagramLabel type="initiator" />
+              <DiagramIcon type="initiator" />
+              <DiagramPath type="initiator" />
+            </>
+          )}
           {proxy && (
             <>
+              <DiagramLabel type="proxy" />
               <DiagramIcon type="proxy" />
               <DiagramPath type="proxy" />
             </>
           )}
           <DiagramIcon type="agent" />
-          <DiagramDivider start />
           <DiagramLabel type="tunnel" />
           <DiagramPath type="tunnel" />
         </DiagramGroup>
         <DiagramGuide type="target">
           <DiagramGroup type="target" indicator={{ placement: 'right' }}>
-            <DiagramDivider end />
             {relay && <DiagramLabel type="relay" />}
             <DiagramIcon type="relay" />
             {relay && <DiagramPath type="relay" />}

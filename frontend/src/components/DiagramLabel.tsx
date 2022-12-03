@@ -18,6 +18,12 @@ export const DiagramLabel: React.FC<Props> = ({ type, right }) => {
     case 'lan':
       name = 'LAN'
       break
+    case 'proxy':
+      name = 'Cloud'
+      break
+    case 'public':
+      name = 'Public'
+      break
     case 'tunnel':
       name = 'Tunnel'
       break
