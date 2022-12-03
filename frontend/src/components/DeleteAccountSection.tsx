@@ -23,7 +23,16 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
     dispatch.feedback.set({
       subject: `Account deletion request for ${user?.email}`,
       body,
-      data: { email: user?.email, userId: user?.id, contactMe: contact ? 'Yes' : 'No' },
+      data: {
+        email: user?.email,
+        userId: user?.id,
+        contactMe: contact ? 'Yes' : 'No',
+        createdDate: user?.created?.toLocaleString(navigator.language, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+      },
       snackbar: 'Your account delete request has been sent.',
     })
     dispatch.feedback.sendFeedback()
