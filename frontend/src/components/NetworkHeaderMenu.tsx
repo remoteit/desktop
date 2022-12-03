@@ -52,7 +52,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
             ) : (
               network.permissions.includes('MANAGE') && (
                 <>
-                  <AddUserButton to={`/networks/view/${network.id}/share`} />
+                  <AddUserButton to={`/networks/${network.id}/share`} />
                   <DeleteButton
                     title="Delete Network"
                     warning={
@@ -78,11 +78,11 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
               title="Details"
               icon="circle-info"
               iconColor="grayDarker"
-              pathname={`/networks/view/${network.id}`}
+              pathname={`/networks/${network.id}`}
               exactMatch
               dense
             />
-            <UsersTab instance={network} to={`/networks/view/${network.id}/users`} />
+            <UsersTab instance={network} to={`/networks/${network.id}/users`} />
           </ListHorizontal>
         </>
       }

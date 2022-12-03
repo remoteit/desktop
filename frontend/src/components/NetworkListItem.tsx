@@ -1,6 +1,5 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { useLocation } from 'react-router-dom'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
@@ -16,12 +15,21 @@ export interface Props {
   serviceId: string
   session?: ISession
   network?: INetwork
+  connections?: boolean
   fallbackName?: string
   external?: boolean
   children?: React.ReactNode
 }
 
-export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, fallbackName, external, children }) => {
+export const NetworkListItem: React.FC<Props> = ({
+  network,
+  serviceId,
+  session,
+  fallbackName,
+  external,
+  connections,
+  children,
+}) => {
   const { service, device, foundSession, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceId)
     return {
@@ -32,8 +40,6 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
     }
   })
   session = session || foundSession
-  const location = useLocation()
-  const tab = location.pathname.split('/')[1]
   const connected = external || session?.state === 'connected' || connection.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
@@ -42,7 +48,8 @@ export const NetworkListItem: React.FC<Props> = ({ network, serviceId, session, 
   const name = connection.name || session?.target.name || fallbackName || serviceId
   const color = network?.enabled ? 'primary' : undefined
 
-  let pathname = `/${tab}/${serviceId}`
+  let pathname = `/networks/${network?.id}/${serviceId}`
+  if (connections) pathname = `/connections/${serviceId}`
   if (session) pathname += `/${session.id}`
   if (external) pathname += '/other'
 

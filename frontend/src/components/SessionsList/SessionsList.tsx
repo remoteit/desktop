@@ -24,7 +24,7 @@ export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
         <List key={k}>
           <NetworkListTitle network={networks[k]} noLink />
           {networks[k].sessions?.map((s, i) => (
-            <NetworkListItem key={i} network={networks[k]} session={s} serviceId={s.target.id} external />
+            <NetworkListItem key={i} network={networks[k]} session={s} serviceId={s.target.id} external connections />
           ))}
         </List>
       ))}

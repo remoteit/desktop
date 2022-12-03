@@ -257,7 +257,7 @@ export default createModel<RootModel>()({
       console.log('ADDING NETWORK', params)
       await dispatch.networks.setNetwork(params)
       await dispatch.networks.fetch()
-      dispatch.ui.set({ redirect: `/networks/view/${params.id}` })
+      dispatch.ui.set({ redirect: `/networks/${params.id}` })
     },
 
     async updateNetwork(network: INetwork) {

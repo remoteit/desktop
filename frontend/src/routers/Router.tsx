@@ -140,7 +140,7 @@ export const Router: React.FC = () => {
       </Route>
 
       {/* Networks */}
-      <Route path={['/networks/view/:networkID', '/networks/:serviceID?']}>
+      <Route path="/networks/:networkID?/:serviceID?">
         <DeviceContextWrapper>
           <NetworkRouter layout={layout} />
         </DeviceContextWrapper>

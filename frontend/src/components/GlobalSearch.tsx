@@ -52,7 +52,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     // dispatch.devices.set({ query: '' })
     if (selection.nodeType === 'NETWORK') {
       dispatch.accounts.select(selection.accountId)
-      history.push(`/networks/${selection?.serviceId}`)
+      history.push(`/networks/${selection?.nodeId}/${selection?.serviceId}`)
     } else {
       history.push(`/devices/${selection?.nodeId}/${selection?.serviceId}`)
     }

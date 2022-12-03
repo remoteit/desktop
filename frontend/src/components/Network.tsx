@@ -12,13 +12,14 @@ import { makeStyles } from '@mui/styles'
 
 export interface Props {
   network?: INetwork
+  connections?: boolean
   recent?: boolean
   noLink?: boolean
   highlight?: boolean
   onClear?: (serviceId: string) => void
 }
 
-export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, network }) => {
+export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, network, connections }) => {
   const dispatch = useDispatch<Dispatch>()
   const { collapsed } = useSelector((state: ApplicationState) => state.ui)
   const css = useStyles({ highlight })
@@ -50,7 +51,13 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
       </NetworkListTitle>
       <Collapse in={expanded}>
         {network?.serviceIds.map(id => (
-          <NetworkListItem serviceId={id} key={id} network={network} fallbackName={network.connectionNames[id]}>
+          <NetworkListItem
+            serviceId={id}
+            key={id}
+            network={network}
+            fallbackName={network.connectionNames[id]}
+            connections={connections}
+          >
             {onClear && <ClearButton id={id} onClick={() => onClear(id)} className="hidden" />}
           </NetworkListItem>
         ))}

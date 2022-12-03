@@ -80,7 +80,7 @@ export const ConnectionsPage: React.FC = () => {
             </Gutters>
           )}
           {active.map(n => (
-            <Network noLink key={n.id} network={n} />
+            <Network noLink key={n.id} network={n} connections />
           ))}
           <SessionsList
             title="Outside Connections"
@@ -99,7 +99,7 @@ export const ConnectionsPage: React.FC = () => {
             <>
               <br />
               <Divider variant="inset" />
-              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} />
+              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} connections />
             </>
           )}
         </>
