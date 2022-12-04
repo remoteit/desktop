@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, attributeName } from '../../shared/nameHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { getDevices } from '../../models/accounts'
+import { getDevices } from '../../selectors/devices'
 
 export const DeviceNameSetting: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()

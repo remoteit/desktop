@@ -19,7 +19,8 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getActiveAccountId, getAllDevices, getDevices, getDeviceModel } from './accounts'
+import { getAllDevices, getDevices, getDeviceModel } from '../selectors/devices'
+import { getActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'

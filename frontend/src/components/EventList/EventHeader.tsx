@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { DateTime } from 'luxon'
-import { getActiveAccountId } from '../../models/accounts'
+import { getActiveAccountId } from '../../selectors/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { makeStyles } from '@mui/styles'

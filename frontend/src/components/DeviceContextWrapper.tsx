@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../helpers/connectionHelper'
-import { getDeviceModel } from '../models/accounts'
+import { getDeviceModel } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {

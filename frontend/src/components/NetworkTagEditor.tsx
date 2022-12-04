@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { selectTags, canEditTags } from '../models/tags'
-import { getActiveAccountId } from '../models/accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 

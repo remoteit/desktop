@@ -1,9 +1,9 @@
 import { createModel } from '@rematch/core'
-import { getDeviceModel } from './accounts'
+import { getDeviceModel } from '../selectors/devices'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getActiveAccountId } from './accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
 type ISearchState = ILookup<any> & {

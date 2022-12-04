@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
-import { getActiveAccountId } from './accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { selectPermissions } from './organization'
 import {
   graphQLSetTag,

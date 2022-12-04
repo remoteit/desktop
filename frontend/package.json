@@ -59,6 +59,7 @@
     "reconnecting-websocket": "^4.4.0",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
+    "reselect": "^4.1.7",
     "screenfull": "^5.1.0",
     "seedrandom": "^3.0.5",
     "socket.io-client": "2.3.1",

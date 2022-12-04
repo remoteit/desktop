@@ -1,5 +1,5 @@
 import React from 'react'
-import { getDeviceModel } from '../../models/accounts'
+import { getDeviceModel } from '../../selectors/devices'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@mui/styles'

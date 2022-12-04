@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { getDeviceModel } from '../models/accounts'
+import { getDeviceModel } from '../selectors/devices'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'

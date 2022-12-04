@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
 import { makeStyles } from '@mui/styles'
-import { getActiveAccountId } from '../models/accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { useParams, useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
 import {

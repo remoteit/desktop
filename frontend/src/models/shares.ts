@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { getAccess } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
-import { getDevices } from './accounts'
+import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
 
 type ShareParams = { [key: string]: any }

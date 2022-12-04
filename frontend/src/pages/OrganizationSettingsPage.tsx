@@ -14,7 +14,8 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { getMembership } from '../models/accounts'
-import { memberOrganization, selectPermissions, selectLimitsLookup } from '../models/organization'
+import { memberOrganization, selectPermissions } from '../models/organization'
+import { selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { DeleteButton } from '../buttons/DeleteButton'

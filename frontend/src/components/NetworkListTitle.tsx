@@ -20,6 +20,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
   return (
     <ListItemLocation
       className={css.item}
+      exactMatch
       icon={
         <>
           {false ? (

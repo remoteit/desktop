@@ -2,8 +2,9 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
-import { LicensingNotice } from './LicensingNotice'
 import { Typography } from '@mui/material'
+import { getAttribute } from './Attributes'
+import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { LoadingMessage } from './LoadingMessage'
 import { AddUserButton } from '../buttons/AddUserButton'
@@ -23,6 +24,8 @@ export const ServiceHeaderMenu: React.FC<{
 
   if (!service || !device) return <LoadingMessage />
 
+  const Users = getAttribute('serviceAccess').value({ device, service })
+
   return (
     <Container
       gutterBottom
@@ -33,6 +36,7 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
+            {Users}
             <AddUserButton
               to={`/devices/${device.id}/${service.id}/share`}
               hide={!device.permissions.includes('MANAGE')}
@@ -51,7 +55,6 @@ export const ServiceHeaderMenu: React.FC<{
             <Diagram
               to={{
                 initiator: `/devices/${device?.id}/${serviceID}/connect`,
-                // tunnel: `/devices/${device?.id}/${serviceID}/connect`,
                 target: `/devices/${device?.id}/${serviceID}/edit`,
               }}
             />

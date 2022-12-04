@@ -6,7 +6,8 @@ import {
   REGEX_CONNECTION_TRIM,
   MAX_CONNECTION_NAME_LENGTH,
 } from '../shared/constants'
-import { getAllDevices, getActiveUser } from '../models/accounts'
+import { getActiveUser } from '../models/accounts'
+import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
 import { selectById } from '../models/devices'

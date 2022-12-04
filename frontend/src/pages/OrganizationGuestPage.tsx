@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getDevices } from '../models/accounts'
+import { getDevices } from '../selectors/devices'
 import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'

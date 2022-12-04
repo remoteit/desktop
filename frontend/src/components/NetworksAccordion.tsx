@@ -1,7 +1,7 @@
 import React from 'react'
 import { Chip, Box, Tooltip } from '@mui/material'
 import { NetworksJoined } from './NetworksJoined'
-import { getActiveAccountId } from '../models/accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectNetworks, selectNetworkByService } from '../models/networks'

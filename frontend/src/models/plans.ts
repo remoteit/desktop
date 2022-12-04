@@ -10,7 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getDevices } from './accounts'
+import { getDevices } from '../selectors/devices'
 import { getOrganization } from './organization'
 import { RootModel } from '.'
 import humanize from 'humanize-duration'
