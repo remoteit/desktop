@@ -21,6 +21,7 @@ import {
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { getAllDevices, getDevices, getDeviceModel } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
+import { selectById } from '../selectors/devices'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -275,7 +276,7 @@ export default createModel<RootModel>()({
     },
 
     async renameService(service: IService, state) {
-      let [_, device] = selectById(state, service.deviceID)
+      let [_, device] = selectById(state, undefined, service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].name = service.name
@@ -308,7 +309,7 @@ export default createModel<RootModel>()({
     },
 
     async setServiceAttributes(service: IService, state) {
-      let [_, device] = selectById(state, service.deviceID)
+      let [_, device] = selectById(state, undefined, service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       if (index === -1) return
@@ -534,38 +535,6 @@ export function selectIsFiltered(state: ApplicationState) {
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {
   const inactive = instance?.state !== 'active' && !connection?.connected
   return inactive
-}
-
-export function selectDevice(state: ApplicationState, deviceId?: string) {
-  const accountId = getActiveAccountId(state)
-  const device = selectDeviceByAccount(state, deviceId, accountId)
-  return device || getAllDevices(state).find(d => d.id === deviceId)
-}
-
-export function selectDeviceByAccount(state: ApplicationState, deviceId?: string, accountId?: string) {
-  return getDevices(state, accountId).find(d => d.id === deviceId)
-}
-
-export function selectById(state: ApplicationState, id?: string) {
-  const accountId = getActiveAccountId(state)
-  const result = findById(getDevices(state, accountId), id)
-  return result[0] || result[1] ? result : findById(getAllDevices(state), id)
-}
-
-export function findById(devices: IDevice[], id?: string) {
-  let service: IService | undefined
-  const device = devices.find(
-    d =>
-      d.id === id ||
-      d?.services?.find(s => {
-        if (s.id === id) {
-          service = s
-          return true
-        }
-        return false
-      })
-  )
-  return [service, device] as [IService | undefined, IDevice | undefined]
 }
 
 export function eachDevice(state: ApplicationState, callback: (device: IDevice) => void) {

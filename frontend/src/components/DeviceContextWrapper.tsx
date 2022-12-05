@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { selectById, selectDevice } from '../models/devices'
+import { selectById, selectDevice } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'
 import { REGEX_FIRST_PATH } from '../shared/constants'
@@ -21,10 +21,10 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
       let service: IService | undefined
       const { fetching, initialized } = getDeviceModel(state)
       if (deviceID) {
-        device = selectDevice(state, deviceID)
+        device = selectDevice(state, undefined, deviceID)
         if (device && serviceID) service = device.services.find(s => s.id === serviceID)
       } else if (serviceID) {
-        ;[service, device] = selectById(state, serviceID)
+        ;[service, device] = selectById(state, undefined, serviceID)
       }
       return {
         device,

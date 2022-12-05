@@ -3,8 +3,7 @@ import { PROTOCOL } from '../../shared/constants'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { CopyButton } from '../../buttons/CopyButton'
-import { getDevices } from '../../selectors/devices'
-import { findById } from '../../models/devices'
+import { selectById } from '../../selectors/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { useApplication } from '../../hooks/useApplication'
@@ -22,7 +21,7 @@ export const ServiceContextualMenu: React.FC = () => {
   const { el, remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
     const { el, serviceID } = state.ui.serviceContextMenu || {}
     if (serviceID) {
-      const [service, device] = findById(getDevices(state), serviceID)
+      const [service, device] = selectById(state, undefined, serviceID)
       return {
         el,
         remoteUI: isRemoteUI(state),

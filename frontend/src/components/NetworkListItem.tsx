@@ -7,7 +7,7 @@ import { ApplicationState } from '../store'
 import { TargetPlatform } from './TargetPlatform'
 import { ConnectionName } from './ConnectionName'
 import { useSelector } from 'react-redux'
-import { selectById } from '../models/devices'
+import { selectById } from '../selectors/devices'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -31,7 +31,7 @@ export const NetworkListItem: React.FC<Props> = ({
   children,
 }) => {
   const { service, device, foundSession, connection } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceId)
+    const [service, device] = selectById(state, undefined, serviceId)
     return {
       service,
       device,

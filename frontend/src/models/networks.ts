@@ -5,7 +5,7 @@ import { getActiveUser } from './accounts'
 import { getActiveAccountId } from '../selectors/accounts'
 import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
-import { selectById } from '../models/devices'
+import { selectById } from '../selectors/devices'
 import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
@@ -221,7 +221,7 @@ export default createModel<RootModel>()({
         }
       }
       if (joined.length <= 1) {
-        const [service] = selectById(state, serviceId)
+        const [service] = selectById(state, undefined, serviceId)
         const connection = selectConnection(state, service)
         dispatch.connections.disconnect(connection)
       }
@@ -230,7 +230,7 @@ export default createModel<RootModel>()({
     async removeById(id: string, state) {
       let { all } = state.networks
       all[DEFAULT_ID] = [state.networks.default]
-      const [_, device] = selectById(state, id)
+      const [_, device] = selectById(state, undefined, id)
       const serviceIds = id === device?.id ? device?.services.map(s => s.id) : [id]
       Object.keys(all).forEach(key => {
         all[key].forEach(async network => {

@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
 import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
-import { selectDeviceByAccount } from '../models/devices'
+import { selectDevice } from '../selectors/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -25,7 +25,7 @@ export const AddPage: React.FC = () => {
   const [valid, setValid] = useState<boolean>(false)
   const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
-    hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.user.id) !== undefined,
+    hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
   }))
 
   const handleClose = () => {

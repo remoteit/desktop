@@ -6,7 +6,7 @@ import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
-import { selectById } from '../models/devices'
+import { selectById } from '../selectors/devices'
 import { combinedName } from '../shared/nameHelper'
 import { setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { getActiveAccountId } from '../selectors/accounts'
@@ -201,7 +201,7 @@ class CloudController {
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,
         target: event.target.map(t => {
-          const [service, device] = selectById(state, t.id)
+          const [service, device] = selectById(state, undefined, t.id)
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
