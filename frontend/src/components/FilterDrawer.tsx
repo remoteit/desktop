@@ -8,7 +8,7 @@ import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
 import { AccordionMenu } from './AccordionMenu'
 import { selectLimitsLookup } from '../selectors/organizations'
-import { selectTags } from '../models/tags'
+import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
 

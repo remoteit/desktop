@@ -1,6 +1,6 @@
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
-import { selectTags } from './tags'
+import { selectTags } from '../selectors/tags'
 import { RootModel } from '.'
 import { toLookup } from '../helpers/utilHelper'
 
