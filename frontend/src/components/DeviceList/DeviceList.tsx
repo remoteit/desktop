@@ -48,7 +48,15 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           const canRestore = isOffline(device) && !device.shared
           const isSelected = selected?.includes(device.id)
           if (restore && !canRestore) return null
-
+          const onSelect = deviceId => {
+            if (isSelected) {
+              const index = selected.indexOf(deviceId)
+              selected.splice(index, 1)
+            } else {
+              selected.push(deviceId)
+            }
+            dispatch.ui.set({ selected: [...selected] })
+          }
           const row = (
             <DeviceListContext.Provider
               key={device.id}
@@ -58,15 +66,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 restore={restore && canRestore}
                 select={select}
                 selected={isSelected}
-                onSelect={deviceId => {
-                  if (isSelected) {
-                    const index = selected.indexOf(deviceId)
-                    selected.splice(index, 1)
-                  } else {
-                    selected.push(deviceId)
-                  }
-                  dispatch.ui.set({ selected: [...selected] })
-                }}
+                onSelect={onSelect}
               />
             </DeviceListContext.Provider>
           )
