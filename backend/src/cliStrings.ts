@@ -115,6 +115,10 @@ export default {
     return ipMask ? `-j scan -m ${ipMask}` : '-j scan'
   },
 
+  agentVersion() {
+    return '-j agent version'
+  },
+
   version() {
     return '-j version'
   },

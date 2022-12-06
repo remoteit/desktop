@@ -1,14 +1,14 @@
 import cli from './cliInterface'
 import rimraf from 'rimraf'
 import strings from './cliStrings'
+import Command from './Command'
 import EventBus from './EventBus'
 import environment from './environment'
 import preferences from './preferences'
 import ConnectionPool from './ConnectionPool'
 import semverCompare from 'semver/functions/compare'
-import { existsSync, lstatSync } from 'fs'
-import Command from './Command'
 import Binary, { binaries, cliBinary } from './Binary'
+import { existsSync, lstatSync } from 'fs'
 import Logger from './Logger'
 
 export class BinaryInstaller {
@@ -40,10 +40,11 @@ export class BinaryInstaller {
 
   async shouldInstall() {
     let binariesOutdated = !(await this.cliBinary.isCurrent())
-    const serviceStopped = !(await cli.agentRunning(true))
-    const cliChanged = await this.cliVersionChanged()
-    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, cliChanged })
-    return binariesOutdated || serviceStopped || cliChanged
+    const agentStopped = !(await cli.agentRunning())
+    const agentMismatched = (await cli.agentVersion()) !== this.cliBinary.version
+    const cliUpdated = await this.cliUpdated()
+    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped: agentStopped, agentMismatched, cliUpdated })
+    return binariesOutdated || agentStopped || agentMismatched || cliUpdated
   }
 
   async install() {
@@ -160,31 +161,31 @@ export class BinaryInstaller {
     return envVar
   }
 
-  async cliVersionChanged() {
+  async cliUpdated() {
     const previousVersion = preferences.get().cliVersion
     const thisVersion = this.cliBinary.version
-    let changed = true
+    let updated = true
 
     try {
-      changed = semverCompare(previousVersion, thisVersion) < 0
+      updated = semverCompare(previousVersion, thisVersion) < 0
     } catch (error) {
       Logger.warn('CLI VERSION COMPARE FAILED', { error, previousVersion, thisVersion })
     }
 
-    if (environment.isWindows && changed) {
+    if (environment.isWindows && updated) {
       // Windows has an installer script to update so doesn't need this check
       this.updateVersions()
       return false
     }
 
-    if (changed) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
+    if (updated) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
     else Logger.info('CLI NOT UPDATED', { previousVersion, thisVersion })
 
-    return changed
+    return updated
   }
 
   async updateVersions() {
-    const cliVersion = await cli.version(true)
+    const cliVersion = await cli.version()
     Logger.info('CLI VERSION UPDATE', { cliVersion })
     preferences.update({ version: environment.version, cliVersion })
   }

@@ -279,7 +279,7 @@ export default class CLI {
     return await this.exec({ cmds: [strings.scan(ipMask)], skipSignInCheck: true })
   }
 
-  async agentRunning(force?: boolean) {
+  async agentRunning() {
     let running = false
 
     const data = await this.exec({
@@ -287,7 +287,7 @@ export default class CLI {
       checkAuthHash: true,
       skipSignInCheck: true,
       quiet: false,
-      force,
+      force: true,
     })
 
     if (data) running = data.running
@@ -295,8 +295,13 @@ export default class CLI {
     return running
   }
 
-  async version(force?: boolean) {
-    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true, force })
+  async version() {
+    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true, force: true })
+    return result.version
+  }
+
+  async agentVersion() {
+    const result = await this.exec({ cmds: [strings.agentVersion()], skipSignInCheck: true, quiet: true, force: true })
     return result.version
   }
 
