@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { Typography } from '@mui/material'
-import { getAttribute } from './Attributes'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { LoadingMessage } from './LoadingMessage'
+import { ListHorizontal } from './ListHorizontal'
+import { ListItemLocation } from './ListItemLocation'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
+import { UsersTab } from './UsersTab'
 import { Gutters } from './Gutters'
 import { Color } from '../styling'
 import { Diagram } from './Diagram'
@@ -24,19 +26,16 @@ export const ServiceHeaderMenu: React.FC<{
 
   if (!service || !device) return <LoadingMessage />
 
-  const Users = getAttribute('serviceAccess').value({ device, service })
-
   return (
     <Container
       gutterBottom
       backgroundColor={backgroundColor}
-      bodyProps={{ verticalOverflow: true, gutterTop: true }}
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
-            {Users}
             <AddUserButton
               to={`/devices/${device.id}/${service.id}/share`}
               hide={!device.permissions.includes('MANAGE')}
@@ -51,13 +50,34 @@ export const ServiceHeaderMenu: React.FC<{
             </Gutters>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          <Gutters top="lg" size="md" bottom="sm">
-            <Diagram
-              to={{
-                initiator: `/devices/${device?.id}/${serviceID}/connect`,
-                target: `/devices/${device?.id}/${serviceID}/edit`,
-              }}
+          <ListHorizontal size="small" dense>
+            <ListItemLocation
+              title="Connection"
+              icon="arrow-right"
+              iconColor="grayDarker"
+              pathname={`/devices/${device.id}/${serviceID}/connect`}
+              match={[`/devices/${device.id}/${serviceID}/connect`, `/devices/${device.id}/${serviceID}`]}
+              exactMatch
+              dense
             />
+            {device.permissions.includes('MANAGE') && (
+              <ListItemLocation
+                title="Service"
+                icon="bullseye"
+                iconColor="grayDarker"
+                pathname={`/devices/${device.id}/${serviceID}/edit`}
+                dense
+              />
+            )}
+            <UsersTab
+              instance={device}
+              service={service}
+              to={`/devices/${device.id}/${serviceID}/users`}
+              size="small"
+            />
+          </ListHorizontal>
+          <Gutters top="xs">
+            <Diagram />
           </Gutters>
         </>
       }

@@ -54,11 +54,12 @@ export const DiagramLabel: React.FC<Props> = ({ type, right }) => {
       }}
     >
       <Typography
-        variant="body2"
+        variant="h5"
         sx={{
-          top: '-38px',
+          top: '-32px',
           right: right ? 0 : undefined,
           position: 'absolute',
+          maxWidth: 'initial',
           color: titleColor,
         }}
       >

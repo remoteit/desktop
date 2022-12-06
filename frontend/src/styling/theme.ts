@@ -556,6 +556,13 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginTop: spacing.xs,
             marginBottom: spacing.sm,
           },
+          h5: {
+            fontSize: fontSizes.sm * 0.75, // inputLabel shrink
+            color: palette.grayDark.main,
+            letterSpacing: 0.5,
+            fontWeight: 500,
+            textTransform: 'uppercase',
+          },
           subtitle1: {
             fontSize: fontSizes.xxs,
             color: palette.grayDarkest.main,

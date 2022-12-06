@@ -1,13 +1,12 @@
 import React from 'react'
 import { Box } from '@mui/material'
+import { IP_LATCH } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
 import { isRelay, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
-import { DiagramGroup } from './DiagramGroup'
 import { DiagramLabel } from './DiagramLabel'
-import { DiagramGuide } from './DiagramGuide'
 import { lanShared } from '../helpers/lanSharing'
 import { Pre } from './Pre'
 
@@ -23,7 +22,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const lan = lanShared(connection)
   const css = useStyles()
   const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
-  const exposed = connection.public
+  const exposed = connection.connectLink || (connection.public && connection.publicRestriction !== IP_LATCH)
 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
@@ -49,48 +48,42 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
     <DiagramContext.Provider value={{ state, proxy, relay, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
       <Box className={css.diagram}>
-        <DiagramGroup type="initiator" flexGrow={1}>
-          {lan && (
-            <>
-              <DiagramLabel type="lan" />
-              <DiagramIcon type="lan" />
-              <DiagramPath type="lan" />
-            </>
-          )}
-          {exposed ? (
-            <>
-              <DiagramLabel type="public" />
-              <DiagramIcon type="public" />
-              <DiagramPath type="public" />
-            </>
-          ) : (
-            <>
-              <DiagramLabel type="initiator" />
-              <DiagramIcon type="initiator" />
-              <DiagramPath type="initiator" />
-            </>
-          )}
-          {proxy && (
-            <>
-              <DiagramLabel type="proxy" />
-              <DiagramIcon type="proxy" />
-              <DiagramPath type="proxy" />
-            </>
-          )}
-          <DiagramIcon type="agent" />
-          <DiagramLabel type="tunnel" />
-          <DiagramPath type="tunnel" />
-        </DiagramGroup>
-        <DiagramGuide type="target">
-          <DiagramGroup type="target" indicator={{ placement: 'right' }}>
-            {relay && <DiagramLabel type="relay" />}
-            <DiagramIcon type="relay" />
-            {relay && <DiagramPath type="relay" />}
-            <DiagramPath type="target" />
-            <DiagramIcon type="target" />
-            <DiagramLabel type="target" right />
-          </DiagramGroup>
-        </DiagramGuide>
+        {lan && (
+          <>
+            <DiagramLabel type="lan" />
+            <DiagramIcon type="lan" />
+            <DiagramPath type="lan" />
+          </>
+        )}
+        {exposed ? (
+          <>
+            <DiagramLabel type="public" />
+            <DiagramIcon type="public" />
+            <DiagramPath type="public" />
+          </>
+        ) : (
+          <>
+            <DiagramLabel type="initiator" />
+            <DiagramIcon type="initiator" />
+            <DiagramPath type="initiator" />
+          </>
+        )}
+        {proxy && (
+          <>
+            <DiagramLabel type="proxy" />
+            <DiagramIcon type="proxy" />
+            <DiagramPath type="proxy" />
+          </>
+        )}
+        <DiagramIcon type="agent" />
+        <DiagramLabel type="tunnel" />
+        <DiagramPath type="tunnel" />
+        {relay && <DiagramLabel type="relay" />}
+        <DiagramIcon type="relay" />
+        {relay && <DiagramPath type="relay" />}
+        <DiagramPath type="target" />
+        <DiagramIcon type="target" />
+        <DiagramLabel type="target" right />
       </Box>
     </DiagramContext.Provider>
   )
@@ -99,9 +92,10 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
 const useStyles = makeStyles({
   diagram: {
     display: 'flex',
-    alignItems: 'stretch',
+    alignItems: 'center',
     justifyContent: 'stretch',
     position: 'relative',
-    overflow: 'visible',
+    paddingTop: 24,
+    paddingBottom: 6,
   },
 })

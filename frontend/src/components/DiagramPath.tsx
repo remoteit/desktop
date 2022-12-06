@@ -15,8 +15,6 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
     flexGrow,
     borderBottomWidth: 1.5,
     borderColor: 'grayDarkest.main',
-    marginBottom: '8px',
-    marginTop: '9px',
     maxWidth: 50,
     width: 50,
   }
@@ -39,6 +37,7 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
       if (proxy) sx.borderStyle = 'dotted'
       break
     case 'relay':
+      sx.maxWidth = 30
       break
     case 'target':
       break
