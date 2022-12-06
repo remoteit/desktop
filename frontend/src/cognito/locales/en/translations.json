@@ -100,11 +100,6 @@
     "sign-in": {
       "create-account": "Don't have an account yet?",
       "forgot-password": "Forgot your password?",
-      "notice2": {
-        "link": "update your password",
-        "part1": "If this is your first sign-in since 3:00 PM August 4, 2020 PDT (22:00 UTC) visit our ",
-        "part2": " page to reset your password with our new system (Note: You can reset using your existing password)."
-      },
       "or": "OR",
       "saml-link": "SAML Login",
       "sign-in": "Sign In",
