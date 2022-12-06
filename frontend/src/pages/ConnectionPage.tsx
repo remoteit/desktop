@@ -48,12 +48,7 @@ export const ConnectionPage: React.FC = () => {
             </Gutters>
           )}
           <Gutters>
-            <Diagram
-              to={{
-                initiator: `${menu}/${service.id}`,
-                target: `/devices/${device?.id}/${service.id}/edit`,
-              }}
-            />
+            <Diagram />
           </Gutters>
         </>
       }

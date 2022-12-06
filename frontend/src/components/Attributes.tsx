@@ -1,5 +1,5 @@
 import React from 'react'
-import { IP_LATCH, PROTOCOL } from '../shared/constants'
+import { IP_LATCH, IP_PRIVATE, PROTOCOL } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -326,7 +326,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceHost',
     label: 'Service Host',
-    value: ({ service }) => service?.host,
+    value: ({ service }) => service?.host || IP_PRIVATE,
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',

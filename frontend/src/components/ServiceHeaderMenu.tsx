@@ -60,15 +60,13 @@ export const ServiceHeaderMenu: React.FC<{
               exactMatch
               dense
             />
-            {device.permissions.includes('MANAGE') && (
-              <ListItemLocation
-                title="Service"
-                icon="bullseye"
-                iconColor="grayDarker"
-                pathname={`/devices/${device.id}/${serviceID}/edit`}
-                dense
-              />
-            )}
+            <ListItemLocation
+              title="Service"
+              icon="bullseye"
+              iconColor="grayDarker"
+              pathname={`/devices/${device.id}/${serviceID}/edit`}
+              dense
+            />
             <UsersTab
               instance={device}
               service={service}
