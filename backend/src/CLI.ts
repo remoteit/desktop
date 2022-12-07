@@ -297,12 +297,12 @@ export default class CLI {
 
   async version() {
     const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true, force: true })
-    return result.version
+    return result?.version
   }
 
   async agentVersion() {
     const result = await this.exec({ cmds: [strings.agentVersion()], skipSignInCheck: true, quiet: true, force: true })
-    return result.version
+    return result?.version
   }
 
   async exec({
