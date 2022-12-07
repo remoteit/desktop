@@ -107,11 +107,10 @@ export default createModel<RootModel>()({
     },
 
     async fetchSingle({ network, redirect }: { network: INetwork; redirect?: string }, state) {
-      if (!network) return
+      if (!network || !network.cloud) return
 
       const accountId = getActiveAccountId(state)
       dispatch.devices.set({ fetching: true, accountId })
-
       const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId)
       if (gqlResponse === 'ERROR') {
         if (redirect) dispatch.ui.set({ redirect })
@@ -159,6 +158,7 @@ export default createModel<RootModel>()({
             access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
             tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
             icon: 'chart-network',
+            cloud: true,
           }
         })
       )
@@ -202,14 +202,14 @@ export default createModel<RootModel>()({
       }
     },
 
-    async remove({ serviceId = '', networkId = DEFAULT_ID }: { serviceId?: string; networkId?: string }, state) {
+    async remove({ serviceId = '', networkId }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
       let copy = { ...network }
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
       dispatch.networks.setNetwork(copy)
-      if (networkId !== DEFAULT_ID) {
+      if (networkId) {
         const result = await graphQLRemoveConnection(networkId, serviceId)
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
           console.error('Failed to remove network connection', serviceId, network, result)
@@ -329,6 +329,7 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
   return {
     id: '',
     name: '',
+    cloud: false,
     enabled: true,
     shared: false,
     loaded: false,

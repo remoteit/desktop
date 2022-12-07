@@ -287,7 +287,7 @@ export async function graphQLFetchFullDevice(id: string, account: string) {
 */
 export async function graphQLFetchNetworkServices(id: string, account: string) {
   return await graphQLBasicRequest(
-    ` query Network($id: String!, $account: String) {
+    ` query NetworkServices($id: String!, $account: String) {
         login {
           id
           network(id: $id)  {
