@@ -15,6 +15,10 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       primary={<NetworksPage />}
       secondary={
         <Switch>
+          <Route path="/networks/add">
+            <NetworkAddPage />
+          </Route>
+
           <Route path="/networks/:networkID/share">
             <NetworkSharePage />
           </Route>
@@ -33,10 +37,6 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
           <Route path="/networks/:networkID">
             <NetworkPage />
-          </Route>
-
-          <Route path="/networks/add">
-            <NetworkAddPage />
           </Route>
         </Switch>
       }

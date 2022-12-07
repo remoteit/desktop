@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
-import { getAttribute } from './Attributes'
 import { Typography } from '@mui/material'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
@@ -20,8 +19,6 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
 
   if (!device) return <LoadingMessage />
 
-  const Users = getAttribute('access').value({ device })
-
   return (
     <Container
       gutterBottom
@@ -33,7 +30,6 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             <TestUI>
               <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
             </TestUI>
-            {Users}
             <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
