@@ -16,6 +16,7 @@ describe('Test framework is working', () => {
 
 describe('backend/binaryInstaller', () => {
   const version = '0.37.6'
+  const agentVersion = '0.37.6'
   const cliBinary = new Binary({ name: 'remoteit', version, isCli: true })
   const binaryInstaller = new BinaryInstaller(
     [
@@ -119,9 +120,9 @@ describe('backend/binaryInstaller', () => {
     const name = 'remoteit'
 
     let installSpy: jest.SpyInstance,
-      installedSpy: jest.SpyInstance,
       eventSpy: jest.SpyInstance,
       versionSpy: jest.SpyInstance,
+      agentVersionSpy: jest.SpyInstance,
       prefSpy: jest.SpyInstance,
       agentSpy: jest.SpyInstance
     let binary: Binary
@@ -149,12 +150,14 @@ describe('backend/binaryInstaller', () => {
       installSpy.mockClear()
       eventSpy.mockClear()
       versionSpy.mockClear()
+      agentVersionSpy.mockClear()
       agentSpy.mockClear()
     })
 
     test('should notify if installed', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
 
       await binaryInstaller.check()
 
@@ -168,6 +171,7 @@ describe('backend/binaryInstaller', () => {
     test('should notify if agent is not installed', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
       agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(false))
 
       await binaryInstaller.check()
@@ -179,11 +183,26 @@ describe('backend/binaryInstaller', () => {
       expect(versionSpy).toBeCalledTimes(1)
     })
 
+    test('should notify if agent version is wrong', async () => {
+      jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
+      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+
+      await binaryInstaller.check()
+
+      expect(installSpy).toBeCalledTimes(0)
+      expect(eventSpy).toBeCalledTimes(1)
+      expect(agentVersionSpy).toBeCalledTimes(2)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
+      expect(agentVersionSpy).toBeCalledTimes(2)
+    })
+
     test('should notify with different installed version', async () => {
       const installedVersion = '0.40.0'
 
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(installedVersion))
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
 
       await binaryInstaller.check()
 
@@ -196,6 +215,7 @@ describe('backend/binaryInstaller', () => {
     test('should notify if cli outdated', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
 
       await binaryInstaller.check()
 
@@ -209,6 +229,7 @@ describe('backend/binaryInstaller', () => {
       environment.isElevated = true
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
 
       await binaryInstaller.check()
 

@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
 import { makeStyles } from '@mui/styles'
-import { getDeviceModel } from '../models/accounts'
+import { getDeviceModel } from '../selectors/devices'
 import { AddFromNetwork } from '../components/AddFromNetwork'
 import { DeviceTagEditor } from '../components/DeviceTagEditor'
 import { AddServiceButton } from '../buttons/AddServiceButton'
@@ -150,10 +150,12 @@ export const DevicePage: React.FC = () => {
         >
           {device.services.sort(getSortOptions(sortService).sortService).map(s => {
             const c = connections?.find(c => c.id === s.id)
+            let pathname = `/devices/${device.id}/${s.id}${servicePage}`
+            if (pathname === location.pathname) pathname = `/devices/${device.id}/${s.id}/connect`
             return (
               <ListItemLocation
                 key={s.id}
-                pathname={`/devices/${device.id}/${s.id}${servicePage}`}
+                pathname={pathname}
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
                 disabled={setupDeletingService === s.id}

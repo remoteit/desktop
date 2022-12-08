@@ -14,9 +14,10 @@ type Props = {
   service?: IService
   menuItem?: boolean
   to: string
+  size?: 'large' | 'small'
 }
 
-export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to }) => {
+export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, size = 'large' }) => {
   const css = useStyles()
   const { connected, access } = useSelector((state: ApplicationState) => ({
     connected: selectSessionUsers(state, service ? service.id : instance?.id).length,
@@ -50,12 +51,14 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to }) =
     >
       <ListItemLocation pathname={to} menuItem={menuItem} dense>
         <ListItemIcon>
-          <Icon name="user-group" color="grayDarker" size="md" />
+          <Icon name="user-group" color={connected ? 'primary' : 'grayDarker'} size="md" />
         </ListItemIcon>
         <ListItemText
+          sx={{ color: connected ? 'primary.main' : undefined }}
           primary="Users"
           secondary={
-            !!total && (
+            !!total &&
+            size === 'large' && (
               <>
                 {total ? total + ' total' : ''}
                 <br />

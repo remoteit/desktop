@@ -20,6 +20,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
   return (
     <ListItemLocation
       className={css.item}
+      exactMatch
       icon={
         <>
           {false ? (
@@ -43,7 +44,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
           )}
         </>
       }
-      pathname={noLink ? undefined : `/networks/view/${network?.id}`}
+      pathname={noLink ? undefined : `/networks/${network?.id}`}
       onClick={noLink ? onClick : undefined}
       title={
         <Title className={css.text} enabled={network?.enabled}>

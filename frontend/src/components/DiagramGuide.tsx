@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { Typography } from '@mui/material'
-import { DiagramGroupType } from './DiagramGroup'
 import { DiagramContext } from '../services/Context'
 import { GuideBubble } from './GuideBubble'
 

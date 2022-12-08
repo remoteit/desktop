@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getDevices } from '../models/accounts'
+import { getDevices } from '../selectors/devices'
 import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
@@ -131,7 +131,7 @@ export const OrganizationGuestPage: React.FC = () => {
             {accessible.map(network => (
               <ListItemLocation
                 key={network.id}
-                pathname={`/networks/view/${network.id}`}
+                pathname={`/networks/${network.id}`}
                 icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
                 title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
               />
@@ -183,7 +183,7 @@ export const OrganizationGuestPage: React.FC = () => {
               return (
                 <ListItemLocation
                   key={id}
-                  pathname={`/networks/view/${id}`}
+                  pathname={`/networks/${id}`}
                   icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
                   title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
                 />

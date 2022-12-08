@@ -1,8 +1,9 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
-import { getActiveAccountId } from './accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { selectPermissions } from './organization'
+import { selectTags } from '../selectors/tags'
 import {
   graphQLSetTag,
   graphQLAddDeviceTag,
@@ -26,13 +27,6 @@ type ITagState = {
   removing?: boolean
   deleting?: string
   updating?: string
-}
-
-type ApplyTagProps<T> = {
-  tag: ITag
-  subject: T
-  accountId: string
-  apply: (subject: T) => void
 }
 
 const defaultState: ITagState = {
@@ -238,11 +232,6 @@ function removeTag<T extends IInstance>(original: T, tag: ITag): T {
   const index = findTagIndex(copy.tags, tag.name)
   copy.tags.splice(index, 1)
   return copy
-}
-
-export function selectTags(state: ApplicationState, accountId?: string) {
-  accountId = accountId || getActiveAccountId(state)
-  return state.tags.all[accountId] || []
 }
 
 export function canEditTags(state: ApplicationState, accountId?: string) {

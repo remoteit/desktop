@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
-import { getAllDevices } from '../models/accounts'
+import { getAllDevices } from '../selectors/devices'
 import { newConnection } from '../helpers/connectionHelper'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -54,7 +54,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
     const a = getApplication(undefined, c)
     const el = (
       <>
-        connection <Link to={`/networks/${c.id}`}>{c.name}</Link>
+        connection <Link to={`/connections/${c.id}`}>{c.name}</Link>
       </>
     )
     addCustomAttributes(a.allCustomTokens, c.typeID || 0, el)

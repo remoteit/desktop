@@ -4,9 +4,14 @@ import { List, ListProps, useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
-export const ListHorizontal: React.FC<ListProps> = ({ children, ...props }) => {
-  const hideIcons = useMediaQuery(`(max-width:500px)`)
-  const css = useStyles({ hideIcons })
+type Props = ListProps & {
+  size?: 'large' | 'small'
+  hideIcons?: boolean
+}
+
+export const ListHorizontal: React.FC<Props> = ({ size = 'large', hideIcons, children, ...props }) => {
+  const smallScreen = useMediaQuery(`(max-width:500px)`)
+  const css = useStyles({ hideIcons, smallScreen, small: size === 'small' })
   return (
     <List {...props} className={classnames(css.horizontal, props.className)}>
       {children}
@@ -15,7 +20,7 @@ export const ListHorizontal: React.FC<ListProps> = ({ children, ...props }) => {
 }
 
 const useStyles = makeStyles({
-  horizontal: ({ hideIcons }: any) => ({
+  horizontal: ({ smallScreen, small }: any) => ({
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
@@ -23,18 +28,21 @@ const useStyles = makeStyles({
     paddingRight: spacing.xs,
     paddingLeft: spacing.md,
     '& .MuiListItem-root': {
-      display: 'block',
-      minWidth: hideIcons ? undefined : 100,
+      display: small ? undefined : 'block',
+      minWidth: smallScreen ? undefined : 100,
       width: 'initial',
-      paddingLeft: spacing.md,
-      paddingTop: spacing.lg,
-      paddingBottom: spacing.sm,
+      paddingLeft: small ? undefined : spacing.md,
+      paddingTop: small ? undefined : spacing.lg,
+      paddingBottom: small ? undefined : spacing.sm,
       paddingRight: spacing.md,
       margin: 1,
     },
-    '& .MuiListItemText-root': { display: hideIcons ? 'none' : undefined },
-    '& .MuiListItemIcon-root': { minWidth: 'initial' },
+    '& .MuiListItemText-root': { display: smallScreen ? 'none' : undefined },
+    '& .MuiListItemIcon-root': { minWidth: small ? 44 : 'initial' },
     '& .MuiListSubheader-root': { width: '100%' },
     '& .MuiDivider-root': { width: '100%' },
   }),
+  small: {
+    '& .MuiListItemIcon-root': { minWidth: 100 },
+  },
 })

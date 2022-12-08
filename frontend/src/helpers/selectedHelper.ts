@@ -1,4 +1,4 @@
-import { getDevices } from '../models/accounts'
+import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
 
 export function eachSelectedDevice(

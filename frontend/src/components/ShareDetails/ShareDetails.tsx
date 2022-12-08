@@ -27,7 +27,7 @@ export const ShareDetails: React.FC<Props> = ({ user, device, connected }) => {
           </span>
         </Tooltip>
       )}
-      {!!services.length && services.map(s => <ServiceMiniState key={s.id} service={s} showConnected={!!connected} />)}
+      {!!services.length && services.map(s => <ServiceMiniState key={s.id} service={s} />)}
     </ListItemSecondaryAction>
   )
 }

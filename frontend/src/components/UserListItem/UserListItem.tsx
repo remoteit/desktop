@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItemText, ListItemIcon } from '@mui/material'
+import { ListItemText, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { ListItemLocation } from '../ListItemLocation'
@@ -21,7 +21,11 @@ export const UserListItem: React.FC<Props> = ({ user, remove, isConnected, membe
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   return (
-    <ListItemLocation pathname={member ? `/organization/members/${user.id}` : `${location.pathname}/${user.id}`} dense>
+    <ListItemLocation
+      pathname={member ? `/organization/members/${user.id}` : `${location.pathname}/${user.id}`}
+      disabled={!!remove}
+      dense
+    >
       <ListItemIcon>
         <Avatar email={user.email} size={spacing.lg} />
       </ListItemIcon>
@@ -34,19 +38,14 @@ export const UserListItem: React.FC<Props> = ({ user, remove, isConnected, membe
       ) : (
         <ListItemText primary={user.email} />
       )}
-      {/* 
-      
-      TODO ADD REMOVE USER OPTION TO SUPPORT NETWORKS AND DON'T LINK TO USER PAGE
-
-      make hover icon same as in the network list item
-      
-      */}
       {!member && children}
       {remove && (
-        <ClearButton
-          id={user.id}
-          onClick={() => dispatch.networks.unshareNetwork({ networkId: remove, email: user.email })}
-        />
+        <ListItemSecondaryAction>
+          <ClearButton
+            id={user.id}
+            onClick={() => dispatch.networks.unshareNetwork({ networkId: remove, email: user.email })}
+          />
+        </ListItemSecondaryAction>
       )}
     </ListItemLocation>
   )

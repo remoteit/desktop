@@ -10,8 +10,9 @@ import {
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getActiveAccountId, getActiveUser, getAccountIds, getMembership, isUserAccount } from './accounts'
-import { selectRemoteitLicense, selectBaseLimits } from './plans'
+import { getActiveUser, getAccountIds, getMembership } from './accounts'
+import { getActiveAccountId } from '../selectors/accounts'
+import { selectRemoteitLicense } from './plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
@@ -525,20 +526,6 @@ export function canViewByTags(filter: ITagFilter, tags: ITag[]) {
     return filter.values.every(tag => names.includes(tag))
   }
   return true
-}
-
-export function selectLimitsLookup(state: ApplicationState, accountId?: string): ILookup<ILimit['value']> {
-  const limits = selectBaseLimits(state, accountId)
-  const notUser = !isUserAccount(state, accountId)
-
-  const { limitsOverride } = state.ui
-  let result: ILookup<boolean> = {}
-
-  limits.forEach(l => {
-    result[l.name] = limitsOverride[l.name] === undefined || notUser ? l.value : limitsOverride[l.name]
-  })
-
-  return result
 }
 
 export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {

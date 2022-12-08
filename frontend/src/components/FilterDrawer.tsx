@@ -1,14 +1,14 @@
 import React from 'react'
 import { platforms } from '../platforms'
-import { getDeviceModel } from '../models/accounts'
+import { getDeviceModel } from '../selectors/devices'
 import { defaultState } from '../models/devices'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
 import { AccordionMenu } from './AccordionMenu'
-import { selectLimitsLookup } from '../models/organization'
-import { selectTags } from '../models/tags'
+import { selectLimitsLookup } from '../selectors/organizations'
+import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
 
@@ -44,6 +44,39 @@ export const FilterDrawer: React.FC = () => {
     devices.fetchList()
   }
 
+  const onSort = value => {
+    if (state.sort === value) value = value.substring(0, 1) === '-' ? value : `-${value}`
+    update({ sort: value })
+  }
+
+  const onTag = value => {
+    let result = state.tag?.values
+    const index = result && result.indexOf(value)
+
+    if (index !== undefined && index >= 0) result?.splice(index, 1)
+    else if (value === '') result = undefined
+    else result === undefined ? (result = [value]) : result.push(value)
+
+    if (!result?.length) update({ tag: undefined })
+    else update({ tag: { values: result, operator: state.tag?.operator || 'ANY' } })
+  }
+
+  const onState = value => update({ filter: value })
+
+  const onOwner = value => update({ owner: value })
+
+  const onPlatform = value => {
+    let result = Array.isArray(state.platform) ? state.platform : undefined
+    const index = result && result.indexOf(value)
+
+    if (index !== undefined && index >= 0) result?.splice(index, 1)
+    else if (value === -1) result = undefined
+    else result === undefined ? (result = [value]) : result.push(value)
+
+    if (!result?.length) result = undefined
+    update({ platform: result })
+  }
+
   return (
     <Drawer menu="FILTER">
       <AccordionMenu
@@ -56,10 +89,7 @@ export const FilterDrawer: React.FC = () => {
               <FilterSelector
                 icon={state.sort.substring(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
                 value={state.sort}
-                onSelect={value => {
-                  if (state.sort === value) value = value.substring(0, 1) === '-' ? value : `-${value}`
-                  update({ sort: value })
-                }}
+                onSelect={onSort}
                 filterList={sortFilters}
               />
             ),
@@ -70,22 +100,7 @@ export const FilterDrawer: React.FC = () => {
             onClear: state.tag === undefined ? undefined : () => update({ tag: undefined }),
             disabled: !feature.tagging,
             children: (
-              <FilterSelector
-                icon="check"
-                value={state.tag?.values || ['']}
-                onSelect={value => {
-                  let result = state.tag?.values
-                  const index = result && result.indexOf(value)
-
-                  if (index !== undefined && index >= 0) result?.splice(index, 1)
-                  else if (value === '') result = undefined
-                  else result === undefined ? (result = [value]) : result.push(value)
-
-                  if (!result?.length) update({ tag: undefined })
-                  else update({ tag: { values: result, operator: state.tag?.operator || 'ANY' } })
-                }}
-                filterList={tags}
-              >
+              <FilterSelector icon="check" value={state.tag?.values || ['']} onSelect={onTag} filterList={tags}>
                 <TagFilterToggle tag={state.tag} onUpdate={update} />
               </FilterSelector>
             ),
@@ -95,26 +110,14 @@ export const FilterDrawer: React.FC = () => {
             subtitle: 'State',
             onClear: defaultState.filter === state.filter ? undefined : () => update({ filter: defaultState.filter }),
             children: (
-              <FilterSelector
-                icon="check"
-                value={state.filter}
-                onSelect={value => update({ filter: value })}
-                filterList={deviceFilters}
-              />
+              <FilterSelector icon="check" value={state.filter} onSelect={onState} filterList={deviceFilters} />
             ),
           },
           {
             key: 'owner',
             subtitle: 'Owner',
             onClear: defaultState.owner === state.owner ? undefined : () => update({ owner: defaultState.owner }),
-            children: (
-              <FilterSelector
-                icon="check"
-                value={state.owner}
-                onSelect={value => update({ owner: value })}
-                filterList={ownerFilters}
-              />
-            ),
+            children: <FilterSelector icon="check" value={state.owner} onSelect={onOwner} filterList={ownerFilters} />,
           },
           {
             key: 'platform',
@@ -124,17 +127,7 @@ export const FilterDrawer: React.FC = () => {
               <FilterSelector
                 icon="check"
                 value={state.platform === undefined ? [-1] : state.platform}
-                onSelect={value => {
-                  let result = Array.isArray(state.platform) ? state.platform : undefined
-                  const index = result && result.indexOf(value)
-
-                  if (index !== undefined && index >= 0) result?.splice(index, 1)
-                  else if (value === -1) result = undefined
-                  else result === undefined ? (result = [value]) : result.push(value)
-
-                  if (!result?.length) result = undefined
-                  update({ platform: result })
-                }}
+                onSelect={onPlatform}
                 filterList={platformFilter.concat(
                   Object.keys(platforms.nameLookup)
                     .map(p => ({ value: parseInt(p), name: platforms.nameLookup[p] }))

@@ -20,7 +20,7 @@ export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
   if (instance)
     onClick = () => {
       let path = `/devices/${device?.id}`
-      if (service) path += `/${service.id}`
+      if (service) path += `/${service.id}/edit`
       history.push(path)
     }
 
@@ -28,7 +28,7 @@ export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
     <Tooltip title={title}>
       <IconButton onClick={onClick} size="large">
         {/* <Icon name="neuter" size="md" rotate={90} fixedWidth /> */}
-        <Icon name="router" size="md" fixedWidth />
+        <Icon name="bullseye" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

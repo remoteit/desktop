@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { DiagramGroupType } from './DiagramGroup'
 import { DiagramContext } from '../services/Context'
 import { Divider, DividerProps } from '@mui/material'
 

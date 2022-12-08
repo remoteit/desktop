@@ -3,10 +3,10 @@ import { makeStyles } from '@mui/styles'
 import { Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { getActiveAccountId } from '../models/accounts'
+import { getActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
 import { useHistory } from 'react-router-dom'
-import { selectTags } from '../models/tags'
+import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Title } from './Title'
 import { Container } from './Container'
@@ -34,7 +34,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
       gutterBottom
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
-        <Collapse in={!!(select || selected.length)}>
+        <Collapse in={!!(select || selected.length)} mountOnEnter>
           <Box className={css.actions}>
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
-import { useLocation, Redirect } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
@@ -30,7 +30,7 @@ export const ConnectionPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      bodyProps={{ verticalOverflow: true, gutterTop: true }}
+      bodyProps={{ verticalOverflow: true }}
       backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}
       header={
         <>
@@ -47,13 +47,8 @@ export const ConnectionPage: React.FC = () => {
               </Typography>
             </Gutters>
           )}
-          <Gutters size="md" bottom="sm">
-            <Diagram
-              to={{
-                initiator: `${menu}/${service.id}`,
-                target: `/devices/${device?.id}/${service.id}/edit`,
-              }}
-            />
+          <Gutters>
+            <Diagram />
           </Gutters>
         </>
       }

@@ -2,7 +2,6 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Box, alpha } from '@mui/material'
 import { spacing, fontSizes, Color, radius } from '../../styling'
-import { connectionState } from '../../helpers/connectionHelper'
 import { getLicenseChip } from '../LicenseChip'
 import classnames from 'classnames'
 
@@ -10,25 +9,16 @@ interface Props {
   connection?: IConnection
   service?: IService
   onClick?: (IContextMenu) => void
-  showConnected?: boolean
   className?: string
 }
 
-export const ServiceMiniState: React.FC<Props> = ({
-  connection,
-  service,
-  onClick,
-  className,
-  showConnected = true,
-}) => {
-  const cState = connectionState(service, connection)
-
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick, className }) => {
   let colorName: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
 
   if (connection) {
-    if (cState === 'connecting' || cState === 'stopping') state = 'transition'
-    if (cState === 'connected' || cState === 'ready') state = 'connected'
+    if (connection.connecting || connection.stopping) state = 'transition'
+    if (connection.connected || connection.enabled) state = 'connected'
     if (connection.error?.message) state = 'error'
   }
 
@@ -62,14 +52,16 @@ export const ServiceMiniState: React.FC<Props> = ({
     colorName = chip.colorName
   }
 
+  const onMouseDown = event => {
+    event.stopPropagation()
+    onClick && onClick({ el: event.currentTarget, serviceID: service.id })
+  }
+
   return (
     <Box
       component="span"
       className={classnames(onClick && css.clickable, css.indicator, className)}
-      onMouseDown={event => {
-        event.stopPropagation()
-        onClick && onClick({ el: event.currentTarget, serviceID: service.id })
-      }}
+      onMouseDown={onMouseDown}
     >
       <span className={css.background}>{service.type}</span>
     </Box>

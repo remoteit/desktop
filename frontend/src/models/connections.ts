@@ -28,7 +28,7 @@ import {
 } from '../services/graphQLDevice'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectNetwork } from './networks'
-import { selectById } from '../models/devices'
+import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
@@ -208,7 +208,7 @@ export default createModel<RootModel>()({
         // data missing from cli if our connections file is lost
         if (!connection.owner || !connection.name) {
           console.log('CONNECTION MISSING DATA', connection.id)
-          const [service] = selectById(state, connection.id)
+          const [service] = selectById(state, undefined, connection.id)
           if (!connection.id) {
             delete connections[index]
             console.warn('No id found in connection', { connection })
@@ -258,7 +258,7 @@ export default createModel<RootModel>()({
 
       if (!trigger) return
 
-      const [service] = selectById(state, trigger.id)
+      const [service] = selectById(state, undefined, trigger.id)
       const connection = selectConnection(state, service)
 
       let different = false
@@ -404,7 +404,7 @@ export default createModel<RootModel>()({
     },
 
     async connect(connection: IConnection, state) {
-      const [service] = selectById(state, connection.id)
+      const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.online = service ? service?.state === 'active' : connection.online

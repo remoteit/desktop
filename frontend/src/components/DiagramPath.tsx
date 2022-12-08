@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { DiagramGroupType } from './DiagramGroup'
 import { DiagramContext } from '../services/Context'
 import { Divider, DividerProps } from '@mui/material'
 
@@ -16,10 +15,8 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
     flexGrow,
     borderBottomWidth: 1.5,
     borderColor: 'grayDarkest.main',
-    marginBottom: '8px',
-    marginTop: '9px',
-    maxWidth: 40,
-    width: 40,
+    maxWidth: 50,
+    width: 50,
   }
 
   switch (type) {
@@ -40,10 +37,13 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
       if (proxy) sx.borderStyle = 'dotted'
       break
     case 'relay':
-      sx.width = 40
+      sx.maxWidth = 30
       break
     case 'target':
-      sx.width = 40
+      break
+    case 'public':
+      sx.borderStyle = 'dotted'
+
       break
   }
 

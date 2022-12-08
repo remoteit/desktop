@@ -1,5 +1,5 @@
 import React from 'react'
-import { IP_LATCH, PROTOCOL } from '../shared/constants'
+import { IP_LATCH, IP_PRIVATE, PROTOCOL } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -326,19 +326,19 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceHost',
     label: 'Service Host',
-    value: ({ service }) => service?.host,
+    value: ({ service }) => service?.host || IP_PRIVATE,
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',
     label: 'Service Protocol',
     value: ({ service }) => service?.protocol,
   }),
-  // new ServiceAttribute({
-  //   id: 'serviceAccess',
-  //   label: 'Users',
-  //   defaultWidth: 200,
-  //   value: ({ device, service }) => <AvatarList users={device?.shared ? [device.owner] : service?.access} size={22} />,
-  // }),
+  new ServiceAttribute({
+    id: 'serviceAccess',
+    label: 'Users',
+    defaultWidth: 200,
+    value: ({ device, service }) => <AvatarList users={device?.shared ? [device.owner] : service?.access} size={22} />,
+  }),
   new ServiceAttribute({
     id: 'serviceLastReported',
     label: 'Last Reported',

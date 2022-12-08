@@ -1,9 +1,8 @@
 import React from 'react'
 import network from '../../services/Network'
 import { emit } from '../../services/Controller'
-import { selectDevice } from '../../models/devices'
 import { Switch, Route, useParams } from 'react-router-dom'
-import { getDeviceModel } from '../../models/accounts'
+import { getDeviceModel, selectDevice } from '../../selectors/devices'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
@@ -14,7 +13,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
   const { fetching, device } = useSelector((state: ApplicationState) => ({
     fetching: getDeviceModel(state).fetching || (device && state.logs.fetching) || state.ui.fetching,
-    device: selectDevice(state, deviceID),
+    device: selectDevice(state, undefined, deviceID),
   }))
 
   let attributes = { ...props }

@@ -22,6 +22,8 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
 
   const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
   const display = device.services.slice(0, MAX_INDICATORS)
+  const onClick = serviceContextMenu => ui.set({ serviceContextMenu })
+
   return (
     <Box className={css.indicators}>
       {display.map(service => (
@@ -29,7 +31,7 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
           key={service.id}
           service={service}
           connection={connections.find(c => c.id === service.id)}
-          onClick={serviceContextMenu => ui.set({ serviceContextMenu })}
+          onClick={onClick}
         />
       ))}
       {!!extra && <Chip label={`+${extra}`} size="small" />}

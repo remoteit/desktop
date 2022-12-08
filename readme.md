@@ -146,6 +146,16 @@ Command+option+I to open with dev tools.
 
 Tests are written using Jest.
 
+```shell
+npm run test
+```
+
+or
+
+```shell
+npm run test-watch
+```
+
 ### Setup
 
 Get a copy of the .env file

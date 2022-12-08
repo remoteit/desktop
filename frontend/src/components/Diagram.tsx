@@ -1,14 +1,12 @@
 import React from 'react'
 import { Box } from '@mui/material'
+import { IP_LATCH } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
-import { DiagramDivider } from './DiagramDivider'
 import { isRelay, connectionState } from '../helpers/connectionHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
-import { DiagramGroup, DiagramGroupType } from './DiagramGroup'
 import { DiagramLabel } from './DiagramLabel'
-import { DiagramGuide } from './DiagramGuide'
 import { lanShared } from '../helpers/lanSharing'
 import { Pre } from './Pre'
 
@@ -24,6 +22,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const lan = lanShared(connection)
   const css = useStyles()
   const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
+  const exposed = connection.connectLink || (connection.public && connection.publicRestriction !== IP_LATCH)
 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
@@ -36,7 +35,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
       break
     case 'connected':
     case 'disconnecting':
-      activeTypes = ['lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
+      activeTypes = ['public', 'lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
       break
     case 'online':
     case 'stopping':
@@ -49,39 +48,42 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
     <DiagramContext.Provider value={{ state, proxy, relay, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
       <Box className={css.diagram}>
-        <DiagramGroup type="initiator" flexGrow={1}>
-          {lan && (
-            <>
-              <DiagramLabel name="LAN" />
-              <DiagramIcon type="lan" />
-              <DiagramPath type="lan" />
-            </>
-          )}
-          <DiagramLabel name="Local" />
-          <DiagramIcon type="initiator" />
-          <DiagramPath type="initiator" />
-          {proxy && (
-            <>
-              <DiagramIcon type="proxy" />
-              <DiagramPath type="proxy" />
-            </>
-          )}
-          <DiagramIcon type="agent" />
-          <DiagramDivider start />
-          <DiagramLabel name="Tunnel" />
-          <DiagramPath type="tunnel" />
-        </DiagramGroup>
-        <DiagramGuide type="target">
-          <DiagramGroup type="target" indicator={{ placement: 'right' }}>
-            <DiagramDivider end />
-            {relay && <DiagramLabel name="Relay" />}
-            <DiagramIcon type="relay" />
-            {relay && <DiagramPath type="relay" />}
-            <DiagramPath type="target" />
-            <DiagramIcon type="target" />
-            <DiagramLabel name="Service" right />
-          </DiagramGroup>
-        </DiagramGuide>
+        {lan && (
+          <>
+            <DiagramLabel type="lan" />
+            <DiagramIcon type="lan" />
+            <DiagramPath type="lan" />
+          </>
+        )}
+        {exposed ? (
+          <>
+            <DiagramLabel type="public" />
+            <DiagramIcon type="public" />
+            <DiagramPath type="public" />
+          </>
+        ) : (
+          <>
+            <DiagramLabel type="initiator" />
+            <DiagramIcon type="initiator" />
+            <DiagramPath type="initiator" />
+          </>
+        )}
+        {proxy && (
+          <>
+            <DiagramLabel type="proxy" />
+            <DiagramIcon type="proxy" />
+            <DiagramPath type="proxy" />
+          </>
+        )}
+        <DiagramIcon type="agent" />
+        <DiagramLabel type="tunnel" />
+        <DiagramPath type="tunnel" />
+        {relay && <DiagramLabel type="relay" />}
+        <DiagramIcon type="relay" />
+        {relay && <DiagramPath type="relay" />}
+        <DiagramPath type="target" />
+        <DiagramIcon type="target" />
+        <DiagramLabel type="target" right />
       </Box>
     </DiagramContext.Provider>
   )
@@ -90,9 +92,10 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
 const useStyles = makeStyles({
   diagram: {
     display: 'flex',
-    alignItems: 'stretch',
+    alignItems: 'center',
     justifyContent: 'stretch',
     position: 'relative',
-    overflow: 'visible',
+    paddingTop: 24,
+    paddingBottom: 6,
   },
 })

@@ -14,6 +14,7 @@ interface BinaryArgs {
 export default class Binary {
   name: string
   version: string
+  agentVersion?: string
   installedVersion?: string
   inProgress?: boolean
   isCli?: boolean
@@ -40,7 +41,8 @@ export default class Binary {
 
     if (this.isCli) {
       try {
-        version = await cli.version(true)
+        version = await cli.version()
+        this.agentVersion = await cli.agentVersion()
         this.installedVersion = version
         current = semverCompare(version, this.version) >= 0
       } catch (error) {
@@ -50,9 +52,20 @@ export default class Binary {
     }
 
     if (current) {
-      Logger.info('CHECK BINARY VERSION', { current, name: this.name, version, desiredVersion: this.version })
+      Logger.info('CHECK BINARY VERSION', {
+        current,
+        name: this.name,
+        version,
+        desiredVersion: this.version,
+        agentVersion: this.agentVersion,
+      })
     } else {
-      Logger.info('BINARY NOT CURRENT', { name: this.name, version, desiredVersion: this.version })
+      Logger.info('BINARY NOT CURRENT', {
+        name: this.name,
+        version,
+        desiredVersion: this.version,
+        agentVersion: this.agentVersion,
+      })
     }
 
     return current

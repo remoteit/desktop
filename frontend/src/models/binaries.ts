@@ -46,7 +46,6 @@ export default createModel<RootModel>()({
     },
     notInstalled(state: BinariesState, name: BinaryName) {
       console.log('BINARY NOT INSTALLED', name)
-      state.installing = false
       state.installed = false
       state.path = undefined
       state.version = undefined

@@ -85,22 +85,8 @@ export default class TrayMenu {
   private connectionsMenu() {
     let menu = []
     const enabled = this.pool.filter(c => c.enabled)
-    const recent = this.pool.filter(c => !c.enabled)
-    if (enabled.length) menu.push({ label: 'Local Network', enabled: false }, ...this.connectionsList(enabled))
-    if (enabled.length && recent.length) menu.push({ type: 'separator' })
-    if (recent.length)
-      menu.push(
-        { label: 'Recent', enabled: false },
-        ...this.connectionsList(recent),
-        { type: 'separator' },
-        {
-          label: 'Clear recent',
-          type: 'normal',
-          click: () => EventBus.emit(EVENTS.clearRecent),
-        }
-      )
-
-    return menu.length ? menu : [{ label: 'No recent connections', enabled: false }]
+    if (enabled.length) menu.push({ label: 'Connections', enabled: false }, ...this.connectionsList(enabled))
+    return menu.length ? menu : [{ label: 'No connections', enabled: false }]
   }
 
   private connectionsList(list: IConnection[]) {

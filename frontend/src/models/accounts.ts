@@ -1,5 +1,7 @@
 import { createModel } from '@rematch/core'
+import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
+import { getActiveAccountId, isUserAccount } from '../selectors/accounts'
 import { selectRemoteitLicense } from './plans'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
@@ -168,18 +170,10 @@ export function accountFromDevice(state: ApplicationState, device?: IDevice) {
   return device?.accountId || getActiveAccountId(state)
 }
 
-export function isUserAccount(state: ApplicationState, accountId?: string) {
-  return (accountId || getActiveAccountId(state)) === state.auth.user?.id
-}
-
 export function getAccountIds(state: ApplicationState) {
   let ids = state.accounts.membership.map(m => m.account.id)
   state.auth.user && ids.unshift(state.auth.user.id)
   return ids
-}
-
-export function getActiveAccountId(state: ApplicationState) {
-  return state.accounts.activeId || state.auth.user?.id || ''
 }
 
 export function getActiveUser(state: ApplicationState): IUserRef {
@@ -206,22 +200,4 @@ export function getMembership(state: ApplicationState, accountId?: string): IMem
   if (isUserAccount(state, accountId)) return thisMembership()
   accountId = accountId || getActiveAccountId(state)
   return state.accounts.membership.find(m => m.account.id === accountId) || thisMembership()
-}
-
-export function getDeviceModel(state: ApplicationState, accountId?: string) {
-  return state.devices[accountId || getActiveAccountId(state)] || state.devices.default
-}
-
-export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
-  return getDeviceModel(state, accountId).all || []
-}
-
-export function getOwnDevices(state: ApplicationState): IDevice[] {
-  return getDeviceModel(state, state.auth.user?.id || '').all || []
-}
-
-export function getAllDevices(state: ApplicationState): IDevice[] {
-  return (
-    Object.keys(state.devices).reduce((all: IDevice[], accountId) => all.concat(state.devices[accountId].all), []) || []
-  )
 }

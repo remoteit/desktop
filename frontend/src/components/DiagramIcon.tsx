@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { DiagramGroupType } from './DiagramGroup'
 import { Tooltip, Box } from '@mui/material'
 import { DiagramContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'
@@ -31,13 +30,16 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       tooltip = 'Remote endpoint'
       break
     case 'agent':
-      props.name = 'play'
+      props.name = 'diamond'
       tooltip = proxy ? 'Proxy agent' : 'Local agent'
       break
     case 'relay':
-      props.name = 'play'
-      props.rotate = 180
+      props.name = 'diamond'
       tooltip = 'Remote agent'
+      break
+    case 'public':
+      props.name = 'globe'
+      tooltip = 'Publicly available'
       break
     case 'lan':
       props.name = 'chart-network'

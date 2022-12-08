@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
+import { findLocalConnection, setConnection, selectConnections } from '../helpers/connectionHelper'
 import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -139,10 +139,12 @@ export function selectSessionsByService(state: ApplicationState, id?: string) {
 
 export function selectSessionUsers(state: ApplicationState, id?: string) {
   let ids: string[] = []
+  const activeSessionIds = selectConnections(state).map(c => c.sessionId)
   return state.sessions.all.reduce((users: IUserRef[], session) => {
     if (
       session.user &&
       !ids.includes(session.user.id) &&
+      !activeSessionIds.includes(session.id) &&
       (session.target.id === id || session.target.deviceId === id)
     ) {
       ids.push(session.user.id)

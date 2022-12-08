@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { getOwnDevices } from '../models/accounts'
+import { getOwnDevices } from '../selectors/devices'
 import { Typography } from '@mui/material'
 import { OutOfBand } from '../components/OutOfBand'
 import { Container } from '../components/Container'

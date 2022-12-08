@@ -8,7 +8,7 @@ import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material
 import { spacing, fontSizes } from '../../styling'
 import { getOrganization } from '../../models/organization'
 import { ContactSelector } from '../../components/ContactSelector'
-import { selectDevice } from '../../models/devices'
+import { selectDevice } from '../../selectors/devices'
 import { SharingForm } from '../../components/SharingForm'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
@@ -22,7 +22,7 @@ export const SharePage: React.FC = () => {
   const { userID = '', serviceID = '', deviceID = '' } = useParams<IParams>()
   const { shares, organization } = useDispatch<Dispatch>()
   const { device, contacts, guests, deleting, users } = useSelector((state: ApplicationState) => {
-    const device = selectDevice(state, deviceID)
+    const device = selectDevice(state, undefined, deviceID)
     return {
       device,
       contacts: state.contacts.all,

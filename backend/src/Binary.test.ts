@@ -12,6 +12,7 @@ describe('backend/Binary', () => {
 
     beforeAll(() => {
       binary = new Binary({ name, version, isCli })
+      jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(version))
     })
 
     afterEach(() => {

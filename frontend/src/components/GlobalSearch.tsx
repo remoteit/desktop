@@ -3,7 +3,7 @@ import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
 import debounce from 'lodash.debounce'
 import classnames from 'classnames'
-import { getDeviceModel } from '../models/accounts'
+import { getDeviceModel } from '../selectors/devices'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -52,7 +52,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     // dispatch.devices.set({ query: '' })
     if (selection.nodeType === 'NETWORK') {
       dispatch.accounts.select(selection.accountId)
-      history.push(`/networks/${selection?.serviceId}`)
+      history.push(`/networks/${selection?.nodeId}/${selection?.serviceId}`)
     } else {
       history.push(`/devices/${selection?.nodeId}/${selection?.serviceId}`)
     }

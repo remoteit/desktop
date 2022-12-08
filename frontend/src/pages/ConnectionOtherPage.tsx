@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Typography } from '@mui/material'
-import { selectById } from '../models/devices'
+import { selectById } from '../selectors/devices'
 import { ConnectionDetails } from '../components/ConnectionDetails'
 import { ApplicationState } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
@@ -13,7 +13,7 @@ import { Title } from '../components/Title'
 export const ConnectionOtherPage: React.FC = () => {
   const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
   const { service, device, connection, session } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceID)
+    const [service, device] = selectById(state, undefined, serviceID)
     return {
       service,
       device,

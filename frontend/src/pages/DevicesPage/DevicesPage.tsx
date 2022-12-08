@@ -1,8 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { masterAttributes, deviceAttributes, restoreAttributes } from '../../components/Attributes'
-import { getDeviceModel } from '../../models/accounts'
-import { selectLimitsLookup } from '../../models/organization'
+import { getConnectionsLookup } from '../../selectors/connections'
+import { masterAttributes, restoreAttributes } from '../../components/Attributes'
+import { getDevices, getDeviceModel, selectMasterAttributes } from '../../selectors/devices'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import { DeviceActionsBar } from '../../components/DeviceActionsBar'
 import { ApplicationState } from '../../store'
@@ -10,7 +10,6 @@ import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
-import { getDevices } from '../../models/accounts'
 
 type Props = { restore?: boolean; select?: boolean }
 
@@ -18,21 +17,12 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { selected, devices, connections, fetching, columnWidths, attributes, required } = useSelector(
     (state: ApplicationState) => ({
       selected: state.ui.selected,
-      attributes: restore
-        ? restoreAttributes
-        : masterAttributes
-            .concat(deviceAttributes)
-            .filter(a => a.show(selectLimitsLookup(state)) && state.ui.columns.includes(a.id) && !a.required),
+      attributes: restore ? restoreAttributes : selectMasterAttributes(state),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
       fetching: getDeviceModel(state).fetching || state.ui.fetching,
       columnWidths: state.ui.columnWidths,
       devices: getDevices(state).filter((d: IDevice) => !d.hidden),
-      connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
-        if (!c.deviceID) return lookup
-        if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
-        else lookup[c.deviceID] = [c]
-        return lookup
-      }, {}),
+      connections: getConnectionsLookup(state),
     })
   )
 

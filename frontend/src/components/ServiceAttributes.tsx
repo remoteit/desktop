@@ -8,24 +8,16 @@ export const ServiceAttributes: React.FC<{
   service?: IService
   disablePadding?: boolean
 }> = props => {
-  const attributes = getAttributes([
-    'license',
-    'owner',
-    'serviceLastReported',
-    'serviceCreated',
-    // 'serviceName',
-    // 'servicePort',
-    // 'serviceHost',
-    // 'serviceProtocol',
-    // 'serviceType',
-    'presenceAddress',
-    'serviceId',
-    'id',
-  ])
+  let attributes = ['license', 'owner', 'serviceLastReported', 'serviceCreated']
+
+  if (props.device?.permissions.includes('MANAGE') || !props.device?.configurable)
+    attributes.push('servicePort', 'serviceHost', 'serviceProtocol', 'serviceType')
+
+  attributes.push('presenceAddress', 'serviceId', 'id')
 
   return (
     <Gutters>
-      <DataDisplay {...props} attributes={attributes} />
+      <DataDisplay {...props} attributes={getAttributes(attributes)} />
     </Gutters>
   )
 }

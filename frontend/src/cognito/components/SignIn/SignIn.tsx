@@ -63,26 +63,11 @@ export function SignIn({
   const [username, setUsername] = React.useState<string>(email || rememberMe.username)
   const [password, setPassword] = React.useState<string>('')
   const [error, setError] = React.useState<Error | null>(externalError)
-  const [notice, setNotice] = React.useState<ReactElement | null>(null)
   const [loading, setLoading] = React.useState<boolean>(false)
   const [emailProcessed, setEmailProcessed] = React.useState<boolean>(false)
   const [remember, setRemember] = React.useState<boolean>(rememberMe.checked)
   const passRef = React.useRef<HTMLInputElement>()
   const css = useStyles()
-
-  useEffect(() => {
-    if (error && error.name == 'NotAuthorizedException') {
-      setNotice(
-        <>
-          {t('pages.sign-in.notice2.part1')}
-          <Link to="/update-password">{t('pages.sign-in.notice2.link')}</Link>
-          {t('pages.sign-in.notice2.part2')}
-        </>
-      )
-    } else {
-      setNotice(null)
-    }
-  }, [error])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
@@ -148,7 +133,6 @@ export function SignIn({
         {error?.message && (
           <Notice severity="error" fullWidth gutterBottom>
             {error.message}
-            {notice}
           </Notice>
         )}
         <Box mb={1}>
