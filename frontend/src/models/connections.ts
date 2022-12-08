@@ -137,7 +137,6 @@ export default createModel<RootModel>()({
           createdTime: new Date(link.created).getTime(),
           enabled: link.enabled,
           connectLink: link.enabled,
-          public: true,
         }
 
         const url = urlParse(link.url)
@@ -154,7 +153,6 @@ export default createModel<RootModel>()({
             ...lookup[key],
             connectLink: DEFAULT_CONNECTION.connectLink,
             enabled: DEFAULT_CONNECTION.enabled,
-            public: DEFAULT_CONNECTION.public,
           })
         }
         return result
@@ -342,8 +340,8 @@ export default createModel<RootModel>()({
 
     async setConnectLink(connection: IConnection) {
       const creating: IConnection = connection.enabled
-        ? { ...connection, public: true, connectLink: true }
-        : { ...connection, public: false, connectLink: false }
+        ? { ...connection, connectLink: true }
+        : { ...connection, connectLink: false }
 
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
@@ -382,7 +380,6 @@ export default createModel<RootModel>()({
         ...connection,
         connectLink: false,
         enabled: false,
-        public: false || isPortal(),
         disconnecting: true,
       }
       dispatch.connections.updateConnection(removing)

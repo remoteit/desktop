@@ -30,8 +30,8 @@ export const OrganizationSelect: React.FC = () => {
   }))
 
   const ownOrgId = ownOrg?.id
-  const onSelect = async id => {
-    const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
+  const onSelect = async (id: string) => {
+    const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
     if (id) {
       await logs.reset()
       await accounts.setActive(id.toString())
