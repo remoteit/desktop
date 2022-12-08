@@ -25,7 +25,7 @@
     "detect-rpi": "^1.4.0",
     "dotenv": "^8.2.0",
     "escape-string-regexp": "^4.0.0",
-    "express": "4.17.1",
+    "express": "4.17.3",
     "is-electron": "^2.2.0",
     "is-elevated": "^3.0.0",
     "is-port-reachable": "^3.1.0",
