@@ -16,8 +16,9 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrg, userId } = useSelector((state: ApplicationState) => ({
+  const { options, activeOrg, ownOrg, userId, defaultSelection } = useSelector((state: ApplicationState) => ({
     activeOrg: getOrganization(state),
+    defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
       email: m.account.email,
@@ -38,7 +39,9 @@ export const OrganizationSelect: React.FC = () => {
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()
-      if (menu === '/devices') history.push('/devices')
+      if (['/devices', '/networks'].includes(menu)) {
+        history.push(defaultSelection[id]?.[menu] || menu)
+      }
     }
   }
 

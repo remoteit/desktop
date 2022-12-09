@@ -1,10 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
-import { useLocation } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
-import { REGEX_FIRST_PATH } from '../shared/constants'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
 import { ConnectionName } from '../components/ConnectionName'
 import { InfoButton } from '../buttons/InfoButton'
@@ -15,15 +11,7 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionPage: React.FC = () => {
-  const dispatch = useDispatch<Dispatch>()
-  const location = useLocation()
   const { connection, device, service, network } = React.useContext(DeviceContext)
-  const { defaultSelection } = useSelector((state: ApplicationState) => state.ui)
-  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
-
-  React.useEffect(() => {
-    if (service) dispatch.ui.set({ defaultSelection: { ...defaultSelection, [menu]: location.pathname } })
-  }, [service])
 
   if (!service) return <NoConnectionPage />
 

@@ -7,17 +7,18 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
 import { selectEnabledConnections, selectActiveCount } from '../helpers/connectionHelper'
+import { selectDefaultSelected } from '../selectors/ui'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { defaultSelection, unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
+  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
     (state: ApplicationState) => {
       const connections = selectEnabledConnections(state)
       return {
-        defaultSelection: state.ui.defaultSelection,
+        defaultSelected: selectDefaultSelected(state),
         unreadAnnouncements: selectAnnouncements(state, true).length,
         connections: connections.length,
         networks: selectNetworks(state).length,
@@ -29,7 +30,7 @@ export const SidebarNav: React.FC = () => {
   )
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active })
-  const pathname = path => defaultSelection[path] || path
+  const pathname = path => defaultSelected[path] || path
 
   if (remoteUI)
     return (

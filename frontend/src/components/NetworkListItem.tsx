@@ -1,5 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
 import { selectConnection } from '../helpers/connectionHelper'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
@@ -40,6 +42,7 @@ export const NetworkListItem: React.FC<Props> = ({
     }
   })
   session = session || foundSession
+  const dispatch = useDispatch<Dispatch>()
   const connected = external || session?.state === 'connected' || connection.connected
   const offline = service?.state !== 'active' && !external
   const platform = device?.targetPlatform || session?.target.platform
@@ -58,7 +61,18 @@ export const NetworkListItem: React.FC<Props> = ({
   if (connection.connectLink) icon = <Icon color={color} name="circle-medium" type="solid" size="sm" />
 
   return (
-    <ListItemLocation className={css.item} pathname={pathname} exactMatch dense>
+    <ListItemLocation
+      className={css.item}
+      pathname={pathname}
+      exactMatch
+      dense
+      onClick={() =>
+        dispatch.ui.setDefaultSelected({
+          key: connections ? '/connections' : '/networks',
+          value: pathname,
+        })
+      }
+    >
       <ListItemIcon className={css.connectIcon}>
         <div className={css.connection} />
         {icon}

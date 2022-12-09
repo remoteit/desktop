@@ -38,6 +38,10 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/networks/:networkID">
             <NetworkPage />
           </Route>
+
+          <Route path="/networks">
+            <ConnectionPage />
+          </Route>
         </Switch>
       }
       layout={layout}
