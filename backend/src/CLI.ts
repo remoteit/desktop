@@ -280,19 +280,8 @@ export default class CLI {
   }
 
   async agentRunning() {
-    let running = false
-
-    const data = await this.exec({
-      cmds: [strings.agentStatus()],
-      checkAuthHash: true,
-      skipSignInCheck: true,
-      quiet: false,
-      force: true,
-    })
-
-    if (data) running = data.running
-    Logger.info('CLI AGENT STATUS', { running })
-    return running
+    const data = await this.exec({ cmds: [strings.agentStatus()], skipSignInCheck: true, force: true })
+    return data?.running
   }
 
   async version() {
