@@ -73,7 +73,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           <ListItemIcon>
             <Icon name="object-intersect" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Service Defaults" />
+          <ListItemText primary="Connection Defaults" />
         </MenuItem>
         <MenuItem dense component={Link} to={`/settings/defaults/${service?.typeID}`}>
           <ListItemIcon>

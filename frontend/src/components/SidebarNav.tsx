@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
 import { selectEnabledConnections, selectActiveCount } from '../helpers/connectionHelper'
+import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelected } from '../selectors/ui'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
@@ -14,8 +15,8 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
-    (state: ApplicationState) => {
+  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI, limits } =
+    useSelector((state: ApplicationState) => {
       const connections = selectEnabledConnections(state)
       return {
         defaultSelected: selectDefaultSelected(state),
@@ -25,9 +26,9 @@ export const SidebarNav: React.FC = () => {
         active: selectActiveCount(state, connections).length,
         devices: getDeviceModel(state).total,
         remoteUI: isRemoteUI(state),
+        limits: selectLimitsLookup(state),
       }
-    }
-  )
+    })
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active })
   const pathname = path => defaultSelected[path] || path
@@ -104,15 +105,24 @@ export const SidebarNav: React.FC = () => {
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
       <ListItemLocation title="Inbox" pathname="/announcements" icon="envelope" badge={unreadAnnouncements} dense />
-      <ListItemLocation
-        className={css.footer}
-        title="Contact"
-        // subtitle="Support and Feedback"
-        onClick={() => dispatch.feedback.reset()}
-        pathname="/feedback"
-        icon="envelope-open-text"
-        dense
-      />
+      {limits.support > 10 ? (
+        <ListItemLocation
+          className={css.footer}
+          title="Contact"
+          onClick={() => dispatch.feedback.reset()}
+          pathname="/feedback"
+          icon="envelope-open-text"
+          dense
+        />
+      ) : (
+        <ListItemLink
+          title="Support Forum"
+          href="https://link.remote.it/forum"
+          icon="comments"
+          className={css.footer}
+          dense
+        />
+      )}
     </List>
   )
 }
