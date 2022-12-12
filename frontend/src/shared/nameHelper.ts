@@ -85,7 +85,7 @@ export function safeFilename(name: string) {
   return name.replace(REGEX_NOT_FILE_SAFE, '-')
 }
 
-export function serviceNameValidation(name: string) {
+export function serviceNameValidation(name: string, emptyOk?: boolean) {
   const value = name
   if (value.length > MAX_NAME_LENGTH) {
     return {
@@ -93,7 +93,7 @@ export function serviceNameValidation(name: string) {
       value: value.substring(0, MAX_NAME_LENGTH),
     }
   }
-  if (!value.length) {
+  if (!emptyOk && !value.length) {
     return {
       error: `Cannot be empty`,
       value,

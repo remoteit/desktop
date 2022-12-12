@@ -10,18 +10,27 @@ import { getApplicationType } from '../shared/applications'
 import { serviceNameValidation } from '../shared/nameHelper'
 import { Typography, TextField, Divider, Button, Box, Chip } from '@mui/material'
 import { selectUniqueSchemeTypes } from '../models/applicationTypes'
+import { ListItemLocation } from './ListItemLocation'
 import { ServiceFormProps } from './ServiceForm'
 import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
-import { spacing, fontSizes } from '../styling'
+import { spacing } from '../styling'
 import { Gutters } from './Gutters'
+import { Icon } from './Icon'
 import { Pre } from './Pre'
 
 type Props = ServiceFormProps & {
   nameField?: boolean
 }
 
-export const ServiceSmartForm: React.FC<Props> = ({ nameField, service, thisDevice, disabled, onSubmit, onChange }) => {
+export const ServiceSmartForm: React.FC<Props> = ({
+  nameField = true,
+  service,
+  thisDevice,
+  disabled,
+  onSubmit,
+  onChange,
+}) => {
   const { applicationTypes, keyApplications, saving } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
     keyApplications: selectUniqueSchemeTypes(state),
@@ -65,16 +74,34 @@ export const ServiceSmartForm: React.FC<Props> = ({ nameField, service, thisDevi
   return (
     <>
       <form
-        className={classnames(css.item)}
+        className={css.item}
         onSubmit={event => {
           event.preventDefault()
           onSubmit(form)
         }}
       >
+        {nameField && (
+          <TextField
+            fullWidth
+            label="Name"
+            value={name}
+            disabled={disabled}
+            error={!!error}
+            variant="filled"
+            InputLabelProps={{ shrink: true }}
+            helperText={error || ''}
+            placeholder={applicationType?.name || application.title}
+            onChange={event => {
+              const validation = serviceNameValidation(event.target.value, true)
+              setName(validation.value)
+              validation.error ? setError(validation.error) : setError(undefined)
+            }}
+          />
+        )}
         <TextField
           required
           value={field}
-          label="Service Endpoint"
+          label="Endpoint"
           disabled={disabled}
           variant="filled"
           InputLabelProps={{ shrink: !!field }}
@@ -85,24 +112,7 @@ export const ServiceSmartForm: React.FC<Props> = ({ nameField, service, thisDevi
             endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
           }}
         />
-        {nameField && (
-          <TextField
-            required
-            label="Service Name"
-            value={name}
-            disabled={disabled}
-            error={!!error}
-            variant="filled"
-            InputLabelProps={{ shrink: true }}
-            helperText={error || ''}
-            placeholder={applicationType?.name || application.title}
-            onChange={event => {
-              const validation = serviceNameValidation(event.target.value)
-              setName(validation.value)
-              validation.error ? setError(validation.error) : setError(undefined)
-            }}
-          />
-        )}
+
         <Button
           type="submit"
           variant="contained"
@@ -114,34 +124,27 @@ export const ServiceSmartForm: React.FC<Props> = ({ nameField, service, thisDevi
         </Button>
       </form>
       <Gutters inset="sm" className={css.item}>
-        <Box className={css.item}>
-          {keyApplications.map(
-            t =>
-              t.scheme && (
-                <Chip
-                  label={t.name}
-                  key={t.id}
-                  onClick={() => {
-                    parsed.protocol = t.scheme + ':'
-                    if (parsed.pathname === '/') parsed.pathname = null
-                    setField(url.format(parsed))
-                  }}
-                  color={t.id === applicationType?.id ? 'primary' : undefined}
-                  variant="filled"
-                  size="small"
-                />
-              )
-          )}
-          <Divider orientation="vertical" />
-          <Chip
-            label="Advanced setup"
-            to="./addForm"
-            variant="filled"
-            component={Link}
-            onClick={console.log}
-            size="small"
-          />
-        </Box>
+        {keyApplications.map(
+          t =>
+            t.scheme && (
+              <Chip
+                label={t.name}
+                key={t.id}
+                onClick={() => {
+                  parsed.protocol = t.scheme + ':'
+                  if (parsed.pathname === '/') parsed.pathname = null
+                  setField(url.format(parsed))
+                }}
+                color={t.id === applicationType?.id ? 'primary' : undefined}
+                variant="filled"
+                size="small"
+              />
+            )
+        )}
+        <Divider />
+        <ListItemLocation pathname="./addForm" title="Advanced setup" dense disableGutters>
+          <Icon name="chevron-right" />
+        </ListItemLocation>
       </Gutters>
       {/* <Pre {...{ field }} /> */}
     </>
@@ -152,7 +155,7 @@ const useStyles = makeStyles(({ palette }) => ({
   item: {
     display: 'flex',
     alignItems: 'flex-start',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     flexWrap: 'wrap',
     marginBottom: '4vh',
     maxWidth: 600,
@@ -162,16 +165,10 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiTextField-root': { flexGrow: 1 },
     '& .MuiFilledInput-root': { minWidth: 250 },
     '& .MuiButton-root': { marginTop: spacing.xs },
+    '& .MuiListItem-root': { paddingLeft: spacing.md, paddingRight: spacing.md },
     '& .MuiDivider-root': {
-      height: '1em',
-      marginTop: spacing.xs,
-      marginLeft: spacing.sm,
-      marginRight: spacing.sm,
-      borderColor: palette.gray.main,
+      width: '100%',
+      marginTop: spacing.md,
     },
-  },
-  preview: {
-    fontSize: fontSizes.xxxs,
-    textTransform: 'uppercase',
   },
 }))
