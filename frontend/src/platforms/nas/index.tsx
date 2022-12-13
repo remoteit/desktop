@@ -44,6 +44,6 @@ platforms.register({
   installation: {
     instructions: 'Download the package file and install it through your NAS web interface.',
     qualifier: 'Synology manual installation',
-    link: 'https://link.remote.it/download',
+    link: 'https://link.remote.it/download/synology',
   },
 })

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from '../../components/Link'
 import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
@@ -23,4 +24,14 @@ platforms.register({
   name: 'Debian Linux',
   component: Component,
   types: { 1120: 'Debian Linux' },
+  installation: {
+    qualifier: 'For Ubuntu Desktop systems.',
+    link: 'https://link.remote.it/download/desktop',
+    instructions: (
+      <>
+        Install the Desktop or CLI on an Ubuntu Desktop system <br />
+        or just use our <Link to="./linux">Linux system agent</Link>
+      </>
+    ),
+  },
 })
