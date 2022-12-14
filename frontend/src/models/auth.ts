@@ -247,6 +247,7 @@ export default createModel<RootModel>()({
       dispatch.auth.set({ user: undefined })
       dispatch.user.reset()
       dispatch.organization.reset()
+      dispatch.networks.reset()
       dispatch.accounts.reset()
       dispatch.connections.reset()
       dispatch.devices.reset()
