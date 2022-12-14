@@ -46,12 +46,6 @@ export function sanitizeName(name: string) {
   return name?.toLowerCase().replace(REGEX_CONNECTION_NAME, '-').replace(REGEX_CONNECTION_TRIM, '')
 }
 
-export function connectionName(service?: nameObj, device?: nameObj): string {
-  let name = sanitizeName(combinedName(service, device))
-  if (name.length > MAX_CONNECTION_NAME_LENGTH) name = name.substring(0, MAX_CONNECTION_NAME_LENGTH)
-  return name
-}
-
 export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
@@ -69,7 +63,7 @@ export function newConnection(service?: IService | null) {
 
   if (service) {
     const [_, device] = selectById(state, undefined, service.deviceID)
-    connection.name = connectionName(service)
+    connection.name = service.subdomain
     connection.id = service.id
     connection.deviceID = service.deviceID
     connection.accountId = device?.accountId || user.id
@@ -80,7 +74,6 @@ export function newConnection(service?: IService | null) {
     if (service.attributes.defaultPort && !usedPorts(state).includes(service.attributes.defaultPort)) {
       connection.port = service.attributes.defaultPort
     }
-    if (device) connection.name = connectionName(service, device)
   }
 
   return connection
