@@ -143,7 +143,7 @@ export const Connect: React.FC = () => {
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters
-          subtitle="Connection"
+          subtitle="Local"
           expanded={accordion.config}
           onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
           action={<ConnectionMenu connection={connection} service={service} />}
@@ -186,17 +186,6 @@ export const Connect: React.FC = () => {
             </PortalUI>
           </List>
         </AccordionMenuItem>
-        <NetworksAccordion
-          instance={instance}
-          service={service}
-          connection={connection}
-          expanded={accordion.networks}
-          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
-        />
-        <AccessAccordion
-          expanded={accordion.access}
-          onClick={() => dispatch.ui.accordion({ access: !accordion.access })}
-        />
         <AccordionMenuItem gutters subtitle="Service" defaultExpanded>
           {device?.permissions.includes('MANAGE') && (
             <>
@@ -208,6 +197,17 @@ export const Connect: React.FC = () => {
           )}
           <ServiceAttributes device={device} service={service} disablePadding />
         </AccordionMenuItem>
+        <NetworksAccordion
+          instance={instance}
+          service={service}
+          connection={connection}
+          expanded={accordion.networks}
+          onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
+        />
+        <AccessAccordion
+          expanded={accordion.access}
+          onClick={() => dispatch.ui.accordion({ access: !accordion.access })}
+        />
       </Gutters>
     </>
   )

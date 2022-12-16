@@ -1,8 +1,10 @@
 import React from 'react'
+import { Box } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { ListItemBack } from '../components/ListItemBack'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ConnectionDefaultsForm } from '../components/ConnectionDefaultsForm'
+import { IconButton } from '../buttons/IconButton'
 import { DeviceContext } from '../services/Context'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
@@ -17,7 +19,14 @@ export const ServiceDefaultsPage: React.FC = () => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Connection settings" />
+      <Box display="flex">
+        <ListItemBack title="Connection settings" />
+        <IconButton
+          name="object-intersect"
+          title="Connection Type Defaults"
+          to={`/settings/defaults/${service?.typeID}`}
+        />
+      </Box>
       <AccordionMenuItem gutters subtitle="Defaults" defaultExpanded disabled>
         <ConnectionDefaultsForm
           service={service}

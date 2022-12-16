@@ -69,12 +69,6 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
             <ListItemText primary="Forget persistent public url" />
           </MenuItem>
         )}
-        <MenuItem dense component={Link} to={`/settings/defaults/${service?.typeID}`}>
-          <ListItemIcon>
-            <Icon name="square-dashed" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="Connection Type Defaults" />
-        </MenuItem>
       </Menu>
     </>
   )
