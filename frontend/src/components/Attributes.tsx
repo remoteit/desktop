@@ -386,20 +386,24 @@ export const attributes: Attribute[] = [
   new ConnectionAttribute({
     id: 'connection',
     label: 'Connection',
-    value: ({ connection, session, application }) =>
-      connection?.connecting
-        ? 'Connecting...'
-        : connection?.public
-        ? connection?.connectLink
-          ? 'Persistent Public Endpoint'
-          : application?.reverseProxy
-          ? 'Public Reverse Proxy'
-          : 'Public Proxy'
-        : !connection?.connected && !session
-        ? 'Idle - Connect on demand'
-        : connection?.isP2P || session?.isP2P
-        ? 'Peer to Peer'
-        : 'Proxy',
+    value: ({ connection, session, application }) => {
+      if (!connection) return null
+      return connection.enabled
+        ? connection.connecting
+          ? 'Connecting...'
+          : connection.public
+          ? connection.connectLink
+            ? 'Persistent Public Endpoint'
+            : application?.reverseProxy
+            ? 'Public Reverse Proxy'
+            : 'Public Proxy'
+          : !connection.connected && !session
+          ? 'Idle - Connect on demand'
+          : connection.isP2P || session?.isP2P
+          ? 'Local Peer to Peer'
+          : 'Local Proxy'
+        : 'Inactive'
+    },
   }),
   new ConnectionAttribute({
     id: 'security',

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography, Divider } from '@mui/material'
-import { selectNetworks } from '../models/networks'
+import { selectNetworks } from '../selectors/networks'
 import { selectPermissions } from '../models/organization'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'

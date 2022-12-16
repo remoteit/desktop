@@ -1,7 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { ServiceHeaderMenu } from '../components/ServiceHeaderMenu'
 import { ConnectionDefaultsForm } from '../components/ConnectionDefaultsForm'
 import { DeviceContext } from '../services/Context'
 import { useDispatch } from 'react-redux'
@@ -16,7 +15,7 @@ export const ServiceDefaultsPage: React.FC = () => {
   if (!service || !device) return null
 
   return (
-    <ServiceHeaderMenu device={device} service={service}>
+    <>
       <Gutters bottom="xxs">
         <Typography variant="subtitle2">Connection Defaults</Typography>
       </Gutters>
@@ -33,6 +32,6 @@ export const ServiceDefaultsPage: React.FC = () => {
           }
         }}
       />
-    </ServiceHeaderMenu>
+    </>
   )
 }

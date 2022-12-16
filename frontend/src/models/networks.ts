@@ -3,6 +3,7 @@ import { isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { getActiveUser } from './accounts'
 import { getActiveAccountId } from '../selectors/accounts'
+import { selectNetworks } from '../selectors/networks'
 import { selectConnection, selectEnabledConnections } from '../helpers/connectionHelper'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById } from '../selectors/devices'
@@ -341,10 +342,6 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
     tags: [],
     icon: 'chart-network',
   }
-}
-
-export function selectNetworks(state: ApplicationState): INetwork[] {
-  return state.networks.all[getActiveAccountId(state)] || []
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {

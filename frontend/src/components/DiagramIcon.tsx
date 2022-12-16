@@ -61,7 +61,7 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   }
 
   if (highlight) {
-    props.color = 'alwaysWhite'
+    props.color = 'primary'
   }
 
   return (

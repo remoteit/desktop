@@ -378,6 +378,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
             '& > .MuiList-padding': { padding: 0 },
             '& .MuiListItemIcon-root': { minWidth: 50 },
+            '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
             '& .MuiDivider-root': {
               marginTop: 10,
               marginBottom: 10,

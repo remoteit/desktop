@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { Typography, Box } from '@mui/material'
+import { Typography, Box, Paper } from '@mui/material'
 import { ApplicationState } from '../store'
 import { SharedUsersPaginatedList } from './SharedUsersPaginatedList'
 import { selectMembersWithAccess, getOrganization } from '../models/organization'
@@ -29,34 +29,36 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
 
   if (!connected.length && !disconnected.length && !members.length)
     return (
-      <Gutters top="xxl" center>
-        <Box paddingBottom={2} paddingTop={4}>
-          <Icon name="user-group" type="light" fontSize={36} color="grayLight" />
-        </Box>
-        <Typography variant="caption" color="gray.main" component="div" gutterBottom>
-          No one has access to this service.
-        </Typography>
-        <AddUserButton to={location.pathname.replace('users', 'share')} inlineLeft>
-          <Typography variant="body2">Share to a guest</Typography>
-        </AddUserButton>
-        <Typography variant="caption" color="gray.main" component="div">
-          or
-        </Typography>
-        {hasOrganization ? (
-          <IconButton
-            icon="user-plus"
-            to="/organization/share"
-            size="md"
-            disabled={!instance?.permissions.includes('ADMIN')}
-          >
-            <Typography variant="body2"> &nbsp;&nbsp; Add an organization member</Typography>
-          </IconButton>
-        ) : (
-          <IconButton icon="industry-alt" to="/organization" size="md">
-            <Typography variant="body2"> &nbsp;&nbsp; Create your organization</Typography>
-          </IconButton>
-        )}
-      </Gutters>
+      <Paper elevation={0} sx={{ contain: 'layout', marginTop: 2 }}>
+        <Gutters center bottom="xxl" top="lg">
+          <Box paddingBottom={2} paddingTop={4}>
+            <Icon name="user-group" type="light" fontSize={36} color="grayLight" />
+          </Box>
+          <Typography variant="caption" color="gray.main" component="div" gutterBottom>
+            No one has access to this service.
+          </Typography>
+          <AddUserButton to={location.pathname.replace('users', 'share')} inlineLeft>
+            <Typography variant="body2">Share to a guest</Typography>
+          </AddUserButton>
+          <Typography variant="caption" color="gray.main" component="div">
+            or
+          </Typography>
+          {hasOrganization ? (
+            <IconButton
+              icon="user-plus"
+              to="/organization/share"
+              size="md"
+              disabled={!instance?.permissions.includes('ADMIN')}
+            >
+              <Typography variant="body2"> &nbsp;&nbsp; Add an organization member</Typography>
+            </IconButton>
+          ) : (
+            <IconButton icon="industry-alt" to="/organization" size="md">
+              <Typography variant="body2"> &nbsp;&nbsp; Create your organization</Typography>
+            </IconButton>
+          )}
+        </Gutters>
+      </Paper>
     )
 
   return (

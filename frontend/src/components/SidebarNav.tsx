@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { selectNetworks } from '../models/networks'
+import { selectNetworks } from '../selectors/networks'
 import { getDeviceModel } from '../selectors/devices'
 import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'

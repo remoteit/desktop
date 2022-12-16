@@ -1,6 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { ConnectionPage } from '../pages/ConnectionPage'
+import { ServiceRouter } from './ServiceRouter'
 import { NetworksPage } from '../pages/NetworksPage'
 import { NetworkUsersPage } from '../pages/NetworkUsersPage'
 import { NetworkSharePage } from '../pages/NetworkSharePage'
@@ -32,7 +32,7 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           </Route>
 
           <Route path="/networks/:networkID/:serviceID">
-            <ConnectionPage />
+            <ServiceRouter basename="/networks/:networkID/:serviceID" />
           </Route>
 
           <Route path="/networks/:networkID">
@@ -40,7 +40,7 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           </Route>
 
           <Route path="/networks">
-            <ConnectionPage />
+            <ServiceRouter basename="/networks/:serviceID?/:sessionID?" />
           </Route>
         </Switch>
       }

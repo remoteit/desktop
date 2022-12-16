@@ -31,7 +31,7 @@ export const DiagramLabel: React.FC<Props> = ({ type, right }) => {
       name = 'Local'
       break
     case 'relay':
-      name = 'Relay'
+      name = 'Jump'
       break
     case 'target':
       name = 'Service'
@@ -44,7 +44,7 @@ export const DiagramLabel: React.FC<Props> = ({ type, right }) => {
       break
   }
 
-  if (highlight) titleColor = 'alwaysWhite.main'
+  if (highlight) titleColor = 'primary.main'
 
   return (
     <Box

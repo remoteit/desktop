@@ -3,7 +3,6 @@ import { ListItemQuote } from '../ListItemQuote'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
-import { AutoLaunchToggle } from '../AutoLaunchToggle'
 import { LaunchTypeSelect } from '../LaunchTypeSelect'
 import { useApplication } from '../../hooks/useApplication'
 
@@ -30,7 +29,6 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       <LaunchTypeSelect app={app} onChange={handleChange} />
       {app.launchType !== 'NONE' && (
         <ListItemQuote>
-          <AutoLaunchToggle app={app} connection={connection} service={service} />
           <InlineTemplateSetting app={app} connection={connection} service={service} />
           <CustomAttributeSettings app={app} connection={connection} service={service} />
         </ListItemQuote>

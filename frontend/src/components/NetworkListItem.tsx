@@ -54,7 +54,9 @@ export const NetworkListItem: React.FC<Props> = ({
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connections) pathname = `/connections/${serviceId}`
   if (session) pathname += `/${session.id}`
+  const matchname = pathname
   if (external) pathname += '/other'
+  else pathname += '/connect'
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name="play" size="sm" type="solid" />
@@ -62,10 +64,10 @@ export const NetworkListItem: React.FC<Props> = ({
 
   return (
     <ListItemLocation
+      dense
       className={css.item}
       pathname={pathname}
-      exactMatch
-      dense
+      match={matchname}
       onClick={() =>
         dispatch.ui.setDefaultSelected({
           key: connections ? '/connections' : '/networks',

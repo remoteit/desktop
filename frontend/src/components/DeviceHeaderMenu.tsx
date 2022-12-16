@@ -5,13 +5,11 @@ import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'
-import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersTab } from './UsersTab'
 import { Container } from './Container'
 import { Gutters } from './Gutters'
-import { TestUI } from './TestUI'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
@@ -27,9 +25,6 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <TestUI>
-              <DeviceConnectMenu size="small" disabled={device.thisDevice || device.state === 'inactive'} />
-            </TestUI>
             <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>

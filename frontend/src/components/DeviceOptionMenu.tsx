@@ -1,27 +1,24 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
+import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
-import { UsersTab } from './UsersTab'
 import { Icon } from './Icon'
 
-type Props = { device?: IDevice; service?: IService }
+type Props = { device?: IDevice; service?: IService; user?: IUser }
 
 export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
-  const userId = useSelector((state: ApplicationState) => state.auth.user?.id)
+  const { deviceID } = useParams<{ deviceID?: string }>()
+  const deviceLink = !deviceID
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
   if (!device) return null
-
-  const manage = userId === device.accountId || device.permissions.includes('MANAGE')
 
   return (
     <>
@@ -37,31 +34,27 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        {service
-          ? [
-              <UsersTab
-                key="users"
-                menuItem
-                instance={device}
-                service={service}
-                to={`/devices/${device.id}/${service.id}/users`}
-              />,
-              <CopyMenuItem
-                key="link"
-                icon="link"
-                title="Service Link"
-                value={`${PROTOCOL}device/${device.id}/${service.id}`}
-              />,
-            ]
-          : [<CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />]}
-        {manage && [
-          <MenuItem
+        {deviceLink && (
+          <ListItemLocation
+            title="Device Page"
+            icon="router"
+            pathname={`/devices/${device.id}/details`}
+            menuItem
             dense
-            key="transfer"
-            to={`/devices/${device.id}/transfer`}
-            component={Link}
-            disabled={!device.permissions.includes('MANAGE')}
-          >
+          />
+        )}
+        {service ? (
+          <CopyMenuItem
+            key="link"
+            icon="link"
+            title="Service Link"
+            value={`${PROTOCOL}device/${device.id}/${service.id}`}
+          />
+        ) : (
+          <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+        )}
+        {device.permissions.includes('MANAGE') && [
+          <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
             <ListItemIcon>
               <Icon name="arrow-turn-down-right" size="md" />
             </ListItemIcon>

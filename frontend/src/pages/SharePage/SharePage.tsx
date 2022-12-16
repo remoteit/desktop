@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useContext } from 'react'
 import { makeStyles } from '@mui/styles'
-import { REGEX_LAST_PATH } from '../../shared/constants'
+import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { useParams, useLocation, useHistory } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
 import { getOrganization } from '../../models/organization'
 import { ContactSelector } from '../../components/ContactSelector'
-import { selectDevice } from '../../selectors/devices'
 import { SharingForm } from '../../components/SharingForm'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
@@ -16,13 +15,11 @@ import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 
-type IParams = { userID: string; serviceID: string; deviceID: string }
-
 export const SharePage: React.FC = () => {
-  const { userID = '', serviceID = '', deviceID = '' } = useParams<IParams>()
+  const { device, service } = useContext(DeviceContext)
+  const { userID = '' } = useParams<{ userID?: string }>()
   const { shares, organization } = useDispatch<Dispatch>()
-  const { device, contacts, guests, deleting, users } = useSelector((state: ApplicationState) => {
-    const device = selectDevice(state, undefined, deviceID)
+  const { contacts, guests, deleting, users } = useSelector((state: ApplicationState) => {
     return {
       device,
       contacts: state.contacts.all,
@@ -31,7 +28,6 @@ export const SharePage: React.FC = () => {
       users: state.shares.currentDevice?.users || [],
     }
   })
-  const location = useLocation()
   const history = useHistory()
   const css = useStyles()
   const guest = guests.find(g => g.id === userID)
@@ -39,14 +35,15 @@ export const SharePage: React.FC = () => {
 
   useEffect(() => {
     ;(async () => {
+      if (!service || !device) return
       if (!guest && userID) await organization.fetch()
-      await shares.fetch({ email, serviceID, device })
+      await shares.fetch({ email, serviceId: service.id, device })
     })()
   }, [])
 
   const handleUnshare = async () => {
     if (device) await shares.delete({ deviceId: device.id, email })
-    history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
+    history.goBack()
   }
 
   const handleChange = (emails: string[]) => {
