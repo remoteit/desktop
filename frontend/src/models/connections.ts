@@ -408,9 +408,7 @@ export default createModel<RootModel>()({
       connection.host = ''
       connection.error = undefined
       connection.autoStart = undefined
-      connection.public = connection.public || isPortal()
       connection.port = connection.port || state.backend.freePort
-      connection.starting = !connection.public
 
       if (connection.connectLink) {
         dispatch.connections.setConnectLink({ ...connection, enabled: true, starting: true })
