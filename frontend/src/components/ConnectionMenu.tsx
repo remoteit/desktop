@@ -64,7 +64,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
             }
           >
             <ListItemIcon>
-              <Icon name="link-slash" size="md" />
+              <Icon name="trash" size="md" />
             </ListItemIcon>
             <ListItemText primary="Forget persistent public url" />
           </MenuItem>

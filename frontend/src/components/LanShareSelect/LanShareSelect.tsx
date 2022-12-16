@@ -1,5 +1,4 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
 import { ListItemIcon, ListItemText } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
@@ -10,7 +9,6 @@ type Props = {
 }
 
 export const LanShareSelect: React.FC<Props> = ({ connection }) => {
-  const location = useLocation()
   const shared = lanShared(connection)
   const disabled = connection?.connected || connection?.public
 

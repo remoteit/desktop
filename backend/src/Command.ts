@@ -96,8 +96,7 @@ export default class Command {
       }
 
       if (stdout) {
-        result = stdout.toString()
-        this.log(`EXEC SUCCESS`, { stdout: toJson(stdout) })
+        result = toJson(stdout)
       }
     } catch (error) {
       if (isStdExecException(error)) {

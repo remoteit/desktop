@@ -29,7 +29,7 @@ export const ConnectAdvanced: React.FC = () => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Connection configuration" />
+      <ListItemBack title="Connection settings" />
       <AccordionMenuItem gutters subtitle="Advanced" defaultExpanded disabled>
         <List disablePadding>
           {!connection.public && (

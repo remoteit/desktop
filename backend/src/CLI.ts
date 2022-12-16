@@ -173,11 +173,7 @@ export default class CLI {
       let result: IConnection = {
         id: c.id,
         host: c.addressHost,
-        port: c.addressPort === -1 ? undefined : c.addressPort,
         enabled: !!c.isEnabled,
-        createdTime: Date.parse(c.createdAt),
-        startTime: c.startedAt ? Date.parse(c.startedAt) : undefined,
-        endTime: c.stoppedAt ? Date.parse(c.stoppedAt) : undefined,
         starting: c.state === 1, //      starting
         connecting: c.state === 3, //    connecting
         connected: c.state === 4, //     connected
@@ -193,6 +189,10 @@ export default class CLI {
 
       // keep old sessionID for analytics
       if (c.sessionID) result.sessionId = c.sessionID.toLowerCase()
+      if (c.addressPort && c.addressPort > 0) result.port = c.addressPort
+      if (c.createdAt) result.createdTime = Date.parse(c.createdAt)
+      if (c.startedAt) result.startTime = Date.parse(c.startedAt)
+      if (c.stoppedAt) result.endTime = Date.parse(c.stoppedAt)
       if (error) result.error = error
 
       return result
@@ -336,7 +336,7 @@ export default class CLI {
 
     if (result) {
       try {
-        const parsed = JSON.parse(result)
+        const parsed = typeof result === 'string' ? JSON.parse(result) : result
         if (parsed.code === 0) parsed.message && Logger.info('CLI EXEC MESSAGE', parsed.message)
         else throw new Error(parsed)
         return parsed.data

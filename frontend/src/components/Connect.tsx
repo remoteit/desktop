@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { List, Button, Typography, Collapse } from '@mui/material'
+import { List, Button, Typography, Collapse, Divider } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
@@ -158,14 +158,14 @@ export const Connect: React.FC = () => {
             <Collapse in={showConnectLink}>
               <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
             </Collapse>
-            <ListItemLocation title="Connection Defaults" icon="object-intersect" pathname="defaults" dense>
-              <Icon name="angle-right" inlineLeft fixedWidth />
-            </ListItemLocation>
             <Collapse in={!connection.connectLink}>
               <ListItemLocation icon="sliders" title="Advanced" pathname="advanced" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
             </Collapse>
+            <ListItemLocation title="Defaults" icon="square-dashed" pathname="defaults" dense>
+              <Icon name="angle-right" inlineLeft fixedWidth />
+            </ListItemLocation>
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Get Desktop for more features and control.</strong>
@@ -198,12 +198,15 @@ export const Connect: React.FC = () => {
           onClick={() => dispatch.ui.accordion({ access: !accordion.access })}
         />
         <AccordionMenuItem gutters subtitle="Service" defaultExpanded>
-          <ServiceAttributes device={device} service={service} disablePadding />
           {device?.permissions.includes('MANAGE') && (
-            <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
-              <Icon name="angle-right" inlineLeft fixedWidth />
-            </ListItemLocation>
+            <>
+              <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
+                <Icon name="angle-right" inlineLeft fixedWidth />
+              </ListItemLocation>
+              <Divider variant="inset" sx={{ marginTop: 1 }} />
+            </>
           )}
+          <ServiceAttributes device={device} service={service} disablePadding />
         </AccordionMenuItem>
       </Gutters>
     </>
