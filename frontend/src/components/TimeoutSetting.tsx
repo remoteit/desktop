@@ -1,9 +1,11 @@
 import React from 'react'
 import { Tooltip } from '@mui/material'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { DEFAULT_CONNECTION, PUBLIC_CONNECTION, REGEX_CHARACTERS } from '../shared/constants'
+import { DEFAULT_CONNECTION, REGEX_CHARACTERS } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Icon } from './Icon'
+
+const PUBLIC_TIMEOUT = 15
 
 export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   if (!service) return null
@@ -11,7 +13,7 @@ export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnect
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
   const disabled = connection.connected || connection.public
-  const timeout = connection.public ? PUBLIC_CONNECTION.timeout : connection.timeout
+  const timeout = connection.public ? PUBLIC_TIMEOUT : connection.timeout
   let display = timeout === 0 ? 'Never' : `${timeout} minutes`
 
   const save = (newTimeout?: number) =>

@@ -11,9 +11,9 @@ platforms.register({
   name: 'Ubiquiti',
   component: Component,
   types: { 1218: 'Ubiquiti Router' },
-  // installation: {
-  //   instructions: 'Install the Desktop or CLI on the Windows system to you want to enable remote access to.',
-  //   qualifier: 'Windows installation',
-  //   link: 'https://link.remote.it/download',
-  // },
+  installation: {
+    command: true,
+    qualifier: 'For Ubiquiti routers',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

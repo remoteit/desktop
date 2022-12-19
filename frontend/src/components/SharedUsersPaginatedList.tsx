@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { List, Typography, Pagination, Slider, Box } from '@mui/material'
+import { List, Pagination, Slider, Box } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
+import { AccordionMenuItem } from './AccordionMenuItem'
 import { UserListItem } from './UserListItem'
 import { ShareDetails } from './ShareDetails'
 import { IconButton } from '../buttons/IconButton'
-import { Title } from './Title'
 
 interface Props {
   title: string
@@ -36,9 +36,10 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
   const pageUsers = users.slice(start, start + perPage)
 
   return (
-    <>
-      <Typography variant="subtitle1" color={connected ? 'primary' : undefined}>
-        <Title>{title}</Title>
+    <AccordionMenuItem
+      gutters
+      subtitle={title}
+      action={
         <Box className={css.pagination}>
           {users.length > perPage * 3 ? (
             <>
@@ -56,7 +57,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
           ) : (
             users.length > perPage && (
               <Pagination
-                className={css.pagination}
+                classes={{ ul: css.pagination }}
                 count={pageCount}
                 onChange={(e, page) => setPage(Math.max(page, 1))}
                 size="small"
@@ -64,7 +65,9 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
             )
           )}
         </Box>
-      </Typography>
+      }
+      defaultExpanded
+    >
       <List>
         {pageUsers.map((user, i) => (
           <UserListItem key={user.id} user={user} isConnected={connected} member={members} remove={remove}>
@@ -72,14 +75,15 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
           </UserListItem>
         ))}
       </List>
-    </>
+    </AccordionMenuItem>
   )
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
   pagination: {
-    marginRight: spacing.sm,
     margin: 0,
+    whiteSpace: 'nowrap',
+    flexWrap: 'nowrap',
     '& .MuiSlider-sizeSmall': { width: 200 },
     '& .MuiIconButton-root': { marginTop: -spacing.lg },
     '& .MuiPaginationItem-sizeSmall': { fontSize: fontSizes.xxs },

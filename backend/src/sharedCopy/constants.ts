@@ -84,17 +84,6 @@ export const DEFAULT_CONNECTION: IConnection = {
   default: true,
 }
 
-export const PUBLIC_CONNECTION = {
-  autoLaunch: true,
-  port: undefined,
-  public: true,
-  timeout: 15,
-  isP2P: false,
-  failover: false,
-  proxyOnly: true,
-  log: false,
-}
-
 export const DEFAULT_SERVICE: IService = {
   id: '',
   contactedAt: new Date(),

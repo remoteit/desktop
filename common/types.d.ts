@@ -132,6 +132,7 @@ declare global {
 
   interface INetwork extends IInstance {
     enabled: boolean
+    cloud: boolean
     connectionNames: INameLookupByServiceId
     serviceIds: string[]
     sessions?: ISession[]

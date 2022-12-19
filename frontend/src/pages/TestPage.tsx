@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { TEST_HEADER } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
@@ -15,7 +15,8 @@ import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
   const { plans, ui } = useDispatch<Dispatch>()
-  const { tests, informed, testUI, unExpireBubbles, preferences, limits, limitsOverride, testHeader } = useSelector(
+  const [testHeader, setTestHeader] = useState<string>(window.localStorage.getItem(TEST_HEADER) || '')
+  const { tests, informed, testUI, unExpireBubbles, preferences, limits, limitsOverride } = useSelector(
     (state: ApplicationState) => ({
       ...state.plans,
       testUI: state.ui.testUI,
@@ -23,7 +24,6 @@ export const TestPage: React.FC = () => {
       preferences: state.backend.preferences,
       limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
       limits: selectBaseLimits(state, state.auth.user?.id),
-      testHeader: window.localStorage.getItem(TEST_HEADER) || '',
     })
   )
 
@@ -59,7 +59,10 @@ export const TestPage: React.FC = () => {
           displayValue={testHeader ? undefined : "<empty> Enter header as 'key:value'"}
           resetValue=""
           maxLength={200}
-          onSave={result => window.localStorage.setItem(TEST_HEADER, result.toString())}
+          onSave={result => {
+            window.localStorage.setItem(TEST_HEADER, result.toString())
+            setTestHeader(result.toString())
+          }}
           hideIcon
         />
 

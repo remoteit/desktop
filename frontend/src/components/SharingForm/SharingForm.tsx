@@ -99,9 +99,9 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
       <Gutters top="xl">
         <Box display="flex" alignItems="center">
           <TargetPlatform id={device?.targetPlatform} size="xl" inlineLeft />
-          <Typography variant="h2">
+          <Typography variant="h3">
             {device.name}
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="caption" component="p">
               Choose the services you'd like to provide access to.
             </Typography>
           </Typography>
@@ -125,11 +125,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           onClick={handleChangeScripting}
         />
       </List>
-      <ShareSaveActions
-        onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
-        onSave={action}
-        disabled={disabled}
-      />
+      <ShareSaveActions onCancel={() => history.goBack()} onSave={action} disabled={disabled} />
     </>
   )
 }

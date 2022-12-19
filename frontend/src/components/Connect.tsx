@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { List, ListItem, ListItemIcon, ListItemText, Button, Typography, Collapse } from '@mui/material'
+import { List, Button, Typography, Collapse, Divider } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
@@ -7,26 +7,19 @@ import { canUseConnectLink } from '../models/applicationTypes'
 import { getDeviceModel } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { windowOpen } from '../services/Browser'
-import { PortSetting } from './PortSetting'
-import { NameSetting } from './NameSetting'
 import { makeStyles } from '@mui/styles'
-import { RouteSetting } from './RouteSetting'
-import { PublicSetting } from './PublicSetting'
-import { TimeoutSetting } from './TimeoutSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { ConnectionDetails } from './ConnectionDetails'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
-import { ConnectionLogSetting } from './ConnectionLogSetting'
-import { NetworksAccordion } from './NetworksAccordion'
-import { TargetHostSetting } from './TargetHostSetting'
-import { AccordionMenuItem } from './AccordionMenuItem'
 import { ConnectLinkSetting } from './ConnectLinkSetting'
-import { NoConnectionPage } from '../pages/NoConnectionPage'
+import { ServiceAttributes } from './ServiceAttributes'
+import { NetworksAccordion } from './NetworksAccordion'
+import { AccordionMenuItem } from './AccordionMenuItem'
+import { ListItemLocation } from './ListItemLocation'
+import { AutoLaunchToggle } from './AutoLaunchToggle'
 import { ConnectionSurvey } from './ConnectionSurvey'
-import { LanShareSelect } from './LanShareSelect'
+import { AccessAccordion } from './AccessAccordion'
 import { ConnectionMenu } from './ConnectionMenu'
-import { ListItemQuote } from './ListItemQuote'
-import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
 import { GuideBubble } from './GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
@@ -60,7 +53,6 @@ export const Connect: React.FC = () => {
     showConnectLink: canUseConnectLink(state, service?.typeID) && !(!connection.connectLink && connection.enabled),
   }))
 
-  const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
   const displayThisDevice = thisDevice && !connectThisDevice
 
   useEffect(() => {
@@ -70,7 +62,7 @@ export const Connect: React.FC = () => {
     if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 
-  if (!service || !instance) return <NoConnectionPage />
+  if (!service || !instance) return null
 
   return (
     <>
@@ -142,7 +134,6 @@ export const Connect: React.FC = () => {
               onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
               fullWidth
             />
-            <ConnectionMenu connection={connection} service={service} />
           </Gutters>
         </GuideBubble>
       )}
@@ -151,44 +142,56 @@ export const Connect: React.FC = () => {
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters
-          subtitle="Configuration"
-          expanded={accordion[accordionConfig]}
-          onClick={() => dispatch.ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
-          elevation={0}
+          subtitle="Local"
+          expanded={accordion.config}
+          onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
+          action={<ConnectionMenu connection={connection} service={service} />}
         >
           <List disablePadding>
-            <Collapse in={!connection.public}>
-              <DesktopUI>
-                <NameSetting connection={connection} service={service} instance={instance} />
-                <PortSetting connection={connection} service={service} />
-              </DesktopUI>
+            <Collapse in={!connection.connectLink}>
+              <AutoLaunchToggle connection={connection} service={service} />
+            </Collapse>
+            <Collapse in={showConnectLink}>
+              <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
             </Collapse>
             <Collapse in={!connection.connectLink}>
-              <LaunchSelect connection={connection} service={service} />
+              <ListItemLocation icon="sliders" title="Advanced" pathname="advanced" dense>
+                <Icon name="angle-right" inlineLeft fixedWidth />
+              </ListItemLocation>
             </Collapse>
-            <PortalUI>
-              <PublicSetting connection={connection} service={service} />
-            </PortalUI>
-            {showConnectLink && <ConnectLinkSetting connection={connection} permissions={instance.permissions} />}
+            <ListItemLocation title="Defaults" icon="square-dashed" pathname="defaults" dense>
+              <Icon name="angle-right" inlineLeft fixedWidth />
+            </ListItemLocation>
             <PortalUI>
               <Notice gutterTop severity="info">
-                <strong>Get Desktop for more features and control.</strong>
+                <strong>Want Persistent URLs for your system?</strong>
                 <em>
-                  Peer-to-peer and on demand connections with persistent URLs and LAN sharing. Remote system and network
-                  access. Improved launch commands and the Remote.It CLI.
+                  Get Peer-to-peer on demand connections with persistent URLs. Remote system and network access.
+                  Improved launch commands and the Remote.It CLI.
                 </em>
                 <Button
                   size="small"
                   color="primary"
                   variant="contained"
-                  sx={{ marginTop: 1 }}
+                  sx={{ marginTop: 1, marginBottom: 1 }}
                   onClick={() => windowOpen('https://link.remote.it/download/desktop')}
                 >
-                  Download
+                  Download Desktop
                 </Button>
               </Notice>
             </PortalUI>
           </List>
+        </AccordionMenuItem>
+        <AccordionMenuItem gutters subtitle="Service" defaultExpanded>
+          {device?.permissions.includes('MANAGE') && (
+            <>
+              <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
+                <Icon name="angle-right" inlineLeft fixedWidth />
+              </ListItemLocation>
+              <Divider variant="inset" sx={{ marginTop: 2, marginBottom: 3 }} />
+            </>
+          )}
+          <ServiceAttributes device={device} service={service} disablePadding />
         </AccordionMenuItem>
         <NetworksAccordion
           instance={instance}
@@ -197,55 +200,10 @@ export const Connect: React.FC = () => {
           expanded={accordion.networks}
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
         />
-        {connection.connectLink || (
-          <DesktopUI>
-            <AccordionMenuItem
-              gutters
-              subtitle="Options"
-              expanded={accordion.options}
-              onClick={() => dispatch.ui.accordion({ options: !accordion.options })}
-              elevation={0}
-            >
-              <List disablePadding>
-                <RouteSetting connection={connection} service={service} />
-                <LanShareSelect connection={connection} />
-                <TargetHostSetting connection={connection} service={service} />
-                <TimeoutSetting connection={connection} service={service} />
-              </List>
-            </AccordionMenuItem>
-          </DesktopUI>
-        )}
-        {!connection.public && (
-          <DesktopUI>
-            <AccordionMenuItem
-              gutters
-              subtitle="Logs"
-              expanded={accordion.logs}
-              onClick={() => dispatch.ui.accordion({ logs: !accordion.logs })}
-              elevation={0}
-            >
-              <List>
-                <ListItem dense>
-                  <ListItemIcon>
-                    <Icon name="terminal" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="CLI command log"
-                    secondary={connection.commandLog?.length ? undefined : 'Empty'}
-                  />
-                </ListItem>
-                <ListItemQuote>
-                  {connection.commandLog?.map((l, i) => (
-                    <ListItem key={i} disablePadding>
-                      <DataCopy value={l} hideIcon fullWidth dense />
-                    </ListItem>
-                  ))}
-                </ListItemQuote>
-                <ConnectionLogSetting connection={connection} service={service} />
-              </List>
-            </AccordionMenuItem>
-          </DesktopUI>
-        )}
+        <AccessAccordion
+          expanded={accordion.access}
+          onClick={() => dispatch.ui.accordion({ access: !accordion.access })}
+        />
       </Gutters>
     </>
   )

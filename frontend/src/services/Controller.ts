@@ -112,7 +112,7 @@ class Controller extends EventEmitter {
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     if (!this.socket?.connected) {
-      this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
+      if (!isPortal()) this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
       return false
     }
     this.log('Controller emit', event, ...args)

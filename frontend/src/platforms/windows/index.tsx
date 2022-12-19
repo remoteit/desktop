@@ -14,6 +14,6 @@ platforms.register({
   installation: {
     instructions: 'Install the Desktop or CLI on the Windows system to you want to enable remote access to.',
     qualifier: 'Windows installation',
-    link: 'https://link.remote.it/download',
+    link: 'https://link.remote.it/download/desktop',
   },
 })

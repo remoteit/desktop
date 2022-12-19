@@ -12,10 +12,15 @@ type Props = {
   onDelete?: (tag: ITag) => void
 }
 
-export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelete }) => {
-  const labels = useSelector((state: ApplicationState) => state.labels)
+const AVERAGE_TAG_WIDTH = 85
 
-  const dot = tags.length > 1 && small
+export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelete }) => {
+  const { labels, count } = useSelector((state: ApplicationState) => ({
+    labels: state.labels,
+    count: Math.floor(state.ui.columnWidths.tags / AVERAGE_TAG_WIDTH),
+  }))
+
+  const dot = tags.length > count && small
 
   const Tags = tags
     .sort(nameSort)

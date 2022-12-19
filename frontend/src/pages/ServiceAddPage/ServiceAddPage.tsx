@@ -32,7 +32,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
   return (
     <Container
       gutterBottom
-      bodyProps={{ center: !form }}
+      bodyProps={{ center: !form, gutterTop: true }}
       integrated
       header={
         <>

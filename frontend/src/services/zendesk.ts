@@ -1,5 +1,7 @@
 import { insertScript } from './Browser'
 import { ZENDESK_KEY } from '../shared/constants'
+import { selectLimitsLookup } from '../selectors/organizations'
+import { store } from '../store'
 import sleep from '../services/sleep'
 
 declare const window: Window & {
@@ -8,6 +10,8 @@ declare const window: Window & {
 }
 
 class Zendesk {
+  visible?: boolean
+
   async initChat(user?: IUser) {
     if (!window.zE) await this.loadChat()
 
@@ -17,7 +21,18 @@ class Zendesk {
         email: user.email,
       })
 
-    window.zE?.('webWidget', 'show')
+    this.subscribe()
+  }
+
+  subscribe() {
+    store.subscribe(() => {
+      const state = store.getState()
+      const limits = selectLimitsLookup(state)
+      const visible = limits.support > 10
+      if (visible !== this.visible) {
+        visible ? this.showChat() : this.hideChat()
+      }
+    })
   }
 
   async loadChat() {
@@ -46,9 +61,21 @@ class Zendesk {
     await sleep(5000)
   }
 
-  endChat() {
-    window.zE?.('webWidget', 'logout')
+  showChat() {
+    window.zE?.('webWidget', 'show')
+    this.visible = true
+    console.log('SHOW CHAT')
+  }
+
+  hideChat() {
     window.zE?.('webWidget', 'hide')
+    this.visible = false
+    console.log('HIDE CHAT')
+  }
+
+  endChat() {
+    this.hideChat()
+    window.zE?.('webWidget', 'logout')
   }
 }
 

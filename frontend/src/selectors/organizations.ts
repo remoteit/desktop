@@ -23,7 +23,7 @@ export const selectLimitsLookup = createSelector(
     let result: ILookup<boolean> = {}
 
     baseLimits.forEach(l => {
-      result[l.name] = limitsOverride[l.name] === undefined || (isUserAccount ? limitsOverride[l.name] : l.value)
+      result[l.name] = limitsOverride[l.name] === undefined || !isUserAccount ? l.value : limitsOverride[l.name]
     })
 
     return result

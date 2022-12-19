@@ -90,7 +90,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Connection Defaults</Title>
+            <Title>Connection Type Defaults</Title>
           </Typography>
           <Gutters bottom="lg" top={null}>
             <Typography variant="caption">Defaults can be overridden by service specific default settings.</Typography>

@@ -4,7 +4,8 @@ import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { getFreeLicenses, selectRemoteitLicense } from '../models/plans'
-import { selectAccessibleNetworks, selectNetworks } from '../models/networks'
+import { selectAccessibleNetworks } from '../models/networks'
+import { selectNetworks } from '../selectors/networks'
 import { ApplicationState, Dispatch } from '../store'
 import { Typography, List, Box, Divider } from '@mui/material'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -12,7 +13,7 @@ import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
 import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { getOrganization } from '../models/organization'
-import { LoadingMessage } from '../components/LoadingMessage'
+import { LinearProgress } from '../components/LinearProgress'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from '../components/LicenseSelect'
 import { RoleSelect } from '../components/RoleSelect'
@@ -66,35 +67,38 @@ export const OrganizationGuestPage: React.FC = () => {
   return (
     <Container
       header={
-        <Typography variant="h1" gutterBottom>
-          <Title>
-            <Avatar email={user?.email} inline />
-            {user?.email}
-          </Title>
-          {member && (
-            <ConfirmButton
-              confirm
-              confirmMessage={
-                <>
-                  This will remove <b>{member.user.email}’s </b>
-                  access to all the organization’s devices
-                </>
-              }
-              confirmTitle="Are you sure?"
-              title="Remove Member"
-              icon="trash"
-              size="md"
-              color={removing ? 'danger' : undefined}
-              loading={removing}
-              disabled={removing}
-              onClick={async () => {
-                setRemoving(true)
-                await dispatch.organization.removeMember(member)
-                setRemoving(false)
-              }}
-            />
-          )}
-        </Typography>
+        <>
+          <Typography variant="h1" gutterBottom>
+            <Title>
+              <Avatar email={user?.email} inline />
+              {user?.email}
+            </Title>
+            {member && (
+              <ConfirmButton
+                confirm
+                confirmMessage={
+                  <>
+                    This will remove <b>{member.user.email}’s </b>
+                    access to all the organization’s devices
+                  </>
+                }
+                confirmTitle="Are you sure?"
+                title="Remove Member"
+                icon="trash"
+                size="md"
+                color={removing ? 'danger' : undefined}
+                loading={removing}
+                disabled={removing}
+                onClick={async () => {
+                  setRemoving(true)
+                  await dispatch.organization.removeMember(member)
+                  setRemoving(false)
+                }}
+              />
+            )}
+          </Typography>
+          {!guestsLoaded && <LinearProgress loading />}
+        </>
       }
     >
       {member && (
@@ -139,7 +143,6 @@ export const OrganizationGuestPage: React.FC = () => {
           </List>
         </>
       )}
-      {!guestsLoaded && <LoadingMessage inline />}
       {(guest?.deviceIds.length || guest?.networkIds.length) && (
         <>
           <Gutters top="xl">

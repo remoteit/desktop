@@ -1,7 +1,7 @@
 import React from 'react'
 import { getAccess } from '../../helpers/userHelper'
 import { ListItemSecondaryAction, Tooltip } from '@mui/material'
-import { ServiceMiniState } from '../ServiceMiniState'
+import { ServiceIndicators } from '../ServiceIndicators'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -27,7 +27,7 @@ export const ShareDetails: React.FC<Props> = ({ user, device, connected }) => {
           </span>
         </Tooltip>
       )}
-      {!!services.length && services.map(s => <ServiceMiniState key={s.id} service={s} />)}
+      <ServiceIndicators services={services} />
     </ListItemSecondaryAction>
   )
 }

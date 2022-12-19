@@ -9,7 +9,7 @@ type ShareParams = { [key: string]: any }
 
 type CurrentDevice = {
   device: IDevice
-  serviceID: string
+  serviceId: string
   userSelected: IUserRef | undefined
   selectedServices: string[]
   users: string[]
@@ -37,7 +37,7 @@ const state: IShareState = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetch(data: { email?: string; serviceID: string; device?: IDevice }, globalState) {
+    async fetch(data: { email?: string; serviceId: string; device?: IDevice }, globalState) {
       const { set } = dispatch.shares
       const user = globalState.contacts.all.find(c => c.email === data.email)
       const permissions = data.device && getAccess(data.device, data.email)
@@ -45,7 +45,7 @@ export default createModel<RootModel>()({
       set({
         currentDevice: {
           device: data.device,
-          serviceID: data.serviceID,
+          serviceId: data.serviceId,
           userSelected: user,
           selectedServices: permissions?.services.map(s => s.id).filter(v => v) || [],
           script: permissions?.scripting || false,
@@ -145,7 +145,7 @@ export default createModel<RootModel>()({
       let intersection: string[] = []
 
       const currentDevice = globalState.shares.currentDevice
-      const { device, serviceID } = currentDevice
+      const { device, serviceId } = currentDevice
       const contacts = globalState.contacts.all
 
       let userSelectedServices: string[][] = emails.map(email => {
@@ -191,7 +191,7 @@ export default createModel<RootModel>()({
         }
       }
 
-      const selectedServices = [...(matchServices ? [...matchServices, serviceID] : [serviceID])].filter(v => v)
+      const selectedServices = [...(matchServices ? [...matchServices, serviceId] : [serviceId])].filter(v => v)
 
       set({
         currentDevice: {

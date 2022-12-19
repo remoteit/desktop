@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
+import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
 import { Typography, InputLabel, Collapse, Paper, alpha } from '@mui/material'
@@ -124,7 +125,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   return (
     <Collapse in={show}>
       <Gutters top="md" size="md" bottom={null}>
-        <Paper className={css.address} elevation={0}>
+        <Paper className={classnames(css.address, !connection?.enabled && css.disabled)} elevation={0}>
           {!!showTitle ? (
             <Gutters size="md">
               <InputLabel shrink>User</InputLabel>
@@ -305,6 +306,9 @@ const useStyles = makeStyles(({ palette }) => ({
     borderBottomRightRadius: 0,
     borderBottomLeftRadius: 0,
     '& label': { color: palette.alwaysWhite.main },
+  },
+  disabled: {
+    backgroundColor: palette.gray.main,
   },
   details: {
     paddingTop: 1,

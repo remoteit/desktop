@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ListItem, ListItemIcon, ListItemSecondaryAction, MenuItem, TextField } from '@mui/material'
+import { ListItem, ListItemIcon, ListItemSecondaryAction, MenuItem, TextField, Tooltip } from '@mui/material'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -11,6 +11,7 @@ type Props = {
   disabled?: boolean
   modified?: boolean
   hideIcon?: boolean
+  helpMessage?: string
   onChange?: (value: string) => void
   children?: React.ReactNode
 }
@@ -23,6 +24,7 @@ export const SelectSetting: React.FC<Props> = ({
   hideIcon,
   disabled,
   modified,
+  helpMessage,
   onChange,
   children,
 }) => {
@@ -39,7 +41,18 @@ export const SelectSetting: React.FC<Props> = ({
         fullWidth
         variant="standard"
         SelectProps={{ open }}
-        label={label}
+        label={
+          <>
+            {label}
+            {helpMessage && (
+              <Tooltip title={helpMessage} placement="top" arrow>
+                <span style={{ zIndex: 10 }}>
+                  <Icon name="question-circle" size="sm" inline />
+                </span>
+              </Tooltip>
+            )}
+          </>
+        }
         value={value}
         onChange={e => {
           handleClick()

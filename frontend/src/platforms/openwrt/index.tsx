@@ -35,4 +35,9 @@ platforms.register({
   name: 'OpenWrt',
   component: Component,
   types: { 1205: 'OpenWrt' },
+  installation: {
+    command: true,
+    qualifier: 'For OpenWrt routers:',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

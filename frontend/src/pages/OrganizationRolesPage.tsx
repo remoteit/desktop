@@ -1,6 +1,6 @@
 import React from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
-import { List, ListItemSecondaryAction, Typography, Chip, Box } from '@mui/material'
+import { List, ListItemSecondaryAction, Typography, Chip, Box, Button } from '@mui/material'
 import { selectPermissions, getOrganization } from '../models/organization'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { ApplicationState } from '../store'
@@ -45,6 +45,14 @@ export const OrganizationRolesPage: React.FC = () => {
       {!limits.roles && (
         <Notice severity="info" gutterTop>
           Upgrade your plan to Business to add custom roles.
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => history.push('/account/plans')}
+            sx={{ display: 'block', marginTop: 1, marginBottom: 1 }}
+          >
+            Upgrade
+          </Button>
         </Notice>
       )}
       <Typography variant="subtitle1">

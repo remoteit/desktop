@@ -188,6 +188,7 @@ export class Environment {
       isLinux: this.isLinux,
       isArmLinux: this.isArmLinux,
       isHeadless: this.isHeadless,
+      isElevated: this.isElevated,
       simpleOS: this.simpleOS,
       userPath: this.userPath,
       adminPath: this.adminPath,

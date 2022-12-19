@@ -2,11 +2,11 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
-import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
-import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { REGEX_LAST_PATH } from '../../shared/constants'
+import { ListItemBack } from '../../components/ListItemBack'
 import { ServiceForm } from '../../components/ServiceForm'
+import { Gutters } from '../../components/Gutters'
 
 type Props = { device?: IDevice }
 
@@ -31,26 +31,26 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
-    <ServiceHeaderMenu device={device} service={service}>
-      <AccordionMenuItem gutters subtitle="Service Details" defaultExpanded>
-        <ServiceAttributes device={device} service={service} disablePadding />
-      </AccordionMenuItem>
-      <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
-        <ServiceForm
-          service={service}
-          thisDevice={thisDevice}
-          editable={!!device?.configurable || thisDevice}
-          disabled={!device?.permissions.includes('MANAGE')}
-          onCancel={exit}
-          onSubmit={async form => {
-            if (device?.permissions.includes('MANAGE')) {
-              service.attributes = { ...service.attributes, ...form.attributes }
-              await devices.setServiceAttributes(service)
-              if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
-            }
-          }}
-        />
-      </AccordionMenuItem>
-    </ServiceHeaderMenu>
+    <>
+      <Gutters size="md" bottom={null}>
+        <ListItemBack title="Service configuration" />
+        <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
+          <ServiceForm
+            service={service}
+            thisDevice={thisDevice}
+            editable={!!device?.configurable || thisDevice}
+            disabled={!device?.permissions.includes('MANAGE')}
+            onCancel={exit}
+            onSubmit={async form => {
+              if (device?.permissions.includes('MANAGE')) {
+                service.attributes = { ...service.attributes, ...form.attributes }
+                await devices.setServiceAttributes(service)
+                if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
+              }
+            }}
+          />
+        </AccordionMenuItem>
+      </Gutters>
+    </>
   )
 }

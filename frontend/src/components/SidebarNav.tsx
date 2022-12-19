@@ -1,35 +1,37 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { selectNetworks } from '../models/networks'
+import { selectNetworks } from '../selectors/networks'
 import { getDeviceModel } from '../selectors/devices'
 import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
 import { selectEnabledConnections, selectActiveCount } from '../helpers/connectionHelper'
+import { selectLimitsLookup } from '../selectors/organizations'
+import { selectDefaultSelected } from '../selectors/ui'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { defaultSelection, unreadAnnouncements, connections, networks, active, devices, remoteUI } = useSelector(
-    (state: ApplicationState) => {
+  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI, limits } =
+    useSelector((state: ApplicationState) => {
       const connections = selectEnabledConnections(state)
       return {
-        defaultSelection: state.ui.defaultSelection,
+        defaultSelected: selectDefaultSelected(state),
         unreadAnnouncements: selectAnnouncements(state, true).length,
         connections: connections.length,
         networks: selectNetworks(state).length,
         active: selectActiveCount(state, connections).length,
         devices: getDeviceModel(state).total,
         remoteUI: isRemoteUI(state),
+        limits: selectLimitsLookup(state),
       }
-    }
-  )
+    })
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active })
-  const pathname = path => defaultSelection[path] || path
+  const pathname = path => defaultSelected[path] || path
 
   if (remoteUI)
     return (
@@ -103,15 +105,24 @@ export const SidebarNav: React.FC = () => {
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
       <ListItemLocation title="Inbox" pathname="/announcements" icon="envelope" badge={unreadAnnouncements} dense />
-      <ListItemLocation
-        className={css.footer}
-        title="Contact"
-        // subtitle="Support and Feedback"
-        onClick={() => dispatch.feedback.reset()}
-        pathname="/feedback"
-        icon="envelope-open-text"
-        dense
-      />
+      {limits.support > 10 ? (
+        <ListItemLocation
+          className={css.footer}
+          title="Contact"
+          onClick={() => dispatch.feedback.reset()}
+          pathname="/feedback"
+          icon="envelope-open-text"
+          dense
+        />
+      ) : (
+        <ListItemLink
+          title="Support Forum"
+          href="https://link.remote.it/forum"
+          icon="comments"
+          className={css.footer}
+          dense
+        />
+      )}
     </List>
   )
 }

@@ -72,7 +72,7 @@ export const DiagramGroup: React.FC<Props> = ({ type, indicator, flexGrow = 'inh
           justifyContent: 'stretch',
         }}
       >
-        {selected && <DiagramIndicator top="sm" {...indicator} />}
+        {selected && <DiagramIndicator {...indicator} />}
         {children}
       </Box>
     </ListItemButton>

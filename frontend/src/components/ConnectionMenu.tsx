@@ -22,7 +22,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick} color="primary" icon="ellipsis-v" size="md" inline />
+      <IconButton onClick={handleClick} icon="ellipsis-v" buttonBaseSize="small" inline />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -64,23 +64,11 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
             }
           >
             <ListItemIcon>
-              <Icon name="link-slash" size="md" />
+              <Icon name="trash" size="md" />
             </ListItemIcon>
             <ListItemText primary="Forget persistent public url" />
           </MenuItem>
         )}
-        <MenuItem dense component={Link} to="defaults">
-          <ListItemIcon>
-            <Icon name="object-intersect" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="Service Defaults" />
-        </MenuItem>
-        <MenuItem dense component={Link} to={`/settings/defaults/${service?.typeID}`}>
-          <ListItemIcon>
-            <Icon name="square-dashed" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="App Defaults" />
-        </MenuItem>
       </Menu>
     </>
   )

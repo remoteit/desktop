@@ -8,20 +8,22 @@ import { Dispatch } from '../store'
 type Props = {
   device?: IDevice
   connections?: IConnection[]
+  services?: IService[]
   restore?: boolean
   columns?: string[]
 }
 
 const MAX_INDICATORS = 6
 
-export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
+export const ServiceIndicators: React.FC<Props> = ({ device, services = [], connections = [] }) => {
   const css = useStyles({ device })
   const { ui } = useDispatch<Dispatch>()
 
-  if (!device?.services) return null
+  if (!device?.services.length && !services.length) return null
 
-  const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
-  const display = device.services.slice(0, MAX_INDICATORS)
+  services = device?.services.length ? device.services : services
+  const extra = Math.max(services.length - MAX_INDICATORS, 0)
+  const display = services.slice(0, MAX_INDICATORS)
   const onClick = serviceContextMenu => ui.set({ serviceContextMenu })
 
   return (

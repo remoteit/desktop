@@ -1,20 +1,16 @@
 import React from 'react'
+import { ScanPage } from '../pages/ScanPage'
 import { DeviceContext } from '../services/Context'
+import { ServiceRouter } from './ServiceRouter'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { ApplicationState } from '../store'
 import { getDeviceModel } from '../selectors/devices'
-import { ScanPage } from '../pages/ScanPage'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
-import { ServiceDefaultsPage } from '../pages/ServiceDefaultsPage'
-import { ServiceConnectPage } from '../pages/ServiceConnectPage'
-import { ServiceUsersPage } from '../pages/ServiceUsersPage'
 import { DeviceUsersPage } from '../pages/DeviceUsersPage'
-import { ServiceEditPage } from '../pages/ServiceEditPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
-import { LanSharePage } from '../pages/LanSharePage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
@@ -40,7 +36,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     return `/devices/${device?.id}/${redirect}`
   }
 
-  if (waiting && !device) return <LoadingMessage message="Fetching device" />
+  if (waiting && !device) return <LoadingMessage />
 
   return (
     <DynamicPanel
@@ -74,31 +70,10 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/details">
             <DeviceDetailPage />
           </Route>
-          <Route
-            path={[
-              '/devices/:deviceID/:serviceID/users/share',
-              '/devices/:deviceID/:serviceID/users/:userID',
-              '/devices/:deviceID/:serviceID/share',
-            ]}
-          >
-            <SharePage />
+          <Route path="/devices/:deviceID/:serviceID">
+            <ServiceRouter basename="/devices/:deviceID/:serviceID" />
           </Route>
-          <Route path="/devices/:deviceID/:serviceID/users">
-            <ServiceUsersPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/:serviceID/edit">
-            <ServiceEditPage device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/:serviceID/defaults">
-            <ServiceDefaultsPage />
-          </Route>
-          <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/:serviceID/connect/lan']}>
-            <LanSharePage />
-          </Route>
-          <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
-            <ServiceConnectPage />
-          </Route>
-          <Route path="*">
+          <Route path="/devices/:deviceID">
             <Redirect to={defaultService()} />
           </Route>
         </Switch>

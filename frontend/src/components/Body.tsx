@@ -126,7 +126,7 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingBottom: spacing.xxl,
   },
   gutterTop: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,
   },
   center: {
     display: 'flex',

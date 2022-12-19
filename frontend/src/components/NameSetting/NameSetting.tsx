@@ -1,14 +1,13 @@
 import React from 'react'
+import { setConnection } from '../../helpers/connectionHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { setConnection, connectionName } from '../../helpers/connectionHelper'
 import { REGEX_CONNECTION_NAME, MAX_CONNECTION_NAME_LENGTH } from '../../shared/constants'
 
 export const NameSetting: React.FC<{ service: IService; instance?: IInstance; connection: IConnection }> = ({
   service,
-  instance,
   connection,
 }) => {
-  const resetValue = connectionName(service, instance)
+  const resetValue = service.subdomain
   return (
     <InlineTextFieldSetting
       required
@@ -20,13 +19,11 @@ export const NameSetting: React.FC<{ service: IService; instance?: IInstance; co
       disabled={connection.connected || connection.public}
       filter={REGEX_CONNECTION_NAME}
       maxLength={MAX_CONNECTION_NAME_LENGTH}
-      onSave={
-        name =>
-          setConnection({
-            ...connection,
-            name: name.toString() || connection.name,
-          })
-        // update service SUBDOMAIN setting
+      onSave={name =>
+        setConnection({
+          ...connection,
+          name: name.toString() || connection.name,
+        })
       }
     />
   )

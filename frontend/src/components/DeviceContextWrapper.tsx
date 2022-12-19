@@ -44,14 +44,14 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     console.log('instance', instance?.loaded, device?.loaded)
-    if (instance?.loaded || waiting) return
+    if (instance?.loaded || device?.loaded || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {
       console.log('LOADING DEVICE DATA', deviceID)
       dispatch.devices.fetchSingle({ id: deviceID, hidden: true, redirect: '/devices' })
     } else if (serviceID) {
       const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
-      if (network) {
+      if (network && network.cloud) {
         console.log('LOADING NETWORK DATA', network, redirect)
         dispatch.networks.fetchSingle({ network, redirect })
       } else {

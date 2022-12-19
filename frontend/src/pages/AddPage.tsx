@@ -128,7 +128,22 @@ export const AddPage: React.FC = () => {
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           <Divider />
-          {['raspberrypi', 'linux', 'nas', 'firewalla', 'tinkerboard', 'windows', 'mac'].map(p => {
+
+          {[
+            'raspberrypi',
+            'linux',
+            'nas',
+            'openwrt',
+            'firewalla',
+            'tinkerboard',
+            'ubiquiti',
+            'nvidia',
+            'axis',
+            'advantech',
+            'ubuntu',
+            'windows',
+            'mac',
+          ].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation

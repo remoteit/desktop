@@ -5,6 +5,7 @@ import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { ApplicationState } from '../store'
+import { getActiveAccountId } from '../selectors/accounts'
 import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
@@ -53,7 +54,7 @@ export type UIState = {
   serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   defaultService: ILookup<string | null>
-  defaultSelection: ILookup<string>
+  defaultSelection: ILookup<ILookup<string | undefined>>
   registrationCommand?: string
   redirect?: string
   restoring: boolean
@@ -240,6 +241,13 @@ export default createModel<RootModel>()({
       const all = state.ui.defaultService
       all[deviceId] = serviceId
       dispatch.ui.setPersistent({ defaultService: all })
+    },
+    async setDefaultSelected({ key, value }: { key: string; value?: string }, state) {
+      const accountId = getActiveAccountId(state)
+      let defaultSelection = { ...state.ui.defaultSelection }
+      defaultSelection[accountId] = defaultSelection[accountId] || {}
+      defaultSelection[accountId][key] = value
+      dispatch.ui.set({ defaultSelection })
     },
     async setPersistent(params: ILookup<any>, state) {
       dispatch.ui.set(params)

@@ -18,4 +18,9 @@ platforms.register({
   name: 'AXIS',
   component: Component,
   types: { 1209: 'AXIS' },
+  installation: {
+    command: true,
+    qualifier: 'For AXIS camera systems',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

@@ -1,45 +1,38 @@
-import React from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useContext } from 'react'
+import { DeviceContext } from '../services/Context'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { Typography } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
-import { LoadingMessage } from './LoadingMessage'
-import { ListHorizontal } from './ListHorizontal'
-import { ListItemLocation } from './ListItemLocation'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
-import { UsersTab } from './UsersTab'
 import { Gutters } from './Gutters'
 import { Color } from '../styling'
 import { Diagram } from './Diagram'
 
-export const ServiceHeaderMenu: React.FC<{
-  device?: IDevice
-  service?: IService
+type Props = {
   footer?: React.ReactNode
   backgroundColor?: Color
   children?: React.ReactNode
-}> = ({ device, service, footer, backgroundColor, children }) => {
-  const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
+}
 
-  if (!service || !device) return <LoadingMessage />
+export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, children }) => {
+  const { device, service } = useContext(DeviceContext)
+
+  if (!service || !device) return null
 
   return (
     <Container
       gutterBottom
       backgroundColor={backgroundColor}
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={
         <>
           <OutOfBand />
-          <Typography variant="h1">
+          <Typography variant="h1" gutterBottom={!service?.attributes.description}>
             <Title>{service.name || 'unknown'}</Title>
-            <AddUserButton
-              to={`/devices/${device.id}/${service.id}/share`}
-              hide={!device.permissions.includes('MANAGE')}
-            />
+            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
@@ -50,30 +43,6 @@ export const ServiceHeaderMenu: React.FC<{
             </Gutters>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          <ListHorizontal size="small" dense>
-            <ListItemLocation
-              title="Connection"
-              icon="arrow-right"
-              iconColor="grayDarker"
-              pathname={`/devices/${device.id}/${serviceID}/connect`}
-              match={[`/devices/${device.id}/${serviceID}/connect`, `/devices/${device.id}/${serviceID}`]}
-              exactMatch
-              dense
-            />
-            <ListItemLocation
-              title="Service"
-              icon="bullseye"
-              iconColor="grayDarker"
-              pathname={`/devices/${device.id}/${serviceID}/edit`}
-              dense
-            />
-            <UsersTab
-              instance={device}
-              service={service}
-              to={`/devices/${device.id}/${serviceID}/users`}
-              size="small"
-            />
-          </ListHorizontal>
           <Gutters top="xs">
             <Diagram />
           </Gutters>
