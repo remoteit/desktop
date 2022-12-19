@@ -26,7 +26,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
     <Container
       gutterBottom
       backgroundColor={backgroundColor}
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={
         <>
           <OutOfBand />

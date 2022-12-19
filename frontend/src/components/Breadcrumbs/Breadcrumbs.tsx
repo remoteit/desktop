@@ -60,7 +60,8 @@ export const Breadcrumbs: React.FC<{ show?: boolean }> = ({ show }) => {
     document.title = BASE_TITLE + parts.join(' - ')
   }, [crumbs])
 
-  if (!show || !crumbs.join()) return isDev() ? <Typography variant="caption">{location.pathname}</Typography> : null
+  if (!show || !crumbs.join())
+    return false && isDev() ? <Typography variant="caption">{location.pathname}</Typography> : null
 
   return (
     <Typography className={css.header}>

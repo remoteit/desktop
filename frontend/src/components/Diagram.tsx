@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom'
 import { isRelay, connectionState } from '../helpers/connectionHelper'
 import { IP_LATCH, REGEX_LAST_PATH } from '../shared/constants'
 import { DeviceContext, DiagramContext } from '../services/Context'
+import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
 import { DiagramLabel } from './DiagramLabel'
 import { lanShared } from '../helpers/lanSharing'
 import { Pre } from './Pre'
@@ -29,6 +30,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
+  let indicator: IndicatorProps | undefined = { placement: 'right' }
 
   switch (state) {
     case 'ready':
@@ -48,13 +50,17 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   }
 
   switch (page) {
+    case '/connect':
     case '/advanced':
     case '/defaults':
-      highlightTypes = ['target']
+    case '/lan':
+      indicator.placement = 'left'
       break
-    case '/edit':
-      highlightTypes = ['target', 'relay']
-      break
+  }
+
+  if (exposed) {
+    // todo exposed and connected should appear the same, so maybe pass connected state and also add exposed to it
+    activeTypes = ['public', 'lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
   }
 
   return (
@@ -97,6 +103,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
         <DiagramPath type="target" />
         <DiagramIcon type="target" />
         <DiagramLabel type="target" right />
+        <DiagramIndicator {...indicator} />
       </Box>
     </DiagramContext.Provider>
   )

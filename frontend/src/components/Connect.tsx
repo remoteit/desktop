@@ -8,7 +8,6 @@ import { getDeviceModel } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { windowOpen } from '../services/Browser'
 import { makeStyles } from '@mui/styles'
-import { PublicSetting } from './PublicSetting'
 import { LicensingNotice } from './LicensingNotice'
 import { ConnectionDetails } from './ConnectionDetails'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
@@ -151,9 +150,6 @@ export const Connect: React.FC = () => {
           <List disablePadding>
             <Collapse in={!connection.connectLink}>
               <AutoLaunchToggle connection={connection} service={service} />
-              <PortalUI>
-                <PublicSetting connection={connection} service={service} />
-              </PortalUI>
             </Collapse>
             <Collapse in={showConnectLink}>
               <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
@@ -192,7 +188,7 @@ export const Connect: React.FC = () => {
               <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
-              <Divider variant="inset" sx={{ marginTop: 1 }} />
+              <Divider variant="inset" sx={{ marginTop: 2, marginBottom: 3 }} />
             </>
           )}
           <ServiceAttributes device={device} service={service} disablePadding />

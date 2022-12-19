@@ -1,10 +1,9 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { spacing, Spacing, Color } from '../styling'
+import { spacing, Color } from '../styling'
 
 export type IndicatorProps = {
-  top: Spacing
   border?: Color
   placement?: 'left' | 'right'
 }
@@ -20,13 +19,14 @@ export const DiagramIndicator: React.FC<IndicatorProps> = props => {
 }
 
 const SIZE = 12
+const GUTTERS = 16
 
 const useStyles = makeStyles(({ palette }) => ({
-  indicator: ({ top, placement }: IndicatorProps) => ({
+  indicator: ({ placement }: IndicatorProps) => ({
     position: 'absolute',
-    bottom: -spacing[top],
-    left: placement === 'right' ? undefined : 0,
-    right: placement === 'right' ? 0 : undefined,
+    bottom: -spacing.md,
+    left: placement === 'right' ? undefined : -GUTTERS,
+    right: placement === 'right' ? -GUTTERS : undefined,
     transform: `translate(${SIZE * (placement === 'right' ? -2 : 2)}px)`,
     '&::before, &::after': {
       content: '""',
@@ -35,7 +35,10 @@ const useStyles = makeStyles(({ palette }) => ({
       width: '100vw',
       background: 'transparent',
     },
-    '&::before': { borderRight: `${SIZE}px solid transparent`, right: '100%' },
+    '&::before': {
+      borderRight: `${SIZE}px solid transparent`,
+      right: '100%',
+    },
     '&::after': { borderLeft: `${SIZE}px solid transparent`, left: 0 },
   }),
   main: {

@@ -22,10 +22,11 @@ export const ServiceDefaultsPage: React.FC = () => {
   return (
     <Gutters size="md" bottom={null}>
       <Box display="flex">
-        <ListItemBack title="Connection settings" />
+        <ListItemBack title="Default Connection settings" />
         <IconButton
           name="object-intersect"
           title="Connection Type Defaults"
+          color="grayDarker"
           to={`/settings/defaults/${service?.typeID}`}
         />
       </Box>

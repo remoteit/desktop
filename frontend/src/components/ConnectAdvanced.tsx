@@ -1,7 +1,8 @@
 import React from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText, Box } from '@mui/material'
+import { PublicSetting } from './PublicSetting'
 import { DeviceContext } from '../services/Context'
 import { RouteSetting } from './RouteSetting'
 import { TimeoutSetting } from './TimeoutSetting'
@@ -15,7 +16,9 @@ import { LaunchSelect } from './LaunchSelect'
 import { ListItemBack } from './ListItemBack'
 import { PortSetting } from './PortSetting'
 import { NameSetting } from './NameSetting'
+import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
+import { PortalUI } from './PortalUI'
 import { DataCopy } from './DataCopy'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
@@ -29,7 +32,15 @@ export const ConnectAdvanced: React.FC = () => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Connection settings" />
+      <Box display="flex">
+        <ListItemBack title="Connection settings" />
+        <IconButton
+          name="undo"
+          color="grayDarker"
+          title="Reset connection"
+          onClick={() => dispatch.connections.forget(connection.id)}
+        />
+      </Box>
       <AccordionMenuItem gutters subtitle="Advanced" defaultExpanded disabled>
         <List disablePadding>
           {!connection.public && (
@@ -38,6 +49,9 @@ export const ConnectAdvanced: React.FC = () => {
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
           )}
+          <PortalUI>
+            <PublicSetting connection={connection} service={service} />
+          </PortalUI>
           <LaunchSelect connection={connection} service={service} />
           <DesktopUI>
             <RouteSetting connection={connection} service={service} />
