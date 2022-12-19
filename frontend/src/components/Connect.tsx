@@ -164,10 +164,10 @@ export const Connect: React.FC = () => {
             </ListItemLocation>
             <PortalUI>
               <Notice gutterTop severity="info">
-                <strong>Get Desktop for more features and control.</strong>
+                <strong>Want Persistent URLs for your system?</strong>
                 <em>
-                  Peer-to-peer and on demand connections with persistent URLs and LAN sharing. Remote system and network
-                  access. Improved launch commands and the Remote.It CLI.
+                  Get Peer-to-peer on demand connections with persistent URLs. Remote system and network access.
+                  Improved launch commands and the Remote.It CLI.
                 </em>
                 <Button
                   size="small"
@@ -176,7 +176,7 @@ export const Connect: React.FC = () => {
                   sx={{ marginTop: 1, marginBottom: 1 }}
                   onClick={() => windowOpen('https://link.remote.it/download/desktop')}
                 >
-                  Download
+                  Download Desktop
                 </Button>
               </Notice>
             </PortalUI>
