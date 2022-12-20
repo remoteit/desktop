@@ -1,15 +1,8 @@
 import { emit } from '../services/Controller'
-import {
-  IP_PRIVATE,
-  DEFAULT_CONNECTION,
-  REGEX_CONNECTION_NAME,
-  REGEX_CONNECTION_TRIM,
-  MAX_CONNECTION_NAME_LENGTH,
-} from '../shared/constants'
+import { IP_PRIVATE, DEFAULT_CONNECTION, REGEX_CONNECTION_NAME, REGEX_CONNECTION_TRIM } from '../shared/constants'
 import { getActiveUser } from '../models/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
-import { combinedName } from '../shared/nameHelper'
 import { selectById } from '../selectors/devices'
 import { isPortal } from '../services/Browser'
 
@@ -39,8 +32,6 @@ export function selectActiveCount(state: ApplicationState, connections: IConnect
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {
   return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
-
-type nameObj = { name: string }
 
 export function sanitizeName(name: string) {
   return name?.toLowerCase().replace(REGEX_CONNECTION_NAME, '-').replace(REGEX_CONNECTION_TRIM, '')

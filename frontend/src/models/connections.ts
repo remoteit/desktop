@@ -415,7 +415,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connection.public) {
+      if (connection.public || isPortal()) {
         dispatch.connections.proxyConnect(connection)
         return
       }
@@ -436,7 +436,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connection.public) {
+      if (connection.public || isPortal()) {
         dispatch.connections.proxyDisconnect(connection)
         return
       }
