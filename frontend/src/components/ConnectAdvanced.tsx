@@ -36,12 +36,28 @@ export const ConnectAdvanced: React.FC = () => {
         <ListItemBack title="Connection settings" />
         <IconButton
           name="undo"
-          color="grayDarker"
+          color="grayDark"
           title="Reset connection"
           onClick={() => dispatch.connections.forget(connection.id)}
         />
       </Box>
-      <AccordionMenuItem gutters subtitle="Advanced" defaultExpanded disabled>
+      <AccordionMenuItem
+        gutters
+        subtitle="Advanced"
+        defaultExpanded
+        disabled
+        action={
+          <>
+            <IconButton name="square-dashed" title="Connection Defaults" color="grayDarker" to="defaults" />
+            <IconButton
+              name="object-intersect"
+              title="Connection Type Defaults"
+              color="grayDarker"
+              to={`/settings/defaults/${service?.typeID}`}
+            />
+          </>
+        }
+      >
         <List disablePadding>
           {!connection.public && (
             <DesktopUI>

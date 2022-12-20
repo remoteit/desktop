@@ -289,22 +289,20 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           </>
         )}
       </List>
-      {adding && (
-        <AccordionMenuItem subtitle="Setup connection defaults" gutters>
-          <List>
-            <ServiceAttributesForm
-              connection={{
-                ...DEFAULT_CONNECTION,
-                ...form.attributes,
-                typeID: form.typeID,
-              }}
-              disabled={disabled}
-              attributes={form.attributes}
-              onUpdate={attributes => setForm({ ...form, attributes })}
-            />
-          </List>
-        </AccordionMenuItem>
-      )}
+      <AccordionMenuItem subtitle="Setup connection defaults" gutters>
+        <List>
+          <ServiceAttributesForm
+            connection={{
+              ...DEFAULT_CONNECTION,
+              ...form.attributes,
+              typeID: form.typeID,
+            }}
+            disabled={disabled}
+            attributes={form.attributes}
+            onUpdate={attributes => setForm({ ...form, attributes })}
+          />
+        </List>
+      </AccordionMenuItem>
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed}>
           {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}

@@ -142,7 +142,7 @@ export const Connect: React.FC = () => {
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem
           gutters
-          subtitle="Local"
+          subtitle="Connection"
           expanded={accordion.config}
           onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
           action={<ConnectionMenu connection={connection} service={service} />}
@@ -155,13 +155,10 @@ export const Connect: React.FC = () => {
               <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
             </Collapse>
             <Collapse in={!connection.connectLink}>
-              <ListItemLocation icon="sliders" title="Advanced" pathname="advanced" dense>
+              <ListItemLocation icon="sliders" title="Connection configuration" pathname="advanced" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
             </Collapse>
-            <ListItemLocation title="Defaults" icon="square-dashed" pathname="defaults" dense>
-              <Icon name="angle-right" inlineLeft fixedWidth />
-            </ListItemLocation>
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Want Persistent URLs for your system?</strong>
