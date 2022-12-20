@@ -21,9 +21,11 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
   }
 
   switch (type) {
+    case 'proxy':
     case 'tunnel':
-      sx.flexGrow = 1
-      sx.maxWidth = 'initial'
+      if (type === 'tunnel') {
+        sx.maxWidth = 'initial'
+      }
       sx.borderTopWidth = 1
       sx.borderBottomWidth = 1
       sx.minHeight = '6px'
@@ -39,8 +41,7 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
       if (!proxy) sx.borderStyle = 'solid'
       break
     case 'relay':
-      sx.maxWidth = 30
-      sx.borderStyle = 'solid'
+      sx.maxWidth = 70
       break
     case 'target':
       sx.borderStyle = relay ? 'dotted' : 'solid'

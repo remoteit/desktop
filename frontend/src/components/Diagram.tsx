@@ -24,8 +24,10 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
   const css = useStyles()
-  const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
-  const exposed = connection.connectLink || (connection.public && connection.publicRestriction !== IP_LATCH)
+  // const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
+  const proxy = connection.proxyOnly
+  const publik = connection.connectLink || connection.public
+  const protekted = connection.connectLink ? !!connection.password : connection.publicRestriction === IP_LATCH
   const page = location.pathname.match(REGEX_LAST_PATH)?.[0]
 
   relay = relay || isRelay(service)
@@ -58,13 +60,13 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
       break
   }
 
-  if (exposed) {
-    // todo exposed and connected should appear the same, so maybe pass connected state and also add exposed to it
+  if (publik && connection.enabled) {
+    // todo public and connected should appear the same, so maybe pass connected state and also add public to it
     activeTypes = ['public', 'lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
   }
 
   return (
-    <DiagramContext.Provider value={{ state, proxy, relay, toTypes, activeTypes, highlightTypes }}>
+    <DiagramContext.Provider value={{ state, relay, toTypes, activeTypes, highlightTypes }}>
       {/* <Pre {...{ connection }} /> */}
       <Box className={css.diagram}>
         {lan && (
@@ -74,7 +76,14 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
             <DiagramPath type="lan" />
           </>
         )}
-        {exposed ? (
+        {/* end node */}
+        {publik && protekted ? (
+          <>
+            <DiagramLabel type="initiator" />
+            <DiagramIcon type="initiator" />
+            <DiagramPath type="public" />
+          </>
+        ) : publik ? (
           <>
             <DiagramLabel type="public" />
             <DiagramIcon type="public" />
@@ -87,22 +96,41 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
             <DiagramPath type="initiator" />
           </>
         )}
-        {proxy && (
+        {/* cloud and agent */}
+        {publik && proxy ? (
+          <>
+            <DiagramIcon type="agent" />
+            <DiagramPath type="proxy" />
+            <DiagramLabel type="proxy" />
+            <DiagramIcon type="proxy" />
+          </>
+        ) : proxy ? (
+          <>
+            <DiagramIcon type="agent" />
+            <DiagramPath type="proxy" />
+            <DiagramLabel type="proxy" />
+            <DiagramIcon type="proxy" />
+          </>
+        ) : publik ? (
           <>
             <DiagramLabel type="proxy" />
             <DiagramIcon type="proxy" />
-            <DiagramPath type="proxy" />
+          </>
+        ) : (
+          <>
+            <DiagramIcon type="agent" />
+            <DiagramLabel type="tunnel" />
           </>
         )}
-        <DiagramIcon type="agent" />
-        <DiagramLabel type="tunnel" />
+        {/* tunnel */}
         <DiagramPath type="tunnel" />
+        {/* jump and target */}
         {relay && <DiagramLabel type="relay" />}
         <DiagramIcon type="relay" />
-        {relay && <DiagramPath type="relay" />}
-        <DiagramPath type="target" />
+        {relay ? <DiagramPath type="relay" /> : <DiagramPath type="target" />}
         <DiagramIcon type="target" />
         <DiagramLabel type="target" right />
+        {/* selection indicator */}
         <DiagramIndicator {...indicator} />
       </Box>
     </DiagramContext.Provider>
