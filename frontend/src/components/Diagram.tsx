@@ -125,7 +125,6 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
         {/* tunnel */}
         <DiagramPath type="tunnel" />
         {/* jump and target */}
-        {relay && <DiagramLabel type="relay" />}
         <DiagramIcon type="relay" />
         {relay ? <DiagramPath type="relay" /> : <DiagramPath type="target" />}
         <DiagramIcon type="target" />
