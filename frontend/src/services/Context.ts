@@ -9,6 +9,7 @@ export const DeviceListContext = createContext<IDeviceListContext>({
 })
 
 export const DeviceContext = createContext<IDeviceContext>({
+  user: {} as IUser,
   device: undefined,
   network: undefined,
   connections: [],

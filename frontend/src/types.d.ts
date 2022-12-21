@@ -31,6 +31,7 @@ declare global {
   }
 
   interface IDeviceContext {
+    user: IUser
     device?: IDevice
     network?: INetwork
     connections: IConnection[]
