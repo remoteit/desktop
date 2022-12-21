@@ -58,7 +58,10 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
               dispatch.ui.set({
                 confirm: {
                   id: 'destroyLink',
-                  callback: () => dispatch.connections.removeConnectLink(connection),
+                  callback: () => {
+                    dispatch.connections.removeConnectLink(connection)
+                    handleClose()
+                  },
                 },
               })
             }

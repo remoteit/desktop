@@ -394,6 +394,7 @@ export default createModel<RootModel>()({
 
       setConnection({
         ...removing,
+        host: undefined,
         password: undefined,
         disconnecting: false,
         connected: false,
