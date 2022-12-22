@@ -2,13 +2,18 @@ import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
 import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH, DEFAULT_CONNECTION } from '../shared/constants'
+import { HTTP_TYPES } from '../shared/applications'
 import { makeStyles } from '@mui/styles'
 import { AddFromNetwork } from './AddFromNetwork'
 import { ListItemCheckbox } from './ListItemCheckbox'
-import { Typography, TextField, List, ListItem, MenuItem, Button } from '@mui/material'
+import { Typography, TextField, List, ListItem, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { ServiceFormApplications } from './ServiceFormApplications'
 import { serviceNameValidation } from '../shared/nameHelper'
+import { ServiceAttributesForm } from './ServiceAttributesForm'
+import { AccordionMenuItem } from './AccordionMenuItem'
+import { ServiceFormHTTP } from './ServiceFormHTTP'
 import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
 import { validPort } from '../helpers/connectionHelper'
@@ -17,8 +22,7 @@ import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
 import { TestUI } from './TestUI'
-import { AccordionMenuItem } from './AccordionMenuItem'
-import { ServiceAttributesForm } from './ServiceAttributesForm'
+import { Pre } from './Pre'
 
 export type ServiceFormProps = {
   service?: IService
@@ -43,7 +47,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const { ui } = useDispatch<Dispatch>()
   const { applicationTypes, saving, setupAdded } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
-    saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    saving: !!(state.ui.setupAddingService || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,
   }))
   const initForm = () => {
@@ -51,19 +55,20 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
     return {
       ...DEFAULT_SERVICE,
-      host: service?.host || IP_PRIVATE,
       id: service?.id || '',
+      host: service?.host || IP_PRIVATE,
       port: service?.port || defaultType.port,
       type: defaultType.name,
       typeID: defaultType.id,
       enabled: !service || service.enabled,
       presenceAddress: service?.presenceAddress,
-      name: service?.name || serviceNameValidation(defaultType.name).value,
+      name: service?.name || '',
       attributes: service?.attributes || {},
       ...setupAdded,
     }
   }
   const [defaultForm, setDefaultForm] = useState<IService>()
+  const [invalid, setInvalid] = useState<boolean>()
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IService>()
   const [portReachable, portScan] = usePortScan()
@@ -76,10 +81,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
-    portScan({ port: newForm.port, host: newForm.host })
     if (!adding) setDefaultForm(cloneDeep(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
   }, [service])
+
+  useEffect(() => {
+    if (form && thisDevice) portScan({ port: form.port, host: form.host })
+  }, [form])
 
   if (!form) return null
 
@@ -87,208 +95,198 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     <form
       onSubmit={event => {
         event.preventDefault()
-        onSubmit({ ...form, port: form.port || 1 })
+        onSubmit({
+          ...form,
+          port: form.port || 1,
+          name: form.name || serviceNameValidation(appType.name).value,
+        })
       }}
     >
-      <List>
-        <ListItem className={css.field}>
-          <TextField
-            required
-            label="Service Name"
-            value={form.name}
-            disabled={disabled}
-            error={!!error}
-            variant="filled"
-            helperText={error || ''}
-            placeholder={appType.name}
-            onChange={event => {
-              const validation = serviceNameValidation(event.target.value)
-              setForm({ ...form, name: validation.value })
-              validation.error ? setError(validation.error) : setError(undefined)
-            }}
+      <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
+        <List>
+          <ServiceFormApplications
+            selected={form.typeID}
+            disabled={!editable}
+            onSelect={type =>
+              setForm({
+                ...form,
+                typeID: type.id,
+                type: type.name,
+                port: type.port,
+                attributes: {
+                  ...form.attributes,
+                  commandTemplate: undefined,
+                  launchTemplate: undefined,
+                },
+              })
+            }
           />
-        </ListItem>
-        <ListItem className={css.field}>
-          <TextField
-            multiline
-            label="Service Description"
-            value={form.attributes.description || ''}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => {
-              form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
-              setForm({ ...form })
-            }}
-          />
-          <Typography variant="caption">
-            <i>Optional</i>
-            <br />
-            Service description or connection instructions.
-          </Typography>
-        </ListItem>
-        {editable && (
-          <>
-            <ListItem className={css.field}>
-              <TextField
-                select
-                label="Service Type"
-                value={form.typeID}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => {
-                  const typeID = Number(event.target.value)
-                  const updatedAppType = findType(applicationTypes, typeID)
-                  setForm({
-                    ...form,
-                    typeID: typeID,
-                    port: findType(applicationTypes, typeID).port || 0,
-                    name: serviceNameValidation(updatedAppType.name).value,
-                    attributes: {
-                      ...form.attributes,
-                      commandTemplate: undefined,
-                      launchTemplate: undefined,
-                    },
-                  })
-                }}
-              >
-                {applicationTypes.map(type => (
-                  <MenuItem value={type.id} key={type.id}>
-                    {type.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <Typography variant="caption">
-                {appType.description}
-                <br />
-                <em>
-                  {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
-                </em>
-              </Typography>
-            </ListItem>
-            <ListItem className={css.field}>
-              <TextField
-                required
-                label="Service Port"
-                value={form.port || ''}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => {
-                  const port = validPort(event)
-                  setForm({ ...form, port })
-                  thisDevice && portScan({ port, host: form.host })
-                }}
-                InputProps={{
-                  endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
-                }}
-              />
-              <Typography variant="caption">
-                Port the application's service is running on. Do not change this unless you know it is running on a
-                custom port.
-              </Typography>
-            </ListItem>
-            <ListItem className={css.field}>
-              <TextField
-                required
-                label="Service Host"
-                value={form.host}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => {
-                  const host = event.target.value
-                  setForm({ ...form, host })
-                  thisDevice && portScan({ port: form.port, host })
-                }}
-                InputProps={{
-                  endAdornment: thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />,
-                }}
-              />
-              <Typography variant="caption">
-                Enter a local network IP address or fully qualified domain name to configure this as a jump service to a
-                system on your local network.
-                <br />
-                <i>AWS example:</i>
-                <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
-              </Typography>
-            </ListItem>
-            {thisDevice && (
-              <ListItem>
-                <Notice
-                  fullWidth
-                  severity={portReachable === 'REACHABLE' ? 'success' : 'warning'}
-                  button={
-                    portReachable === 'REACHABLE' ? undefined : (
-                      <Button
-                        size="small"
-                        color="primary"
-                        onClick={() => portScan({ port: form.port, host: form.host })}
-                      >
-                        Retry
-                      </Button>
-                    )
-                  }
-                >
-                  {portReachable === 'REACHABLE' ? (
-                    `Service found on ${form.host}:${form.port}!`
-                  ) : (
-                    <>
-                      No service found running on {form.host}:{form.port}.
-                      <AddFromNetwork allowScanning={thisDevice} />
-                      <em>Double check that the host application running.</em>
-                    </>
-                  )}
-                </Notice>
-              </ListItem>
-            )}
-            {appType.proxy && (
+          {editable && (
+            <>
+              {thisDevice && (
+                <ListItem>
+                  <Notice
+                    severity={portReachable === 'REACHABLE' ? 'success' : 'warning'}
+                    button={
+                      portReachable === 'REACHABLE' ? undefined : (
+                        <Button
+                          size="small"
+                          color="primary"
+                          onClick={() => portScan({ port: form.port, host: form.host })}
+                        >
+                          Retry
+                        </Button>
+                      )
+                    }
+                  >
+                    {portReachable === 'REACHABLE' ? (
+                      <>
+                        Service found on
+                        <b>
+                          {form.host}:{form.port}
+                        </b>
+                      </>
+                    ) : (
+                      <>
+                        No service found running on {form.host}:{form.port}.
+                        <AddFromNetwork allowScanning={thisDevice} />
+                        <em>Double check that the host application running.</em>
+                      </>
+                    )}
+                  </Notice>
+                </ListItem>
+              )}
+              {HTTP_TYPES.includes(form.typeID) ? (
+                <ListItem className={css.field}>
+                  <ServiceFormHTTP
+                    form={form}
+                    disabled={disabled}
+                    thisDevice={thisDevice}
+                    portReachable={portReachable}
+                    applicationTypes={applicationTypes}
+                    onInvalid={state => setInvalid(state)}
+                    onChange={form => setForm({ ...form })}
+                  />
+                </ListItem>
+              ) : (
+                <>
+                  <ListItem className={css.field}>
+                    <TextField
+                      required
+                      label="Service Host"
+                      value={form.host || ''}
+                      disabled={disabled}
+                      variant="filled"
+                      InputLabelProps={{ shrink: true }}
+                      onChange={event => {
+                        const host = event.target.value
+                        setForm({ ...form, host })
+                      }}
+                      InputProps={{
+                        endAdornment: thisDevice && (
+                          <PortScanIcon state={portReachable} port={form.port} host={form.host} />
+                        ),
+                      }}
+                    />
+                    <Typography variant="caption">
+                      Enter a local network IP address or fully qualified domain name to configure this as a jump
+                      service to a system on your local network.
+                      <br />
+                      <i>AWS example:</i>
+                      <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+                    </Typography>
+                  </ListItem>
+                  <ListItem className={css.field}>
+                    <TextField
+                      required
+                      label="Service Port"
+                      value={form.port || ''}
+                      disabled={disabled}
+                      variant="filled"
+                      onChange={event => {
+                        const port = validPort(event)
+                        setForm({ ...form, port })
+                      }}
+                      InputProps={{
+                        endAdornment: thisDevice && (
+                          <PortScanIcon state={portReachable} port={form.port} host={form.host} />
+                        ),
+                      }}
+                    />
+                    <Typography variant="caption">
+                      Port the application's service is running on. Do not change this unless you know it is running on
+                      a custom port.
+                    </Typography>
+                  </ListItem>
+                </>
+              )}
               <ListItem className={css.field}>
                 <TextField
-                  label="Target Host Name"
-                  value={form.attributes.targetHost || ''}
+                  label="Service Name"
+                  value={form.name || ''}
+                  disabled={disabled}
+                  error={!!error}
+                  variant="filled"
+                  helperText={error || ''}
+                  InputLabelProps={{ shrink: true }}
+                  placeholder={serviceNameValidation(appType.name).value}
+                  onChange={event => {
+                    const validation = serviceNameValidation(event.target.value, true)
+                    setForm({ ...form, name: validation.value })
+                    validation.error ? setError(validation.error) : setError(undefined)
+                  }}
+                />
+              </ListItem>
+              <ListItem className={css.field}>
+                <TextField
+                  multiline
+                  label="Service Description"
+                  value={form.attributes.description || ''}
                   disabled={disabled}
                   variant="filled"
-                  onChange={event =>
-                    setForm({ ...form, attributes: { ...form.attributes, targetHost: event.target.value.toString() } })
-                  }
+                  placeholder="&ndash;"
+                  InputLabelProps={{ shrink: true }}
+                  onChange={event => {
+                    form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
+                    setForm({ ...form })
+                  }}
                 />
                 <Typography variant="caption">
-                  <i>Optional. </i>
-                  Override the target host name when accessing this service. Needed by host name dependant web sites.{' '}
-                  <i>
-                    Example
-                    <b> webui.company.com</b> or <b>google.com</b>
-                  </i>
+                  Service description or connection instructions.
+                  <br />
+                  <i>Optional</i>
                 </Typography>
               </ListItem>
-            )}
-            <TestUI>
-              <ListItem className={css.field}>
-                <TextField
-                  label="Presence address"
-                  value={form.presenceAddress || ''}
-                  variant="filled"
-                  onChange={event => setForm({ ...form, presenceAddress: event.target.value })}
-                />
-                <Typography variant="caption">Example: prod-presence.remote.it:6960</Typography>
-              </ListItem>
-            </TestUI>
-            <ListItemCheckbox
-              checked={form.enabled}
-              label="Enable service"
-              subLabel={
-                <>
-                  Disabling your service will take it offline.{' '}
-                  <i>
-                    Service is
-                    {form.enabled ? ' enabled' : ' disabled'}
-                  </i>
-                </>
-              }
-              disabled={disabled}
-              onClick={() => setForm({ ...form, enabled: !form.enabled })}
-            />
-          </>
-        )}
-      </List>
+              <TestUI>
+                <ListItem className={css.field}>
+                  <TextField
+                    label="Presence address"
+                    value={form.presenceAddress || ''}
+                    variant="filled"
+                    onChange={event => setForm({ ...form, presenceAddress: event.target.value })}
+                  />
+                  <Typography variant="caption">Example: prod-presence.remote.it:6960</Typography>
+                </ListItem>
+              </TestUI>
+              <ListItemCheckbox
+                checked={form.enabled}
+                label="Enable service"
+                subLabel={
+                  <>
+                    Disabling your service will take it offline.&nbsp;
+                    <i>
+                      Service is
+                      {form.enabled ? ' enabled' : ' disabled'}
+                    </i>
+                  </>
+                }
+                disabled={disabled}
+                onClick={() => setForm({ ...form, enabled: !form.enabled })}
+              />
+            </>
+          )}
+        </List>
+      </AccordionMenuItem>
       <AccordionMenuItem subtitle="Setup connection defaults" gutters>
         <List>
           <ServiceAttributesForm
@@ -303,17 +301,18 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           />
         </List>
       </AccordionMenuItem>
-      <Gutters>
-        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed}>
+      <Gutters size={adding ? undefined : null} top="lg">
+        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed || invalid}>
           {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
         </Button>
         <Button onClick={onCancel}>Cancel</Button>
+        {/* <Pre form={form} /> */}
       </Gutters>
     </form>
   )
 }
 
-export const useStyles = makeStyles({
+export const useStyles = makeStyles(({ breakpoints }) => ({
   field: {
     paddingRight: spacing.lg,
     paddingLeft: spacing.md,
@@ -335,4 +334,11 @@ export const useStyles = makeStyles({
       maxWidth: 400,
     },
   },
-})
+  [breakpoints.down('sm')]: {
+    field: {
+      flexDirection: 'column',
+      '& > *': { width: '100%' },
+      '& > .MuiTypography-root': { margin: spacing.xs, width: '100%', marginBottom: spacing.md },
+    },
+  },
+}))

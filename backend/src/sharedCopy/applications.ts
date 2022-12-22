@@ -9,6 +9,8 @@ import { replaceHost } from './nameHelper'
 import { getEnvironment, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
+export const HTTP_TYPES = [7, 8]
+export const KEY_APPS = [8, 7, 28, 4, 5, 34]
 
 export class Application {
   title: string = ''
@@ -235,7 +237,6 @@ export function getApplicationType(typeId: number | undefined) {
     case 4:
       return new Application({
         title: 'VNC',
-        example: 'ssh://localhost:5900',
         launchIcon: 'desktop',
         appLaunchType: 'COMMAND',
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
@@ -246,7 +247,6 @@ export function getApplicationType(typeId: number | undefined) {
     case 28:
       return new Application({
         title: 'SSH',
-        example: 'ssh://127.0.0.1:22',
         appLaunchType: portal ? 'URL' : windows ? 'COMMAND' : 'URL',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: windows
@@ -256,7 +256,6 @@ export function getApplicationType(typeId: number | undefined) {
     case 5:
       return new Application({
         title: 'RDP',
-        example: 'rdp://localhost:3389',
         appLaunchType: windows ? 'COMMAND' : 'URL',
         appLaunchTemplate: 'rdp://[username]@[host]:[port]',
         appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : '[host]:[port]',
@@ -283,7 +282,6 @@ export function getApplicationType(typeId: number | undefined) {
     case 34:
       return new Application({
         title: 'Samba',
-        example: 'smb://localhost:445',
         launchIcon: 'folder',
         commandIcon: 'clipboard',
         localhost: true,

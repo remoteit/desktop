@@ -467,6 +467,8 @@ declare global {
     description: string
   }
 
+  type ISmartApplication = 'URL' | undefined
+
   interface ICloudEvent {
     sessionId: string
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'LICENSE_UPDATED'

@@ -83,7 +83,7 @@ export const darkColors: { [key in Color]: string } = {
   primaryLight: '#1C72AD', // 70%
   primaryLighter: '#21435B', // 20%
   primaryHighlight: '#1f3042', //'#222D38', // 10%
-  primaryBackground: '#212B3A',
+  primaryBackground: '#212a35',
   secondary: '#75bd00',
   successLight: '#a4db4c',
   success: '#75bd00',

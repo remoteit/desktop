@@ -1,3 +1,5 @@
+import { REGEX_VALID_IP } from '../shared/constants'
+
 export function toLookup<T>(array: T[], key: string): ILookup<T> {
   return array.reduce((obj, item) => ({ ...obj, [item[key]]: item }), {})
 }
@@ -39,4 +41,8 @@ export const tagsInclude = (haystack: ILookup<any>[], needle: string) =>
 export const mergeTags = (legacy: ITag[], tags: ITag[]) => {
   const unique = legacy.filter(l => findTagIndex(tags, l.name) === -1) || []
   return tags.concat(unique)
+}
+
+export function containsIpAddress(url: URL): boolean {
+  return REGEX_VALID_IP.test(url.hostname)
 }

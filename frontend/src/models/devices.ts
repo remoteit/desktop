@@ -334,7 +334,7 @@ export default createModel<RootModel>()({
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
           await dispatch.devices.fetchSingle({ id: deviceId })
-          dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}` })
+          dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })

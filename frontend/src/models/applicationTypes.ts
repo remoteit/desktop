@@ -51,15 +51,6 @@ export function getType(all: IApplicationType[], port?: number) {
   return type ? type.id : DEFAULT_SERVICE.typeID
 }
 
-export function selectUniqueSchemeTypes(state: ApplicationState) {
-  let schemes: string[] = []
-  return state.applicationTypes.all.filter(t => {
-    if (schemes.includes(t.scheme) || !t.port) return false
-    schemes.push(t.scheme)
-    return true
-  })
-}
-
 export function canUseConnectLink(state: ApplicationState, typeId?: number) {
   if (!typeId) return false
   const applicationType = findType(state.applicationTypes.all, typeId)
