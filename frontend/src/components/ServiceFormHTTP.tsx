@@ -93,9 +93,7 @@ export const ServiceFormHTTP: React.FC<Props> = ({
         }}
       />
       <Typography variant="caption">
-        URL of the service you want to connect to.
-        <br />
-        Example: {application.example}
+        URL of the service you want to connect to. Example: {application.example}
       </Typography>
     </>
   )

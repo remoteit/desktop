@@ -253,7 +253,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 />
                 <Typography variant="caption">
                   Service description or connection instructions.
-                  <br />
                   <i>Optional</i>
                 </Typography>
               </ListItem>

@@ -47,7 +47,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           <Gutters top={null} bottom="lg" size="md">
             <ServiceConnectButton />
           </Gutters>
-          <Gutters top="xs">
+          <Gutters top="xs" bottom="sm">
             <Diagram />
           </Gutters>
         </>

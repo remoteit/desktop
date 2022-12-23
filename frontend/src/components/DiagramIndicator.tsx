@@ -13,18 +13,19 @@ export const DiagramIndicator: React.FC<IndicatorProps> = props => {
   return (
     <>
       <span className={classnames(css.indicator, css.border)} />
+      <span className={classnames(css.indicator, css.highlight)} />
       <span className={classnames(css.indicator, css.main)} />
     </>
   )
 }
 
-const SIZE = 12
-const GUTTERS = 16
+const SIZE = 8
+const GUTTERS = 10
 
 const useStyles = makeStyles(({ palette }) => ({
   indicator: ({ placement }: IndicatorProps) => ({
     position: 'absolute',
-    bottom: -spacing.md,
+    bottom: -spacing.sm,
     left: placement === 'right' ? undefined : -GUTTERS,
     right: placement === 'right' ? -GUTTERS : undefined,
     transform: `translate(${SIZE * (placement === 'right' ? -2 : 2)}px)`,
@@ -44,7 +45,12 @@ const useStyles = makeStyles(({ palette }) => ({
   main: {
     '&::before, &::after': { borderTop: `${SIZE}px solid ${palette.white.main}` },
   },
-  border: ({ border = 'grayLight' }: IndicatorProps) => ({
+  highlight: {
+    '&::before, &::after': { borderTop: `${SIZE}px solid ${palette.grayDarker.main}` },
+    '&::before': { transform: `translate(1px)` },
+    '&::after': { transform: `translate(-1px)` },
+  },
+  border: ({ border = 'grayLighter' }: IndicatorProps) => ({
     '&::before, &::after': { borderTop: `${SIZE + 1}px solid ${palette[border].main}` },
     '&::before': { transform: `translate(1px)` },
     '&::after': { transform: `translate(-1px)` },
