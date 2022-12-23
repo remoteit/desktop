@@ -13,10 +13,10 @@ type Props = { device?: IDevice; service?: IService; user?: IUser }
 
 export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const deviceLink = !deviceID
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
+  const devicePage = !!deviceID
 
   if (!device) return null
 
@@ -34,7 +34,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        {deviceLink && (
+        {!devicePage && (
           <ListItemLocation
             title="Device Page"
             icon="router"
@@ -51,20 +51,23 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             value={`${PROTOCOL}device/${device.id}/${service.id}`}
           />
         ) : (
-          <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+          devicePage && (
+            <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+          )
         )}
-        {device.permissions.includes('MANAGE') && [
-          <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
-            <ListItemIcon>
-              <Icon name="arrow-turn-down-right" size="md" />
-            </ListItemIcon>
-            <ListItemText primary="Transfer Device" />
-          </MenuItem>,
-          <Divider key="divider" />,
-          <LeaveDevice key="leaveDevice" device={device} menuItem />,
-          <DeleteDevice key="deleteDevice" device={device} menuItem />,
-          <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
-        ]}
+        {devicePage &&
+          device.permissions.includes('MANAGE') && [
+            <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
+              <ListItemIcon>
+                <Icon name="arrow-turn-down-right" size="md" />
+              </ListItemIcon>
+              <ListItemText primary="Transfer Device" />
+            </MenuItem>,
+            <Divider key="divider" />,
+            <LeaveDevice key="leaveDevice" device={device} menuItem />,
+            <DeleteDevice key="deleteDevice" device={device} menuItem />,
+            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
+          ]}
       </Menu>
     </>
   )

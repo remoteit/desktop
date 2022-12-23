@@ -44,7 +44,6 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const instance: IInstance | undefined = network || device
 
   useEffect(() => {
-    console.log('instance', instance?.loaded, device?.loaded)
     if (instance?.loaded || device?.loaded || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, Redirect } from 'react-router-dom'
 import { ServiceDefaultsPage } from '../pages/ServiceDefaultsPage'
 import { ServiceHeaderMenu } from '../components/ServiceHeaderMenu'
 import { ServiceUsersPage } from '../pages/ServiceUsersPage'
@@ -12,7 +12,7 @@ import { SharePage } from '../pages/SharePage'
 import { Connect } from '../components/Connect'
 
 export const ServiceRouter: React.FC<{ basename: string }> = ({ basename }) => {
-  const { device, instance, service, connection } = useContext(DeviceContext)
+  const { device, instance, service, connection, network } = useContext(DeviceContext)
 
   if (!service || !instance) return <NoConnectionPage />
 
@@ -39,8 +39,11 @@ export const ServiceRouter: React.FC<{ basename: string }> = ({ basename }) => {
             <Route path={`${basename}/advanced`}>
               <ConnectAdvanced />
             </Route>
-            <Route path={basename}>
+            <Route path={`${basename}/connect`}>
               <Connect />
+            </Route>
+            <Route path={basename}>
+              <Redirect to={`/${network ? 'networks' : 'devices'}/${instance.id}/${service.id}/connect`} />
             </Route>
           </Switch>
         </ServiceHeaderMenu>

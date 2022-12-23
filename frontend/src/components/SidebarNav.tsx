@@ -79,7 +79,7 @@ export const SidebarNav: React.FC = () => {
           )}
         </ListItemSecondaryAction>
       </ListItemLocation>
-      <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" exactMatch dense>
+      <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" dense>
         {!!devices && (
           <ListItemSecondaryAction>
             <Tooltip title="Total Devices" placement="top" arrow>
