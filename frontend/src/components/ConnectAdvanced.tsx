@@ -9,13 +9,13 @@ import { TimeoutSetting } from './TimeoutSetting'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { TargetHostSetting } from './TargetHostSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { SubdomainSetting } from './SubdomainSetting'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { LanShareSelect } from './LanShareSelect'
 import { ListItemQuote } from './ListItemQuote'
 import { LaunchSelect } from './LaunchSelect'
 import { ListItemBack } from './ListItemBack'
 import { PortSetting } from './PortSetting'
-import { NameSetting } from './NameSetting'
 import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
@@ -33,7 +33,7 @@ export const ConnectAdvanced: React.FC = () => {
   return (
     <Gutters size="md" bottom={null}>
       <Box display="flex">
-        <ListItemBack title="Connection settings" />
+        <ListItemBack title="Connection configuration" />
         <IconButton
           name="undo"
           color="grayDark"
@@ -61,7 +61,7 @@ export const ConnectAdvanced: React.FC = () => {
         <List disablePadding>
           {!connection.public && (
             <DesktopUI>
-              <NameSetting connection={connection} service={service} instance={instance} />
+              <SubdomainSetting connection={connection} service={service} instance={instance} />
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
           )}

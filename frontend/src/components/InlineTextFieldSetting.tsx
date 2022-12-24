@@ -69,7 +69,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
       value={value}
       fieldRef={fieldRef}
       resetValue={resetValue}
-      onResetClick={() => setEditValue(resetValue)}
+      onResetClick={() => onSave && onSave(resetValue)}
       onSubmit={() => onSave && onSave(editValue)}
       onCancel={() => setEditValue(value)}
       onShowEdit={() => setEditValue(value)}

@@ -1,1 +1,0 @@
-export { NameSetting } from './NameSetting'

@@ -47,7 +47,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
       pathname={noLink ? undefined : `/networks/${network?.id}`}
       onClick={noLink ? onClick : undefined}
       title={
-        <Title className={css.text} enabled={network?.enabled}>
+        <Title className={css.text}>
           {network?.name}
           {expanded ? '' : ' ...'}
         </Title>

@@ -180,11 +180,11 @@ export class Application {
     return this.reverseProxy ? template.replace('http:', 'https:') : template
   }
 
-  private get resolvedDefaultLaunchTemplate() {
+  private get resolvedDefaultLaunchTemplate(): string {
     return this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.appLaunchTemplate
   }
 
-  private get resolvedDefaultCommandTemplate() {
+  private get resolvedDefaultCommandTemplate(): string {
     return (
       this.service?.attributes.commandTemplate ||
       this.globalDefaults.commandTemplate ||
