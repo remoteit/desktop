@@ -398,16 +398,18 @@ export default createModel<RootModel>()({
       name,
       services,
       platform,
+      tags,
       accountId,
       template,
     }: {
       name?: string
       services: IServiceRegistration[]
       platform?: number
+      tags?: string[]
       accountId: string
       template?: string | boolean
     }) {
-      const result = await graphQLRegistration({ name, services, platform, account: accountId })
+      const result = await graphQLRegistration({ name, services, platform, tags, account: accountId })
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)

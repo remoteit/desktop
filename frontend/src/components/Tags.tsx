@@ -1,10 +1,10 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { Chip, Box, Typography } from '@mui/material'
+import { Chip, Box, BoxProps, Typography } from '@mui/material'
 import { Tag } from './Tag'
 
-type Props = {
+type Props = BoxProps & {
   tags: ITag[]
   small?: boolean
   showEmpty?: boolean
@@ -14,7 +14,7 @@ type Props = {
 
 const AVERAGE_TAG_WIDTH = 85
 
-export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelete }) => {
+export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelete, ...props }) => {
   const { labels, count } = useSelector((state: ApplicationState) => ({
     labels: state.labels,
     count: Math.floor(state.ui.columnWidths.tags / AVERAGE_TAG_WIDTH),
@@ -42,7 +42,7 @@ export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelet
       </Typography>
     )
 
-  return <Box>{dot ? <Chip size="small" label={Tags} /> : Tags}</Box>
+  return <Box {...props}>{dot ? <Chip size="small" label={Tags} /> : Tags}</Box>
 }
 
 function nameSort(a: ITag, b: ITag) {

@@ -1,14 +1,19 @@
 import React, { useEffect } from 'react'
+import { Box, Typography } from '@mui/material'
+import { platforms, IPlatform } from '../platforms'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getOrganization, selectPermissions } from '../models/organization'
-import { Box, Typography } from '@mui/material'
-import { platforms, IPlatform } from '../platforms'
 import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
 import { Link } from '../components/Link'
 
-export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
+type Props = {
+  platform: IPlatform
+  tags: string[]
+}
+
+export const AddDevice: React.FC<Props> = ({ platform, tags }) => {
   const { organization, registrationCommand, permissions, userId } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
     registrationCommand: state.ui.registrationCommand,
@@ -22,15 +27,16 @@ export const AddDevice: React.FC<{ platform: IPlatform }> = ({ platform }) => {
   useEffect(() => {
     const platformType = platforms.findType(platform.id)
     dispatch.devices.createRegistration({
-      services: [{ application: 28 }],
+      tags,
       accountId,
+      services: [{ application: 28 }],
       platform: platformType,
       template: platform.installation?.command,
     }) // ssh
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
-  }, [accountId, platform])
+  }, [accountId, platform, tags])
 
   if (!permissions?.includes('MANAGE')) {
     return (

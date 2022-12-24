@@ -47,8 +47,8 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   highlight: {
     '&::before, &::after': { borderTop: `${SIZE}px solid ${palette.grayDarker.main}` },
-    '&::before': { transform: `translate(1px)` },
-    '&::after': { transform: `translate(-1px)` },
+    '&::before': { transform: `translate(2px)` },
+    '&::after': { transform: `translate(-2px)` },
   },
   border: ({ border = 'grayLighter' }: IndicatorProps) => ({
     '&::before, &::after': { borderTop: `${SIZE + 1}px solid ${palette[border].main}` },
