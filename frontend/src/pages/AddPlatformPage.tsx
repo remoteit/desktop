@@ -22,7 +22,9 @@ export const AddPlatformPage: React.FC = () => {
       <Box display="flex" flexWrap="wrap" justifyContent="center" paddingBottom={5}>
         <Box className={css.icon}>
           <Icon name={platform} fontSize={100} platformIcon />
-          <AddPlatformTags tags={platformTags} onChange={tags => setPlatformTags(tags)} />
+          {platformObj.installation?.command && (
+            <AddPlatformTags tags={platformTags} onChange={tags => setPlatformTags(tags)} />
+          )}
         </Box>
         <Box className={css.box}>
           {platformObj.installation?.command ? (
