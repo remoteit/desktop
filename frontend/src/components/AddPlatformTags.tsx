@@ -26,7 +26,6 @@ export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange }) => 
         showEmpty={!canEdit}
         tags={selectedTags}
         onDelete={canEdit ? tag => onChange(tags.filter(t => t !== tag.name)) : undefined}
-        onClick={tag => onChange([...tags, tag])}
       />
       {canEdit && (
         <TagEditor

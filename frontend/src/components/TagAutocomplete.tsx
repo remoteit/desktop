@@ -28,6 +28,7 @@ interface Props {
   allowAdding?: boolean
   createOnly?: boolean
   indicator?: string
+  hideIcons?: boolean
   InputProps?: TextFieldProps['InputProps']
   onItemColor?: (value: ITag) => string
   onSelect?: (action: 'add' | 'new', value: ITag) => void
@@ -46,6 +47,7 @@ export const TagAutocomplete: React.FC<Props> = ({
   onSelect,
   onChange,
   onClose,
+  hideIcons,
   allowAdding,
   createOnly,
   InputProps = {},
@@ -94,8 +96,8 @@ export const TagAutocomplete: React.FC<Props> = ({
           onClose={onClose}
           onChange={(event, value, reason) => {
             if (!value || !onSelect || disabled) return
-            if (!value.created) onSelect('new', { name: inputValue, color: value.color, created: new Date() })
-            else onSelect('add', value)
+            if (value.created) onSelect('add', value)
+            else onSelect('new', { name: inputValue, color: value.color, created: new Date() })
           }}
           PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
           PopperComponent={Box as React.ComponentType<PopperProps>}
@@ -106,16 +108,20 @@ export const TagAutocomplete: React.FC<Props> = ({
             setInputValue(result)
             if (onChange) onChange(result)
           }}
-          renderOption={(props, option, state) => (
-            <MenuItem {...props} disableGutters>
-              <ListItemIcon>
-                <Icon
-                  name={!option.name ? 'plus' : indicator || 'circle'}
-                  color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
-                  type="solid"
-                  size="base"
-                />
-              </ListItemIcon>
+          renderOption={(props, option) => (
+            <MenuItem {...props}>
+              {hideIcons ? (
+                <> &nbsp; &nbsp; </>
+              ) : (
+                <ListItemIcon>
+                  <Icon
+                    name={!option.name ? 'plus' : indicator || 'circle'}
+                    color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
+                    type="solid"
+                    size="base"
+                  />
+                </ListItemIcon>
+              )}
               <ListItemText
                 primary={reactStringReplace(
                   option.name,

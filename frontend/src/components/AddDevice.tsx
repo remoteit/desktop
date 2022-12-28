@@ -11,9 +11,10 @@ import { Link } from '../components/Link'
 type Props = {
   platform: IPlatform
   tags: string[]
+  types: number[]
 }
 
-export const AddDevice: React.FC<Props> = ({ platform, tags }) => {
+export const AddDevice: React.FC<Props> = ({ platform, tags, types }) => {
   const { organization, registrationCommand, permissions, userId } = useSelector((state: ApplicationState) => ({
     organization: getOrganization(state),
     registrationCommand: state.ui.registrationCommand,
@@ -29,14 +30,14 @@ export const AddDevice: React.FC<Props> = ({ platform, tags }) => {
     dispatch.devices.createRegistration({
       tags,
       accountId,
-      services: [{ application: 28 }],
+      services: types.map(type => ({ application: type })),
       platform: platformType,
       template: platform.installation?.command,
-    }) // ssh
+    })
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
-  }, [accountId, platform, tags])
+  }, [accountId, platform, tags, types])
 
   if (!permissions?.includes('MANAGE')) {
     return (

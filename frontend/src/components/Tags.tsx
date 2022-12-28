@@ -8,18 +8,15 @@ type Props = BoxProps & {
   tags: ITag[]
   small?: boolean
   showEmpty?: boolean
+  hideLabels?: boolean
   onClick?: (tag: ITag) => void
   onDelete?: (tag: ITag) => void
 }
 
 const AVERAGE_TAG_WIDTH = 85
 
-export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelete, ...props }) => {
-  const { labels, count } = useSelector((state: ApplicationState) => ({
-    labels: state.labels,
-    count: Math.floor(state.ui.columnWidths.tags / AVERAGE_TAG_WIDTH),
-  }))
-
+export const Tags: React.FC<Props> = ({ tags, small, showEmpty, hideLabels, onClick, onDelete, ...props }) => {
+  const count = useSelector((state: ApplicationState) => Math.floor(state.ui.columnWidths.tags / AVERAGE_TAG_WIDTH))
   const dot = tags.length > count && small
 
   const Tags = tags
@@ -29,7 +26,7 @@ export const Tags: React.FC<Props> = ({ tags, small, showEmpty, onClick, onDelet
         key={index}
         dot={dot}
         tag={tag}
-        labels={labels}
+        hideLabels={hideLabels}
         onDelete={onDelete ? () => onDelete(tag) : undefined}
         onClick={onClick ? () => onClick(tag) : undefined}
       />
