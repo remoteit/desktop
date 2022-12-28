@@ -3,6 +3,18 @@ import { removeDeviceName } from '../shared/nameHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
+const DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES = [
+  'id',
+  'deviceName',
+  'status',
+  'permissions',
+  'owner',
+  'quality',
+  'license',
+]
+
+const DEVICE_PRELOAD_ATTRIBUTES = [...DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES, 'services']
+
 export const SERVICE_SELECT = `
   id
   name
@@ -121,17 +133,6 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => (k === 'services' ? '' : DeviceSelectLookup[k]))
   .join('')
 
-const DEVICE_PRELOAD_ATTRIBUTES = [
-  'id',
-  'deviceName',
-  'status',
-  'permissions',
-  'owner',
-  'quality',
-  'license',
-  'services',
-]
-
 export async function graphQLFetchDeviceList({
   tag,
   size,
@@ -205,7 +206,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
+                  ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES)}
                 }          
               }
               name
