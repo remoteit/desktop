@@ -84,8 +84,8 @@ export const Connect: React.FC = () => {
             </Collapse>
             <PortalUI>
               <Notice gutterTop severity="info">
-                <strong>Want Persistent URLs?</strong>
-                <em>On demand connections with persistent URLs, remote access, and improved launch commands.</em>
+                <strong>Want Persistent Endpoints?</strong>
+                <em>On demand connections with persistent endpoints, remote access, and improved launch commands.</em>
                 <Button
                   size="small"
                   color="primary"

@@ -7,7 +7,6 @@ import {
   cleanOrphanConnections,
   getConnectionServiceIds,
   newConnection,
-  sanitizeName,
   selectConnection,
   setConnection,
   parseLinkData,
@@ -404,7 +403,6 @@ export default createModel<RootModel>()({
     async connect(connection: IConnection, state) {
       const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
-      connection.name = sanitizeName(connection?.name || '')
       connection.online = service ? service?.state === 'active' : connection.online
       connection.host = ''
       connection.error = undefined

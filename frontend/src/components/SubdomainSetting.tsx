@@ -1,7 +1,7 @@
 import React from 'react'
 import { setConnection } from '../helpers/connectionHelper'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { REGEX_CONNECTION_NAME, MAX_CONNECTION_NAME_LENGTH } from '../shared/constants'
+import { MAX_CONNECTION_NAME_LENGTH } from '../shared/constants'
 
 export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstance; connection: IConnection }> = ({
   service,
@@ -17,7 +17,6 @@ export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstanc
       label="Subdomain"
       resetValue={resetValue}
       disabled={connection.connected || connection.public}
-      filter={REGEX_CONNECTION_NAME}
       maxLength={MAX_CONNECTION_NAME_LENGTH}
       onSave={name =>
         setConnection({

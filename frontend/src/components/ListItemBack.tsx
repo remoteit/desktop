@@ -11,7 +11,7 @@ export type Props = {
 export const ListItemBack: React.FC<Props> = ({ title, children, ...props }) => {
   const history = useHistory()
   return (
-    <ListItem dense disableGutters {...props} button onClick={() => history.goBack()}>
+    <ListItem dense disableGutters {...props} button onClick={() => history.push('connect')}>
       <ListItemIcon>
         <Icon name="angle-left" size="md" fixedWidth />
       </ListItemIcon>

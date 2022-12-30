@@ -33,10 +33,6 @@ export function findLocalConnection(state: ApplicationState, id: string, session
   return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
-export function sanitizeName(name: string) {
-  return name?.toLowerCase().replace(REGEX_CONNECTION_NAME, '-').replace(REGEX_CONNECTION_TRIM, '')
-}
-
 export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)

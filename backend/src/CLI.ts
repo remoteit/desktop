@@ -1,5 +1,6 @@
 import { REACHABLE_ERROR_CODE } from './constants'
 import { cliBinary } from './Binary'
+import { toUnicode } from 'punycode'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import preferences from './preferences'
@@ -172,7 +173,7 @@ export default class CLI {
 
       let result: IConnection = {
         id: c.id,
-        host: c.addressHost,
+        host: toUnicode(c.addressHost || ''),
         enabled: !!c.isEnabled,
         starting: c.state === 1, //      starting
         connecting: c.state === 3, //    connecting

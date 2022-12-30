@@ -197,7 +197,7 @@ export class Application {
     this.allTokens.forEach(token => {
       if (lookup[token]) {
         const search = new RegExp(`\\[${token}\\]`, 'g')
-        const replace = this.launchType === 'URL' ? encodeURI(lookup[token]) : lookup[token]
+        const replace = lookup[token]
         template = template.replace(search, replace)
       }
     })
