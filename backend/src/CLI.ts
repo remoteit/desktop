@@ -1,4 +1,4 @@
-import { REACHABLE_ERROR_CODE } from './constants'
+import { CLI_REACHABLE_ERROR_CODE } from './sharedCopy/constants'
 import { cliBinary } from './Binary'
 import { toUnicode } from 'punycode'
 import binaryInstaller from './binaryInstaller'
@@ -59,6 +59,15 @@ type IConnectionStatus = {
   addressHost?: string
   restrict?: ipAddress
   timeout?: number
+  checkpointCanBindToPortLocally?: boolean
+  checkpointConnectdCanAuth?: boolean
+  checkpointConnectdCanConnectToChatServers?: boolean
+  checkpointConnectdCanPortBind?: boolean
+  checkpointConnectdCanStart?: boolean
+  checkpointConnectdTunnelCreated?: boolean
+  checkpointHostnameCanFetch?: boolean
+  checkpointHostnameCanResolve?: boolean
+  checkpointProxyCanCreate?: boolean
 }
 
 type IConnectionDefaults = {
@@ -159,10 +168,10 @@ export default class CLI {
       if (c.isReachable === false) {
         error = {
           message: 'Remote.It connected, but there is no service running on the remote machine.',
-          code: REACHABLE_ERROR_CODE,
+          code: CLI_REACHABLE_ERROR_CODE,
         }
       } else if (c.isReachable === true) {
-        if (error && error?.code === REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
+        if (error && error?.code === CLI_REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
 
       if (c.error?.message) {
@@ -170,6 +179,7 @@ export default class CLI {
       }
 
       d('CONNECTION STATE', c.id, c.state)
+      if (c.id === '80:00:00:00:01:26:69:30') Logger.info('CONNECTION STATUS', c)
 
       let result: IConnection = {
         id: c.id,
@@ -185,6 +195,17 @@ export default class CLI {
         reachable: c.isReachable,
         restriction: c.restrict,
         timeout: c.timeout,
+        checkpoint: {
+          canBindToPortLocally: !!c.checkpointCanBindToPortLocally,
+          connectdCanAuth: !!c.checkpointConnectdCanAuth,
+          connectdCanConnectToChatServers: !!c.checkpointConnectdCanConnectToChatServers,
+          connectdCanPortBind: !!c.checkpointConnectdCanPortBind,
+          connectdCanStart: !!c.checkpointConnectdCanStart,
+          connectdTunnelCreated: !!c.checkpointConnectdTunnelCreated,
+          hostnameCanFetch: !!c.checkpointHostnameCanFetch,
+          hostnameCanResolve: !!c.checkpointHostnameCanResolve,
+          proxyCanCreate: !!c.checkpointProxyCanCreate,
+        },
         default: false,
       }
 

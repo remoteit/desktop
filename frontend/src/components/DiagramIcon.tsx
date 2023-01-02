@@ -7,7 +7,8 @@ type Props = { type: DiagramGroupType; end?: boolean }
 
 export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   const [hover, setHover] = React.useState<boolean>(false)
-  const { highlightTypes, activeTypes, state, proxy } = useContext(DiagramContext)
+  const { highlightTypes, activeTypes, errorTypes, state, proxy } = useContext(DiagramContext)
+  const error = type ? errorTypes.includes(type) : false
   const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
   let tooltip = ''
@@ -62,6 +63,10 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
 
   if (highlight) {
     props.color = 'primary'
+  }
+
+  if (error) {
+    props.color = 'danger'
   }
 
   return (

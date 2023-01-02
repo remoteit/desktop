@@ -5,7 +5,7 @@ import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
 import { useLocation } from 'react-router-dom'
 import { isRelay, connectionState } from '../helpers/connectionHelper'
-import { IP_LATCH, REGEX_LAST_PATH } from '../shared/constants'
+import { IP_LATCH, REGEX_LAST_PATH, CLI_REACHABLE_ERROR_CODE } from '../shared/constants'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
 import { DiagramLabel } from './DiagramLabel'
@@ -32,6 +32,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
+  let errorTypes: DiagramGroupType[] = []
   let indicator: IndicatorProps | undefined = { placement: 'right' }
 
   switch (state) {
@@ -65,8 +66,17 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
     activeTypes = ['public', 'lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
   }
 
+  console.log('DIAGRAM CONNECTION', connection)
+  if (connection.error) {
+    console.log('DIAGRAM ERROR', connection.error)
+    errorTypes = ['initiator', 'agent']
+    if (connection.error.code === CLI_REACHABLE_ERROR_CODE) {
+      errorTypes = ['relay', 'target']
+    }
+  }
+
   return (
-    <DiagramContext.Provider value={{ state, relay, toTypes, activeTypes, highlightTypes }}>
+    <DiagramContext.Provider value={{ state, relay, toTypes, activeTypes, highlightTypes, errorTypes }}>
       {/* <Pre {...{ connection }} /> */}
       <Box className={css.diagram}>
         {lan && (

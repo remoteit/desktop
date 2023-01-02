@@ -21,6 +21,7 @@ export const DeviceContext = createContext<IDeviceContext>({
 
 export const DiagramContext = createContext<IDiagramContext>({
   toTypes: undefined,
+  errorTypes: [],
   activeTypes: [],
   highlightTypes: [],
   state: undefined,

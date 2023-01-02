@@ -67,6 +67,7 @@ export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
+export const CLI_REACHABLE_ERROR_CODE = 523
 
 export const DEFAULT_CONNECTION: IConnection = {
   id: '',

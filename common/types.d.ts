@@ -188,6 +188,17 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
+    checkpoint?: {
+      canBindToPortLocally: boolean
+      connectdCanAuth: boolean
+      connectdCanConnectToChatServers: boolean
+      connectdCanPortBind: boolean
+      connectdCanStart: boolean
+      connectdTunnelCreated: boolean
+      hostnameCanFetch: boolean
+      hostnameCanResolve: boolean
+      proxyCanCreate: boolean
+    }
   }
 
   type IConnectionState =

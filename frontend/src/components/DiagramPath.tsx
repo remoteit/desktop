@@ -8,7 +8,8 @@ type Props = {
 }
 
 export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
-  const { highlightTypes, activeTypes, state, proxy } = useContext(DiagramContext)
+  const { highlightTypes, activeTypes, errorTypes, state, proxy } = useContext(DiagramContext)
+  const error = type ? errorTypes.includes(type) : false
   const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
   let sx: DividerProps['sx'] = {
@@ -62,6 +63,10 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
 
   if (highlight) {
     sx.borderColor = 'primary.main'
+  }
+
+  if (error) {
+    sx.borderColor = 'error.main'
   }
 
   return <Divider sx={sx} />

@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
-import { Typography, InputLabel, Collapse, Paper, alpha } from '@mui/material'
+import { Typography, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
 import { getAttributes } from './Attributes'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
@@ -14,6 +14,7 @@ import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
+import { Icon } from './Icon'
 
 type Props = {
   connection?: IConnection
@@ -121,7 +122,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       </Typography>
     </div>
   )
-
+  console.log('CONN CHK', connection?.checkpoint)
   return (
     <Collapse in={show}>
       <Gutters top="md" size="md" bottom={null}>
@@ -259,14 +260,46 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
         </Paper>
         <Paper className={css.details} elevation={0}>
           <Gutters bottom="xs">
-            <DataDisplay
-              attributes={attributes}
-              connection={connection}
-              session={session}
-              application={app}
-              width={100}
-              disablePadding
-            />
+            <Box display="flex" flexDirection="row" alignItems="center" marginRight={-1}>
+              <DataDisplay
+                attributes={attributes}
+                connection={connection}
+                session={session}
+                application={app}
+                width={100}
+                disablePadding
+              />
+              {connection?.checkpoint && connection.enabled && (
+                <IconButton
+                  name="stethoscope"
+                  color="grayDarker"
+                  size="md"
+                  placement="left"
+                  title={[
+                    'canBindToPortLocally',
+                    'connectdCanAuth',
+                    'connectdCanConnectToChatServers',
+                    'connectdCanPortBind',
+                    'connectdCanStart',
+                    'connectdTunnelCreated',
+                    'hostnameCanFetch',
+                    'hostnameCanResolve',
+                    'proxyCanCreate',
+                  ].map(a => (
+                    <span key={a}>
+                      {connection?.checkpoint?.[a] ? (
+                        <Icon name="check" color="success" fixedWidth inlineLeft />
+                      ) : (
+                        <Icon name="times" color="danger" fixedWidth inlineLeft />
+                      )}
+                      {a}
+                      <br />
+                    </span>
+                  ))}
+                  hideDisableFade
+                />
+              )}
+            </Box>
           </Gutters>
         </Paper>
       </Gutters>

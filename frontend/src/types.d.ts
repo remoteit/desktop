@@ -43,6 +43,7 @@ declare global {
 
   interface IDiagramContext {
     toTypes?: { [key in DiagramGroupType]?: string }
+    errorTypes: DiagramGroupType[]
     activeTypes: DiagramGroupType[]
     highlightTypes: DiagramGroupType[]
     state?: IConnectionState
