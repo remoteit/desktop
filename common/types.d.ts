@@ -148,7 +148,7 @@ declare global {
     autoStart?: boolean
     commandLog?: string[]
     commandTemplate?: string // command line launch template
-    connectLink?: boolean
+    connectLink?: boolean // is public persistent link
     connected?: boolean
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
@@ -318,7 +318,12 @@ declare global {
     state: IDevice['state']
     type: string
     deviceID: string
-    connection?: IConnection
+    link?: {
+      url: string
+      created: Date
+      enabled: boolean
+      password?: string
+    }
     typeID: number
     port?: number
     host?: ipAddress

@@ -15,21 +15,30 @@ const DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES = [
 
 const DEVICE_PRELOAD_ATTRIBUTES = [...DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES, 'services']
 
-export const SERVICE_SELECT = `
+const SERVICE_PRELOAD = `
   id
   name
   state
   title
-  enabled
+  license
   application
+  subdomain
+  link {
+    url
+    created
+    password
+    enabled
+  }`
+
+export const SERVICE_SELECT = `
+  ${SERVICE_PRELOAD}
+  enabled
   created
   lastReported
   port
   host
   type
-  subdomain
   protocol
-  license
   attributes
   presenceAddress
   access {
@@ -38,15 +47,6 @@ export const SERVICE_SELECT = `
       email
     }
   }`
-
-const SERVICE_PRELOAD = `
-  id
-  name
-  state
-  title
-  license
-  application
-  subdomain`
 
 const DeviceSelectLookup: ILookup<string> = {
   id: `
@@ -231,28 +231,13 @@ export async function graphQLPreloadNetworks(accountId: string) {
   )
 }
 
-export async function graphQLFetchConnectionsAndLinks(params: { ids: string[] }) {
+export async function graphQLFetchConnections(params: { ids: string[] }) {
   return await graphQLRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
           device(id: $ids)  {
             ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
-          }
-          links {
-            url
-            created
-            password
-            enabled
-            service {
-              id
-              name
-              subdomain
-              device {
-                id
-                name
-              }
-            }
           }
         }
       }`,
@@ -401,6 +386,7 @@ export function graphQLDeviceAdaptor({
     }
   })
   store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
+  store.dispatch.connections.parseConnectionsLinks({ devices: data, accountId })
   return data
 }
 
@@ -425,6 +411,10 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         host: s.host,
         protocol: s.protocol,
         presenceAddress: s.presenceAddress,
+        link: s.link && {
+          ...s.link,
+          created: new Date(s.link.created),
+        },
         access: s.access?.map(e => ({
           email: e.user?.email || e.user?.id,
           id: e.user?.id,

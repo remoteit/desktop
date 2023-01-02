@@ -148,20 +148,6 @@ export function getConnectionLookup(state: ApplicationState) {
   }, {})
 }
 
-export function parseLinkData(responseData: any) {
-  if (!responseData.links) return []
-
-  let result: ILinkData[] = responseData.links.map(l => ({
-    ...l,
-    subdomain: l.service.subdomain,
-    serviceId: l.service.id,
-    deviceId: l.service.device.id,
-  }))
-
-  console.log('PARSE LINK DATA RESULT', result)
-  return result
-}
-
 export function cleanOrphanConnections(expectedIds?: IService['id'][]) {
   const state = store.getState()
   if (!expectedIds?.length || state.ui.offline) return

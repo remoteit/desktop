@@ -19,7 +19,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, getDevices, getDeviceModel } from '../selectors/devices'
+import { getAllDevices, getDeviceModel } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
 import { selectById } from '../selectors/devices'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
@@ -156,7 +156,6 @@ export default createModel<RootModel>()({
       if (searched) set({ results: total, accountId })
       else set({ total, accountId })
 
-      // awaiting setDevices is critical for accurate initialized state
       if (append) {
         await appendUniqueDevices({ devices, accountId })
       } else {

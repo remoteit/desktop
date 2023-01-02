@@ -122,7 +122,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       </Typography>
     </div>
   )
-  console.log('CONN CHK', connection?.checkpoint)
+
   return (
     <Collapse in={show}>
       <Gutters top="md" size="md" bottom={null}>

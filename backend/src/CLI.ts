@@ -179,7 +179,7 @@ export default class CLI {
       }
 
       d('CONNECTION STATE', c.id, c.state)
-      if (c.id === '80:00:00:00:01:26:69:30') Logger.info('CONNECTION STATUS', c)
+      // if (c.id === '80:00:00:00:01:26:69:30') Logger.info('CONNECTION STATUS', c)
 
       let result: IConnection = {
         id: c.id,

@@ -66,7 +66,6 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
     activeTypes = ['public', 'lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
   }
 
-  console.log('DIAGRAM CONNECTION', connection)
   if (connection.error) {
     console.log('DIAGRAM ERROR', connection.error)
     errorTypes = ['initiator', 'agent']
