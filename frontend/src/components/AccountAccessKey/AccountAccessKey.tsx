@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { dateOptions } from '../Duration/Duration'
 import { Gutters } from '../Gutters'
+import { Notice } from '../Notice'
 import { Icon } from '../Icon'
 import { spacing } from '../../styling'
 
@@ -43,9 +44,11 @@ export const AccountAccessKey: React.FC = () => {
         <Typography variant="body2" gutterBottom>
           Access keys are used to authenticate you with our API. You can create a new key or delete an existing key at
           any time. You can also temporarily disable a key.
-          <br />
-          <em>If you lose or forget your secret key, you cannot retrieve it. There is a limit of 2 access keys.</em>
         </Typography>
+        <Notice severity="warning" fullWidth gutterBottom>
+          If you lose or forget your secret key, you cannot retrieve it.
+          <em> There is a limit of 2 access keys. Keep your keys in a safe place.</em>
+        </Notice>
         <Button
           variant="contained"
           color="primary"
