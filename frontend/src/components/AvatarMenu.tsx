@@ -17,15 +17,12 @@ export const AvatarMenu: React.FC = () => {
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const dispatch = useDispatch<Dispatch>()
-  const { user, remoteUI, preferences, backendAuthenticated, licenseIndicator } = useSelector(
-    (state: ApplicationState) => ({
-      user: state.auth.user,
-      remoteUI: isRemoteUI(state),
-      preferences: state.backend.preferences,
-      backendAuthenticated: state.auth.backendAuthenticated,
-      licenseIndicator: selectLicenseIndicator(state),
-    })
-  )
+  const { user, remoteUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
+    user: state.auth.user,
+    remoteUI: isRemoteUI(state),
+    backendAuthenticated: state.auth.backendAuthenticated,
+    licenseIndicator: selectLicenseIndicator(state),
+  }))
 
   const css = useStyles()
   const handleClose = () => {
@@ -126,9 +123,5 @@ export const AvatarMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  menu: {
-    '& .MuiMenu-list': {
-      backgroundColor: palette.white.main,
-    },
-  },
+  menu: { '& .MuiMenu-list': { backgroundColor: palette.white.main } },
 }))

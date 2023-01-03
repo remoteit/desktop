@@ -19,7 +19,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, getDevices, getDeviceModel } from '../selectors/devices'
+import { getAllDevices, getDeviceModel } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
 import { selectById } from '../selectors/devices'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
@@ -156,7 +156,6 @@ export default createModel<RootModel>()({
       if (searched) set({ results: total, accountId })
       else set({ total, accountId })
 
-      // awaiting setDevices is critical for accurate initialized state
       if (append) {
         await appendUniqueDevices({ devices, accountId })
       } else {
@@ -334,7 +333,7 @@ export default createModel<RootModel>()({
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
           await dispatch.devices.fetchSingle({ id: deviceId })
-          dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}` })
+          dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
@@ -398,16 +397,18 @@ export default createModel<RootModel>()({
       name,
       services,
       platform,
+      tags,
       accountId,
       template,
     }: {
       name?: string
       services: IServiceRegistration[]
       platform?: number
+      tags?: string[]
       accountId: string
       template?: string | boolean
     }) {
-      const result = await graphQLRegistration({ name, services, platform, account: accountId })
+      const result = await graphQLRegistration({ name, services, platform, tags, account: accountId })
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)

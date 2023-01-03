@@ -49,6 +49,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
             />
             <TagEditor
               allowAdding={false}
+              placeholder="Remove a tag..."
               tags={getSelectedTags(devices, selected)}
               button="minus"
               buttonProps={{ title: 'Remove Tag', color: 'alwaysWhite', loading: removing, disabled: removing }}

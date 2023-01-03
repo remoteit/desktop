@@ -15,7 +15,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   let { deviceID, serviceID, networkID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
   if (!deviceID?.includes(':')) deviceID = undefined
   if (!serviceID?.includes(':')) serviceID = undefined
-  const { device, network, connections, service, connection, remoteUI, thisId, waiting } = useSelector(
+  const { user, device, network, connections, service, connection, remoteUI, thisId, waiting } = useSelector(
     (state: ApplicationState) => {
       let device: IDevice | undefined
       let service: IService | undefined
@@ -29,6 +29,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
       return {
         device,
         service,
+        user: state.user,
         network: networkID ? selectNetwork(state, networkID) : selectSharedNetwork(state, serviceID),
         connection: selectConnection(state, service),
         connections: state.connections.all.filter(c => c.deviceID === deviceID),
@@ -43,7 +44,6 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const instance: IInstance | undefined = network || device
 
   useEffect(() => {
-    console.log('instance', instance?.loaded, device?.loaded)
     if (instance?.loaded || device?.loaded || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {
@@ -62,7 +62,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   }, [deviceID, serviceID, waiting, thisId, instance])
 
   return (
-    <DeviceContext.Provider value={{ service, connection, network, device, connections, instance, waiting }}>
+    <DeviceContext.Provider value={{ user, service, connection, network, device, connections, instance, waiting }}>
       {children}
     </DeviceContext.Provider>
   )

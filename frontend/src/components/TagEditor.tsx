@@ -9,7 +9,10 @@ import { Icon } from './Icon'
 type Props = {
   tags?: ITag[]
   filter?: ITag[]
+  label?: string
+  placeholder?: string
   allowAdding?: boolean
+  hideIcons?: boolean
   createOnly?: boolean
   button?: string
   buttonProps?: ButtonProps
@@ -20,7 +23,10 @@ type Props = {
 export const TagEditor: React.FC<Props> = ({
   tags = [],
   filter = [],
+  label = 'TAG',
+  placeholder = 'New tag...',
   allowAdding = true,
+  hideIcons,
   createOnly,
   button,
   buttonProps,
@@ -61,7 +67,7 @@ export const TagEditor: React.FC<Props> = ({
           label={
             <>
               <Icon name={creating ? 'spinner-third' : 'plus'} spin={creating} size="sm" inlineLeft />
-              TAG
+              {label}
             </>
           }
           className={css.chip}
@@ -74,9 +80,10 @@ export const TagEditor: React.FC<Props> = ({
         items={tags}
         open={open}
         indicator="tag"
+        hideIcons={hideIcons}
         filter={filter}
         createOnly={createOnly}
-        placeholder={allowAdding ? 'New tag...' : 'Remove a tag...'}
+        placeholder={placeholder}
         targetEl={addRef.current}
         onItemColor={tag => getColor(tag.color)}
         InputProps={{

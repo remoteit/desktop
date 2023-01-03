@@ -94,7 +94,7 @@ export const InlineSetting: React.FC<Props> = ({
               onMouseDown={cancelBlur}
               onClick={() => {
                 onResetClick()
-                fieldRef?.current?.focus()
+                setEdit(false)
               }}
             />
           )}

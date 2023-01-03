@@ -4,7 +4,6 @@ import { useHistory } from 'react-router-dom'
 import { ListItemBack } from '../components/ListItemBack'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ConnectionDefaultsForm } from '../components/ConnectionDefaultsForm'
-import { Typography } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { DeviceContext } from '../services/Context'
 import { useDispatch } from 'react-redux'
@@ -21,18 +20,10 @@ export const ServiceDefaultsPage: React.FC = () => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <Box display="flex">
-        <ListItemBack title="Default Connection settings" />
-        <IconButton
-          name="object-intersect"
-          title="Connection Type Defaults"
-          color="grayDarker"
-          to={`/settings/defaults/${service?.typeID}`}
-        />
-      </Box>
+      <ListItemBack title="Default Connection settings" />
       <AccordionMenuItem gutters subtitle="Defaults" defaultExpanded disabled>
         <Gutters>
-          <Notice fullWidth>Default local settings for connections to this service for any user.</Notice>
+          <Notice fullWidth>Default local settings for any connections to this service.</Notice>
         </Gutters>
         <ConnectionDefaultsForm
           service={service}

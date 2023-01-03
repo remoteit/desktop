@@ -26,7 +26,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
   if (!device) return null
 
   return (
-    <Box display="flex" alignItems="center" marginLeft={9} marginRight={2}>
+    <Box display="flex" marginLeft={9} marginRight={2}>
       <Tags
         showEmpty={!canEdit}
         tags={device.tags}

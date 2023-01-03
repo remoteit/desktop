@@ -50,7 +50,7 @@ export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const REGEX_CHARACTERS = /^([^0-9]*)$/
 export const REGEX_LAST_NUMBER = /-*\d*$/
 export const REGEX_VALID_IP =
-  /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
+  /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/
 export const REGEX_VALID_HOSTNAME =
   /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 export const REGEX_TAG_SAFE = /[\s]/g
@@ -67,6 +67,7 @@ export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
+export const CLI_REACHABLE_ERROR_CODE = 523
 
 export const DEFAULT_CONNECTION: IConnection = {
   id: '',

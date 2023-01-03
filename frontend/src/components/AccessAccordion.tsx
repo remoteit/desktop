@@ -1,9 +1,9 @@
 import React, { useContext } from 'react'
+import { useSelector } from 'react-redux'
 import { DeviceContext } from '../services/Context'
-import { Chip, Box, Typography, Tooltip } from '@mui/material'
+import { Chip, Box, Typography } from '@mui/material'
 import { selectSessionUsers } from '../models/sessions'
 import { selectMembersWithAccess } from '../models/organization'
-import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { ListItemLocation } from './ListItemLocation'
@@ -21,9 +21,9 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
     connected: selectSessionUsers(state, service ? service.id : instance?.id).length,
     access: instance?.permissions.includes('MANAGE') ? selectMembersWithAccess(state, instance).map(m => m.user) : [],
   }))
-  const users = (service ? service.access : instance?.access) || []
-  const usersLinked = access.filter(user => !users.find(_u => _u.email === user.email))
-  const total = users.length + usersLinked.length
+  const guests = (service ? service.access : instance?.access) || []
+  const members = access.filter(user => !guests.find(_u => _u.email === user.email))
+  const total = guests.length + members.length
 
   if (!instance?.permissions.includes('MANAGE')) return null
 
@@ -39,14 +39,21 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
         <Box display="flex" alignItems="center">
           {!total && <Typography variant="caption">No&nbsp;users</Typography>}
           {!!connected && <Chip size="small" color="primary" label={connected} />} &nbsp;
-          {!!total && <Chip size="small" label={total} />}
-          <AddUserButton to="share" icon="plus" size="base" fixedWidth />
+          {!!total && !expanded && <Chip size="small" label={total} />}
+          <AddUserButton to="share" icon="plus" size="base" buttonBaseSize="small" fixedWidth />
         </Box>
       }
     >
-      {!!total && (
-        <ListItemLocation icon="user-group" title="Users" pathname="users" dense>
-          <Icon name="angle-right" inlineLeft fixedWidth />
+      {!!guests.length && (
+        <ListItemLocation icon="user-circle" title="Guests" pathname="users" dense>
+          <Chip size="small" label={guests.length} />
+          <Icon name="angle-right" inlineLeft inline fixedWidth />
+        </ListItemLocation>
+      )}
+      {!!members.length && (
+        <ListItemLocation icon="users" title="Organization members" pathname="users" dense>
+          <Chip size="small" label={members.length} />
+          <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>
       )}
     </AccordionMenuItem>

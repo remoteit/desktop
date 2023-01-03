@@ -128,7 +128,6 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
                         onClick={() => {
                           ui.set({
                             setupAdded: {
-                              ...DEFAULT_SERVICE,
                               typeID: getType(applicationTypes, port[0]),
                               host: ip[0] === privateIP ? IP_PRIVATE : ip[0],
                               port: port[0],

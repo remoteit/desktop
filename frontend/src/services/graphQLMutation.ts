@@ -91,16 +91,17 @@ export async function graphQLRemoveConnectLink(serviceId: string) {
 
 export async function graphQLRegistration(props: {
   name?: string
-  services: IServiceRegistration[]
+  tags?: string[]
   platform?: number
+  services: IServiceRegistration[]
   account: string
 }) {
   return await graphQLBasicRequest(
-    ` query Registration($account: String, $name: String, $platform: Int, $services: [ServiceInput!]) {
+    ` query Registration($account: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!]) {
         login {
           account(id: $account) {
-            registrationCode(name: $name, platform: $platform, services: $services)
-            registrationCommand(name: $name, platform: $platform, services: $services)
+            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services)
+            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services)
           }
         }
       }`,

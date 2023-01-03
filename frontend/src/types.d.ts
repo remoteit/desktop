@@ -31,6 +31,7 @@ declare global {
   }
 
   interface IDeviceContext {
+    user: IUser
     device?: IDevice
     network?: INetwork
     connections: IConnection[]
@@ -42,6 +43,7 @@ declare global {
 
   interface IDiagramContext {
     toTypes?: { [key in DiagramGroupType]?: string }
+    errorTypes: DiagramGroupType[]
     activeTypes: DiagramGroupType[]
     highlightTypes: DiagramGroupType[]
     state?: IConnectionState

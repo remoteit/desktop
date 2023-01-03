@@ -3,29 +3,17 @@ import { removeDeviceName } from '../shared/nameHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
-export const SERVICE_SELECT = `
-  id
-  name
-  state
-  title
-  enabled
-  application
-  created
-  lastReported
-  port
-  host
-  type
-  subdomain
-  protocol
-  license
-  attributes
-  presenceAddress
-  access {
-    user {
-      id
-      email
-    }
-  }`
+const DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES = [
+  'id',
+  'deviceName',
+  'status',
+  'permissions',
+  'owner',
+  'quality',
+  'license',
+]
+
+const DEVICE_PRELOAD_ATTRIBUTES = [...DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES, 'services']
 
 const SERVICE_PRELOAD = `
   id
@@ -34,7 +22,31 @@ const SERVICE_PRELOAD = `
   title
   license
   application
-  subdomain`
+  subdomain
+  link {
+    url
+    created
+    password
+    enabled
+  }`
+
+export const SERVICE_SELECT = `
+  ${SERVICE_PRELOAD}
+  enabled
+  created
+  lastReported
+  port
+  host
+  type
+  protocol
+  attributes
+  presenceAddress
+  access {
+    user {
+      id
+      email
+    }
+  }`
 
 const DeviceSelectLookup: ILookup<string> = {
   id: `
@@ -121,17 +133,6 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => (k === 'services' ? '' : DeviceSelectLookup[k]))
   .join('')
 
-const DEVICE_PRELOAD_ATTRIBUTES = [
-  'id',
-  'deviceName',
-  'status',
-  'permissions',
-  'owner',
-  'quality',
-  'license',
-  'services',
-]
-
 export async function graphQLFetchDeviceList({
   tag,
   size,
@@ -205,7 +206,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
+                  ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES)}
                 }          
               }
               name
@@ -230,28 +231,13 @@ export async function graphQLPreloadNetworks(accountId: string) {
   )
 }
 
-export async function graphQLFetchConnectionsAndLinks(params: { ids: string[] }) {
+export async function graphQLFetchConnections(params: { ids: string[] }) {
   return await graphQLRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
           device(id: $ids)  {
             ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
-          }
-          links {
-            url
-            created
-            password
-            enabled
-            service {
-              id
-              name
-              subdomain
-              device {
-                id
-                name
-              }
-            }
           }
         }
       }`,
@@ -400,6 +386,7 @@ export function graphQLDeviceAdaptor({
     }
   })
   store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
+  store.dispatch.connections.parseConnectionsLinks({ devices: data, accountId })
   return data
 }
 
@@ -424,6 +411,10 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         host: s.host,
         protocol: s.protocol,
         presenceAddress: s.presenceAddress,
+        link: s.link && {
+          ...s.link,
+          created: new Date(s.link.created),
+        },
         access: s.access?.map(e => ({
           email: e.user?.email || e.user?.id,
           id: e.user?.id,

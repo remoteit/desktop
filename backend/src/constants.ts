@@ -10,7 +10,6 @@ export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e137655
 
 // CLI
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
-export const REACHABLE_ERROR_CODE = 523
 
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 33280

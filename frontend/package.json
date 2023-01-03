@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.14.0-beta.1",
+  "version": "3.14.0-beta.2",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -63,7 +63,6 @@
     "screenfull": "^5.1.0",
     "seedrandom": "^3.0.5",
     "socket.io-client": "2.3.1",
-    "url": "^0.11.0",
     "use-clipboard-copy": "^0.2.0",
     "use-resize-observer": "^7.0.1",
     "validator": "^13.7.0",

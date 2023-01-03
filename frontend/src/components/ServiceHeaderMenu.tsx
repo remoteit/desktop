@@ -5,11 +5,12 @@ import { OutOfBand } from './OutOfBand'
 import { Typography } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
+import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
 import { Gutters } from './Gutters'
-import { Color } from '../styling'
 import { Diagram } from './Diagram'
+import { Color } from '../styling'
 
 type Props = {
   footer?: React.ReactNode
@@ -43,7 +44,10 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
             </Gutters>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          <Gutters top="xs">
+          <Gutters top={null} bottom="lg" size="md">
+            <ServiceConnectButton />
+          </Gutters>
+          <Gutters top="xs" bottom="sm">
             <Diagram />
           </Gutters>
         </>

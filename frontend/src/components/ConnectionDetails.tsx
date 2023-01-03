@@ -2,8 +2,9 @@ import React, { useRef, useState, useEffect } from 'react'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
-import { Typography, InputLabel, Collapse, Paper, alpha } from '@mui/material'
 import { getAttributes } from './Attributes'
+import { Typography, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
+import { ConnectionChecklist } from './ConnectionChecklist'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
@@ -259,14 +260,17 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
         </Paper>
         <Paper className={css.details} elevation={0}>
           <Gutters bottom="xs">
-            <DataDisplay
-              attributes={attributes}
-              connection={connection}
-              session={session}
-              application={app}
-              width={100}
-              disablePadding
-            />
+            <Box display="flex" flexDirection="row">
+              <DataDisplay
+                attributes={attributes}
+                connection={connection}
+                session={session}
+                application={app}
+                width={100}
+                disablePadding
+              />
+              <ConnectionChecklist connection={connection} />
+            </Box>
           </Gutters>
         </Paper>
       </Gutters>

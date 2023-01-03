@@ -9,6 +9,7 @@ export const DeviceListContext = createContext<IDeviceListContext>({
 })
 
 export const DeviceContext = createContext<IDeviceContext>({
+  user: {} as IUser,
   device: undefined,
   network: undefined,
   connections: [],
@@ -20,6 +21,7 @@ export const DeviceContext = createContext<IDeviceContext>({
 
 export const DiagramContext = createContext<IDiagramContext>({
   toTypes: undefined,
+  errorTypes: [],
   activeTypes: [],
   highlightTypes: [],
   state: undefined,

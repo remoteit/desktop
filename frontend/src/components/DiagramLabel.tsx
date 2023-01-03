@@ -44,7 +44,7 @@ export const DiagramLabel: React.FC<Props> = ({ type, right }) => {
       break
   }
 
-  if (highlight) titleColor = 'primary.main'
+  if (highlight) titleColor = 'black.main'
 
   return (
     <Box

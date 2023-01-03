@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
-import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ListItemBack } from '../../components/ListItemBack'
 import { ServiceForm } from '../../components/ServiceForm'
@@ -34,22 +33,20 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
     <>
       <Gutters size="md" bottom={null}>
         <ListItemBack title="Service configuration" />
-        <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
-          <ServiceForm
-            service={service}
-            thisDevice={thisDevice}
-            editable={!!device?.configurable || thisDevice}
-            disabled={!device?.permissions.includes('MANAGE')}
-            onCancel={exit}
-            onSubmit={async form => {
-              if (device?.permissions.includes('MANAGE')) {
-                service.attributes = { ...service.attributes, ...form.attributes }
-                await devices.setServiceAttributes(service)
-                if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
-              }
-            }}
-          />
-        </AccordionMenuItem>
+        <ServiceForm
+          service={service}
+          thisDevice={thisDevice}
+          editable={!!device?.configurable || thisDevice}
+          disabled={!device?.permissions.includes('MANAGE')}
+          onCancel={exit}
+          onSubmit={async form => {
+            if (device?.permissions.includes('MANAGE')) {
+              service.attributes = { ...service.attributes, ...form.attributes }
+              await devices.setServiceAttributes(service)
+              if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
+            }
+          }}
+        />
       </Gutters>
     </>
   )

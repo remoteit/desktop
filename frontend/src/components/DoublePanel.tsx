@@ -74,7 +74,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
 
   return (
     <>
-      <div className={css.panel} style={{ minWidth: width }} ref={primaryRef}>
+      <div className={css.panel} style={{ minWidth: width, width }} ref={primaryRef}>
         <Header />
         {primary}
       </div>

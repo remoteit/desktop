@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { Button, List, Typography, TextField, MenuItem } from '@mui/material'
+import { Button, List, Typography, TextField, MenuItem, Box } from '@mui/material'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { selectConnection, setConnection } from '../../helpers/connectionHelper'
 import { selectById } from '../../selectors/devices'
 import { makeStyles } from '@mui/styles'
-import { Container } from '../../components/Container'
+import { AccordionMenuItem } from '../../components/AccordionMenuItem'
+import { ListItemBack } from '../../components/ListItemBack'
+import { Gutters } from '../../components/Gutters'
 import { spacing } from '../../styling'
 import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
@@ -109,79 +111,84 @@ export const LanSharePage: React.FC = () => {
   }
 
   return (
-    <Container header={<Typography variant="h1">Local Network Sharing</Typography>}>
-      <List>
-        <ListItemSetting
-          icon="network-wired"
-          toggle={enabledLocalSharing}
-          onClick={handleEnableLocalSharing}
-          label="Enable LAN sharing"
-        />
-      </List>
+    <Gutters size="md" bottom={null}>
+      <Box display="flex">
+        <ListItemBack title="Local Network Sharing" />
+      </Box>
+      <AccordionMenuItem gutters subtitle="Settings" defaultExpanded disabled>
+        <List>
+          <ListItemSetting
+            icon="network-wired"
+            toggle={enabledLocalSharing}
+            onClick={handleEnableLocalSharing}
+            label="Enable LAN sharing"
+          />
+        </List>
 
-      <div className={css.container}>
-        <div>
-          <Typography variant="caption">Your local IP address</Typography>
-          <Typography variant="h3">{lanIp}</Typography>
+        <div className={css.container}>
+          <div>
+            <Typography variant="caption">Your local IP address</Typography>
+            <Typography variant="h3">{lanIp}</Typography>
+          </div>
+          <Typography variant="body2" color="textSecondary">
+            Allow users to connect to your remote device through your IP address using a custom port.
+          </Typography>
+          {enabledLocalSharing && (
+            <>
+              <TextField
+                className={css.textField}
+                multiline={currentIp.toString().length > 30}
+                label="Bind IP Address"
+                error={!!error}
+                defaultValue={currentIp}
+                variant="filled"
+                helperText={error}
+                onChange={handleBindIP}
+              />
+              <br />
+              <TextField
+                select
+                className={css.textField}
+                variant="filled"
+                label="Local Network Security"
+                value={selection.toString()}
+                onChange={handleLocalNetworkSecurity}
+              >
+                {selections.map((option, key) => (
+                  <MenuItem key={key} value={key.toString()}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Typography variant="body2" color="textSecondary">
+                {selected.note} <br />
+                <span className={css.mask}>
+                  Mask {getSelectionValue()}
+                  {getSelectionMask()}
+                </span>
+              </Typography>
+              {typeof selected.value === 'function' && (
+                <Quote>
+                  <TextField
+                    className={css.textField}
+                    value={address}
+                    variant="filled"
+                    label="IP address"
+                    onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
+                  />
+                </Quote>
+              )}
+            </>
+          )}
         </div>
-        <Typography variant="body2" color="textSecondary">
-          Allow users to connect to your remote device through your IP address using a custom port.
-        </Typography>
-        {enabledLocalSharing && (
-          <>
-            <TextField
-              className={css.textField}
-              multiline={currentIp.toString().length > 30}
-              label="Bind IP Address"
-              error={!!error}
-              defaultValue={currentIp}
-              variant="filled"
-              helperText={error}
-              onChange={handleBindIP}
-            />
-            <br />
-            <TextField
-              select
-              className={css.textField}
-              variant="filled"
-              label="Local Network Security"
-              value={selection.toString()}
-              onChange={handleLocalNetworkSecurity}
-            >
-              {selections.map((option, key) => (
-                <MenuItem key={key} value={key.toString()}>
-                  {option.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Typography variant="body2" color="textSecondary">
-              {selected.note} <br />
-              <span className={css.mask}>
-                Mask {getSelectionValue()}
-                {getSelectionMask()}
-              </span>
-            </Typography>
-            {typeof selected.value === 'function' && (
-              <Quote>
-                <TextField
-                  className={css.textField}
-                  value={address}
-                  variant="filled"
-                  label="IP address"
-                  onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
-                />
-              </Quote>
-            )}
-          </>
-        )}
-      </div>
-      <div className={css.container}>
-        <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
-          Save
-        </Button>
-        <Button onClick={() => history.goBack()}>Cancel</Button>
-      </div>
-    </Container>
+        <div className={css.container}>
+          <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
+            Save
+          </Button>
+          <Button onClick={() => history.goBack()}>Cancel</Button>
+        </div>
+      </AccordionMenuItem>
+    </Gutters>
   )
 }
 

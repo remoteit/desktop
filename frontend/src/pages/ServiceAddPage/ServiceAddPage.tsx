@@ -3,12 +3,11 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
-import { ServiceSmartForm } from '../../components/ServiceSmartForm'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
-import { isRelay } from '../../helpers/connectionHelper'
 import { Typography } from '@mui/material'
 import { Container } from '../../components/Container'
+import { isRelay } from '../../helpers/connectionHelper'
 import { Diagram } from '../../components/Diagram'
 import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
@@ -27,12 +26,11 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
   }, [])
 
   const maxReached = device && device.services.length >= setupServicesLimit
-  const Form = form ? ServiceForm : ServiceSmartForm
 
   return (
     <Container
       gutterBottom
-      bodyProps={{ center: !form, gutterTop: true }}
+      bodyProps={{ gutterTop: true }}
       integrated
       header={
         <>
@@ -51,7 +49,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
           Desktop currently supports a maximum of {setupServicesLimit} services.
         </Typography>
       ) : (
-        <Form
+        <ServiceForm
           adding
           thisDevice={!!device?.thisDevice}
           editable={device?.configurable || !!device?.thisDevice}

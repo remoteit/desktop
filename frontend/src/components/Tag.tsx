@@ -7,16 +7,16 @@ import { Icon } from '../components/Icon'
 
 type Props = {
   tag?: ITag
-  labels: ILabel[]
   dot?: boolean
   size?: FontSize
+  hideLabels?: boolean
   onClick?: () => void
   onDelete?: () => void
 }
 
-export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, onDelete }) => {
+export const Tag: React.FC<Props> = ({ tag, dot, size = 'xxs', hideLabels, onClick, onDelete }) => {
   const getColor = useLabel()
-  const color = tag ? getColor(tag.color) : undefined
+  const color = tag && !hideLabels ? getColor(tag.color) : undefined
   const css = useStyles({ color })
 
   if (!tag) return null
@@ -45,7 +45,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
       className={css.chip}
       label={
         <>
-          <Icon name="tag" type="solid" size={size} />
+          {!hideLabels && <Icon name="tag" type="solid" size={size} />}
           {tag.name}
         </>
       }
@@ -71,8 +71,7 @@ const useStyles = makeStyles({
     '& + span': { marginLeft: spacing.xxs },
   },
   chip: {
-    marginBottom: 2,
-    marginTop: 2,
+    marginBottom: 4,
     '& .MuiChip-label > *': { marginRight: spacing.xs },
     '& .MuiChip-deleteIconSmall': {
       marginLeft: -spacing.sm,

@@ -148,7 +148,7 @@ declare global {
     autoStart?: boolean
     commandLog?: string[]
     commandTemplate?: string // command line launch template
-    connectLink?: boolean
+    connectLink?: boolean // is public persistent link
     connected?: boolean
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
@@ -188,6 +188,17 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
+    checkpoint?: {
+      canBindToPortLocally: boolean
+      connectdCanAuth: boolean
+      connectdCanConnectToChatServers: boolean
+      connectdCanPortBind: boolean
+      connectdCanStart: boolean
+      connectdTunnelCreated: boolean
+      hostnameCanFetch: boolean
+      hostnameCanResolve: boolean
+      proxyCanCreate: boolean
+    }
   }
 
   type IConnectionState =
@@ -307,7 +318,12 @@ declare global {
     state: IDevice['state']
     type: string
     deviceID: string
-    connection?: IConnection
+    link?: {
+      url: string
+      created: Date
+      enabled: boolean
+      password?: string
+    }
     typeID: number
     port?: number
     host?: ipAddress
@@ -466,6 +482,8 @@ declare global {
     protocol: 'TCP' | 'UDP'
     description: string
   }
+
+  type ISmartApplication = 'URL' | undefined
 
   interface ICloudEvent {
     sessionId: string
