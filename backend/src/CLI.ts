@@ -30,7 +30,7 @@ type IExec = {
   skipSignInCheck?: boolean
   admin?: boolean
   quiet?: boolean
-  force?: boolean
+  skipInstalledCheck?: boolean
   onCommand?: (command: string) => void
   onError?: (error: Error) => void
 }
@@ -302,17 +302,32 @@ export default class CLI {
   }
 
   async agentRunning() {
-    const data = await this.exec({ cmds: [strings.agentStatus()], skipSignInCheck: true, force: true })
+    const data = await this.exec({
+      cmds: [strings.agentStatus()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: !binaryInstaller.ready,
+    })
     return data?.running
   }
 
   async version() {
-    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true, force: true })
+    const result = await this.exec({
+      cmds: [strings.version()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+    })
     return result?.version
   }
 
   async agentVersion() {
-    const result = await this.exec({ cmds: [strings.agentVersion()], skipSignInCheck: true, quiet: true, force: true })
+    const result = await this.exec({
+      cmds: [strings.agentVersion()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+    })
     return result?.version
   }
 
@@ -320,13 +335,13 @@ export default class CLI {
     cmds,
     checkAuthHash = false,
     skipSignInCheck = false,
+    skipInstalledCheck,
     admin = false,
     quiet = false,
-    force,
     onCommand,
     onError,
   }: IExec) {
-    if (!force && (binaryInstaller.inProgress || !binaryInstaller.ready)) {
+    if (!skipInstalledCheck && (binaryInstaller.inProgress || !binaryInstaller.ready)) {
       Logger.info('EXEC EXITED -> CLI NOT READY', {
         inProgress: binaryInstaller.inProgress,
         ready: binaryInstaller.ready,
@@ -360,11 +375,15 @@ export default class CLI {
       try {
         const parsed = typeof result === 'string' ? JSON.parse(result) : result
         if (parsed.code === 0) parsed.message && Logger.info('CLI EXEC MESSAGE', parsed.message)
-        else throw new Error(parsed)
+        else Logger.error('CLI ERROR', { result, command: commands.toSafeString() })
         return parsed.data
       } catch (error) {
         if (error instanceof Error) {
-          Logger.error('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
+          Logger.error('CLI PARSE ERROR', {
+            result,
+            error,
+            command: commands.toSafeString(),
+          })
         }
       }
     }

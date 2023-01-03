@@ -1,11 +1,11 @@
-import AirBrake from './AirBrake'
+import cli from './cliInterface'
 import user from './User'
+import AirBrake from './AirBrake'
 import Logger from './Logger'
 import environment from './environment'
 import { promisify } from 'util'
 import { exec, ExecException } from 'child_process'
 import { sudoPromise } from './sudoPromise'
-import cli from './cliInterface'
 
 type StdExecException = ExecException & { stderr: string; stdout: string }
 
@@ -57,10 +57,7 @@ export default class Command {
 
   parseStdError(error: string) {
     const cliError = error.match(/{.*}/)
-    if (cliError) {
-      const { message }: CliStderr = toJson(cliError[0])
-      return message
-    }
+    if (cliError) return toJson(cliError[0])
     return error
   }
 

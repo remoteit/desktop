@@ -32,6 +32,7 @@ export class BinaryInstaller {
       if (environment.isElevated) return await this.install()
       return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
     } else if (!this.ready) {
+      Logger.info('INSTALLER DONE')
       this.ready = true
     }
 
