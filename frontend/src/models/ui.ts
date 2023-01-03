@@ -107,7 +107,7 @@ export const defaultState: UIState = {
   drawerMenu: null,
   drawerAccordion: 'sort',
   columns: ['deviceName', 'status', 'tags', 'services'],
-  columnWidths: {},
+  columnWidths: { tags: 120 },
   collapsed: ['recent'],
   limitsOverride: {},
   serviceContextMenu: undefined,
