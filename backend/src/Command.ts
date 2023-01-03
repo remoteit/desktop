@@ -57,7 +57,10 @@ export default class Command {
 
   parseStdError(error: string) {
     const cliError = error.match(/{.*}/)
-    if (cliError) return toJson(cliError[0])
+    if (cliError) {
+      const { message }: CliStderr = toJson(cliError[0])
+      return message
+    }
     return error
   }
 

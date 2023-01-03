@@ -180,7 +180,6 @@ export class BinaryInstaller {
     }
 
     if (updated) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
-    else Logger.info('CLI NOT UPDATED', { previousVersion, thisVersion })
 
     return updated
   }

@@ -306,7 +306,7 @@ export default class CLI {
       cmds: [strings.agentStatus()],
       skipSignInCheck: true,
       skipInstalledCheck: true,
-      quiet: !binaryInstaller.ready,
+      quiet: true,
     })
     return data?.running
   }
@@ -357,11 +357,9 @@ export default class CLI {
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
-    if (!quiet) {
+    if (!quiet && !skipInstalledCheck) {
       commands.onError = (e: Error) => {
         if (typeof onError === 'function') onError(e)
-        // @TODO detect signing or service not started error and don't display,
-        // just run check and sign in commands.
         EventBus.emit(this.EVENTS.error, e.toString())
         binaryInstaller.check()
       }
