@@ -53,8 +53,8 @@ export const NetworkListItem: React.FC<Props> = ({
 
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connections) pathname = `/connections/${serviceId}`
-  if (session) pathname += `/${session.id}`
   const matchname = pathname
+  pathname += `/${session?.id || 'none'}`
   if (external) pathname += '/other'
   else pathname += '/connect'
 
@@ -82,7 +82,11 @@ export const NetworkListItem: React.FC<Props> = ({
       <ListItemIcon className={css.platform}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
-      <ListItemText className={css.text} primary={<ConnectionName name={name} port={connection.port} />} />
+      <ListItemText
+        className={css.text}
+        primary={<ConnectionName name={name} port={connection.port} />}
+        secondary={pathname}
+      />
       {children}
     </ListItemLocation>
   )

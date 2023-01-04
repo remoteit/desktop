@@ -59,7 +59,6 @@ export const Connect: React.FC = () => {
         show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
-      {/* <ServiceConnectButton /> */}
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem

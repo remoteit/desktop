@@ -122,7 +122,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   return (
     <Collapse in={show}>
       <Gutters top="md" size="md" bottom={null}>
-        <Paper className={classnames(css.address, !connection?.enabled && css.disabled)} elevation={0}>
+        <Paper className={classnames(css.address, !(connection?.enabled || session) && css.disabled)} elevation={0}>
           {!!showTitle ? (
             <Gutters size="md">
               <InputLabel shrink>User</InputLabel>
