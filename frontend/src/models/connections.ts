@@ -1,17 +1,15 @@
 import { parse as urlParse } from 'url'
-import { pickTruthy } from '../helpers/utilHelper'
 import { createModel } from '@rematch/core'
+import { pickTruthy, dedupe } from '../helpers/utilHelper'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import {
   cleanOrphanConnections,
   getConnectionServiceIds,
   newConnection,
-  selectConnection,
   setConnection,
   getConnectionLookup,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
-import { dedupe } from '../helpers/utilHelper'
 import {
   graphQLConnect,
   graphQLDisconnect,
@@ -21,6 +19,7 @@ import {
 } from '../services/graphQLMutation'
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors } from '../services/graphQL'
+import { selectConnection } from '../selectors/connections'
 import { selectNetwork } from './networks'
 import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
@@ -86,7 +85,7 @@ export default createModel<RootModel>()({
 
           // add / update connect link
           if (s.link) {
-            connection = connection || DEFAULT_CONNECTION
+            connection = connection || newConnection(s)
 
             connection = {
               ...connection,

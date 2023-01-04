@@ -122,11 +122,6 @@ export function selectConnections(state: ApplicationState) {
   return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public || c.connectLink))
 }
 
-export function selectConnection(state: ApplicationState, service?: IService) {
-  let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
-  return connection
-}
-
 export function selectEnabledConnections(state: ApplicationState) {
   return selectConnections(state).filter(connection => connection.enabled)
 }

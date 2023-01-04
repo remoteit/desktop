@@ -24,6 +24,7 @@ export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, di
     saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,
   }))
+
   const initForm = () => {
     setError(undefined)
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)

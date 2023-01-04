@@ -43,7 +43,7 @@ export default createModel<RootModel>()({
 })
 
 export function findType(all: IApplicationType[], typeId?: number) {
-  return all.find(t => t.id === typeId) || all[0] || emptyServiceType
+  return all.find(t => t.id === typeId) || emptyServiceType
 }
 
 export function getType(all: IApplicationType[], port?: number) {
@@ -57,10 +57,11 @@ export function canUseConnectLink(state: ApplicationState, typeId?: number) {
   return applicationType.proxy
 }
 
-const emptyServiceType = {
+const emptyServiceType: IApplicationType = {
   id: 1,
   name: '',
-  port: null,
+  port: 0,
+  scheme: '',
   proxy: false,
   protocol: 'TCP',
   description: '',

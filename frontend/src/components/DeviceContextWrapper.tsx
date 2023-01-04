@@ -7,7 +7,7 @@ import { useLocation, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectSharedNetwork } from '../models/networks'
-import { selectConnection } from '../helpers/connectionHelper'
+import { selectConnection } from '../selectors/connections'
 import { getDeviceModel } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 
