@@ -622,7 +622,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiTooltip: {
         styleOverrides: {
-          tooltip: { '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 } },
+          tooltip: {
+            '& .MuiDivider-root': { margin: `${spacing.xxs}px 0`, borderColor: palette.alwaysWhite.main, opacity: 0.3 },
+          },
         },
       },
       MuiTableCell: {

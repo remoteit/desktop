@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { IP_PRIVATE, DEFAULT_CONNECTION, REGEX_CONNECTION_NAME, REGEX_CONNECTION_TRIM } from '../shared/constants'
+import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
 import { getActiveUser } from '../models/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
@@ -146,6 +146,18 @@ export function getConnectionLookup(state: ApplicationState) {
     result[c.id] = c
     return result
   }, {})
+}
+
+export function getEndpoint(connection?: IConnection) {
+  let name = connection?.host
+  let port = connection?.port
+
+  if (!name && connection?.connecting) {
+    name = 'Connecting...'
+    port = undefined
+  }
+
+  return name + (port ? ':' + port : '')
 }
 
 export function cleanOrphanConnections(expectedIds?: IService['id'][]) {

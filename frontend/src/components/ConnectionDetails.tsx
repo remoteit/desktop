@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
+import { getEndpoint } from '../helpers/connectionHelper'
 import { getAttributes } from './Attributes'
 import { Typography, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
 import { ConnectionChecklist } from './ConnectionChecklist'
@@ -59,12 +60,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   let name = connection?.host
   let port = connection?.port
 
-  if (!name && connection?.connecting) {
-    name = 'Connecting...'
-    port = undefined
-  }
-
-  const endpoint = name + (port ? ':' + port : '')
+  const endpoint = getEndpoint(connection)
   const endpointName = (connection?.public ? 'Public' : 'Local') + ' Endpoint'
 
   const basicDisplay = (
