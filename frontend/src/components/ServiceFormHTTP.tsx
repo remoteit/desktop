@@ -67,7 +67,6 @@ export const ServiceFormHTTP: React.FC<Props> = ({
   }, [field])
 
   useEffect(() => {
-    console.log('form change', applicationType?.id, '!==', form.typeID)
     if (applicationType?.id !== form.typeID) setField(formToURL(form).origin)
   }, [form])
 

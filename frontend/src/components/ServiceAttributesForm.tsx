@@ -43,7 +43,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       {!globalDefaults && (
         <ListItem className={css.field}>
           <TextField
-            label="Default Local Port"
+            label="Local Port"
             value={attributes.defaultPort || ''}
             disabled={disabled}
             variant="filled"
@@ -79,6 +79,25 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           <b> Default peer to peer with proxy failover</b>
         </Typography>
       </ListItem>
+      {!globalDefaults && app.reverseProxy && (
+        <ListItem className={css.field}>
+          <TextField
+            label="Host Header Override"
+            value={attributes.targetHost || ''}
+            disabled={disabled}
+            variant="filled"
+            onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
+          />
+          <Typography variant="caption">
+            A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing
+            scenarios to route requests to the appropriate server.
+            <i>
+              &nbsp;Example
+              <b> webui.example.com</b>
+            </i>
+          </Typography>
+        </ListItem>
+      )}
       {globalDefaults && (
         <>
           <ListItem className={css.field}>
