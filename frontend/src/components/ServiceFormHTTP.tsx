@@ -79,7 +79,7 @@ export const ServiceFormHTTP: React.FC<Props> = ({
       <TextField
         required
         value={field}
-        label="Endpoint"
+        label="Service URL"
         variant="filled"
         error={!!error}
         disabled={disabled}
