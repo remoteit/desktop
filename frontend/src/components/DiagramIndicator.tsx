@@ -1,58 +1,32 @@
 import React from 'react'
-import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { spacing, Color } from '../styling'
+import { Color } from '../styling'
+import { Icon } from './Icon'
 
 export type IndicatorProps = {
-  border?: Color
+  color?: Color
   placement?: 'left' | 'right'
+  hide?: boolean
 }
 
 export const DiagramIndicator: React.FC<IndicatorProps> = props => {
   const css = useStyles(props)
+  if (props.hide) return null
   return (
-    <>
-      <span className={classnames(css.indicator, css.border)} />
-      <span className={classnames(css.indicator, css.highlight)} />
-      <span className={classnames(css.indicator, css.main)} />
-    </>
+    <span className={css.icon}>
+      <Icon name="arrow-up" fontSize={22} type="solid" color={props.color} />
+    </span>
   )
 }
 
-const SIZE = 8
-const GUTTERS = 10
+const GUTTERS = 32
 
 const useStyles = makeStyles(({ palette }) => ({
-  indicator: ({ placement }: IndicatorProps) => ({
+  icon: ({ placement }: IndicatorProps) => ({
+    bottom: -26,
     position: 'absolute',
-    bottom: -spacing.sm,
-    left: placement === 'right' ? undefined : -GUTTERS,
-    right: placement === 'right' ? -GUTTERS : undefined,
-    transform: `translate(${SIZE * (placement === 'right' ? -2 : 2)}px)`,
-    '&::before, &::after': {
-      content: '""',
-      position: 'absolute',
-      display: 'block',
-      width: '100vw',
-      background: 'transparent',
-    },
-    '&::before': {
-      borderRight: `${SIZE}px solid transparent`,
-      right: '100%',
-    },
-    '&::after': { borderLeft: `${SIZE}px solid transparent`, left: 0 },
-  }),
-  main: {
-    '&::before, &::after': { borderTop: `${SIZE}px solid ${palette.white.main}` },
-  },
-  highlight: {
-    '&::before, &::after': { borderTop: `${SIZE}px solid ${palette.grayDarker.main}` },
-    '&::before': { transform: `translate(2px)` },
-    '&::after': { transform: `translate(-2px)` },
-  },
-  border: ({ border = 'grayLighter' }: IndicatorProps) => ({
-    '&::before, &::after': { borderTop: `${SIZE + 1}px solid ${palette[border].main}` },
-    '&::before': { transform: `translate(1px)` },
-    '&::after': { transform: `translate(-1px)` },
+    left: placement === 'right' ? undefined : GUTTERS,
+    right: placement === 'right' ? GUTTERS : undefined,
+    filter: `drop-shadow(3px 2px 1px ${palette.grayLightest.main})`,
   }),
 }))
