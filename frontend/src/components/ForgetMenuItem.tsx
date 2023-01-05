@@ -11,7 +11,7 @@ type Props = {
 
 export const ForgetMenuItem: React.FC<Props> = ({ connection, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
-  const disabled = !connection || connection.default
+  const disabled = !connection || connection.default || connection.connectLink
 
   const forget = () => {
     if (connection) dispatch.connections.forget(connection.id)

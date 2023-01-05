@@ -32,9 +32,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        <div>
-          <ForgetMenuItem connection={connection} onClick={handleClose} />
-        </div>
+        <ForgetMenuItem connection={connection} onClick={handleClose} />
         <MenuItem
           dense
           onClick={async () => {

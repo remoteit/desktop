@@ -380,11 +380,6 @@ export default createModel<RootModel>()({
       connection.autoStart = undefined
       connection.port = connection.port || state.backend.freePort
 
-      if (connection.connectLink) {
-        dispatch.connections.setConnectLink({ ...connection, enabled: true, starting: true })
-        return
-      }
-
       if (connection.public || isPortal()) {
         dispatch.connections.proxyConnect(connection)
         return
@@ -398,11 +393,6 @@ export default createModel<RootModel>()({
     async disconnect(connection: IConnection | undefined) {
       if (!connection) {
         console.warn('No connection to disconnect')
-        return
-      }
-
-      if (connection.connectLink) {
-        dispatch.connections.setConnectLink({ ...connection, enabled: false })
         return
       }
 
@@ -432,8 +422,6 @@ export default createModel<RootModel>()({
     async forget(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      const connection = all.find(a => a.id === id)
-      if (connection?.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
       if (state.auth.backendAuthenticated) emit('service/forget', { id })
       else set({ all: all.filter(c => c.id !== id) })
     },
@@ -441,8 +429,6 @@ export default createModel<RootModel>()({
     async clear(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      const connection = all.find(a => a.id === id)
-      if (connection?.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
       if (state.auth.backendAuthenticated) emit('service/clear', { id })
       else set({ all: all.filter(c => c.id !== id) })
     },

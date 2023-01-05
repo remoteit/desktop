@@ -82,11 +82,7 @@ export const NetworkListItem: React.FC<Props> = ({
       <ListItemIcon className={css.platform}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
-      <ListItemText
-        className={css.text}
-        primary={<ConnectionName name={name} port={connection.port} />}
-        secondary={pathname}
-      />
+      <ListItemText className={css.text} primary={<ConnectionName name={name} port={connection.port} />} />
       {children}
     </ListItemLocation>
   )
