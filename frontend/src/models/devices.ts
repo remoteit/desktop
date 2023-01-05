@@ -274,15 +274,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async renameService(service: IService, state) {
-      let [_, device] = selectById(state, undefined, service.deviceID)
-      if (!device) return
-      const index = device.services.findIndex((s: IService) => s.id === service.id)
-      device.services[index].name = service.name
-      dispatch.accounts.setDevice({ id: device.id, device })
-      dispatch.devices.rename(service)
-    },
-
     async renameDevice(device: IDevice) {
       dispatch.accounts.setDevice({ id: device.id, device })
       dispatch.devices.rename(device)
@@ -291,6 +282,14 @@ export default createModel<RootModel>()({
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
       await dispatch.devices.fetchSingle({ id })
+    },
+
+    async setService({ id, set }: { id: string; set: ILookup<any> }, state) {
+      let [_, device] = selectById(state, undefined, id)
+      if (!device) return
+      const index = device.services.findIndex((s: IService) => s.id === id)
+      for (const key in set) device.services[index][key] = set[key]
+      dispatch.accounts.setDevice({ id: device.id, device })
     },
 
     async setAttributes(device: IDevice) {

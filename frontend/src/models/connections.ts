@@ -83,8 +83,8 @@ export default createModel<RootModel>()({
           let connection = lookup[s.id]
           const online = s.state === 'active'
 
-          // add / update connect link
-          if (s.link) {
+          // add / update enabled connect links
+          if (s.link?.enabled) {
             connection = connection || newConnection(s)
 
             connection = {
@@ -92,7 +92,6 @@ export default createModel<RootModel>()({
               id: s.id,
               deviceID: d.id,
               name: connection.name || s.subdomain,
-              password: s.link.password,
               createdTime: s.link.created.getTime(),
               enabled: s.link.enabled,
               connectLink: s.link.enabled,
@@ -101,6 +100,7 @@ export default createModel<RootModel>()({
             const url = urlParse(s.link.url)
             if (url.host) connection.host = url.host
             if (url.port) connection.port = parseInt(url.port, 10)
+            if (s.link.password) connection.password = s.link.password
           }
 
           if (connection) {
@@ -309,15 +309,13 @@ export default createModel<RootModel>()({
     },
 
     async setConnectLink(connection: IConnection) {
-      const creating: IConnection = connection.enabled
-        ? { ...connection, connectLink: true }
-        : { ...connection, connectLink: false }
+      const creating: IConnection = { ...connection, connectLink: connection.enabled }
 
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
         serviceId: connection.id,
         enabled: connection.enabled,
-        password: connection.password?.trim() || null,
+        password: connection.password?.trim(),
       })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
@@ -346,29 +344,16 @@ export default createModel<RootModel>()({
     async removeConnectLink(connection?: IConnection) {
       if (!connection) return console.warn('No connection to disconnect')
 
-      const removing: IConnection = {
-        ...connection,
-        connectLink: false,
-        enabled: false,
-        disconnecting: true,
-      }
-      dispatch.connections.updateConnection(removing)
+      dispatch.connections.setConnectLink({ ...connection, enabled: false })
+      dispatch.devices.setService({ id: connection.id, set: { link: undefined } })
       const result = await graphQLRemoveConnectLink(connection.id)
 
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred removing your persistent connection. Please contact support.' }
-        dispatch.connections.updateConnection(connection)
-        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
-        return
+        await dispatch.connections.updateConnection(connection)
       }
 
-      setConnection({
-        ...removing,
-        host: undefined,
-        password: undefined,
-        disconnecting: false,
-        connected: false,
-      })
+      await dispatch.devices.fetchSingle({ id: connection.id, isService: true })
     },
 
     async connect(connection: IConnection, state) {

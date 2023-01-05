@@ -148,9 +148,9 @@ declare global {
     autoStart?: boolean
     commandLog?: string[]
     commandTemplate?: string // command line launch template
-    connectLink?: boolean // is public persistent link
     connected?: boolean
     connecting?: boolean
+    connectLink?: boolean // is public persistent link
     createdTime?: number // unix timestamp track for garbage cleanup
     default?: boolean // if the connection is in a default state - gets removed on modification
     description?: string
@@ -180,9 +180,9 @@ declare global {
     reachable?: boolean // if remote connection resource is reachable
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
-    stopping?: boolean // service stopping the listener
     starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
+    stopping?: boolean // service stopping the listener
     surveyed?: string // the session ID of the survey that has been answered
     targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
