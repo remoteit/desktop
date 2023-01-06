@@ -137,14 +137,17 @@ export default class ConnectionPool {
       'connecting',
       'disconnecting',
       'isP2P',
-      'reachable',
       'restriction',
       'timeout',
       'sessionId',
       'error',
+      'checkpoint',
     ]
     return props.some(prop => {
-      if (f[prop] !== undefined && f[prop] !== t[prop]) {
+      if (
+        f[prop] !== undefined &&
+        (prop === 'checkpoint' ? JSON.stringify(f[prop]) !== JSON.stringify(t[prop]) : f[prop] !== t[prop])
+      ) {
         Logger.info('CONNECTION CHANGED', {
           id: f.id,
           prop,

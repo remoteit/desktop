@@ -4,6 +4,8 @@ const notP2P = connection =>
 const notProxy = connection =>
   !((connection.connected || connection.connecting || connection.disconnecting) && !connection.isP2P)
 
+const notConnected = connection => !(connection.connected || connection.connecting || connection.disconnecting)
+
 export const checklist: ILookup<{
   title: string
   hide?: (connection: IConnection) => boolean
@@ -43,5 +45,10 @@ export const checklist: ILookup<{
   proxyCanCreate: {
     title: 'Proxy connection established',
     hide: notProxy,
+  },
+  // any cli connection
+  targetServiceReachable: {
+    title: 'Target service is reachable',
+    hide: notConnected,
   },
 }

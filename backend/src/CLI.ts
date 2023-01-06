@@ -49,7 +49,6 @@ type IConnectionStatus = {
 	   7 - stopping  */
   isP2P?: boolean
   error?: ISimpleError
-  isReachable: boolean
   sessionID?: string
   createdAt: string
   startedAt?: string
@@ -67,6 +66,7 @@ type IConnectionStatus = {
   checkpointConnectdTunnelCreated?: boolean
   checkpointHostnameCanFetch?: boolean
   checkpointHostnameCanResolve?: boolean
+  checkpointIsTargetServiceReachable?: boolean
   checkpointProxyCanCreate?: boolean
 }
 
@@ -165,12 +165,12 @@ export default class CLI {
     return connections.map(c => {
       let error: ISimpleError | undefined
 
-      if (c.isReachable === false) {
+      if (c.checkpointIsTargetServiceReachable === false) {
         error = {
           message: 'Remote.It connected, but there is no service running on the remote machine.',
           code: CLI_REACHABLE_ERROR_CODE,
         }
-      } else if (c.isReachable === true) {
+      } else if (c.checkpointIsTargetServiceReachable === true) {
         if (error && error?.code === CLI_REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
 
@@ -192,7 +192,6 @@ export default class CLI {
         stopping: c.state === 7, //      stopping
         typeID: c.serviceType,
         isP2P: c.isP2P,
-        reachable: c.isReachable,
         restriction: c.restrict,
         timeout: c.timeout,
         checkpoint: {
@@ -205,6 +204,7 @@ export default class CLI {
           hostnameCanFetch: !!c.checkpointHostnameCanFetch,
           hostnameCanResolve: !!c.checkpointHostnameCanResolve,
           proxyCanCreate: !!c.checkpointProxyCanCreate,
+          targetServiceReachable: !!c.checkpointIsTargetServiceReachable,
         },
         default: false,
       }

@@ -177,7 +177,6 @@ declare global {
     public?: boolean // if the connection should be a public proxy link
     publicId?: string // public proxy connection ID
     publicRestriction?: ipAddress // public proxy restriction IP
-    reachable?: boolean // if remote connection resource is reachable
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
     starting?: boolean // if the connection listening is starting up
@@ -198,6 +197,7 @@ declare global {
       hostnameCanFetch: boolean
       hostnameCanResolve: boolean
       proxyCanCreate: boolean
+      targetServiceReachable: boolean
     }
   }
 

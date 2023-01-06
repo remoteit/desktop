@@ -190,7 +190,7 @@ export default createModel<RootModel>()({
               'endTime',
               'connected',
               'isP2P',
-              'reachable',
+              'checklist',
               'restriction',
               'sessionId',
               'default',
