@@ -12,21 +12,24 @@ export type IndicatorProps = {
 export const DiagramIndicator: React.FC<IndicatorProps> = props => {
   const css = useStyles(props)
   if (props.hide) return null
+
   return (
     <span className={css.icon}>
-      <Icon name="arrow-up" fontSize={22} type="solid" color={props.color} />
+      <Icon name="arrow-up" fontSize={20} type="regular" color={props.color} fixedWidth />
     </span>
   )
 }
 
-const GUTTERS = 32
+const GUTTERS = 24
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   icon: ({ placement }: IndicatorProps) => ({
-    bottom: -26,
+    bottom: -28,
     position: 'absolute',
     left: placement === 'right' ? undefined : GUTTERS,
     right: placement === 'right' ? GUTTERS : undefined,
-    filter: `drop-shadow(3px 2px 1px ${palette.grayLightest.main})`,
+    backgroundColor: palette.white.main,
+    padding: spacing(0.5),
+    borderRadius: '50%',
   }),
 }))

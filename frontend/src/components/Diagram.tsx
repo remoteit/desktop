@@ -33,16 +33,20 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
   let errorTypes: DiagramGroupType[] = []
-  let indicator: IndicatorProps = { placement: 'right', color: 'grayDarkest' }
+  let indicator: IndicatorProps = { color: 'grayDarkest' }
 
   switch (page) {
     case '/connect':
+    case '/users':
       indicator.hide = true
       break
     case '/advanced':
     case '/defaults':
     case '/lan':
       indicator.placement = 'left'
+      break
+    case '/edit':
+      indicator.placement = 'right'
       break
   }
 

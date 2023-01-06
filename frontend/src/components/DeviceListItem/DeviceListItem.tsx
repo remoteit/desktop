@@ -78,7 +78,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '&.Mui-selected:hover > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryLighter.main} 95%, transparent)`,
     },
-    '& > div:first-of-type > *': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-of-type > *': { opacity: offline ? 0.5 : 1 },
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }),
