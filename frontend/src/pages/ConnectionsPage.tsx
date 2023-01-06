@@ -1,14 +1,14 @@
 import React from 'react'
-import { Typography, Tooltip, Divider } from '@mui/material'
+import { Typography, Tooltip, ListSubheader, Divider } from '@mui/material'
 import { defaultNetwork, selectActiveNetworks, recentNetwork } from '../models/networks'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { selectConnections } from '../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../selectors/devices'
-import { LinearProgress } from '../components/LinearProgress'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
+import { StickyTitle } from '../components/StickyTitle'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
 import { Gutters } from '../components/Gutters'
@@ -56,18 +56,23 @@ export const ConnectionsPage: React.FC = () => {
   const empty = !active?.length
 
   return (
-    <Container
-      bodyProps={{ verticalOverflow: true, gutterTop: true }}
-      gutterBottom
-      header={
-        <>
-          <Typography variant="subtitle1">
-            <Title>Connections</Title>
-          </Typography>
-          <LinearProgress loading={loading} />
-        </>
-      }
-    >
+    <Container bodyProps={{ verticalOverflow: true }} gutterBottom>
+      <SessionsList
+        title="Outside connections"
+        networks={other}
+        action={
+          <Tooltip
+            title="Connections to one of your devices that were initiated by another application or user."
+            placement="top"
+            arrow
+          >
+            <Icon name="circle-question" color="grayDark" size="sm" />
+          </Tooltip>
+        }
+      />
+      <StickyTitle loading={loading}>
+        <Title>Connections</Title>
+      </StickyTitle>
       {initialized ? (
         <>
           {empty && (
@@ -82,19 +87,6 @@ export const ConnectionsPage: React.FC = () => {
           {active.map(n => (
             <Network noLink key={n.id} network={n} connections />
           ))}
-          <SessionsList
-            title="Outside Connections"
-            networks={other}
-            action={
-              <Tooltip
-                title="These are connections to a device of yours that originated from a different application or user."
-                placement="top"
-                arrow
-              >
-                <Icon name="circle-question" color="grayDark" size="sm" />
-              </Tooltip>
-            }
-          />
           {!!recent.serviceIds.length && (
             <>
               <br />

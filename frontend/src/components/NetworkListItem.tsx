@@ -34,11 +34,12 @@ export const NetworkListItem: React.FC<Props> = ({
 }) => {
   const { service, device, foundSession, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, undefined, serviceId)
+    const connection = selectConnection(state, service)
     return {
       service,
       device,
-      foundSession: state.sessions.all.find(s => s.target.id === serviceId),
-      connection: selectConnection(state, service),
+      connection,
+      foundSession: state.sessions.all.find(s => s.id === connection.sessionId),
     }
   })
   session = session || foundSession
@@ -53,8 +54,8 @@ export const NetworkListItem: React.FC<Props> = ({
 
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connections) pathname = `/connections/${serviceId}`
-  const matchname = pathname
   pathname += `/${session?.id || 'none'}`
+  const matchname = pathname
   if (external) pathname += '/other'
   else pathname += '/connect'
 
