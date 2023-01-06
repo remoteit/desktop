@@ -8,6 +8,7 @@ type Props = {
   value?: string | number
   label?: React.ReactNode
   icon?: React.ReactNode
+  placeholder?: TextFieldProps['placeholder']
   actionIcon?: React.ReactNode
   displayValue?: string | number
   filter?: RegExp
@@ -35,6 +36,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   required,
   value = '',
   resetValue = '',
+  placeholder,
   maxLength,
   autoCorrect,
   multiline,
@@ -83,6 +85,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         error={!!error}
         value={editValue}
         variant="filled"
+        placeholder={placeholder}
         className={css.field}
         onChange={event => {
           let value = event.target.value

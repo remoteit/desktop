@@ -19,9 +19,8 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, getDeviceModel } from '../selectors/devices'
+import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
-import { selectById } from '../selectors/devices'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -284,7 +283,7 @@ export default createModel<RootModel>()({
       await dispatch.devices.fetchSingle({ id })
     },
 
-    async setService({ id, set }: { id: string; set: ILookup<any> }, state) {
+    async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
       let [_, device] = selectById(state, undefined, id)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === id)
@@ -338,11 +337,22 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
     },
 
+    async cloudUpdateDevice({ id, set }: { id: string; set: ILookup<any> }, state) {
+      let device = selectDevice(state, undefined, id)
+      if (!device) return
+      for (const key in set) device[key] = set[key]
+      dispatch.accounts.setDevice({ id: device.id, device })
+      await graphQLUpdateService({
+        id,
+        presenceAddress: set.presenceAddress,
+      })
+    },
+
     async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
       if (!form.host || !form.port) return
       dispatch.ui.set({ setupServiceBusy: form.id })
       await graphQLUpdateService({
-        id: form.id,
+        id: form.id || deviceId,
         name: form.name,
         application: form.typeID,
         host: form.host,

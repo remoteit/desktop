@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
 import { DeviceDescriptionSetting } from '../components/DeviceDescriptionSetting'
+import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
@@ -17,6 +18,7 @@ export const DeviceEditPage: React.FC = () => {
           <List>
             <DeviceNameSetting />
             <DeviceDescriptionSetting />
+            <DevicePresenceSetting />
           </List>
         </Gutters>
       )}

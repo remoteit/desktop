@@ -293,6 +293,7 @@ declare global {
     services: IService[]
     hidden?: boolean
     newDevice?: boolean
+    presenceAddress: string
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -622,11 +623,11 @@ declare global {
 
   type ICloudUpdateService = {
     id: string
-    name: string
-    application: number
-    host: string
-    port: number
-    enabled: boolean
+    name?: string
+    application?: number
+    host?: string
+    port?: number
+    enabled?: boolean
     presenceAddress?: string
   }
 

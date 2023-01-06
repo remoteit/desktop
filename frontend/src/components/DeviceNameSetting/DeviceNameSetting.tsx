@@ -31,9 +31,7 @@ export const DeviceNameSetting: React.FC = () => {
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}
-      onSave={name => {
-        devices.renameDevice({ ...device, name: name.toString() })
-      }}
+      onSave={name => devices.renameDevice({ ...device, name: name.toString() })}
     />
   )
 }

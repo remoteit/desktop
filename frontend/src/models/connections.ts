@@ -345,7 +345,7 @@ export default createModel<RootModel>()({
       if (!connection) return console.warn('No connection to disconnect')
 
       dispatch.connections.setConnectLink({ ...connection, enabled: false })
-      dispatch.devices.setService({ id: connection.id, set: { link: undefined } })
+      dispatch.devices.updateService({ id: connection.id, set: { link: undefined } })
       const result = await graphQLRemoveConnectLink(connection.id)
 
       if (result === 'ERROR') {
