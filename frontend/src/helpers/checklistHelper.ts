@@ -4,7 +4,9 @@ const notP2P = connection =>
 const notProxy = connection =>
   !((connection.connected || connection.connecting || connection.disconnecting) && !connection.isP2P)
 
-const notConnected = connection => !(connection.connected || connection.connecting || connection.disconnecting)
+const notConnected = connection =>
+  !(connection.connected || connection.connecting || connection.disconnecting) &&
+  connection.checkpoint.targetServiceReachable
 
 export const checklist: ILookup<{
   title: string

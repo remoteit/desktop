@@ -363,6 +363,7 @@ export default createModel<RootModel>()({
       connection.host = ''
       connection.error = undefined
       connection.autoStart = undefined
+      connection.checkpoint = undefined
       connection.port = connection.port || state.backend.freePort
 
       if (connection.public || isPortal()) {
