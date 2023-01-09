@@ -1,15 +1,19 @@
 import React from 'react'
 import { Tooltip } from '@mui/material'
+import { useSelector } from 'react-redux'
+import { isReverseProxy } from '../models/applicationTypes'
+import { ApplicationState } from '../store'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Icon } from './Icon'
 
-export const TargetHostSetting: React.FC<{ service: IService; connection?: IConnection }> = ({
+export const HeaderOverrideSetting: React.FC<{ service: IService; connection?: IConnection }> = ({
   service,
   connection,
 }) => {
-  if (!service) return null
+  const reverseProxy = useSelector((state: ApplicationState) => isReverseProxy(state, service.typeID))
+  if (!reverseProxy) return null
   if (!connection) connection = newConnection(service)
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
@@ -31,9 +35,9 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
       icon="bullseye"
       label={
         <>
-          Target Host name
+          Host header override
           <Tooltip
-            title="If a website expects a specific host name, enter it here. (Example: https://google.com)"
+            title="A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server."
             placement="top"
             arrow
           >

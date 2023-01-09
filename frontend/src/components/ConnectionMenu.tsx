@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory, Link } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
@@ -16,7 +16,6 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
-  const hadLink = connection?.host?.includes('connect.remote.it')
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
@@ -32,9 +31,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        <div>
-          <ForgetMenuItem connection={connection} onClick={handleClose} />
-        </div>
+        <ForgetMenuItem connection={connection} onClick={handleClose} />
         <MenuItem
           dense
           onClick={async () => {
@@ -51,7 +48,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           </ListItemIcon>
           <ListItemText primary="Report Issue" />
         </MenuItem>
-        {hadLink && (
+        {service?.link && (
           <MenuItem
             dense
             onClick={() =>

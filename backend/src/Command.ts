@@ -1,11 +1,11 @@
-import AirBrake from './AirBrake'
+import cli from './cliInterface'
 import user from './User'
+import AirBrake from './AirBrake'
 import Logger from './Logger'
 import environment from './environment'
 import { promisify } from 'util'
 import { exec, ExecException } from 'child_process'
 import { sudoPromise } from './sudoPromise'
-import cli from './cliInterface'
 
 type StdExecException = ExecException & { stderr: string; stdout: string }
 

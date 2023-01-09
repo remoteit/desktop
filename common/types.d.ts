@@ -148,9 +148,9 @@ declare global {
     autoStart?: boolean
     commandLog?: string[]
     commandTemplate?: string // command line launch template
-    connectLink?: boolean // is public persistent link
     connected?: boolean
     connecting?: boolean
+    connectLink?: boolean // is public persistent link
     createdTime?: number // unix timestamp track for garbage cleanup
     default?: boolean // if the connection is in a default state - gets removed on modification
     description?: string
@@ -177,12 +177,11 @@ declare global {
     public?: boolean // if the connection should be a public proxy link
     publicId?: string // public proxy connection ID
     publicRestriction?: ipAddress // public proxy restriction IP
-    reachable?: boolean // if remote connection resource is reachable
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
-    stopping?: boolean // service stopping the listener
     starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
+    stopping?: boolean // service stopping the listener
     surveyed?: string // the session ID of the survey that has been answered
     targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
@@ -198,6 +197,7 @@ declare global {
       hostnameCanFetch: boolean
       hostnameCanResolve: boolean
       proxyCanCreate: boolean
+      targetServiceReachable: boolean
     }
   }
 
@@ -293,6 +293,7 @@ declare global {
     services: IService[]
     hidden?: boolean
     newDevice?: boolean
+    presenceAddress: string
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -622,11 +623,11 @@ declare global {
 
   type ICloudUpdateService = {
     id: string
-    name: string
-    application: number
-    host: string
-    port: number
-    enabled: boolean
+    name?: string
+    application?: number
+    host?: string
+    port?: number
+    enabled?: boolean
     presenceAddress?: string
   }
 

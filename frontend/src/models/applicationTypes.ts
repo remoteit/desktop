@@ -42,8 +42,8 @@ export default createModel<RootModel>()({
   },
 })
 
-export function findType(all: IApplicationType[], typeId?: number) {
-  return all.find(t => t.id === typeId) || all[0] || emptyServiceType
+export function findType(all?: IApplicationType[], typeId?: number): IApplicationType {
+  return all?.find(t => t.id === typeId) || all?.[0] || emptyServiceType
 }
 
 export function getType(all: IApplicationType[], port?: number) {
@@ -51,16 +51,17 @@ export function getType(all: IApplicationType[], port?: number) {
   return type ? type.id : DEFAULT_SERVICE.typeID
 }
 
-export function canUseConnectLink(state: ApplicationState, typeId?: number) {
+export function isReverseProxy(state: ApplicationState, typeId?: number) {
   if (!typeId) return false
   const applicationType = findType(state.applicationTypes.all, typeId)
-  return applicationType.proxy
+  return applicationType?.proxy
 }
 
-const emptyServiceType = {
+const emptyServiceType: IApplicationType = {
   id: 1,
   name: '',
-  port: null,
+  port: 0,
+  scheme: '',
   proxy: false,
   protocol: 'TCP',
   description: '',

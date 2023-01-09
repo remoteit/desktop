@@ -30,7 +30,7 @@ type IExec = {
   skipSignInCheck?: boolean
   admin?: boolean
   quiet?: boolean
-  force?: boolean
+  skipInstalledCheck?: boolean
   onCommand?: (command: string) => void
   onError?: (error: Error) => void
 }
@@ -49,7 +49,6 @@ type IConnectionStatus = {
 	   7 - stopping  */
   isP2P?: boolean
   error?: ISimpleError
-  isReachable: boolean
   sessionID?: string
   createdAt: string
   startedAt?: string
@@ -67,6 +66,7 @@ type IConnectionStatus = {
   checkpointConnectdTunnelCreated?: boolean
   checkpointHostnameCanFetch?: boolean
   checkpointHostnameCanResolve?: boolean
+  checkpointIsTargetServiceReachable?: boolean
   checkpointProxyCanCreate?: boolean
 }
 
@@ -165,12 +165,12 @@ export default class CLI {
     return connections.map(c => {
       let error: ISimpleError | undefined
 
-      if (c.isReachable === false) {
+      if (c.checkpointIsTargetServiceReachable === false) {
         error = {
           message: 'Remote.It connected, but there is no service running on the remote machine.',
           code: CLI_REACHABLE_ERROR_CODE,
         }
-      } else if (c.isReachable === true) {
+      } else if (c.checkpointIsTargetServiceReachable === true) {
         if (error && error?.code === CLI_REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
 
@@ -192,7 +192,6 @@ export default class CLI {
         stopping: c.state === 7, //      stopping
         typeID: c.serviceType,
         isP2P: c.isP2P,
-        reachable: c.isReachable,
         restriction: c.restrict,
         timeout: c.timeout,
         checkpoint: {
@@ -205,6 +204,7 @@ export default class CLI {
           hostnameCanFetch: !!c.checkpointHostnameCanFetch,
           hostnameCanResolve: !!c.checkpointHostnameCanResolve,
           proxyCanCreate: !!c.checkpointProxyCanCreate,
+          targetServiceReachable: !!c.checkpointIsTargetServiceReachable,
         },
         default: false,
       }
@@ -302,17 +302,32 @@ export default class CLI {
   }
 
   async agentRunning() {
-    const data = await this.exec({ cmds: [strings.agentStatus()], skipSignInCheck: true, force: true })
+    const data = await this.exec({
+      cmds: [strings.agentStatus()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+    })
     return data?.running
   }
 
   async version() {
-    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true, force: true })
+    const result = await this.exec({
+      cmds: [strings.version()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+    })
     return result?.version
   }
 
   async agentVersion() {
-    const result = await this.exec({ cmds: [strings.agentVersion()], skipSignInCheck: true, quiet: true, force: true })
+    const result = await this.exec({
+      cmds: [strings.agentVersion()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+    })
     return result?.version
   }
 
@@ -320,13 +335,13 @@ export default class CLI {
     cmds,
     checkAuthHash = false,
     skipSignInCheck = false,
+    skipInstalledCheck,
     admin = false,
     quiet = false,
-    force,
     onCommand,
     onError,
   }: IExec) {
-    if (!force && (binaryInstaller.inProgress || !binaryInstaller.ready)) {
+    if (!skipInstalledCheck && (binaryInstaller.inProgress || !binaryInstaller.ready)) {
       Logger.info('EXEC EXITED -> CLI NOT READY', {
         inProgress: binaryInstaller.inProgress,
         ready: binaryInstaller.ready,
@@ -342,11 +357,9 @@ export default class CLI {
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
-    if (!quiet) {
+    if (!quiet && !skipInstalledCheck) {
       commands.onError = (e: Error) => {
         if (typeof onError === 'function') onError(e)
-        // @TODO detect signing or service not started error and don't display,
-        // just run check and sign in commands.
         EventBus.emit(this.EVENTS.error, e.toString())
         binaryInstaller.check()
       }
@@ -360,11 +373,15 @@ export default class CLI {
       try {
         const parsed = typeof result === 'string' ? JSON.parse(result) : result
         if (parsed.code === 0) parsed.message && Logger.info('CLI EXEC MESSAGE', parsed.message)
-        else throw new Error(parsed)
+        else Logger.error('CLI ERROR', { result, command: commands.toSafeString() })
         return parsed.data
       } catch (error) {
         if (error instanceof Error) {
-          Logger.error('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
+          Logger.error('CLI PARSE ERROR', {
+            result,
+            error,
+            command: commands.toSafeString(),
+          })
         }
       }
     }

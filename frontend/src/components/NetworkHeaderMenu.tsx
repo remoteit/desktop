@@ -52,7 +52,7 @@ export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; chi
             ) : (
               network.permissions.includes('MANAGE') && (
                 <>
-                  <AddUserButton to={`/networks/${network.id}/share`} />
+                  <AddUserButton to={`/networks/${network.id}/share`} title="Share access" />
                   <DeleteButton
                     title="Delete Network"
                     warning={

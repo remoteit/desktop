@@ -24,7 +24,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
   const css = useStyles()
-  // const proxy = connection && ((!connection.isP2P && connection.connected) || connection.proxyOnly || connection.public)
+
   const proxy = connection.proxyOnly
   const publik = connection.connectLink || connection.public
   const protekted = connection.connectLink ? !!connection.password : connection.publicRestriction === IP_LATCH
@@ -33,32 +33,41 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   relay = relay || isRelay(service)
   let activeTypes: DiagramGroupType[] = []
   let errorTypes: DiagramGroupType[] = []
-  let indicator: IndicatorProps | undefined = { placement: 'right' }
+  let indicator: IndicatorProps = { color: 'grayDarkest' }
+
+  switch (page) {
+    case '/connect':
+    case '/users':
+      indicator.hide = true
+      break
+    case '/advanced':
+    case '/defaults':
+    case '/lan':
+      indicator.placement = 'left'
+      break
+    case '/edit':
+      indicator.placement = 'right'
+      break
+  }
 
   switch (state) {
     case 'ready':
     case 'starting':
     case 'connecting':
       activeTypes = ['lan', 'initiator', 'target', 'relay']
+      indicator.color = 'primary'
       break
     case 'connected':
     case 'disconnecting':
       activeTypes = ['public', 'lan', 'initiator', 'target', 'proxy', 'agent', 'tunnel', 'relay']
+      indicator.color = 'primary'
       break
     case 'online':
     case 'stopping':
       activeTypes = ['target', 'relay']
+      if (indicator.placement === 'right') indicator.color = 'primary'
       break
     case 'offline':
-  }
-
-  switch (page) {
-    case '/connect':
-    case '/advanced':
-    case '/defaults':
-    case '/lan':
-      indicator.placement = 'left'
-      break
   }
 
   if (publik && connection.enabled) {

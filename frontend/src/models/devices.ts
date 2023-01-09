@@ -19,9 +19,8 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, getDeviceModel } from '../selectors/devices'
+import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
-import { selectById } from '../selectors/devices'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -214,16 +213,18 @@ export default createModel<RootModel>()({
 
       const accountId = getActiveAccountId(state)
       let result: IDevice | undefined
+      let errors: Error[] | undefined
 
       dispatch.devices.set({ fetching: true, accountId })
 
       try {
         const gqlResponse = await graphQLFetchFullDevice(id, accountId)
-        graphQLGetErrors(gqlResponse)
+        errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
         if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
       } catch (error) {
         await apiError(error)
+        errors = errors?.length ? [...errors, error] : [error]
       }
 
       if (result) {
@@ -238,7 +239,10 @@ export default createModel<RootModel>()({
             errorMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
           })
         if (redirect) dispatch.ui.set({ redirect })
-        if (isService) dispatch.connections.forget(id)
+        if (!errors) {
+          if (isService) dispatch.connections.forget(id)
+          else dispatch.devices.cleanup(id)
+        }
       }
 
       dispatch.devices.set({ fetching: false, accountId })
@@ -274,15 +278,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async renameService(service: IService, state) {
-      let [_, device] = selectById(state, undefined, service.deviceID)
-      if (!device) return
-      const index = device.services.findIndex((s: IService) => s.id === service.id)
-      device.services[index].name = service.name
-      dispatch.accounts.setDevice({ id: device.id, device })
-      dispatch.devices.rename(service)
-    },
-
     async renameDevice(device: IDevice) {
       dispatch.accounts.setDevice({ id: device.id, device })
       dispatch.devices.rename(device)
@@ -291,6 +286,14 @@ export default createModel<RootModel>()({
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
       await dispatch.devices.fetchSingle({ id })
+    },
+
+    async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
+      let [_, device] = selectById(state, undefined, id)
+      if (!device) return
+      const index = device.services.findIndex((s: IService) => s.id === id)
+      for (const key in set) device.services[index][key] = set[key]
+      dispatch.accounts.setDevice({ id: device.id, device })
     },
 
     async setAttributes(device: IDevice) {
@@ -339,11 +342,22 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
     },
 
+    async cloudUpdateDevice({ id, set }: { id: string; set: ILookup<any> }, state) {
+      let device = selectDevice(state, undefined, id)
+      if (!device) return
+      for (const key in set) device[key] = set[key]
+      dispatch.accounts.setDevice({ id: device.id, device })
+      await graphQLUpdateService({
+        id,
+        presenceAddress: set.presenceAddress,
+      })
+    },
+
     async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
       if (!form.host || !form.port) return
       dispatch.ui.set({ setupServiceBusy: form.id })
       await graphQLUpdateService({
-        id: form.id,
+        id: form.id || deviceId,
         name: form.name,
         application: form.typeID,
         host: form.host,

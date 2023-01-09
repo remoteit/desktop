@@ -25,7 +25,11 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
+            <AddUserButton
+              to={`/devices/${device.id}/share`}
+              hide={!device.permissions.includes('MANAGE')}
+              title="Share access"
+            />
             <DeviceOptionMenu device={device} />
           </Typography>
           {device.attributes.description && (
@@ -46,8 +50,8 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               dense
             />
             <ListItemLocation
-              title="Edit"
-              icon="pen"
+              title="Configure"
+              icon="sliders"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/edit`}
               dense

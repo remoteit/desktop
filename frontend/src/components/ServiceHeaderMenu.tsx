@@ -27,13 +27,13 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
     <Container
       gutterBottom
       backgroundColor={backgroundColor}
-      bodyProps={{ verticalOverflow: true, gutterTop: true }}
+      bodyProps={{ verticalOverflow: true }}
       header={
         <>
           <OutOfBand />
           <Typography variant="h1" gutterBottom={!service?.attributes.description}>
             <Title>{service.name || 'unknown'}</Title>
-            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} />
+            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} title="Share access" />
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
@@ -47,7 +47,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           <Gutters top={null} bottom="lg" size="md">
             <ServiceConnectButton />
           </Gutters>
-          <Gutters top="xs" bottom="sm">
+          <Gutters top="xs" bottom="md">
             <Diagram />
           </Gutters>
         </>

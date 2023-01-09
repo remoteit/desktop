@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
-import { Tooltip, Box } from '@mui/material'
-import { DiagramContext } from '../services/Context'
+import { getAttribute } from './Attributes'
+import { Tooltip, TooltipProps, Divider, Box } from '@mui/material'
+import { DiagramContext, DeviceContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'
 
 type Props = { type: DiagramGroupType; end?: boolean }
@@ -8,10 +9,11 @@ type Props = { type: DiagramGroupType; end?: boolean }
 export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   const [hover, setHover] = React.useState<boolean>(false)
   const { highlightTypes, activeTypes, errorTypes, state, proxy } = useContext(DiagramContext)
+  const { device } = useContext(DeviceContext)
   const error = type ? errorTypes.includes(type) : false
   const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
-  let tooltip = ''
+  let tooltip: TooltipProps['title'] = ''
   let props: IconProps = {
     type: hover ? 'solid' : 'regular',
     color: 'grayDarkest',
@@ -28,7 +30,13 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       break
     case 'target':
       props.name = 'bullseye'
-      tooltip = 'Remote endpoint'
+      tooltip = (
+        <>
+          Remote endpoint
+          <Divider />
+          {getAttribute('location').value({ device })}
+        </>
+      )
       break
     case 'agent':
       props.name = 'diamond'
@@ -36,7 +44,13 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       break
     case 'relay':
       props.name = 'diamond'
-      tooltip = 'Remote agent'
+      tooltip = (
+        <>
+          Remote agent
+          <Divider />
+          {getAttribute('isp').value({ device })}
+        </>
+      )
       break
     case 'public':
       props.name = 'globe'
@@ -70,7 +84,7 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   }
 
   return (
-    <Tooltip title={tooltip} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <Tooltip title={tooltip} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} arrow>
       <Box padding={1} margin={-1}>
         <Icon {...props} />
       </Box>

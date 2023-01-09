@@ -13,7 +13,6 @@ export const DeviceDescriptionSetting: React.FC = () => {
 
   return (
     <InlineTextFieldSetting
-      // multiline
       icon="paragraph"
       label="Device Description"
       value={device.attributes.description}

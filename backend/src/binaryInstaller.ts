@@ -32,6 +32,7 @@ export class BinaryInstaller {
       if (environment.isElevated) return await this.install()
       return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
     } else if (!this.ready) {
+      Logger.info('INSTALLER DONE')
       this.ready = true
     }
 
@@ -179,7 +180,6 @@ export class BinaryInstaller {
     }
 
     if (updated) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
-    else Logger.info('CLI NOT UPDATED', { previousVersion, thisVersion })
 
     return updated
   }

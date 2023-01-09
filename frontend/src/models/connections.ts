@@ -1,17 +1,15 @@
 import { parse as urlParse } from 'url'
-import { pickTruthy } from '../helpers/utilHelper'
 import { createModel } from '@rematch/core'
+import { pickTruthy, dedupe } from '../helpers/utilHelper'
 import { DEFAULT_CONNECTION } from '../shared/constants'
 import {
   cleanOrphanConnections,
   getConnectionServiceIds,
   newConnection,
-  selectConnection,
   setConnection,
   getConnectionLookup,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
-import { dedupe } from '../helpers/utilHelper'
 import {
   graphQLConnect,
   graphQLDisconnect,
@@ -21,6 +19,7 @@ import {
 } from '../services/graphQLMutation'
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors } from '../services/graphQL'
+import { selectConnection } from '../selectors/connections'
 import { selectNetwork } from './networks'
 import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
@@ -84,16 +83,15 @@ export default createModel<RootModel>()({
           let connection = lookup[s.id]
           const online = s.state === 'active'
 
-          // add / update connect link
-          if (s.link) {
-            connection = connection || DEFAULT_CONNECTION
+          // add / update enabled connect links
+          if (s.link?.enabled) {
+            connection = connection || newConnection(s)
 
             connection = {
               ...connection,
               id: s.id,
               deviceID: d.id,
               name: connection.name || s.subdomain,
-              password: s.link.password,
               createdTime: s.link.created.getTime(),
               enabled: s.link.enabled,
               connectLink: s.link.enabled,
@@ -102,6 +100,7 @@ export default createModel<RootModel>()({
             const url = urlParse(s.link.url)
             if (url.host) connection.host = url.host
             if (url.port) connection.port = parseInt(url.port, 10)
+            if (s.link.password) connection.password = s.link.password
           }
 
           if (connection) {
@@ -191,7 +190,7 @@ export default createModel<RootModel>()({
               'endTime',
               'connected',
               'isP2P',
-              'reachable',
+              'checklist',
               'restriction',
               'sessionId',
               'default',
@@ -310,15 +309,13 @@ export default createModel<RootModel>()({
     },
 
     async setConnectLink(connection: IConnection) {
-      const creating: IConnection = connection.enabled
-        ? { ...connection, connectLink: true }
-        : { ...connection, connectLink: false }
+      const creating: IConnection = { ...connection, connectLink: connection.enabled }
 
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
         serviceId: connection.id,
         enabled: connection.enabled,
-        password: connection.password?.trim() || null,
+        password: connection.password?.trim(),
       })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
@@ -347,29 +344,16 @@ export default createModel<RootModel>()({
     async removeConnectLink(connection?: IConnection) {
       if (!connection) return console.warn('No connection to disconnect')
 
-      const removing: IConnection = {
-        ...connection,
-        connectLink: false,
-        enabled: false,
-        disconnecting: true,
-      }
-      dispatch.connections.updateConnection(removing)
+      dispatch.connections.setConnectLink({ ...connection, enabled: false })
+      dispatch.devices.updateService({ id: connection.id, set: { link: undefined } })
       const result = await graphQLRemoveConnectLink(connection.id)
 
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred removing your persistent connection. Please contact support.' }
-        dispatch.connections.updateConnection(connection)
-        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
-        return
+        await dispatch.connections.updateConnection(connection)
       }
 
-      setConnection({
-        ...removing,
-        host: undefined,
-        password: undefined,
-        disconnecting: false,
-        connected: false,
-      })
+      await dispatch.devices.fetchSingle({ id: connection.id, isService: true })
     },
 
     async connect(connection: IConnection, state) {
@@ -379,12 +363,8 @@ export default createModel<RootModel>()({
       connection.host = ''
       connection.error = undefined
       connection.autoStart = undefined
+      connection.checkpoint = undefined
       connection.port = connection.port || state.backend.freePort
-
-      if (connection.connectLink) {
-        dispatch.connections.setConnectLink({ ...connection, enabled: true, starting: true })
-        return
-      }
 
       if (connection.public || isPortal()) {
         dispatch.connections.proxyConnect(connection)
@@ -399,11 +379,6 @@ export default createModel<RootModel>()({
     async disconnect(connection: IConnection | undefined) {
       if (!connection) {
         console.warn('No connection to disconnect')
-        return
-      }
-
-      if (connection.connectLink) {
-        dispatch.connections.setConnectLink({ ...connection, enabled: false })
         return
       }
 
@@ -433,8 +408,6 @@ export default createModel<RootModel>()({
     async forget(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      const connection = all.find(a => a.id === id)
-      if (connection?.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
       if (state.auth.backendAuthenticated) emit('service/forget', { id })
       else set({ all: all.filter(c => c.id !== id) })
     },
@@ -442,8 +415,6 @@ export default createModel<RootModel>()({
     async clear(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      const connection = all.find(a => a.id === id)
-      if (connection?.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
       if (state.auth.backendAuthenticated) emit('service/clear', { id })
       else set({ all: all.filter(c => c.id !== id) })
     },

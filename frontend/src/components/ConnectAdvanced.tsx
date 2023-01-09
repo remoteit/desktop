@@ -7,7 +7,7 @@ import { DeviceContext } from '../services/Context'
 import { RouteSetting } from './RouteSetting'
 import { TimeoutSetting } from './TimeoutSetting'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
-import { TargetHostSetting } from './TargetHostSetting'
+import { HeaderOverrideSetting } from './HeaderOverrideSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { SubdomainSetting } from './SubdomainSetting'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
@@ -72,7 +72,7 @@ export const ConnectAdvanced: React.FC = () => {
           <DesktopUI>
             <RouteSetting connection={connection} service={service} />
             <LanShareSelect connection={connection} />
-            <TargetHostSetting connection={connection} service={service} />
+            <HeaderOverrideSetting connection={connection} service={service} />
             <TimeoutSetting connection={connection} service={service} />
           </DesktopUI>
         </List>

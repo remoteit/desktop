@@ -56,7 +56,8 @@ export const TestPage: React.FC = () => {
         <InlineTextFieldSetting
           value={testHeader}
           label="Add query header"
-          displayValue={testHeader ? undefined : "<empty> Enter header as 'key:value'"}
+          displayValue={testHeader}
+          placeholder='Example: "key:value"'
           resetValue=""
           maxLength={200}
           onSave={result => {

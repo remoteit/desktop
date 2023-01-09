@@ -40,7 +40,15 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
           {!total && <Typography variant="caption">No&nbsp;users</Typography>}
           {!!connected && <Chip size="small" color="primary" label={connected} />} &nbsp;
           {!!total && !expanded && <Chip size="small" label={total} />}
-          <AddUserButton to="share" icon="plus" size="base" buttonBaseSize="small" fixedWidth />
+          <AddUserButton
+            to="share"
+            icon="plus"
+            size="base"
+            title="Add access"
+            buttonBaseSize="small"
+            inline
+            fixedWidth
+          />
         </Box>
       }
     >

@@ -17,12 +17,12 @@ export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
   return (
     <Tooltip
       arrow
-      placement="left"
+      placement="left-start"
       classes={{ tooltip: css.tooltip }}
       title={keys.map(
         key =>
           !checklist[key].hide?.(connection) && (
-            <Typography key={key} variant="body2">
+            <Typography key={key} variant="body2" color="grayDarkest.main">
               {connection?.checkpoint?.[key] ? (
                 <Icon name="check" color="success" type="solid" fixedWidth inlineLeft />
               ) : (
@@ -41,13 +41,14 @@ export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
   )
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  tooltip: ({ color }: any) => ({
+const useStyles = makeStyles(({ palette, spacing, shadows }) => ({
+  tooltip: {
     paddingLeft: spacing(2),
     paddingRight: spacing(2.5),
     paddingTop: spacing(1.5),
     paddingBottom: spacing(1.5),
+    boxShadow: shadows[1],
     backgroundColor: palette.grayLightest.main,
     '& .MuiTooltip-arrow': { color: palette.grayLightest.main },
-  }),
+  },
 }))

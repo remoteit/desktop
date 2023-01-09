@@ -119,7 +119,7 @@ export const Router: React.FC = () => {
                 </Route>
 
                 <Route path="/connections/:serviceID?/:sessionID?">
-                  <ServiceRouter basename="/connections/:serviceID?" />
+                  <ServiceRouter basename="/connections/:serviceID?/:sessionID?" />
                 </Route>
               </Switch>
             }

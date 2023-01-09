@@ -13,6 +13,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   name?: string
   disabled?: boolean
   hideDisableFade?: boolean
+  iconInlineLeft?: boolean
   to?: string
   buttonBaseSize?: 'small' | 'medium' | 'large'
   variant?: 'text' | 'contained' | 'outlined'
@@ -46,6 +47,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       buttonBaseSize,
       inline,
       inlineLeft,
+      iconInlineLeft,
       className,
       loading,
       submit,
@@ -97,6 +99,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
           size={size}
           spin={spin}
           color={variant === 'contained' ? undefined : color}
+          inlineLeft={iconInlineLeft}
           fixedWidth
         />
         {children}

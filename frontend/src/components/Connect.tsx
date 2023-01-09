@@ -3,13 +3,12 @@ import { List, Button, Collapse, Divider } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
-import { canUseConnectLink } from '../models/applicationTypes'
+import { isReverseProxy } from '../models/applicationTypes'
 import { getDeviceModel } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { windowOpen } from '../services/Browser'
 import { LicensingNotice } from './LicensingNotice'
 import { ConnectionDetails } from './ConnectionDetails'
-import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 import { ConnectLinkSetting } from './ConnectLinkSetting'
 import { ServiceAttributes } from './ServiceAttributes'
 import { NetworksAccordion } from './NetworksAccordion'
@@ -39,7 +38,7 @@ export const Connect: React.FC = () => {
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    showConnectLink: canUseConnectLink(state, service?.typeID) && !(!connection.connectLink && connection.enabled),
+    showConnectLink: isReverseProxy(state, service?.typeID) && !(!connection.connectLink && connection.enabled),
   }))
 
   useEffect(() => {
@@ -60,7 +59,6 @@ export const Connect: React.FC = () => {
         show={!!(connection.enabled && connection.host) || connection.connectLink}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
-      {/* <ServiceConnectButton /> */}
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
         <AccordionMenuItem

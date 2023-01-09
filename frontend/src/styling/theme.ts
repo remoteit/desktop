@@ -62,7 +62,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiDivider: {
         styleOverrides: {
           root: { borderColor: palette.screen.main, '&.MuiDivider-flexItem': { height: 1 } },
-          inset: { marginRight: spacing.md, marginLeft: spacing.md },
+          inset: { marginRight: spacing.lg, marginLeft: spacing.lg },
         },
       },
       MuiAccordion: {
@@ -279,7 +279,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           gutters: {
             marginLeft: spacing.lg,
-            marginRight: spacing.xs,
+            marginRight: spacing.lg,
           },
         },
       },
@@ -622,7 +622,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiTooltip: {
         styleOverrides: {
-          tooltip: { '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 } },
+          tooltip: {
+            '& .MuiDivider-root': { margin: `${spacing.xxs}px 0`, borderColor: palette.alwaysWhite.main, opacity: 0.3 },
+          },
         },
       },
       MuiTableCell: {

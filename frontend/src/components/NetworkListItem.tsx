@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { selectConnection } from '../helpers/connectionHelper'
+import { selectConnection } from '../selectors/connections'
 import { ListItemText, ListItemIcon } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
@@ -34,11 +34,12 @@ export const NetworkListItem: React.FC<Props> = ({
 }) => {
   const { service, device, foundSession, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, undefined, serviceId)
+    const connection = selectConnection(state, service)
     return {
       service,
       device,
-      foundSession: state.sessions.all.find(s => s.target.id === serviceId),
-      connection: selectConnection(state, service),
+      connection,
+      foundSession: state.sessions.all.find(s => s.id === connection.sessionId),
     }
   })
   session = session || foundSession
@@ -53,7 +54,7 @@ export const NetworkListItem: React.FC<Props> = ({
 
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connections) pathname = `/connections/${serviceId}`
-  if (session) pathname += `/${session.id}`
+  pathname += `/${session?.id || 'none'}`
   const matchname = pathname
   if (external) pathname += '/other'
   else pathname += '/connect'
