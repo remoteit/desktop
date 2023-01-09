@@ -55,7 +55,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
         </ListItemIcon>
         <ListItemText
           sx={{ color: connected ? 'primary.main' : undefined }}
-          primary="Users"
+          primary="Access"
           secondary={
             !!total &&
             size === 'large' && (

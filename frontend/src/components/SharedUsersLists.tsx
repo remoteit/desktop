@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { Typography, Box, Paper } from '@mui/material'
+import { Typography, Box, Paper, Tooltip } from '@mui/material'
 import { ApplicationState } from '../store'
 import { SharedUsersPaginatedList } from './SharedUsersPaginatedList'
 import { selectMembersWithAccess, getOrganization } from '../models/organization'
@@ -31,13 +31,12 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
     return (
       <Paper elevation={0} sx={{ contain: 'layout', marginTop: 2 }}>
         <Gutters center bottom="xxl" top="lg">
-          <Box paddingBottom={2} paddingTop={4}>
-            <Icon name="user-group" type="light" fontSize={36} color="grayLight" />
+          <Box paddingBottom={4} paddingTop={4}>
+            <Tooltip title="No one has access to this service." placement="top" arrow>
+              <Icon name="user-slash" type="light" fontSize={28} color="gray" />
+            </Tooltip>
           </Box>
-          <Typography variant="caption" color="gray.main" component="div" gutterBottom>
-            No one has access to this service.
-          </Typography>
-          <AddUserButton to={location.pathname.replace('users', 'share')} inlineLeft>
+          <AddUserButton to={location.pathname.replace('users', 'share')} iconInlineLeft>
             <Typography variant="body2">Share to a guest</Typography>
           </AddUserButton>
           <Typography variant="caption" color="gray.main" component="div">

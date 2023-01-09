@@ -33,7 +33,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           <OutOfBand />
           <Typography variant="h1" gutterBottom={!service?.attributes.description}>
             <Title>{service.name || 'unknown'}</Title>
-            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} />
+            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} title="Share access" />
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
