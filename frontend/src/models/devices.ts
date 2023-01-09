@@ -213,16 +213,18 @@ export default createModel<RootModel>()({
 
       const accountId = getActiveAccountId(state)
       let result: IDevice | undefined
+      let errors: Error[] | undefined
 
       dispatch.devices.set({ fetching: true, accountId })
 
       try {
         const gqlResponse = await graphQLFetchFullDevice(id, accountId)
-        graphQLGetErrors(gqlResponse)
+        errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
         if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
       } catch (error) {
         await apiError(error)
+        errors = errors?.length ? [...errors, error] : [error]
       }
 
       if (result) {
@@ -237,7 +239,10 @@ export default createModel<RootModel>()({
             errorMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
           })
         if (redirect) dispatch.ui.set({ redirect })
-        if (isService) dispatch.connections.forget(id)
+        if (!errors) {
+          if (isService) dispatch.connections.forget(id)
+          else dispatch.devices.cleanup(id)
+        }
       }
 
       dispatch.devices.set({ fetching: false, accountId })

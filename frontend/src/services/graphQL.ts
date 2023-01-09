@@ -56,7 +56,7 @@ export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silen
   if (!response || response === 'ERROR') return
   const { ui } = store.dispatch
 
-  const errors: undefined | { message: string }[] = response?.data?.errors
+  const errors: undefined | Error[] = response?.data?.errors
   const warning: undefined | string = response?.headers?.['X-R3-Warning']
 
   if (warning) {
