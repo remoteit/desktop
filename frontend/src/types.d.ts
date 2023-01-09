@@ -1,17 +1,8 @@
-import { AnalyticsJS } from 'segment-analytics'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
 import { Color } from './styling'
 
 declare global {
-  type ConnectionState = IService['state'] | 'connecting' | 'disconnected' | 'unknown'
-
-  type Tab = 'connections' | 'devices'
-
-  type Page = 'connections' | 'devices' | 'setup' | 'settings' | 'network'
-
-  type Route = { [key in Page]: React.ReactNode }
-
   type DiagramGroupType =
     | 'target'
     | 'initiator'
@@ -182,40 +173,6 @@ declare global {
     createdAt?: Date
   }
 
-  interface ContactFields {
-    accountCreated?: boolean
-    companyName?: string
-    createdAt?: Date
-    email: string
-    firstName?: string
-    id?: string
-    inviteSent?: boolean
-    lastName?: string
-    language?: AvailableLanguage | string
-    updatedAt?: Date
-  }
-
-  interface IReactSelectOption {
-    value: string
-    label: string
-    isDisabled: boolean
-  }
-
-  interface ShareInfo {
-    created: string
-    email: string
-    scripting: boolean
-    services: string[]
-    uid: string
-    updated: string
-    userid: string
-  }
-
-  interface SimplifiedService {
-    id: string
-    name: string
-  }
-
   type IconType = 'light' | 'regular' | 'solid' | 'brands'
 
   /**
@@ -225,13 +182,6 @@ declare global {
   interface Action {
     type: string
     [key: string]: any
-  }
-
-  interface Window {
-    process?: {
-      type?: string
-    }
-    analytics: AnalyticsJS
   }
 
   type IDataOptions = {

@@ -25,7 +25,7 @@ export async function notify(event: ICloudEvent) {
       break
 
     case 'DEVICE_SHARE':
-    // @TODO parse and display notice
+      shareNotification(event)
   }
 }
 
@@ -64,6 +64,12 @@ function connectNotification(event: ICloudEvent) {
     }
     createNotification(title, url, { body })
   })
+}
+
+function shareNotification(event: ICloudEvent) {
+  const from = event.actor.email
+  const device = event.target.find(t => t.typeID === DEVICE_TYPE)?.device
+  const to = event.users
 }
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {
