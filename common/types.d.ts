@@ -181,6 +181,7 @@ declare global {
     sessionId?: string //the connection session id
     starting?: boolean // if the connection listening is starting up
     startTime?: number // unix timestamp connection start time
+    stopped?: boolean // connection stopped by user do not re-added if missing from cli
     stopping?: boolean // service stopping the listener
     surveyed?: string // the session ID of the survey that has been answered
     targetHost?: ipAddress // default localhost

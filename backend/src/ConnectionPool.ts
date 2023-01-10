@@ -76,7 +76,7 @@ export default class ConnectionPool {
 
       const cliConnection = cliData.find(c => c.id === connection.params.id)
 
-      if (!cliConnection) {
+      if (!cliConnection && !connection.params.stopped) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         this.start(connection.params)
         this.updated(connection)
