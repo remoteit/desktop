@@ -2,7 +2,6 @@ import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES
 import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
-import JSONFile from './JSONFile'
 import plist from 'plist'
 import path from 'path'
 import os from 'os'
@@ -94,6 +93,11 @@ export class Environment {
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()
+    this.initializePaths()
+  }
+
+  initializePaths() {
+    if (!fs.existsSync(this.connectionLogPath)) fs.mkdirSync(this.connectionLogPath, { recursive: true })
   }
 
   get frontend() {
@@ -157,22 +161,28 @@ export class Environment {
   }
 
   getAppVersion() {
-    let data = new JSONFile<any>(path.join(__dirname, '../package.json')).read()
-    return data.version
+    const content = fs.readFileSync(path.join(__dirname, '../package.json'))
+    const json = JSON.parse(content.toString())
+    return json.version
   }
 
   getManufacturerDetails(): ManufacturerDetails {
-    const fileData = new JSONFile<ManufacturerDetails>(path.join(this.adminPath, 'manufacturer.json')).read()
-    const manufacturerDetails: ManufacturerDetails = fileData || { manufacturer: {}, product: {} }
-    manufacturerDetails.manufacturer = manufacturerDetails.manufacturer || {} //guarantees it to have manufacturer field even if it is empty
-    manufacturerDetails.product = manufacturerDetails.product || {} //guarantees it to have product field even if it is empty
-    if (!manufacturerDetails.product.platform) {
-      manufacturerDetails.product.platform = this.getPlatformCode()
+    let result: ManufacturerDetails = { manufacturer: {}, product: {} }
+    const file = path.join(this.adminPath, 'manufacturer.json')
+    try {
+      if (!fs.existsSync(file)) return result
+      const fileData = JSON.parse(fs.readFileSync(file).toString())
+      return {
+        manufacturer: { ...fileData?.manufacture },
+        product: {
+          ...fileData?.product,
+          platform: Number(fileData?.product.platform) || this.getPlatformCode(),
+          appCode: MANUFACTURE_ID_HEADLESS, // Default to headless, update later if not
+        },
+      }
+    } catch (error) {
+      return result
     }
-
-    manufacturerDetails.product.platform = +manufacturerDetails.product.platform // cast platform to number
-    manufacturerDetails.product.appCode = MANUFACTURE_ID_HEADLESS // Default to headless, update later if not
-    return manufacturerDetails
   }
 
   async setElevatedState() {

@@ -1,3 +1,4 @@
+import Logger from './Logger'
 import debug from 'debug'
 import fs from 'fs'
 import path from 'path'
@@ -9,6 +10,7 @@ export default class JSONFile<T> {
 
   constructor(location: string) {
     this.location = location
+    Logger.info('FILE ATTACHED', { location })
   }
 
   /**
@@ -39,6 +41,7 @@ export default class JSONFile<T> {
 
       return json
     } catch (error) {
+      Logger.error('FILE READ ERROR', error)
       return
     }
   }

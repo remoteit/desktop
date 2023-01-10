@@ -28,7 +28,9 @@ export class Preferences {
 
   constructor() {
     this.file = new JSONFile<IPreferences>(path.join(environment.userPath, 'preferences.json'))
-    this.set({ ...this.defaults, ...this.file.read() })
+    const fileData = this.file.read()
+    if (!fileData) Logger.warn('NO PREFERENCES DATA', { fileData })
+    this.set({ ...this.defaults, ...fileData })
   }
 
   get defaults(): IPreferences {
@@ -40,19 +42,20 @@ export class Preferences {
   }
 
   get(): IPreferences {
-    return this.data
+    return this.data || this.file.read()
   }
 
   update(pref: { [key: string]: any }) {
     Logger.info('UPDATE PREFERENCE', pref)
-    this.set({ ...this.data, ...pref })
+    const data = this.get()
+    this.set({ ...data, ...pref })
   }
 
   set = (preferences: IPreferences) => {
+    Logger.info('SET PREFERENCES', { preferences })
     this.file.write(preferences)
     this.data = preferences
-    Logger.info('SET PREFERENCES', { preferences })
-    EventBus.emit(this.EVENTS.update, this.data)
+    EventBus.emit(this.EVENTS.update, preferences)
   }
 }
 
