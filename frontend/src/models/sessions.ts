@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { findLocalConnection, setConnection, selectConnections } from '../helpers/connectionHelper'
+import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
+import { selectConnections } from '../selectors/connections'
 import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'

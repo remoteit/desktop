@@ -1,10 +1,10 @@
 import React from 'react'
-import { Typography, Tooltip, ListSubheader, Divider } from '@mui/material'
-import { defaultNetwork, selectActiveNetworks, recentNetwork } from '../models/networks'
-import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
-import { selectConnections } from '../helpers/connectionHelper'
+import { Typography, Tooltip, Divider } from '@mui/material'
+import { defaultNetwork, recentNetwork } from '../models/networks'
+import { selectConnectionsByAccount, selectConnections } from '../selectors/connections'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
 import { getDeviceModel } from '../selectors/devices'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
@@ -22,10 +22,11 @@ export const ConnectionsPage: React.FC = () => {
     const activeSessionIds = allConnections.map(c => c.sessionId)
     const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
     const deviceModel = getDeviceModel(state)
-    let other: ILookup<INetwork> = {}
+    let other: ILookup<INetwork> | undefined
 
     otherSessions.forEach(s => {
       const id = s.user?.id || 'default'
+      other = other || {}
       if (!other[id]) {
         const [icon, iconType] = initiatorPlatformIcon({ id: s.platform })
         other[id] = {
@@ -41,13 +42,18 @@ export const ConnectionsPage: React.FC = () => {
       other[id].sessions?.push(s)
     })
 
+    if (other) {
+      const otherKeys = Object.keys(other)
+      if (!otherKeys.length || !other[otherKeys[0]]?.sessions?.length) other = undefined
+    }
+
     return {
       other,
       recent: {
         ...recentNetwork,
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
-      active: selectActiveNetworks(state),
+      active: selectConnectionsByAccount(state),
       initialized: deviceModel.initialized,
       loading: deviceModel.fetching,
     }
@@ -57,21 +63,8 @@ export const ConnectionsPage: React.FC = () => {
 
   return (
     <Container bodyProps={{ verticalOverflow: true }} gutterBottom>
-      <SessionsList
-        title="Outside connections"
-        networks={other}
-        action={
-          <Tooltip
-            title="Connections to one of your devices that were initiated by another application or user."
-            placement="top"
-            arrow
-          >
-            <Icon name="circle-question" color="grayDark" size="sm" />
-          </Tooltip>
-        }
-      />
       <StickyTitle loading={loading}>
-        <Title>Connections</Title>
+        <Title>Local Connections</Title>
       </StickyTitle>
       {initialized ? (
         <>
@@ -85,13 +78,33 @@ export const ConnectionsPage: React.FC = () => {
             </Gutters>
           )}
           {active.map(n => (
-            <Network noLink key={n.id} network={n} connections />
+            <Network noLink key={n.id} network={n} connectionsPage />
           ))}
+          <SessionsList
+            title="External connections"
+            networks={other}
+            action={
+              <Tooltip
+                title={
+                  <>
+                    <Typography variant="body2">
+                      Any connection that didn't originate from this user and application.
+                    </Typography>
+                    <p>These are connections to any device you manage. Even if started by another application.</p>
+                  </>
+                }
+                placement="top"
+                arrow
+              >
+                <Icon name="circle-question" color="grayDark" size="sm" />
+              </Tooltip>
+            }
+          />
           {!!recent.serviceIds.length && (
             <>
               <br />
               <Divider variant="inset" />
-              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} connections />
+              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} connectionsPage />
             </>
           )}
         </>

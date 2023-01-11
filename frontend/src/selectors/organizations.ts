@@ -3,7 +3,7 @@ import { ApplicationState } from '../store'
 import { getActiveAccountId, isUserAccount } from './accounts'
 import { memberOrganization, IOrganizationState } from '../models/organization'
 
-const getAccounts = (state: ApplicationState) => state.organization.accounts
+export const getAccounts = (state: ApplicationState) => state.organization.accounts
 const getTestLimits = (state: ApplicationState) => (state.plans.tests.limit ? state.plans.tests.limits : undefined)
 const getLimitsOverride = (state: ApplicationState) => state.ui.limitsOverride
 
