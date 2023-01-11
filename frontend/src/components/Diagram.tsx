@@ -46,6 +46,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
       indicator.placement = 'left'
       break
     case '/edit':
+    case '/add':
       indicator.placement = 'right'
       break
   }

@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
-import { findLocalConnection, setConnection, selectConnections } from '../helpers/connectionHelper'
+import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
+import { selectConnections } from '../selectors/connections'
 import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -76,14 +77,15 @@ export default createModel<RootModel>()({
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
       return sorted.reduce((sessions: ISession[], e: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
+        if (!e.endpoint) return sessions
         const connection = findLocalConnection(globalState, e.target.id, e.id)
         sessions.push({
           id: e.id,
           timestamp: new Date(e.timestamp),
-          isP2P: e.endpoint ? !e.endpoint?.proxy : undefined,
-          platform: e.endpoint?.platform,
+          isP2P: !e.endpoint.proxy,
+          platform: e.endpoint.platform,
           user: e.user,
-          geo: e.endpoint?.geo,
+          geo: e.endpoint.geo,
           public: !!connection?.public,
           target: {
             id: e.target.id,

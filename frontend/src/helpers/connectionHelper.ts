@@ -3,6 +3,7 @@ import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
 import { getActiveUser } from '../models/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
+import { selectConnections } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
 import { isPortal } from '../services/Browser'
 
@@ -50,14 +51,18 @@ export function newConnection(service?: IService | null) {
 
   if (service) {
     const [_, device] = selectById(state, undefined, service.deviceID)
-    connection.name = service.subdomain
-    connection.id = service.id
-    connection.deviceID = service.deviceID
-    connection.accountId = device?.accountId || user.id
-    connection.online = service.state === 'active'
-    connection.typeID = service.typeID
-    connection.targetHost = service.attributes.targetHost
-    connection.description = service.attributes.description
+    connection = {
+      ...connection,
+      name: service.subdomain,
+      id: service.id,
+      deviceID: service.deviceID,
+      owner: device?.owner || connection.owner,
+      accountId: device?.accountId || user.id,
+      online: service.state === 'active',
+      typeID: service.typeID,
+      targetHost: service.attributes.targetHost,
+      description: service.attributes.description,
+    }
     if (service.attributes.defaultPort && !usedPorts(state).includes(service.attributes.defaultPort)) {
       connection.port = service.attributes.defaultPort
     }
@@ -116,14 +121,6 @@ export function getConnectionServiceIds(state: ApplicationState) {
   const serviceIds = selectConnections(state).map(c => c.id)
   if (thisId && !serviceIds.includes(thisId)) serviceIds.push(thisId)
   return serviceIds
-}
-
-export function selectConnections(state: ApplicationState) {
-  return state.connections.all.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public || c.connectLink))
-}
-
-export function selectEnabledConnections(state: ApplicationState) {
-  return selectConnections(state).filter(connection => connection.enabled)
 }
 
 export function getRoute(connection: IConnection): IRouteType {

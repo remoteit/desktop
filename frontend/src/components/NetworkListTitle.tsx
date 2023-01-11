@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { ListItemLocation } from './ListItemLocation'
-import { useStyles } from './NetworkListItem'
+import { useStyles } from './ConnectionListItem'
 import { Avatar } from './Avatar'
 import { Title } from './Title'
 import { Icon } from './Icon'

@@ -59,38 +59,41 @@ export default class ConnectionPool {
         this.stop(connection)
       } else if (this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
-        this.set({ ...connection, ...cliConnection })
+        this.set({
+          ...connection,
+          ...cliConnection,
+          enabled: this.stopLocked(connection) ? false : cliConnection.enabled,
+        })
       }
     })
 
     // start any connections: desktop -> cli
-    this.pool.forEach(connection => {
+    this.pool.forEach(instance => {
       if (
-        !(connection.params.enabled || connection.params.connected) ||
-        connection.params.public ||
-        connection.params.connectLink
+        !(instance.params.enabled || instance.params.connected) ||
+        instance.params.public ||
+        instance.params.connectLink
       ) {
-        this.clearTransitions(connection)
+        this.clearTransitions(instance)
         return
       }
 
-      const cliConnection = cliData.find(c => c.id === connection.params.id)
-
-      if (!cliConnection) {
-        Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
-        this.start(connection.params)
-        this.updated(connection)
+      const cliConnection = cliData.find(c => c.id === instance.params.id)
+      if (!cliConnection && !this.stopLocked(instance.params)) {
+        Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: instance.params })
+        this.start(instance.params)
+        this.updated(instance)
       }
 
-      if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
-        if (!connection.params.error) {
-          Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })
-          connection.error(
+      if (instance.params.host === IP_PRIVATE && preferences.get().useCertificate) {
+        if (!instance.params.error) {
+          Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: instance.params })
+          instance.error(
             new Error(
               'Connection certificate error, unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.'
             )
           )
-          this.updated(connection)
+          this.updated(instance)
         }
       }
     })
@@ -102,19 +105,12 @@ export default class ConnectionPool {
   }
 
   // update single connection
-  set = (connection: IConnection, setCLI?: boolean, skipUpdate?: boolean) => {
+  set = (connection: IConnection, setCLI?: boolean, skipUpdate?: boolean): Connection => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
-    d('SET SINGLE CONNECTION', { name: connection.name, id: connection.id })
-    if (instance) {
-      if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
-        instance.set(connection, setCLI)
-        if (!skipUpdate) this.updated(instance)
-      }
-    } else {
-      instance = this.add(connection)
-      if (!skipUpdate) this.updated(instance)
-    }
+    if (instance) instance.set(connection, setCLI)
+    else instance = this.add(connection)
+    if (!skipUpdate) this.updated(instance)
     return instance
   }
 
@@ -123,6 +119,11 @@ export default class ConnectionPool {
     d('ADDING CONNECTION', connection.id)
     this.pool.push(instance)
     return instance
+  }
+
+  stopLocked = (connection: IConnection) => {
+    const expireLock = Date.now() - 1000 * 60 * 2
+    return Boolean(connection.stopLock && connection.stopLock > expireLock)
   }
 
   changed = (f: IConnection, t: IConnection) => {
@@ -147,15 +148,12 @@ export default class ConnectionPool {
       'checkpoint',
     ]
     return props.some(prop => {
-      if (
-        f[prop] !== undefined &&
-        (prop === 'checkpoint' ? JSON.stringify(f[prop]) !== JSON.stringify(t[prop]) : f[prop] !== t[prop])
-      ) {
+      if (f[prop] !== undefined && JSON.stringify(f[prop]) !== JSON.stringify(t[prop])) {
         Logger.info('CONNECTION CHANGED', {
           id: f.id,
           prop,
-          fromCLI: f[prop] || '<empty>',
-          toDesktop: t[prop] || '<empty>',
+          fromCLI: f[prop] === undefined ? '<empty>' : f[prop],
+          toDesktop: t[prop] === undefined ? '<empty>' : t[prop],
         })
         return true
       }
@@ -169,46 +167,40 @@ export default class ConnectionPool {
 
   start = async (connection: IConnection) => {
     Logger.info('CONNECT', { id: connection.id })
-    if (!connection) return new Error('No connection data!')
     const instance = this.set(connection, false, true)
-    if (!instance) return
     instance.params = await this.assignPort(instance.params)
     await instance.start()
     this.updated(instance)
   }
 
-  disconnect = async ({ id }: IConnection) => {
-    Logger.info('DISCONNECT', { id })
-    const instance = this.find(id)
-    instance && (await instance.disconnect())
+  disconnect = async (connection: IConnection) => {
+    Logger.info('DISCONNECT', { id: connection.id })
+    const instance = this.set(connection, false, true)
+    await instance.disconnect()
     this.updated(instance)
   }
 
-  stop = async ({ id }: IConnection) => {
-    Logger.info('REMOVE', { id })
-    const instance = this.find(id)
-    instance && (await instance.stop())
+  stop = async (connection: IConnection) => {
+    Logger.info('REMOVE', { id: connection.id })
+    const instance = this.set(connection, false, true)
+    await instance.stop()
     this.updated(instance)
   }
 
-  forget = async ({ id }: IConnection) => {
-    Logger.info('FORGET', { id })
-    const connection = this.find(id)
-    if (connection) {
-      const index = this.pool.indexOf(connection)
-      await connection.clear()
-      this.pool.splice(index, 1)
-      this.updated()
-    }
+  forget = async (connection: IConnection) => {
+    Logger.info('FORGET', { id: connection.id })
+    const instance = this.set(connection, false, true)
+    const index = this.pool.indexOf(instance)
+    await instance.clear()
+    this.pool.splice(index, 1)
+    this.updated()
   }
 
-  clear = async ({ id }: IConnection) => {
-    Logger.info('CLEAR', { id })
-    const connection = this.find(id)
-    if (connection) {
-      await connection.clear()
-      this.updated()
-    }
+  clear = async (connection: IConnection) => {
+    Logger.info('CLEAR', { id: connection.id })
+    const instance = this.set(connection, false, true)
+    await instance.clear()
+    this.updated()
   }
 
   clearTransitions = (instance: Connection) => {

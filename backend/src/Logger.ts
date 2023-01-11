@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 import environment from './environment'
 import { ENVIRONMENT } from './constants'
@@ -8,8 +7,6 @@ import * as winston from 'winston'
 const DEBUG = process.env.DEBUG
 const MAX_LOG_SIZE_BYTES = 1e6 // 1mb
 const MAX_LOG_FILES = 5
-
-if (!fs.existsSync(environment.connectionLogPath)) fs.mkdirSync(environment.connectionLogPath, { recursive: true })
 
 const { combine, printf } = winston.format
 const consoleFormat = printf(p => {

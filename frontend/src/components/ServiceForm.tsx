@@ -261,10 +261,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   <TextField
                     label="Presence address"
                     value={form.presenceAddress || ''}
+                    placeholder="presence.remote.it:443"
                     variant="filled"
                     onChange={event => setForm({ ...form, presenceAddress: event.target.value })}
                   />
-                  <Typography variant="caption">Example: prod-presence.remote.it:6960</Typography>
+                  <Typography variant="caption">Example: presence.remote.it:443</Typography>
                 </ListItem>
               </TestUI>
               <ListItemCheckbox

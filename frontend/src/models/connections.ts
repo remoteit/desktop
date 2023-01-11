@@ -254,7 +254,6 @@ export default createModel<RootModel>()({
         createdTime: Date.now(),
         startTime: Date.now(),
         connecting: true,
-        enabled: true,
       }
 
       setConnection(proxyConnection)
@@ -364,14 +363,17 @@ export default createModel<RootModel>()({
       connection.error = undefined
       connection.autoStart = undefined
       connection.checkpoint = undefined
+      connection.stopLock = undefined
       connection.port = connection.port || state.backend.freePort
+      connection.enabled = true
 
       if (connection.public || isPortal()) {
         dispatch.connections.proxyConnect(connection)
         return
       }
 
-      dispatch.connections.updateConnection({ ...connection, starting: true })
+      connection = { ...connection, starting: true }
+      dispatch.connections.updateConnection(connection)
       emit('service/connect', connection)
       heartbeat.connect()
     },
@@ -388,10 +390,12 @@ export default createModel<RootModel>()({
       }
 
       if (connection.connected) {
-        dispatch.connections.updateConnection({ ...connection, disconnecting: true })
+        connection = { ...connection, disconnecting: true }
+        dispatch.connections.updateConnection(connection)
         emit('service/disconnect', connection)
       } else {
-        dispatch.connections.updateConnection({ ...connection, stopping: true })
+        connection = { ...connection, stopping: true, stopLock: Date.now(), enabled: false }
+        dispatch.connections.updateConnection(connection)
         emit('service/stop', connection)
       }
       heartbeat.disconnect()
@@ -438,9 +442,7 @@ export default createModel<RootModel>()({
     },
 
     async setAll(all: IConnection[], state) {
-      all
-        .sort((a, b) => nameSort(a.name || '', b.name || ''))
-        .sort((a, b) => Number(b.connected || 0) - Number(a.connected || 0))
+      all.sort((a, b) => nameSort(a.name || '', b.name || ''))
       setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },

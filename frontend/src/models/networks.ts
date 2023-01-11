@@ -4,7 +4,6 @@ import { ApplicationState } from '../store'
 import { getActiveUser } from './accounts'
 import { getActiveAccountId } from '../selectors/accounts'
 import { selectNetworks } from '../selectors/networks'
-import { selectEnabledConnections } from '../helpers/connectionHelper'
 import { selectConnection } from '../selectors/connections'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById } from '../selectors/devices'
@@ -27,9 +26,24 @@ import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
 export const DEFAULT_ID = 'local'
+export const DEFAULT_NETWORK: INetwork = {
+  id: '',
+  name: '',
+  cloud: false,
+  enabled: true,
+  shared: false,
+  loaded: false,
+  owner: { id: '', email: '' },
+  permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
+  connectionNames: {},
+  serviceIds: [],
+  access: [],
+  tags: [],
+  icon: 'chart-network',
+}
 
 const defaultLocalNetwork: INetwork = {
-  ...defaultNetwork(),
+  ...DEFAULT_NETWORK,
   id: DEFAULT_ID,
   name: 'Active',
   permissions: [],
@@ -39,7 +53,7 @@ const defaultLocalNetwork: INetwork = {
 }
 
 const defaultCloudNetwork: INetwork = {
-  ...defaultNetwork(),
+  ...DEFAULT_NETWORK,
   id: DEFAULT_ID,
   name: 'Cloud Proxy',
   permissions: [],
@@ -48,7 +62,7 @@ const defaultCloudNetwork: INetwork = {
 }
 
 export const sharedNetwork: INetwork = {
-  ...defaultNetwork(),
+  ...DEFAULT_NETWORK,
   id: 'shared',
   name: 'Shared',
   permissions: [],
@@ -58,7 +72,7 @@ export const sharedNetwork: INetwork = {
 }
 
 export const recentNetwork: INetwork = {
-  ...defaultNetwork(),
+  ...DEFAULT_NETWORK,
   id: 'recent',
   name: 'Recent',
   permissions: [],
@@ -146,7 +160,7 @@ export default createModel<RootModel>()({
           dispatch.networks.parseServices({ gqlConnections, accountId })
 
           return {
-            ...defaultNetwork(),
+            ...DEFAULT_NETWORK,
             shared,
             id: n.id,
             name: n.name,
@@ -327,42 +341,11 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
     state.networks.default.owner = getActiveUser(state)
     return state.networks.default
   }
-
-  return {
-    id: '',
-    name: '',
-    cloud: false,
-    enabled: true,
-    shared: false,
-    loaded: false,
-    owner: { id: '', email: '' },
-    permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
-    connectionNames: {},
-    serviceIds: [],
-    access: [],
-    tags: [],
-    icon: 'chart-network',
-  }
+  return DEFAULT_NETWORK
 }
 
 export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
-}
-
-export function selectActiveNetworks(state: ApplicationState): INetwork[] {
-  const template = defaultNetwork(state)
-  const all = selectEnabledConnections(state)
-  let networks: INetwork[] = []
-
-  all.forEach(c => {
-    const accountId = c?.accountId || c?.owner?.id || state.user.id || ''
-    const name = state.organization.accounts[accountId]?.name || 'Unknown'
-    const index = networks.findIndex(n => n.id === accountId)
-    if (index === -1) networks.push({ ...template, id: accountId, name, serviceIds: [c.id] })
-    else networks[index].serviceIds.push(c.id)
-  })
-
-  return networks
 }
 
 export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {

@@ -19,8 +19,6 @@ export default class Connection {
   }
 
   async start() {
-    this.params.enabled = true
-    this.params.error = undefined
     await cli.addConnection(this.params, this.error, this.log)
   }
 
@@ -29,7 +27,6 @@ export default class Connection {
   }
 
   async stop() {
-    this.params.enabled = false
     await cli.removeConnection(this.params, this.error, this.log)
   }
 

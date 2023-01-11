@@ -1,15 +1,14 @@
 require('dotenv').config()
 require('win-ca')
-
 import debug from 'debug'
-import Command from './Command'
 import AirBrake from './AirBrake'
+import environment from './environment'
 import Application from './Application'
 import preferences from './preferences'
 import { getApplication } from './sharedCopy/applications'
 import ConnectionPool from './ConnectionPool'
-import environment from './environment'
 import EventBus from './EventBus'
+import Command from './Command'
 import Logger from './Logger'
 import LAN from './LAN'
 import user, { User } from './User'
