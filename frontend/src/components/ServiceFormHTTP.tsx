@@ -60,7 +60,6 @@ export const ServiceFormHTTP: React.FC<Props> = ({
       host: parsed.hostname || form.host,
       attributes: {
         ...form.attributes,
-        targetHost: applicationType?.proxy && !containsIpAddress(parsed) ? parsed.host : undefined,
         launchTemplate: parsed.pathname.length > 1 ? application.launchTemplate + parsed.pathname : undefined,
       },
     })
