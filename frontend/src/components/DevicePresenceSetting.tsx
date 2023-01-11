@@ -16,7 +16,7 @@ export const DevicePresenceSetting: React.FC = () => {
       <InlineTextFieldSetting
         icon="bullseye-pointer"
         label="Presence Address"
-        placeholder="Example: prod-presence.remote.it:6960"
+        placeholder="presence.remote.it:443"
         value={device.presenceAddress}
         disabled={!device.permissions.includes('MANAGE')}
         resetValue={device.presenceAddress}
