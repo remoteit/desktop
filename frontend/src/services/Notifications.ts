@@ -1,14 +1,21 @@
 import { DEVICE_TYPE } from '../shared/applications'
+import { getAccountIds } from '../models/accounts'
+import { getOrganization } from '../models/organization'
 import { platforms } from '../platforms'
 import { isPortal } from '../services/Browser'
 import { store } from '../store'
 import icon from '../assets/noticeIcon.png'
 
 const actions = {
+  // DEVICE_STATE
   active: 'came online',
   inactive: 'went offline',
   connected: 'connected',
   disconnected: 'disconnected',
+  // DEVICE_SHARE
+  add: 'was shared',
+  update: 'share was updated',
+  remove: 'was unshared',
 }
 
 export async function notify(event: ICloudEvent) {
@@ -67,9 +74,27 @@ function connectNotification(event: ICloudEvent) {
 }
 
 function shareNotification(event: ICloudEvent) {
-  const from = event.actor.email
-  const device = event.target.find(t => t.typeID === DEVICE_TYPE)?.device
-  const to = event.users
+  // don't notify of actions you've done
+  if (event.authUserId === event.actor.id) return
+
+  let name
+  const state = store.getState()
+  const accountIds = getAccountIds(state)
+  const accountTo = event.users.find(u => accountIds.includes(u.id))
+
+  if (accountTo) {
+    if (event.authUserId === accountTo.id) name = 'you'
+    else name = getOrganization(state, accountTo.id)?.name || accountTo.email
+
+    event.target.forEach(target => {
+      if (target.typeID === DEVICE_TYPE) {
+        const title = `${target.name} ${actions[event.action]}`
+        const body = `with ${name} by ${event.actor.email}.`
+        const url = event.action === 'add' || event.action === 'update' ? `/devices/${target.id}` : '/devices'
+        createNotification(title, url, { body })
+      }
+    })
+  }
 }
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {

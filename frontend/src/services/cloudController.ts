@@ -4,6 +4,7 @@ import { DEVICE_TYPE } from '../shared/applications'
 import { getToken } from './remote.it'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
+import { getAccountIds } from '../models/accounts'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -269,9 +270,7 @@ class CloudController {
               target.owner?.id === getActiveAccountId(state) &&
               event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
             ) {
-              if (state.ui.registrationCommand) {
-                ui.set({ redirect: `/devices/${target.deviceId}` })
-              }
+              if (state.ui.registrationCommand) ui.set({ redirect: `/devices/${target.deviceId}` })
               ui.set({ successMessage: `${target.name} registered successfully!` })
               devices.fetchSingle({ id: target.deviceId, newDevice: true })
             }
@@ -323,19 +322,28 @@ class CloudController {
         break
 
       case 'DEVICE_SHARE':
-        // const state = store.getState()
-        // const activeAccountId = getActiveAccountId(state)\
+        // don't handle actions you've done
+        if (event.authUserId === event.actor.id) break
 
-        // device unshared from me
+        const state = store.getState()
+        const accountIds = getAccountIds(state)
+        const accountTo = event.users.find(u => accountIds.includes(u.id))
 
-        // device shared to me
-        if (!event.users) {
+        // device unshared from me or my org
+        if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) {
-              devices.fetchSingle({ id: target.deviceId, newDevice: true })
-            }
+            if (target.typeID === DEVICE_TYPE) devices.cleanup(target.id)
           })
         }
+
+        // device shared or updated with me or my org
+        else if (accountTo && ['add', 'update'].includes(event.action)) {
+          event.target.forEach(target => {
+            if (target.typeID === DEVICE_TYPE)
+              devices.fetchSingle({ id: target.deviceId, newDevice: event.action === 'add' })
+          })
+        }
+
         break
 
       case 'LICENSE_UPDATED':
