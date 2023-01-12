@@ -3,6 +3,7 @@ import { getAttribute } from './Attributes'
 import { Tooltip, TooltipProps, Divider, Box } from '@mui/material'
 import { DiagramContext, DeviceContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'
+import { Link } from './Link'
 
 type Props = { type: DiagramGroupType; end?: boolean }
 
@@ -14,6 +15,7 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
   const active = type ? activeTypes.includes(type) : false
   const highlight = type ? highlightTypes.includes(type) : false
   let tooltip: TooltipProps['title'] = ''
+  let link: string | undefined
   let props: IconProps = {
     type: hover ? 'solid' : 'regular',
     color: 'grayDarkest',
@@ -23,13 +25,16 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
     case 'initiator':
       props.name = 'circle'
       tooltip = 'Endpoint on this system'
+      link = 'connect'
       break
     case 'proxy':
       props.name = 'cloud'
       tooltip = 'Proxy server'
+      link = 'advanced'
       break
     case 'target':
       props.name = 'bullseye'
+      link = 'edit'
       tooltip = (
         <>
           Remote endpoint
@@ -40,10 +45,12 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       break
     case 'agent':
       props.name = 'diamond'
+      link = 'advanced'
       tooltip = proxy ? 'Proxy agent' : 'Local agent'
       break
     case 'relay':
       props.name = 'diamond'
+      link = 'edit'
       tooltip = (
         <>
           Remote agent
@@ -54,10 +61,12 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       break
     case 'public':
       props.name = 'globe'
+      link = 'connect'
       tooltip = 'Publicly available'
       break
     case 'lan':
       props.name = 'chart-network'
+      link = 'lan'
       tooltip = 'The local network'
       break
   }
@@ -85,9 +94,9 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
 
   return (
     <Tooltip title={tooltip} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} arrow>
-      <Box padding={1} margin={-1}>
+      <Link to={link} sx={{ padding: 1, margin: -1 }}>
         <Icon {...props} />
-      </Box>
+      </Link>
     </Tooltip>
   )
 }
