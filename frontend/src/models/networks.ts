@@ -221,6 +221,9 @@ export default createModel<RootModel>()({
     async remove({ serviceId = '', networkId }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
+
+      if (!network.permissions.includes('MANAGE')) return
+
       let copy = { ...network }
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
