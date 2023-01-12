@@ -61,6 +61,19 @@ export const AvatarMenu: React.FC = () => {
             onClick={handleClose}
           />
         </div>
+        <ListItemLocation
+          title="Bug Report"
+          icon="bug"
+          pathname="/feedback"
+          onClick={async () => {
+            await dispatch.feedback.set({
+              subject: 'Bug Report',
+              data: { location: window.location.href },
+            })
+            handleClose()
+          }}
+          dense
+        />
         <ListItemLink
           title="Support"
           icon="life-ring"
