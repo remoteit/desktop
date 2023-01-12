@@ -237,6 +237,7 @@ declare global {
   type IDataOptions = {
     application?: Application
     device?: IDevice
+    instance?: IInstance
     service?: IService
     connection?: IConnection
     session?: ISession

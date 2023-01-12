@@ -5,8 +5,10 @@ import { Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getOrganizationName } from '../models/organization'
+import { networkAttributes } from '../components/Attributes'
 import { NetworkHeaderMenu } from '../components/NetworkHeaderMenu'
 import { NetworkSettings } from '../components/NetworkSettings'
+import { DataDisplay } from '../components/DataDisplay'
 import { GuideStep } from '../components/GuideStep'
 import { Gutters } from '../components/Gutters'
 
@@ -60,6 +62,9 @@ export const NetworkPage: React.FC = () => {
         </Gutters>
         <Typography variant="subtitle1">Settings</Typography>
         <NetworkSettings network={network} orgName={orgName} />
+        <Gutters>
+          <DataDisplay attributes={networkAttributes} instance={network} />
+        </Gutters>
       </NetworkHeaderMenu>
     </GuideStep>
   )

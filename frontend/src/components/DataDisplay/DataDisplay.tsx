@@ -1,6 +1,5 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@mui/material'
-import { Application } from '../../shared/applications'
 import { fontSizes } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Attribute } from '../Attributes'
@@ -9,9 +8,6 @@ import { Icon } from '../Icon'
 type Props = IDataOptions & {
   attributes: Attribute[]
   limits?: ILookup<boolean>
-  device?: IDevice
-  service?: IService
-  application?: Application
   disablePadding?: boolean
   width?: number
 }
@@ -24,6 +20,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
       {attributes.map(attribute => {
         if (limits && !attribute.show(limits)) return null
         const value = attribute.value(props)
+        console.log(attribute.label, value)
         return (
           value != null && (
             <ListItem className={css.item} key={attribute.label} disableGutters>
