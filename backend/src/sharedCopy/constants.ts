@@ -63,7 +63,6 @@ export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
 export const ORGANIZATION_BAR_WIDTH = 70
-export const ADD_EVENTS_ACTIONS = ['add', 'update']
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750

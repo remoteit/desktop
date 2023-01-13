@@ -492,6 +492,7 @@ declare global {
     sessionId: string
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'LICENSE_UPDATED'
     state: IDevice['state'] | 'connected' | 'disconnected'
+    action: 'add' | 'update' | 'remove'
     timestamp: Date
     isP2P: boolean
     actor: IUserRef
@@ -548,7 +549,7 @@ declare global {
     shared: any
     scripting: boolean
     id: string
-    state?: ConnectionState
+    state?: IDevice['state']
     timestamp: Date
     type: string
     actor?: IUser

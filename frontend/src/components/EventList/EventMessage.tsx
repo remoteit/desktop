@@ -1,7 +1,7 @@
 import React from 'react'
-import { ADD_EVENTS_ACTIONS } from '../../shared/constants'
 import { combinedName } from '../../shared/nameHelper'
 
+export const EventActions = ['add', 'update']
 export const EventType = {
   login_state: 'AUTH_LOGIN',
   login_attempt_state: 'AUTH_LOGIN_ATTEMPT',
@@ -94,7 +94,7 @@ export function EventMessage({
             <b>{affected}</b>
           </>
         )
-      } else if (ADD_EVENTS_ACTIONS.includes(item.action)) {
+      } else if (EventActions.includes(item.action)) {
         message = (
           <>
             {actor} shared <i>{deviceName}</i> with <b>{affected}</b>
