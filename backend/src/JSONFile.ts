@@ -18,7 +18,9 @@ export default class JSONFile<T> {
    * file system.
    */
   get exists() {
-    return fs.existsSync(this.location)
+    const exists = fs.existsSync(this.location)
+    if (!exists) Logger.info('FILE DOES NOT EXIST', { location: this.location })
+    return exists
   }
 
   /**
@@ -63,11 +65,15 @@ export default class JSONFile<T> {
    */
   write = (content?: T) => {
     d('Writing file', { location: this.location, content })
+    try {
+      // Make sure containing folder exists.
+      fs.mkdirSync(path.parse(this.location).dir, { recursive: true })
 
-    // Make sure containing folder exists.
-    fs.mkdirSync(path.parse(this.location).dir, { recursive: true })
-
-    // Write the contents as a indented/formatted JSON value.
-    fs.writeFileSync(this.location, JSON.stringify(content || {}, null, 2))
+      // Write the contents as a indented/formatted JSON value.
+      fs.writeFileSync(this.location, JSON.stringify(content || {}, null, 2))
+    } catch (error) {
+      Logger.error('FILE WRITE ERROR', error)
+      return
+    }
   }
 }
