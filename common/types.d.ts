@@ -131,6 +131,7 @@ declare global {
   type INodeType = 'DEVICE' | 'NETWORK'
 
   interface INetwork extends IInstance {
+    accountId: string
     enabled: boolean
     cloud: boolean
     connectionNames: INameLookupByServiceId

@@ -20,7 +20,6 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
       {attributes.map(attribute => {
         if (limits && !attribute.show(limits)) return null
         const value = attribute.value(props)
-        console.log(attribute.label, value)
         return (
           value != null && (
             <ListItem className={css.item} key={attribute.label} disableGutters>
