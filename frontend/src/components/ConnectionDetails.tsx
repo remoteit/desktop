@@ -3,13 +3,10 @@ import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
 import { getEndpoint } from '../helpers/connectionHelper'
-import { getAttributes } from './Attributes'
 import { Typography, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
-import { ConnectionChecklist } from './ConnectionChecklist'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
-import { DataDisplay } from './DataDisplay'
 import { IconButton } from '../buttons/IconButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { DesktopUI } from './DesktopUI'
@@ -23,10 +20,10 @@ type Props = {
   session?: ISession
   showTitle?: string
   show?: boolean
+  children?: React.ReactNode
 }
 
-export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
+export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session, children }) => {
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -121,8 +118,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   return (
     <Collapse in={show}>
-      <Gutters top="md" size="md" bottom={null}>
-        <Paper className={classnames(css.address, !(connection?.enabled || session) && css.disabled)} elevation={0}>
+      <Paper className={css.paper} elevation={0}>
+        <Box className={classnames(css.address, !(connection?.enabled || session) && css.disabled)}>
           {!!showTitle ? (
             <Gutters size="md">
               <InputLabel shrink>User</InputLabel>
@@ -239,7 +236,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                         />
                       ) : (
                         <IconButton
-                          title="Download the desktop app to launch"
+                          title="To launch, change your launch type to URL or download the desktop app"
                           name="ban"
                           type="regular"
                           color="alwaysWhite"
@@ -253,23 +250,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
               </GuideBubble>
             </>
           )}
-        </Paper>
-        <Paper className={css.details} elevation={0}>
-          <Gutters bottom="xs">
-            <Box display="flex" flexDirection="row">
-              <DataDisplay
-                attributes={attributes}
-                connection={connection}
-                session={session}
-                application={app}
-                width={100}
-                disablePadding
-              />
-              <ConnectionChecklist connection={connection} />
-            </Box>
-          </Gutters>
-        </Paper>
-      </Gutters>
+        </Box>
+        {children}
+      </Paper>
     </Collapse>
   )
 }
@@ -303,18 +286,14 @@ const useStyles = makeStyles(({ palette }) => ({
     backgroundColor: palette.primary.main,
     color: palette.alwaysWhite.main,
     padding: spacing.xs,
-    borderBottomRightRadius: 0,
-    borderBottomLeftRadius: 0,
     '& label': { color: palette.alwaysWhite.main },
+  },
+  paper: {
+    marginTop: spacing.md,
+    overflow: 'hidden',
   },
   disabled: {
     backgroundColor: palette.gray.main,
-  },
-  details: {
-    paddingTop: 1,
-    paddingBottom: spacing.md,
-    borderTopRightRadius: 0,
-    borderTopLeftRadius: 0,
   },
   buttons: {
     display: 'flex',

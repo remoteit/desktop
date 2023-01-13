@@ -7,6 +7,7 @@ import { isReverseProxy } from '../models/applicationTypes'
 import { getDeviceModel } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { windowOpen } from '../services/Browser'
+import { ConnectionData } from './ConnectionData'
 import { LicensingNotice } from './LicensingNotice'
 import { ConnectionDetails } from './ConnectionDetails'
 import { ConnectLinkSetting } from './ConnectLinkSetting'
@@ -52,12 +53,16 @@ export const Connect: React.FC = () => {
 
   return (
     <>
-      <ConnectionDetails
-        connection={connection}
-        service={service}
-        session={session}
-        show={!!(connection.enabled && connection.host) || connection.connectLink}
-      />
+      <Gutters top={null} size="md" bottom={null}>
+        <ConnectionDetails
+          connection={connection}
+          service={service}
+          session={session}
+          show={!!(connection.enabled && connection.host) || connection.connectLink}
+        >
+          <ConnectionData connection={connection} service={service} session={session} />
+        </ConnectionDetails>
+      </Gutters>
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>

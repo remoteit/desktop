@@ -118,7 +118,11 @@ export function clearConnectionError(connection: IConnection) {
 
 export function getConnectionServiceIds(state: ApplicationState) {
   const thisId = state.backend.thisId
-  const serviceIds = selectConnections(state).map(c => c.id)
+  const serviceIds = selectConnections(state).map(c => {
+    // @TODO see if it would be better to put the connections into the correct accountId device model
+    // console.log('connection ids', c.id, c.accountId)
+    return c.id
+  })
   if (thisId && !serviceIds.includes(thisId)) serviceIds.push(thisId)
   return serviceIds
 }
