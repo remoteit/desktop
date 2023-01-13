@@ -104,25 +104,25 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     >
       <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
         <List>
-          <ServiceFormApplications
-            selected={form.typeID}
-            disabled={!editable}
-            onSelect={type =>
-              setForm({
-                ...form,
-                typeID: type.id,
-                type: type.name,
-                port: type.port,
-                attributes: {
-                  ...form.attributes,
-                  commandTemplate: undefined,
-                  launchTemplate: undefined,
-                },
-              })
-            }
-          />
-          {editable && (
+          {editable ? (
             <>
+              <ServiceFormApplications
+                selected={form.typeID}
+                disabled={!editable}
+                onSelect={type =>
+                  setForm({
+                    ...form,
+                    typeID: type.id,
+                    type: type.name,
+                    port: type.port,
+                    attributes: {
+                      ...form.attributes,
+                      commandTemplate: undefined,
+                      launchTemplate: undefined,
+                    },
+                  })
+                }
+              />
               {thisDevice && (
                 <ListItem>
                   <Notice
@@ -284,6 +284,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 onClick={() => setForm({ ...form, enabled: !form.enabled })}
               />
             </>
+          ) : (
+            <Notice>
+              This service isn't remote configurable.
+              <em>Update it's device package to the latest version to be able to remote configure it.</em>
+            </Notice>
           )}
         </List>
       </AccordionMenuItem>
