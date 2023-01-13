@@ -9,7 +9,7 @@ export const AttributeValue: React.FC<{
   connection?: IConnection
 }> = ({ attribute, connection }) => {
   const { connections, device } = useContext(DeviceListContext)
-  const value = attribute?.value({ device, connection, connections }) || ''
+  const value = attribute?.value({ device, instance: device, connection, connections }) || ''
   return (
     <Box
       className={`attribute attribute-${attribute?.id}`}
