@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { useHistory } from 'react-router-dom'
 import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -17,15 +18,17 @@ const LEAVE_DELAY = 200
 const AVATAR_SIZE = 44
 
 export const AvatarMenu: React.FC = () => {
+  const history = useHistory()
   const [open, setOpen] = React.useState<boolean>(false)
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const enterTimer = React.useRef<number>()
   const leaveTimer = React.useRef<number>()
   const dispatch = useDispatch<Dispatch>()
-  const { user, remoteUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
+    testUI: ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''),
     backendAuthenticated: state.auth.backendAuthenticated,
     licenseIndicator: selectLicenseIndicator(state),
   }))
@@ -97,16 +100,17 @@ export const AvatarMenu: React.FC = () => {
           href="https://link.remote.it/documentation-desktop/overview"
           dense
         />
-        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />{' '}
-        {altMenu && (
+        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />
+        {(altMenu || testUI) && (
           <ListItemSetting
-            confirm
-            label="Enable Test UI"
+            confirm={!testUI}
+            label={(testUI ? '' : 'Enable ') + 'Test UI'}
             icon="vial"
             confirmTitle="Are you sure?"
             confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
             onClick={() => {
               dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
+              history.push('/settings/test')
               handleClose()
             }}
           />
