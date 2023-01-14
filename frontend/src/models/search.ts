@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { getDeviceModel } from '../selectors/devices'
+import { REGEX_SERVICE_ID } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
@@ -30,6 +31,7 @@ export default createModel<RootModel>()({
     async fetch(name: string, state) {
       if (!state.auth.user) return
       if (!state.search.cloudSearch) return
+      const isServiceId = REGEX_SERVICE_ID.test(name)
 
       dispatch.search.set({ fetching: true })
 
@@ -38,7 +40,7 @@ export default createModel<RootModel>()({
       const accountQuery = `
         account(id: $id) {
           id
-          devices(size: $size, name: $name) {
+          devices(size: $size, name: $name, id: $serviceId) {
             items {
               id
               name
@@ -69,7 +71,7 @@ export default createModel<RootModel>()({
         }`
 
       const response = await graphQLBasicRequest(
-        ` query Search($id: String, $size: Int, $name: String) {
+        ` query Search($id: String, $size: Int, $name: String, $serviceId: [String!]) {
               login {
                 ${accountQuery}
               }
@@ -77,7 +79,8 @@ export default createModel<RootModel>()({
         {
           id,
           size,
-          name,
+          name: isServiceId ? undefined : name,
+          serviceId: isServiceId ? [name] : undefined,
         }
       )
 
@@ -102,7 +105,7 @@ export default createModel<RootModel>()({
             nodeId: device.id,
             nodeName: device.name,
             nodeType: 'DEVICE',
-            combinedName: serviceName + ' ' + device.name,
+            combinedName: serviceName + ' ' + device.name + ' ' + device.id + ' ' + service.id,
             serviceId: service.id,
             ownerEmail: device.owner.email,
             targetPlatform: device.platform,
