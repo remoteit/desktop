@@ -72,7 +72,7 @@ export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, di
           }}
           disabled={disabled}
           attributes={form.attributes}
-          onUpdate={attributes => setForm({ ...form, attributes })}
+          onChange={attributes => setForm({ ...form, attributes })}
         />
       </List>
       <Gutters>

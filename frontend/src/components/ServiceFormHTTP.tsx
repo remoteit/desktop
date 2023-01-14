@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { IP_PRIVATE } from '../shared/constants'
+import { IP_PRIVATE, REGEX_URL_PATHNAME } from '../shared/constants'
 import { containsIpAddress } from '../helpers/utilHelper'
 import { getApplicationType } from '../shared/applications'
 import { Typography, TextField } from '@mui/material'
@@ -9,6 +9,7 @@ type Props = {
   form: IService
   disabled?: boolean
   thisDevice?: boolean
+  pathname?: string
   portReachable?: IPortScan
   applicationTypes?: IApplicationType[]
   onInvalid?: (disable: boolean) => void
@@ -20,13 +21,14 @@ const DEFAULT_URL = new URL(`http://${IP_PRIVATE}`)
 export const ServiceFormHTTP: React.FC<Props> = ({
   form,
   thisDevice,
+  pathname,
   portReachable,
   applicationTypes,
   disabled,
   onInvalid,
   onChange,
 }) => {
-  const [field, setField] = useState<string>(formToURL(form).origin)
+  const [field, setField] = useState<string>(formToURL(form).href)
   const [error, setError] = useState<string>()
 
   const parsed = safeParse(field)
@@ -36,20 +38,28 @@ export const ServiceFormHTTP: React.FC<Props> = ({
   const port = parsed.port ? parseInt(parsed.port, 10) : applicationType?.port
 
   function formToURL(form: IService) {
-    const string = `${form.type.toLowerCase()}://${form.host}:${form.port}`
+    let string = `${form.type.toLowerCase()}://${form.host}:${form.port}`
+    if (pathname) string += `${pathname}`
     return safeParse(string)
   }
 
-  function safeParse(field: string) {
+  function safeParse(field?: string) {
     let result = DEFAULT_URL
     try {
-      result = new URL(field)
+      result = new URL(field || '')
       if (error) setError(undefined)
     } catch (e) {
       result = DEFAULT_URL
       if (error !== e.message) setError?.(e.message)
     }
     return result
+  }
+
+  function updateTemplatePathname() {
+    const template = form.attributes.launchTemplate || application.launchTemplate
+    const index = template.match(REGEX_URL_PATHNAME)?.index
+    const baseTemplate = template.substring(0, index)
+    return baseTemplate + parsed.pathname
   }
 
   useEffect(() => {
@@ -60,14 +70,18 @@ export const ServiceFormHTTP: React.FC<Props> = ({
       host: parsed.hostname || form.host,
       attributes: {
         ...form.attributes,
-        launchTemplate: parsed.pathname.length > 1 ? application.launchTemplate + parsed.pathname : undefined,
+        launchTemplate: updateTemplatePathname(),
       },
     })
   }, [field])
 
   useEffect(() => {
-    if (applicationType?.id !== form.typeID) setField(formToURL(form).origin)
+    if (applicationType?.id !== form.typeID) setField(formToURL(form).href)
   }, [form])
+
+  useEffect(() => {
+    setField(formToURL(form).href)
+  }, [pathname])
 
   useEffect(() => {
     onInvalid?.(!!error)

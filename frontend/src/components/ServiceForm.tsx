@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH, DEFAULT_CONNECTION } from '../shared/constants'
+import {
+  IP_PRIVATE,
+  DEFAULT_SERVICE,
+  MAX_DESCRIPTION_LENGTH,
+  DEFAULT_CONNECTION,
+  REGEX_URL_PATHNAME,
+} from '../shared/constants'
 import { HTTP_TYPES } from '../shared/applications'
 import { makeStyles } from '@mui/styles'
 import { AddFromNetwork } from './AddFromNetwork'
@@ -41,6 +47,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   editable,
   disabled,
   adding,
+  onChange,
   onSubmit,
   onCancel,
 }) => {
@@ -67,7 +74,17 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       ...setupAdded,
     }
   }
+  const updatePathname = (attributes: IService['attributes']) => {
+    console.log('UPDATE PATHNAME', attributes.launchTemplate)
+    if (attributes.launchTemplate) {
+      const index = attributes.launchTemplate.match(REGEX_URL_PATHNAME)?.index
+      const result = index ? attributes.launchTemplate.substring(index) : ''
+      console.log('SET PATHNAME', result)
+      setPathname(result)
+    }
+  }
   const [defaultForm, setDefaultForm] = useState<IService>()
+  const [pathname, setPathname] = useState<string>()
   const [invalid, setInvalid] = useState<boolean>()
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IService>()
@@ -75,12 +92,14 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const appType = findType(applicationTypes, form?.typeID)
   const css = useStyles()
   const changed = !isEqual(form, defaultForm)
+  const urlInput = HTTP_TYPES.includes(form?.typeID || 0)
 
   disabled = disabled || saving
 
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
+    updatePathname(newForm.attributes)
     if (!adding) setDefaultForm(cloneDeep(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
   }, [service])
@@ -156,16 +175,20 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   </Notice>
                 </ListItem>
               )}
-              {HTTP_TYPES.includes(form.typeID) ? (
+              {urlInput ? (
                 <ListItem className={css.field}>
                   <ServiceFormHTTP
                     form={form}
                     disabled={disabled}
+                    pathname={pathname}
                     thisDevice={thisDevice}
                     portReachable={portReachable}
                     applicationTypes={applicationTypes}
                     onInvalid={state => setInvalid(state)}
-                    onChange={form => setForm({ ...form })}
+                    onChange={form => {
+                      setForm({ ...form })
+                      onChange?.(form)
+                    }}
                   />
                 </ListItem>
               ) : (
@@ -302,7 +325,10 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             }}
             disabled={disabled}
             attributes={form.attributes}
-            onUpdate={attributes => setForm({ ...form, attributes })}
+            onChange={attributes => {
+              updatePathname(attributes)
+              setForm({ ...form, attributes })
+            }}
           />
         </List>
       </AccordionMenuItem>
