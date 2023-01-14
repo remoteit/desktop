@@ -35,11 +35,16 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
     case 'target':
       props.name = 'bullseye'
       link = 'edit'
+      const location = getAttribute('location').value({ device })
       tooltip = (
         <>
           Remote endpoint
-          <Divider />
-          {getAttribute('location').value({ device })}
+          {location && (
+            <>
+              <Divider />
+              {location}
+            </>
+          )}
         </>
       )
       break
@@ -51,11 +56,16 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
     case 'relay':
       props.name = 'diamond'
       link = 'edit'
+      const isp = getAttribute('isp').value({ device })
       tooltip = (
         <>
           Remote agent
-          <Divider />
-          {getAttribute('isp').value({ device })}
+          {isp && (
+            <>
+              <Divider />
+              {isp}
+            </>
+          )}
         </>
       )
       break

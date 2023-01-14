@@ -63,7 +63,7 @@ export const AvatarMenu: React.FC = () => {
         PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        transitionDuration={100}
+        transitionDuration={200}
         disableAutoFocusItem
         disableScrollLock
         elevation={2}
@@ -162,6 +162,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
         top: -AVATAR_SIZE - 4,
         width: AVATAR_SIZE + 4,
         height: AVATAR_SIZE + 4,
+        cursor: 'pointer',
       },
     },
     '& .MuiList-root': { backgroundColor: 'transparent' },

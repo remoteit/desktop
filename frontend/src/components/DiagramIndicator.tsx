@@ -30,7 +30,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     right: placement === 'right' ? GUTTERS : undefined,
     backgroundColor: palette.white.main,
     padding: spacing(0.5),
-    borderBottom: `1px solid ${palette.grayLighter.main}`,
+    borderBottom: `1px solid ${palette.grayLight.main}`,
     borderRadius: '50%',
   }),
 }))
