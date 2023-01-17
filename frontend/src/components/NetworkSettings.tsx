@@ -2,10 +2,8 @@ import React from 'react'
 import { List } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { FormDisplay } from './FormDisplay'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { MAX_NAME_LENGTH } from '../shared/constants'
-import { Avatar } from '../components/Avatar'
 
 export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> = ({ network, orgName }) => {
   const dispatch = useDispatch<Dispatch>()
@@ -29,12 +27,6 @@ export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> =
         toggle={network.enabled}
         onClick={() => dispatch.networks.updateNetwork({ ...network, enabled: !network.enabled })}
       /> */}
-      <FormDisplay
-        icon={<Avatar email={network.owner.email} size={24} tooltip />}
-        label="Owner"
-        value={`${network.owner.email} (${orgName})`}
-        displayOnly
-      />
     </List>
   )
 }

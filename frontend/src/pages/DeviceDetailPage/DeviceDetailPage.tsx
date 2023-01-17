@@ -18,7 +18,7 @@ export const DeviceDetailPage: React.FC = () => {
   return (
     <DeviceHeaderMenu>
       <Gutters>
-        <DataDisplay attributes={deviceAttributes} device={device} limits={limits} />
+        <DataDisplay attributes={deviceAttributes} device={device} instance={device} limits={limits} />
       </Gutters>
     </DeviceHeaderMenu>
   )

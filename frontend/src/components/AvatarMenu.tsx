@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { useHistory } from 'react-router-dom'
 import { ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,14 +13,22 @@ import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
+const ENTER_DELAY = 0
+const LEAVE_DELAY = 200
+const AVATAR_SIZE = 44
+
 export const AvatarMenu: React.FC = () => {
+  const history = useHistory()
   const [open, setOpen] = React.useState<boolean>(false)
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
+  const enterTimer = React.useRef<number>()
+  const leaveTimer = React.useRef<number>()
   const dispatch = useDispatch<Dispatch>()
-  const { user, remoteUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
+    testUI: ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''),
     backendAuthenticated: state.auth.backendAuthenticated,
     licenseIndicator: selectLicenseIndicator(state),
   }))
@@ -33,50 +42,75 @@ export const AvatarMenu: React.FC = () => {
     if (event.altKey && event.shiftKey) setAltMenu(true)
     setOpen(true)
   }
+  const handleEnter = event => {
+    clearTimeout(enterTimer.current)
+    clearTimeout(leaveTimer.current)
+    enterTimer.current = window.setTimeout(() => handleOpen(event), ENTER_DELAY)
+  }
+  const handleLeave = () => {
+    clearTimeout(enterTimer.current)
+    clearTimeout(leaveTimer.current)
+    leaveTimer.current = window.setTimeout(handleClose, LEAVE_DELAY)
+  }
 
   return (
     <>
-      <ButtonBase onClick={handleOpen} ref={buttonRef}>
-        <Avatar email={user?.email} size={44} button tooltip></Avatar>
+      <ButtonBase onClick={handleOpen} ref={buttonRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+        <Avatar email={user?.email} size={AVATAR_SIZE} button active={open} />
       </ButtonBase>
       <Menu
         open={open}
         anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
+        PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        // getContentAnchorEl={null}
+        transitionDuration={200}
+        disableAutoFocusItem
         disableScrollLock
         elevation={2}
       >
-        <div>
-          <ListItemLocation dense title="Account" icon="user" pathname="/account" onClick={handleClose} />
-          <ListItemLocation
-            dense
-            title="Settings"
-            icon="sliders-h"
-            pathname="/settings"
-            badge={licenseIndicator}
-            onClick={handleClose}
-          />
-        </div>
+        <ListItemLocation dense title="Account" icon="user" pathname="/account" onClick={handleClose} />
+        <ListItemLocation
+          dense
+          title="Settings"
+          icon="sliders-h"
+          pathname="/settings"
+          badge={licenseIndicator}
+          onClick={handleClose}
+        />
+        <ListItemLocation
+          title="Bug Report"
+          icon="spider"
+          iconType="solid"
+          pathname="/feedback"
+          onClick={async () => {
+            await dispatch.feedback.set({
+              subject: 'Bug Report',
+              data: { location: window.location.href },
+            })
+            handleClose()
+          }}
+          dense
+        />
         <ListItemLink
           title="Support"
           icon="life-ring"
           href="https://link.remote.it/documentation-desktop/overview"
           dense
         />
-        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />{' '}
-        {altMenu && (
+        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />
+        {(altMenu || testUI) && (
           <ListItemSetting
-            confirm
-            label="Enable Test UI"
+            confirm={!testUI}
+            label={(testUI ? '' : 'Enable ') + 'Test UI'}
             icon="vial"
             confirmTitle="Are you sure?"
             confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
             onClick={() => {
               dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
+              history.push('/settings/test')
               handleClose()
             }}
           />
@@ -122,6 +156,19 @@ export const AvatarMenu: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  menu: { '& .MuiMenu-list': { backgroundColor: palette.white.main } },
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  menu: {
+    '& .MuiPaper-root': {
+      overflow: 'visible',
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: -AVATAR_SIZE - 4,
+        width: AVATAR_SIZE + 4,
+        height: AVATAR_SIZE + 4,
+        cursor: 'pointer',
+      },
+    },
+    '& .MuiList-root': { backgroundColor: 'transparent' },
+  },
 }))

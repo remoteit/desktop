@@ -1,8 +1,10 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import network from '../services/Network'
+import { DEVICE_TYPE } from '../shared/applications'
 import { getToken } from './remote.it'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
+import { getAccountIds } from '../models/accounts'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -109,6 +111,7 @@ class CloudController {
         event {
           type
           state
+          action
           timestamp
           target {
             id
@@ -142,6 +145,10 @@ class CloudController {
           }
           ... on DeviceShareEvent {
             scripting
+            users {
+              id
+              email
+            }
           }
           ... on LicenseUpdatedEvent {
             plan {
@@ -183,12 +190,14 @@ class CloudController {
     try {
       const json = JSON.parse(response.data)
       if (this.errors(json)) {
-        return
+        console.error('CLOUD GRAPHQL WS ERROR', json.errors)
+        this.log('ERROR', json.errors)
       }
       let event = json.data.event
       return {
         type: event.type,
         state: event.state,
+        action: event.action,
         timestamp: new Date(event.timestamp),
         isP2P: !event.proxy,
         actor: event.actor,
@@ -228,18 +237,18 @@ class CloudController {
     switch (event.type) {
       case 'DEVICE_STATE':
         // active | inactive
-        const state = event.state === 'active' ? 'active' : 'inactive'
+        const onlineState = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
           // if device and device exists
           if (target.device?.id === target.id) {
-            target.device.state = state
+            target.device.state = onlineState
             this.log('DEVICE STATE', target.device.name, target.device.state)
 
             // if service and service exists
           } else {
             target.device?.services.find(service => {
               if (service.id === target.service?.id) {
-                service.state = state
+                service.state = onlineState
                 this.log('SERVICE STATE', service.name, service.state)
                 return true
               }
@@ -253,7 +262,7 @@ class CloudController {
           }
 
           // New unknown device discovered
-          if (!target.device && target.id === target.deviceId && state === 'active') {
+          if (!target.device && target.id === target.deviceId && onlineState === 'active') {
             const state = store.getState()
 
             // Device created within one minute of the event
@@ -261,9 +270,7 @@ class CloudController {
               target.owner?.id === getActiveAccountId(state) &&
               event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
             ) {
-              if (state.ui.registrationCommand) {
-                ui.set({ redirect: `/devices/${target.deviceId}` })
-              }
+              if (state.ui.registrationCommand) ui.set({ redirect: `/devices/${target.deviceId}` })
               ui.set({ successMessage: `${target.name} registered successfully!` })
               devices.fetchSingle({ id: target.deviceId, newDevice: true })
             }
@@ -315,7 +322,28 @@ class CloudController {
         break
 
       case 'DEVICE_SHARE':
-        // @TODO parse and display notice
+        // don't handle actions you've done
+        if (event.authUserId === event.actor.id) break
+
+        const state = store.getState()
+        const accountIds = getAccountIds(state)
+        const accountTo = event.users.find(u => accountIds.includes(u.id))
+
+        // device unshared from me or my org
+        if (accountTo && event.action === 'remove') {
+          event.target.forEach(target => {
+            if (target.typeID === DEVICE_TYPE) devices.cleanup(target.id)
+          })
+        }
+
+        // device shared or updated with me or my org
+        else if (accountTo && ['add', 'update'].includes(event.action)) {
+          event.target.forEach(target => {
+            if (target.typeID === DEVICE_TYPE)
+              devices.fetchSingle({ id: target.deviceId, newDevice: event.action === 'add' })
+          })
+        }
+
         break
 
       case 'LICENSE_UPDATED':

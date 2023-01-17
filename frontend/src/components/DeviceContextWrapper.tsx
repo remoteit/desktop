@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { selectById, selectDevice } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'
-import { REGEX_FIRST_PATH } from '../shared/constants'
+import { REGEX_FIRST_PATH, REGEX_SERVICE_ID } from '../shared/constants'
 import { useLocation, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -13,8 +13,8 @@ import { isRemoteUI } from '../helpers/uiHelper'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   let { deviceID, serviceID, networkID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
-  if (!deviceID?.includes(':')) deviceID = undefined
-  if (!serviceID?.includes(':')) serviceID = undefined
+  if (!deviceID || !REGEX_SERVICE_ID.test(deviceID)) deviceID = undefined
+  if (!serviceID || !REGEX_SERVICE_ID.test(serviceID)) serviceID = undefined
   const { user, device, network, connections, service, connection, remoteUI, thisId, waiting } = useSelector(
     (state: ApplicationState) => {
       let device: IDevice | undefined

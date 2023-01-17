@@ -9,7 +9,7 @@ type Props = { connection?: IConnection }
 export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
   const css = useStyles({})
 
-  if (!connection?.checkpoint) return null
+  if (!connection?.checkpoint || connection.public || connection.connectLink) return null
 
   const keys = Object.keys(checklist)
   const anyFailed = keys.some(key => !checklist[key].hide?.(connection) && !connection.checkpoint?.[key])

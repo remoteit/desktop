@@ -33,6 +33,7 @@ export const DEFAULT_NETWORK: INetwork = {
   enabled: true,
   shared: false,
   loaded: false,
+  accountId: '',
   owner: { id: '', email: '' },
   permissions: ['VIEW', 'CONNECT', 'MANAGE', 'ADMIN'],
   connectionNames: {},
@@ -59,16 +60,6 @@ const defaultCloudNetwork: INetwork = {
   permissions: [],
   enabled: true,
   icon: 'cloud',
-}
-
-export const sharedNetwork: INetwork = {
-  ...DEFAULT_NETWORK,
-  id: 'shared',
-  name: 'Shared',
-  permissions: [],
-  enabled: true,
-  shared: false,
-  icon: 'network-wired',
 }
 
 export const recentNetwork: INetwork = {
@@ -110,14 +101,15 @@ export default createModel<RootModel>()({
       await dispatch.networks.fetch()
       dispatch.networks.set({ initialized: true })
     },
+
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       dispatch.networks.set({ loading: true })
-      const result = await graphQLPreloadNetworks(accountId)
+      const response = await graphQLPreloadNetworks(accountId)
 
-      if (result === 'ERROR') return
+      if (response === 'ERROR') return
 
-      const networks = await dispatch.networks.parse(result)
+      const networks = await dispatch.networks.parse({ response, accountId })
       await dispatch.networks.setNetworks({ networks, accountId })
       dispatch.networks.set({ loading: false })
     },
@@ -149,9 +141,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
-      const accountId = getActiveAccountId(state)
-      const networks = gqlResponse?.data?.data?.login?.account?.networks || []
+    async parse({ response, accountId }: { response: AxiosResponse<any> | undefined; accountId: string }) {
+      const networks = response?.data?.data?.login?.account?.networks || []
 
       const parsed: INetwork[] = await Promise.all(
         networks.map(async n => {
@@ -162,6 +153,7 @@ export default createModel<RootModel>()({
           return {
             ...DEFAULT_NETWORK,
             shared,
+            accountId,
             id: n.id,
             name: n.name,
             owner: n.owner,
@@ -187,8 +179,7 @@ export default createModel<RootModel>()({
       const { gqlConnections, loaded, accountId } = props
       const gqlDevices = graphQLNetworkAdaptor(gqlConnections)
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true, loaded })
-      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
-      await dispatch.connections.updateConnectionState({ devices, accountId })
+      await dispatch.accounts.mergeDevices({ devices, accountId })
     },
 
     async fetchCount(role: IOrganizationRole, state) {
@@ -221,6 +212,9 @@ export default createModel<RootModel>()({
     async remove({ serviceId = '', networkId }: { serviceId?: string; networkId?: string }, state) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
+
+      if (!network.permissions.includes('MANAGE')) return
+
       let copy = { ...network }
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
@@ -339,6 +333,7 @@ export default createModel<RootModel>()({
 export function defaultNetwork(state?: ApplicationState): INetwork {
   if (state) {
     state.networks.default.owner = getActiveUser(state)
+    state.networks.default.accountId = getActiveAccountId(state)
     return state.networks.default
   }
   return DEFAULT_NETWORK

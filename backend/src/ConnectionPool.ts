@@ -100,7 +100,7 @@ export default class ConnectionPool {
   }
 
   setAll = (connections: IConnection[], setCLI?: boolean) => {
-    connections.forEach(c => this.set(c, c.public ? false : setCLI, true))
+    connections.forEach(c => this.set(c, c.public || c.connectLink ? false : setCLI, true))
     this.updated()
   }
 

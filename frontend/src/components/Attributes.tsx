@@ -30,7 +30,7 @@ export class Attribute {
   align?: 'left' | 'right' | 'center'
   column: boolean = true
   defaultWidth: number = 150
-  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
+  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
   feature?: string
   multiline?: boolean
   query?: string // key to device query - fall back to id
@@ -61,6 +61,10 @@ export class Attribute {
 
 class DeviceAttribute extends Attribute {
   type: Attribute['type'] = 'DEVICE'
+}
+
+class InstanceAttribute extends Attribute {
+  type: Attribute['type'] = 'INSTANCE'
 }
 
 class ServiceAttribute extends Attribute {
@@ -129,7 +133,7 @@ export const attributes: Attribute[] = [
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
-    value: ({ device }) => <Tags tags={device?.tags || []} small />,
+    value: ({ instance }) => <Tags tags={instance?.tags || []} small />,
     feature: 'tagging',
   }),
   new Attribute({
@@ -158,12 +162,14 @@ export const attributes: Attribute[] = [
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
   }),
-  new DeviceAttribute({
+  new InstanceAttribute({
     id: 'permissions',
     label: 'Permissions',
     defaultWidth: 210,
-    value: ({ device }) => {
-      return device?.permissions.map(p => <Chip label={PERMISSION[p]?.name} size="small" variant="outlined" key={p} />)
+    value: ({ instance }) => {
+      return instance?.permissions.map(p => (
+        <Chip label={PERMISSION[p]?.name} size="small" variant="outlined" key={p} />
+      ))
     },
   }),
   new DeviceAttribute({
@@ -173,22 +179,22 @@ export const attributes: Attribute[] = [
     defaultWidth: 210,
     value: ({ device }) => <DeviceRole device={device} />,
   }),
-  new DeviceAttribute({
+  new InstanceAttribute({
     id: 'owner',
     label: 'Owner',
     defaultWidth: 210,
-    value: ({ device }) =>
-      device && (
-        <Avatar email={device.owner.email} size={22} inline>
-          {device.owner.email}
+    value: ({ instance }) =>
+      instance && (
+        <Avatar email={instance.owner.email} size={22} inline>
+          {instance.owner.email}
         </Avatar>
       ),
   }),
-  new DeviceAttribute({
+  new InstanceAttribute({
     id: 'access',
-    label: 'Users',
+    label: 'Guests',
     defaultWidth: 200,
-    value: ({ device }) => <AvatarList users={device?.shared ? [device.owner] : device?.access} size={22} />,
+    value: ({ instance }) => (instance?.access.length ? <AvatarList users={instance?.access} size={22} /> : null),
   }),
   new DeviceAttribute({
     id: 'license',
@@ -443,7 +449,8 @@ export const attributes: Attribute[] = [
 const attributeLookup = toLookup<Attribute>(attributes, 'id')
 
 export const masterAttributes = attributes.filter(a => a.type === 'MASTER')
-export const deviceAttributes = attributes.filter(a => a.type === 'DEVICE')
+export const deviceAttributes = attributes.filter(a => a.type === 'DEVICE' || a.type === 'INSTANCE')
+export const networkAttributes = attributes.filter(a => a.type === 'INSTANCE')
 export const serviceAttributes = attributes.filter(a => a.type === 'SERVICE')
 export const restoreAttributes = attributes.filter(a => a.type === 'RESTORE')
 

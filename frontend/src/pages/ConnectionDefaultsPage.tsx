@@ -124,7 +124,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
             attributes={form}
             customTokens={[...customAttributes[id]]}
             customTokensNote={customAttributesNote[id]}
-            onUpdate={attributes => setForm({ ...form, ...attributes })}
+            onChange={attributes => setForm({ ...form, ...attributes })}
           />
         </List>
       </Gutters>

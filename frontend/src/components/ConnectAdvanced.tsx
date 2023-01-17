@@ -9,6 +9,7 @@ import { TimeoutSetting } from './TimeoutSetting'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { HeaderOverrideSetting } from './HeaderOverrideSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { ConnectionDetails } from './ConnectionDetails'
 import { SubdomainSetting } from './SubdomainSetting'
 import { NoConnectionPage } from '../pages/NoConnectionPage'
 import { LanShareSelect } from './LanShareSelect'
@@ -31,8 +32,13 @@ export const ConnectAdvanced: React.FC = () => {
   if (!service) return <NoConnectionPage />
 
   return (
-    <Gutters size="md" bottom={null}>
-      <Box display="flex">
+    <Gutters size="md" top={null} bottom={null}>
+      {/* <ConnectionDetails
+        connection={connection}
+        service={service}
+        show={!!(connection.enabled && connection.host) || connection.connectLink}
+      /> */}
+      <Box display="flex" marginTop={2}>
         <ListItemBack title="Connection configuration" />
         <IconButton
           name="undo"

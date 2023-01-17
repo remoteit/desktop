@@ -20,7 +20,7 @@ type Props = IService['attributes'] & {
   customTokensNote?: ILookup<React.ReactNode>
   attributes: IService['attributes']
   globalDefaults?: boolean
-  onUpdate: (attributes: IService['attributes']) => void
+  onChange: (attributes: IService['attributes']) => void
 }
 
 export const ServiceAttributesForm: React.FC<Props> = ({
@@ -30,7 +30,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   customTokensNote = {},
   attributes,
   globalDefaults,
-  onUpdate,
+  onChange,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
   const app = useApplication(undefined, connection)
@@ -47,7 +47,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             value={attributes.defaultPort || ''}
             disabled={disabled}
             variant="filled"
-            onChange={event => onUpdate({ ...attributes, defaultPort: validPort(event) })}
+            onChange={event => onChange({ ...attributes, defaultPort: validPort(event) })}
           />
           <Typography variant="caption">
             Default local port to use when a system connects to this service. <b>Port will auto assign if unset.</b>
@@ -62,7 +62,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           disabled={!!routingLock || disabled}
           variant="filled"
           placeholder={routingLock || attributes.route || ROUTES[0].key}
-          onChange={event => onUpdate({ ...attributes, route: event.target.value as IRouteType })}
+          onChange={event => onChange({ ...attributes, route: event.target.value as IRouteType })}
         >
           <MenuItem value="">
             <i>No default override</i>
@@ -86,7 +86,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             value={attributes.targetHost || ''}
             disabled={disabled}
             variant="filled"
-            onChange={event => onUpdate({ ...attributes, targetHost: event.target.value.toString() })}
+            onChange={event => onChange({ ...attributes, targetHost: event.target.value.toString() })}
           />
           <Typography variant="caption">
             A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing
@@ -106,7 +106,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
               variant="filled"
               label="Launch method"
               value={attributes.launchType || ''}
-              onChange={event => onUpdate({ ...attributes, launchType: event.target.value })}
+              onChange={event => onChange({ ...attributes, launchType: event.target.value })}
             >
               <MenuItem value="">
                 <i>No default override</i>
@@ -122,7 +122,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
               checked={attributes.autoLaunch}
               indeterminate={attributes.autoLaunch === undefined}
               onClick={autoLaunch =>
-                onUpdate({ ...attributes, autoLaunch: attributes.autoLaunch === false ? undefined : autoLaunch })
+                onChange({ ...attributes, autoLaunch: attributes.autoLaunch === false ? undefined : autoLaunch })
               }
             />
           </ListItem>
@@ -134,7 +134,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         value={attributes.launchTemplate || ''}
         placeholder={app.launchTemplate}
         disabled={disabled}
-        onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
+        onChange={value => onChange({ ...attributes, launchTemplate: value })}
       >
         Default tokens <b>{app.defaultTokens.join(', ')}</b>
         <br />
@@ -152,7 +152,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         value={attributes.commandTemplate || ''}
         placeholder={app.commandTemplate}
         disabled={disabled}
-        onChange={value => onUpdate({ ...attributes, commandTemplate: value })}
+        onChange={value => onChange({ ...attributes, commandTemplate: value })}
       >
         Default tokens <b>{app.defaultTokens.join(', ')}</b>
         <br />
@@ -177,7 +177,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                     dense={false}
                     label="Application Path"
                     value={attributes[token] || ''}
-                    onSave={value => onUpdate({ ...attributes, [token]: value })}
+                    onSave={value => onChange({ ...attributes, [token]: value })}
                   />
                 ) : (
                   <ListItem disableGutters key={token}>
@@ -187,7 +187,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                       value={attributes[token] || ''}
                       disabled={disabled}
                       variant="filled"
-                      onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
+                      onChange={event => onChange({ ...attributes, [token]: event.target.value })}
                     />
                     {customTokensNote[token] && (
                       <Typography variant="caption">Found in {customTokensNote[token]}</Typography>
