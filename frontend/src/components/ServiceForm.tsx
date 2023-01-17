@@ -87,6 +87,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
+    setUrlField(newForm)
     if (!adding) setDefaultForm(cloneDeep(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
   }, [service])
@@ -115,8 +116,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               <ServiceFormApplications
                 selected={form.typeID}
                 disabled={!editable}
-                onSelect={type =>
-                  setForm({
+                onSelect={type => {
+                  const nextForm = {
                     ...form,
                     typeID: type.id,
                     type: type.name,
@@ -126,8 +127,10 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                       commandTemplate: undefined,
                       launchTemplate: undefined,
                     },
-                  })
-                }
+                  }
+                  setForm(nextForm)
+                  setUrlField(nextForm)
+                }}
               />
               {thisDevice && (
                 <ListItem>
@@ -174,7 +177,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                     helperText={urlError}
                     InputLabelProps={{ shrink: true }}
                     onChange={event => {
-                      setUrlField?.(event.target.value)
+                      setUrlField(event.target.value)
                       onChange?.(form)
                     }}
                     InputProps={{
@@ -321,7 +324,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             }}
             disabled={disabled}
             attributes={form.attributes}
-            onChange={attributes => setForm({ ...form, attributes })}
+            onChange={attributes => {
+              const result = { ...form, attributes }
+              setForm(result)
+              setUrlField(result)
+            }}
           />
         </List>
       </AccordionMenuItem>
