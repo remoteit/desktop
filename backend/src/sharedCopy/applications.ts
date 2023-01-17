@@ -9,14 +9,13 @@ import { replaceHost } from './nameHelper'
 import { getEnvironment, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
-export const HTTP_TYPES = [7, 8]
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
 
 export class Application {
   title: string = ''
-  example: string = '127.0.0.1' // @TODO @benoit to add to applicationTypes api?
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
+  urlForm: boolean = false
   appLaunchType: IConnection['launchType'] = 'NONE'
   appCommandTemplate: string = '[host]:[port]'
   appLaunchTemplate: string = 'https://[host]:[port]'
@@ -265,9 +264,9 @@ export function getApplicationType(typeId: number | undefined) {
     case 33:
       return new Application({
         title: 'Secure Browser',
-        example: 'https://192.168.0.110:9000/admin',
         appLaunchType: 'URL',
         appLaunchTemplate: 'https://[host]:[port]',
+        urlForm: true,
       })
     case 7:
     case 30:
@@ -276,8 +275,8 @@ export function getApplicationType(typeId: number | undefined) {
     case 42:
       return new Application({
         title: 'Browser',
-        example: 'http://localhost:8001/api/dashboard',
         appLaunchType: 'URL',
+        urlForm: true,
       })
     case 34:
       return new Application({

@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
 import cloneDeep from 'lodash/cloneDeep'
-import {
-  IP_PRIVATE,
-  DEFAULT_SERVICE,
-  MAX_DESCRIPTION_LENGTH,
-  DEFAULT_CONNECTION,
-  REGEX_URL_PATHNAME,
-} from '../shared/constants'
-import { HTTP_TYPES } from '../shared/applications'
+import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH, DEFAULT_CONNECTION } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
+import { useURLForm } from '../hooks/useURLForm'
 import { AddFromNetwork } from './AddFromNetwork'
+import { useApplication } from '../hooks/useApplication'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { Typography, TextField, List, ListItem, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
@@ -19,7 +14,7 @@ import { ServiceFormApplications } from './ServiceFormApplications'
 import { serviceNameValidation } from '../shared/nameHelper'
 import { ServiceAttributesForm } from './ServiceAttributesForm'
 import { AccordionMenuItem } from './AccordionMenuItem'
-import { ServiceFormHTTP } from './ServiceFormHTTP'
+import { LoadingMessage } from './LoadingMessage'
 import { PortScanIcon } from './PortScanIcon'
 import { usePortScan } from '../hooks/usePortScan'
 import { validPort } from '../helpers/connectionHelper'
@@ -36,7 +31,7 @@ export type ServiceFormProps = {
   editable: boolean
   disabled?: boolean
   adding?: boolean
-  onChange?: (form: IService) => void
+  onChange?: (form: IService) => void /// swap for URL form?
   onSubmit: (form: IService) => void
   onCancel: () => void
 }
@@ -57,9 +52,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     saving: !!(state.ui.setupAddingService || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,
   }))
+
   const initForm = () => {
     setError(undefined)
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
+    console.log('init form')
     return {
       ...DEFAULT_SERVICE,
       id: service?.id || '',
@@ -74,32 +71,22 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       ...setupAdded,
     }
   }
-  const updatePathname = (attributes: IService['attributes']) => {
-    console.log('UPDATE PATHNAME', attributes.launchTemplate)
-    if (attributes.launchTemplate) {
-      const index = attributes.launchTemplate.match(REGEX_URL_PATHNAME)?.index
-      const result = index ? attributes.launchTemplate.substring(index) : ''
-      console.log('SET PATHNAME', result)
-      setPathname(result)
-    }
-  }
+
   const [defaultForm, setDefaultForm] = useState<IService>()
-  const [pathname, setPathname] = useState<string>()
-  const [invalid, setInvalid] = useState<boolean>()
+  const [portReachable, portScan] = usePortScan()
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IService>()
-  const [portReachable, portScan] = usePortScan()
+  const application = useApplication(form)
+  const [urlField, setUrlField, urlError] = useURLForm(form, setForm, application.urlForm)
   const appType = findType(applicationTypes, form?.typeID)
-  const css = useStyles()
   const changed = !isEqual(form, defaultForm)
-  const urlInput = HTTP_TYPES.includes(form?.typeID || 0)
+  const css = useStyles()
 
   disabled = disabled || saving
 
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
-    updatePathname(newForm.attributes)
     if (!adding) setDefaultForm(cloneDeep(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
   }, [service])
@@ -108,7 +95,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     if (form && thisDevice) portScan({ port: form.port, host: form.host })
   }, [form])
 
-  if (!form) return null
+  if (!form) return <LoadingMessage />
 
   return (
     <form
@@ -175,21 +162,30 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   </Notice>
                 </ListItem>
               )}
-              {urlInput ? (
+              {application.urlForm ? (
                 <ListItem className={css.field}>
-                  <ServiceFormHTTP
-                    form={form}
+                  <TextField
+                    required
+                    value={urlField}
+                    label="Service URL"
+                    variant="filled"
+                    error={!!urlError}
                     disabled={disabled}
-                    pathname={pathname}
-                    thisDevice={thisDevice}
-                    portReachable={portReachable}
-                    applicationTypes={applicationTypes}
-                    onInvalid={state => setInvalid(state)}
-                    onChange={form => {
-                      setForm({ ...form })
+                    helperText={urlError}
+                    InputLabelProps={{ shrink: true }}
+                    onChange={event => {
+                      setUrlField?.(event.target.value)
                       onChange?.(form)
                     }}
+                    InputProps={{
+                      endAdornment: thisDevice && (
+                        <PortScanIcon state={portReachable} port={form.port} host={form.host} />
+                      ),
+                    }}
                   />
+                  <Typography variant="caption">
+                    URL of the service you want to connect to. Example: https://localhost:8001/api/dashboard
+                  </Typography>
                 </ListItem>
               ) : (
                 <>
@@ -325,15 +321,17 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             }}
             disabled={disabled}
             attributes={form.attributes}
-            onChange={attributes => {
-              updatePathname(attributes)
-              setForm({ ...form, attributes })
-            }}
+            onChange={attributes => setForm({ ...form, attributes })}
           />
         </List>
       </AccordionMenuItem>
       <Gutters size={adding ? undefined : null} top="lg">
-        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed || invalid}>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={disabled || !!error || !changed /*  || fieldError */}
+        >
           {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
         </Button>
         <Button onClick={onCancel}>Cancel</Button>
