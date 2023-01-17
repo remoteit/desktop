@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.14.1",
+  "version": "3.14.2",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
