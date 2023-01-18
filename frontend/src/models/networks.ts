@@ -179,7 +179,7 @@ export default createModel<RootModel>()({
       const { gqlConnections, loaded, accountId } = props
       const gqlDevices = graphQLNetworkAdaptor(gqlConnections)
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true, loaded })
-      await dispatch.accounts.mergeDevices({ devices, accountId })
+      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
     },
 
     async fetchCount(role: IOrganizationRole, state) {

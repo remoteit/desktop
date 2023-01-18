@@ -24,12 +24,14 @@ export const AddPlatformPage: React.FC = () => {
       <Box display="flex" flexWrap="wrap" justifyContent="center" paddingBottom={5}>
         <Box className={css.icon}>
           <Icon name={platform} fontSize={100} platformIcon />
-          {platformObj.installation?.command && [
-            <Divider sx={{ marginTop: 4, width: '80%' }} />,
-            <AddPlatformServices types={applicationTypes} onChange={type => setApplicationTypes(type)} />,
-            <Divider sx={{ marginBottom: 1, marginTop: 2, width: '80%' }} />,
-            <AddPlatformTags tags={platformTags} onChange={tags => setPlatformTags(tags)} />,
-          ]}
+          {platformObj.installation?.command && (
+            <>
+              <Divider sx={{ marginTop: 4, width: '80%' }} />
+              <AddPlatformServices types={applicationTypes} onChange={type => setApplicationTypes(type)} />
+              <Divider sx={{ marginBottom: 1, marginTop: 2, width: '80%' }} />
+              <AddPlatformTags tags={platformTags} onChange={tags => setPlatformTags(tags)} />
+            </>
+          )}
         </Box>
         <Box className={css.box}>
           {platformObj.installation?.command ? (

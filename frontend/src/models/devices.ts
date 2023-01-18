@@ -532,7 +532,7 @@ export function mergeDevices(params: { overwrite: IDevice[]; keep: IDevice[] }) 
   const { overwrite, keep } = params
   return keep.map(k => {
     const ow = overwrite.find(o => o.id === k.id)
-    return { ...ow, ...k }
+    return { ...ow, ...k, hidden: k.hidden && (ow ? ow.hidden : k.hidden) }
   })
 }
 

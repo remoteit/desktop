@@ -27,7 +27,7 @@ export default class AppUpdater {
 
   async check(force?: boolean) {
     try {
-      if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
+      if (force || autoUpdater.allowPrerelease || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
         this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
         if (environment.isWindows || environment.isMac) {
           Logger.info('CHECK FOR UPDATE')
