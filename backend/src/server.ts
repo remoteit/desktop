@@ -13,6 +13,7 @@ import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
 import socketioAuth from 'socketio-auth'
 import Preferences from './preferences'
+import environment from './environment'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import { IP_PRIVATE, IP_OPEN } from './sharedCopy/constants'
@@ -136,9 +137,15 @@ class Server {
           attemptingID: credentials.guid,
           signedInID: admin.guid,
         })
+
+        const command = environment.isWindows
+          ? `'remoteit signout' from an Administrator Command Prompt`
+          : `'sudo remoteit signout' from your terminal`
+
         return callback(
           new Error(
-            `${admin.username} is currently signed in. They must first sign out to allow ${credentials.username} to sign in.`
+            `${admin.username} is already signed in. They must first sign in and back out to allow ${credentials.username} to sign in.
+            Or you can run ${command}.`
           ),
           false
         )
