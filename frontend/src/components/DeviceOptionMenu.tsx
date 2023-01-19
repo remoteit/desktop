@@ -55,35 +55,34 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
           )
         )}
-        {devicePage && device.permissions.includes('MANAGE') && (
-          <>
+        {devicePage &&
+          device.permissions.includes('MANAGE') && [
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
               <ListItemText primary="Transfer Device" />
-            </MenuItem>
-            <Divider key="divider" />
-            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />
+            </MenuItem>,
+            <Divider key="divider" />,
+            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
             <Tooltip
-              title="Device must be offline"
+              key="deviceActions"
               placement="left"
+              title="Device must be offline"
               open={device.state !== 'active' ? false : undefined}
               arrow
             >
               <span>
                 <CopyMenuItem
-                  key="restore"
                   icon="trash-arrow-up"
                   title="Restore Device"
                   value={device.restoreCommand || ''}
                   disabled={device.state === 'active'}
                 />
-                <DeleteDevice key="deleteDevice" device={device} menuItem />
+                <DeleteDevice device={device} menuItem />
               </span>
-            </Tooltip>
-          </>
-        )}
+            </Tooltip>,
+          ]}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>
     </>
