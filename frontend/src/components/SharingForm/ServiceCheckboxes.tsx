@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { List } from '@mui/material'
@@ -21,16 +21,12 @@ export function ServiceCheckboxes({
   selectedServices: string[]
 }): JSX.Element {
   const { shares } = useDispatch<Dispatch>()
-  const { indeterminateServices } = useSelector((state: ApplicationState) => ({
-    indeterminateServices: state.shares.currentDevice?.indeterminate || [],
-  }))
-  const [allIndeterminate, setAllIndeterminate] = useState<boolean>(false)
-  const [selectAllChecked, setSelectAllChecked] = useState<boolean>(false)
+  const indeterminateServices = useSelector(
+    (state: ApplicationState) => state.shares.currentDevice?.indeterminate || []
+  )
 
-  useEffect(() => {
-    setAllIndeterminate(services?.length !== selectedServices?.length && selectedServices?.length !== 0)
-    setSelectAllChecked(services?.length === selectedServices?.length && selectedServices?.length !== 0)
-  }, [services, selectedServices])
+  const allIndeterminate = !!selectedServices.length && services.length !== selectedServices.length
+  const selectAllChecked = !!selectedServices.length && services.length === selectedServices.length
 
   const update = (checked: boolean, id: string): void => {
     const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id && v)
@@ -40,7 +36,7 @@ export function ServiceCheckboxes({
 
   const selectAll = (checked: boolean, services: CheckboxItem[]): void => {
     const ids = services.map(service => service.value).filter(id => [...selectedServices, id])
-    const all = checked ? ids : selectedServices.filter(v => '')
+    const all = checked ? ids : []
     shares.selectAllServices()
     onChange(all)
   }

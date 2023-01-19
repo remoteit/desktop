@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { REGEX_LAST_PATH } from '../../shared/constants'
 import { Divider, List, Typography, Box } from '@mui/material'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
