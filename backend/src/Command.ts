@@ -55,13 +55,12 @@ export default class Command {
     return this.sanitize({ string: this.commands.join(' && ') }).string?.toString() || ''
   }
 
-  parseStdError(error: string) {
+  parseStdError(error: string): CliStderr {
     const cliError = error.match(/{.*}/)
     if (cliError) {
-      const { message }: CliStderr = toJson(cliError[0])
-      return message
+      return toJson(cliError[0])
     }
-    return error
+    return { message: error, code: -1 }
   }
 
   async exec() {
@@ -84,15 +83,16 @@ export default class Command {
 
       if (stderr) {
         this.log(`EXEC *** STD ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error')
-        if (isErrorReportable(stderr)) {
+        const error = this.parseStdError(stderr)
+        if (isErrorReportable(error)) {
           AirBrake.notify({
             params: { type: 'COMMAND STDERR', exec: this.toString() },
             context: { version: environment.version },
             error: stderr.toString(),
           })
         }
-        result = this.parseStdError(stderr)
-        this.onError(new Error(result))
+        this.onError(new Error(error.message))
+        result = error.message
       }
 
       if (stdout) {
@@ -100,17 +100,17 @@ export default class Command {
       }
     } catch (error) {
       if (isStdExecException(error)) {
-        if (isErrorReportable(error.stderr, error.code)) {
+        const parsed = this.parseStdError(error.stderr || error.stdout || error.message)
+        if (isErrorReportable(parsed)) {
           AirBrake.notify({
             params: { type: 'COMMAND ERROR', exec: this.toString() },
             context: { version: environment.version },
             error,
           })
-          if (error.code) cli.data.errorCodes.push(error.code)
         }
         this.log(`EXEC CAUGHT *** STD ERROR ***`, { error, errorStack: error.stack }, 'error')
-        result = this.parseStdError(error.stderr || error.stdout || error.message)
-        this.onError(new Error(result))
+        this.onError(new Error(parsed.message))
+        result = parsed.message
       } else if (error instanceof Error) {
         this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorStack: error.stack }, 'error')
       } else {
@@ -127,9 +127,11 @@ function isStdExecException(error: any): error is StdExecException {
   return !!error.stdout || !!error.stderr
 }
 
-function isErrorReportable(stderr: string, code?: number) {
-  const isErrorCode = code ? !cli.data.errorCodes.includes(code) : true
-  return !stderr.toString().includes('read-only file system') && isErrorCode
+function isErrorReportable(error: CliStderr) {
+  const newError = error.code > 0 ? !cli.data.errorCodes.includes(error.code) : true
+  const reportable = !error.message.includes('read-only file system') && newError
+  if (newError) cli.data.errorCodes.push(error.code)
+  return reportable
 }
 
 function toJson(string: string) {
