@@ -2,7 +2,7 @@ import React from 'react'
 import { PROTOCOL } from '../../shared/constants'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
-import { CopyButton } from '../../buttons/CopyButton'
+import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { selectById } from '../../selectors/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -69,7 +69,7 @@ export const ServiceContextualMenu: React.FC = () => {
           />
           {connection?.enabled && (
             <>
-              <CopyButton app={app} icon="copy" size="base" />
+              <CopyIconButton app={app} icon="copy" size="base" />
               <LaunchButton app={app} size="base" />
             </>
           )}

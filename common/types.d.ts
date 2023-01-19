@@ -295,7 +295,8 @@ declare global {
     services: IService[]
     hidden?: boolean
     newDevice?: boolean
-    presenceAddress: string
+    presenceAddress?: string
+    restoreCommand?: string
     attributes: ILookup<any> & {
       name?: string
       color?: number

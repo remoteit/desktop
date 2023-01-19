@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
-import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
@@ -55,18 +55,35 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
           )
         )}
-        {devicePage &&
-          device.permissions.includes('MANAGE') && [
+        {devicePage && device.permissions.includes('MANAGE') && (
+          <>
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
               <ListItemText primary="Transfer Device" />
-            </MenuItem>,
-            <Divider key="divider" />,
-            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
-            <DeleteDevice key="deleteDevice" device={device} menuItem />,
-          ]}
+            </MenuItem>
+            <Divider key="divider" />
+            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />
+            <Tooltip
+              title="Device must be offline"
+              placement="left"
+              open={device.state !== 'active' ? false : undefined}
+              arrow
+            >
+              <span>
+                <CopyMenuItem
+                  key="restore"
+                  icon="trash-arrow-up"
+                  title="Restore Device"
+                  value={device.restoreCommand || ''}
+                  disabled={device.state === 'active'}
+                />
+                <DeleteDevice key="deleteDevice" device={device} menuItem />
+              </span>
+            </Tooltip>
+          </>
+        )}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>
     </>

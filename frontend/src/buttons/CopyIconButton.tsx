@@ -24,8 +24,8 @@ export type CopyButtonProps = ButtonProps & {
 
 const COPY_TIMEOUT = 1000
 
-export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  ({ icon, app, value, title, onClick, onCopy, ...props }, ref) => {
+export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
+  ({ icon, app, value, title, size = 'lg', onClick, onCopy, ...props }, ref) => {
     // export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, title, onCopy, ...props }) => {
     const [open, setOpen] = useState<boolean>(false)
     const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
@@ -67,7 +67,7 @@ export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
           onClick={check}
           icon={clipboard.copied ? 'check' : icon}
           title={title}
-          size="lg"
+          size={size}
         />
         <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
         {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}

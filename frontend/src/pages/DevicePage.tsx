@@ -16,6 +16,7 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { LinearProgress } from '../components/LinearProgress'
+import { CopyIconButton } from '../buttons/CopyIconButton'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { GuideBubble } from '../components/GuideBubble'
 import { ServiceName } from '../components/ServiceName'
@@ -82,7 +83,20 @@ export const DevicePage: React.FC = () => {
       }
     >
       {device.state === 'inactive' && (
-        <Notice severity="info" gutterTop>
+        <Notice
+          severity="info"
+          gutterTop
+          button={
+            <CopyIconButton
+              type="light"
+              size="md"
+              color="grayDarker"
+              icon="trash-arrow-up"
+              title="Copy restore command"
+              value={device.restoreCommand}
+            />
+          }
+        >
           Device offline
         </Notice>
       )}

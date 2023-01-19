@@ -4,7 +4,7 @@ import { Button, Paper, Grid, Box, Typography, Theme } from '@mui/material'
 import { makeStyles, createStyles } from '@mui/styles'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { CopyButton } from '../../buttons/CopyButton'
+import { CopyIconButton } from '../../buttons/CopyIconButton'
 
 export function CreateAccessKey(props) {
   const classes = useStyles()
@@ -52,7 +52,7 @@ export function CreateAccessKey(props) {
             <Grid item xs zeroMinWidth>
               <Typography noWrap>
                 {props.newKey}
-                <CopyButton icon="copy" value={props.newKey} />
+                <CopyIconButton icon="copy" value={props.newKey} />
               </Typography>
             </Grid>
           </Grid>
@@ -65,7 +65,7 @@ export function CreateAccessKey(props) {
                 <Box>
                   <Typography noWrap>
                     {props.secretKey}
-                    <CopyButton icon="copy" value={props.secretKey} />
+                    <CopyIconButton icon="copy" value={props.secretKey} />
                   </Typography>
                   <Typography
                     color="primary"
@@ -88,7 +88,7 @@ export function CreateAccessKey(props) {
                   >
                     Show secret access key
                   </Typography>
-                  <CopyButton icon="copy" value={props.secretKey} />
+                  <CopyIconButton icon="copy" value={props.secretKey} />
                 </Box>
               )}
             </Grid>

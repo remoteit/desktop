@@ -126,6 +126,10 @@ const DeviceSelectLookup: ILookup<string> = {
   presenceAddress
   `,
 
+  restore: `
+  restoreCommand
+  `,
+
   notifications: `
   notificationSettings {
     emailNotifications
@@ -377,7 +381,8 @@ export function graphQLDeviceAdaptor({
       attributes: processDeviceAttributes(d, metaData),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
       services: graphQLServiceAdaptor(d),
-      presenceAddress: d.presenceAddress || '',
+      presenceAddress: d.presenceAddress,
+      restoreCommand: d.restoreCommand,
       notificationSettings: d.notificationSettings,
       access:
         d.access?.map((e: any) => ({

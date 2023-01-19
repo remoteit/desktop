@@ -3,17 +3,18 @@ import { useClipboard } from 'use-clipboard-copy'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon } from './Icon'
 
-export interface CopyButtonProps {
+interface Props {
   icon: string
   title: string
   value: string | number
+  disabled?: boolean
 }
 
-export const CopyMenuItem: React.FC<CopyButtonProps> = ({ icon, value, title }) => {
+export const CopyMenuItem: React.FC<Props> = ({ icon, value, title, disabled }) => {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   return (
     <>
-      <MenuItem dense onClick={clipboard.copy}>
+      <MenuItem dense onClick={clipboard.copy} disabled={disabled}>
         <ListItemIcon>
           <Icon name={clipboard.copied ? 'check' : icon} color={clipboard.copied ? 'success' : undefined} size="md" />
         </ListItemIcon>
