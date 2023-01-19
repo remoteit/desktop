@@ -74,7 +74,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             >
               <span>
                 <CopyMenuItem
-                  icon="trash-arrow-up"
+                  icon="wave-pulse"
                   title="Restore Device"
                   value={device.restoreCommand || ''}
                   disabled={device.state === 'active'}

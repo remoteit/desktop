@@ -91,8 +91,8 @@ export const DevicePage: React.FC = () => {
               type="light"
               size="md"
               color="grayDarker"
-              icon="trash-arrow-up"
-              title="Copy restore command"
+              icon="wave-pulse"
+              title="Copy restore device command"
               value={device.restoreCommand}
             />
           }
