@@ -17,11 +17,9 @@
     "@emotion/styled": "^11.9.3",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
-    "@fortawesome/pro-duotone-svg-icons": "^6.1.1",
     "@fortawesome/pro-light-svg-icons": "^6.1.1",
     "@fortawesome/pro-regular-svg-icons": "^6.1.1",
     "@fortawesome/pro-solid-svg-icons": "^6.1.1",
-    "@fortawesome/pro-thin-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mui/lab": "^5.0.0-alpha.92",
     "@mui/material": "^5.9.2",
@@ -33,7 +31,6 @@
     "classnames": "2.2.6",
     "date-fns": "^2.16.1",
     "escape-string-regexp": "^5.0.0",
-    "filesize": "^6.0.1",
     "humanize-duration": "^3.25.1",
     "i18next": "^21.8.16",
     "i18next-browser-languagedetector": "^6.1.4",
@@ -71,8 +68,6 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/classnames": "2.2.9",
-    "@types/debug": "^4.1.5",
-    "@types/google.analytics": "0.0.41",
     "@types/humanize-duration": "^3.18.0",
     "@types/lodash.clonedeep": "^4.5.6",
     "@types/lodash.debounce": "^4.0.6",
@@ -88,16 +83,12 @@
     "@types/redux": "^3.6.0",
     "@types/redux-logger": "^3.0.9",
     "@types/seedrandom": "^3.0.2",
-    "@types/segment-analytics": "0.0.32",
     "@types/socket.io-client": "^1.4.35",
     "@types/validator": "^13.7.2",
     "cross-env": "^6.0.3",
     "eslint": "^8.20.0",
-    "i18n-unused": "^0.8.0",
     "npm-run-all": "4.1.5",
-    "onchange": "^6.1.0",
-    "typescript": "^4.7.4",
-    "webpack": "^5.74.0"
+    "typescript": "^4.7.4"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1"
