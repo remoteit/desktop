@@ -219,7 +219,7 @@ export default createModel<RootModel>()({
         }`
       )
       const result = await graphQLBasicRequest(
-        ` query Organizations{
+        ` query Organizations {
             login {
               ${accountQueries.join('\n')}
             }

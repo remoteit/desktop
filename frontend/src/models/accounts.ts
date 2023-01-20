@@ -33,7 +33,7 @@ export default createModel<RootModel>()({
     async fetch() {
       try {
         const result = await graphQLRequest(
-          ` query Accounts{
+          ` query Accounts {
               login {
                 membership {
                   created

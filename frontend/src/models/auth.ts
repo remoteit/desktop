@@ -89,7 +89,7 @@ export default createModel<RootModel>()({
       const { auth } = dispatch as Dispatch
       try {
         const result = await graphQLRequest(
-          ` {
+          ` query Auth {
               login {
                 id
                 email

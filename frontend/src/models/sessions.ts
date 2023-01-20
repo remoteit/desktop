@@ -21,7 +21,7 @@ export default createModel<RootModel>()({
     async fetch() {
       try {
         const response = await graphQLRequest(
-          ` {
+          ` query Sessions {
               login {
                 sessions {
                   id
