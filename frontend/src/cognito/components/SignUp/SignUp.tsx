@@ -143,6 +143,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
             label="Email Address"
             defaultValue={defaultEmail}
             onChange={e => setEmail(e.currentTarget.value.toLowerCase().trim())}
+            inputProps={{ maxLength: 254 }}
             placeholder="Email address..."
             required
             type="email"

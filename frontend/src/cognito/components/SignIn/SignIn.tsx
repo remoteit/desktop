@@ -145,6 +145,7 @@ export function SignIn({
             id="sign-in-username"
             label={t('global.user.email')}
             name="email"
+            inputProps={{ maxLength: 254 }}
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
               setUsername(e?.currentTarget?.value.trim())
             }}
