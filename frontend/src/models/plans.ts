@@ -86,7 +86,7 @@ export default createModel<RootModel>()({
     },
     async fetch() {
       const result = await graphQLBasicRequest(
-        ` {
+        ` query Plans {
             plans {
               id
               name
