@@ -296,7 +296,6 @@ declare global {
     hidden?: boolean
     newDevice?: boolean
     presenceAddress?: string
-    restoreCommand?: string
     attributes: ILookup<any> & {
       name?: string
       color?: number

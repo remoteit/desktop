@@ -10,6 +10,7 @@ import {
   graphQLRemoveService,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
+  graphQLRestoreDevice,
 } from '../services/graphQLMutation'
 import {
   graphQLFetchDeviceCount,
@@ -429,6 +430,16 @@ export default createModel<RootModel>()({
         console.log('CREATE REGISTRATION', registrationCommand)
         dispatch.ui.set({ registrationCommand })
         return registrationCode
+      }
+    },
+
+    async getRestoreCommand(deviceId, state) {
+      const accountId = getActiveAccountId(state)
+      const result = await graphQLRestoreDevice({ id: deviceId, account: accountId })
+      if (result !== 'ERROR') {
+        let { restoreCommand } = result?.data?.data?.login?.account?.device?.[0]
+        console.log('GET RESTORE COMMAND', restoreCommand)
+        return restoreCommand
       }
     },
 

@@ -109,6 +109,21 @@ export async function graphQLRegistration(props: {
   )
 }
 
+export async function graphQLRestoreDevice(props: { id: string; account: string }) {
+  return await graphQLBasicRequest(
+    ` query Device($id: [String!]!, $account: String) {
+        login {
+          account(id: $account) {
+            device(id: $id)  {
+              restoreCommand
+            }
+          }
+        }
+      }`,
+    props
+  )
+}
+
 export async function graphQLRename(serviceId: string, name: string) {
   return await graphQLBasicRequest(
     ` mutation Rename($serviceId: String!, $name: String!) {
