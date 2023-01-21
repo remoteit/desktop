@@ -1,9 +1,12 @@
 import React from 'react'
-import { Link, useParams } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
+import { Link, useParams } from 'react-router-dom'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
+import { CopyAsyncMenuItem } from './CopyAsyncMenuItem'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
@@ -16,6 +19,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
+  const dispatch = useDispatch<Dispatch>()
   const devicePage = !!deviceID
 
   if (!device) return null
@@ -65,6 +69,12 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             </MenuItem>,
             <Divider key="divider" />,
             <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
+            <CopyAsyncMenuItem
+              key="restore"
+              icon="wave-pulse"
+              title="Restore Device"
+              request={async () => await dispatch.devices.getRestoreCommand(device.id)}
+            />,
             <Tooltip
               key="deviceActions"
               placement="left"
@@ -73,12 +83,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               arrow
             >
               <span>
-                <CopyMenuItem
-                  icon="wave-pulse"
-                  title="Restore Device"
-                  value={device.restoreCommand || ''}
-                  disabled={device.state === 'active'}
-                />
                 <DeleteDevice device={device} menuItem />
               </span>
             </Tooltip>,

@@ -14,9 +14,9 @@ import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgre
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
+import { CopyAsyncMenuItem } from '../components/CopyAsyncMenuItem'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { LinearProgress } from '../components/LinearProgress'
-import { CopyIconButton } from '../buttons/CopyIconButton'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { GuideBubble } from '../components/GuideBubble'
 import { ServiceName } from '../components/ServiceName'
@@ -84,16 +84,13 @@ export const DevicePage: React.FC = () => {
     >
       {device.state === 'inactive' && (
         <Notice
-          severity="info"
           gutterTop
+          severity="info"
           button={
-            <CopyIconButton
-              type="light"
-              size="md"
-              color="grayDarker"
+            <CopyAsyncMenuItem
               icon="wave-pulse"
-              title="Copy restore device command"
-              value={device.restoreCommand}
+              request={async () => await dispatch.devices.getRestoreCommand(device.id)}
+              className={css.restore}
             />
           }
         >
@@ -209,4 +206,5 @@ const useStyles = makeStyles({
   connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
   list: { marginRight: 1 },
+  restore: { marginTop: spacing.xxs, padding: 0 },
 })
