@@ -15,7 +15,9 @@ export function usePortScan(): [typeof reachablePort, (props: Props) => void] {
   const { backend } = useDispatch<Dispatch>()
 
   function portScan({ port, host }: Props) {
-    if ((lastScan.port === port && lastScan.host === host) || !host || !port) {
+    if (lastScan.port === port && lastScan.host === host) return
+
+    if (!host || !port) {
       backend.set({ reachablePort: 'INVALID' })
       return
     }

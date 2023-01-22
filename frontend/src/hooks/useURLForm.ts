@@ -17,7 +17,8 @@ export function useURLForm(
 
   function safeURL(form?: IService): string {
     if (!form) return ''
-    let string = `${form.type.toLowerCase()}://${form.host}:${form.port}`
+    const applicationType = applicationTypes.find(a => a.id === form.typeID)
+    let string = `${applicationType?.scheme || 'http'}://${form.host}:${form.port}`
     string = safeParse(string)?.origin || string
     if (form.attributes) string += `${safePathname(form.attributes.launchTemplate)}`
     return string
@@ -37,8 +38,8 @@ export function useURLForm(
 
   function safePathname(url?: string) {
     if (!url) return ''
-    const index = url.match(REGEX_URL_PATHNAME)?.index
-    return index ? url.substring(index) : ''
+    const match = url.match(REGEX_URL_PATHNAME)
+    return match ? `/${match[3]}` : ''
   }
 
   const formToField = (form?: IService) => {
@@ -58,8 +59,8 @@ export function useURLForm(
     const port = parsed.port ? parseInt(parsed.port, 10) : applicationType?.port
     const app = getApplicationType(applicationType?.id)
     const template = form?.attributes.launchTemplate || app.launchTemplate
-    const index = template.match(REGEX_URL_PATHNAME)?.index
-    const baseTemplate = template.substring(0, index)
+    const match = template.match(REGEX_URL_PATHNAME)
+    const baseTemplate = match ? match[1] + match[2].substring(0, match[2].length - 1) : template
     const launchTemplate = baseTemplate + safePathname(value)
 
     setForm({
