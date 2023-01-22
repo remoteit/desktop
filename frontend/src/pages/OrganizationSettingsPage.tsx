@@ -254,7 +254,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   ) : (
                     <ListItem dense>
                       <ListItemIcon></ListItemIcon>
-                      <Box>
+                      <Box marginRight={4}>
                         <TextField
                           required
                           fullWidth
