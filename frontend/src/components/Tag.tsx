@@ -52,7 +52,7 @@ export const Tag: React.FC<Props> = ({ tag, dot, size = 'xxs', hideLabels, onCli
       size="small"
       style={{ color }}
       deleteIcon={
-        <IconButton size="large">
+        <IconButton size="small">
           <Icon name="times" size="xs" />
         </IconButton>
       }
@@ -74,7 +74,7 @@ const useStyles = makeStyles({
     marginBottom: 4,
     '& .MuiChip-label > *': { marginRight: spacing.xs },
     '& .MuiChip-deleteIconSmall': {
-      marginLeft: -spacing.sm,
+      marginLeft: -spacing.xs,
       marginRight: 0,
     },
   },

@@ -49,7 +49,8 @@ export const REGEX_DOMAIN_SAFE = /[^a-zA-Z0-9-.]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const REGEX_CHARACTERS = /^([^0-9]*)$/
 export const REGEX_LAST_NUMBER = /-*\d*$/
-export const REGEX_URL_PATHNAME = /(?<!\/)\/(?!\/).*/
+export const REGEX_URL_PATHNAME = /(\w*:\/\/)([^/]+\/)(.*)/
+// export const REGEX_URL_PATHNAME = /\w*:\/\/[^/]*/
 export const REGEX_VALID_IP =
   /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/
 export const REGEX_VALID_HOSTNAME =

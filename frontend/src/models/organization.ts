@@ -219,7 +219,7 @@ export default createModel<RootModel>()({
         }`
       )
       const result = await graphQLBasicRequest(
-        ` query Organizations{
+        ` query Organizations {
             login {
               ${accountQueries.join('\n')}
             }
@@ -311,9 +311,7 @@ export default createModel<RootModel>()({
         member.roleId,
         member.license
       )
-      if (result === 'ERROR') {
-        dispatch.organization.fetch()
-      } else {
+      if (result !== 'ERROR') {
         dispatch.ui.set({
           successMessage:
             members.length > 1
@@ -321,6 +319,7 @@ export default createModel<RootModel>()({
               : `The member '${members[0].user.email}' has been ${action}.`,
         })
       }
+      dispatch.organization.fetch()
     },
 
     async removeMember(member: IOrganizationMember, state) {

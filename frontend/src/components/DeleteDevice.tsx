@@ -2,8 +2,8 @@ import React from 'react'
 import { emit } from '../services/Controller'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography } from '@mui/material'
 import { DeleteButton } from '../buttons/DeleteButton'
+import { Typography } from '@mui/material'
 import { Notice } from './Notice'
 
 type Props = {
@@ -50,10 +50,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
     onClick && onClick()
   }
 
-  if (device.state === 'active') {
-    disabled = true
-    title = 'Device must be offline'
-  }
+  if (device.state === 'active') disabled = true
 
   if (device.thisDevice && device.permissions.includes('MANAGE')) {
     disabled = false

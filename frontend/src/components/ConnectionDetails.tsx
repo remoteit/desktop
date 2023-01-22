@@ -8,7 +8,7 @@ import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
 import { IconButton } from '../buttons/IconButton'
-import { CopyButton } from '../buttons/CopyButton'
+import { CopyIconButton } from '../buttons/CopyIconButton'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
@@ -171,7 +171,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     <InputLabel shrink>
                       Copy {hover === 'launch' ? '' : hover === 'copyLaunch' ? app.contextTitle : hover}
                     </InputLabel>
-                    <CopyButton
+                    <CopyIconButton
                       ref={buttonRef}
                       color="alwaysWhite"
                       icon="copy"
@@ -184,14 +184,14 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       <>
                         {connection.port && (
                           <>
-                            <CopyButton
+                            <CopyIconButton
                               color="alwaysWhite"
                               icon="i-cursor"
                               value={connection.host}
                               onMouseEnter={() => setHover('host')}
                               onMouseLeave={() => setHover(undefined)}
                             />
-                            <CopyButton
+                            <CopyIconButton
                               color="alwaysWhite"
                               icon="port"
                               value={connection.port}
@@ -201,7 +201,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                           </>
                         )}
                         {app.launchType !== 'NONE' && (
-                          <CopyButton
+                          <CopyIconButton
                             color="alwaysWhite"
                             icon={app.launchType === 'URL' ? 'link' : 'terminal'}
                             app={app}
@@ -216,7 +216,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   {app.canShare && (
                     <span className={css.share}>
                       <InputLabel shrink>Share</InputLabel>
-                      <CopyButton
+                      <CopyIconButton
                         color="alwaysWhite"
                         icon="share"
                         value={app.string}

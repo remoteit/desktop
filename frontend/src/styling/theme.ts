@@ -167,6 +167,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: radius,
             backgroundColor: palette.grayLightest.main,
             textTransform: 'initial',
+            '& .MuiChip-icon': { color: 'inherit', marginLeft: 8 },
           },
           clickable: {
             '&:hover': { backgroundColor: palette.primaryLighter.main },

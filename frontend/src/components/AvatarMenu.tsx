@@ -74,6 +74,7 @@ export const AvatarMenu: React.FC = () => {
         <ListItemLocation dense title="Account" icon="user" pathname="/account" onClick={handleClose} />
         <ListItemLocation
           dense
+          exactMatch
           title="Settings"
           icon="sliders-h"
           pathname="/settings"

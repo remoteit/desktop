@@ -198,6 +198,9 @@ export default createModel<RootModel>()({
             const picked = pickTruthy(keep, connection)
             connection = { ...newConnection(service), ...picked }
             setConnection(connection)
+          } else if (!connection.port) {
+            dispatch.connections.forget(connection.id)
+            console.warn('No service or connection port found in connection. Connection cleared.', { connection })
           } else {
             console.warn(`No service found for connection ${connection.id}`, { connection })
             // @TODO fetch device if trying to restore a non-loaded connection

@@ -19,18 +19,18 @@ export default createModel<RootModel>()({
     async fetch() {
       try {
         const response = await graphQLRequest(
-          ` {
-            notices {
-              id
-              title
-              body
-              image
-              link
-              type
-              modified
-              read
-            }
-          }`
+          ` query Announcements {
+              notices {
+                id
+                title
+                body
+                image
+                link
+                type
+                modified
+                read
+              }
+            }`
         )
         graphQLGetErrors(response)
         const all = await dispatch.announcements.parse(response)

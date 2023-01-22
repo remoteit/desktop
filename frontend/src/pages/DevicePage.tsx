@@ -14,6 +14,7 @@ import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgre
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
+import { CopyAsyncMenuItem } from '../components/CopyAsyncMenuItem'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
@@ -82,7 +83,17 @@ export const DevicePage: React.FC = () => {
       }
     >
       {device.state === 'inactive' && (
-        <Notice severity="info" gutterTop>
+        <Notice
+          gutterTop
+          severity="info"
+          button={
+            <CopyAsyncMenuItem
+              icon="wave-pulse"
+              request={async () => await dispatch.devices.getRestoreCommand(device.id)}
+              className={css.restore}
+            />
+          }
+        >
           Device offline
         </Notice>
       )}
@@ -195,4 +206,5 @@ const useStyles = makeStyles({
   connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
   list: { marginRight: 1 },
+  restore: { marginTop: spacing.xxs, padding: 0 },
 })
