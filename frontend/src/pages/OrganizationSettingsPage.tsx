@@ -4,6 +4,7 @@ import { REGEX_DOMAIN_SAFE } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import {
+  TextField,
   Typography,
   Button,
   Box,
@@ -18,6 +19,7 @@ import { memberOrganization, selectPermissions } from '../models/organization'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { SelectSetting } from '../components/SelectSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { FileUpload } from '../components/FileUpload'
 import { Container } from '../components/Container'
@@ -27,6 +29,15 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
+
+type ProviderFormProps = {
+  identityProviderEnabled?: boolean
+  metadata?: string
+  clientId?: string
+  clientSecret?: string
+  issuer?: string
+  type: IOrganizationProvider
+}
 
 export const OrganizationSettingsPage: React.FC = () => {
   const { updating, domain, defaultDomain, samlOnly, isOrgOwner, organization, limits, permissions } = useSelector(
@@ -46,20 +57,28 @@ export const OrganizationSettingsPage: React.FC = () => {
     }
   )
   const [checking, setChecking] = useState<boolean>(false)
-  const [form, setForm] = useState<{ samlEnabled?: boolean; metadata?: string }>({
-    samlEnabled: organization.samlEnabled,
-    metadata: '',
+  const [form, setForm] = useState<ProviderFormProps>({
+    identityProviderEnabled: organization.identityProviderEnabled,
+    type: 'SAML',
   })
   const dispatch = useDispatch<Dispatch>()
 
   const enable = () => {
     if (!form.metadata) return
-    dispatch.organization.setSAML({ accountId: organization?.id, enabled: true, metadata: form.metadata })
+    dispatch.organization.setIdentityProvider({
+      accountId: organization?.id,
+      enabled: true,
+      metadata: form.metadata,
+      type: 'SAML',
+    })
   }
 
-  const disable = () => {
-    dispatch.organization.setSAML({ accountId: organization?.id, enabled: false })
-  }
+  const disable = () =>
+    dispatch.organization.setIdentityProvider({ accountId: organization?.id, enabled: false, type: 'SAML' })
+
+  const incomplete =
+    (form.type === 'SAML' && !form.metadata) ||
+    (form.type === 'OIDC' && !(form.clientId && form.clientSecret && form.issuer))
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
 
@@ -175,15 +194,13 @@ export const OrganizationSettingsPage: React.FC = () => {
               </ListItem>
             )}
           </List>
-          <Typography variant="subtitle1">SAML Configuration</Typography>
+          <Typography variant="subtitle1">Identity Provider</Typography>
           <List>
             {organization.verified ? (
-              organization.samlEnabled ? (
+              organization.identityProviderEnabled ? (
                 <>
                   <ListItem dense>
-                    <ListItemIcon>
-                      <Icon name="sign-in" size="md" fixedWidth />
-                    </ListItemIcon>
+                    <ListItemIcon>{/* <Icon name="sign-in" size="md" fixedWidth /> */}</ListItemIcon>
                     <ListItemText
                       primary={
                         <ColorChip
@@ -202,7 +219,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   </ListItem>
                   <ListItemSetting
                     toggle={samlOnly}
-                    label="Require SAML"
+                    label="Require login with identity provider"
                     subLabel="All organization members will not be able to login with email/password or Google."
                     disabled={!organization.verified}
                     onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
@@ -211,40 +228,86 @@ export const OrganizationSettingsPage: React.FC = () => {
                 </>
               ) : (
                 <>
+                  <SelectSetting
+                    icon="sign-in"
+                    label="Provider type"
+                    value={form.type}
+                    values={[
+                      { key: 'SAML', name: 'SAML' },
+                      { key: 'OIDC', name: 'OIDC' },
+                    ]}
+                    onChange={provider => setForm({ ...form, type: provider as IOrganizationProvider })}
+                  />
+                  {form.type === 'SAML' ? (
+                    <>
+                      <ListItem dense>
+                        <ListItemIcon>
+                          <Icon name="arrow-up-to-line" size="md" fixedWidth />
+                        </ListItemIcon>
+                        <ListItemText primary="Upload your metadata file to enable SAML"></ListItemText>
+                      </ListItem>
+                      <ListItem dense>
+                        <ListItemIcon />
+                        <FileUpload onUpload={metadata => setForm({ ...form, metadata })} />
+                      </ListItem>
+                    </>
+                  ) : (
+                    <ListItem dense>
+                      <ListItemIcon></ListItemIcon>
+                      <Box>
+                        <TextField
+                          required
+                          fullWidth
+                          label="Issuer"
+                          value={form.issuer || ''}
+                          variant="filled"
+                          onChange={event => setForm({ ...form, issuer: event.target.value })}
+                        />
+                        <TextField
+                          required
+                          fullWidth
+                          label="Client ID"
+                          value={form.clientId || ''}
+                          variant="filled"
+                          onChange={event => setForm({ ...form, clientId: event.target.value })}
+                        />
+                        <TextField
+                          required
+                          fullWidth
+                          label="Client Secret"
+                          value={form.clientSecret || ''}
+                          variant="filled"
+                          onChange={event => setForm({ ...form, clientSecret: event.target.value })}
+                        />
+                      </Box>
+                    </ListItem>
+                  )}
                   <ListItem dense>
-                    <ListItemIcon>
-                      <Icon name="sign-in" size="md" fixedWidth />
-                    </ListItemIcon>
-                    <ListItemText primary="Upload your metadata file to enable SAML"></ListItemText>
-                    <ListItemSecondaryAction>
+                    <ListItemIcon />
+                    <Box>
                       <Button
                         variant="contained"
                         color="primary"
-                        disabled={!form.metadata || updating}
+                        disabled={incomplete || updating}
                         onClick={enable}
                         size="small"
                       >
                         {updating ? 'Updating...' : 'Enable'}
                       </Button>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  <ListItem dense>
-                    <ListItemIcon />
-                    <FileUpload onUpload={metadata => setForm({ ...form, metadata })} />
-                  </ListItem>
-                  <ListItem dense>
-                    <ListItemIcon />
-                    <Typography variant="caption" gutterBottom>
-                      Setup
-                      <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
-                    </Typography>
+                      &nbsp; &nbsp;
+                      <Typography variant="caption" gutterBottom>
+                        Setup
+                        <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
+                      </Typography>
+                    </Box>
                   </ListItem>
                 </>
               )
             ) : (
               <ListItem>
                 <Notice severity="info" gutterTop>
-                  Validate your domain name to enable SAML
+                  Validate your domain name to use an Identity Provider
+                  <em>SAML and ODIC are both supported</em>
                 </Notice>
               </ListItem>
             )}

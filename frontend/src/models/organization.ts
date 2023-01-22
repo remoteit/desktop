@@ -4,7 +4,7 @@ import {
   graphQLRemoveOrganization,
   graphQLSetMembers,
   graphQLRemoveMembers,
-  graphQLSetSAML,
+  graphQLSetIdentityProvider,
   graphQLCreateRole,
   graphQLUpdateRole,
   graphQLRemoveRole,
@@ -121,8 +121,8 @@ const graphQLOrganization = `
     id
     name
     domain
-    samlEnabled
     providers
+    identityProviderEnabled
     verificationCNAME
     verificationValue
     verified
@@ -163,7 +163,7 @@ export type IOrganizationState = {
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
   domain?: string
-  samlEnabled: boolean
+  identityProviderEnabled: boolean
   providers: null | IOrganizationProvider[]
   verificationCNAME?: string
   verificationValue?: string
@@ -175,7 +175,7 @@ const defaultState: IOrganizationState = {
   id: '',
   name: '',
   domain: undefined,
-  samlEnabled: false,
+  identityProviderEnabled: false,
   providers: null,
   verificationCNAME: undefined,
   verificationValue: undefined,
@@ -282,9 +282,14 @@ export default createModel<RootModel>()({
       await dispatch.organization.fetch()
     },
 
-    async setSAML(params: { accountId: string; enabled: boolean; metadata?: string }) {
+    async setIdentityProvider(params: {
+      accountId: string
+      enabled: boolean
+      metadata?: string
+      type: IOrganizationProvider
+    }) {
       dispatch.organization.set({ updating: true })
-      const result = await graphQLSetSAML(params)
+      const result = await graphQLSetIdentityProvider(params)
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: params.enabled ? 'SAML enabled and metadata uploaded.' : 'SAML disabled.' })
       }
@@ -433,8 +438,8 @@ export function parseOrganization(data: any): IOrganizationState {
   return {
     ...defaultState,
     ...data,
-    // verified: true, // for development
-    // samlEnabled: true, // for development
+    verified: true, // for development
+    // identityProviderEnabled: true, // for development
     created: new Date(data.created),
     members: [
       ...data.members.map(m => ({

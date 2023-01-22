@@ -44,7 +44,7 @@ declare global {
 
   type IPortScan = 'REACHABLE' | 'UNREACHABLE' | 'SCANNING' | 'INVALID'
 
-  type IOrganizationProvider = 'SAML'
+  type IOrganizationProvider = 'SAML' | 'OIDC'
 
   type IOrganizationSettings = {
     name?: string

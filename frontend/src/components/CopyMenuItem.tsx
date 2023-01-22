@@ -8,7 +8,7 @@ export type CopyMenuItemProps = {
   title?: string
   value?: string | number
   disabled?: boolean
-  awaitCopy?: () => Promise<any>
+  awaitCopy?: () => Promise<void>
   iconProps?: IconProps
   className?: string
 }

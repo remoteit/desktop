@@ -5,7 +5,7 @@ import { Icon } from './Icon'
 
 type Props = {
   label: string
-  value: string | number
+  value?: string | number
   values: ISelect[]
   icon?: string
   disabled?: boolean

@@ -137,7 +137,7 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
     <>
       <Box mb={1}>
         <TextField
-          aria-label={t('global.user.password')}
+          aria-label={t('global.user.password').toString()}
           autoComplete="off"
           fullWidth
           label={t(`global.user.${isNewPassword ? 'new-' : ''}password-placeholder`)}
@@ -192,7 +192,7 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
       </Box>
       <Box mb={1}>
         <TextField
-          aria-label={t('global.user.password-confirm')}
+          aria-label={t('global.user.password-confirm').toString()}
           fullWidth
           label={t(`global.user.${isNewPassword ? 'new-' : ''}password-confirm-placeholder`)}
           onChange={e => checkPasswordConfirmation(e)}
