@@ -53,6 +53,16 @@ declare global {
     accountId?: string
   }
 
+  type IIdentityProviderSettings = {
+    accountId: string
+    enabled: boolean
+    type: IOrganizationProvider
+    metadata?: string
+    clientId?: string
+    clientSecret?: string
+    issuer?: string
+  }
+
   type ILicenseChip = {
     name: string
     colorName: Color

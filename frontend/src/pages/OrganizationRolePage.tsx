@@ -235,5 +235,5 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiTextField-root': { maxWidth: 400 },
     '& .MuiListItem-secondaryAction': { paddingRight: 130 },
   },
-  button: { fontWeight: 'bold', letterSpacing: 1, color: palette.grayDarker.main },
+  button: { fontWeight: 500, letterSpacing: 1, color: palette.grayDarker.main },
 }))

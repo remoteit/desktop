@@ -174,15 +174,7 @@ export async function graphQLSetOrganization(params: IOrganizationSettings) {
   )
 }
 
-export async function graphQLSetIdentityProvider(params: {
-  accountId: string
-  enabled: boolean
-  type: IOrganizationProvider
-  metadata?: string
-  clientId?: string
-  clientSecret?: string
-  issuer?: string
-}) {
+export async function graphQLSetIdentityProvider(params: IIdentityProviderSettings) {
   return await graphQLBasicRequest(
     ` mutation SetIdentityProvider($accountId: String, $enabled: Boolean, $type: String, $metadata: String, $clientId: String, $clientSecret: String, $issuer: String) {
         configureOrgIdentityProvider(

@@ -30,15 +30,6 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 
-type ProviderFormProps = {
-  identityProviderEnabled?: boolean
-  metadata?: string
-  clientId?: string
-  clientSecret?: string
-  issuer?: string
-  type: IOrganizationProvider
-}
-
 export const OrganizationSettingsPage: React.FC = () => {
   const { updating, domain, defaultDomain, samlOnly, isOrgOwner, organization, limits, permissions } = useSelector(
     (state: ApplicationState) => {
@@ -57,28 +48,24 @@ export const OrganizationSettingsPage: React.FC = () => {
     }
   )
   const [checking, setChecking] = useState<boolean>(false)
-  const [form, setForm] = useState<ProviderFormProps>({
-    identityProviderEnabled: organization.identityProviderEnabled,
+  const [form, setForm] = useState<IIdentityProviderSettings>({
+    accountId: organization.id,
+    enabled: organization.identityProviderEnabled,
     type: 'SAML',
   })
   const dispatch = useDispatch<Dispatch>()
 
-  const enable = () => {
-    if (!form.metadata) return
-    dispatch.organization.setIdentityProvider({
-      accountId: organization?.id,
-      enabled: true,
-      metadata: form.metadata,
-      type: 'SAML',
-    })
-  }
-
   const disable = () =>
-    dispatch.organization.setIdentityProvider({ accountId: organization?.id, enabled: false, type: 'SAML' })
+    dispatch.organization.setIdentityProvider({ accountId: organization.id, enabled: false, type: 'SAML' })
 
   const incomplete =
     (form.type === 'SAML' && !form.metadata) ||
     (form.type === 'OIDC' && !(form.clientId && form.clientSecret && form.issuer))
+
+  const enable = () => {
+    if (incomplete) return
+    dispatch.organization.setIdentityProvider({ ...form, enabled: true })
+  }
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
 
@@ -285,17 +272,10 @@ export const OrganizationSettingsPage: React.FC = () => {
                   <ListItem dense>
                     <ListItemIcon />
                     <Box>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        disabled={incomplete || updating}
-                        onClick={enable}
-                        size="small"
-                      >
+                      <Button variant="contained" color="primary" disabled={incomplete || updating} onClick={enable}>
                         {updating ? 'Updating...' : 'Enable'}
                       </Button>
-                      &nbsp; &nbsp;
-                      <Typography variant="caption" gutterBottom>
+                      <Typography variant="caption" sx={{ marginLeft: 3 }} gutterBottom>
                         Setup
                         <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                       </Typography>

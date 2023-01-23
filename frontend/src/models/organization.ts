@@ -282,16 +282,13 @@ export default createModel<RootModel>()({
       await dispatch.organization.fetch()
     },
 
-    async setIdentityProvider(params: {
-      accountId: string
-      enabled: boolean
-      metadata?: string
-      type: IOrganizationProvider
-    }) {
+    async setIdentityProvider(params: IIdentityProviderSettings) {
       dispatch.organization.set({ updating: true })
       const result = await graphQLSetIdentityProvider(params)
       if (result !== 'ERROR') {
-        dispatch.ui.set({ successMessage: params.enabled ? 'SAML enabled and metadata uploaded.' : 'SAML disabled.' })
+        dispatch.ui.set({
+          successMessage: params.enabled ? `${params.type} enabled and metadata uploaded.` : `${params.type} disabled.`,
+        })
       }
       await dispatch.organization.fetch()
       dispatch.organization.set({ updating: false })
