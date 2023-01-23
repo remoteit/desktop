@@ -286,9 +286,15 @@ export default createModel<RootModel>()({
       dispatch.organization.set({ updating: true })
       const result = await graphQLSetIdentityProvider(params)
       if (result !== 'ERROR') {
-        dispatch.ui.set({
-          successMessage: params.enabled ? `${params.type} enabled and metadata uploaded.` : `${params.type} disabled.`,
-        })
+        const success = result?.data?.data?.configureOrgIdentityProvider
+        if (success)
+          dispatch.ui.set({
+            successMessage: params.enabled ? `${params.type} enabled.` : `${params.type} disabled.`,
+          })
+        else
+          dispatch.ui.set({
+            errorMessage: `${params.type} update failed, please validate your form data.`,
+          })
       }
       await dispatch.organization.fetch()
       dispatch.organization.set({ updating: false })

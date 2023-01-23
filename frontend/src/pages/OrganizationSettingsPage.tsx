@@ -55,17 +55,20 @@ export const OrganizationSettingsPage: React.FC = () => {
   })
   const dispatch = useDispatch<Dispatch>()
 
-  const disable = () =>
-    dispatch.organization.setIdentityProvider({ accountId: organization.id, enabled: false, type: 'SAML' })
-
   const incomplete =
     (form.type === 'SAML' && !form.metadata) ||
     (form.type === 'OIDC' && !(form.clientId && form.clientSecret && form.issuer))
+
+  const disable = () => dispatch.organization.setIdentityProvider({ ...form, enabled: false })
 
   const enable = () => {
     if (incomplete) return
     dispatch.organization.setIdentityProvider({ ...form, enabled: true })
   }
+
+  React.useEffect(() => {
+    setForm({ ...form, accountId: organization.id, enabled: organization.identityProviderEnabled })
+  }, [organization])
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
 
