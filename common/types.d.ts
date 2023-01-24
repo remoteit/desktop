@@ -429,6 +429,7 @@ declare global {
     created: Date
     license: ILicenseTypes
     account: IUserRef
+    name?: string
   }
 
   type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string

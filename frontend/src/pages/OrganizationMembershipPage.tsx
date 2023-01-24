@@ -12,8 +12,8 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { getOwnOrganization, memberOrganization } from '../models/organization'
 import { selectOwnRemoteitLicense } from '../models/plans'
+import { getOwnOrganization } from '../models/organization'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -24,9 +24,8 @@ import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 
 export const OrganizationMembershipPage: React.FC = () => {
-  const { membership, organization, organizations, license, email } = useSelector((state: ApplicationState) => ({
-    membership: state.accounts.membership,
-    organizations: state.organization.accounts,
+  const { memberships, organization, license, email } = useSelector((state: ApplicationState) => ({
+    memberships: state.accounts.membership,
     organization: getOwnOrganization(state),
     license: selectOwnRemoteitLicense(state),
     email: state.auth.user?.email || '',
@@ -41,7 +40,7 @@ export const OrganizationMembershipPage: React.FC = () => {
         </Typography>
       }
     >
-      {membership.length ? (
+      {memberships.length ? (
         <List>
           {organization && (
             <>
@@ -61,36 +60,33 @@ export const OrganizationMembershipPage: React.FC = () => {
               <Divider variant="inset" />
             </>
           )}
-          {membership.map(m => {
-            const mo = memberOrganization(organizations, m.account.id)
-            return (
-              <ListItem key={m.roleId}>
-                <ListItemIcon>
-                  <Avatar email={m.account.email} title={mo.name} size={28} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={mo.name}
-                  secondary={
-                    <>
-                      Owner <b>{m.account.email}</b>
-                      &nbsp; - Joined <Duration startTime={m.created.getTime()} ago />
-                    </>
-                  }
+          {memberships.map(m => (
+            <ListItem key={m.roleId}>
+              <ListItemIcon>
+                <Avatar email={m.account.email} fallback={m.name} size={28} />
+              </ListItemIcon>
+              <ListItemText
+                primary={m.name}
+                secondary={
+                  <>
+                    Owner <b>{m.account.email}</b>
+                    &nbsp; - Joined <Duration startTime={m.created.getTime()} ago />
+                  </>
+                }
+              />
+              <ListItemSecondaryAction>
+                <Chip label={m.roleName} size="small" />
+                <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
+                  <LicenseChip license={m.license} />
+                </Box>
+                <IconButton
+                  icon="sign-out"
+                  title="Leave Account"
+                  onClick={() => accounts.leaveMembership(m.account.id)}
                 />
-                <ListItemSecondaryAction>
-                  <Chip label={m.roleName} size="small" />
-                  <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
-                    <LicenseChip license={m.license} />
-                  </Box>
-                  <IconButton
-                    icon="sign-out"
-                    title="Leave Account"
-                    onClick={() => accounts.leaveMembership(m.account.id)}
-                  />
-                </ListItemSecondaryAction>
-              </ListItem>
-            )
-          })}
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
         </List>
       ) : (
         <Body center>

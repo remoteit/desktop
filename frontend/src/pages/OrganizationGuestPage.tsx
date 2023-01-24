@@ -3,7 +3,8 @@ import { getDevices } from '../selectors/devices'
 import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
-import { getFreeLicenses, selectRemoteitLicense } from '../models/plans'
+import { getFreeLicenses } from '../models/plans'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { selectAccessibleNetworks } from '../models/networks'
 import { selectNetworks } from '../selectors/networks'
 import { ApplicationState, Dispatch } from '../store'
@@ -12,7 +13,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
 import { RoleAccessCounts } from '../components/RoleAccessCounts'
-import { getOrganization } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from '../components/LicenseSelect'
@@ -31,7 +32,7 @@ export const OrganizationGuestPage: React.FC = () => {
   const [removing, setRemoving] = useState<boolean>(false)
   const { devices, member, accessible, networks, freeLicenses, organization, guest, guestsLoaded, license } =
     useSelector((state: ApplicationState) => {
-      const organization = getOrganization(state)
+      const organization = selectOrganization(state)
       const guest = organization.guests.find(g => g.id === userID)
       const member = organization.members.find(m => m.user.id === userID)
       return {

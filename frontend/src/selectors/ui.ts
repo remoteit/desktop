@@ -1,8 +1,6 @@
 import { createSelector } from 'reselect'
-import { ApplicationState } from '../store'
+import { getDefaultSelected } from './state'
 import { getActiveAccountId } from './accounts'
-
-const getDefaultSelected = (state: ApplicationState) => state.ui.defaultSelection
 
 export const selectDefaultSelected = createSelector(
   [getActiveAccountId, getDefaultSelected],

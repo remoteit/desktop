@@ -14,9 +14,9 @@ import {
   ListItemText,
   ListItemSecondaryAction,
 } from '@mui/material'
-import { getMembership } from '../models/accounts'
-import { memberOrganization, selectPermissions } from '../models/organization'
-import { selectLimitsLookup } from '../selectors/organizations'
+import { selectMembership } from '../selectors/accounts'
+import { selectPermissions } from '../models/organization'
+import { selectOrganization, selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { SelectSetting } from '../components/SelectSetting'
@@ -33,8 +33,8 @@ import { Link } from '../components/Link'
 export const OrganizationSettingsPage: React.FC = () => {
   const { updating, domain, defaultDomain, samlOnly, isOrgOwner, organization, limits, permissions } = useSelector(
     (state: ApplicationState) => {
-      const membership = getMembership(state)
-      const organization = memberOrganization(state.organization.accounts, membership.account.id)
+      const membership = selectMembership(state)
+      const organization = selectOrganization(state, membership.account.id)
       return {
         organization,
         isOrgOwner: organization.id === state.auth.user?.id,

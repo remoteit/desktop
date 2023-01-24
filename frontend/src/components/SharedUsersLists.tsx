@@ -4,7 +4,8 @@ import { useLocation } from 'react-router-dom'
 import { Typography, Box, Paper, Tooltip } from '@mui/material'
 import { ApplicationState } from '../store'
 import { SharedUsersPaginatedList } from './SharedUsersPaginatedList'
-import { selectMembersWithAccess, getOrganization } from '../models/organization'
+import { selectMembersWithAccess } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { IconButton } from '../buttons/IconButton'
 import { Gutters } from './Gutters'
@@ -22,7 +23,7 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
   const location = useLocation()
   const { members, hasOrganization } = useSelector((state: ApplicationState) => ({
     members: selectMembersWithAccess(state, instance).map(m => m.user),
-    hasOrganization: !!getOrganization(state).id,
+    hasOrganization: !!selectOrganization(state).id,
   }))
   const disconnected = users.filter(user => !connected.find(_u => _u.email === user.email))
   const manager = !!instance?.permissions.includes('MANAGE')

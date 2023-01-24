@@ -1,16 +1,11 @@
 import { isPortal } from '../services/Browser'
 import { createSelector } from 'reselect'
-import { ApplicationState } from '../store'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
 import { getOwnDevices } from './devices'
-import { getAccounts } from './organizations'
-import { getUserId } from './accounts'
+import { getUserId, getOrganizations, getAllConnections, optionalService } from './state'
 
-const getAllConnections = (state: ApplicationState) => state.connections.all
-const optionalService = (_: ApplicationState, service?: IService) => service
-
-export const getConnectionsLookup = createSelector(getAllConnections, allConnections =>
+export const getConnectionsLookup = createSelector([getAllConnections], allConnections =>
   allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
     if (!c.deviceID) return lookup
     if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
@@ -38,8 +33,8 @@ export const selectConnection = createSelector(
 )
 
 export const selectConnectionsByAccount = createSelector(
-  [getUserId, getOwnDevices, selectEnabledConnections, getAccounts],
-  (userId, devices, connections, accounts): INetwork[] => {
+  [getUserId, getOwnDevices, selectEnabledConnections, getOrganizations],
+  (userId, devices, connections, organizations): INetwork[] => {
     const ownDeviceIds = devices.filter(d => !d.hidden).map(d => d.id)
     let networks: INetwork[] = []
 
@@ -49,9 +44,9 @@ export const selectConnectionsByAccount = createSelector(
       // own device
       if (ownDeviceIds.includes(c.deviceID || '')) accountId = userId
       // org device
-      else if (c.owner?.id && accounts[c.owner.id]) accountId = c.owner.id
+      else if (c.owner?.id && organizations[c.owner.id]) accountId = c.owner.id
 
-      const name = accounts[accountId]?.name || 'Unknown'
+      const name = organizations[accountId]?.name || 'Unknown'
       const index = networks.findIndex(n => n.id === accountId)
 
       if (index === -1) networks.push({ ...DEFAULT_NETWORK, id: accountId, name, serviceIds: [c.id] })

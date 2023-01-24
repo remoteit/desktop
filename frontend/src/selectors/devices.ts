@@ -1,13 +1,9 @@
 import { createSelector } from 'reselect'
 import { ApplicationState } from '../store'
-import { getUserId, getActiveAccountId } from './accounts'
+import { getActiveAccountId } from './accounts'
+import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
 import { masterAttributes, deviceAttributes } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
-
-const getDevicesState = (state: ApplicationState) => state.devices
-const getColumns = (state: ApplicationState) => state.ui.columns
-const optionalId = (_: ApplicationState, accountId?: string, id?: string) => id
-const optionalDeviceId = (_: ApplicationState, accountId?: string, deviceId?: string) => deviceId
 
 function getDeviceModelFn(devices: ApplicationState['devices'], activeAccountId: string, accountId?: string) {
   return devices[accountId || activeAccountId] || devices.default

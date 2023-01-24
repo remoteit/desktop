@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { List, Typography } from '@mui/material'
+import { selectPermissions } from '../models/organization'
 import { Redirect, useParams } from 'react-router-dom'
-import { selectPermissions, getOrganization } from '../models/organization'
-import { selectRemoteitLicense } from '../models/plans'
-import { selectLimitsLookup } from '../selectors/organizations'
+import { selectLimitsLookup, selectOrganization } from '../selectors/organizations'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { PlanActionChip } from '../components/PlanActionChip'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
@@ -16,7 +16,7 @@ import { Title } from '../components/Title'
 export const OrganizationPage: React.FC = () => {
   const { userID = '', deviceID = '' } = useParams<{ userID: string; deviceID: string }>()
   const { initialized, permissions, limits, organization, license } = useSelector((state: ApplicationState) => ({
-    organization: getOrganization(state),
+    organization: selectOrganization(state),
     initialized: state.organization.initialized,
     permissions: selectPermissions(state),
     limits: selectLimitsLookup(state),

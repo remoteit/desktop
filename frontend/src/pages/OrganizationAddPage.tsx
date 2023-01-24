@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { getFreeLicenses } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { getOrganization } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { Typography, Button, Box } from '@mui/material'
 import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
@@ -15,7 +15,7 @@ import { useHistory } from 'react-router-dom'
 
 export const OrganizationAddPage = () => {
   const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => {
-    const organization = getOrganization(state)
+    const organization = selectOrganization(state)
     return {
       organization,
       contacts: state.contacts.all.filter(c => !organization.members.find(s => s.user.id === c.id)) || [],

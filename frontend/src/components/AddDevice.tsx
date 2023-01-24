@@ -3,7 +3,8 @@ import { Box, Typography } from '@mui/material'
 import { platforms, IPlatform } from '../platforms'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { getOrganization, selectPermissions } from '../models/organization'
+import { selectPermissions } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { DataCopy } from '../components/DataCopy'
 import { Notice } from '../components/Notice'
 import { Link } from '../components/Link'
@@ -16,7 +17,7 @@ type Props = {
 
 export const AddDevice: React.FC<Props> = ({ platform, tags, types }) => {
   const { organization, registrationCommand, permissions, userId } = useSelector((state: ApplicationState) => ({
-    organization: getOrganization(state),
+    organization: selectOrganization(state),
     registrationCommand: state.ui.registrationCommand,
     permissions: selectPermissions(state),
     userId: state.user.id,
