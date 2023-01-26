@@ -68,8 +68,8 @@
       "github"
     ],
     "win": {
-      "certificateSubjectName": "remot3.it, Inc.",
-      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4",
+      "sign": "./scripts/sign.js",
+      "signingHashAlgorithms": ["sha256"],
       "artifactName": "${productName}-installer.${ext}",
       "target": [
         {

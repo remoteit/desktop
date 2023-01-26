@@ -29,3 +29,4 @@ yarn-debug.log*
 yarn-error.log*
 
 bin/*
+logs/code_signing_tool.log
