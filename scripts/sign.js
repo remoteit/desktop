@@ -1,54 +1,44 @@
-/* 
-  THIS FILE IS NOT IN USE
- 
-  It was an attempt to get the builder to not ask for the password when building. 
-  However, I couldn't get it to work, and upon further investigation found that you cannot get 
-  an EV Signing Certificate to build without prompting. There was a workaround that 
-  the cert software has a checkbox to only ask once per login for the password, 
-  so I added that to the docs. I didn't want to throw away this signing script however, 
-  so I left it, kinda incomplete.
-  
-  This script could be used if we ever move to a standard Signing Cert so 
-  that we can build in an automated fashion.
-*/
-
 require('dotenv').config()
 
-exports.default = async function(conf) {
-  // do not include passwords or other sensitive data in the file
-  // rather create environment variables with sensitive data
-  const tokenPassword = process.env.CSC_KEY_PASSWORD
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
+const { execSync } = require('child_process')
 
-  if (conf.hash === 'sha1') return
-  if (require('os').platform() !== 'win32') {
-    console.log(`SKIPPING WINDOWS SIGNING ${conf.path}`)
-    return
+const TEMP_DIR = path.resolve(__dirname, '../temp')
+const TOOL_DIR = path.resolve(os.homedir(), 'CodeSignTool/')
+const TOOL_PATH = path.resolve(TOOL_DIR, 'CodeSignTool.bat')
+const CMD_PATH = path.resolve('C:/Windows/System32/cmd.exe')
+
+if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true })
+
+exports.default = async function sign(configuration) {
+  const username = process.env.WINDOWS_SIGN_USER_NAME
+  const userPassword = process.env.WINDOWS_SIGN_USER_PASSWORD
+  const credentialId = process.env.WINDOWS_SIGN_CREDENTIAL_ID
+  const userTOTP = process.env.WINDOWS_SIGN_USER_TOTP
+
+  if (username && userPassword && userTOTP && credentialId) {
+    const { name, dir } = path.parse(configuration.path)
+
+    // Sign and replace file
+    const tempFile = path.join(TEMP_DIR, name)
+    const signFile = `${CMD_PATH} /C ${TOOL_PATH} sign -input_file_path="${configuration.path}" -output_dir_path="${TEMP_DIR}" -credential_id="${credentialId}" -username="${username}" -password="${userPassword}" -totp_secret="${userTOTP}"`
+    const moveFile = `mv "${tempFile}" "${dir}"`
+
+    console.log('Sign file\n', configuration.path)
+    execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR }})
+    console.log('Move file\n', moveFile)
+    execSync(moveFile)
+
+  } else {
+    // Missing data
+    console.warn(`Can't sign file ${configuration.path}, missing .env data:
+      WINDOWS_SIGN_USER_NAME="${username}"
+      WINDOWS_SIGN_USER_PASSWORD="${userPassword}"
+      WINDOWS_SIGN_CREDENTIAL_ID="${credentialId}"
+      WINDOWS_SIGN_USER_TOTP="${userTOTP}"
+    `)
+    process.exit(1)
   }
-
-  console.log(`Signing Windows Binary ${conf.path}`)
-
-  require('child_process').execSync(
-    `signtool sign /d ${conf.name} /du ${conf.site} /p ${tokenPassword} /a ${conf.path}`,
-    {
-      stdio: 'inherit',
-    }
-  )
 }
-
-// Example configurations:
-// const e1 = {
-//   path: 'C:\\Users\\jamie\\Code\\desktop\\dist\\remoteit-installer.exe',
-//   name: 'remoteit',
-//   site: 'https://remote.it',
-//   options: { target: 'nsis', sign: './sign.js' },
-//   hash: 'sha1',
-//   isNest: false,
-// }
-// const e2 = {
-//   path: 'C:\\Users\\jamie\\Code\\desktop\\dist\\remoteit-installer.exe',
-//   name: 'remoteit',
-//   site: 'https://remote.it',
-//   options: { target: 'nsis', sign: './sign.js' },
-//   hash: 'sha256',
-//   isNest: true,
-// }
