@@ -144,7 +144,7 @@ class Server {
 
         return callback(
           new Error(
-            `${admin.username} is already signed in. They must first sign in and back out to allow ${credentials.username} to sign in.
+            `${admin.username} (${admin.guid}) is already signed in. They must first sign in and back out to allow ${credentials.username} (${credentials.guid}) to sign in.
             Or you can run ${command}.`
           ),
           false
