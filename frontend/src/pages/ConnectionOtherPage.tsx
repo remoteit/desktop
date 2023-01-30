@@ -6,8 +6,10 @@ import { selectById } from '../selectors/devices'
 import { ConnectionDetails } from '../components/ConnectionDetails'
 import { ApplicationState } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
+import { ConnectionData } from '../components/ConnectionData'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionOtherPage: React.FC = () => {
@@ -36,13 +38,17 @@ export const ConnectionOtherPage: React.FC = () => {
         </Typography>
       }
     >
-      <ConnectionDetails
-        connection={connection}
-        session={session}
-        service={service}
-        showTitle={session?.user ? session.user.email : undefined}
-        show
-      />
+      <Gutters top={null} size="md" bottom={null}>
+        <ConnectionDetails
+          connection={connection}
+          session={session}
+          service={service}
+          showTitle={session?.user ? session.user.email : undefined}
+          show
+        >
+          <ConnectionData connection={connection} service={service} session={session} />
+        </ConnectionDetails>
+      </Gutters>
     </Container>
   )
 }
