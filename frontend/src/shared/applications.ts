@@ -288,6 +288,12 @@ export function getApplicationType(typeId: number | undefined) {
         appLaunchTemplate: 'smb://[host]:[port]',
         appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
       })
+    case 47:
+      return new Application({
+        title: 'Docker',
+        appLaunchType: 'COMMAND',
+        appCommandTemplate: windows ? 'start cmd /k docker -H [host]:[port] ps' : 'docker -H [host]:[port] ps',
+      })
     default:
       return new Application({})
   }
