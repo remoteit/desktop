@@ -21,7 +21,7 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'ubuntu',
-  name: 'Debian Linux',
+  name: 'Ubuntu Desktop',
   component: Component,
   types: { 1120: 'Debian Linux' },
   installation: {
