@@ -76,7 +76,11 @@ export type IOrganizationState = {
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
   domain?: string
-  identityProviderEnabled: boolean
+  identityProvider?: {
+    type: string
+    clientId: string
+    issuer: string
+  }
   providers: null | IOrganizationProvider[]
   verificationCNAME?: string
   verificationValue?: string
@@ -88,7 +92,7 @@ export const defaultState: IOrganizationState = {
   id: '',
   name: '',
   domain: undefined,
-  identityProviderEnabled: false,
+  identityProvider: undefined,
   providers: null,
   verificationCNAME: undefined,
   verificationValue: undefined,
@@ -131,12 +135,10 @@ export default createModel<RootModel>()({
             id
             name
             domain
-            identityProviderEnabled
-            providers
+            created
+            verified
             verificationCNAME
             verificationValue
-            verified
-            created
             roles {
               id
               name
@@ -159,6 +161,12 @@ export default createModel<RootModel>()({
                 id
                 email
               }
+            }
+            providers
+            identityProvider {
+              type
+              clientId
+              issuer
             }
           }
           licenses {
@@ -282,15 +290,13 @@ export default createModel<RootModel>()({
       dispatch.organization.set({ updating: true })
       const result = await graphQLSetIdentityProvider(params)
       if (result !== 'ERROR') {
-        const success = result?.data?.data?.configureOrgIdentityProvider
-        if (success)
-          dispatch.ui.set({
-            successMessage: params.enabled ? `${params.type} enabled.` : `${params.type} disabled.`,
-          })
-        else
-          dispatch.ui.set({
-            errorMessage: `${params.type} update failed, please validate your form data.`,
-          })
+        dispatch.ui.set({
+          successMessage: params.enabled ? `${params.type} enabled.` : `${params.type} disabled.`,
+        })
+      } else {
+        dispatch.ui.set({
+          errorMessage: `${params.type} update failed, please validate your form data.`,
+        })
       }
       await dispatch.organization.fetch()
       dispatch.organization.set({ updating: false })
@@ -437,8 +443,12 @@ export function parseOrganization(data: any): IOrganizationState {
   return {
     ...defaultState,
     ...data,
-    verified: true, // for development
-    // identityProviderEnabled: true, // for development
+    // verified: true, // for development
+    // identityProvider { // for development
+    //   type:
+    //   clientId
+    //   issuer
+    // },
     created: new Date(data.created),
     members: [
       ...data.members.map(m => ({

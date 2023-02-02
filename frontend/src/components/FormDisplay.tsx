@@ -20,6 +20,7 @@ type Props = {
   modified?: boolean
   disableGutters?: boolean
   displayOnly?: boolean
+  hideEmpty?: boolean
   onDelete?: () => void
   onClick?: () => void
 }
@@ -36,12 +37,15 @@ export const FormDisplay: React.FC<Props> = ({
   warning,
   hideIcon,
   modified,
+  hideEmpty,
   disableGutters,
   displayOnly,
   onDelete,
   onClick,
 }) => {
   const css = useStyles()
+
+  if (hideEmpty && !value) return null
   if (typeof icon === 'string') icon = <Icon name={icon} size="md" modified={modified} fixedWidth />
   icon = <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
 

@@ -26,10 +26,7 @@ const getThisMembership = createSelector([getUser], user => ({
 export const selectMembership = createSelector(
   [getActiveAccountId, getMemberships, getThisMembership, isUserAccount],
   (accountId, memberships, thisMembership, isUserAccount): IMembership => {
-    if (isUserAccount) {
-      console.log('RETURN THIS MEMBERSHIP', thisMembership.license)
-      return thisMembership
-    }
+    if (isUserAccount) return thisMembership
     return (
       memberships.find(m => m.account.id === accountId) ||
       (console.log('CANT FIND THIS MEMBERSHIP', thisMembership.license), thisMembership)

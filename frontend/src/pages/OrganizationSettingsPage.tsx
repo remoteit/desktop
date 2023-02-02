@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
   Button,
+  Stack,
   Box,
   List,
   ListItem,
@@ -21,6 +22,7 @@ import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { SelectSetting } from '../components/SelectSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
+import { FormDisplay } from '../components/FormDisplay'
 import { FileUpload } from '../components/FileUpload'
 import { Container } from '../components/Container'
 import { ColorChip } from '../components/ColorChip'
@@ -31,7 +33,7 @@ import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 
 export const OrganizationSettingsPage: React.FC = () => {
-  const { updating, domain, defaultDomain, samlOnly, isOrgOwner, organization, limits, permissions } = useSelector(
+  const { updating, domain, defaultDomain, isOrgOwner, organization, limits, permissions } = useSelector(
     (state: ApplicationState) => {
       const membership = selectMembership(state)
       const organization = selectOrganization(state, membership.account.id)
@@ -41,7 +43,6 @@ export const OrganizationSettingsPage: React.FC = () => {
         updating: state.organization.updating,
         domain: organization.domain || '',
         defaultDomain: state.auth.user?.email.split('@')[1],
-        samlOnly: !!organization.providers?.includes('SAML'),
         limits: selectLimitsLookup(state),
         permissions: selectPermissions(state),
       }
@@ -50,16 +51,23 @@ export const OrganizationSettingsPage: React.FC = () => {
   const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<IIdentityProviderSettings>({
     accountId: organization.id,
-    enabled: organization.identityProviderEnabled,
-    type: 'SAML',
+    enabled: !!organization.identityProvider,
+    type: (organization.identityProvider?.type as IOrganizationProvider) || 'SAML',
   })
   const dispatch = useDispatch<Dispatch>()
+
+  const required = !!organization.providers?.includes(form.type)
 
   const incomplete =
     (form.type === 'SAML' && !form.metadata) ||
     (form.type === 'OIDC' && !(form.clientId && form.clientSecret && form.issuer))
 
-  const disable = () => dispatch.organization.setIdentityProvider({ ...form, enabled: false })
+  const disable = () =>
+    dispatch.organization.setIdentityProvider({
+      accountId: form.accountId,
+      type: form.type,
+      enabled: false,
+    })
 
   const enable = () => {
     if (incomplete) return
@@ -67,7 +75,7 @@ export const OrganizationSettingsPage: React.FC = () => {
   }
 
   React.useEffect(() => {
-    setForm({ ...form, accountId: organization.id, enabled: organization.identityProviderEnabled })
+    setForm({ ...form, accountId: organization.id, enabled: !!organization.identityProvider })
   }, [organization])
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
@@ -187,14 +195,14 @@ export const OrganizationSettingsPage: React.FC = () => {
           <Typography variant="subtitle1">Identity Provider</Typography>
           <List>
             {organization.verified ? (
-              organization.identityProviderEnabled ? (
+              organization.identityProvider ? (
                 <>
-                  <ListItem dense>
+                  <ListItem>
                     <ListItemIcon>{/* <Icon name="sign-in" size="md" fixedWidth /> */}</ListItemIcon>
                     <ListItemText
                       primary={
                         <ColorChip
-                          label="Enabled"
+                          label={`${organization.identityProvider.type} Enabled`}
                           typeColor="alwaysWhite"
                           backgroundColor="primary"
                           icon={<Icon name="shield" size="sm" fixedWidth inline />}
@@ -208,13 +216,15 @@ export const OrganizationSettingsPage: React.FC = () => {
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItemSetting
-                    toggle={samlOnly}
-                    label="Require login with identity provider"
+                    toggle={required}
+                    label={`Require login with ${organization.identityProvider.type}`}
                     subLabel="All organization members will not be able to login with email/password or Google."
                     disabled={!organization.verified}
-                    onClick={() => dispatch.organization.setOrganization({ providers: samlOnly ? null : ['SAML'] })}
+                    onClick={() => dispatch.organization.setOrganization({ providers: required ? null : [form.type] })}
                     icon="shield-alt"
                   />
+                  <FormDisplay label="issuer" value={organization.identityProvider.issuer} displayOnly hideEmpty />
+                  <FormDisplay label="Client ID" value={organization.identityProvider.clientId} displayOnly hideEmpty />
                 </>
               ) : (
                 <>
@@ -231,9 +241,7 @@ export const OrganizationSettingsPage: React.FC = () => {
                   {form.type === 'SAML' ? (
                     <>
                       <ListItem dense>
-                        <ListItemIcon>
-                          <Icon name="arrow-up-to-line" size="md" fixedWidth />
-                        </ListItemIcon>
+                        <ListItemIcon />
                         <ListItemText primary="Upload your metadata file to enable SAML"></ListItemText>
                       </ListItem>
                       <ListItem dense>
