@@ -74,7 +74,9 @@ export const AvatarMenu: React.FC = () => {
         <ListItemLocation
           dense
           title="Account"
+          subtitle={user?.email}
           icon="user"
+          // icon={<Avatar email={user?.email} size={24} />}
           pathname="/account"
           badge={licenseIndicator}
           onClick={handleClose}

@@ -7,7 +7,6 @@ import {
   TextField,
   Typography,
   Button,
-  Stack,
   Box,
   List,
   ListItem,
@@ -48,13 +47,13 @@ export const OrganizationSettingsPage: React.FC = () => {
       }
     }
   )
+  const dispatch = useDispatch<Dispatch>()
   const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<IIdentityProviderSettings>({
     accountId: organization.id,
     enabled: !!organization.identityProvider,
     type: (organization.identityProvider?.type as IOrganizationProvider) || 'SAML',
   })
-  const dispatch = useDispatch<Dispatch>()
 
   const required = !!organization.providers?.includes(form.type)
 

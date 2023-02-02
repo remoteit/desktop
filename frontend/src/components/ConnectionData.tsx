@@ -20,7 +20,7 @@ export const ConnectionData: React.FC<Props> = ({ connection, service, session }
 
   return (
     <Gutters bottom="md">
-      <Box display="flex" flexDirection="row">
+      <Box display="flex" flexDirection="row" alignItems="center">
         <DataDisplay
           attributes={attributes}
           connection={connection}

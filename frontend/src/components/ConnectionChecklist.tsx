@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { checklist } from '../helpers/checklistHelper'
-import { ButtonBase, Tooltip, Typography } from '@mui/material'
+import { Box, Tooltip, Typography } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = { connection?: IConnection }
@@ -34,9 +34,9 @@ export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
           )
       )}
     >
-      <ButtonBase>
+      <Box padding={1}>
         <Icon name={anyFailed ? 'times' : 'check'} color={anyFailed ? 'danger' : 'success'} size="md" />
-      </ButtonBase>
+      </Box>
     </Tooltip>
   )
 }
