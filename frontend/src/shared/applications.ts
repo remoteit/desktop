@@ -202,7 +202,8 @@ export class Application {
     })
     template = replaceHost(template, this.localhost)
     if (!lookup.port) template = template.replace(':[port]', '')
-    return this.parseReverseProxy(template)
+    template = this.parseReverseProxy(template)
+    return this.launchType === 'URL' ? encodeURI(template) : template
   }
 
   private extractTokens(template: string) {
