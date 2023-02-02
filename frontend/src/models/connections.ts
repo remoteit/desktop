@@ -116,7 +116,7 @@ export default createModel<RootModel>()({
             }
 
             // remove connect links
-            if (!s.link && connection.connectLink) {
+            if (connection.connectLink && (!s.link || !s.link.enabled)) {
               console.log('UNLINK CONNECT LINK', s.id)
               connection.connectLink = DEFAULT_CONNECTION.connectLink
               connection.enabled = DEFAULT_CONNECTION.enabled
