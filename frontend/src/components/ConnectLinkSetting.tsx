@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { IconButton } from '../buttons/IconButton'
 import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { ListItemSetting } from './ListItemSetting'
@@ -12,10 +11,12 @@ import { Dispatch } from '../store'
 type ISecurity = 'PROTECTED' | 'OPEN'
 const MAX_PASSWORD_LENGTH = 49
 
-export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions: IPermission[] }> = ({
-  connection,
-  permissions,
-}) => {
+type Props = {
+  connection: IConnection
+  permissions: IPermission[]
+}
+
+export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
@@ -28,7 +29,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
     <>
       <ListItemSetting
         icon="globe"
-        disabled={!canManage || (connection.enabled && !connection.connectLink)}
+        disabled={!canManage || (connection.enabled && !connection.connectLink) || connection.updating}
         label="Persistent public url"
         subLabel={
           canManage ? (
@@ -53,6 +54,7 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
         <ListItemQuote>
           <SelectSetting
             hideIcon
+            disabled={connection.updating}
             label="Authentication"
             value={security}
             values={[
@@ -68,9 +70,10 @@ export const ConnectLinkSetting: React.FC<{ connection: IConnection; permissions
             <InlineTextFieldSetting
               required
               hideIcon
+              disabled={connection.updating}
               displayValue={connection.password?.replaceAll(/./g, '•')}
               modified={!!connection.password}
-              value={connection.password}
+              value={connection.password || ''}
               label="Password"
               resetValue=""
               maxLength={MAX_PASSWORD_LENGTH}

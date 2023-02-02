@@ -1,7 +1,7 @@
 import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
-import { DEFAULT_CONNECTION } from '../shared/constants'
+import { DEFAULT_CONNECTION, REGEX_HIDDEN_PASSWORD } from '../shared/constants'
 import {
   cleanOrphanConnections,
   getConnectionServiceIds,
@@ -34,6 +34,7 @@ type IConnectionsState = {
   queueFinished: boolean
   queueConnection?: IConnection
   initialized: boolean
+  updating: boolean
 }
 
 const defaultState: IConnectionsState = {
@@ -44,6 +45,7 @@ const defaultState: IConnectionsState = {
   queueFinished: false,
   queueConnection: undefined,
   initialized: false,
+  updating: false,
 }
 
 export default createModel<RootModel>()({
@@ -311,19 +313,23 @@ export default createModel<RootModel>()({
     },
 
     async setConnectLink(connection: IConnection) {
-      const creating: IConnection = { ...connection, connectLink: connection.enabled }
+      const creating: IConnection = { ...connection, connectLink: connection.enabled, updating: true }
+
+      console.log('SET CONNECT LINK', connection)
 
       dispatch.connections.updateConnection(creating)
       const result = await graphQLSetConnectLink({
         serviceId: connection.id,
         enabled: connection.enabled,
-        password: connection.password?.trim(),
+        password: REGEX_HIDDEN_PASSWORD.test(connection.password || '')
+          ? undefined
+          : connection.password?.trim() || null,
       })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
         connection.error = { message: 'Persistent connection update failed. Please contact support.' }
         dispatch.connections.updateConnection(connection)
-        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        dispatch.devices.fetchSingle({ id: connection.id, isService: true })
         return
       }
 
@@ -332,6 +338,7 @@ export default createModel<RootModel>()({
 
       setConnection({
         ...creating,
+        updating: undefined,
         password: data?.password,
         enabled: !!data?.enabled,
         createdTime: new Date(data.created).getTime(),
@@ -341,6 +348,8 @@ export default createModel<RootModel>()({
         starting: false,
         isP2P: false,
       })
+
+      dispatch.connections.set({ updating: false })
     },
 
     async removeConnectLink(connection?: IConnection) {
