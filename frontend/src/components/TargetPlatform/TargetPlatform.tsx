@@ -13,10 +13,11 @@ export const TargetPlatform: React.FC<{
 }> = ({ id = -1, size, tooltip, label, inlineLeft }) => {
   const icon = <Icon size={size} inlineLeft={inlineLeft || !!label} platform={id} platformIcon />
   const platform = platforms.type(id)
-
+  const typeName = platform.types?.[id] || platform.name
+  console.log('platform', platform)
   if (tooltip)
     return (
-      <Tooltip title={platform.name} placement="top" arrow>
+      <Tooltip title={typeName} placement="top" arrow>
         <span>{icon}</span>
       </Tooltip>
     )
@@ -25,7 +26,7 @@ export const TargetPlatform: React.FC<{
     return (
       <Box display="flex" alignItems="center">
         {icon}
-        {platform.name}
+        {typeName}
       </Box>
     )
 
