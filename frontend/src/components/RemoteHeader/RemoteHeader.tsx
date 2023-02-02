@@ -7,7 +7,7 @@ import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 import classnames from 'classnames'
-import * as screenfull from 'screenfull'
+import screenfull from 'screenfull'
 
 type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 

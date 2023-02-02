@@ -1,19 +1,19 @@
 import { createSelector } from 'reselect'
-import { ApplicationState } from '../store'
-import { getActiveAccountId, isUserAccount } from './accounts'
-import { memberOrganization, IOrganizationState } from '../models/organization'
+import { getOrganizations, getTestLimits, getLimitsOverride } from './state'
+import { getActiveAccountId, selectMembership, isUserAccount } from './accounts'
+import { defaultState } from '../models/organization'
 
-export const getAccounts = (state: ApplicationState) => state.organization.accounts
-const getTestLimits = (state: ApplicationState) => (state.plans.tests.limit ? state.plans.tests.limits : undefined)
-const getLimitsOverride = (state: ApplicationState) => state.ui.limitsOverride
-
-export const getOrganization = createSelector(
-  [getAccounts, getActiveAccountId],
-  (accounts, activeAccountId): IOrganizationState => memberOrganization(accounts, activeAccountId)
+export const selectOrganization = createSelector(
+  [getActiveAccountId, selectMembership, getOrganizations],
+  (accountId, membership, organizations) =>
+    organizations[accountId] || {
+      ...defaultState,
+      name: membership.name,
+    }
 )
 
 export const selectBaseLimits = createSelector(
-  [getOrganization, getTestLimits],
+  [selectOrganization, getTestLimits],
   (organization, testLimits) => testLimits || organization.limits
 )
 

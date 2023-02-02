@@ -4,7 +4,8 @@ import cloneDeep from 'lodash/cloneDeep'
 import { makeStyles } from '@mui/styles'
 import { getActiveAccountId } from '../selectors/accounts'
 import { useParams, useHistory } from 'react-router-dom'
-import { DEFAULT_ROLE, PERMISSION, getOrganization } from '../models/organization'
+import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import {
   Button,
   Typography,
@@ -39,7 +40,7 @@ export const OrganizationRolePage: React.FC = () => {
   const { accountId, disabled, roles, tags } = useSelector((state: ApplicationState) => ({
     accountId: getActiveAccountId(state),
     disabled: state.organization.updating,
-    roles: getOrganization(state).roles,
+    roles: selectOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
   }))
   const role = roles?.find(r => r.id === roleID) || cloneDeep(DEFAULT_ROLE)
@@ -235,5 +236,5 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiTextField-root': { maxWidth: 400 },
     '& .MuiListItem-secondaryAction': { paddingRight: 130 },
   },
-  button: { fontWeight: 'bold', letterSpacing: 1, color: palette.grayDarker.main },
+  button: { fontWeight: 500, letterSpacing: 1, color: palette.grayDarker.main },
 }))

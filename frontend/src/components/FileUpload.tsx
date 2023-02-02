@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { Typography, Box, ButtonBase, Paper } from '@mui/material'
+import { Typography, Box, ButtonBase } from '@mui/material'
 import { useDropzone } from 'react-dropzone'
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Dispatch } from '../store'
-import { spacing } from '../styling'
+import { spacing, radius } from '../styling'
 
 export const FileUpload: React.FC<{ onUpload: (data: any) => void }> = ({ onUpload }) => {
   const { ui } = useDispatch<Dispatch>()
@@ -66,6 +66,7 @@ const useStyles = makeStyles(({ palette }) => ({
     border: `2px dotted ${isDragActive ? palette.primary.main : palette.grayLightest.main}`,
     background: palette.grayLightest.main,
     padding: `${spacing.lg}px ${spacing.xl}px`,
+    borderRadius: radius,
     minWidth: 400,
     '&:hover': { background: palette.primaryHighlight.main, borderColor: palette.primaryHighlight.main },
   }),

@@ -22,7 +22,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
         const value = attribute.value(props)
         return (
           value != null && (
-            <ListItem className={css.item} key={attribute.label} disableGutters>
+            <ListItem className={css.item} key={attribute.id} disableGutters>
               <span>
                 {attribute.label}:
                 {attribute.help && (

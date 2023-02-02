@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../components/ContactSelector'
-import { getOrganization } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { selectNetwork } from '../models/networks'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
@@ -14,7 +14,7 @@ import { Title } from '../components/Title'
 export const NetworkSharePage = () => {
   const { networkID = '' } = useParams<{ networkID: string }>()
   const { network, contacts } = useSelector((state: ApplicationState) => {
-    const organization = getOrganization(state)
+    const organization = selectOrganization(state)
     return {
       network: selectNetwork(state, networkID),
       contacts: state.contacts.all.filter(c => !organization.members.find(s => s.user.id === c.id)) || [],

@@ -109,5 +109,5 @@ export const TagEditor: React.FC<Props> = ({
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  chip: { fontWeight: 'bold', letterSpacing: 1, color: palette.grayDarker.main },
+  chip: { fontWeight: 500, letterSpacing: 1, color: palette.grayDarker.main },
 }))

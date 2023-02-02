@@ -5,11 +5,13 @@ import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography, Box, List, ListItem } from '@mui/material'
-import { getOwnOrganization, getOrganization, getOrganizationName } from '../models/organization'
+import { Typography, Tooltip, ButtonBase, Box, List, ListItem } from '@mui/material'
+import { getOwnOrganization, getOrganizationName } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
+import { Pre } from './Pre'
 
 export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
@@ -17,7 +19,7 @@ export const OrganizationSelect: React.FC = () => {
   const location = useLocation()
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, userId, defaultSelection } = useSelector((state: ApplicationState) => ({
-    activeOrg: getOrganization(state),
+    activeOrg: selectOrganization(state),
     defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => ({
       id: m.account.id,
@@ -25,6 +27,7 @@ export const OrganizationSelect: React.FC = () => {
       name: getOrganizationName(state, m.account.id),
       roleId: m.roleId,
       roleName: m.roleName,
+      disabled: !selectOrganization(state, m.account.id).id,
     })),
     ownOrg: getOwnOrganization(state),
     userId: state.user.id,
@@ -66,15 +69,24 @@ export const OrganizationSelect: React.FC = () => {
           />
         </ListItem>
         {options.map(option => (
-          <ListItem button key={option.id} onClick={() => onSelect(option.id)} disableGutters>
-            <Avatar
-              email={option.email}
-              title={`${option.name} - ${option.roleName}`}
-              active={option.id === activeOrg.id}
-              button
-              tooltip
-            />
-          </ListItem>
+          <Tooltip
+            key={option.id}
+            title={`${option.name} - ${option.roleName}`}
+            placement="right"
+            enterDelay={800}
+            arrow
+          >
+            <ListItem disableGutters>
+              <ButtonBase disabled={option.disabled} onClick={() => onSelect(option.id)}>
+                <Avatar
+                  email={option.email}
+                  fallback={option.name}
+                  active={option.id === activeOrg.id}
+                  button={!option.disabled}
+                />
+              </ButtonBase>
+            </ListItem>
+          </Tooltip>
         ))}
         <ListItem disableGutters className={css.buttonContainer}>
           <IconButton
@@ -98,8 +110,10 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     '& > *': {
-      height: 50,
+      display: 'flex',
+      justifyContent: 'center',
       borderRadius: '50%',
+      height: 51,
       padding: 0,
     },
   },

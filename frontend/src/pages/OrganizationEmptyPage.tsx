@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { Dispatch, ApplicationState } from '../store'
-import { getOrganization } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { TextField, Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing } from '../styling'
@@ -13,7 +13,7 @@ import { Body } from '../components/Body'
 export const OrganizationEmptyPage: React.FC = () => {
   const { username, hasOrganization } = useSelector((state: ApplicationState) => ({
     username: (state.auth.user?.email || '').split('@')[0],
-    hasOrganization: getOrganization(state)?.id && state.organization.initialized,
+    hasOrganization: selectOrganization(state)?.id && state.organization.initialized,
   }))
   const [name, setName] = React.useState<string>(`${username}'s org`)
   const history = useHistory()

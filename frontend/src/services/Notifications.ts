@@ -1,6 +1,6 @@
 import { DEVICE_TYPE } from '../shared/applications'
 import { getAccountIds } from '../models/accounts'
-import { getOrganization } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'
 import { isPortal } from '../services/Browser'
 import { store } from '../store'
@@ -84,7 +84,7 @@ function shareNotification(event: ICloudEvent) {
 
   if (accountTo) {
     if (event.authUserId === accountTo.id) name = 'you'
-    else name = getOrganization(state, accountTo.id)?.name || accountTo.email
+    else name = selectOrganization(state, accountTo.id)?.name || accountTo.email
 
     event.target.forEach(target => {
       if (target.typeID === DEVICE_TYPE) {

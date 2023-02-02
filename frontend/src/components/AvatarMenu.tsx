@@ -15,7 +15,7 @@ import { emit } from '../services/Controller'
 
 const ENTER_DELAY = 0
 const LEAVE_DELAY = 200
-const AVATAR_SIZE = 44
+const AVATAR_SIZE = 40
 
 export const AvatarMenu: React.FC = () => {
   const history = useHistory()
@@ -71,14 +71,22 @@ export const AvatarMenu: React.FC = () => {
         disableScrollLock
         elevation={2}
       >
-        <ListItemLocation dense title="Account" icon="user" pathname="/account" onClick={handleClose} />
+        <ListItemLocation
+          dense
+          title="Account"
+          subtitle={user?.email}
+          icon="user"
+          // icon={<Avatar email={user?.email} size={24} />}
+          pathname="/account"
+          badge={licenseIndicator}
+          onClick={handleClose}
+        />
         <ListItemLocation
           dense
           exactMatch
           title="Settings"
           icon="sliders-h"
           pathname="/settings"
-          badge={licenseIndicator}
           onClick={handleClose}
         />
         <ListItemLocation

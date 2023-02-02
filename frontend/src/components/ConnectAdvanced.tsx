@@ -33,11 +33,11 @@ export const ConnectAdvanced: React.FC = () => {
 
   return (
     <Gutters size="md" top={null} bottom={null}>
-      {/* <ConnectionDetails
+      <ConnectionDetails
         connection={connection}
         service={service}
         show={!!(connection.enabled && connection.host) || connection.connectLink}
-      /> */}
+      />
       <Box display="flex" marginTop={2}>
         <ListItemBack title="Connection configuration" />
         <IconButton

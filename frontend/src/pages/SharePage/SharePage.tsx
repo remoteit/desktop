@@ -6,7 +6,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
-import { getOrganization } from '../../models/organization'
+import { selectOrganization } from '../../selectors/organizations'
 import { ContactSelector } from '../../components/ContactSelector'
 import { SharingForm } from '../../components/SharingForm'
 import { Container } from '../../components/Container'
@@ -23,7 +23,7 @@ export const SharePage: React.FC = () => {
     return {
       device,
       contacts: state.contacts.all,
-      guests: device ? device.access : (getOrganization(state).guests as IUserRef[]),
+      guests: device ? device.access : (selectOrganization(state).guests as IUserRef[]),
       deleting: state.shares.deleting,
       users: state.shares.currentDevice?.users || [],
     }

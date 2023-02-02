@@ -44,13 +44,23 @@ declare global {
 
   type IPortScan = 'REACHABLE' | 'UNREACHABLE' | 'SCANNING' | 'INVALID'
 
-  type IOrganizationProvider = 'SAML'
+  type IOrganizationProvider = 'SAML' | 'OIDC'
 
   type IOrganizationSettings = {
     name?: string
     domain?: string
     providers?: null | IOrganizationProvider[]
     accountId?: string
+  }
+
+  type IIdentityProviderSettings = {
+    accountId: string
+    enabled: boolean
+    type: IOrganizationProvider
+    metadata?: string
+    clientId?: string
+    clientSecret?: string
+    issuer?: string
   }
 
   type ILicenseChip = {

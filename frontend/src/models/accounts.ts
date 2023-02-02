@@ -1,8 +1,7 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
-import { getActiveAccountId, isUserAccount } from '../selectors/accounts'
-import { selectRemoteitLicense } from './plans'
+import { getActiveAccountId } from '../selectors/accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
@@ -43,6 +42,7 @@ export default createModel<RootModel>()({
                   }
                   license
                   organization {
+                    name
                     account {
                       id
                       email
@@ -70,6 +70,7 @@ export default createModel<RootModel>()({
           roleName: m.customRole.name,
           license: m.license || [],
           account: m.organization.account,
+          name: m.organization.name,
         })),
       })
       if (!membership.find(m => m.organization.account.id === state.accounts.activeId)) {
@@ -184,20 +185,4 @@ export function getActiveUser(state: ApplicationState): IUserRef {
     created: m.created,
   }))
   return membershipOrganizations.find(m => m.id === id) || state.user
-}
-
-export function getMembership(state: ApplicationState, accountId?: string): IMembership {
-  const thisMembership = () => ({
-    roleId: 'OWNER',
-    roleName: 'Owner',
-    license: selectRemoteitLicense(state)?.valid ? 'LICENSED' : 'UNLICENSED',
-    created: state.auth.user?.created || new Date(),
-    account: {
-      id: state.auth.user?.id || '',
-      email: state.auth.user?.email || 'unknown',
-    },
-  })
-  if (isUserAccount(state, accountId)) return thisMembership()
-  accountId = accountId || getActiveAccountId(state)
-  return state.accounts.membership.find(m => m.account.id === accountId) || thisMembership()
 }

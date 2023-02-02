@@ -4,15 +4,17 @@ import {
   graphQLRemoveOrganization,
   graphQLSetMembers,
   graphQLRemoveMembers,
-  graphQLSetSAML,
+  graphQLSetIdentityProvider,
   graphQLCreateRole,
   graphQLUpdateRole,
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getActiveUser, getAccountIds, getMembership } from './accounts'
+import { getActiveUser, getAccountIds } from './accounts'
+import { selectMembership } from '../selectors/accounts'
 import { getActiveAccountId } from '../selectors/accounts'
-import { selectRemoteitLicense } from './plans'
+import { selectOrganization } from '../selectors/organizations'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
@@ -63,95 +65,6 @@ export const SYSTEM_ROLES: IOrganizationRole[] = [
   },
 ]
 
-const graphQLLicensesLimits = `
-  licenses {
-    id
-    updated
-    created
-    expiration
-    valid
-    quantity
-    plan {
-      id
-      name
-      description
-      duration
-      commercial
-      billing
-      product {
-        id
-        name
-        description
-      }
-    }
-    subscription {
-      total
-      status
-      price {
-        id
-        amount
-        currency
-        interval
-      }
-      card {
-        brand
-        month
-        year
-        last
-        name
-        email
-        phone
-        postal
-        country
-        expiration
-      }
-    }
-  }
-  limits {
-    name
-    value
-    actual
-    license {
-      id
-    }
-  }`
-
-const graphQLOrganization = `
-  organization {
-    id
-    name
-    domain
-    samlEnabled
-    providers
-    verificationCNAME
-    verificationValue
-    verified
-    created
-    roles {
-      id
-      name
-      system
-      permissions
-      access
-      tag {
-        operator
-        values
-      }
-    }
-    members {
-      created
-      customRole {
-        id
-        name
-      }
-      license
-      user {
-        id
-        email
-      }
-    }
-  }`
-
 export type IOrganizationState = {
   id: string
   name: string
@@ -163,7 +76,11 @@ export type IOrganizationState = {
   members: IOrganizationMember[]
   roles: IOrganizationRole[]
   domain?: string
-  samlEnabled: boolean
+  identityProvider?: {
+    type: string
+    clientId: string
+    issuer: string
+  }
   providers: null | IOrganizationProvider[]
   verificationCNAME?: string
   verificationValue?: string
@@ -171,11 +88,11 @@ export type IOrganizationState = {
   guestsLoaded: boolean
 }
 
-const defaultState: IOrganizationState = {
+export const defaultState: IOrganizationState = {
   id: '',
   name: '',
   domain: undefined,
-  samlEnabled: false,
+  identityProvider: undefined,
   providers: null,
   verificationCNAME: undefined,
   verificationValue: undefined,
@@ -214,8 +131,95 @@ export default createModel<RootModel>()({
       const accountQueries = ids.map(
         (id, index) => `
         _${index}: account(id: "${id}") {
-          ${graphQLOrganization}
-          ${graphQLLicensesLimits}
+          organization {
+            id
+            name
+            domain
+            created
+            verified
+            verificationCNAME
+            verificationValue
+            roles {
+              id
+              name
+              system
+              permissions
+              access
+              tag {
+                operator
+                values
+              }
+            }
+            members {
+              created
+              customRole {
+                id
+                name
+              }
+              license
+              user {
+                id
+                email
+              }
+            }
+            providers
+            identityProvider {
+              type
+              clientId
+              issuer
+            }
+          }
+          licenses {
+            id
+            updated
+            created
+            expiration
+            valid
+            quantity
+            plan {
+              id
+              name
+              description
+              duration
+              commercial
+              billing
+              product {
+                id
+                name
+                description
+              }
+            }
+            subscription {
+              total
+              status
+              price {
+                id
+                amount
+                currency
+                interval
+              }
+              card {
+                brand
+                month
+                year
+                last
+                name
+                email
+                phone
+                postal
+                country
+                expiration
+              }
+            }
+          }
+          limits {
+            name
+            value
+            actual
+            license {
+              id
+            }
+          }
         }`
       )
       const result = await graphQLBasicRequest(
@@ -273,7 +277,7 @@ export default createModel<RootModel>()({
     },
 
     async setOrganization(params: IOrganizationSettings, state) {
-      let organization = getOrganization(state)
+      let organization = selectOrganization(state)
       await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
       const result = await graphQLSetOrganization(params)
       if (result !== 'ERROR') {
@@ -282,18 +286,24 @@ export default createModel<RootModel>()({
       await dispatch.organization.fetch()
     },
 
-    async setSAML(params: { accountId: string; enabled: boolean; metadata?: string }) {
+    async setIdentityProvider(params: IIdentityProviderSettings) {
       dispatch.organization.set({ updating: true })
-      const result = await graphQLSetSAML(params)
+      const result = await graphQLSetIdentityProvider(params)
       if (result !== 'ERROR') {
-        dispatch.ui.set({ successMessage: params.enabled ? 'SAML enabled and metadata uploaded.' : 'SAML disabled.' })
+        dispatch.ui.set({
+          successMessage: params.enabled ? `${params.type} enabled.` : `${params.type} disabled.`,
+        })
+      } else {
+        dispatch.ui.set({
+          errorMessage: `${params.type} update failed, please validate your form data.`,
+        })
       }
       await dispatch.organization.fetch()
       dispatch.organization.set({ updating: false })
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {
-      const organization = getOrganization(state)
+      const organization = selectOrganization(state)
       let updated = [...organization.members]
 
       members.forEach(m => {
@@ -323,7 +333,7 @@ export default createModel<RootModel>()({
     },
 
     async removeMember(member: IOrganizationMember, state) {
-      const organization = getOrganization(state)
+      const organization = selectOrganization(state)
       const result = await graphQLRemoveMembers([member.user.email], organization.id)
       if (result !== 'ERROR') {
         dispatch.organization.setActive({
@@ -342,7 +352,7 @@ export default createModel<RootModel>()({
     },
 
     async setRole(role: IOrganizationRole, state) {
-      let roles = [...getOrganization(state).roles]
+      let roles = [...selectOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
       const permissions = Object.keys(PERMISSION) as IPermission[]
       const data = {
@@ -378,7 +388,7 @@ export default createModel<RootModel>()({
     },
 
     async removeRole(role: IOrganizationRole, state) {
-      let roles = [...getOrganization(state).roles]
+      let roles = [...selectOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
       if (index > -1) roles.splice(index, 1)
       const result = await graphQLRemoveRole(role.id, getActiveAccountId(state))
@@ -398,7 +408,7 @@ export default createModel<RootModel>()({
 
     async setActive(params: ILookup<any>, state) {
       const id = params.id || getActiveAccountId(state)
-      let org = { ...getOrganization(state, id) }
+      let org = { ...selectOrganization(state, id) }
       Object.keys(params).forEach(key => (org[key] = params[key]))
       const accounts = { ...state.organization.accounts }
       accounts[id] = org
@@ -434,7 +444,11 @@ export function parseOrganization(data: any): IOrganizationState {
     ...defaultState,
     ...data,
     // verified: true, // for development
-    // samlEnabled: true, // for development
+    // identityProvider { // for development
+    //   type:
+    //   clientId
+    //   issuer
+    // },
     created: new Date(data.created),
     members: [
       ...data.members.map(m => ({
@@ -477,30 +491,21 @@ export function parseLicense(data) {
 
 export function getOwnOrganization(state: ApplicationState) {
   const id = state.auth.user?.id || ''
-  return memberOrganization(state.organization.accounts, id)
-}
-
-export function getOrganization(state: ApplicationState, accountId?: string): IOrganizationState {
-  accountId = accountId || getActiveAccountId(state)
-  return memberOrganization(state.organization.accounts, accountId)
-}
-
-export function memberOrganization(organization: ILookup<IOrganizationState>, accountId?: string) {
-  return organization[accountId || ''] || { ...defaultState }
+  return selectOrganization(state, id)
 }
 
 export function getOrganizationName(state: ApplicationState, accountId?: string): string {
-  return memberOrganization(state.organization.accounts, accountId).name || 'Personal'
+  return selectOrganization(state, accountId).name || 'Unknown'
 }
 
 export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
-  const membership = getMembership(state, accountId)
-  const organization = getOrganization(state, accountId)
+  const membership = selectMembership(state, accountId)
+  const organization = selectOrganization(state, accountId)
   return organization.roles.find(r => r.id === membership.roleId)?.permissions
 }
 
 export function selectMembersWithAccess(state: ApplicationState, instance?: IInstance) {
-  const organization = getOrganization(state)
+  const organization = selectOrganization(state)
   return organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
 }
 

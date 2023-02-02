@@ -174,10 +174,18 @@ export async function graphQLSetOrganization(params: IOrganizationSettings) {
   )
 }
 
-export async function graphQLSetSAML(params: { accountId: string; enabled: boolean; metadata?: string }) {
+export async function graphQLSetIdentityProvider(params: IIdentityProviderSettings) {
   return await graphQLBasicRequest(
-    ` mutation SetSAML($accountId: String, $enabled: Boolean, $metadata: String) {
-        configureSAML(accountId: $accountId, enabled: $enabled, metadata: $metadata)
+    ` mutation SetIdentityProvider($accountId: String, $enabled: Boolean, $type: String, $metadata: String, $clientId: String, $clientSecret: String, $issuer: String) {
+        configureOrgIdentityProvider(
+          accountId: $accountId,
+          enabled: $enabled,
+          type: $type,
+          metadata: $metadata,
+          clientId: $clientId,
+          clientSecret: $clientSecret,
+          issuer: $issuer
+        )
       }`,
     params
   )
@@ -232,15 +240,6 @@ export async function graphQLClaimDevice(code: string, accountId?: string) {
         }
       }`,
     { code, accountId }
-  )
-}
-
-export async function graphQLConfigureSAML(params: { enabled: boolean; metadata: string }) {
-  return await graphQLBasicRequest(
-    ` mutation SAML($enabled: Boolean!, $metadata: String!)) {
-        configureSAML(enabled: $enabled, metadata: $metadata)
-      }`,
-    params
   )
 }
 

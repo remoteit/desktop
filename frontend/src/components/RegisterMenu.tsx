@@ -8,10 +8,7 @@ import { spacing } from '../styling'
 
 export const RegisterMenu: React.FC = () => {
   const css = useStyles()
-  const { permissions } = useSelector((state: ApplicationState) => ({
-    permissions: selectPermissions(state),
-  }))
-
+  const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
   const disabled = !permissions?.includes('MANAGE')
 
   return (

@@ -13,14 +13,14 @@ type Props = {
 }
 
 export const ConnectionData: React.FC<Props> = ({ connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
+  const attributes = getAttributes(['lanShare', 'connection', 'session', 'duration', 'location', 'initiatorPlatform'])
   const app = useApplication(service, connection)
 
   if (!connection && !session) return null
 
   return (
     <Gutters bottom="md">
-      <Box display="flex" flexDirection="row">
+      <Box display="flex" flexDirection="row" alignItems="center">
         <DataDisplay
           attributes={attributes}
           connection={connection}

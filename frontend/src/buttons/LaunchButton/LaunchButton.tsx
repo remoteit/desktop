@@ -59,7 +59,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
   }
 
   const launch = () => {
-    if (app.launchType === 'URL') windowOpen(app.string)
+    if (app.launchType === 'URL') windowOpen(app.string, '_blank')
     else emit('launch/app', app.string, !app.tokens.includes('path'))
     heartbeat.connect()
   }

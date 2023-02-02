@@ -202,7 +202,8 @@ export class Application {
     })
     template = replaceHost(template, this.localhost)
     if (!lookup.port) template = template.replace(':[port]', '')
-    return this.parseReverseProxy(template)
+    template = this.parseReverseProxy(template)
+    return this.launchType === 'URL' ? encodeURI(template) : template
   }
 
   private extractTokens(template: string) {
@@ -287,6 +288,12 @@ export function getApplicationType(typeId: number | undefined) {
         appLaunchType: 'URL',
         appLaunchTemplate: 'smb://[host]:[port]',
         appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
+      })
+    case 47:
+      return new Application({
+        title: 'Docker',
+        appLaunchType: 'COMMAND',
+        appCommandTemplate: windows ? 'start cmd /k docker -H [host]:[port] ps' : 'docker -H [host]:[port] ps',
       })
     default:
       return new Application({})

@@ -9,6 +9,7 @@ import { selectBaseLimits } from '../models/plans'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { Container } from '../components/Container'
+import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
@@ -53,19 +54,21 @@ export const TestPage: React.FC = () => {
           }}
         />
 
-        <InlineTextFieldSetting
-          value={testHeader}
-          label="Add query header"
-          displayValue={testHeader}
-          placeholder='Example: "key:value"'
-          resetValue=""
-          maxLength={200}
-          onSave={result => {
-            window.localStorage.setItem(TEST_HEADER, result.toString())
-            setTestHeader(result.toString())
-          }}
-          hideIcon
-        />
+        <PortalUI>
+          <InlineTextFieldSetting
+            value={testHeader}
+            label="Add query header"
+            displayValue={testHeader}
+            placeholder='Example: "key:value"'
+            resetValue=""
+            maxLength={200}
+            onSave={result => {
+              window.localStorage.setItem(TEST_HEADER, result.toString())
+              setTestHeader(result.toString())
+            }}
+            hideIcon
+          />
+        </PortalUI>
 
         <ListItemSetting
           hideIcon

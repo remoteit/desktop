@@ -1,7 +1,7 @@
 import md5 from 'md5'
 import React from 'react'
-import seedRandom from 'seedrandom'
 import classnames from 'classnames'
+import { createColor } from '../../helpers/uiHelper'
 import { labelLookup } from '../../models/labels'
 import { makeStyles } from '@mui/styles'
 import { Avatar as MuiAvatar, Tooltip } from '@mui/material'
@@ -15,16 +15,25 @@ export interface Props {
   inline?: boolean
   title?: string
   active?: boolean
+  fallback?: string
   children?: React.ReactNode
 }
 
-export const Avatar: React.FC<Props> = ({ email, size = 40, title, button, inline, tooltip, active, children }) => {
-  if (button) size -= 4
-
+export const Avatar: React.FC<Props> = ({
+  email,
+  size = 36,
+  title,
+  button,
+  inline,
+  tooltip,
+  active,
+  fallback,
+  children,
+}) => {
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
-  const color = Math.ceil(seedRandom(email || '')() * 12)
-  const fallback = (title || email || '?').substring(0, 1).toUpperCase()
+  const color = createColor(email)
   const css = useStyles({ size, color, button, inline, active })
+  fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
 
   let Element = (
     <>
@@ -70,7 +79,11 @@ const useStyles = makeStyles(({ palette }) => ({
     borderColor: active ? palette.primary.main : palette.grayLighter.main,
     cursor: 'pointer',
     position: 'relative',
-    boxShadow: active ? `0 0 10px ${palette.primaryLight.main}` : undefined,
-    '&:hover': { backgroundColor: palette.primaryLight.main, borderColor: palette.primaryLight.main },
+    color: palette.primaryLight.main,
+    boxShadow: active ? '0 0 10px' : undefined,
+    '&:hover': {
+      borderColor: active ? palette.grayDark.main : palette.primary.main,
+      color: palette.gray.main,
+    },
   }),
 }))

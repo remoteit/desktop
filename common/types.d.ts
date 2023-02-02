@@ -171,7 +171,7 @@ declare global {
     name?: string
     online?: boolean // online if service is online
     owner?: IUserRef
-    password?: string // link password
+    password?: string | null // link password
     path?: string // application path
     port?: number
     proxyOnly?: boolean // disabled p2p
@@ -188,6 +188,7 @@ declare global {
     targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
+    updating?: boolean // waiting for cloud update
     username?: string // support for launching where username could be saved
     checkpoint?: {
       canBindToPortLocally: boolean
@@ -429,6 +430,7 @@ declare global {
     created: Date
     license: ILicenseTypes
     account: IUserRef
+    name?: string
   }
 
   type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string

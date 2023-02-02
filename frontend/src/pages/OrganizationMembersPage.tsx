@@ -1,10 +1,11 @@
 import React from 'react'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { Typography, List } from '@mui/material'
 import { selectOwner } from '../models/organization'
-import { selectRemoteitLicense } from '../models/plans'
-import { selectPermissions, getOrganization } from '../models/organization'
+import { selectOrganization } from '../selectors/organizations'
+import { Typography, List } from '@mui/material'
+import { selectPermissions } from '../models/organization'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
 import { SeatsSetting } from '../components/SeatsSetting'
@@ -16,7 +17,7 @@ import { Body } from '../components/Body'
 
 export const OrganizationMembersPage: React.FC = () => {
   const { organization, permissions, license, owner } = useSelector((state: ApplicationState) => {
-    const organization = getOrganization(state)
+    const organization = selectOrganization(state)
     return {
       organization,
       permissions: selectPermissions(state),
