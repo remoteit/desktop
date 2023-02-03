@@ -2,6 +2,9 @@ name: Build/release
 
 on: workflow_dispatch
 
+env:
+  FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
+  
 jobs:
   release:
     runs-on: ${{ matrix.os }}
