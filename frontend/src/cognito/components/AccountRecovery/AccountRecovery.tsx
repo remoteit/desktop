@@ -20,7 +20,7 @@ export function AccountRecovery({
   fullWidth,
 }: AccountRecoveryProps): JSX.Element {
   const { t } = useTranslation()
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [sentEmailVerifyRequest, setSentEmailVerifyRequest] = useState<boolean>(false)
   const [emailVerificationCode, setEmailVerificationCode] = useState<string>('')
@@ -67,8 +67,8 @@ export function AccountRecovery({
       } else {
         window.location.href = '/#devices'
       }
-    } catch (error) {
-      setError(t(`pages.auth-mfa.errors.${error.code}`))
+    } catch (e) {
+      setError(t(`pages.auth-mfa.errors.${e.code}`))
     }
 
     setLoading(false)
