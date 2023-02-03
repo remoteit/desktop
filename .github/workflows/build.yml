@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: 14
           
+      - name: Set npm version
+        run: npx nvm use 14 && npm install -g npm@8
+          
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
