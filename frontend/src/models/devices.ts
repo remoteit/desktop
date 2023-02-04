@@ -175,12 +175,15 @@ export default createModel<RootModel>()({
       const accountId = getActiveAccountId(state)
       const model = getDeviceModel(state)
 
-      if (model.fetchingArray) return []
+      if (model.fetchingArray) {
+        console.warn('FETCH DEVICES ABORTED, fetching in progress...')
+        return []
+      }
       await dispatch.devices.set({ fetchingArray: true, accountId })
 
       const gqlResponse = await graphQLPreloadDevices({ account: accountId, ids: deviceIds })
       const error = graphQLGetErrors(gqlResponse)
-      const result = gqlResponse?.data?.data?.login?.device
+      const result = gqlResponse?.data?.data?.login?.account?.device
 
       await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []

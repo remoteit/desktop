@@ -69,7 +69,9 @@
     ],
     "win": {
       "sign": "./scripts/sign.js",
-      "signingHashAlgorithms": ["sha256"],
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
       "artifactName": "${productName}-installer.${ext}",
       "target": [
         {

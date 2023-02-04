@@ -71,7 +71,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
       <List>
         {pageUsers.map((user, i) => (
           <UserListItem key={user.id} user={user} isConnected={connected} member={members} remove={remove}>
-            <ShareDetails user={user} device={device} connected />
+            <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}
       </List>

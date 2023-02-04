@@ -4,11 +4,12 @@ import { getDeviceModel } from '../../selectors/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { DEMO_DEVICE_CLAIM_CODE } from '../../shared/constants'
-import { Typography, Button } from '@mui/material'
+import { Typography, Button, Box } from '@mui/material'
 import { selectIsFiltered } from '../../models/devices'
 import { isUserAccount } from '../../selectors/accounts'
 import { GuideStep } from '../GuideStep'
 import { spacing } from '../../styling'
+import { Notice } from '../Notice'
 import { Icon } from '../Icon'
 import { Body } from '../Body'
 
@@ -24,9 +25,9 @@ export const DeviceListEmpty: React.FC = () => {
   return (
     <Body center>
       {noResults ? (
-        <Typography variant="body1" color="textSecondary" align="center">
-          Your search returned no results
-        </Typography>
+        <Box>
+          <Notice>Your search returned no results</Notice>
+        </Box>
       ) : userAccount ? (
         <>
           <GuideStep

@@ -135,7 +135,7 @@ export default createModel<RootModel>()({
     ) {
       accountId = accountId || device?.accountId
       if (!accountId) return console.error('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
-      const devices = getDevices(state, accountId)
+      const devices = [...getDevices(state, accountId)]
 
       let exists = false
       devices.forEach((d, index) => {

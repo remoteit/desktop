@@ -124,8 +124,7 @@ export default createModel<RootModel>()({
               connection.enabled = DEFAULT_CONNECTION.enabled
             }
 
-            connection.online = online
-            result.push(connection)
+            result.push({ ...connection, online })
           }
         })
       })
@@ -150,7 +149,7 @@ export default createModel<RootModel>()({
     },
 
     async updateConnection(connection: IConnection, state) {
-      const { all } = state.connections
+      const all = structuredClone(state.connections.all)
 
       let exists = false
       all.some((c, index) => {
@@ -368,6 +367,7 @@ export default createModel<RootModel>()({
     },
 
     async connect(connection: IConnection, state) {
+      connection = structuredClone(connection)
       const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.online = service ? service?.state === 'active' : connection.online
@@ -384,7 +384,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      connection = { ...connection, starting: true }
+      connection.starting = true
       dispatch.connections.updateConnection(connection)
       emit('service/connect', connection)
       heartbeat.connect()

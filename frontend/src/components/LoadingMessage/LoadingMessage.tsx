@@ -4,21 +4,22 @@ import { makeStyles } from '@mui/styles'
 import { Gutters } from '../Gutters'
 import { Logo } from '../../components/Logo'
 import { Body } from '../Body'
-import { spacing } from '../../styling'
+import { spacing, Color } from '../../styling'
 
 export interface LoadingMessageProps {
   message?: React.ReactNode
   spinner?: boolean
   logo?: boolean
+  logoColor?: Color
   inline?: boolean
 }
 
-export function LoadingMessage({ message, logo, spinner = true, inline }: LoadingMessageProps) {
+export function LoadingMessage({ message, logo, logoColor, spinner = true, inline }: LoadingMessageProps) {
   const css = useStyles()
   const Container = inline ? Gutters : Body
   return (
     <Container center>
-      {logo && <Logo className={css.margin} />}
+      {logo && <Logo color={logoColor} className={css.margin} />}
       {spinner && !logo && <CircularProgress size={50} thickness={1.5} className={css.margin} />}
       {message && (
         <Typography className={css.text} variant="body2">

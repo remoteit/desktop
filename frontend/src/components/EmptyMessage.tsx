@@ -13,7 +13,7 @@ export const EmptyMessage: React.FC<Props> = ({ message }) => {
   return (
     <Box className={css.box}>
       <Icon name="mouse-pointer" type="solid" size="lg" className={css.icon} />
-      <Typography variant="body2" color="GrayText">
+      <Typography variant="body2" color="grayDark.main">
         {message}
       </Typography>
     </Box>

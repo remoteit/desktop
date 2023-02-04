@@ -238,13 +238,13 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ accordion })
     },
     async setDefaultService({ deviceId, serviceId }: { deviceId: string; serviceId: string | null }, state) {
-      const all = state.ui.defaultService
+      const all = { ...state.ui.defaultService }
       all[deviceId] = serviceId
       dispatch.ui.setPersistent({ defaultService: all })
     },
     async setDefaultSelected({ key, value }: { key: string; value?: string }, state) {
       const accountId = getActiveAccountId(state)
-      let defaultSelection = { ...state.ui.defaultSelection }
+      let defaultSelection = structuredClone(state.ui.defaultSelection)
       defaultSelection[accountId] = defaultSelection[accountId] || {}
       defaultSelection[accountId][key] = value
       dispatch.ui.set({ defaultSelection })

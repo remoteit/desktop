@@ -198,7 +198,7 @@ export default createModel<RootModel>()({
     },
 
     async delete({ tag, accountId }: { tag: ITag; accountId: string }, state) {
-      const tags = selectTags(state)
+      const tags = [...selectTags(state)]
       dispatch.tags.set({ deleting: tag.name })
       const result = await graphQLDeleteTag(tag.name, accountId)
       if (result === 'ERROR') return

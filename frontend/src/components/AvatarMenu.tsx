@@ -13,7 +13,7 @@ import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
-const ENTER_DELAY = 0
+const ENTER_DELAY = 100
 const LEAVE_DELAY = 200
 const AVATAR_SIZE = 40
 

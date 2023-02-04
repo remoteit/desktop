@@ -66,7 +66,7 @@ export const FilterDrawer: React.FC = () => {
   const onOwner = value => update({ owner: value })
 
   const onPlatform = value => {
-    let result = Array.isArray(state.platform) ? state.platform : undefined
+    let result = Array.isArray(state.platform) ? [...state.platform] : undefined
     const index = result && result.indexOf(value)
 
     if (index !== undefined && index >= 0) result?.splice(index, 1)

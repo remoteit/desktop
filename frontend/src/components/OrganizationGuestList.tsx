@@ -19,7 +19,7 @@ export const OrganizationGuestList: React.FC = () => {
   const perPage = 20
   const pageCount = Math.ceil(guests.length / perPage)
   const start = (page - 1) * perPage
-  const pageGuests = guests.sort(alphaEmailSort).slice(start, start + perPage)
+  const pageGuests = [...guests].sort(alphaEmailSort).slice(start, start + perPage)
 
   useEffect(() => {
     if (!guestsLoaded) dispatch.organization.fetchGuests()

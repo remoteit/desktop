@@ -7,8 +7,7 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Paper,
-  Popper,
+  Popover,
   PopperProps,
   TextField,
   TextFieldProps,
@@ -75,101 +74,122 @@ export const TagAutocomplete: React.FC<Props> = ({
       })
     : items
 
+  if (!targetEl) return null
+
   return (
-    <Popper anchorEl={targetEl} open={open} placement="bottom-start">
-      <Paper className={css.container} elevation={1}>
-        <Autocomplete
-          fullWidth
-          open={true}
-          disablePortal
-          autoHighlight
-          options={options}
-          includeInputInList
-          inputValue={inputValue}
-          classes={{
-            listbox: css.listbox,
-            option: css.option,
-            input: css.input,
-            popperDisablePortal: css.popperDisablePortal,
-            noOptions: css.empty,
-          }}
-          onClose={onClose}
-          onChange={(event, value, reason) => {
-            if (!value || !onSelect || disabled) return
-            if (value.created) onSelect('add', value)
-            else onSelect('new', { name: inputValue, color: value.color, created: new Date() })
-          }}
-          PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
-          PopperComponent={Box as React.ComponentType<PopperProps>}
-          noOptionsText={false}
-          getOptionLabel={option => option.name}
-          onInputChange={(event, newValue) => {
-            const result = newValue.replace(REGEX_TAG_SAFE, '')
-            setInputValue(result)
-            if (onChange) onChange(result)
-          }}
-          renderOption={(props, option) => (
-            <MenuItem {...props}>
-              {hideIcons ? (
-                <> &nbsp; &nbsp; </>
-              ) : (
-                <ListItemIcon>
-                  <Icon
-                    name={!option.name ? 'plus' : indicator || 'circle'}
-                    color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
-                    type="solid"
-                    size="base"
-                  />
-                </ListItemIcon>
-              )}
-              <ListItemText
-                primary={reactStringReplace(
-                  option.name,
-                  new RegExp(`(${escapeRegexp(inputValue)})`, 'i'),
-                  (match, i) => (
-                    <span key={i} className={css.spanItem}>
-                      {match}
-                    </span>
-                  )
-                )}
-              />
-            </MenuItem>
-          )}
-          renderInput={params => (
-            <TextField
-              autoFocus
-              fullWidth
-              variant="filled"
-              ref={params.InputProps.ref}
-              inputProps={params.inputProps}
-              className={css.textField}
-              InputProps={InputProps}
-              placeholder={placeholder}
+    <Popover
+      PaperProps={{ className: css.inputContainer }}
+      elevation={1}
+      anchorEl={targetEl}
+      open={open}
+      anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+    >
+      <Autocomplete
+        open
+        fullWidth
+        disablePortal
+        autoHighlight
+        handleHomeEndKeys
+        options={options}
+        includeInputInList
+        inputValue={inputValue}
+        classes={{
+          listbox: css.listbox,
+          option: css.option,
+          popper: css.popper,
+          paper: css.popperPaper,
+          noOptions: css.empty,
+        }}
+        onClose={onClose}
+        onChange={(event, value, reason) => {
+          if (!value || !onSelect || disabled) return
+          if (value.created) onSelect('add', value)
+          else onSelect('new', { name: inputValue, color: value.color, created: new Date() })
+        }}
+        isOptionEqualToValue={(option, value) => option.name === value.name || !option.created}
+        PopperComponent={BoxComponent}
+        noOptionsText={false}
+        getOptionLabel={option => option.name || ''}
+        onInputChange={(event, newValue) => {
+          const result = newValue.replace(REGEX_TAG_SAFE, '')
+          setInputValue(result)
+          if (onChange) onChange(result)
+        }}
+        renderOption={(props, option) => (
+          <MenuItem {...props}>
+            {hideIcons ? (
+              <> &nbsp; &nbsp; </>
+            ) : (
+              <ListItemIcon>
+                <Icon
+                  name={!option.name ? 'plus' : indicator || 'circle'}
+                  color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
+                  type="solid"
+                  size="base"
+                />
+              </ListItemIcon>
+            )}
+            <ListItemText
+              primary={reactStringReplace(option.name, new RegExp(`(${escapeRegexp(inputValue)})`, 'i'), (match, i) => (
+                <span key={i} className={css.spanItem}>
+                  {match}
+                </span>
+              ))}
             />
-          )}
-        />
-      </Paper>
-    </Popper>
+          </MenuItem>
+        )}
+        renderInput={params => (
+          <TextField
+            {...params}
+            autoFocus
+            variant="filled"
+            className={css.input}
+            InputProps={{ ...params.InputProps, ...InputProps }}
+            placeholder={placeholder}
+          />
+        )}
+      />
+    </Popover>
   )
 }
 
+type BoxProps = Omit<PopperProps, 'anchorEL' | 'open' | 'role' | 'disablePortal' | 'style'>
+
+export const BoxComponent: React.FC<BoxProps> = ({ className, children, placement }) => (
+  <Box className={className}>
+    {typeof children === 'function' ? children({ placement: placement || 'auto' }) : children}
+  </Box>
+)
+
 const useStyles = makeStyles(({ palette }) => ({
-  container: {
-    width: 200,
+  inputContainer: {
+    minWidth: 200,
+    overflow: 'visible',
     backgroundColor: palette.grayLightest.main,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
   },
-  listbox: { paddingTop: 0 },
-  textField: { padding: `${spacing.xs}px ${spacing.xs}px 0` },
   input: {
-    '&.MuiFilledInput-input.MuiAutocomplete-input': {
+    margin: 0,
+    padding: `${spacing.xs}px ${spacing.xs}px 0`,
+    '& .MuiFilledInput-input.MuiAutocomplete-input': {
       padding: `${spacing.xs}px ${spacing.sm}px`,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
     },
   },
-  popperDisablePortal: {
-    position: 'relative',
+  popper: {
+    width: '100%',
+  },
+  popperPaper: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  listbox: {
+    paddingTop: spacing.xxs,
+    paddingBottom: spacing.xxs,
+    backgroundColor: palette.grayLightest.main,
   },
   empty: {
     display: 'none',
