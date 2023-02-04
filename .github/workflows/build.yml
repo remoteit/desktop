@@ -27,7 +27,6 @@ jobs:
 
       - name: Authenticate with fontawsome NPM repo
         run: echo "//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
-        run: cat ./frontend/.npmrc
       
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
