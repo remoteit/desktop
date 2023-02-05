@@ -4,7 +4,7 @@ import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
 import { ShareSaveActions } from '../ShareSaveActions'
 import { TargetPlatform } from '../TargetPlatform'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Gutters } from '../Gutters'
@@ -21,30 +21,24 @@ export interface SharingAccess {
 }
 
 export function SharingForm({ device, user }: { device: IDevice; user?: IUser }): JSX.Element {
-  const saving = useSelector((state: ApplicationState) => state.shares.sharing)
-  const { script, scriptIndeterminate, users, selectedServices } = useSelector(
-    (state: ApplicationState) => state.shares.currentDevice || { script, scriptIndeterminate, users, selectedServices }
-  )
+  const { script, scriptIndeterminate, users, selectedServices, saving } = useSelector((state: ApplicationState) => ({
+    ...state.shares.currentDevice,
+    script: !!state.shares.currentDevice?.script,
+    selectedServices: state.shares.currentDevice?.selectedServices || [],
+    saving: state.shares.sharing,
+  }))
   const history = useHistory()
-  const location = useLocation()
-  const { shares } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const [allowScript, setAllowScript] = useState<boolean>(script)
 
   const disabled = !users?.length && !user
-  const handleChangeServices = (services: string[]) => {
-    shares.changeServices(services)
-  }
-
-  useEffect(() => {
-    const crumbs = location.pathname.substring(1).split('/')
-    crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
-  }, [])
+  const handleChangeServices = (services: string[]) => dispatch.shares.setSelectedServices(services)
 
   useEffect(() => {
     setAllowScript(script)
   }, [script])
 
-  const handleChangeScripting = () => shares.changeScript(!script)
+  const handleChangeScripting = () => dispatch.shares.setScript(!script)
 
   const mapShareData = (share: SharingDetails, isNew: boolean): IShareProps | undefined => {
     const { access } = share
@@ -65,32 +59,16 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
       }
     }
   }
+
   const handleShare = async (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
     if (!shareData) return
-    await shares.share(shareData)
+    await dispatch.shares.share(shareData)
     history.goBack()
   }
 
   const action = () => {
-    let action = false
-    let emails: string[]
-    if (user) {
-      emails = [user?.email]
-    } else {
-      action = true
-      emails = users
-    }
-    handleShare(
-      {
-        access: {
-          script,
-          services: selectedServices,
-        },
-        emails,
-      },
-      action
-    )
+    handleShare({ access: { script, services: selectedServices }, emails: user ? [user?.email] : users || [] }, !user)
   }
 
   return (

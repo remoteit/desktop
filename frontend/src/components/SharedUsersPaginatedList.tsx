@@ -47,7 +47,6 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
               <Slider
                 valueLabelDisplay="auto"
                 valueLabelFormat={value => pageUsers[0]?.email?.substring(0, 1) || '-'}
-                defaultValue={page}
                 max={pageCount}
                 onChange={(e, page) => setPage(Number(page))}
                 size="small"

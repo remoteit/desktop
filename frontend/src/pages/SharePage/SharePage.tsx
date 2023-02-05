@@ -9,6 +9,7 @@ import { spacing, fontSizes } from '../../styling'
 import { selectOrganization } from '../../selectors/organizations'
 import { ContactSelector } from '../../components/ContactSelector'
 import { SharingForm } from '../../components/SharingForm'
+import { getAccess } from '../../helpers/userHelper'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
 import { Avatar } from '../../components/Avatar'
@@ -39,7 +40,15 @@ export const SharePage: React.FC = () => {
       if (!guest && userID) await organization.fetch()
       await shares.fetch({ email, serviceId: service.id, device })
     })()
-  }, [])
+
+    // set defaults
+    if (device?.loaded) {
+      const access = getAccess(device, email)
+      console.log('ACCESS', access)
+      shares.setSelectedServices(access.services.map(s => s.id))
+      shares.setScript(access.scripting)
+    }
+  }, [device?.loaded])
 
   const handleUnshare = async () => {
     if (device) await shares.delete({ deviceId: device.id, email })

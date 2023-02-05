@@ -31,7 +31,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
     headers: { Authorization: token, ...getTestHeader() },
     data: { query, variables },
   }
-  console.log('GRAPHQL REQUEST', { query, variables, request })
+  // console.log('GRAPHQL REQUEST', { query, variables, request })
   return await axios.request(request)
 }
 
