@@ -51,7 +51,6 @@
     "react-select": "^5.7.0",
     "react-string-replace": "^1.1.0",
     "reaptcha": "^1.12.1",
-    "rebound": "0.1.0",
     "reconnecting-websocket": "^4.4.0",
     "redux": "^4.2.1",
     "redux-logger": "^3.0.6",
