@@ -28,3 +28,4 @@ export const getApplicationParams = (_: ApplicationState, service?: IService, co
 export const getAllNetworks = (state: ApplicationState) => state.networks.all
 export const getTags = (state: ApplicationState) => state.tags.all
 export const getDefaultSelected = (state: ApplicationState) => state.ui.defaultSelection
+export const getThemeMode = (themeMode?: ApplicationState['ui']['themeMode']) => themeMode
