@@ -1,0 +1,48 @@
+name: Build/release
+
+on: workflow_dispatch
+
+env:
+  FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
+  
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+#         os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          
+      - name: Set npm version
+        run: npm install -g npm@8
+
+      - name: Authenticate with fontawsome NPM repo
+        run: |
+          echo "pwd = ${PWD}"
+          echo -e "\n//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
+      
+      - name: Create .env file
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+      
+      - name: Build/release Electron app
+        uses: mebays/action-electron-builder@node-16
+        with:
+          # GitHub token, automatically provided to the action
+          # (No need to define this secret in the repo settings)
+          github_token: ${{ secrets.github_token }}
+
+          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # release the app after building
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+
