@@ -28,6 +28,10 @@ jobs:
       - name: Authenticate with fontawsome NPM repo
         run: |
           echo "pwd = ${PWD}"
+          echo "secrets.FONT_AWESOME_AUTH_TOKEN = ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}"
+          echo "environment FONT_AWESOME_AUTH_TOKEN = ${FONT_AWESOME_AUTH_TOKEN}"
+          echo "env:"
+          env
           echo -e "\n//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
           echo "Contents of ./frontend/.npmrc"
           cat ./frontend/.npmrc
