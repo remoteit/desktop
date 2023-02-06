@@ -81,7 +81,6 @@
     "@types/redux": "^3.6.31",
     "@types/redux-logger": "^3.0.9",
     "@types/seedrandom": "^3.0.4",
-    "@types/socket.io-client": "^1.4.36",
     "@types/validator": "^13.7.11",
     "cross-env": "^7.0.3",
     "eslint": "^8.33.0",

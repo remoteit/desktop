@@ -1,4 +1,4 @@
-import io from 'socket.io-client'
+import io, { Socket } from 'socket.io-client'
 import { store } from '../store'
 import { isPortal } from '../services/Browser'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
@@ -6,7 +6,7 @@ import { EventEmitter } from 'events'
 import network from '../services/Network'
 
 class Controller extends EventEmitter {
-  private socket?: SocketIOClient.Socket
+  private socket?: Socket
   private retrying?: NodeJS.Timeout
   private credentials?: UserCredentials
   private url: string = '/'
