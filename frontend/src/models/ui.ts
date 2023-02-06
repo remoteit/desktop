@@ -1,12 +1,11 @@
 import { emit } from '../services/Controller'
-import { Theme } from '@mui/material'
 import { RootModel } from '.'
+import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { getActiveAccountId } from '../selectors/accounts'
-import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -28,7 +27,6 @@ const SAVED_STATES = [
 ]
 
 export type UIState = {
-  theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
   testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
@@ -87,7 +85,6 @@ export type UIState = {
 }
 
 export const defaultState: UIState = {
-  theme: selectTheme(),
   themeMode: 'system',
   themeDark: isDarkMode(),
   testUI: undefined,
@@ -202,7 +199,7 @@ export default createModel<RootModel>()({
     async setTheme(themeMode: UIState['themeMode'] | undefined, state) {
       themeMode = themeMode || state.ui.themeMode
       dispatch.ui.setPersistent({ themeMode })
-      dispatch.ui.set({ theme: selectTheme(themeMode), themeDark: isDarkMode(themeMode) })
+      dispatch.ui.set({ themeDark: isDarkMode(themeMode) })
     },
     async resizeColumn(params: { id: string; width: number }, state) {
       const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }
