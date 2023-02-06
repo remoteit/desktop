@@ -110,7 +110,7 @@ class LAN {
 
     for (let i = 0; i < json.length; i++) {
       item = json[i]
-      next = json[i + 1] || {}
+      next = json[i + 1] || { host: '', name: '', port: 0, protocol: '' }
 
       ports.push([item.port, item.name])
 

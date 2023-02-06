@@ -13,7 +13,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2017",
+    "target": "ESNext",
     "isolatedModules": true,
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
