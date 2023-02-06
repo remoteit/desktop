@@ -78,7 +78,7 @@ class Server {
         Logger.info('HTTPS SERVER STARTED', { port: SSL_PORT, directory: WEB_DIR })
       })
 
-    this.io = SocketIO()
+    this.io = new SocketIO.Server()
     this.io.attach(server)
     this.io.attach(secureServer)
 
