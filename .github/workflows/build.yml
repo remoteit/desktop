@@ -28,7 +28,8 @@ jobs:
       - name: Authenticate with fontawsome NPM repo
         run: |
           echo "pwd = ${PWD}"
-          echo "\n//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
+          echo -e "\n//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
+          echo "Contents of ./frontend/.npmrc"
           cat ./frontend/.npmrc
       
       - name: Build/release Electron app
