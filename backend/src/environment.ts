@@ -190,6 +190,7 @@ export class Environment {
 
   toJSON() {
     return {
+      arch: os.arch(),
       isPiZero: this.isPiZero,
       isPi: this.isPi,
       isWindows: this.isWindows,
