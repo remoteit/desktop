@@ -57,8 +57,7 @@ export class Environment {
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
-      this.binPath = this.isWindows32 ? PATHS.WIN_BINARIES_32 : PATHS.WIN_BINARIES
-      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : this.binPath
+      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : PATHS.WIN_BINARIES
       this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
