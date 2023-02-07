@@ -27,10 +27,9 @@ exports.default = async function sign(configuration) {
     const moveFile = `mv "${tempFile}" "${dir}"`
 
     console.log('Sign file\n', configuration.path)
-    execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR }})
-    console.log('Move file\n', moveFile)
+    execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
+    // console.log('Move file\n', moveFile)
     execSync(moveFile)
-
   } else {
     // Missing data
     console.warn(`Can't sign file ${configuration.path}, missing .env data:
