@@ -25,10 +25,10 @@ if [ "$(uname)" = "Darwin" ]; then
 
     #Mac arm
     mkdir -pm 777 ./bin/arm64
-    curl -L https://${URL_CLI}${CLI}/remoteit.x86_64-osx --output ./bin/arm64/remoteit
-    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-osx --output ./bin/arm64/connectd
-    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-osx --output ./bin/arm64/demuxer
-    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-osx --output ./bin/arm64/muxer
+    curl -L https://${URL_CLI}${CLI}/remoteit.aarch64-osx --output ./bin/arm64/remoteit
+    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.aarch64-osx --output ./bin/arm64/connectd
+    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.aarch64-osx --output ./bin/arm64/demuxer
+    curl -L https://${URL_MUXER}${MUXER}/muxer.aarch64-osx --output ./bin/arm64/muxer
 
 
 elif [ "$(uname)" = "Linux" ]; then
