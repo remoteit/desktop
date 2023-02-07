@@ -319,6 +319,7 @@ export default createModel<RootModel>()({
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       if (index === -1) return
+      device = structuredClone(device)
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
       dispatch.accounts.setDevice({ id: device.id, device })
