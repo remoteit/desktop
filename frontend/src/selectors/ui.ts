@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { getDefaultSelected, getThemeMode } from './state'
+import { getDefaultSelected, getThemeDark } from './state'
 import { getActiveAccountId } from './accounts'
 import { getTheme } from '../styling/theme'
 
@@ -8,4 +8,4 @@ export const selectDefaultSelected = createSelector(
   (activeAccountId, defaultSelected) => defaultSelected[activeAccountId] || {}
 )
 
-export const selectTheme = createSelector([getThemeMode], theme => getTheme(theme))
+export const selectTheme = createSelector([getThemeDark], darkTheme => getTheme(darkTheme))
