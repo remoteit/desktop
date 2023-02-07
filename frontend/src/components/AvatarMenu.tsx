@@ -1,7 +1,8 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
-import { ButtonBase, Divider, Menu } from '@mui/material'
+import { HIDE_SIDEBAR_WIDTH } from '../shared/constants'
+import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -13,7 +14,7 @@ import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
-const ENTER_DELAY = 100
+const ENTER_DELAY = 0
 const LEAVE_DELAY = 200
 const AVATAR_SIZE = 40
 
@@ -25,6 +26,7 @@ export const AvatarMenu: React.FC = () => {
   const enterTimer = React.useRef<number>()
   const leaveTimer = React.useRef<number>()
   const dispatch = useDispatch<Dispatch>()
+  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
@@ -45,6 +47,7 @@ export const AvatarMenu: React.FC = () => {
   const handleEnter = event => {
     clearTimeout(enterTimer.current)
     clearTimeout(leaveTimer.current)
+    if (sidebarHidden) return
     enterTimer.current = window.setTimeout(() => handleOpen(event), ENTER_DELAY)
   }
   const handleLeave = () => {
