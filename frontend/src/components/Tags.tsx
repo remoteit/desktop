@@ -19,8 +19,8 @@ export const Tags: React.FC<Props> = ({ tags, small, showEmpty, hideLabels, onCl
   const count = useSelector((state: ApplicationState) => Math.floor(state.ui.columnWidths.tags / AVERAGE_TAG_WIDTH))
   const dot = tags.length > count && small
 
-  const Tags = tags
-    .sort(nameSort)
+  const Tags = [...tags]
+    .sort(colorSort)
     .map((tag, index) => (
       <Tag
         key={index}
@@ -42,7 +42,7 @@ export const Tags: React.FC<Props> = ({ tags, small, showEmpty, hideLabels, onCl
   return <Box {...props}>{dot ? <Chip size="small" label={Tags} /> : Tags}</Box>
 }
 
-function nameSort(a: ITag, b: ITag) {
+function colorSort(a: ITag, b: ITag) {
   return a.color < b.color ? -1 : 1
   // return a.name.localeCompare(b.name)
 }

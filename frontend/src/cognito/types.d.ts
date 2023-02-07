@@ -52,7 +52,13 @@ export type TOTPChallenge = 'SOFTWARE_TOKEN_MFA'
 
 export type SMSChallenge = 'SMS_MFA'
 
-export type ChallengeOption = TOTPChallenge | 'CUSTOM_CHALLENGE' | SMSChallenge | 'NEW_PASSWORD_REQUIRED' | 'MFA_SETUP'
+export type ChallengeOption =
+  | TOTPChallenge
+  | 'CUSTOM_CHALLENGE'
+  | SMSChallenge
+  | 'NEW_PASSWORD_REQUIRED'
+  | 'MFA_SETUP'
+  | 'SELECT_MFA_TYPE'
 
 export type SignInFunc = (username: string, password?: string) => Promise<ChallengeOption | undefined>
 

@@ -3,6 +3,7 @@ name: Build/release
 on: workflow_dispatch
 
 env:
+  CI: ""
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
   
 jobs:
@@ -12,7 +13,7 @@ jobs:
     strategy:
       matrix:
 #         os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
 
     steps:
       - name: Check out Git repository

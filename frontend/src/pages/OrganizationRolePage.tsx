@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
-import cloneDeep from 'lodash/cloneDeep'
 import { makeStyles } from '@mui/styles'
 import { getActiveAccountId } from '../selectors/accounts'
 import { useParams, useHistory } from 'react-router-dom'
@@ -43,8 +42,8 @@ export const OrganizationRolePage: React.FC = () => {
     roles: selectOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
   }))
-  const role = roles?.find(r => r.id === roleID) || cloneDeep(DEFAULT_ROLE)
-  const [form, setForm] = useState<IOrganizationRole>(cloneDeep(role))
+  const role = roles?.find(r => r.id === roleID) || structuredClone(DEFAULT_ROLE)
+  const [form, setForm] = useState<IOrganizationRole>(structuredClone(role))
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
@@ -60,7 +59,7 @@ export const OrganizationRolePage: React.FC = () => {
   }
 
   useEffect(() => {
-    changeForm(cloneDeep(role))
+    changeForm(structuredClone(role))
   }, [roleID])
 
   return (
@@ -133,7 +132,7 @@ export const OrganizationRolePage: React.FC = () => {
             onChange={event => {
               let tag: ITagFilter | undefined
               const access = event.target.value as IRoleAccess
-              if (access === 'TAG') tag = cloneDeep(DEFAULT_ROLE.tag)
+              if (access === 'TAG') tag = structuredClone(DEFAULT_ROLE.tag)
               changeForm({ ...form, access, tag })
             }}
           >
@@ -151,7 +150,7 @@ export const OrganizationRolePage: React.FC = () => {
             <Tags
               tags={filteredTags}
               onDelete={({ name }) => {
-                let tag = cloneDeep(form.tag || DEFAULT_ROLE.tag) as ITagFilter
+                let tag = structuredClone(form.tag || DEFAULT_ROLE.tag) as ITagFilter
                 if (!tag.values) return
                 const index = tag.values.indexOf(name)
                 tag.values.splice(index, 1)
@@ -220,7 +219,7 @@ export const OrganizationRolePage: React.FC = () => {
               if (!form.tag && form.access === 'TAG') form.access = 'NONE'
               await dispatch.organization.setRole(form)
               setSaving(false)
-              setForm(cloneDeep(form))
+              setForm(structuredClone(form))
             }}
           >
             {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}

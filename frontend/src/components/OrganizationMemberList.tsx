@@ -10,7 +10,7 @@ type Props = { organization?: IOrganizationState; owner?: IOrganizationMember; e
 
 export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, enterprise }) => {
   const licenses = useSelector((state: ApplicationState) => getFreeLicenses(state))
-
+  const members = organization?.members ? [...organization.members].sort(alphaEmailSort) : []
   return (
     <List>
       {owner && (
@@ -23,18 +23,15 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, e
           enterprise={enterprise}
         />
       )}
-      {organization?.members &&
-        organization.members
-          .sort(alphaEmailSort)
-          .map(member => (
-            <OrganizationMember
-              key={member.user.id}
-              member={member}
-              roles={organization?.roles}
-              disabled={!licenses && member.license !== 'LICENSED'}
-              enterprise={enterprise}
-            />
-          ))}
+      {members.map(member => (
+        <OrganizationMember
+          key={member.user.id}
+          member={member}
+          roles={organization?.roles}
+          disabled={!licenses && member.license !== 'LICENSED'}
+          enterprise={enterprise}
+        />
+      ))}
     </List>
   )
 }

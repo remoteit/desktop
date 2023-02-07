@@ -220,9 +220,9 @@ class CloudController {
             platform: t.platform,
             deviceId: t.device.id,
             deviceCreated: new Date(t.device.created),
-            connection,
-            service,
-            device,
+            connection: structuredClone(connection),
+            service: structuredClone(service),
+            device: structuredClone(device),
           }
         }),
       }

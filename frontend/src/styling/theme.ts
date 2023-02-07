@@ -637,10 +637,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   }
 }
 
-export function selectTheme(themeMode?: ApplicationState['ui']['themeMode']) {
-  const darkMode = isDarkMode(themeMode)
-  console.log('SELECT THEME. DARK MODE:', darkMode)
-  const theme = createTheme(jssTheme(darkMode))
+export function getTheme(isDark: boolean) {
+  console.log('SELECT THEME. DARK MODE:', isDark)
+  const theme = createTheme(jssTheme(isDark))
   return theme
 }
 

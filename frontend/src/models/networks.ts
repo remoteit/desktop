@@ -303,7 +303,7 @@ export default createModel<RootModel>()({
       const id = getActiveAccountId(state)
       if (params.id === DEFAULT_ID) return
 
-      let networks: INetwork[] = state.networks.all[id] || []
+      let networks: INetwork[] = [...(state.networks.all[id] || [])]
       const index = networks.findIndex(network => network.id === params.id)
 
       if (index >= 0) {
@@ -332,9 +332,9 @@ export default createModel<RootModel>()({
 
 export function defaultNetwork(state?: ApplicationState): INetwork {
   if (state) {
-    state.networks.default.owner = getActiveUser(state)
-    state.networks.default.accountId = getActiveAccountId(state)
-    return state.networks.default
+    const owner = getActiveUser(state)
+    const accountId = getActiveAccountId(state)
+    return { ...state.networks.default, owner, accountId }
   }
   return DEFAULT_NETWORK
 }

@@ -95,7 +95,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           if (reason === 'input') setQuery(newQuery)
           if (reason === 'clear') clear()
         }}
-        getOptionLabel={option => option.serviceName}
+        getOptionLabel={option => option.serviceName || option}
         isOptionEqualToValue={(option, value) => option.serviceId === value.serviceId}
         filterOptions={createFilterOptions({ stringify: option => option.combinedName })}
         clearIcon={
@@ -109,7 +109,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             {...params}
             autoFocus
             hiddenLabel
-            placeholder="Search by device or service name"
+            placeholder="Search device or service name"
             variant="filled"
             inputRef={inputRef}
             className={css.input}

@@ -14,7 +14,7 @@ export const TargetPlatform: React.FC<{
   const icon = <Icon size={size} inlineLeft={inlineLeft || !!label} platform={id} platformIcon />
   const platform = platforms.type(id)
   const typeName = platform.types?.[id] || platform.name
-  console.log('platform', platform)
+
   if (tooltip)
     return (
       <Tooltip title={typeName} placement="top" arrow>

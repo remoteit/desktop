@@ -155,7 +155,7 @@ export default createModel<RootModel>()({
 })
 
 export function selectAllSearch(state: ApplicationState): ISearch[] {
-  const { search } = state.search
+  const search = structuredClone(state.search.search)
   const sorted = search.sort((a, b) => {
     if (a.nodeName.toLowerCase() > b.nodeName.toLowerCase()) return 1
     if (a.nodeName.toLowerCase() < b.nodeName.toLowerCase()) return -1

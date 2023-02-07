@@ -40,10 +40,10 @@ export default createModel<RootModel>()({
           name: user?.email,
           email: user?.email,
         })
-        dispatch.ui.set({ successMessage: snackbar || 'Thank you. Your feedback was sent!' })
+        dispatch.ui.set({ successMessage: snackbar || 'Thank you. Your message was sent!' })
         dispatch.feedback.reset()
       } catch (error) {
-        dispatch.ui.set({ errorMessage: 'Sending feedback encountered an error. Please try again.' })
+        dispatch.ui.set({ errorMessage: 'Sending message encountered an error. Please try again.' })
         await apiError(error)
       }
     },

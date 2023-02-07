@@ -47,7 +47,7 @@ export const App: React.FC = () => {
   if (!authInitialized)
     return (
       <Page>
-        <LoadingMessage message="Loading..." logo />
+        <LoadingMessage logo />
       </Page>
     )
 

@@ -32,7 +32,7 @@ export function MFACode({
   const { t } = useTranslation()
   const [localCognitoUser, setAuthUser] = useState<CognitoUser | undefined>(cognitoUser)
   const [code, setCode] = useState<string>('')
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
@@ -58,9 +58,9 @@ export function MFACode({
         }
 
         onSignInSuccess(authUser)
-      } catch (error) {
-        console.error('verificationError', error)
-        setError(error.message)
+      } catch (e) {
+        console.error('verificationError', e)
+        setError(e.message)
       }
     } else {
       try {
@@ -74,9 +74,9 @@ export function MFACode({
             onSignInSuccess(localCognitoUser)
           }
         }
-      } catch (error) {
-        console.error('verificationError', error)
-        setError(t(`pages.auth-mfa.errors.${error.code}`))
+      } catch (e) {
+        console.error('verificationError', e)
+        setError(t(`pages.auth-mfa.errors.${e.code}`))
       }
     }
 
