@@ -28,16 +28,18 @@ export const OrganizationRolesPage: React.FC = () => {
       gutterBottom
       header={
         <Gutters top="sm" size="lg">
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h2">
-              <Title>Roles</Title>
-            </Typography>
-            <Chip
-              label={name}
-              size="small"
-              icon={<Icon name="chevron-left" size="xxs" type="solid" color="grayDark" fixedWidth />}
+          <Box display="flex" alignItems="center">
+            <IconButton
+              icon="chevron-left"
+              size="md"
               onClick={() => history.push('/organization')}
+              fixedWidth={false}
+              inlineLeft
             />
+            <Title>
+              <Typography variant="h2">Roles</Typography>
+            </Title>
+            <Chip label={name} size="small" />
           </Box>
         </Gutters>
       }

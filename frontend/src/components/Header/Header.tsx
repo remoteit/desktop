@@ -32,7 +32,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
     }
   })
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
@@ -41,7 +41,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
     <>
       <Breadcrumbs show={breadcrumbs} />
       <div className={css.header}>
-        {hideSidebar && (
+        {sidebarHidden && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
         {!(showSearch || searched) && isElectron() && (

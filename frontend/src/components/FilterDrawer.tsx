@@ -15,6 +15,11 @@ import { Drawer } from './Drawer'
 const sortFilters = [
   { value: 'name', name: 'Name' },
   { value: 'state,name', name: 'Status' },
+  { value: 'platform,name', name: 'Platform' },
+  { value: 'created,state,name', name: 'Created Date' },
+  { value: 'lastReported,name', name: 'Last Reported Date' },
+  { value: 'owner.email,name', name: 'Owner' },
+  { value: 'endpoint.quality,name', name: 'Quality' },
   // { value: 'attributes.$remoteit.color,name', name: 'Color' },
 ]
 const deviceFilters = [
@@ -66,7 +71,7 @@ export const FilterDrawer: React.FC = () => {
   const onOwner = value => update({ owner: value })
 
   const onPlatform = value => {
-    let result = Array.isArray(state.platform) ? state.platform : undefined
+    let result = Array.isArray(state.platform) ? [...state.platform] : undefined
     const index = result && result.indexOf(value)
 
     if (index !== undefined && index >= 0) result?.splice(index, 1)
@@ -87,7 +92,7 @@ export const FilterDrawer: React.FC = () => {
             onClear: defaultState.sort === state.sort ? undefined : () => update({ sort: defaultState.sort }),
             children: (
               <FilterSelector
-                icon={state.sort.substring(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
+                icon={state.sort.substring(0, 1) === '-' ? 'sort-amount-down' : 'sort-amount-up'}
                 value={state.sort}
                 onSelect={onSort}
                 filterList={sortFilters}

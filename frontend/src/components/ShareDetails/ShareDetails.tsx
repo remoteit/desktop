@@ -9,10 +9,9 @@ import { Icon } from '../Icon'
 type Props = {
   user: IUser
   device?: IDevice
-  connected?: boolean
 }
 
-export const ShareDetails: React.FC<Props> = ({ user, device, connected }) => {
+export const ShareDetails: React.FC<Props> = ({ user, device }) => {
   const css = useStyles()
 
   if (!device) return null

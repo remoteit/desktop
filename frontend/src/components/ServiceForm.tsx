@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
-import cloneDeep from 'lodash/cloneDeep'
 import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH, DEFAULT_CONNECTION } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { useURLForm } from '../hooks/useURLForm'
@@ -56,7 +55,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const initForm = () => {
     setError(undefined)
     const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
-    console.log('init form')
     return {
       ...DEFAULT_SERVICE,
       id: service?.id || '',
@@ -88,7 +86,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     const newForm = initForm()
     setForm(newForm)
     setUrlField(newForm)
-    if (!adding) setDefaultForm(cloneDeep(newForm))
+    if (!adding) setDefaultForm(structuredClone(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
   }, [service])
 

@@ -62,7 +62,9 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   }, [deviceID, serviceID, waiting, thisId, instance])
 
   return (
-    <DeviceContext.Provider value={{ user, service, connection, network, device, connections, instance, waiting }}>
+    <DeviceContext.Provider
+      value={{ user, service, connection, network, device: structuredClone(device), connections, instance, waiting }}
+    >
       {children}
     </DeviceContext.Provider>
   )

@@ -52,7 +52,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             key="link"
             icon="link"
             title="Service Link"
-            value={`${PROTOCOL}device/${device.id}/${service.id}`}
+            value={`${PROTOCOL}devices/${device.id}/${service.id}`}
           />
         ) : (
           devicePage && (

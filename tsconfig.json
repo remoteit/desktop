@@ -9,7 +9,7 @@
     "useUnknownInCatchVariables": false,
     "isolatedModules": true,
     "lib": ["esnext"],
-    "module": "commonjs",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "./build",
     "resolveJsonModule": true,

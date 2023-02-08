@@ -18,7 +18,7 @@ import { Icon } from '../components/Icon'
 export const NetworksPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { initialized, networks, shared, permissions, loading } = useSelector((state: ApplicationState) => {
-    const networks = selectNetworks(state).sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
+    const networks = [...selectNetworks(state)].sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
     const deviceModel = getDeviceModel(state)
     return {
       initialized: state.networks.initialized,

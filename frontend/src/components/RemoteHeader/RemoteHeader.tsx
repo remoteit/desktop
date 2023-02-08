@@ -45,7 +45,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
           <span className={css.icon}>
             <TargetPlatform id={device?.targetPlatform} size="lg" tooltip />
           </span>
-          <Logo width={80} margin="auto" white />
+          <Logo width={80} margin="auto" color="white" />
         </div>
       )}
       <div className={pageCss}>{children}</div>

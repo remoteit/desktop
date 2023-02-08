@@ -27,7 +27,7 @@ type IShareState = {
   currentDevice?: CurrentDevice
 }
 
-const state: IShareState = {
+const defaultState: IShareState = {
   deleting: false,
   updating: false,
   sharing: false,
@@ -35,11 +35,11 @@ const state: IShareState = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
-    async fetch(data: { email?: string; serviceId: string; device?: IDevice }, globalState) {
+    async fetch(data: { email?: string; serviceId: string; device?: IDevice }, state) {
       const { set } = dispatch.shares
-      const user = globalState.contacts.all.find(c => c.email === data.email)
+      const user = state.contacts.all.find(c => c.email === data.email)
       const permissions = data.device && getAccess(data.device, data.email)
 
       set({
@@ -68,10 +68,10 @@ export default createModel<RootModel>()({
       set({ deleting: false })
     },
 
-    async share(data: IShareProps, globalState) {
+    async share(data: IShareProps, state) {
       const { set } = dispatch.shares
       set({ sharing: true })
-      const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
+      const device = getDevices(state).find((d: IDevice) => d.id === data.deviceId)
       const result = await graphQLShareDevice(data)
       if (result !== 'ERROR') {
         await dispatch.devices.fetchSingle({ id: data.deviceId })
@@ -86,8 +86,7 @@ export default createModel<RootModel>()({
       set({ sharing: false })
     },
 
-    async changeScript(script: boolean, globalState) {
-      const state = globalState
+    async setScript(script: boolean, state) {
       const { set } = dispatch.shares
       set({
         currentDevice: {
@@ -97,8 +96,7 @@ export default createModel<RootModel>()({
       })
     },
 
-    async changeServices(selectedServices: string[], globalState) {
-      const state = globalState
+    async setSelectedServices(selectedServices: string[], state) {
       const { set } = dispatch.shares
       set({
         currentDevice: {
@@ -108,45 +106,45 @@ export default createModel<RootModel>()({
       })
     },
 
-    async changeIndeterminate(indeterminate: string[], globalState) {
+    async changeIndeterminate(indeterminate: string[], state) {
       const { set } = dispatch.shares
       set({
         currentDevice: {
-          ...globalState.shares.currentDevice,
+          ...state.shares.currentDevice,
           indeterminate,
         },
       })
     },
 
-    async selectAllServices(_: void, globalState) {
+    async selectAllServices(_: void, state) {
       const { set } = dispatch.shares
       set({
         currentDevice: {
-          ...globalState.shares.currentDevice,
+          ...state.shares.currentDevice,
           indeterminate: [],
         },
       })
     },
 
-    async changeScriptIndeterminate(scriptIndeterminate: boolean, globalState) {
+    async changeScriptIndeterminate(scriptIndeterminate: boolean, state) {
       const { set } = dispatch.shares
       set({
         currentDevice: {
-          ...globalState.shares.currentDevice,
+          ...state.shares.currentDevice,
           scriptIndeterminate,
         },
       })
     },
 
-    async selectContacts(emails: string[], globalState) {
+    async selectContacts(emails: string[], state) {
       const { set } = dispatch.shares
-      if (!globalState.shares.currentDevice) return
+      if (!state.shares.currentDevice) return
 
       let intersection: string[] = []
 
-      const currentDevice = globalState.shares.currentDevice
+      const currentDevice = state.shares.currentDevice
       const { device, serviceId } = currentDevice
-      const contacts = globalState.contacts.all
+      const contacts = state.contacts.all
 
       let userSelectedServices: string[][] = emails.map(email => {
         return device ? getAccess(device, email, true).services.map(s => s.id) : []

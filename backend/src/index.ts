@@ -1,5 +1,5 @@
-require('dotenv').config()
-require('win-ca')
+import 'win-ca'
+import * as dotenv from 'dotenv'
 import debug from 'debug'
 import AirBrake from './AirBrake'
 import environment from './environment'
@@ -19,6 +19,7 @@ import { WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 
+dotenv.config()
 Logger.info('ENVIRONMENT', environment.toJSON())
 
 process

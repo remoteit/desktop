@@ -17,7 +17,7 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
   const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
-  const [error, setError] = useState<Error | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [shortcode, setShortcode] = useState<string>('')
   const [password, setPassword] = useState<string>('')
@@ -50,10 +50,10 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
         },
       })
       return
-    } catch (error) {
-      console.error(error)
-      if (error.code) setError(t(`pages.auth-mfa.errors.${error.code}`))
-      else setError(error.message)
+    } catch (e) {
+      console.error(e)
+      if (e.code) setError(t(`pages.auth-mfa.errors.${e.code}`))
+      else setError(e.message)
     }
 
     setLoading(false)
@@ -81,7 +81,7 @@ export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: Pas
         )}
         {error && (
           <Notice severity="error" fullWidth gutterBottom>
-            {error.message}
+            {error}
           </Notice>
         )}
         <Box mt={4}>

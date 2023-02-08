@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
-import cloneDeep from 'lodash/cloneDeep'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '../shared/constants'
 import { List, Button } from '@mui/material'
 import { ApplicationState } from '../store'
@@ -51,7 +50,7 @@ export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, di
   useEffect(() => {
     const newForm = initForm()
     setForm(newForm)
-    setDefaultForm(cloneDeep(newForm))
+    setDefaultForm(structuredClone(newForm))
   }, [service])
 
   if (!form) return null

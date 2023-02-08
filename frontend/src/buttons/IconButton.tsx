@@ -53,6 +53,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       submit,
       hide,
       placement = 'top',
+      fixedWidth = true,
       onMouseEnter,
       onMouseLeave,
       onMouseDown,
@@ -100,7 +101,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
           spin={spin}
           color={variant === 'contained' ? undefined : color}
           inlineLeft={iconInlineLeft}
-          fixedWidth
+          fixedWidth={fixedWidth}
         />
         {children}
       </MuiIconButton>

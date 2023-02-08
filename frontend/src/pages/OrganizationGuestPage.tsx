@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getDevices } from '../selectors/devices'
+import { getAllDevices } from '../selectors/devices'
 import { REGEX_LAST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
@@ -30,6 +30,7 @@ export const OrganizationGuestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { userID = '' } = useParams<{ userID: string }>()
   const [removing, setRemoving] = useState<boolean>(false)
+  const [fetched, setFetched] = useState<boolean>(false)
   const { devices, member, accessible, networks, freeLicenses, organization, guest, guestsLoaded, license } =
     useSelector((state: ApplicationState) => {
       const organization = selectOrganization(state)
@@ -41,7 +42,7 @@ export const OrganizationGuestPage: React.FC = () => {
         organization,
         freeLicenses: getFreeLicenses(state),
         license: selectRemoteitLicense(state),
-        devices: getDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
+        devices: getAllDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
         accessible: selectAccessibleNetworks(state, organization, member),
         networks: selectNetworks(state),
         guestsLoaded: organization.guestsLoaded,
@@ -54,12 +55,15 @@ export const OrganizationGuestPage: React.FC = () => {
 
   useEffect(() => {
     if (!user) history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
-  }, [user])
-
-  useEffect(() => {
+    setFetched(false)
     const missing = guest?.deviceIds.filter(id => !devices.find(device => device.id === id))
-    if (missing?.length) dispatch.devices.fetchDevices(missing)
-  }, [devices])
+    if (missing?.length && !fetched) {
+      ;(async () => {
+        await dispatch.devices.fetchDevices(missing)
+        setFetched(true)
+      })()
+    }
+  }, [user])
 
   useEffect(() => {
     if (!guestsLoaded) dispatch.organization.fetchGuests()
@@ -161,15 +165,23 @@ export const OrganizationGuestPage: React.FC = () => {
               return (
                 <ListItemLocation
                   key={id}
-                  pathname={`${location.pathname}/${id}`}
+                  pathname={`/devices/${id}/users/${user?.id || userID}`}
                   icon={
                     device ? (
                       <TargetPlatform id={device?.targetPlatform} size="md" />
+                    ) : fetched ? (
+                      <Icon name="exclamation-triangle" />
                     ) : (
                       <Icon name="spinner-third" spin />
                     )
                   }
-                  title={device ? device.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
+                  title={
+                    device ? (
+                      device.name
+                    ) : (
+                      <Box sx={{ opacity: 0.4 }}>{fetched ? `Loading failed (${id})` : 'loading...'}</Box>
+                    )
+                  }
                 >
                   <ShareDetails user={guest} device={device} />
                 </ListItemLocation>

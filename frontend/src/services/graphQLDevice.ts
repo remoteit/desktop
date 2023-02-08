@@ -178,7 +178,7 @@ export async function graphQLFetchDeviceList({
 
 export async function graphQLPreloadDevices(params: { account: string; ids: string[] }) {
   return await graphQLRequest(
-    ` query DevicePreload($ids: [String!]!) {
+    ` query DevicePreload($ids: [String!]!, $account: String) {
         login {
           id
           account(id: $account) {

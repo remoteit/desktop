@@ -12,7 +12,7 @@ import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
   const { selected, feature } = useSelector((state: ApplicationState) => ({
-    selected: state.ui.columns,
+    selected: [...state.ui.columns],
     feature: selectLimitsLookup(state),
   }))
   const { ui, devices } = useDispatch<Dispatch>()

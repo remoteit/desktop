@@ -58,6 +58,7 @@ export const ListItemLocation: React.FC<Props> = ({
     props.onClick?.()
     if (!disabled && pathname) history.push(pathname)
   }
+
   const iconEl =
     icon && typeof icon === 'string' ? (
       <Icon
@@ -72,19 +73,8 @@ export const ListItemLocation: React.FC<Props> = ({
       icon
     )
 
-  const Item = menuItem ? MenuItem : ListItem
-
-  return (
-    <Item
-      {...props}
-      button
-      href=""
-      className={classnames(css.root, className)}
-      selected={!!matches}
-      onClick={onClick}
-      disabled={disabled}
-      style={showDisabled ? undefined : { opacity: 1 }}
-    >
+  const Contents = (
+    <>
       {icon && (
         <ListItemIcon>
           {badge ? (
@@ -98,7 +88,24 @@ export const ListItemLocation: React.FC<Props> = ({
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
       {children}
-    </Item>
+    </>
+  )
+
+  const ItemProps = {
+    ...props,
+    onClick,
+    disabled,
+    className: classnames(css.root, className),
+    selected: !!matches,
+    style: showDisabled ? undefined : { opacity: 1 },
+  }
+
+  return menuItem ? (
+    <MenuItem {...ItemProps}>{Contents}</MenuItem>
+  ) : (
+    <ListItem {...ItemProps} button>
+      {Contents}
+    </ListItem>
   )
 }
 
