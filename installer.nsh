@@ -7,16 +7,6 @@
 !macro customInit
     Var /GLOBAL path_i
 
-    ${If} ${RunningX64}
-        StrCpy $path_i '$INSTDIR\resources\x64'
-    ${Else}
-        StrCpy $path_i '$INSTDIR\resources\x86'
-    ${EndIf}
-
-    ; stop the agent
-    MessageBox MB_OK "Please wait while we stop the remote.it system services for installation"
-    nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent uninstall'
-
     ; create backup directory if doesn't exist
     CreateDirectory "${REMOTEIT_BACKUP}"
 
@@ -33,8 +23,9 @@
 
 !macro customInstall
     Var /GLOBAL ps_command
-    Var /GLOBAL path_
+    Var /GLOBAL install_path
     Var /GLOBAL installLog
+    Var /GLOBAL platform
 
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
 
@@ -49,29 +40,41 @@
     FileWrite $installLog "$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
     
-    ${If} ${RunningX64}
-        FileWrite $installLog "- Platform X64$\r$\n"
-        StrCpy $path_ '$INSTDIR\resources\x64'
+    ; Find the platform
+    System::Call 'kernel32::GetSystemInfo(i0)'
+    System::Call 'kernel32::GetNativeSystemInfo(i0)'
+    System::Call 'kernel32::GetSystemInfo(i.r1)'
+    System::Call 'kernel32::GetNativeSystemInfo(i.r2)'
+    ${If} $1 == 9
+        ; ARM64
+        FileWrite $installLog "- Platform x86 or arm64$\r$\n"
+        StrCpy $install_path '$INSTDIR\resources\arm64'
+    ${ElseIf} $1 == 0
+        ; x86 / ia32
+        FileWrite $installLog "- Platform x86 or ia32$\r$\n"
+        StrCpy $install_path '$INSTDIR\resources\ia32'
     ${Else}
-        FileWrite $installLog "- Platform X86$\r$\n"
-        StrCpy $path_ '$INSTDIR\resources\x86'
+        ; x64 $1 == 5 or Unknown
+        FileWrite $installLog "- Platform X64$\r$\n"
+        StrCpy $install_path '$INSTDIR\resources\x64'
     ${EndIf}
 
     ; Add to PATH
-    StrCpy $ps_command 'powershell [Environment]::SetEnvironmentVariable("$\'"Path$\'",[Environment]::GetEnvironmentVariable("$\'"Path$\'", [EnvironmentVariableTarget]::"$\'"Machine$\'") + "$\'";$path_$\'",[EnvironmentVariableTarget]::"$\'"Machine$\'")'
+    StrCpy $ps_command 'powershell [Environment]::SetEnvironmentVariable("$\'"Path$\'",[Environment]::GetEnvironmentVariable("$\'"Path$\'", [EnvironmentVariableTarget]::"$\'"Machine$\'") + "$\'";$install_path$\'",[EnvironmentVariableTarget]::"$\'"Machine$\'")'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
     ; removes agent
-    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
+    StrCpy $ps_command 'powershell "& " "$\'"$install_path\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
+    ; install agent
+    StrCpy $ps_command 'powershell "& " "$\'"$install_path\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
@@ -85,7 +88,7 @@
     Var /GLOBAL get_uid
     Var /GLOBAL ps_command_uninstall
     Var /GLOBAL uninstallLog
-    Var /GLOBAL path_u
+    Var /GLOBAL uninstall_path
 
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
@@ -96,13 +99,24 @@
         FileOpen $uninstallLog "$TEMP\remoteit.log" w
     end_of_test_u:
 
-    ${If} ${RunningX64}
-        FileWrite $uninstallLog "Platform X64$\r$\n"
-        StrCpy $path_u '$INSTDIR\resources\x64'
+    ; Find the platform and assign uninstall path
+    System::Call 'kernel32::GetSystemInfo(i0)'
+    System::Call 'kernel32::GetNativeSystemInfo(i0)'
+    System::Call 'kernel32::GetSystemInfo(i.r1)'
+    System::Call 'kernel32::GetNativeSystemInfo(i.r2)'
+    ${If} $1 == 9
+        ; ARM64
+        FileWrite $installLog "- Platform x86 or arm64$\r$\n"
+        StrCpy $uninstall_path '$INSTDIR\resources\arm64'
+    ${ElseIf} $1 == 0
+        ; x86 / ia32
+        FileWrite $installLog "- Platform x86 or ia32$\r$\n"
+        StrCpy $uninstall_path '$INSTDIR\resources\ia32'
     ${Else}
-        FileWrite $uninstallLog "Platform X86$\r$\n"
-        StrCpy $path_u '$INSTDIR\resources\x86'
-    ${EndIf} 
+        ; x64 $1 == 5 or Unknown
+        FileWrite $installLog "- Platform X64$\r$\n"
+        StrCpy $uninstall_path '$INSTDIR\resources\x64'
+    ${EndIf}
 
     ; detects auto-update
     ${GetParameters} $R0
@@ -133,14 +147,14 @@
                         true:
                             FileWrite $uninstallLog "...unregister your device: YES$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$uninstall_path\remoteit.exe$\'" -j unregister --yes'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
 
                             ; Waits for unregister to complete
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j --skipCloud status'
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$uninstall_path\remoteit.exe$\'" -j --skipCloud status'
 
                             MessageBox MB_OK "Your device was unregistered!"
 
@@ -165,7 +179,7 @@
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
-            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent uninstall'
+            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$uninstall_path\remoteit.exe$\'" -j agent uninstall'
             nsExec::ExecToStack /OEM $ps_command_uninstall 
             Pop $0
             Pop $1      
