@@ -23,7 +23,6 @@
     Var /GLOBAL ps_command
     Var /GLOBAL install_path
     Var /GLOBAL installLog
-    Var /GLOBAL platform
 
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
 
