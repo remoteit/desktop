@@ -106,15 +106,15 @@
     System::Call 'kernel32::GetNativeSystemInfo(i.r2)'
     ${If} $1 == 9
         ; ARM64
-        FileWrite $installLog "- Platform x86 or arm64$\r$\n"
+        FileWrite $uninstallLog "- Platform x86 or arm64$\r$\n"
         StrCpy $uninstall_path '$INSTDIR\resources\arm64'
     ${ElseIf} $1 == 0
         ; x86 / ia32
-        FileWrite $installLog "- Platform x86 or ia32$\r$\n"
+        FileWrite $uninstallLog "- Platform x86 or ia32$\r$\n"
         StrCpy $uninstall_path '$INSTDIR\resources\ia32'
     ${Else}
         ; x64 $1 == 5 or Unknown
-        FileWrite $installLog "- Platform X64$\r$\n"
+        FileWrite $uninstallLog "- Platform X64$\r$\n"
         StrCpy $uninstall_path '$INSTDIR\resources\x64'
     ${EndIf}
 
