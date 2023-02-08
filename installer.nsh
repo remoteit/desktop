@@ -1,5 +1,6 @@
 !include FileFunc.nsh
 !include x64.nsh
+!include WinVer.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 !define PKGVERSION "3.15.0-alpha.1"
@@ -37,23 +38,25 @@
     FileWrite $installLog "$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
     
-    ; Find the platform
-    System::Call 'kernel32::GetSystemInfo(i0)'
-    System::Call 'kernel32::GetNativeSystemInfo(i0)'
-    System::Call 'kernel32::GetSystemInfo(i.r1)'
-    System::Call 'kernel32::GetNativeSystemInfo(i.r2)'
-    ${If} $1 == 9
-        ; ARM64
-        FileWrite $installLog "- Platform x86 or arm64$\r$\n"
-        StrCpy $install_path '$INSTDIR\resources\arm64'
-    ${ElseIf} $1 == 0
+    ; Find the platform and set install path
+    ${If} ${RunningX64}
+        ${If} ${IsNativeAMD64}
+            ; x64
+            FileWrite $installLog "- Platform X64$\r$\n"
+            StrCpy $install_path '$INSTDIR\resources\x64'
+        ${ElseIf} ${IsNativeARM64}
+            ; ARM64
+            FileWrite $installLog "- Platform x86 or arm64$\r$\n"
+            StrCpy $install_path '$INSTDIR\resources\arm64'
+        ${Else}
+            ; Unknown architecture
+            FileWrite $installLog "- Unknown architecture - using Platform X64$\r$\n"
+            StrCpy $install_path '$INSTDIR\resources\x64'
+        ${EndIf}
+    ${Else}
         ; x86 / ia32
         FileWrite $installLog "- Platform x86 or ia32$\r$\n"
         StrCpy $install_path '$INSTDIR\resources\ia32'
-    ${Else}
-        ; x64 $1 == 5 or Unknown
-        FileWrite $installLog "- Platform X64$\r$\n"
-        StrCpy $install_path '$INSTDIR\resources\x64'
     ${EndIf}
 
     ; Add to PATH
@@ -97,22 +100,24 @@
     end_of_test_u:
 
     ; Find the platform and assign uninstall path
-    System::Call 'kernel32::GetSystemInfo(i0)'
-    System::Call 'kernel32::GetNativeSystemInfo(i0)'
-    System::Call 'kernel32::GetSystemInfo(i.r1)'
-    System::Call 'kernel32::GetNativeSystemInfo(i.r2)'
-    ${If} $1 == 9
-        ; ARM64
-        FileWrite $uninstallLog "- Platform x86 or arm64$\r$\n"
-        StrCpy $uninstall_path '$INSTDIR\resources\arm64'
-    ${ElseIf} $1 == 0
+    ${If} ${RunningX64}
+        ${If} ${IsNativeAMD64}
+            ; x64
+            FileWrite $uninstallLog "- Platform X64$\r$\n"
+            StrCpy $uninstall_path '$INSTDIR\resources\x64'
+        ${ElseIf} ${IsNativeARM64}
+            ; ARM64
+            FileWrite $uninstallLog "- Platform x86 or arm64$\r$\n"
+            StrCpy $uninstall_path '$INSTDIR\resources\arm64'
+        ${Else}
+            ; Unknown architecture
+            FileWrite $uninstallLog "- Unknown architecture - using Platform X64$\r$\n"
+            StrCpy $uninstall_path '$INSTDIR\resources\x64'
+        ${EndIf}
+    ${Else}
         ; x86 / ia32
         FileWrite $uninstallLog "- Platform x86 or ia32$\r$\n"
         StrCpy $uninstall_path '$INSTDIR\resources\ia32'
-    ${Else}
-        ; x64 $1 == 5 or Unknown
-        FileWrite $uninstallLog "- Platform X64$\r$\n"
-        StrCpy $uninstall_path '$INSTDIR\resources\x64'
     ${EndIf}
 
     ; detects auto-update
