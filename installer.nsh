@@ -5,8 +5,6 @@
 !define PKGVERSION "3.15.0-alpha.1"
 
 !macro customInit
-    Var /GLOBAL path_i
-
     ; create backup directory if doesn't exist
     CreateDirectory "${REMOTEIT_BACKUP}"
 
