@@ -30,12 +30,12 @@ jobs:
 
       - name: Authenticate with fontawsome NPM repo
         run: |
+          echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
           npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
       
       - name: Create .env file
         run: |
-          echo "pwd=$(pwd)"
           echo "${{ secrets.ENV_FILE }}" > .env
       
       - name: Build/release Electron app
