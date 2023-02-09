@@ -2,6 +2,10 @@ name: Build/release
 
 on: workflow_dispatch
 
+defaults:
+  run:
+    shell: bash
+ 
 env:
   CI: ""
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
@@ -37,7 +41,15 @@ jobs:
       - name: Create .env file
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
-      
+
+      - name: Install SSL.com Sign Tool on Windows
+        shell: bash
+        if: matrix.os == 'windows-latest'
+        run: |
+          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/codesigntool.zip
+          unzip ~/Downloads/codesigntool.zip -d ~/
+          mv ~/CodeSignTool* ~/CodeSignTool/
+
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
