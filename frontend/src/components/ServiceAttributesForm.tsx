@@ -164,23 +164,22 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           </>
         )}
       </TemplateSetting>
-      <ListItem className={css.fieldSub}>
+      <ListItem>
         {customTokens.length ? (
-          <Quote margin="xs">
+          <Quote margin="xs" indent="listItem" noInset>
             <List disablePadding>
               {customTokens.map(token =>
                 token === 'path' && !isPortal() ? (
                   <InlineFileFieldSetting
                     key="path"
-                    variant="filled"
-                    disableGutters
                     dense={false}
+                    variant="filled"
                     label="Application Path"
                     value={attributes[token] || ''}
                     onSave={value => onChange({ ...attributes, [token]: value })}
                   />
                 ) : (
-                  <ListItem disableGutters key={token}>
+                  <ListItem disableGutters key={token} className={css.field}>
                     <TextField
                       fullWidth
                       label={`${token} default`}
@@ -190,7 +189,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                       onChange={event => onChange({ ...attributes, [token]: event.target.value })}
                     />
                     {customTokensNote[token] && (
-                      <Typography variant="caption">Found in {customTokensNote[token]}</Typography>
+                      <Typography variant="caption">This token was found in {customTokensNote[token]}</Typography>
                     )}
                   </ListItem>
                 )

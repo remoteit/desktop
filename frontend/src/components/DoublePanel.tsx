@@ -4,6 +4,7 @@ import { spacing } from '../styling'
 import { usePanelWidth } from '../hooks/usePanelWidth'
 import { useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { isWindows } from '../services/Browser'
 import { Header } from './Header'
 import classnames from 'classnames'
 
@@ -91,7 +92,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
         className={classnames(css.panel, css.secondary)}
         style={{ minWidth: parentWidth ? parentWidth - width : undefined }}
       >
-        {sidebarHidden || <div className={css.header} />}
+        {sidebarHidden || isWindows() || <div className={css.header} />}
         {secondary}
       </div>
     </>
