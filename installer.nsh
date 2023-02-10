@@ -38,10 +38,12 @@
         StrCpy $9 '$INSTDIR\resources\ia32'
     ${EndIf}
 
+    ; Non blocking message box
+    nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'Remote.It Installer$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
+
     ; Stop the agent
-    MessageBox MB_OK "Please wait while we stop the remote.it system service"
     FileWrite $8 "Stopping Service$\r$\n"
-    nsExec::ExectoStack /OEM 'powershell & "$\'$9\remoteit.exe$\'" agent uninstall'
+    nsExec::ExecToStack '"$9\remoteit.exe" agent uninstall' 
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -92,28 +94,28 @@
 
     ; Remove from path env var incase already there
     StrCpy $7 'powershell [Environment]::SetEnvironmentVariable("$\'PATH$\'",((([Environment]::GetEnvironmentVariable("$\'PATH$\'","$\'Machine$\'")).Split("$\';$\'") | Where-Object { $$_ -notlike "$\'*\remoteit\resources\*$\'" }) -join "$\';$\'"),"$\'Machine$\'")' 
-    nsExec::ExecToStack /OEM $7
+    nsExec::ExecToStack $7
     Pop $0
     Pop $1
     FileWrite $8 "$7     [$0]  [$1]$\r$\n"
 
     ; Add to path env var
     StrCpy $7 'powershell [Environment]::SetEnvironmentVariable("$\'PATH$\'",[Environment]::GetEnvironmentVariable("$\'PATH$\'", [EnvironmentVariableTarget]::"$\'Machine$\'") + "$\';$9$\'",[EnvironmentVariableTarget]::"$\'Machine$\'")'
-    nsExec::ExecToStack /OEM $7
+    nsExec::ExecToStack $7
     Pop $0
     Pop $1
     FileWrite $8 "$7     [$0]  [$1]$\r$\n"
 
     ; Remove agent just in case
-    StrCpy $7 'powershell & "$\'$9\remoteit.exe$\'" agent uninstall'
-    nsExec::ExecToStack /OEM $7
+    StrCpy $7 '"$9\remoteit.exe" agent uninstall'
+    nsExec::ExecToStack $7
     Pop $0
     Pop $1
     FileWrite $8 "$7     [$0]  [$1]$\r$\n"
 
     ; Install agent
-    StrCpy $7 'powershell & "$\'$9\remoteit.exe$\'" agent install'
-    nsExec::ExecToStack /OEM $7
+    StrCpy $7 '"$9\remoteit.exe" agent install'
+    nsExec::ExecToStack $7
     Pop $0
     Pop $1
     FileWrite $8 "$7     [$0]  [$1]$\r$\n"
@@ -163,7 +165,7 @@
 
         config_found:
             StrCpy $6 'powershell (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length'
-            nsExec::ExecToStack /OEM $6
+            nsExec::ExecToStack $6
             Pop $0
             Pop $1
             FileWrite $8 "$6     [$0]  [$1] $\r$\n"
@@ -177,14 +179,14 @@
                     true:
                         FileWrite $8 "...unregister your device: YES$\r$\n"
 
-                        StrCpy $7 'powershell & "$\'$9\remoteit.exe$\'" unregister --yes'
-                        nsExec::ExecToStack /OEM $7 
+                        StrCpy $7 '"$9\remoteit.exe" unregister --yes'
+                        nsExec::ExecToStack $7
                         Pop $0
                         Pop $1
                         FileWrite $8 "$7     [$0]  [$1]$\r$\n"
 
                         ; Waits for unregister to complete
-                        nsExec::ExecToStack /OEM 'powershell & "$\'$9\remoteit.exe$\'" status'
+                        nsExec::ExecToStack '"$9\remoteit.exe" status'
 
                         MessageBox MB_OK "Your device was unregistered!"
 
@@ -208,15 +210,15 @@
             FileWrite $8 "Device config not found$\r$\n"
         end_of_config:
 
-        StrCpy $7 'powershell & "$\'$9\remoteit.exe$\'" agent uninstall'
-        nsExec::ExecToStack /OEM $7 
+        StrCpy $7 '"$9\remoteit.exe" agent uninstall'
+        nsExec::ExecToStack $7
         Pop $0
         Pop $1      
         FileWrite $8 "$7     [$0]  [$1]$\r$\n"
         
         ; Remove from path env var
         StrCpy $7 'powershell [Environment]::SetEnvironmentVariable("$\'PATH$\'",((([Environment]::GetEnvironmentVariable("$\'PATH$\'","$\'Machine$\'")).Split("$\';$\'") | Where-Object { $$_ -notlike "$\'*\remoteit\resources\*$\'" }) -join "$\';$\'"),"$\'Machine$\'")' 
-        nsExec::ExecToStack /OEM $7
+        nsExec::ExecToStack $7
         Pop $0
         Pop $1
         FileWrite $8 "$7     [$0]  [$1]$\r$\n"
