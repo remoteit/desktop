@@ -100,7 +100,9 @@ export default class ConnectionPool {
   }
 
   setAll = (connections: IConnection[], setCLI?: boolean) => {
+    const ids = connections.map(c => c.id)
     connections.forEach(c => this.set(c, c.public || c.connectLink ? false : setCLI, true))
+    this.pool = this.pool.filter(c => ids.includes(c.params.id))
     this.updated()
   }
 

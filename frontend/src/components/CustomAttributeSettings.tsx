@@ -23,8 +23,8 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
               if (value) {
                 setConnection({ ...connection, path: value })
               } else {
-                delete connection.path
-                setConnection({ ...connection })
+                const { path, ...props } = connection
+                setConnection(props)
               }
             }}
           />

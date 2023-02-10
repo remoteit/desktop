@@ -52,9 +52,9 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init(_: void, state) {
-      let item = getLocalStorage(state, 'connections')
-      if (item) await dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
-      console.log('INIT CONNECTIONS', item)
+      let connections = getLocalStorage(state, 'connections')
+      if (connections) await dispatch.connections.setAll(dedupe<IConnection>(connections, 'id'))
+      console.log('INIT CONNECTIONS', connections)
     },
 
     async fetch(_: void, state) {
@@ -82,15 +82,13 @@ export default createModel<RootModel>()({
 
       devices.forEach(d => {
         d.services.forEach(async s => {
-          let connection = lookup[s.id]
+          let connection = structuredClone(lookup[s.id])
           const online = s.state === 'active'
 
           // add / update enabled connect links
           if (s.link?.enabled) {
-            connection = connection || newConnection(s)
-
             connection = {
-              ...connection,
+              ...(connection || newConnection(s)),
               id: s.id,
               deviceID: d.id,
               name: connection.name || s.subdomain,
@@ -210,7 +208,7 @@ export default createModel<RootModel>()({
           }
         }
       })
-      dispatch.connections.setAll(connections)
+      dispatch.connections.setAll(connections.filter(c => !!c))
     },
 
     async queueEnable({ serviceIds, enabled }: { serviceIds: string[]; enabled: boolean }) {
