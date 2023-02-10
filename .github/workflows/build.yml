@@ -61,4 +61,15 @@ jobs:
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-${{ runner.os }}
+          path: |
+            dist/latest*.yml
+            dist/remoteit-*-installer*
+            dist/remoteit-installer-*
+
+          # retention-days: 5
+
 
