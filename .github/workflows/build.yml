@@ -63,6 +63,7 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
       - name: Upload Release yml Artifacts
+        if: runner.os != 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -70,7 +71,7 @@ jobs:
             ./dist/latest*.yml
 
       - name: Upload Mac arm64 Artifacts
-        if: ${{ runner.os }} == 'macOS'
+        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -78,7 +79,7 @@ jobs:
             ./dist/remoteit-installer-arm64*
 
       - name: Upload Mac x64 Artifacts
-        if: ${{ runner.os }} == 'macOS'
+        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -86,7 +87,7 @@ jobs:
             ./dist/remoteit-installer-x64*
 
       - name: Upload Windows Artifacts
-        if: ${{ runner.os }} == 'Windows'
+        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -95,7 +96,7 @@ jobs:
             ./dist/remoteit-installer.exe.blockmap
 
       - name: Upload Linux arm64 Artifacts
-        if: ${{ runner.os }} == 'Linux'
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -103,7 +104,7 @@ jobs:
             ./dist/remoteit-arm64-installer.deb
 
       - name: Upload Linux amd64 Artifacts
-        if: ${{ runner.os }} == 'Linux'
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -111,7 +112,7 @@ jobs:
             ./dist/remoteit-amd64-installer.deb
 
       - name: Upload Linux armv7l Artifacts
-        if: ${{ runner.os }} == 'Linux'
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-${{ runner.os }}
@@ -119,7 +120,7 @@ jobs:
             ./dist/remoteit-armv7l-installer.deb
 
       - name: Upload Headless Artifacts
-        if: ${{ runner.os }} == 'macOS'
+        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-headless
