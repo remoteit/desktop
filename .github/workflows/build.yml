@@ -5,11 +5,11 @@ on: workflow_dispatch
 defaults:
   run:
     shell: bash
- 
+
 env:
-  CI: ""
+  CI: ''
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
-  
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          
+
       - name: Set npm version
         run: npm install -g npm@8
 
@@ -35,10 +35,9 @@ jobs:
           echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
           npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
-      
+
       - name: Create .env file
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
+        run: echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Install SSL.com Sign Tool on Windows
         shell: bash
@@ -53,7 +52,7 @@ jobs:
         with:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
-          
+
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
@@ -67,24 +66,21 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: release-ymls
-          path: |
-            ./dist/latest*.yml
+          path: ./dist/latest*.yml
 
       - name: Upload Mac arm64 Artifacts
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-arm64-${{ runner.os }}
-          path: |
-            ./dist/remoteit-installer-arm64*
+          path: ./dist/remoteit-installer-arm64*
 
       - name: Upload Mac x64 Artifacts
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-x64-${{ runner.os }}
-          path: |
-            ./dist/remoteit-installer-x64*
+          path: ./dist/remoteit-installer-x64*
 
       - name: Upload Windows Artifacts
         if: runner.os == 'Windows'
@@ -100,29 +96,36 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-arm64-${{ runner.os }}
-          path: |
-            ./dist/remoteit-arm64-installer.deb
+          path: ./dist/remoteit-arm64-installer.deb
 
       - name: Upload Linux amd64 Artifacts
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-amd64-${{ runner.os }}
-          path: |
-            ./dist/remoteit-amd64-installer.deb
+          path: ./dist/remoteit-amd64-installer.deb
 
       - name: Upload Linux armv7l Artifacts
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-armv7l-${{ runner.os }}
-          path: |
-            ./dist/remoteit-armv7l-installer.deb
+          path: ./dist/remoteit-armv7l-installer.deb
 
       - name: Upload Headless Artifacts
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v3
         with:
           name: remoteit-installer-headless
-          path: |
-            ./dist/remoteit-headless.tgz
+          path: ./dist/remoteit-headless.tgz
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
