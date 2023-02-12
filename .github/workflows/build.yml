@@ -2,6 +2,10 @@ name: Build/release
 
 on: workflow_dispatch
 
+defaults:
+  run:
+    shell: bash
+ 
 env:
   CI: ""
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
@@ -12,8 +16,7 @@ jobs:
 
     strategy:
       matrix:
-#         os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -29,16 +32,28 @@ jobs:
 
       - name: Authenticate with fontawsome NPM repo
         run: |
-          echo "pwd = ${PWD}"
-          echo -e "\n//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
+          echo "pwd=${PWD}"
+          npm config set "@fortawesome:registry" https://npm.fontawesome.com/
+          npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
       
       - name: Create .env file
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
-      
+
+      - name: Install SSL.com Sign Tool on Windows
+        shell: bash
+        if: matrix.os == 'windows-latest'
+        run: |
+          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/codesigntool.zip
+          unzip ~/Downloads/codesigntool.zip -d ~/
+          mv ~/CodeSignTool* ~/CodeSignTool/
+
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
+          mac_certs: ${{ secrets.mac_certs }}
+          mac_certs_password: ${{ secrets.mac_certs_password }}
+          
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
@@ -47,3 +62,67 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
+      - name: Upload Release yml Artifacts
+        if: runner.os != 'Linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-ymls
+          path: |
+            ./dist/latest*.yml
+
+      - name: Upload Mac arm64 Artifacts
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-arm64-${{ runner.os }}
+          path: |
+            ./dist/remoteit-installer-arm64*
+
+      - name: Upload Mac x64 Artifacts
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-x64-${{ runner.os }}
+          path: |
+            ./dist/remoteit-installer-x64*
+
+      - name: Upload Windows Artifacts
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-${{ runner.os }}
+          path: |
+            ./dist/remoteit-installer.exe
+            ./dist/remoteit-installer.exe.blockmap
+
+      - name: Upload Linux arm64 Artifacts
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-arm64-${{ runner.os }}
+          path: |
+            ./dist/remoteit-arm64-installer.deb
+
+      - name: Upload Linux amd64 Artifacts
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-amd64-${{ runner.os }}
+          path: |
+            ./dist/remoteit-amd64-installer.deb
+
+      - name: Upload Linux armv7l Artifacts
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-armv7l-${{ runner.os }}
+          path: |
+            ./dist/remoteit-armv7l-installer.deb
+
+      - name: Upload Headless Artifacts
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteit-installer-headless
+          path: |
+            ./dist/remoteit-headless.tgz
