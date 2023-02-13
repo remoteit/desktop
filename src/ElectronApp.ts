@@ -268,6 +268,19 @@ export default class ElectronApp {
   private createSystemTray() {
     Logger.info('CREATE SYSTEM TRAY')
 
+    this.tray = new electron.Tray(this.getIconPath())
+    new TrayMenu(this.tray)
+    const defaultMenu = Menu.getApplicationMenu()
+    const items = defaultMenu?.items.filter(item => item.role !== 'help')
+    const menu = Menu.buildFromTemplate(items || [])
+    Menu.setApplicationMenu(menu)
+
+    electron.nativeTheme.on('updated', () => {
+      this.tray?.setImage(this.getIconPath())
+    })
+  }
+
+  private getIconPath() {
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
       : environment.isWindows
@@ -277,13 +290,7 @@ export default class ElectronApp {
       : environment.isPi
       ? 'iconLinuxColor.png'
       : 'iconLinux.png'
-    const iconPath = path.join(__dirname, 'images', iconFile)
-    this.tray = new electron.Tray(iconPath)
-    new TrayMenu(this.tray)
-    const defaultMenu = Menu.getApplicationMenu()
-    const items = defaultMenu?.items.filter(item => item.role !== 'help')
-    const menu = Menu.buildFromTemplate(items || [])
-    Menu.setApplicationMenu(menu)
+    return path.join(__dirname, 'images', iconFile)
   }
 
   private openWindow = (location?: string, openDevTools?: boolean) => {
