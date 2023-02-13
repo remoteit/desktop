@@ -275,9 +275,9 @@ export default class ElectronApp {
     const menu = Menu.buildFromTemplate(items || [])
     Menu.setApplicationMenu(menu)
 
-    electron.nativeTheme.on('updated', () => {
-      this.tray?.setImage(this.getIconPath())
-    })
+    if (environment.isWindows) {
+      electron.nativeTheme.on('updated', () => this.tray?.setImage(this.getIconPath()))
+    }
   }
 
   private getIconPath() {
