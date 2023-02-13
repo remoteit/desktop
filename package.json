@@ -61,7 +61,7 @@
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
     "afterSign": "scripts/notarize.js",
-    "artifactName": "${productName}-${arch}-installer.${ext}",
+    "artifactName": "${productName}-installer-${arch}.${ext}",
     "generateUpdatesFilesForAllChannels": true,
     "publish": [
       "github"

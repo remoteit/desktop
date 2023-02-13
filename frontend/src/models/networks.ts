@@ -238,7 +238,7 @@ export default createModel<RootModel>()({
     },
 
     async removeById(id: string, state) {
-      let { all } = state.networks
+      let all = { ...state.networks.all }
       all[DEFAULT_ID] = [state.networks.default]
       const [_, device] = selectById(state, undefined, id)
       const serviceIds = id === device?.id ? device?.services.map(s => s.id) : [id]
