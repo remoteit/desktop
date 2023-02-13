@@ -63,9 +63,6 @@
     "afterSign": "scripts/notarize.js",
     "artifactName": "${productName}-installer-${arch}.${ext}",
     "generateUpdatesFilesForAllChannels": true,
-    "publish": [
-      "github"
-    ],
     "win": {
       "sign": "./scripts/sign.js",
       "signingHashAlgorithms": [
