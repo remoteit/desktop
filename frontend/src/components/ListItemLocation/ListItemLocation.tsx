@@ -91,7 +91,7 @@ export const ListItemLocation: React.FC<Props> = ({
     </>
   )
 
-  const ItemProps = {
+  let ItemProps = {
     ...props,
     onClick,
     disabled,
@@ -102,10 +102,12 @@ export const ListItemLocation: React.FC<Props> = ({
 
   return menuItem ? (
     <MenuItem {...ItemProps}>{Contents}</MenuItem>
-  ) : (
+  ) : pathname ? (
     <ListItem {...ItemProps} button>
       {Contents}
     </ListItem>
+  ) : (
+    <ListItem {...ItemProps}>{Contents}</ListItem>
   )
 }
 

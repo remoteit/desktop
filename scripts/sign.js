@@ -13,6 +13,8 @@ const CMD_PATH = path.resolve('C:/Windows/System32/cmd.exe')
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true })
 
 exports.default = async function sign(configuration) {
+  if (process.env.SKIP_SIGNING === 'true') return
+
   const username = process.env.WINDOWS_SIGN_USER_NAME
   const userPassword = process.env.WINDOWS_SIGN_USER_PASSWORD
   const credentialId = process.env.WINDOWS_SIGN_CREDENTIAL_ID
@@ -27,10 +29,9 @@ exports.default = async function sign(configuration) {
     const moveFile = `mv "${tempFile}" "${dir}"`
 
     console.log('Sign file\n', configuration.path)
-    execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR }})
-    console.log('Move file\n', moveFile)
+    execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
+    // console.log('Move file\n', moveFile)
     execSync(moveFile)
-
   } else {
     // Missing data
     console.warn(`Can't sign file ${configuration.path}, missing .env data:

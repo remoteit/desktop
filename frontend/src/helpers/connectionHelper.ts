@@ -111,9 +111,8 @@ export function setConnection(connection: IConnection) {
 }
 
 export function clearConnectionError(connection: IConnection) {
-  delete connection.error
   console.log('CLEAR ERROR', connection)
-  setConnection(connection)
+  setConnection({ ...connection, error: undefined })
 }
 
 export function getConnectionServiceIds(state: ApplicationState) {

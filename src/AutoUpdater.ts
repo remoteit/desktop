@@ -3,6 +3,7 @@ import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-hea
 import { autoUpdater } from 'electron-updater'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
+const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
 
 export default class AppUpdater {
   nextCheck: number = 0
@@ -27,8 +28,9 @@ export default class AppUpdater {
 
   async check(force?: boolean) {
     try {
-      if (force || autoUpdater.allowPrerelease || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
-        this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
+      if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
+        this.nextCheck =
+          Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
         if (environment.isWindows || environment.isMac) {
           Logger.info('CHECK FOR UPDATE')
           autoUpdater.checkForUpdatesAndNotify()

@@ -360,14 +360,6 @@ export const useStyles = makeStyles(({ breakpoints }) => ({
       marginLeft: spacing.lg,
     },
   },
-  fieldSub: {
-    padding: `0 ${spacing.lg}px 0 ${spacing.md}px`,
-    '& .MuiFormControl-root + .MuiFormControl-root': { marginTop: spacing.sm },
-    '& > *': {
-      width: '50%',
-      maxWidth: 400,
-    },
-  },
   [breakpoints.down('sm')]: {
     field: {
       flexDirection: 'column',

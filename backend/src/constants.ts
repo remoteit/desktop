@@ -71,16 +71,15 @@ export const PATHS = {
   ARM64_SYMLINKS: '/usr/bin/arm64',
 
   MAC_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
-  MAC_BINARIES: path.resolve(__dirname, '../../../../'),
-  MAC_BINARIES_DEV: path.resolve('./bin'),
+  MAC_BINARIES: path.resolve(__dirname, '../../../../', os.arch()),
+  MAC_BINARIES_DEV: path.resolve('./bin/', os.arch()),
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
   MAC_SYMLINKS: '/usr/local/bin/',
 
   WIN_USER_SETTINGS: path.resolve(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_BINARIES: path.resolve(__dirname, '../../../../x64'),
-  WIN_BINARIES_32: path.resolve(__dirname, '../../../../x86'),
-  WIN_BINARIES_DEV: path.resolve('./bin/x64'),
+  WIN_BINARIES: path.resolve(__dirname, '../../../../', os.arch()),
+  WIN_BINARIES_DEV: path.resolve('./bin/', os.arch()),
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
     path.resolve('C:/Program Files/remoteit-bin/remoteit.exe'),

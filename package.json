@@ -1,14 +1,13 @@
 {
   "name": "remoteit",
-  "version": "3.15.0-alpha.0",
+  "version": "3.15.1",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend build-binaries compile copy-* build-electron",
+    "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
     "build-electron": "cross-env electron-builder",
-    "build-binaries": "sh scripts/build.sh $NODE_ARCH",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-env": "cp .env frontend/ && cp .env backend/",
@@ -20,7 +19,7 @@
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
     "install-frontend": "cd frontend && npm i",
-    "install-binaries": "sh scripts/build.sh ",
+    "install-binaries": "sh scripts/build.sh",
     "postinstall": "run-s install-*",
     "version": "sh scripts/version.sh $npm_package_version",
     "start": "npm-run-all -l -n -p copy-* watch-*",
@@ -38,7 +37,7 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
-    "electron": "^22.2.0",
+    "electron": "^23.0.0",
     "electron-builder": "^23.6.0",
     "electron-notarize": "^1.2.1",
     "npm-run-all": "4.1.5",
@@ -61,11 +60,8 @@
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
     "afterSign": "scripts/notarize.js",
-    "artifactName": "${productName}-${arch}-installer.${ext}",
+    "artifactName": "${productName}-installer-${arch}.${ext}",
     "generateUpdatesFilesForAllChannels": true,
-    "publish": [
-      "github"
-    ],
     "win": {
       "sign": "./scripts/sign.js",
       "signingHashAlgorithms": [
@@ -76,6 +72,7 @@
         {
           "target": "nsis",
           "arch": [
+            "arm64",
             "ia32",
             "x64"
           ]

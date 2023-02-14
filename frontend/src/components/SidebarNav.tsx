@@ -133,6 +133,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'static',
     marginTop: spacing.sm,
     '& .MuiListItemText-primary': { color: palette.grayDark.main },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
     '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px` },

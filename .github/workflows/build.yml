@@ -2,18 +2,22 @@ name: Build/release
 
 on: workflow_dispatch
 
+defaults:
+  run:
+    shell: bash
+
 env:
-  CI: ""
+  CI: ''
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
-  
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      # fail-fast: false
       matrix:
-#         os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -23,25 +27,33 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          
+
       - name: Set npm version
         run: npm install -g npm@8
 
       - name: Authenticate with fontawsome NPM repo
         run: |
-          echo "pwd = ${PWD}"
-          echo -e "\n//npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_AUTH_TOKEN }}" >> ./frontend/.npmrc
-      
+          echo "pwd=${PWD}"
+          npm config set "@fortawesome:registry" https://npm.fontawesome.com/
+          npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
+
       - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Install SSL.com Sign Tool on Windows
+        shell: bash
+        if: matrix.os == 'windows-latest'
         run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-      
+          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/codesigntool.zip
+          unzip ~/Downloads/codesigntool.zip -d ~/
+          mv ~/CodeSignTool* ~/CodeSignTool/
+
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
-          
+
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
@@ -49,4 +61,3 @@ jobs:
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-
