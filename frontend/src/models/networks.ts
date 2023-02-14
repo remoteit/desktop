@@ -254,7 +254,7 @@ export default createModel<RootModel>()({
       const id = getActiveAccountId(state)
       const response = await graphQLDeleteNetwork(params.id)
       if (response === 'ERROR') return
-      let networks = state.networks.all[id] || []
+      let networks = [...state.networks.all[id]] || []
       const index = networks.findIndex(network => network.id === params.id)
       networks.splice(index, 1)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
@@ -293,7 +293,7 @@ export default createModel<RootModel>()({
     async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {
       const response = await graphQLRemoveNetworkShare(networkId, email)
       if (response === 'ERROR' || !response?.data?.data?.removeNetworkShare) return
-      const network = selectNetwork(state, networkId)
+      const network = structuredClone(selectNetwork(state, networkId))
       const index = network.access.findIndex(a => a.email === email)
       network.access.splice(index, 1)
       await dispatch.networks.setNetwork(network)
