@@ -26,7 +26,7 @@ export function isRelay(service?: IService) {
 
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
   const sessions = state.sessions.all.map(s => s.target.id)
-  const connected = connections.filter(c => c.connected).map(c => c.id)
+  const connected = connections.filter(c => c.connected && !sessions.includes(c.id)).map(c => c.id)
   return sessions.concat(connected)
 }
 
