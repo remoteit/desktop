@@ -13,7 +13,7 @@ const CMD_PATH = path.resolve('C:/Windows/System32/cmd.exe')
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true })
 
 exports.default = async function sign(configuration) {
-  if (process.env.SKIP_SIGNING) return
+  if (process.env.SKIP_SIGNING === 'true') return
 
   const username = process.env.WINDOWS_SIGN_USER_NAME
   const userPassword = process.env.WINDOWS_SIGN_USER_PASSWORD
