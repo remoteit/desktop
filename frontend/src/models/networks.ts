@@ -307,8 +307,7 @@ export default createModel<RootModel>()({
       const index = networks.findIndex(network => network.id === params.id)
 
       if (index >= 0) {
-        const network = { ...networks[index], ...params }
-        networks[index] = network
+        networks[index] = { ...networks[index], ...params }
         dispatch.networks.setNetworks({ networks, accountId: id })
       }
     },
