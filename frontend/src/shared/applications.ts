@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment, getCloudData } from '../sharedAdaptor'
+import { getEnvironment, getCloudData, certificateEnabled } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
@@ -172,11 +172,11 @@ export class Application {
   }
 
   get reverseProxy() {
-    return !!this.cloudData?.proxy
+    return this.cloudData ? this.cloudData.proxy : false
   }
 
   private parseReverseProxy(template: string) {
-    return this.reverseProxy ? template.replace('http:', 'https:') : template
+    return this.reverseProxy && certificateEnabled() ? template.replace('http:', 'https:') : template
   }
 
   private get resolvedDefaultLaunchTemplate(): string {

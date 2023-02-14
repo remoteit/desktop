@@ -5,7 +5,7 @@ import Command from './Command'
 import environment from './environment'
 
 export default async function launch(command: string, terminal: boolean) {
-  Logger.info('LAUNCH', { command, terminal })
+  Logger.info('LAUNCH', { terminal })
 
   if (terminal) {
     if (environment.isMac) {
@@ -18,11 +18,16 @@ export default async function launch(command: string, terminal: boolean) {
   }
 
   const commands = new Command({ command })
-  commands.onError = (e: Error) => EventBus.emit(cli.EVENTS.error, e.toString())
+  commands.onError = (e: Error) => {
+    Logger.error('LAUNCH APP ERROR', e)
+    if (e.toString().includes('[CATransaction synchronize]')) return
+    EventBus.emit(cli.EVENTS.error, e.toString())
+  }
+
   const result = await commands.exec()
 
   if (result && result.includes('Command failed:')) {
     EventBus.emit(cli.EVENTS.error, result.toString())
-    Logger.warn('LAUNCH APP ERROR', { result })
+    Logger.warn('LAUNCH APP COMMAND FAILURE', { result })
   }
 }
