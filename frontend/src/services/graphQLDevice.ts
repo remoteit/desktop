@@ -182,7 +182,7 @@ export async function graphQLPreloadDevices(params: { account: string; ids: stri
         login {
           id
           account(id: $account) {
-            device(id: $ids)  {
+            device(id: $ids) {
               ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
             }
           }
@@ -257,7 +257,7 @@ export async function graphQLFetchFullDevice(id: string, account: string) {
     ` query Device($id: [String!]!, $account: String) {
         login {
           id
-          device(id: $id)  {
+          device(id: $id) {
             ${DEVICE_SELECT}
             services {
               ${SERVICE_SELECT}

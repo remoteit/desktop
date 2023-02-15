@@ -1,0 +1,52 @@
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.error .drag {
+  position: absolute;
+  top: 0;
+  height: 50px;
+  width: 100%;
+  background-color: #fee1dc;
+  -webkit-app-region: drag;
+}
+
+.error .body {
+  position: relative;
+  color: white;
+  background-color: rgb(166, 0, 0);
+  border-radius: 20px;
+  padding: 10px 30px 20px;
+  box-shadow: rgba(50, 0, 0, 0.4) 0px 5px 15px 0px;
+}
+
+.error button {
+  cursor: pointer;
+  font-size: x-large;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+.error .restart {
+  font-weight: 900;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  box-shadow: rgba(50, 0, 0, 0.4) 0px 5px 15px 0px;
+}
+
+.error .close {
+  top: 0;
+  right: 0;
+  position: absolute;
+  background: none;
+  color: white;
+  rotate: 45deg;
+}
