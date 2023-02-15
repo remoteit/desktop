@@ -10,11 +10,15 @@ const TOOL_DIR = path.resolve(os.homedir(), 'CodeSignTool/')
 const TOOL_PATH = path.resolve(TOOL_DIR, 'CodeSignTool.bat')
 const CMD_PATH = path.resolve('C:/Windows/System32/cmd.exe')
 
+const RED = '\x1b[31m'
+const BLUE = '\x1b[34m'
+const END = '\x1b[0m'
+
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true })
 
 exports.default = async function sign(configuration) {
   if (process.env.SKIP_SIGNING === 'true') {
-    console.log('  ! SKIP signing      name=' + appName)
+    console.log(`  ${RED}!${END} SKIP signing  ${BLUE}name${END}=${appName}`)
     return
   }
 
@@ -31,7 +35,7 @@ exports.default = async function sign(configuration) {
     const signFile = `${CMD_PATH} /C ${TOOL_PATH} sign -input_file_path="${configuration.path}" -output_dir_path="${TEMP_DIR}" -credential_id="${credentialId}" -username="${username}" -password="${userPassword}" -totp_secret="${userTOTP}"`
     const moveFile = `mv "${tempFile}" "${dir}"`
 
-    console.log('  • signing      name=' + name)
+    console.log(`  ${BLUE}•${END} signing      ${BLUE}name${END}=${name}`)
 
     execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
     execSync(moveFile)

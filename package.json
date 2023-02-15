@@ -60,6 +60,7 @@
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
     "artifactName": "${productName}-installer-${arch}.${ext}",
+    "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
       "sign": "./scripts/sign.js",
@@ -103,9 +104,9 @@
     "mac": {
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
+      "darkModeSupport": true,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "afterSign": "scripts/notarize.js",
       "extendInfo": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
