@@ -229,10 +229,6 @@ export function getApplicationType(typeId: number | undefined) {
   const windows = os === 'windows'
 
   switch (typeId) {
-    case 1:
-      return new Application({
-        appLaunchType: 'URL',
-      })
     case 4:
       return new Application({
         title: 'VNC',

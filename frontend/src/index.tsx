@@ -1,6 +1,7 @@
 import React from 'react'
 import Controller from './services/Controller'
 import { App } from './components/App'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { environment } from './services/Browser'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline } from '@mui/material'
@@ -19,14 +20,16 @@ if (environment() !== 'development') analytics.initialize()
 
 const root = createRoot(document.getElementById('root')!)
 root.render(
-  <Provider store={store}>
-    <Layout>
-      <CssBaseline />
-      <HashRouter>
-        <App />
-      </HashRouter>
-    </Layout>
-  </Provider>
+  <ErrorBoundary>
+    <Provider store={store}>
+      <Layout>
+        <CssBaseline />
+        <HashRouter>
+          <App />
+        </HashRouter>
+      </Layout>
+    </Provider>
+  </ErrorBoundary>
 )
 
 // If you want your app to work offline and load faster, you can change

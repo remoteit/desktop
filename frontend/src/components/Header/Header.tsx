@@ -116,7 +116,7 @@ const useStyles = makeStyles({
     zIndex: 1,
   },
   button: {
-    '-webkit-app-region': 'no-drag',
+    WebkitAppRegion: 'no-drag',
     justifyContent: 'flex-start',
     minHeight: spacing.xxl,
   },

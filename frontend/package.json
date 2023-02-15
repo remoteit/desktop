@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.15.2",
+  "version": "3.15.3",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "watch-react": "react-scripts start"
   },
   "dependencies": {
+    "@airbrake/browser": "^2.1.8",
     "@aws-amplify/auth": "^4.6.16",
     "@date-io/date-fns": "^2.16.0",
     "@emotion/react": "^11.10.5",
