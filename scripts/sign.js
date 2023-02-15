@@ -17,8 +17,10 @@ const END = '\x1b[0m'
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true })
 
 exports.default = async function sign(configuration) {
+  const { name, dir } = path.parse(configuration.path)
+
   if (process.env.SKIP_SIGNING === 'true') {
-    console.log(`  ${RED}!${END} SKIP signing  ${BLUE}name${END}=${appName}`)
+    console.log(`  ${RED}!${END} SKIP signing  ${BLUE}name${END}=${name}`)
     return
   }
 
@@ -28,8 +30,6 @@ exports.default = async function sign(configuration) {
   const userTOTP = process.env.WINDOWS_SIGN_USER_TOTP
 
   if (username && userPassword && userTOTP && credentialId) {
-    const { name, dir } = path.parse(configuration.path)
-
     // Sign and replace file
     const tempFile = path.join(TEMP_DIR, name)
     const signFile = `${CMD_PATH} /C ${TOOL_PATH} sign -input_file_path="${configuration.path}" -output_dir_path="${TEMP_DIR}" -credential_id="${credentialId}" -username="${username}" -password="${userPassword}" -totp_secret="${userTOTP}"`
