@@ -40,6 +40,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabl
             roles={roles}
             roleId={member.roleId}
             onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
+            onClick={event => event.stopPropagation()}
           />
           {!enterprise && (
             <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
