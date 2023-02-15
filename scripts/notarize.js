@@ -2,15 +2,20 @@ require('dotenv').config()
 const { notarize } = require('electron-notarize')
 
 exports.default = async function notarizing(context) {
-  const { electronPlatformName, appOutDir } = context
-  if (electronPlatformName !== 'darwin' || process.env.SKIP_SIGNING === 'true') return
+  const { appOutDir } = context
+  const { productFilename } = context.packager.appInfo
 
-  const appName = context.packager.appInfo.productFilename
+  if (process.env.SKIP_SIGNING === 'true') {
+    console.log(`  ! SKIP notarizing      name=${appOutDir}/${productFilename}`)
+    return
+  }
+
+  console.log(`  • notarizing      name=${appOutDir}/${productFilename}`)
 
   // See: https://github.com/electron/electron-notarize#safety-when-using-appleidpassword
   return await notarize({
     appBundleId: 'it.remote.desktop',
-    appPath: `${appOutDir}/${appName}.app`,
+    appPath: `${appOutDir}/${productFilename}.app`,
     appleId: 'appledeveloper@remote.it',
     appleIdPassword: process.env.APPLE_ID_PASSWORD,
   })

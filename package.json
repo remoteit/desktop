@@ -59,7 +59,6 @@
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
-    "afterSign": "scripts/notarize.js",
     "artifactName": "${productName}-installer-${arch}.${ext}",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
@@ -106,7 +105,7 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "artifactName": "${productName}-installer-${arch}.${ext}",
+      "afterSign": "scripts/notarize.js",
       "extendInfo": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
