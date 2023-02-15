@@ -64,7 +64,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        <RefreshButton size="md" color="grayDarker" />
+        {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         <Title className={css.search}>
           {!showSearch && !searched && (
             <IconButton
@@ -110,7 +110,6 @@ const useStyles = makeStyles({
     maxHeight: 45,
     width: '100%',
     zIndex: 14,
-    '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {
     flexGrow: 1,
