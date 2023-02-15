@@ -3,7 +3,7 @@
 !include WinVer.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.15.1"
+!define PKGVERSION "3.15.2"
 
 !macro customInit
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found

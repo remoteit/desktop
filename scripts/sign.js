@@ -4,16 +4,24 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { execSync } = require('child_process')
+const { config } = require('dotenv')
 
 const TEMP_DIR = path.resolve(__dirname, '../temp')
 const TOOL_DIR = path.resolve(os.homedir(), 'CodeSignTool/')
 const TOOL_PATH = path.resolve(TOOL_DIR, 'CodeSignTool.bat')
 const CMD_PATH = path.resolve('C:/Windows/System32/cmd.exe')
 
+const RED = '\x1b[31m'
+const BLUE = '\x1b[34m'
+const END = '\x1b[0m'
+
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true })
 
 exports.default = async function sign(configuration) {
-  if (process.env.SKIP_SIGNING === 'true') return
+  if (process.env.SKIP_SIGNING === 'true') {
+    console.log(`  ${RED}!${END} SKIP signing    ${BLUE}path${END}=${configuration.path}`)
+    return
+  }
 
   const username = process.env.WINDOWS_SIGN_USER_NAME
   const userPassword = process.env.WINDOWS_SIGN_USER_PASSWORD
@@ -28,9 +36,9 @@ exports.default = async function sign(configuration) {
     const signFile = `${CMD_PATH} /C ${TOOL_PATH} sign -input_file_path="${configuration.path}" -output_dir_path="${TEMP_DIR}" -credential_id="${credentialId}" -username="${username}" -password="${userPassword}" -totp_secret="${userTOTP}"`
     const moveFile = `mv "${tempFile}" "${dir}"`
 
-    console.log('Sign file\n', configuration.path)
+    console.log(`  ${BLUE}•${END} signing        ${BLUE}name${END}=${name}`)
+
     execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
-    // console.log('Move file\n', moveFile)
     execSync(moveFile)
   } else {
     // Missing data
