@@ -178,7 +178,7 @@ const useStyles = makeStyles(({ palette }) => ({
     width: '100%',
     zIndex: 1,
   },
-  input: { '-webkit-app-region': 'no-drag' },
+  input: { WebkitAppRegion: 'no-drag' },
   button: { marginBottom: -spacing.sm },
   enabled: { color: palette.primary.main },
   subhead: {
