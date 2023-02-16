@@ -11,7 +11,7 @@ export interface Props {
   expanded?: boolean
   offline?: boolean
   noLink?: boolean
-  onClick?: () => void
+  onClick?: (event: React.MouseEvent) => void
   children?: React.ReactNode
 }
 

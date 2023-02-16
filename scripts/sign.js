@@ -36,7 +36,7 @@ exports.default = async function sign(configuration) {
     const signFile = `${CMD_PATH} /C ${TOOL_PATH} sign -input_file_path="${configuration.path}" -output_dir_path="${TEMP_DIR}" -credential_id="${credentialId}" -username="${username}" -password="${userPassword}" -totp_secret="${userTOTP}"`
     const moveFile = `mv "${tempFile}" "${dir}"`
 
-    console.log(`  ${BLUE}•${END} signing        ${BLUE}name${END}=${name}`)
+    console.log(`  ${BLUE}•${END} signing         ${BLUE}path${END}=${configuration.path}`)
 
     execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
     execSync(moveFile)
