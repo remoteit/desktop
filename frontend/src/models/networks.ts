@@ -215,7 +215,7 @@ export default createModel<RootModel>()({
 
       if (!network.permissions.includes('MANAGE')) return
 
-      let copy = { ...network }
+      let copy = structuredClone(network)
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
       dispatch.networks.setNetwork(copy)

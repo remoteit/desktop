@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo } from 'react'
+import { Store } from '../store'
 import { AIRBRAKE_ID, AIRBRAKE_KEY } from '../shared/constants'
 import { environment } from '../services/Browser'
 import { Notifier } from '@airbrake/browser'
@@ -6,6 +7,7 @@ import { version } from '../helpers/versionHelper'
 import '../styling/error.css'
 
 type ErrorBoundaryProps = {
+  store?: Store
   children: React.ReactNode
 }
 
@@ -13,6 +15,7 @@ type ErrorBoundaryState = {
   hasError: boolean
   error?: Error
   info?: ErrorInfo
+  userId?: string
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -39,14 +42,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     event.preventDefault()
 
     const error = event.reason instanceof Error ? event.reason : new Error(event.reason)
-    this.setState({ hasError: true, error })
+    const userId = this.props.store?.getState().user.id
 
-    this.airbrake.notify({ error, context: { version } })
+    this.setState({ hasError: true, error, userId })
+    this.airbrake.notify({ error, context: { version, userId } })
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    this.setState({ hasError: true, error, info })
-    this.airbrake.notify({ error, params: { info }, context: { version } })
+    const userId = this.props.store?.getState().user.id
+
+    this.setState({ hasError: true, error, info, userId })
+    this.airbrake.notify({ error, params: { info }, context: { version, userId } })
   }
 
   render() {
@@ -68,6 +74,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   Restart
                 </button>
               </p>
+              <p>{this.state.userId && this.state.userId}</p>
               <p>{this.state.error && this.state.error.toString()}</p>
               {this.state.error && (
                 <>

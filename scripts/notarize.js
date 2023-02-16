@@ -12,11 +12,11 @@ exports.default = async function notarizing(context) {
   if (electronPlatformName !== 'darwin') return
 
   if (process.env.SKIP_SIGNING === 'true') {
-    console.log(`  ${RED}!${END} SKIP notarizing ${BLUE}name${END}=${appOutDir}/${productFilename}`)
+    console.log(`  ${RED}!${END} SKIP notarizing  ${BLUE}name${END}=${appOutDir}/${productFilename}`)
     return
   }
 
-  console.log(`  ${BLUE}•${END} notarizing     ${BLUE}name${END}=${appOutDir}/${productFilename}`)
+  console.log(`  ${BLUE}•${END} notarizing      ${BLUE}name${END}=${appOutDir}/${productFilename}`)
 
   // See: https://github.com/electron/electron-notarize#safety-when-using-appleidpassword
   return await notarize({

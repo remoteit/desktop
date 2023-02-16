@@ -20,7 +20,7 @@ if (environment() !== 'development') analytics.initialize()
 
 const root = createRoot(document.getElementById('root')!)
 root.render(
-  <ErrorBoundary>
+  <ErrorBoundary store={store}>
     <Provider store={store}>
       <Layout>
         <CssBaseline />

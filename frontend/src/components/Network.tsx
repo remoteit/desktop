@@ -21,16 +21,17 @@ export interface Props {
 
 export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, network, connectionsPage }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { collapsed } = useSelector((state: ApplicationState) => state.ui)
+  const collapsed = useSelector((state: ApplicationState) => [...state.ui.collapsed])
   const css = useStyles({ highlight })
 
   if (!network?.id) return null
 
   const expanded = !collapsed.includes(network.id)
-  const toggle = () => {
+  const toggle = (event: React.MouseEvent) => {
+    event.stopPropagation()
     if (expanded) collapsed.push(network.id)
     else collapsed.splice(collapsed.indexOf(network.id), 1)
-    dispatch.ui.set({ collapsed: [...collapsed] })
+    dispatch.ui.set({ collapsed })
   }
 
   return (

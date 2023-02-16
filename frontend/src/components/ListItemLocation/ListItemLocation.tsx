@@ -27,7 +27,7 @@ export type Props = {
   exactMatch?: boolean
   badge?: number
   children?: React.ReactNode
-  onClick?: () => void
+  onClick?: (event: React.MouseEvent) => void
 }
 
 export const ListItemLocation: React.FC<Props> = ({
@@ -54,8 +54,8 @@ export const ListItemLocation: React.FC<Props> = ({
   const matches = useMatches({ to: pathname, match, exactMatch })
   const css = useStyles({ disableIcon: !!disableIcon })
 
-  const onClick = () => {
-    props.onClick?.()
+  const onClick = (event: React.MouseEvent) => {
+    props.onClick?.(event)
     if (!disabled && pathname) history.push(pathname)
   }
 
