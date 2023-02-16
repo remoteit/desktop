@@ -67,7 +67,6 @@
       "signingHashAlgorithms": [
         "sha256"
       ],
-      "artifactName": "${productName}-installer.${ext}",
       "target": [
         {
           "target": "nsis",
@@ -128,7 +127,7 @@
         "to": "./"
       },
       {
-        "from": "./bin/",
+        "from": "./bin/${arch}",
         "to": "./"
       }
     ],
