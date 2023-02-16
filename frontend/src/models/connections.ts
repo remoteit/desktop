@@ -87,8 +87,9 @@ export default createModel<RootModel>()({
 
           // add / update enabled connect links
           if (s.link?.enabled) {
+            connection = connection || newConnection(s)
             connection = {
-              ...(connection || newConnection(s)),
+              ...connection,
               id: s.id,
               deviceID: d.id,
               name: connection.name || s.subdomain,

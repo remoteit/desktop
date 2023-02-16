@@ -68,7 +68,7 @@ export default createModel<RootModel>()({
       - Filter out this user's sessions
       - Combine same user sessions
     */
-    async parse(response: AxiosResponse | void, globalState): Promise<ISession[]> {
+    async parse(response: AxiosResponse | void, state): Promise<ISession[]> {
       if (!response) return []
       const data = response?.data?.data?.login?.sessions
       if (!data) return []
@@ -78,7 +78,7 @@ export default createModel<RootModel>()({
       return sorted.reduce((sessions: ISession[], e: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
         if (!e.endpoint) return sessions
-        const connection = findLocalConnection(globalState, e.target.id, e.id)
+        const connection = findLocalConnection(state, e.target.id, e.id)
         sessions.push({
           id: e.id,
           timestamp: new Date(e.timestamp),
@@ -97,16 +97,13 @@ export default createModel<RootModel>()({
         return sessions
       }, [])
     },
-    async updatePublicConnections(all: ISession[], globalState) {
-      const publicConnections = globalState.connections.all.filter(c => c.public && !c.connectLink)
+    async updatePublicConnections(all: ISession[], state) {
+      const publicConnections = state.connections.all.filter(c => c.public && !c.connectLink)
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
         const session = all.find(s => s.id === connection.sessionId)
         if (connection.connecting !== false || connection.enabled !== !!session || connection.connected !== !!session) {
-          connection.connecting = false
-          connection.enabled = !!session
-          connection.connected = !!session
-          setConnection(connection)
+          setConnection({ ...connection, connecting: false, enabled: !!session, connected: !!session })
         }
       })
     },

@@ -39,8 +39,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-    event.preventDefault()
-
     const error = event.reason instanceof Error ? event.reason : new Error(event.reason)
     const userId = this.props.store?.getState().user.id
 
