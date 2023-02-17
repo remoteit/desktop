@@ -60,7 +60,7 @@ export default createModel<RootModel>()({
       console.log('USER DATA', data)
       return {
         ...data,
-        created: new Date(data.created),
+        created: new Date(data?.created),
         attributes: data?.attributes?.$remoteit,
       }
     },
