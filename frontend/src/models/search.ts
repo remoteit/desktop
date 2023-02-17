@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { getDeviceModel } from '../selectors/devices'
 import { REGEX_SERVICE_ID } from '../shared/constants'

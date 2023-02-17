@@ -1,4 +1,5 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
+import structuredClone from '@ungap/structured-clone'
 import network from '../services/Network'
 import { DEVICE_TYPE } from '../shared/applications'
 import { getToken } from './remote.it'
