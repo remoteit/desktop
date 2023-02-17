@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'

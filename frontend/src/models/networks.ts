@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'

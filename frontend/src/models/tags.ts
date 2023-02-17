@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'

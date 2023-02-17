@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import structuredClone from '@ungap/structured-clone'
 import { selectById, selectDevice } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'

@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import {
   graphQLDeleteDevice,
   graphQLUnShareDevice,

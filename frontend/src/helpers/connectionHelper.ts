@@ -97,16 +97,16 @@ export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInp
 export function setConnection(connection: IConnection) {
   const { auth } = store.getState()
   const { connections } = store.dispatch
-  connection.default = false
+
   if (!connection.id || !connection.name || !connection.deviceID) {
     var error = new Error()
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
   if (isPortal()) {
-    connections.updateConnection(connection)
+    connections.updateConnection({ ...connection, default: false })
   } else if (auth.backendAuthenticated) {
-    emit('connection', connection)
+    emit('connection', { ...connection, default: false })
   }
 }
 

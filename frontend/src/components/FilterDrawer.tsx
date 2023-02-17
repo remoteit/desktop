@@ -1,4 +1,5 @@
 import React from 'react'
+import structuredClone from '@ungap/structured-clone'
 import { platforms } from '../platforms'
 import { getDeviceModel } from '../selectors/devices'
 import { defaultState } from '../models/devices'

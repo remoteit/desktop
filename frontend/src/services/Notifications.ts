@@ -118,9 +118,9 @@ function showNotice(event: ICloudEvent) {
 }
 
 async function checkNotificationPermission() {
-  console.log('NOTIFICATION PERMISSION', Notification.permission)
-  if (Notification.permission === 'granted') return
+  console.log('NOTIFICATION PERMISSION', Notification?.permission)
+  if (Notification?.permission === 'granted') return
 
-  const permission = await Notification.requestPermission()
+  const permission = await Notification?.requestPermission()
   if (permission === 'granted') console.log('User granted notification permission')
 }
