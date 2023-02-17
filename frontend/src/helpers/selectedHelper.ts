@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
 
@@ -7,7 +8,7 @@ export function eachSelectedDevice(
   callback: (device: IDevice) => void
 ) {
   getDevices(state).forEach(device => {
-    if (selected.includes(device.id)) callback(device)
+    if (selected.includes(device.id)) callback(structuredClone(device))
   })
 }
 
