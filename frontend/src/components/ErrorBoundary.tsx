@@ -30,22 +30,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.state = { hasError: false }
   }
 
-  componentDidMount() {
-    window.addEventListener('unhandledrejection', this.handleUnhandledRejection)
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('unhandledrejection', this.handleUnhandledRejection)
-  }
-
-  handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-    const error = event.reason instanceof Error ? event.reason : new Error(event.reason)
-    const userId = this.props.store?.getState().user.id
-
-    this.setState({ hasError: true, error, userId })
-    this.airbrake.notify({ error, context: { version, userId } })
-  }
-
   componentDidCatch(error: Error, info: ErrorInfo) {
     const userId = this.props.store?.getState().user.id
 

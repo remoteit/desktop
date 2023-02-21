@@ -21,6 +21,8 @@
 .error .body {
   position: relative;
   color: white;
+  max-width: 90%;
+  overflow: scroll;
   background-color: rgb(166, 0, 0);
   border-radius: 20px;
   padding: 10px 30px 20px;
