@@ -42,8 +42,9 @@
     nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'Remote.It Installer$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
 
     ; Stop the agent
-    FileWrite $8 "Stopping Service$\r$\n"
-    nsExec::ExecToStack '"$9\remoteit.exe" agent uninstall' 
+    FileWrite $8 "Stopping Service$\r$\n" 
+    FileWrite $8 '"$9\remoteit.exe" agent uninstall$\r$\n' 
+    nsExec::ExecToStack '"$9\remoteit.exe" agent uninstall'
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -69,7 +70,7 @@
     file_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
     end_of_test:
-    FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    FileWrite $8 "Install ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     
     ; Find the platform and set install path
     ${If} ${RunningX64}
@@ -93,32 +94,34 @@
     ${EndIf}
 
     ; Remove from path env var incase already there
-    StrCpy $7 'powershell [Environment]::SetEnvironmentVariable("$\'PATH$\'",((([Environment]::GetEnvironmentVariable("$\'PATH$\'","$\'Machine$\'")).Split("$\';$\'") | Where-Object { $$_ -notlike "$\'*\remoteit\resources\*$\'" }) -join "$\';$\'"),"$\'Machine$\'")' 
+    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine)).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -or ($$_ -eq '') }) -join ';', [EnvironmentVariableTarget]::Machine)"
+    FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+    FileWrite $8 "Result: [$0] $1"
 
     ; Add to path env var
-    StrCpy $7 'powershell [Environment]::SetEnvironmentVariable("$\'PATH$\'",[Environment]::GetEnvironmentVariable("$\'PATH$\'", [EnvironmentVariableTarget]::"$\'Machine$\'") + "$\';$9$\'",[EnvironmentVariableTarget]::"$\'Machine$\'")'
+    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$9',[EnvironmentVariableTarget]::Machine)"
+    FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+    FileWrite $8 "Result: [$0] $1"
 
     ; Remove agent just in case
     StrCpy $7 '"$9\remoteit.exe" agent uninstall'
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+    FileWrite $8 "$7     [$0] $1"
 
     ; Install agent
     StrCpy $7 '"$9\remoteit.exe" agent install'
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+    FileWrite $8 "$7     [$0] $1"
     
     FileWrite $8 "$\nEnd Install $\r$\n"
     FileClose $8
@@ -183,7 +186,7 @@
                         nsExec::ExecToStack $7
                         Pop $0
                         Pop $1
-                        FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+                        FileWrite $8 "$7     [$0] $1"
 
                         ; Waits for unregister to complete
                         nsExec::ExecToStack '"$9\remoteit.exe" status'
@@ -214,14 +217,14 @@
         nsExec::ExecToStack $7
         Pop $0
         Pop $1      
-        FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+        FileWrite $8 "$7     [$0] $1"
         
         ; Remove from path env var
-        StrCpy $7 'powershell [Environment]::SetEnvironmentVariable("$\'PATH$\'",((([Environment]::GetEnvironmentVariable("$\'PATH$\'","$\'Machine$\'")).Split("$\';$\'") | Where-Object { $$_ -notlike "$\'*\remoteit\resources\*$\'" }) -join "$\';$\'"),"$\'Machine$\'")' 
+        StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine)).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -or ($$_ -eq '') }) -join ';', [EnvironmentVariableTarget]::Machine)"
         nsExec::ExecToStack $7
         Pop $0
         Pop $1
-        FileWrite $8 "$7     [$0]  [$1]$\r$\n"
+        FileWrite $8 "$7     [$0] $1"
 
         RMDir /r "$INSTDIR"
         FileWrite $8 "RMDir $INSTDIR$\r$\n"
