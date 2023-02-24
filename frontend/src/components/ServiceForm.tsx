@@ -89,7 +89,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     setUrlField(newForm)
     if (!adding) setDefaultForm(structuredClone(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
-  }, [service])
+  }, [service?.id])
 
   useEffect(() => {
     if (form && thisDevice) portScan({ port: form.port, host: form.host })
