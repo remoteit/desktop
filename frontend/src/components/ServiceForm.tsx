@@ -22,7 +22,6 @@ import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
 export type ServiceFormProps = {
@@ -277,18 +276,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   <i>Optional</i>
                 </Typography>
               </ListItem>
-              <TestUI>
-                <ListItem className={css.field}>
-                  <TextField
-                    label="Presence address"
-                    value={form.presenceAddress || ''}
-                    placeholder="presence.remote.it:443"
-                    variant="filled"
-                    onChange={event => setForm({ ...form, presenceAddress: event.target.value })}
-                  />
-                  <Typography variant="caption">Example: presence.remote.it:443</Typography>
-                </ListItem>
-              </TestUI>
               <ListItemCheckbox
                 checked={form.enabled}
                 label="Enable service"
