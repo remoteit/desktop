@@ -18,7 +18,7 @@ export const ListItemCopy: React.FC<Props> = props => {
       <DataButton
         {...props}
         title={clipboard.copied ? 'Copied!' : `Copy ${props.label}`}
-        icon={clipboard.copied ? 'check' : 'copy'}
+        icon={clipboard.copied ? 'check' : 'clone'}
         iconColor={clipboard.copied ? 'success' : undefined}
         onClick={clipboard.copy}
       />

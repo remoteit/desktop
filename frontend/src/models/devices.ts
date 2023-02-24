@@ -349,7 +349,7 @@ export default createModel<RootModel>()({
     },
 
     async cloudUpdateDevice({ id, set }: { id: string; set: ILookup<any> }, state) {
-      let device = selectDevice(state, undefined, id)
+      let device = structuredClone(selectDevice(state, undefined, id))
       if (!device) return
       for (const key in set) device[key] = set[key]
       dispatch.accounts.setDevice({ id: device.id, device })
