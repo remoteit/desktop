@@ -1,4 +1,4 @@
-name: Build/release
+name: Build/signed-release
 
 on: workflow_dispatch
 
