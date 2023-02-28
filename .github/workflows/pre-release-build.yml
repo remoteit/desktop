@@ -23,7 +23,6 @@ jobs:
     steps:
       - name: Create a draft release
         uses: actions/create-release@v1
-        if: env.release == true
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }}
