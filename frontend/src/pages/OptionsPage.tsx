@@ -117,6 +117,12 @@ export const OptionsPage: React.FC = () => {
           <AccordionMenuItem subtitle="Advanced" gutters>
             <List>
               <ListItemSetting
+                label="Clear all connection errors"
+                subLabel="Will leave connections all unchanged, but clear the saved error messages."
+                icon="broom-wide"
+                onClick={() => emit('service/clearErrors')}
+              />
+              <ListItemSetting
                 label="Disable deep link handling"
                 subLabel="You can disable deep link handling to fix a bug in Linux where the desktop app is set to open html file types."
                 icon={preferences.disableDeepLinks ? 'link-slash' : 'link'}

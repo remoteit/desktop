@@ -29,7 +29,8 @@ declare global {
     | 'service/forget'
     | 'service/restart'
     | 'service/clear'
-    | 'service/clear-recent'
+    | 'service/clearRecent'
+    | 'service/clearErrors'
     | 'launch/app'
 
     // App/settings

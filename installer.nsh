@@ -3,7 +3,7 @@
 !include WinVer.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.15.8"
+!define PKGVERSION "3.16.0-alpha.0"
 
 !macro customInit
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
@@ -17,34 +17,13 @@
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
-    ; Find the platform and set install path
-    ${If} ${RunningX64}
-        ${If} ${IsNativeAMD64}
-            ; x64
-            FileWrite $8 "Platform X64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\x64'
-        ${ElseIf} ${IsNativeARM64}
-            ; ARM64
-            FileWrite $8 "Platform x86 or arm64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\arm64'
-        ${Else}
-            ; Unknown architecture
-            FileWrite $8 "Unknown architecture - using Platform X64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\x64'
-        ${EndIf}
-    ${Else}
-        ; x86 / ia32
-        FileWrite $8 "Platform x86 or ia32$\r$\n"
-        StrCpy $9 '$INSTDIR\resources\ia32'
-    ${EndIf}
-
     ; Non blocking message box
     nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'Remote.It Installer$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
 
-    ; Stop the agent
-    FileWrite $8 "Stopping Service$\r$\n" 
-    FileWrite $8 '"$9\remoteit.exe" agent uninstall$\r$\n' 
-    nsExec::ExecToStack '"$9\remoteit.exe" agent uninstall'
+    ; Stop the agent - don't use install path since it would be different if installed in an arch directory
+    FileWrite $8 "Stopping Service$\r$\n"
+    FileWrite $8 'remoteit.exe agent uninstall$\r$\n' 
+    nsExec::ExecToStack 'remoteit.exe agent uninstall' 
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -72,27 +51,6 @@
     end_of_test:
     FileWrite $8 "Install ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     
-    ; Find the platform and set install path
-    ${If} ${RunningX64}
-        ${If} ${IsNativeAMD64}
-            ; x64
-            FileWrite $8 "Platform X64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\x64'
-        ${ElseIf} ${IsNativeARM64}
-            ; ARM64
-            FileWrite $8 "Platform x86 or arm64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\arm64'
-        ${Else}
-            ; Unknown architecture
-            FileWrite $8 "Unknown architecture - using Platform X64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\x64'
-        ${EndIf}
-    ${Else}
-        ; x86 / ia32
-        FileWrite $8 "Platform x86 or ia32$\r$\n"
-        StrCpy $9 '$INSTDIR\resources\ia32'
-    ${EndIf}
-
     ; Remove from path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine)).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -or ($$_ -eq '') }) -join ';', [EnvironmentVariableTarget]::Machine)"
     FileWrite $8 "$7$\r$\n"
@@ -102,7 +60,7 @@
     FileWrite $8 "Result: [$0] $1"
 
     ; Add to path env var
-    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$9',[EnvironmentVariableTarget]::Machine)"
+    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$INSTDIR\resources', [EnvironmentVariableTarget]::Machine)"
     FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
     Pop $0
@@ -110,14 +68,14 @@
     FileWrite $8 "Result: [$0] $1"
 
     ; Remove agent just in case
-    StrCpy $7 '"$9\remoteit.exe" agent uninstall'
+    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
     FileWrite $8 "$7     [$0] $1"
 
     ; Install agent
-    StrCpy $7 '"$9\remoteit.exe" agent install'
+    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent install'
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
@@ -137,27 +95,6 @@
         FileOpen $8 "$TEMP\remoteit.log" w
     end_of_test_u:
     FileWrite $8 "$\r$\nRemoveFiles ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-
-    ; Find the platform and assign uninstall path
-    ${If} ${RunningX64}
-        ${If} ${IsNativeAMD64}
-            ; x64
-            FileWrite $8 "Platform X64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\x64'
-        ${ElseIf} ${IsNativeARM64}
-            ; ARM64
-            FileWrite $8 "Platform x86 or arm64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\arm64'
-        ${Else}
-            ; Unknown architecture
-            FileWrite $8 "Unknown architecture - using Platform X64$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\x64'
-        ${EndIf}
-    ${Else}
-        ; x86 / ia32
-        FileWrite $8 "Platform x86 or ia32$\r$\n"
-        StrCpy $9 '$INSTDIR\resources\ia32'
-    ${EndIf}
 
     ; Detect auto-update
     ${If} ${IsUpdated}
@@ -182,14 +119,14 @@
                     true:
                         FileWrite $8 "...unregister your device: YES$\r$\n"
 
-                        StrCpy $7 '"$9\remoteit.exe" unregister --yes'
+                        StrCpy $7 '"$INSTDIR\resources\remoteit.exe" unregister --yes'
                         nsExec::ExecToStack $7
                         Pop $0
                         Pop $1
                         FileWrite $8 "$7     [$0] $1"
 
                         ; Waits for unregister to complete
-                        nsExec::ExecToStack '"$9\remoteit.exe" status'
+                        nsExec::ExecToStack '"$INSTDIR\resources\remoteit.exe" status'
 
                         MessageBox MB_OK "Your device was unregistered!"
 
@@ -213,7 +150,7 @@
             FileWrite $8 "Device config not found$\r$\n"
         end_of_config:
 
-        StrCpy $7 '"$9\remoteit.exe" agent uninstall'
+        StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
         nsExec::ExecToStack $7
         Pop $0
         Pop $1      

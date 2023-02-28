@@ -33,12 +33,12 @@ if [ "$(uname)" = "Darwin" ]; then
 
 elif [ "$(uname)" = "Linux" ]; then
     
-    #Linux
-    mkdir -pm 777 ./bin/linux/
-    curl -L https://${URL_CLI}${CLI}/remoteit.x86_64-linux --output ./bin/linux/remoteit
-    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/linux/connectd
-    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/linux/demuxer
-    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/linux/muxer
+    #amd64
+    mkdir -pm 777 ./bin/amd64/
+    curl -L https://${URL_CLI}${CLI}/remoteit.x86_64-linux --output ./bin/amd64/remoteit
+    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/amd64/connectd
+    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/amd64/demuxer
+    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/amd64/muxer
 
     #RPI armv7
     mkdir -pm 777 ./bin/armv7l/
