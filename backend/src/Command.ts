@@ -35,9 +35,10 @@ export default class Command {
   log(
     message: string,
     params: ILookup<object | string | boolean | undefined>,
-    type: 'info' | 'warn' | 'error' = 'info'
+    type: 'info' | 'warn' | 'error' = 'info',
+    force?: boolean
   ) {
-    if (this.quiet) return
+    if (this.quiet && !force) return
     Logger[type](message, this.sanitize(params))
   }
 
@@ -82,17 +83,10 @@ export default class Command {
           : await execPromise(this.toString())
 
       if (stderr) {
-        this.log(`EXEC *** STD ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error')
-        const error = this.parseStdError(stderr)
-        if (isErrorReportable(error)) {
-          AirBrake.notify({
-            params: { type: 'COMMAND STDERR', exec: this.toString() },
-            context: { version: environment.version },
-            error: stderr.toString(),
-          })
-        }
-        this.onError(new Error(error.message))
-        result = error.message
+        this.log(`EXEC *** STD ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error', true)
+        const cliError = this.parseStdError(stderr)
+        this.airbrake(cliError, stderr.toString(), 'COMMAND STDERR')
+        this.onError(new Error(cliError.message))
       }
 
       if (stdout) {
@@ -100,25 +94,28 @@ export default class Command {
       }
     } catch (error) {
       if (isStdExecException(error)) {
-        const parsed = this.parseStdError(error.stderr || error.stdout || error.message)
-        if (isErrorReportable(parsed)) {
-          AirBrake.notify({
-            params: { type: 'COMMAND ERROR', exec: this.toString() },
-            context: { version: environment.version },
-            error,
-          })
-        }
-        this.log(`EXEC CAUGHT *** STD ERROR ***`, { error, errorStack: error.stack }, 'error')
-        this.onError(new Error(parsed.message))
-        result = parsed.message
+        const cliError = this.parseStdError(error.stderr || error.stdout || error.message)
+        this.airbrake(cliError, error, 'COMMAND ERROR')
+        this.log(`EXEC CAUGHT *** STD ERROR ***`, { error, errorStack: error.stack }, 'error', true)
+        this.onError(new Error(cliError.message))
       } else if (error instanceof Error) {
-        this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorStack: error.stack }, 'error')
+        this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorStack: error.stack }, 'error', true)
       } else {
-        Logger.error(`EXEC CAUGHT *** UNKNOWN ERROR ***`, { error }, 'error')
+        Logger.error(`EXEC CAUGHT *** UNKNOWN ERROR ***`, { error }, 'error', true)
       }
     }
 
     return result
+  }
+
+  airbrake(cliError: CliStderr, error: string | StdExecException, type: string) {
+    if (isErrorReportable(cliError)) {
+      AirBrake.notify({
+        params: { type, exec: this.toString() },
+        context: { version: environment.version },
+        error,
+      })
+    }
   }
 }
 

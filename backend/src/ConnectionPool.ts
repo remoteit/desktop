@@ -50,6 +50,7 @@ export default class ConnectionPool {
   check = async () => {
     if (!binaryInstaller.ready || binaryInstaller.inProgress || !user.signedIn) return
     const cliData = await cli.readConnections()
+    // no data returned on error
     if (!cliData) return
 
     // move connections: cli -> desktop
@@ -231,13 +232,13 @@ export default class ConnectionPool {
     this.updated()
   }
 
-  clearErrors = async () => {
+  clearErrors = () => {
     this.pool.forEach(connection => (connection.params.error = undefined))
     Logger.info('CLEARING ERRORS')
     this.updated()
   }
 
-  clearMemory = async () => {
+  clearMemory = () => {
     Logger.info('CLEARING CONNECTIONS')
     this.pool = []
     EventBus.emit(ConnectionPool.EVENTS.pool, [])

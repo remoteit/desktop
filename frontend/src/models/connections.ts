@@ -449,7 +449,7 @@ export default createModel<RootModel>()({
     async clearRecent(_: void, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      if (state.auth.backendAuthenticated) emit('service/clear-recent')
+      if (state.auth.backendAuthenticated) emit('service/clearRecent')
       else set({ all: all.filter(c => c.enabled && c.online) })
     },
 
