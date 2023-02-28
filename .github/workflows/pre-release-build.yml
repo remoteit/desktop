@@ -21,6 +21,16 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
+      - name: Create a draft release
+        uses: actions/create-release@v1
+        if: env.release == true
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+
       - name: Check out Git repository
         uses: actions/checkout@v3
 
