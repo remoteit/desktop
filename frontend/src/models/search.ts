@@ -37,7 +37,7 @@ export default createModel<RootModel>()({
       dispatch.search.set({ fetching: true })
 
       const id = getActiveAccountId(state)
-      const size = 5
+      const size = 10
       const accountQuery = `
         account(id: $id) {
           id
