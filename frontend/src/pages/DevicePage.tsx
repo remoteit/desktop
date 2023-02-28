@@ -182,7 +182,7 @@ export const DevicePage: React.FC = () => {
                   service={s}
                   className={css.connect}
                   permissions={device.permissions}
-                  disabled={s.state === 'inactive' || device.thisDevice}
+                  disabled={s.state === 'inactive'}
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
