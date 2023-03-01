@@ -4,7 +4,6 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { execSync } = require('child_process')
-const { config } = require('dotenv')
 
 const TEMP_DIR = path.resolve(__dirname, '../temp')
 const TOOL_DIR = path.resolve(os.homedir(), 'CodeSignTool/')
