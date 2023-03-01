@@ -46,6 +46,7 @@ jobs:
         with:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
+          network-timeout: 60000
 
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
