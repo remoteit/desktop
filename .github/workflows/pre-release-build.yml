@@ -32,7 +32,7 @@ jobs:
       - name: Set npm version
         run: npm install -g npm@8
 
-      - name: Authenticate with fontawsome NPM repo
+      - name: Authenticate with fontawesome NPM repo
         run: |
           echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
