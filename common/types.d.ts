@@ -554,7 +554,7 @@ declare global {
     id: string
     state?: IDevice['state']
     timestamp: Date
-    type: string
+    type: IEventType
     actor?: IUser
     target?: {
       id: string
@@ -565,6 +565,20 @@ declare global {
     action: string
     devices?: { id: string; name: string }[]
   }
+
+  type IEventType =
+    | 'AUTH_LOGIN'
+    | 'AUTH_LOGIN_ATTEMPT'
+    | 'AUTH_PASSWORD_CHANGE'
+    | 'AUTH_PASSWORD_RESET'
+    | 'AUTH_PASSWORD_RESET_CONFIRMED'
+    | 'AUTH_PHONE_CHANGE'
+    | 'AUTH_MFA_ENABLED'
+    | 'AUTH_MFA_DISABLED'
+    | 'LICENSE_UPDATED'
+    | 'DEVICE_STATE'
+    | 'DEVICE_CONNECT'
+    | 'DEVICE_SHARE'
 
   interface IEventList {
     total: number

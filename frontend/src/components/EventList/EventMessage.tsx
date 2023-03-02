@@ -2,20 +2,7 @@ import React from 'react'
 import { combinedName } from '../../shared/nameHelper'
 
 export const EventActions = ['add', 'update']
-export const EventType = {
-  login_state: 'AUTH_LOGIN',
-  login_attempt_state: 'AUTH_LOGIN_ATTEMPT',
-  login_password_change: 'AUTH_PASSWORD_CHANGE',
-  login_password_reset: 'AUTH_PASSWORD_RESET',
-  login_password_reset_confirmed: 'AUTH_PASSWORD_RESET_CONFIRMED',
-  login_phone_change: 'AUTH_PHONE_CHANGE',
-  login_mfa_enabled: 'AUTH_MFA_ENABLED',
-  login_mfa_disabled: 'AUTH_MFA_DISABLED',
-  license_updated: 'LICENSE_UPDATED',
-  device_state: 'DEVICE_STATE',
-  device_connect: 'DEVICE_CONNECT',
-  device_share: 'DEVICE_SHARE',
-}
+
 export const EventState = {
   active: 'active',
   connected: 'connected',
@@ -28,39 +15,61 @@ export function EventMessage({
 }: {
   item: IEvent
   device?: IDevice
-  loggedInUser: IUser | undefined
+  loggedInUser: IUser
 }): JSX.Element {
   const target = item.target?.[0] //(item.target?.map(service => service.name) || []).join(' + ')
   let name = combinedName(target, target?.device, ' - ')
   if (!name) name = target?.id ? `${target.id} (deleted)` : 'Unknown'
+  const actorName = item.actor?.email === loggedInUser.email ? 'You' : item.actor?.email
+  const actorAdjective = actorName === 'You' ? 'your' : 'their'
 
   let message: JSX.Element | string = ''
   switch (item.type) {
-    case EventType.login_state:
-      message = 'Logged in'
+    case 'AUTH_LOGIN':
+      message = (
+        <>
+          <b>{actorName}</b> logged in
+        </>
+      )
       break
-    case EventType.login_attempt_state:
-      message = 'Login attempt'
+    case 'AUTH_LOGIN_ATTEMPT':
+      message = (
+        <>
+          <b>{actorName}</b> attempted to log in
+        </>
+      )
       break
-    case EventType.login_password_change:
-      message = 'Password changed'
+    case 'AUTH_PASSWORD_CHANGE':
+      message = (
+        <>
+          <b>{actorName}</b> changed {actorAdjective} password
+        </>
+      )
       break
-    case EventType.login_password_reset:
-      message = 'Password reset started'
+    case 'AUTH_PASSWORD_RESET':
+      message = (
+        <>
+          <b>{actorName}</b> reset {actorAdjective} password
+        </>
+      )
       break
-    case EventType.login_password_reset_confirmed:
-      message = 'Password reset confirmed'
+    case 'AUTH_PASSWORD_RESET_CONFIRMED':
+      message = (
+        <>
+          Reset password was confirmed for <b>{actorName}</b>
+        </>
+      )
       break
-    case EventType.login_phone_change:
+    case 'AUTH_PHONE_CHANGE':
       message = 'Phone number changed'
       break
-    case EventType.login_mfa_enabled:
+    case 'AUTH_MFA_ENABLED':
       message = 'Multi-factor authentication (MFA) enabled'
       break
-    case EventType.login_mfa_disabled:
+    case 'AUTH_MFA_DISABLED':
       message = 'Multi-factor authentication (MFA) disabled'
       break
-    case EventType.device_state:
+    case 'DEVICE_STATE':
       message = (
         <>
           <b>{name} </b>
@@ -69,38 +78,36 @@ export function EventMessage({
       )
       break
 
-    case EventType.device_connect:
+    case 'DEVICE_CONNECT':
       message = (
         <>
-          <b>{item.actor?.email}</b> {item.state === EventState.connected ? 'connected to' : 'disconnected from'}{' '}
-          <i>{name} </i>
+          <b>{actorName}</b> {item.state === EventState.connected ? 'connected to' : 'disconnected from'} <i>{name} </i>
         </>
       )
       break
 
-    case EventType.device_share:
-      const actor = item.actor?.email === loggedInUser?.email ? 'You' : item.actor?.email
+    case 'DEVICE_SHARE':
       const messageDevice = device || item.devices?.[0]
       const deviceName = messageDevice?.name || ''
       const users = item.users && item.users.map(user => user.email || '(deleted)')
       const userList =
         users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
-      const affected = userList === loggedInUser?.email ? 'you' : userList
+      const affected = userList === loggedInUser.email ? 'you' : userList
 
       if (item.shared) {
         message = (
           <>
-            {actor} shared <i>{deviceName}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
+            {actorName} shared <i>{deviceName}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
             <b>{affected}</b>
           </>
         )
       } else if (EventActions.includes(item.action)) {
         message = (
           <>
-            {actor} shared <i>{deviceName}</i> with <b>{affected}</b>
+            {actorName} shared <i>{deviceName}</i> with <b>{affected}</b>
           </>
         )
-      } else if (actor === affected) {
+      } else if (actorName?.toLowerCase() === affected) {
         message = (
           <>
             You left the shared device <i>{deviceName}</i>
@@ -109,13 +116,13 @@ export function EventMessage({
       } else {
         message = (
           <>
-            {actor} removed sharing of <i>{deviceName}</i> from <b>{affected}</b>
+            {actorName} removed sharing of <i>{deviceName}</i> from <b>{affected}</b>
           </>
         )
       }
       break
 
-    case EventType.license_updated:
+    case 'LICENSE_UPDATED':
       message = <b>Your license was updated</b>
       break
     default:
