@@ -68,6 +68,7 @@ export const PATHS = {
   WIN_BINARIES_DEV: path.resolve('./bin/', os.arch()),
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
+    path.resolve(__dirname, '../../../../', os.arch(), '/remoteit.exe'),
     path.resolve('C:/Program Files/remoteit-bin/remoteit.exe'),
     path.resolve('C:/Program Files/remoteit/remoteit.exe'),
     path.resolve('C:/Windows/remoteit.exe'),
