@@ -18,15 +18,20 @@
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
     ; Install window title
-    StrCpy $7 "Remote.It Installer"
+    StrCpy $6 "Remote.It Installer"
 
     ; Non blocking message box
-    nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $7, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
+    nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $6, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
 
     ; Stop the agent - don't use install path since it would be different if installed in an arch directory
-    FileWrite $8 "Stopping Service$\r$\n"
-    FileWrite $8 "remoteit.exe agent uninstall$\r$\n"
-    nsExec::ExecToStack "remoteit.exe agent uninstall"
+    FileWrite $8 "Stopping Old Service$\r$\n"
+
+    ; Remove agent via path at startup to access old binary
+    StrCpy $7 "remoteit.exe agent uninstall"
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1
+    FileWrite $8 "$7     [$0] $1"
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -43,7 +48,7 @@
     FileClose $8
 
     ; Close the installing window
-    nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $7 } | ForEach-Object { $$_.CloseMainWindow() }"'
+    nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $6 } | ForEach-Object { $$_.CloseMainWindow() }"'
 !macroend
 
 !macro customInstall
@@ -55,7 +60,9 @@
     file_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
     end_of_test:
-    FileWrite $8 "Install ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    
+    FileWrite $8 "Uninstalling Service$\r$\n"
     
     ; Remove agent just in case
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
@@ -64,6 +71,8 @@
     Pop $1
     FileWrite $8 "$7     [$0] $1"
 
+    FileWrite $8 "Installing Service$\r$\n"
+
     ; Install agent
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent install'
     nsExec::ExecToStack $7
@@ -71,6 +80,8 @@
     Pop $1
     FileWrite $8 "$7     [$0] $1"
     
+    FileWrite $8 "Setting PATH ... "
+
     ; Remove from machine path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
     FileWrite $8 "$7$\r$\n"
@@ -94,6 +105,7 @@
     Pop $0
     Pop $1
     FileWrite $8 "Result: [$0] $1"
+    FileWrite $8 "DONE $\r$\n"
 
     FileWrite $8 "$\r$\nRemoving deprecated binaries... "
     RMDir /r "$INSTDIR\resources\arm64"
@@ -101,7 +113,7 @@
     RMDir /r "$INSTDIR\resources\x64"
     FileWrite $8 "DONE$\r$\n"
 
-    FileWrite $8 "$\r$\nEnd Install $\r$\n"
+    FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
     FileClose $8
 !macroend
 
