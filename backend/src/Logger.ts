@@ -11,7 +11,16 @@ const MAX_LOG_FILES = 5
 const { combine, printf } = winston.format
 const consoleFormat = printf(p => {
   const { timestamp, level, message, ...rest } = p
-  return `${message} ${level} ${timestamp} ${JSON.stringify(rest, null, 4)}`
+  const localTimestamp = new Date(timestamp).toLocaleString(undefined, {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: 'numeric',
+    fractionalSecondDigits: 3,
+  })
+  return `${message} ${level} ${localTimestamp} ${JSON.stringify(rest, null, 4)}`
 })
 
 const transports = [
