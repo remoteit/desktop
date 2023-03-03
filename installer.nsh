@@ -18,7 +18,7 @@
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
     ; Install window title
-    StrCpy $6 "Remote.It Installer"
+    StrCpy $6 "Remote.It Pre-Installation"
 
     ; Non blocking message box
     nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $6, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
@@ -80,7 +80,7 @@
     Pop $1
     FileWrite $8 "$7     [$0] $1"
     
-    FileWrite $8 "Setting PATH ... "
+    FileWrite $8 "Setting PATH ... $\r$\n"
 
     ; Remove from machine path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
@@ -88,7 +88,7 @@
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "Result: [$0] $1"
+    FileWrite $8 "Result: [$0] $1$\r$\n"
 
     ; Remove from user path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'User')"
@@ -96,7 +96,7 @@
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "Result: [$0] $1"
+    FileWrite $8 "Result: [$0] $1$\r$\n"
 
     ; Add to path env var
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$INSTDIR\resources', [EnvironmentVariableTarget]::Machine)"
@@ -104,7 +104,7 @@
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "Result: [$0] $1"
+    FileWrite $8 "Result: [$0] $1$\r$\n"
     FileWrite $8 "DONE $\r$\n"
 
     FileWrite $8 "$\r$\nRemoving deprecated binaries... "
@@ -126,13 +126,13 @@
     file_not_found_u:
         FileOpen $8 "$TEMP\remoteit.log" w
     end_of_test_u:
-    FileWrite $8 "$\r$\nRemoveFiles ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    FileWrite $8 "$\r$\nStart Remove Files ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
     ; Detect auto-update
     ${If} ${IsUpdated}
-        FileWrite $8 "$\r$\nUpdate ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+        FileWrite $8 "$\r$\nIs an update, don't remove files.$\r$\n"
     ${Else}
-        FileWrite $8 "$\r$\nUninstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+        FileWrite $8 "$\r$\nUninstalling ...$\r$\n"
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
         config_found:
@@ -200,7 +200,7 @@
         FileWrite $8 "RMDir $INSTDIR$\r$\n"
     ${endif}
 
-    FileWrite $8 "$\r$\nEnd Remove Files$\r$\n$\r$\n"
+    FileWrite $8 "$\r$\nEnd Remove Files$\r$\n"
     FileClose $8 
 !macroend
 
