@@ -67,8 +67,9 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
     if (!onClick) confirm = false
 
     const handleClick = () => {
+      if (disabled) return
       if (confirm) setOpen(true)
-      else disabled || onClick?.()
+      else onClick?.()
     }
 
     const handleConfirm = () => {
