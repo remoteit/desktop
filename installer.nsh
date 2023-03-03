@@ -95,7 +95,13 @@
     Pop $1
     FileWrite $8 "Result: [$0] $1"
 
-    FileWrite $8 "$\nEnd Install $\r$\n"
+    FileWrite $8 "$\r$\nRemoving deprecated binaries... "
+    RMDir /r "$INSTDIR\resources\arm64"
+    RMDir /r "$INSTDIR\resources\ia32"
+    RMDir /r "$INSTDIR\resources\x64"
+    FileWrite $8 "DONE$\r$\n"
+
+    FileWrite $8 "$\r$\nEnd Install $\r$\n"
     FileClose $8
 !macroend
 
@@ -112,9 +118,9 @@
 
     ; Detect auto-update
     ${If} ${IsUpdated}
-        FileWrite $8 "$\nUpdate ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+        FileWrite $8 "$\r$\nUpdate ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     ${Else}
-        FileWrite $8 "$\nUninstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+        FileWrite $8 "$\r$\nUninstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
         config_found:
