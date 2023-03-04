@@ -5,9 +5,9 @@
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-* build-electron",
+    "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-*",
     "build-backend": "cd backend && npm run build",
-    "build-electron": "cross-env electron-builder",
+    "build-electron": "electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-env": "cp .env frontend/ && cp .env backend/",

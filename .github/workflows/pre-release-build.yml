@@ -21,16 +21,6 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - name: Create a draft release
-        uses: actions/create-release@v1
-        if: env.release == true
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
-
       - name: Check out Git repository
         uses: actions/checkout@v3
 
@@ -42,7 +32,7 @@ jobs:
       - name: Set npm version
         run: npm install -g npm@8
 
-      - name: Authenticate with fontawsome NPM repo
+      - name: Authenticate with fontawesome NPM repo
         run: |
           echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
@@ -51,19 +41,12 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Install SSL.com Sign Tool on Windows
-        shell: bash
-        if: matrix.os == 'windows-latest'
-        run: |
-          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/codesigntool.zip
-          unzip ~/Downloads/codesigntool.zip -d ~/
-          mv ~/CodeSignTool* ~/CodeSignTool/
-
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
+          # args: '--network-timeout=60000'
 
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
