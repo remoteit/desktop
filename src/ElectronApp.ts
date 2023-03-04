@@ -284,9 +284,7 @@ export default class ElectronApp {
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
       : environment.isWindows
-      ? electron.nativeTheme.shouldUseDarkColors
-        ? 'iconWinDark.ico'
-        : 'iconWinLight.ico'
+      ? 'iconWinColor.ico'
       : environment.isPi
       ? 'iconLinuxColor.png'
       : 'iconLinux.png'
