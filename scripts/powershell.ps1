@@ -1,3 +1,9 @@
+# open window
+Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Please wait while we stop the Remote.It system service...', '$6 Window Title', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()
+
+# close window
+Get-Process | Where-Object { $_.MainWindowTitle -eq '$6 Window Title' } | ForEach-Object { $_.CloseMainWindow() }
+
 
 # remove remoteit machine env vars
 [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($_ -notlike '*\remoteit*') -and ($_ -ne '') }) -join ';', 'Machine')
@@ -23,7 +29,6 @@ foreach ($path in $existingPath) {
 }
 
 Write-Output ($newPath -join "`r`n")
-
 
 # preview set
 Write-Output((([Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine)).Split(';') | Where-Object { ($_ -notlike '*\remoteit*') -and ($path -ne '') }) -join ';')

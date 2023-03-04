@@ -21,7 +21,7 @@
     StrCpy $6 "Remote.It Pre-Installation"
 
     ; Non blocking message box
-    nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $6, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)"'
+    nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
 
     ; Stop the agent - don't use install path since it would be different if installed in an arch directory
     FileWrite $8 "Stopping Old Service$\r$\n"
@@ -48,7 +48,7 @@
     FileClose $8
 
     ; Close the installing window
-    nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $6 } | ForEach-Object { $$_.CloseMainWindow() }"'
+    nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
 !macroend
 
 !macro customInstall
