@@ -178,7 +178,7 @@ export default createModel<RootModel>()({
 
     async rename({ tag, name, accountId }: { tag: ITag; name: string; accountId: string }, state) {
       dispatch.tags.set({ updating: tag.name })
-      const tags = selectTags(state, accountId)
+      const tags = structuredClone(selectTags(state, accountId))
       const found = findTagIndex(tags, name)
       const index = findTagIndex(tags, tag.name)
       if (found >= 0 && tag.name.toLowerCase() !== name.toLowerCase()) {
