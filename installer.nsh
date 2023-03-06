@@ -111,6 +111,7 @@
     RMDir /r "$INSTDIR\resources\arm64"
     RMDir /r "$INSTDIR\resources\ia32"
     RMDir /r "$INSTDIR\resources\x64"
+    RMDir /r "$INSTDIR\resources\x86"
     FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
