@@ -16,7 +16,7 @@ type Props = { restore?: boolean; select?: boolean }
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { selected, devices, connections, fetching, columnWidths, attributes, required } = useSelector(
     (state: ApplicationState) => ({
-      selected: state.ui.selected,
+      selected: [...state.ui.selected],
       attributes: restore ? restoreAttributes : selectMasterAttributes(state),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
       fetching: getDeviceModel(state).fetching || state.ui.fetching,
@@ -29,7 +29,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   return (
     <DevicesHeader>
       {fetching && !devices.length ? (
-        <LoadingMessage message="Loading..." />
+        <LoadingMessage message="Loading..." spinner={false} />
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (

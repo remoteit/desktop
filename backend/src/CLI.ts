@@ -56,6 +56,7 @@ type IConnectionStatus = {
   serviceType?: number
   addressPort?: number
   addressHost?: string
+  addressIsComplete?: boolean
   restrict?: ipAddress
   timeout?: number
   checkpointCanBindToPortLocally?: boolean
@@ -183,7 +184,6 @@ export default class CLI {
 
       let result: IConnection = {
         id: c.id,
-        host: toUnicode(c.addressHost || ''),
         enabled: !!c.isEnabled,
         starting: c.state === 1, //      starting
         connecting: c.state === 3, //    connecting
@@ -209,9 +209,12 @@ export default class CLI {
         default: false,
       }
 
+      // only update if address is complete
+      if (c.addressIsComplete && c.addressPort && c.addressPort > 0) result.port = c.addressPort
+      if (c.addressIsComplete) result.host = toUnicode(c.addressHost || '')
+
       // keep old sessionID for analytics
       if (c.sessionID) result.sessionId = c.sessionID.toLowerCase()
-      if (c.addressPort && c.addressPort > 0) result.port = c.addressPort
       if (c.createdAt) result.createdTime = Date.parse(c.createdAt)
       if (c.startedAt) result.startTime = Date.parse(c.startedAt)
       if (c.stoppedAt) result.endTime = Date.parse(c.stoppedAt)
@@ -357,10 +360,12 @@ export default class CLI {
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
-    if (!quiet && !skipInstalledCheck) {
+    if (!skipInstalledCheck) {
       commands.onError = (e: Error) => {
-        if (typeof onError === 'function') onError(e)
-        EventBus.emit(this.EVENTS.error, e.toString())
+        if (!quiet) {
+          if (typeof onError === 'function') onError(e)
+          EventBus.emit(this.EVENTS.error, e.toString())
+        }
         binaryInstaller.check()
       }
     }
@@ -371,10 +376,8 @@ export default class CLI {
 
     if (result) {
       try {
-        const parsed = typeof result === 'string' ? JSON.parse(result) : result
-        if (parsed.code === 0) parsed.message && Logger.info('CLI EXEC MESSAGE', parsed.message)
-        else Logger.error('CLI ERROR', { result, command: commands.toSafeString() })
-        return parsed.data
+        const json = typeof result === 'string' ? JSON.parse(result) : result
+        return json.data
       } catch (error) {
         if (error instanceof Error) {
           Logger.error('CLI PARSE ERROR', {

@@ -28,6 +28,10 @@ export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 export const TEST_HEADER = 'test-header'
 
+//Airbrake
+export const AIRBRAKE_ID = parseInt(env.REACT_APP_AIRBRAKE_ID || '', 10)
+export const AIRBRAKE_KEY = String(env.REACT_APP_AIRBRAKE_KEY)
+
 //API Zendesk
 export const ZENDESK_URL = env.ZENDESK_URL || env.REACT_APP_ZENDESK_URL
 export const ZENDESK_KEY = env.ZENDESK_KEY || env.REACT_APP_ZENDESK_KEY

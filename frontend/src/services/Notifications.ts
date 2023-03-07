@@ -19,7 +19,9 @@ const actions = {
 }
 
 export async function notify(event: ICloudEvent) {
+  if (!notificationSupported()) return
   if (!showNotice(event)) return
+
   await checkNotificationPermission()
 
   switch (event.type) {
@@ -118,9 +120,13 @@ function showNotice(event: ICloudEvent) {
 }
 
 async function checkNotificationPermission() {
-  console.log('NOTIFICATION PERMISSION', Notification.permission)
-  if (Notification.permission === 'granted') return
+  console.log('NOTIFICATION PERMISSION', Notification?.permission)
+  if (Notification?.permission === 'granted') return
 
-  const permission = await Notification.requestPermission()
+  const permission = await Notification?.requestPermission()
   if (permission === 'granted') console.log('User granted notification permission')
+}
+
+function notificationSupported() {
+  return !!window.Notification && !!Notification.requestPermission
 }

@@ -6,6 +6,7 @@ import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldP
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'
+import classnames from 'classnames'
 
 type Props = {
   label?: string
@@ -15,6 +16,7 @@ type Props = {
   disableGutters?: boolean
   dense?: boolean
   onSave?: (value?: string) => void
+  className?: string
 }
 
 export const InlineFileFieldSetting: React.FC<Props> = ({
@@ -25,6 +27,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   disableGutters,
   dense = true,
   onSave,
+  className,
 }) => {
   const { filePath } = useSelector((state: ApplicationState) => state.backend)
   const dispatch = useDispatch<Dispatch>()
@@ -42,7 +45,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   return (
     <ListItem
       button
-      className={css.container}
+      className={classnames(className, css.container)}
       onClick={filePrompt}
       disabled={disabled}
       disableGutters={disableGutters}

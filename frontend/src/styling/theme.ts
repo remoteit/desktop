@@ -156,6 +156,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             borderRadius: radius,
+            WebkitAppRegion: 'no-drag',
             '& .MuiTouchRipple-root': { color: palette.primary.main },
           },
         },

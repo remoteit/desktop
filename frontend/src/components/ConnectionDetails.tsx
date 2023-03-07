@@ -174,7 +174,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     <CopyIconButton
                       ref={buttonRef}
                       color="alwaysWhite"
-                      icon="copy"
+                      icon="clone"
                       value={endpoint}
                       onMouseEnter={() => setHover('endpoint')}
                       onMouseLeave={() => setHover(undefined)}

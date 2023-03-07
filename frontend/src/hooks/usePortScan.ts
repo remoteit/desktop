@@ -9,8 +9,8 @@ type Props = {
   host?: string
 }
 
-export function usePortScan(): [typeof reachablePort, (props: Props) => void] {
-  const { reachablePort } = useSelector((state: ApplicationState) => state.backend)
+export function usePortScan(): [typeof portReachable, (props: Props) => void] {
+  const portReachable = useSelector((state: ApplicationState) => state.backend.reachablePort)
   const [lastScan, setLastScan] = useState<Props>({})
   const { backend } = useDispatch<Dispatch>()
 
@@ -32,5 +32,5 @@ export function usePortScan(): [typeof reachablePort, (props: Props) => void] {
     }
   }
 
-  return [reachablePort, portScan]
+  return [portReachable, portScan]
 }

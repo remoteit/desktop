@@ -26,7 +26,7 @@ export function isRelay(service?: IService) {
 
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
   const sessions = state.sessions.all.map(s => s.target.id)
-  const connected = connections.filter(c => c.connected).map(c => c.id)
+  const connected = connections.filter(c => c.connected && !sessions.includes(c.id)).map(c => c.id)
   return sessions.concat(connected)
 }
 
@@ -97,23 +97,22 @@ export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInp
 export function setConnection(connection: IConnection) {
   const { auth } = store.getState()
   const { connections } = store.dispatch
-  connection.default = false
+
   if (!connection.id || !connection.name || !connection.deviceID) {
     var error = new Error()
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
   if (isPortal()) {
-    connections.updateConnection(connection)
+    connections.updateConnection({ ...connection, default: false })
   } else if (auth.backendAuthenticated) {
-    emit('connection', connection)
+    emit('connection', { ...connection, default: false })
   }
 }
 
 export function clearConnectionError(connection: IConnection) {
-  delete connection.error
   console.log('CLEAR ERROR', connection)
-  setConnection(connection)
+  setConnection({ ...connection, error: undefined })
 }
 
 export function getConnectionServiceIds(state: ApplicationState) {

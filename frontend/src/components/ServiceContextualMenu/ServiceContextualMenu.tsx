@@ -69,7 +69,7 @@ export const ServiceContextualMenu: React.FC = () => {
           />
           {connection?.enabled && (
             <>
-              <CopyIconButton app={app} icon="copy" size="base" />
+              <CopyIconButton app={app} icon="clone" size="base" />
               <LaunchButton app={app} size="base" />
             </>
           )}

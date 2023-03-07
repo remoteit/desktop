@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash/isEqual'
+import structuredClone from '@ungap/structured-clone'
 import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH, DEFAULT_CONNECTION } from '../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { useURLForm } from '../hooks/useURLForm'
@@ -21,7 +22,6 @@ import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Notice } from './Notice'
-import { TestUI } from './TestUI'
 import { Pre } from './Pre'
 
 export type ServiceFormProps = {
@@ -88,7 +88,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     setUrlField(newForm)
     if (!adding) setDefaultForm(structuredClone(newForm))
     if (setupAdded) ui.set({ setupAdded: undefined })
-  }, [service])
+  }, [service?.id])
 
   useEffect(() => {
     if (form && thisDevice) portScan({ port: form.port, host: form.host })
@@ -276,18 +276,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   <i>Optional</i>
                 </Typography>
               </ListItem>
-              <TestUI>
-                <ListItem className={css.field}>
-                  <TextField
-                    label="Presence address"
-                    value={form.presenceAddress || ''}
-                    placeholder="presence.remote.it:443"
-                    variant="filled"
-                    onChange={event => setForm({ ...form, presenceAddress: event.target.value })}
-                  />
-                  <Typography variant="caption">Example: presence.remote.it:443</Typography>
-                </ListItem>
-              </TestUI>
               <ListItemCheckbox
                 checked={form.enabled}
                 label="Enable service"
@@ -358,14 +346,6 @@ export const useStyles = makeStyles(({ breakpoints }) => ({
     '& > .MuiTypography-root': {
       width: `calc(50% - ${spacing.lg}px)`,
       marginLeft: spacing.lg,
-    },
-  },
-  fieldSub: {
-    padding: `0 ${spacing.lg}px 0 ${spacing.md}px`,
-    '& .MuiFormControl-root + .MuiFormControl-root': { marginTop: spacing.sm },
-    '& > *': {
-      width: '50%',
-      maxWidth: 400,
     },
   },
   [breakpoints.down('sm')]: {

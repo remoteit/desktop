@@ -267,7 +267,7 @@ export default createModel<RootModel>()({
       const data = result?.data?.data?.login
       let orgs: IOrganizationAccountState['accounts'] = {}
       ids.forEach((id, index) => {
-        if (!data[`_${index}`]) return
+        if (!data?.[`_${index}`]) return
         const { organization, licenses, limits } = data[`_${index}`]
         orgs[id] = parseOrganization(organization)
         orgs[id].licenses = licenses?.map(l => parseLicense(l))

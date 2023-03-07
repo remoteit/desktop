@@ -52,7 +52,7 @@ export function CreateAccessKey(props) {
             <Grid item xs zeroMinWidth>
               <Typography noWrap>
                 {props.newKey}
-                <CopyIconButton icon="copy" value={props.newKey} />
+                <CopyIconButton icon="clone" value={props.newKey} />
               </Typography>
             </Grid>
           </Grid>
@@ -65,7 +65,7 @@ export function CreateAccessKey(props) {
                 <Box>
                   <Typography noWrap>
                     {props.secretKey}
-                    <CopyIconButton icon="copy" value={props.secretKey} />
+                    <CopyIconButton icon="clone" value={props.secretKey} />
                   </Typography>
                   <Typography
                     color="primary"
@@ -88,7 +88,7 @@ export function CreateAccessKey(props) {
                   >
                     Show secret access key
                   </Typography>
-                  <CopyIconButton icon="copy" value={props.secretKey} />
+                  <CopyIconButton icon="clone" value={props.secretKey} />
                 </Box>
               )}
             </Grid>

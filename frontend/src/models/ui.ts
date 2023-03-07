@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { emit } from '../services/Controller'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'

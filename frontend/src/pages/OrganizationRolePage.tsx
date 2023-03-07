@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash/isEqual'
+import structuredClone from '@ungap/structured-clone'
 import { makeStyles } from '@mui/styles'
 import { getActiveAccountId } from '../selectors/accounts'
 import { useParams, useHistory } from 'react-router-dom'

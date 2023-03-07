@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
@@ -52,9 +53,9 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init(_: void, state) {
-      let item = getLocalStorage(state, 'connections')
-      if (item) await dispatch.connections.setAll(dedupe<IConnection>(item, 'id'))
-      console.log('INIT CONNECTIONS', item)
+      let connections = getLocalStorage(state, 'connections')
+      if (connections) await dispatch.connections.setAll(dedupe<IConnection>(connections, 'id'))
+      console.log('INIT CONNECTIONS', connections)
     },
 
     async fetch(_: void, state) {
@@ -82,13 +83,12 @@ export default createModel<RootModel>()({
 
       devices.forEach(d => {
         d.services.forEach(async s => {
-          let connection = lookup[s.id]
+          let connection = structuredClone(lookup[s.id])
           const online = s.state === 'active'
 
           // add / update enabled connect links
           if (s.link?.enabled) {
             connection = connection || newConnection(s)
-
             connection = {
               ...connection,
               id: s.id,
@@ -210,7 +210,7 @@ export default createModel<RootModel>()({
           }
         }
       })
-      dispatch.connections.setAll(connections)
+      dispatch.connections.setAll(connections.filter(c => !!c))
     },
 
     async queueEnable({ serviceIds, enabled }: { serviceIds: string[]; enabled: boolean }) {
@@ -449,7 +449,7 @@ export default createModel<RootModel>()({
     async clearRecent(_: void, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      if (state.auth.backendAuthenticated) emit('service/clear-recent')
+      if (state.auth.backendAuthenticated) emit('service/clearRecent')
       else set({ all: all.filter(c => c.enabled && c.online) })
     },
 

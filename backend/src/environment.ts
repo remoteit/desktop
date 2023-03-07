@@ -57,8 +57,7 @@ export class Environment {
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
-      this.binPath = this.isWindows32 ? PATHS.WIN_BINARIES_32 : PATHS.WIN_BINARIES
-      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : this.binPath
+      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : PATHS.WIN_BINARIES
       this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
@@ -67,25 +66,11 @@ export class Environment {
       this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
       this.symlinkPath = PATHS.MAC_SYMLINKS
     } else {
-      if (this.isPi || this.isPiZero) {
-        this.userPath = PATHS.ARMV7L_USER_SETTINGS
-        this.adminPath = PATHS.ARMV7L_ADMIN_SETTINGS
-        this.binPath = this.isDev ? PATHS.ARMV7L_BINARIES_DEV : PATHS.ARMV7L_BINARIES
-        this.deprecatedBinaries = PATHS.ARMV7L_DEPRECATED_BINARIES
-        this.symlinkPath = PATHS.ARMV7L_SYMLINKS
-      } else if (this.isArmLinux) {
-        this.userPath = PATHS.ARM64_USER_SETTINGS
-        this.adminPath = PATHS.ARM64_ADMIN_SETTINGS
-        this.binPath = this.isDev ? PATHS.ARM64_BINARIES_DEV : PATHS.ARM64_BINARIES
-        this.deprecatedBinaries = PATHS.ARM64_DEPRECATED_BINARIES
-        this.symlinkPath = PATHS.ARM64_SYMLINKS
-      } else {
-        this.userPath = PATHS.LINUX_USER_SETTINGS
-        this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
-        this.binPath = this.isDev ? PATHS.LINUX_BINARIES_DEV : PATHS.LINUX_BINARIES
-        this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
-        this.symlinkPath = PATHS.LINUX_SYMLINKS
-      }
+      this.userPath = PATHS.LINUX_USER_SETTINGS
+      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
+      this.binPath = this.isDev ? PATHS.LINUX_BINARIES_DEV : PATHS.LINUX_BINARIES
+      this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
     this.logPath = path.resolve(this.userPath, 'log')
@@ -94,6 +79,11 @@ export class Environment {
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()
     this.initializePaths()
+  }
+
+  isWindowsARM() {
+    const archString = process.env.PROCESSOR_ARCHITECTURE + process.env.PROCESSOR_ARCHITEW6432
+    return archString.toLowerCase().includes('arm')
   }
 
   initializePaths() {
@@ -191,6 +181,7 @@ export class Environment {
 
   toJSON() {
     return {
+      arch: os.arch(),
       isPiZero: this.isPiZero,
       isPi: this.isPi,
       isWindows: this.isWindows,

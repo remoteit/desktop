@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
@@ -215,7 +216,7 @@ export default createModel<RootModel>()({
 
       if (!network.permissions.includes('MANAGE')) return
 
-      let copy = { ...network }
+      let copy = structuredClone(network)
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
       dispatch.networks.setNetwork(copy)
@@ -238,7 +239,7 @@ export default createModel<RootModel>()({
     },
 
     async removeById(id: string, state) {
-      let { all } = state.networks
+      let all = { ...state.networks.all }
       all[DEFAULT_ID] = [state.networks.default]
       const [_, device] = selectById(state, undefined, id)
       const serviceIds = id === device?.id ? device?.services.map(s => s.id) : [id]
@@ -254,7 +255,7 @@ export default createModel<RootModel>()({
       const id = getActiveAccountId(state)
       const response = await graphQLDeleteNetwork(params.id)
       if (response === 'ERROR') return
-      let networks = state.networks.all[id] || []
+      let networks = [...state.networks.all[id]] || []
       const index = networks.findIndex(network => network.id === params.id)
       networks.splice(index, 1)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
@@ -293,7 +294,7 @@ export default createModel<RootModel>()({
     async unshareNetwork({ networkId, email }: { networkId: string; email: string }, state) {
       const response = await graphQLRemoveNetworkShare(networkId, email)
       if (response === 'ERROR' || !response?.data?.data?.removeNetworkShare) return
-      const network = selectNetwork(state, networkId)
+      const network = structuredClone(selectNetwork(state, networkId))
       const index = network.access.findIndex(a => a.email === email)
       network.access.splice(index, 1)
       await dispatch.networks.setNetwork(network)
@@ -307,8 +308,7 @@ export default createModel<RootModel>()({
       const index = networks.findIndex(network => network.id === params.id)
 
       if (index >= 0) {
-        const network = { ...networks[index], ...params }
-        networks[index] = network
+        networks[index] = { ...networks[index], ...params }
         dispatch.networks.setNetworks({ networks, accountId: id })
       }
     },

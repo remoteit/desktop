@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
@@ -88,11 +89,11 @@ export default createModel<RootModel>()({
 
     async addNetwork({ tag, network }: { tag: ITag; network: INetwork }) {
       if (!network) return
-      const copy = { ...network }
+      const copy = structuredClone(network)
       copy.tags.push(tag)
       dispatch.networks.setNetwork(copy)
       const result = await graphQLAddNetworkTag(copy.id, tag.name)
-      if (result === 'ERROR' || !result?.data?.data?.addTag) {
+      if (result === 'ERROR' || !result?.data?.data?.addNetworkTag) {
         dispatch.networks.setNetwork(network)
       }
     },
@@ -228,7 +229,7 @@ export default createModel<RootModel>()({
 })
 
 function removeTag<T extends IInstance>(original: T, tag: ITag): T {
-  const copy = { ...original }
+  const copy = structuredClone(original)
   const index = findTagIndex(copy.tags, tag.name)
   copy.tags.splice(index, 1)
   return copy

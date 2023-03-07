@@ -13,7 +13,8 @@ type Props = {
 export const ClearButton: React.FC<Props> = ({ all, onClick, ...props }) => {
   const [deleting, setDeleting] = useState<boolean>(false)
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent) => {
+    event.stopPropagation()
     setDeleting(true)
     onClick?.()
   }
