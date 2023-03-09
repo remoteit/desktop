@@ -114,11 +114,6 @@
     RMDir /r "$INSTDIR\resources\x86"
     FileWrite $8 "DONE$\r$\n"
 
-    FileWrite $8 "$\r$\nRemoving old installations... "
-    RMDir /r "$INSTDIR\..\remoteit"
-    RMDir /r "$INSTDIR\..\remoteit-bin"
-    FileWrite $8 "DONE$\r$\n"
-
     FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
     FileClose $8
 !macroend
@@ -202,8 +197,14 @@
         Pop $1
         FileWrite $8 "Result: [$0] $1"
 
-        RMDir /r "$INSTDIR"
+        FileWrite $8 "$\r$\nRemoving installation directories... "
         FileWrite $8 "RMDir $INSTDIR$\r$\n"
+        RMDir /r "$INSTDIR"
+        FileWrite $8 "RMDir $INSTDIR\..\remoteit$\r$\n"
+        RMDir /r "$INSTDIR\..\remoteit"
+        FileWrite $8 "RMDir $INSTDIR\..\remoteit-bin$\r$\n"
+        RMDir /r "$INSTDIR\..\remoteit-bin"
+        FileWrite $8 "DONE$\r$\n"
     ${endif}
 
     FileWrite $8 "$\r$\nEnd Remove Files$\r$\n"
