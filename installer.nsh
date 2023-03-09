@@ -115,8 +115,8 @@
     FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nRemoving old installations... "
-    RMDir /r "$PROGRAMFILES\remoteit"
-    RMDir /r "$PROGRAMFILES\remoteit-bin"
+    RMDir /r "$INSTDIR\..\remoteit"
+    RMDir /r "$INSTDIR\..\remoteit-bin"
     FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
