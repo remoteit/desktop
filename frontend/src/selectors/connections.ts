@@ -46,7 +46,7 @@ export const selectConnectionsByAccount = createSelector(
       // org device
       else if (c.owner?.id && organizations[c.owner.id]) accountId = c.owner.id
 
-      const name = organizations[accountId]?.name || 'Unknown'
+      const name = organizations[accountId]?.name || 'Personal'
       const index = networks.findIndex(n => n.id === accountId)
 
       if (index === -1) networks.push({ ...DEFAULT_NETWORK, id: accountId, name, serviceIds: [c.id] })

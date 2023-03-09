@@ -19,7 +19,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
   const { events, from, size, minDate, selectedDate, planUpgrade, fetching, fetchingMore, user, logLimit } =
     useSelector((state: ApplicationState) => ({
       ...state.logs,
-      user: state.auth.user,
+      user: state.user,
       logLimit: selectLimit('log-limit', state) || 'P1W',
     }))
 

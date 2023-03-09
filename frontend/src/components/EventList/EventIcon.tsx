@@ -1,26 +1,41 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { Color } from '../../styling'
-import { EventState, EventType, EventActions } from './EventMessage'
+import { EventState, EventActions } from './EventMessage'
 
 export function EventIcon(item: IEvent): JSX.Element {
   let color: Color = 'grayLighter'
   let icon = ''
   let title = ''
   switch (item.type) {
-    case EventType.login_state:
-    case EventType.login_attempt_state:
-    case EventType.login_password_change:
-    case EventType.login_password_reset:
-    case EventType.login_password_reset_confirmed:
-    case EventType.login_phone_change:
-    case EventType.login_mfa_enabled:
-    case EventType.login_mfa_disabled:
-      icon = 'sign-in'
+    case 'AUTH_LOGIN':
+      icon = 'arrow-right-to-bracket'
       color = 'success'
-      title = 'Activity list:' + item.type
       break
-    case EventType.device_state:
+    case 'AUTH_LOGIN_ATTEMPT':
+      icon = 'arrow-right-to-bracket'
+      color = 'grayDarker'
+      break
+    case 'AUTH_PASSWORD_CHANGE':
+    case 'AUTH_PASSWORD_RESET':
+    case 'AUTH_PASSWORD_RESET_CONFIRMED':
+      icon = 'key-skeleton'
+      color = 'grayDarker'
+      break
+    case 'AUTH_PHONE_CHANGE':
+      icon = 'phone'
+      color = 'grayDarker'
+      break
+    case 'AUTH_MFA_ENABLED':
+      icon = 'shield'
+      color = 'success'
+      break
+    case 'AUTH_MFA_DISABLED':
+      icon = 'shield-slash'
+      color = 'warning'
+      break
+
+    case 'DEVICE_STATE':
       if (item.state === EventState.active) {
         icon = 'check-circle'
         color = 'success'
@@ -32,7 +47,7 @@ export function EventIcon(item: IEvent): JSX.Element {
       }
       break
 
-    case EventType.device_connect:
+    case 'DEVICE_CONNECT':
       if (item.state === EventState.connected) {
         icon = 'dot-circle'
         color = 'primary'
@@ -44,19 +59,19 @@ export function EventIcon(item: IEvent): JSX.Element {
       }
       break
 
-    case EventType.device_share:
+    case 'DEVICE_SHARE':
       if (EventActions.includes(item.action)) {
-        icon = 'user-plus'
+        icon = 'share'
         color = 'success'
         title = 'Device Shared'
       } else {
-        icon = 'user-minus'
+        icon = 'do-not-enter'
         color = 'dangerLight'
         title = 'Device Share Removed'
       }
       break
 
-    case EventType.license_updated:
+    case 'LICENSE_UPDATED':
       icon = 'info-circle'
       color = 'grayDarker'
       title = 'License changed'
