@@ -202,7 +202,7 @@ class Controller {
 
   installAndRestart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
-    await cli.serviceUninstall()
+    if (!environment.isWindows) await cli.serviceUninstall()
     EventBus.emit(electronInterface.EVENTS.update)
   }
 

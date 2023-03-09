@@ -1,11 +1,12 @@
 {
-  "name": "remoteit",
+  "name": "remoteit-desktop",
   "version": "3.16.0-alpha.1",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
     "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-*",
+    "build-dev": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=development NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-* && electron-builder --$npm_config_platform",
     "build-backend": "cd backend && npm run build",
     "build-electron": "electron-builder",
     "clean": "rimraf build/* dist/*",
@@ -58,8 +59,8 @@
   "build": {
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
-    "productName": "remoteit",
-    "artifactName": "${productName}-installer-${arch}.${ext}",
+    "productName": "Remote.It",
+    "artifactName": "${name}-installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
