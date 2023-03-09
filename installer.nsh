@@ -114,6 +114,11 @@
     RMDir /r "$INSTDIR\resources\x86"
     FileWrite $8 "DONE$\r$\n"
 
+    FileWrite $8 "$\r$\nRemoving old installations... "
+    RMDir /r "$PROGRAMFILES\remoteit"
+    RMDir /r "$PROGRAMFILES\remoteit-bin"
+    FileWrite $8 "DONE$\r$\n"
+
     FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
     FileClose $8
 !macroend
