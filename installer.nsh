@@ -20,40 +20,6 @@
     ; Install window title
     StrCpy $6 "Remote.It Pre-Installation"
 
-    ; ; Non blocking message box
-    ; nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
-
-    ; ; Stop the agent - don't use install path since it would be different if installed in an arch directory
-    ; FileWrite $8 "Stopping Old Service$\r$\n"
-
-    ; ; Find the platform binary path
-    ; ${If} ${RunningX64}
-    ;     ${If} ${IsNativeAMD64}
-    ;         ; x64
-    ;         FileWrite $8 "Platform X64$\r$\n"
-    ;         StrCpy $9 '$INSTDIR\resources\x64'
-    ;     ${ElseIf} ${IsNativeARM64}
-    ;         ; ARM64
-    ;         FileWrite $8 "Platform x86 or arm64$\r$\n"
-    ;         StrCpy $9 '$INSTDIR\resources\arm64'
-    ;     ${Else}
-    ;         ; Unknown architecture
-    ;         FileWrite $8 "Unknown architecture - using Platform X64$\r$\n"
-    ;         StrCpy $9 '$INSTDIR\resources\x64'
-    ;     ${EndIf}
-    ; ${Else}
-    ;     ; x86 / ia32
-    ;     FileWrite $8 "Platform x86 or ia32$\r$\n"
-    ;     StrCpy $9 '$INSTDIR\resources\ia32'
-    ; ${EndIf}
-
-    ; ; Remove agent via path at startup to access old binary
-    ; StrCpy $7 "remoteit.exe agent uninstall"
-    ; nsExec::ExecToStack $7
-    ; Pop $0
-    ; Pop $1
-    ; FileWrite $8 "$7     [$0] $1"
-
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
     CreateDirectory "${REMOTEIT_BACKUP}"
@@ -67,9 +33,6 @@
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
     FileWrite $8 "Backup complete$\r$\n"
     FileClose $8
-
-    ; ; Close the installing window
-    ; nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
 !macroend
 
 !macro customInstall
@@ -85,7 +48,7 @@
     
     FileWrite $8 "Uninstalling Service$\r$\n"
     
-    ; Remove agent just in case
+    ; Remove agent from old location because old versions didn't uninstall on update case
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
     nsExec::ExecToStack $7
     Pop $0
@@ -203,30 +166,30 @@
         config_not_found:
             FileWrite $8 "Device config not found$\r$\n"
         end_of_config:
-
-        StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1      
-        FileWrite $8 "$7     [$0] $1"
-        
-        ; Only remove from machine path env var since that's all that's been set here
-        StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
-        FileWrite $8 "$7$\r$\n"
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1
-        FileWrite $8 "Result: [$0] $1"
-
-        FileWrite $8 "$\r$\nRemoving installation directories... "
-        FileWrite $8 "RMDir $INSTDIR$\r$\n"
-        RMDir /r "$INSTDIR"
-        FileWrite $8 "RMDir $INSTDIR\..\remoteit$\r$\n"
-        RMDir /r "$INSTDIR\..\remoteit"
-        FileWrite $8 "RMDir $INSTDIR\..\remoteit-bin$\r$\n"
-        RMDir /r "$INSTDIR\..\remoteit-bin"
-        FileWrite $8 "DONE$\r$\n"
     ${endif}
+
+    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1      
+    FileWrite $8 "$7     [$0] $1"
+    
+    ; Only remove from machine path env var since that's all that's been set here
+    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\Remote.It*') -and ($$_ -ne '') }) -join ';', 'Machine')"
+    FileWrite $8 "$7$\r$\n"
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1
+    FileWrite $8 "Result: [$0] $1"
+
+    FileWrite $8 "$\r$\nRemoving installation directories... "
+    FileWrite $8 "RMDir $INSTDIR$\r$\n"
+    RMDir /r "$INSTDIR"
+    FileWrite $8 "RMDir $INSTDIR\..\remoteit$\r$\n"
+    RMDir /r "$INSTDIR\..\remoteit"
+    FileWrite $8 "RMDir $INSTDIR\..\remoteit-bin$\r$\n"
+    RMDir /r "$INSTDIR\..\remoteit-bin"
+    FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nEnd Remove Files$\r$\n"
     FileClose $8 
