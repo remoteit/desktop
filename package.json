@@ -82,8 +82,8 @@
     "nsis": {
       "oneClick": false,
       "perMachine": true,
+      "allowElevation": true,
       "deleteAppDataOnUninstall": true,
-      "shortcutName": "remote.it",
       "include": "build/installer.nsh",
       "allowToChangeInstallationDirectory": true
     },
