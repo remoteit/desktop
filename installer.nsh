@@ -28,8 +28,11 @@
         FileWrite $8 "$INSTDIR not found, skipping ... $\r$\n"
     installer_found_end:
 
-    ; Rename $INSTDIR to remove /remoteit from the path
+    ; Rename $INSTDIR to remove \remoteit from the path
+    FileWrite $8 "Renaming $INSTDIR to remove \remoteit from the path ... "
     StrReplace "\remoteit\" "\" $INSTDIR $INSTDIR
+    FileWrite $8 "DONE$\r$\n"
+    FileWrite $8 "New INSTDIR: $INSTDIR$\r$\n"
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
