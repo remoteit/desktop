@@ -6,8 +6,18 @@
 !define PKGVERSION "3.16.0-alpha.3"
 
 !macro preInit
-    IfFileExists $INSTDIR found not_found
-    found:
+    IfFileExists "$TEMP\remoteit.log" pre_init_log_found pre_init_log_not_found
+    pre_init_log_found:
+        FileOpen $8 "$TEMP\remoteit.log" a
+        FileSeek $8 0 END
+        goto pre_init_log_end
+    pre_init_log_not_found:
+        FileOpen $8 "$TEMP\remoteit.log" w
+    pre_init_log_end:
+
+    FileWrite $8 "PreInit start$\r$\n"
+    IfFileExists $INSTDIR installer_found installer_not_found
+    installer_found:
         ; Non blocking message box
         nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
 
@@ -43,24 +53,26 @@
         FileWrite $8 "$7     [$0] $1"
 
         ; Remove installation directory
-        FileWrite $8 "$\r$\n$INSTDIR found, removing ... "
+        FileWrite $8 "$\r$\n$INSTDIR installer_found, removing ... "
         RMDir /r $INSTDIR
         FileWrite $8 "DONE$\r$\n"
-        goto end
-    not_found:
+        goto installer_found_end
+    installer_not_found:
         FileWrite $8 "$\r$\n$INSTDIR not found, skipping ... "
-    end:
+    installer_found_end:
+    FileWrite $8 "PreInit complete$\r$\n"
+    FileClose $8
 !macroend
 
 !macro customInit
-    IfFileExists "$TEMP\remoteit.log" file_found file_not_found
-    file_found:
+    IfFileExists "$TEMP\remoteit.log" custom_init_log_found custom_init_log_not_found
+    custom_init_log_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto end
-    file_not_found:
+        goto custom_init_log_end
+    custom_init_log_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    end:
+    custom_init_log_end:
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
@@ -87,10 +99,10 @@
     file_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto end
+        goto log_file_end
     file_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    end:
+    log_file_end:
     FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     
     FileWrite $8 "Installing Service$\r$\n"
@@ -157,7 +169,6 @@
     ${Else}
         FileWrite $8 "$\r$\nUninstalling ...$\r$\n"
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
-
         config_found:
             StrCpy $6 'powershell (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length'
             nsExec::ExecToStack $6

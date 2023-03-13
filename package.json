@@ -1,5 +1,5 @@
 {
-  "name": "remoteit",
+  "name": "remoteit-desktop",
   "version": "3.16.0-alpha.3",
   "private": true,
   "main": "build/index.js",
