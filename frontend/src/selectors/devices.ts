@@ -36,7 +36,7 @@ export const getDevices = createSelector(
 
 export const getOwnDevices = createSelector(
   [getDevicesState, getUserId],
-  (devices, getUserId) => getDeviceModelFn(devices, getUserId).all || []
+  (devices, userId) => getDeviceModelFn(devices, userId).all || []
 )
 
 export const getAllDevices = createSelector(

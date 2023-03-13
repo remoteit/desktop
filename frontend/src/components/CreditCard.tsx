@@ -3,7 +3,7 @@ import { Typography, Button, List, ListItem, ListItemText, ListItemIcon, ListIte
 import { useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectOwnRemoteitLicense } from '../models/plans'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -11,7 +11,7 @@ export const CreditCard: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: ApplicationState) => ({
-    license: selectOwnRemoteitLicense(state),
+    license: selectRemoteitLicense(state),
     updating: state.plans.updating,
   }))
   const card = license?.subscription?.card

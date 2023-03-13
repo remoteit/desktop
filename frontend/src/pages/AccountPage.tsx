@@ -1,6 +1,7 @@
 import React from 'react'
 import { List, Typography, Tooltip, ButtonBase } from '@mui/material'
-import { selectOwnRemoteitLicense, selectLicenseIndicator } from '../models/plans'
+import { selectLicenseIndicator } from '../models/plans'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
@@ -10,7 +11,7 @@ import { Logo } from '../components/Logo'
 
 export const AccountPage: React.FC = () => {
   const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
-    billing: !!selectOwnRemoteitLicense(state)?.plan?.billing,
+    billing: !!selectRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
   }))

@@ -12,7 +12,7 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectOwnRemoteitLicense } from '../models/plans'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { getOwnOrganization } from '../models/organization'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
@@ -27,7 +27,7 @@ export const OrganizationMembershipPage: React.FC = () => {
   const { memberships, organization, license, email } = useSelector((state: ApplicationState) => ({
     memberships: state.accounts.membership,
     organization: getOwnOrganization(state),
-    license: selectOwnRemoteitLicense(state),
+    license: selectRemoteitLicense(state),
     email: state.auth.user?.email || '',
   }))
   const { accounts } = useDispatch<Dispatch>()
