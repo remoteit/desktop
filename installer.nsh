@@ -5,15 +5,62 @@
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 !define PKGVERSION "3.16.0-alpha.3"
 
+!macro preInit
+    IfFileExists $INSTDIR found not_found
+    found:
+        ; Non blocking message box
+        nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
+
+        ; Stop the agent - don't use install path since it would be different if installed in an arch directory
+        FileWrite $8 "Stopping Old Service$\r$\n"
+
+        ; Find the platform binary path
+        ${If} ${RunningX64}
+            ${If} ${IsNativeAMD64}
+                ; x64
+                FileWrite $8 "Platform X64$\r$\n"
+                StrCpy $9 '$INSTDIR\resources\x64'
+            ${ElseIf} ${IsNativeARM64}
+                ; ARM64
+                FileWrite $8 "Platform x86 or arm64$\r$\n"
+                StrCpy $9 '$INSTDIR\resources\arm64'
+            ${Else}
+                ; Unknown architecture
+                FileWrite $8 "Unknown architecture - using Platform X64$\r$\n"
+                StrCpy $9 '$INSTDIR\resources\x64'
+            ${EndIf}
+        ${Else}
+            ; x86 / ia32
+            FileWrite $8 "Platform x86 or ia32$\r$\n"
+            StrCpy $9 '$INSTDIR\resources\ia32'
+        ${EndIf}
+
+        ; Remove agent via path at startup to access old binary
+        StrCpy $7 "$9 agent uninstall"
+        nsExec::ExecToStack $7
+        Pop $0
+        Pop $1
+        FileWrite $8 "$7     [$0] $1"
+
+        ; Remove installation directory
+        FileWrite $8 "$\r$\n$INSTDIR found, removing ... "
+        RMDir /r $INSTDIR
+        FileWrite $8 "DONE$\r$\n"
+        goto end
+    not_found:
+        FileWrite $8 "$\r$\n$INSTDIR not found, skipping ... "
+    end:
+!macroend
+
 !macro customInit
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
     file_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto end_of_test ;<== important for not continuing on the else branch
+        goto end
     file_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    end_of_test:
+    end:
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
@@ -40,21 +87,12 @@
     file_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto end_of_test ;<== important for not continuing on the else branch
+        goto end
     file_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    end_of_test:
+    end:
     FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     
-    FileWrite $8 "Uninstalling Service$\r$\n"
-    
-    ; Remove agent from old location because old versions didn't uninstall on update case
-    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
-    nsExec::ExecToStack $7
-    Pop $0
-    Pop $1
-    FileWrite $8 "$7     [$0] $1"
-
     FileWrite $8 "Installing Service$\r$\n"
 
     ; Install agent
