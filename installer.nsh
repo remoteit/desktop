@@ -16,46 +16,9 @@
     custom_init_log_end:
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-    
+        
     IfFileExists $INSTDIR installer_found installer_not_found
     installer_found:
-        ; Install window title
-        StrCpy $6 "Remote.It Pre-Installation"
-
-        ; Non blocking message box
-        nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
-
-        ; Stop the agent - don't use install path since it would be different if installed in an arch directory
-        FileWrite $8 "Stopping Old Service$\r$\n"
-
-        ; Find the platform binary path
-        ${If} ${RunningX64}
-            ${If} ${IsNativeAMD64}
-                ; x64
-                FileWrite $8 "Platform X64$\r$\n"
-                StrCpy $9 '$INSTDIR\resources\x64'
-            ${ElseIf} ${IsNativeARM64}
-                ; ARM64
-                FileWrite $8 "Platform x86 or arm64$\r$\n"
-                StrCpy $9 '$INSTDIR\resources\arm64'
-            ${Else}
-                ; Unknown architecture
-                FileWrite $8 "Unknown architecture - using Platform X64$\r$\n"
-                StrCpy $9 '$INSTDIR\resources\x64'
-            ${EndIf}
-        ${Else}
-            ; x86 / ia32
-            FileWrite $8 "Platform x86 or ia32$\r$\n"
-            StrCpy $9 '$INSTDIR\resources\ia32'
-        ${EndIf}
-
-        ; Remove agent via path at startup to access old binary
-        StrCpy $7 "$9 agent uninstall"
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1
-        FileWrite $8 "$7     [$0] $1"
-
         ; Remove installation directory
         FileWrite $8 "$\r$\n$INSTDIR installer_found, removing ... "
         RMDir /r $INSTDIR
@@ -64,6 +27,9 @@
     installer_not_found:
         FileWrite $8 "$INSTDIR not found, skipping ... $\r$\n"
     installer_found_end:
+
+    ; Rename $INSTDIR to remove /remoteit from the path
+    StrReplace "\remoteit\" "\" $INSTDIR $INSTDIR
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -202,7 +168,7 @@
             FileWrite $8 "Device config not found$\r$\n"
         end_of_config:
     ${endif}
-    
+
     FileWrite $8 "$\r$\nUninstalling...$\r$\n"
 
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'

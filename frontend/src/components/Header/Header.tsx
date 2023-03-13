@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../selectors/devices'
 import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
 import { selectLimitsLookup } from '../../selectors/organizations'
+import { UpgradeNotice } from '../UpgradeNotice'
 import { canEditTags } from '../../models/tags'
 import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -95,6 +96,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           </>
         )}
       </div>
+      <UpgradeNotice />
     </>
   )
 }

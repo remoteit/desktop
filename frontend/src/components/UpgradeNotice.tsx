@@ -11,19 +11,19 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
 
   return (
     <Notice
+      className={css.notice}
       severity="warning"
-      gutterTop
       button={
-        <Button variant="contained" color="warning" size="small" sx={{ paddingX: 5 }}>
+        <Button variant="contained" color="warning" size="small">
           Subscribe
         </Button>
       }
     >
-      Commercial use of Remote.It requires a subscription license starting with the first device.
+      Commercial use requires a license after the first device.
     </Notice>
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  style: { backgroundColor: palette.test.main },
-}))
+const useStyles = makeStyles({
+  notice: { zIndex: 9 },
+})
