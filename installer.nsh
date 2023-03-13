@@ -1,4 +1,5 @@
 !include FileFunc.nsh
+!include StrFunc.nsh
 !include x64.nsh
 !include WinVer.nsh
 !include LogicLib.nsh
@@ -28,9 +29,11 @@
         FileWrite $8 "$INSTDIR not found, skipping ... $\r$\n"
     installer_found_end:
 
-    ; Rename $INSTDIR to remove \remoteit from the path
-    FileWrite $8 "Renaming $INSTDIR to remove \remoteit from the path ... "
-    StrReplace "\remoteit\" "\" $INSTDIR $INSTDIR
+    ; Rename $INSTDIR to correct the install path
+    FileWrite $8 "Moving $INSTDIR to remove \remoteit from the path ... "
+    nsExec::ExecToStack 'powershell -Command "$$str = "$INSTDIR"; $$str = $$str.Replace("\remoteit\", "\"); $$str"'
+    Pop $0
+    StrCpy $INSTDIR $0
     FileWrite $8 "DONE$\r$\n"
     FileWrite $8 "New INSTDIR: $INSTDIR$\r$\n"
 
