@@ -5,19 +5,23 @@
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 !define PKGVERSION "3.16.0-alpha.3"
 
-!macro preInit
-    IfFileExists "$TEMP\remoteit.log" pre_init_log_found pre_init_log_not_found
-    pre_init_log_found:
+!macro customInit
+    IfFileExists "$TEMP\remoteit.log" custom_init_log_found custom_init_log_not_found
+    custom_init_log_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto pre_init_log_end
-    pre_init_log_not_found:
+        goto custom_init_log_end
+    custom_init_log_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    pre_init_log_end:
-
-    FileWrite $8 "PreInit start$\r$\n"
+    custom_init_log_end:
+    FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
+    FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    
     IfFileExists $INSTDIR installer_found installer_not_found
     installer_found:
+        ; Install window title
+        StrCpy $6 "Remote.It Pre-Installation"
+
         ; Non blocking message box
         nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
 
@@ -58,26 +62,8 @@
         FileWrite $8 "DONE$\r$\n"
         goto installer_found_end
     installer_not_found:
-        FileWrite $8 "$\r$\n$INSTDIR not found, skipping ... "
+        FileWrite $8 "$INSTDIR not found, skipping ... $\r$\n"
     installer_found_end:
-    FileWrite $8 "PreInit complete$\r$\n"
-    FileClose $8
-!macroend
-
-!macro customInit
-    IfFileExists "$TEMP\remoteit.log" custom_init_log_found custom_init_log_not_found
-    custom_init_log_found:
-        FileOpen $8 "$TEMP\remoteit.log" a
-        FileSeek $8 0 END
-        goto custom_init_log_end
-    custom_init_log_not_found:
-        FileOpen $8 "$TEMP\remoteit.log" w
-    custom_init_log_end:
-    FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
-    FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-
-    ; Install window title
-    StrCpy $6 "Remote.It Pre-Installation"
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -165,11 +151,11 @@
 
     ; Detect auto-update
     ${If} ${IsUpdated}
-        FileWrite $8 "$\r$\nIs an update, don't remove files.$\r$\n"
+        FileWrite $8 "$\r$\nIs an update, don't remove config.$\r$\n"
     ${Else}
-        FileWrite $8 "$\r$\nUninstalling ...$\r$\n"
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
         config_found:
+            FileWrite $8 "$\r$\nConfig found$\r$\n"
             StrCpy $6 'powershell (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length'
             nsExec::ExecToStack $6
             Pop $0
@@ -216,6 +202,8 @@
             FileWrite $8 "Device config not found$\r$\n"
         end_of_config:
     ${endif}
+    
+    FileWrite $8 "$\r$\nUninstalling...$\r$\n"
 
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
     nsExec::ExecToStack $7

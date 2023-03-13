@@ -4,6 +4,7 @@ import { Divider } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing, Color } from '../../styling'
 import { Body, BodyProps } from '../Body'
+import { UpgradeNotice } from '../UpgradeNotice'
 
 type Props = {
   header?: React.ReactNode
@@ -32,24 +33,27 @@ export const Container: React.FC<Props> = ({
 }) => {
   const css = useStyles({ backgroundColor })
   return (
-    <div className={classnames(className, css.container)}>
-      {header && (
-        <div className={css.header}>
-          {header}
-          {integrated || !!backgroundColor || <Divider variant="inset" />}
-        </div>
-      )}
-      {sidebar && <div className={css.sidebar}>{sidebar}</div>}
-      <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
-        {children}
-      </Body>
-      {footer && (
-        <div className={css.footer}>
-          <Divider variant="inset" />
-          {footer}
-        </div>
-      )}
-    </div>
+    <>
+      <UpgradeNotice />
+      <div className={classnames(className, css.container)}>
+        {header && (
+          <div className={css.header}>
+            {header}
+            {integrated || !!backgroundColor || <Divider variant="inset" />}
+          </div>
+        )}
+        {sidebar && <div className={css.sidebar}>{sidebar}</div>}
+        <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
+          {children}
+        </Body>
+        {footer && (
+          <div className={css.footer}>
+            <Divider variant="inset" />
+            {footer}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
