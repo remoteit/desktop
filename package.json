@@ -59,8 +59,9 @@
   "build": {
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
-    "productName": "Remote.It",
-    "artifactName": "${name}-installer-${arch}.${ext}",
+    "productName": "remoteit",
+    "executableName": "Remote.It",
+    "artifactName": "${productName}-installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {

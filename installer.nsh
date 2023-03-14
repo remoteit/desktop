@@ -17,26 +17,6 @@
     custom_init_log_end:
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-        
-    IfFileExists $INSTDIR installer_found installer_not_found
-    installer_found:
-        ; Remove installation directory
-        FileWrite $8 "$\r$\n$INSTDIR installer_found, removing ... "
-        RMDir /r $INSTDIR
-        FileWrite $8 "DONE$\r$\n"
-        goto installer_found_end
-    installer_not_found:
-        FileWrite $8 "$INSTDIR not found, skipping ... $\r$\n"
-    installer_found_end:
-
-    ; Rename $INSTDIR to correct the install path
-    FileWrite $8 "Moving $INSTDIR to remove \remoteit from the path ... "
-    nsExec::ExecToStack "powershell -Command $\"$$str = '$INSTDIR'; $$str = $$str.Replace('\remoteit\', '\'); $$str$\""
-    Pop $0
-    Pop $1
-    StrCpy $INSTDIR $1
-    FileWrite $8 "DONE$\r$\n"
-    FileWrite $8 "New INSTDIR: $INSTDIR$\r$\n"
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -44,7 +24,7 @@
 
     ; remove old backups so the move can occur
     Delete "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
-    RMDir /r  "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
+    RMDir /r "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
     ; copy the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
@@ -63,19 +43,25 @@
         FileOpen $8 "$TEMP\remoteit.log" w
     log_file_end:
     FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-    
     FileWrite $8 "Installing Service$\r$\n"
+
+    ; REMOVE AFTER v3.16.x -- Uninstall agent
+    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1      
+    FileWrite $8 "$7 [$0] $1"
 
     ; Install agent
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent install'
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "$7     [$0] $1"
+    FileWrite $8 "$7 [$0] $1"
     
     FileWrite $8 "Setting PATH ... $\r$\n"
 
-    ; Remove from machine path env var incase already there
+    ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
     FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
@@ -83,7 +69,7 @@
     Pop $1
     FileWrite $8 "Result: [$0] $1$\r$\n"
 
-    ; Remove from user path env var incase already there
+    ; REMOVE AFTER v3.16.x -- Remove from user path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'User')"
     FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
@@ -100,6 +86,7 @@
     FileWrite $8 "Result: [$0] $1$\r$\n"
     FileWrite $8 "DONE $\r$\n"
 
+    ; REMOVE AFTER v3.16.x
     FileWrite $8 "$\r$\nRemoving deprecated binaries... "
     RMDir /r "$INSTDIR\resources\arm64"
     RMDir /r "$INSTDIR\resources\ia32"
@@ -148,7 +135,7 @@
                         nsExec::ExecToStack $7
                         Pop $0
                         Pop $1
-                        FileWrite $8 "$7     [$0] $1"
+                        FileWrite $8 "$7 [$0] $1"
 
                         ; Waits for unregister to complete
                         nsExec::ExecToStack '"$INSTDIR\resources\remoteit.exe" status'
@@ -182,23 +169,19 @@
     nsExec::ExecToStack $7
     Pop $0
     Pop $1      
-    FileWrite $8 "$7     [$0] $1"
+    FileWrite $8 "$7 [$0] $1"
     
     ; Only remove from machine path env var since that's all that's been set here
-    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\Remote.It*') -and ($$_ -ne '') }) -join ';', 'Machine')"
+    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
     FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
     FileWrite $8 "Result: [$0] $1"
 
-    FileWrite $8 "$\r$\nRemoving installation directories... "
+    FileWrite $8 "$\r$\nRemoving installation directories... $\r$\n"
     FileWrite $8 "RMDir $INSTDIR$\r$\n"
     RMDir /r "$INSTDIR"
-    FileWrite $8 "RMDir $INSTDIR\..\remoteit$\r$\n"
-    RMDir /r "$INSTDIR\..\remoteit"
-    FileWrite $8 "RMDir $INSTDIR\..\remoteit-bin$\r$\n"
-    RMDir /r "$INSTDIR\..\remoteit-bin"
     FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nEnd Remove Files$\r$\n"
