@@ -25,6 +25,7 @@ const SAVED_STATES = [
   'limitsOverride',
   'defaultService',
   'testUI',
+  'updateNoticeCleared',
 ]
 
 export type UIState = {
@@ -83,6 +84,7 @@ export type UIState = {
   autoConnect: boolean
   autoLaunch: boolean
   autoCopy: boolean
+  updateNoticeCleared?: number
 }
 
 export const defaultState: UIState = {
@@ -148,6 +150,7 @@ export const defaultState: UIState = {
   autoConnect: false,
   autoLaunch: false,
   autoCopy: false,
+  updateNoticeCleared: undefined,
 }
 
 export default createModel<RootModel>()({
