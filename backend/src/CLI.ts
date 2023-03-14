@@ -73,10 +73,6 @@ type IConnectionStatus = {
 
 type IConnectionDefaults = {
   enableCertificate?: boolean
-  enableOneHTTPSListener?: boolean
-  enableOneHTTPListener?: boolean
-  oneHTTPSListenerPort?: number
-  oneHTTPListenerPort?: number
 }
 
 export default class CLI {
@@ -106,23 +102,9 @@ export default class CLI {
     if (this.isSignedOut()) await this.signIn()
   }
 
-  async checkDefaults() {
-    if (!this.areDefaultsSet()) await this.setDefaults()
-  }
-
   isSignedOut() {
     this.readUser()
     return !this.data.admin || !this.data.admin.username
-  }
-
-  areDefaultsSet() {
-    this.readSettings()
-    const defaults = this.data.connectionDefaults
-    if (defaults?.enableOneHTTPSListener || defaults?.enableOneHTTPListener) return false
-    const useCert: boolean = !!defaults?.enableCertificate
-    const result = !!preferences.get().useCertificate === useCert
-    d('ARE CLI DEFAULTS SET?', { result, defaults })
-    return result
   }
 
   read() {
@@ -186,6 +168,7 @@ export default class CLI {
         id: c.id,
         enabled: !!c.isEnabled,
         starting: c.state === 1, //      starting
+        ready: c.addressIsComplete, //   ready
         connecting: c.state === 3, //    connecting
         connected: c.state === 4, //     connected
         disconnecting: c.state === 5, // disconnecting
@@ -290,13 +273,6 @@ export default class CLI {
 
   async signOut() {
     if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], skipSignInCheck: true, checkAuthHash: true })
-    this.read()
-  }
-
-  async setDefaults() {
-    Logger.info('SET CLI DEFAULTS', strings.defaults())
-    await this.exec({ cmds: [strings.defaults()], checkAuthHash: true, skipSignInCheck: true })
-    binaryInstaller.restart()
     this.read()
   }
 

@@ -81,7 +81,7 @@ export const OptionsPage: React.FC = () => {
             icon="file-certificate"
             toggle={!!preferences.useCertificate}
             onClick={() => emit('useCertificate', !preferences.useCertificate)}
-            confirmMessage="Changing the certificate handling will require we restart the system agent. You will see a system prompt."
+            confirmMessage="Changing the certificate handling will require we restart all connections."
             confirmTitle="Continue?"
             confirm
           />

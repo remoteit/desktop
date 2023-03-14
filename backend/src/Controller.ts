@@ -167,7 +167,7 @@ class Controller {
 
   useCertificate = async (use: boolean) => {
     preferences.update({ useCertificate: use })
-    await cli.checkDefaults()
+    this.pool.updateAll()
   }
 
   initBackend = () => {

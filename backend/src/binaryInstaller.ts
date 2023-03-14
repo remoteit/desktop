@@ -77,8 +77,6 @@ export class BinaryInstaller {
       }
 
       commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
-      commands.push(`"${this.cliBinary.path}" ${strings.defaults()}`) // @FIXME this should go before the service install if possible and the restart removed!
-      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
 
       await commands.exec()
       resolve()

@@ -1,13 +1,12 @@
 import React from 'react'
 import heartbeat from '../../services/Heartbeat'
-import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { IconButton, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { Application } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
-import { IconButton } from '../../buttons/IconButton'
 import { DataButton } from '../DataButton'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
@@ -25,11 +24,20 @@ type Props = {
   onLaunch?: () => void
 }
 
-export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, app, ...props }) => {
+export const LaunchButton: React.FC<Props> = ({
+  menuItem,
+  dataButton,
+  onLaunch,
+  onMouseEnter,
+  onMouseLeave,
+  app,
+  ...props
+}) => {
   const { ui } = useDispatch<Dispatch>()
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const ready = !!app?.connection?.host
-  const disabled = !app?.connection?.enabled || app?.connection.connecting || !ready
+  const ready = !!app?.connection?.ready
+  const loading = !app?.connection?.ready || app?.connection?.starting
+  const disabled = !app?.connection?.enabled || loading || !ready
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && app?.connection?.autoLaunch)
 
   React.useEffect(() => {
@@ -64,7 +72,7 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
     heartbeat.connect()
   }
 
-  const LaunchIcon = <Icon name="launch" size={props.size} color={props.color} type={props.type} fixedWidth />
+  const LaunchIcon = <Icon {...props} name={loading ? 'spinner-third' : 'launch'} spin={loading} fixedWidth />
 
   return (
     <>
@@ -82,7 +90,9 @@ export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, 
           onClick={clickHandler}
         />
       ) : (
-        <IconButton {...props} onClick={clickHandler} disabled={disabled} icon="launch" size="lg" />
+        <IconButton onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onClick={clickHandler} disabled={disabled}>
+          {LaunchIcon}
+        </IconButton>
       )}
       <PromptModal app={app} open={prompt} onClose={close} onSubmit={onSubmit} />
     </>

@@ -42,6 +42,7 @@ export const GOOGLE_TAG_MANAGER_DESKTOP_KEY = env.REACT_APP_GOOGLE_TAG_MANAGER_D
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
+export const CERTIFICATE_DOMAIN = 'at.remote.it'
 
 export const REGEX_LAST_PATH = /\/[^/]+$/g
 export const REGEX_FIRST_PATH = /^\/(\w+)/g

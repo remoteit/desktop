@@ -117,6 +117,11 @@ export default class ConnectionPool {
     return instance
   }
 
+  updateAll() {
+    this.pool.forEach(async connection => await connection.update())
+    this.updated()
+  }
+
   add = (connection: IConnection) => {
     const instance = new Connection(connection)
     d('ADDING CONNECTION', connection.id)

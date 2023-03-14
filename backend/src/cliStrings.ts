@@ -11,11 +11,6 @@ export default {
     return `-j signout --authhash ${user.authHash}`
   },
 
-  defaults() {
-    const useCert = !!preferences.get().useCertificate
-    return `-j connection defaults --enableCertificate ${useCert} --enableOneHTTPSListener false --enableOneHTTPListener false --authhash ${user.authHash}`
-  },
-
   status() {
     return `-j status --connections --authhash ${user.authHash}`
   },
