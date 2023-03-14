@@ -31,9 +31,10 @@
 
     ; Rename $INSTDIR to correct the install path
     FileWrite $8 "Moving $INSTDIR to remove \remoteit from the path ... "
-    nsExec::ExecToStack 'powershell -Command "$$str = "$INSTDIR"; $$str = $$str.Replace("\remoteit\", "\"); $$str"'
+    nsExec::ExecToStack "powershell -Command $\"$$str = '$INSTDIR'; $$str = $$str.Replace('\remoteit\', '\'); $$str$\""
     Pop $0
-    StrCpy $INSTDIR $0
+    Pop $1
+    StrCpy $INSTDIR $1
     FileWrite $8 "DONE$\r$\n"
     FileWrite $8 "New INSTDIR: $INSTDIR$\r$\n"
 
