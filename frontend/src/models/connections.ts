@@ -378,7 +378,6 @@ export default createModel<RootModel>()({
       connection.autoStart = undefined
       connection.checkpoint = undefined
       connection.stopLock = undefined
-      connection.port = connection.port || state.backend.freePort
       connection.enabled = true
 
       if (connection.public || isPortal()) {
