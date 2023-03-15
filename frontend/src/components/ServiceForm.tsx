@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import isEqual from 'lodash/isEqual'
+import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { IP_PRIVATE, DEFAULT_SERVICE, MAX_DESCRIPTION_LENGTH, DEFAULT_CONNECTION } from '../shared/constants'
 import { makeStyles } from '@mui/styles'

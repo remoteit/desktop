@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { isEqual } from 'lodash'
+import isEqual from 'lodash.isequal'
 import { getAllDevices } from '../selectors/devices'
 import { newConnection } from '../helpers/connectionHelper'
 import { useParams, useHistory } from 'react-router-dom'
