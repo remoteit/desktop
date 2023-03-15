@@ -234,15 +234,16 @@ export function getApplicationType(typeId: number | undefined) {
         title: 'VNC',
         launchIcon: 'desktop',
         appLaunchType: 'COMMAND',
+        defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows
           ? '"[path]" -Username [username] [host]:[port]'
-          : '[path] -Username [username] [host]:[port]',
+          : 'open -a "[app]" --args -Username [username] [host]:[port]',
       })
     case 28:
       return new Application({
         title: 'SSH',
-        appLaunchType: portal ? 'URL' : windows ? 'COMMAND' : 'URL',
+        appLaunchType: portal ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
@@ -251,9 +252,12 @@ export function getApplicationType(typeId: number | undefined) {
     case 5:
       return new Application({
         title: 'RDP',
-        appLaunchType: windows ? 'COMMAND' : 'URL',
-        appLaunchTemplate: 'rdp://[username]@[host]:[port]',
-        appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : '[host]:[port]',
+        appLaunchType: 'COMMAND',
+        defaultTokenData: { app: windows ? undefined : 'Microsoft Remote Desktop' },
+        appLaunchTemplate: 'rdp://full%20address=s:[host]:[port]&username=s:[username]',
+        appCommandTemplate: windows
+          ? 'mstsc /v: [host]:[port]'
+          : 'open -a "[app]" "rdp://full%20address=s:[host]:[port]&username=s:[username]"',
       })
     case 8:
     case 10:

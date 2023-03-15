@@ -172,6 +172,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                 token === 'path' && !isPortal() ? (
                   <InlineFileFieldSetting
                     key="path"
+                    type={token}
                     dense={false}
                     variant="filled"
                     label="Application Path"
