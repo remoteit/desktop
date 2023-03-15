@@ -24,6 +24,7 @@ export default class Connection {
 
   async start() {
     await cli.addConnection(this.params, this.error, this.log)
+    this.params.connectOnReady = false
   }
 
   async disconnect() {

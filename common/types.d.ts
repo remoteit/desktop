@@ -153,6 +153,7 @@ declare global {
     connected?: boolean
     connecting?: boolean
     connectLink?: boolean // is public persistent link
+    connectOnReady?: boolean // if the connection should be started when the service is ready
     createdTime?: number // unix timestamp track for garbage cleanup
     default?: boolean // if the connection is in a default state - gets removed on modification
     description?: string

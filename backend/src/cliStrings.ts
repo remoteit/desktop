@@ -37,6 +37,7 @@ export default {
       --name "${c.name}" \
       --port ${c.port} \
       --ip ${c.ip} \
+      --connectAtStart ${!!c.connectOnReady} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \
