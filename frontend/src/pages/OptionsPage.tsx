@@ -12,7 +12,7 @@ import { getOwnDevices } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
-import { isRemote } from '../services/Browser'
+import { isRemote, isWindows } from '../services/Browser'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 
@@ -81,7 +81,7 @@ export const OptionsPage: React.FC = () => {
             icon="file-certificate"
             toggle={!!preferences.useCertificate}
             onClick={() => emit('useCertificate', !preferences.useCertificate)}
-            confirmMessage="Changing the certificate handling will require we restart the system agent. You will see a system prompt."
+            confirmMessage="Changing the certificate handling will require we restart all connections."
             confirmTitle="Continue?"
             confirm
           />
@@ -143,21 +143,23 @@ export const OptionsPage: React.FC = () => {
                 confirmMessage="This will stop and attempt to re-install the system agent."
                 onClick={() => binaries.install()}
               />
-              <ListItemSetting
-                confirm
-                label="Uninstall"
-                disabled={notOwner}
-                subLabel={
-                  'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner.'
-                }
-                icon="trash"
-                confirmTitle="Are you sure?"
-                confirmMessage="You will remove this system as a host, your connections and command line utilities."
-                onClick={() => {
-                  emit('uninstall')
-                  ui.set({ waitMessage: 'uninstalling' })
-                }}
-              />
+              {!isWindows && (
+                <ListItemSetting
+                  confirm
+                  label="Uninstall"
+                  disabled={notOwner}
+                  subLabel={
+                    'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner.'
+                  }
+                  icon="trash"
+                  confirmTitle="Are you sure?"
+                  confirmMessage="You will remove this system as a host, your connections and command line utilities."
+                  onClick={() => {
+                    emit('uninstall')
+                    ui.set({ waitMessage: 'uninstalling' })
+                  }}
+                />
+              )}
               <ListItemSetting
                 label="Show support files"
                 subLabel="Will show the folders that contain the application logs and config file."

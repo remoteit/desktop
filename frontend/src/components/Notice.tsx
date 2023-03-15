@@ -58,10 +58,10 @@ export const Notice: React.FC<NoticeProps> = ({
   return (
     <Paper elevation={0} className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}>
       {icon}
-      <Box>
+      <Box className={css.message}>
         <span>{children}</span>
       </Box>
-      {button}
+      {button && <Box className={css.button}>{button}</Box>}
       {onClose && <IconButton name="times" onClick={onClose} color={solid ? 'alwaysWhite' : undefined} title="Close" />}
     </Paper>
   )
@@ -87,17 +87,7 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     position: 'relative',
     fontWeight: 500,
-    '& > .MuiBox-root': {
-      flexGrow: 1,
-      marginTop: spacing.xxs,
-      marginRight: spacing.xs,
-      minHeight: 34,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    },
     '& > .MuiIconButton-root': { marginLeft: spacing.sm },
-    '& > .MuiButton-root': { alignSelf: 'center' },
     '& > svg': {
       marginLeft: spacing.xxs,
       marginRight: spacing.md,
@@ -108,4 +98,14 @@ const useStyles = makeStyles(({ palette }) => ({
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
   }),
+  message: {
+    flexGrow: 1,
+    marginTop: spacing.xxs,
+    marginRight: spacing.xs,
+    minHeight: 34,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  button: { alignSelf: 'center' },
 }))

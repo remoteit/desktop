@@ -8,7 +8,7 @@ import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectOwnRemoteitLicense } from '../models/plans'
+import { selectRemoteitLicense } from '../selectors/plans'
 import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID } from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -64,7 +64,7 @@ export const Plans: React.FC = () => {
     accountId: state.user.id,
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: state.plans.purchasing,
-    license: selectOwnRemoteitLicense(state),
+    license: selectRemoteitLicense(state),
   }))
   function getDefaults(): IPurchase {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]

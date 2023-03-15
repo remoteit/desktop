@@ -167,7 +167,7 @@ class Controller {
 
   useCertificate = async (use: boolean) => {
     preferences.update({ useCertificate: use })
-    await cli.checkDefaults()
+    this.pool.updateAll()
   }
 
   initBackend = () => {
@@ -202,7 +202,6 @@ class Controller {
 
   installAndRestart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
-    if (!environment.isWindows) await cli.serviceUninstall()
     EventBus.emit(electronInterface.EVENTS.update)
   }
 

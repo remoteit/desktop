@@ -2,7 +2,7 @@ import structuredClone from '@ungap/structured-clone'
 import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
-import { DEFAULT_CONNECTION, REGEX_HIDDEN_PASSWORD } from '../shared/constants'
+import { DEFAULT_CONNECTION, REGEX_HIDDEN_PASSWORD, IP_PRIVATE, CERTIFICATE_DOMAIN } from '../shared/constants'
 import {
   cleanOrphanConnections,
   getConnectionServiceIds,
@@ -371,7 +371,9 @@ export default createModel<RootModel>()({
       const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.online = service ? service?.state === 'active' : connection.online
-      connection.host = ''
+      connection.host = state.backend.preferences.useCertificate
+        ? `${connection.name}.${CERTIFICATE_DOMAIN}`
+        : IP_PRIVATE
       connection.error = undefined
       connection.autoStart = undefined
       connection.checkpoint = undefined

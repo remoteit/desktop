@@ -15,7 +15,11 @@ export default class Connection {
   async set({ ip = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { ip, restriction, failover, ...connection }
     d('SET CONNECTION', { params: this.params })
-    if (setCLI) await cli.setConnection(this.params, this.error, this.log)
+    if (setCLI) this.update()
+  }
+
+  async update() {
+    await cli.setConnection(this.params, this.error, this.log)
   }
 
   async start() {

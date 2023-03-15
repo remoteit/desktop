@@ -229,8 +229,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       <InputLabel shrink>Launch</InputLabel>
                       {app.canLaunch ? (
                         <LaunchButton
-                          color="alwaysWhite"
                           app={app}
+                          size="lg"
+                          color="alwaysWhite"
                           onMouseEnter={() => setHover('launch')}
                           onMouseLeave={() => setHover(undefined)}
                         />

@@ -234,10 +234,6 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectOwnRemoteitLicense(state: ApplicationState): ILicense | null {
-  return selectLicenses(state, state.auth.user?.id).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
-}
-
 export function getFreeLicenses(state: ApplicationState) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
@@ -250,7 +246,7 @@ function isEnterprise(state: ApplicationState) {
 }
 
 export function isPersonal(state: ApplicationState) {
-  const license = selectOwnRemoteitLicense(state)
+  const license = selectRemoteitLicense(state)
   return license?.plan.id === PERSONAL_PLAN_ID
 }
 

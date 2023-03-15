@@ -179,6 +179,7 @@ declare global {
     public?: boolean // if the connection should be a public proxy link
     publicId?: string // public proxy connection ID
     publicRestriction?: ipAddress // public proxy restriction IP
+    ready?: boolean // if the connection is ready to connect
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
     starting?: boolean // if the connection listening is starting up

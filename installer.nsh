@@ -1,37 +1,22 @@
 !include FileFunc.nsh
+!include StrFunc.nsh
 !include x64.nsh
 !include WinVer.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.16.0-alpha.2"
+!define PKGVERSION "3.16.0-alpha.4"
 
 !macro customInit
-    IfFileExists "$TEMP\remoteit.log" file_found file_not_found
-    file_found:
+    IfFileExists "$TEMP\remoteit.log" custom_init_log_found custom_init_log_not_found
+    custom_init_log_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto end_of_test ;<== important for not continuing on the else branch
-    file_not_found:
+        goto custom_init_log_end
+    custom_init_log_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    end_of_test:
+    custom_init_log_end:
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-
-    ; Install window title
-    StrCpy $6 "Remote.It Pre-Installation"
-
-    ; Non blocking message box
-    nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
-
-    ; Stop the agent - don't use install path since it would be different if installed in an arch directory
-    FileWrite $8 "Stopping Old Service$\r$\n"
-
-    ; Remove agent via path at startup to access old binary
-    StrCpy $7 "remoteit.exe agent uninstall"
-    nsExec::ExecToStack $7
-    Pop $0
-    Pop $1
-    FileWrite $8 "$7     [$0] $1"
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -39,16 +24,13 @@
 
     ; remove old backups so the move can occur
     Delete "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
-    RMDir /r  "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
+    RMDir /r "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
     ; copy the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
     FileWrite $8 "Backup complete$\r$\n"
     FileClose $8
-
-    ; Close the installing window
-    nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
 !macroend
 
 !macro customInstall
@@ -56,33 +38,30 @@
     file_found:
         FileOpen $8 "$TEMP\remoteit.log" a
         FileSeek $8 0 END
-        goto end_of_test ;<== important for not continuing on the else branch
+        goto log_file_end
     file_not_found:
         FileOpen $8 "$TEMP\remoteit.log" w
-    end_of_test:
+    log_file_end:
     FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-    
-    FileWrite $8 "Uninstalling Service$\r$\n"
-    
-    ; Remove agent just in case
+    FileWrite $8 "Installing Service$\r$\n"
+
+    ; REMOVE AFTER v3.16.x -- Uninstall agent
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
     nsExec::ExecToStack $7
     Pop $0
-    Pop $1
-    FileWrite $8 "$7     [$0] $1"
-
-    FileWrite $8 "Installing Service$\r$\n"
+    Pop $1      
+    FileWrite $8 "$7 [$0] $1"
 
     ; Install agent
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent install'
     nsExec::ExecToStack $7
     Pop $0
     Pop $1
-    FileWrite $8 "$7     [$0] $1"
+    FileWrite $8 "$7 [$0] $1"
     
     FileWrite $8 "Setting PATH ... $\r$\n"
 
-    ; Remove from machine path env var incase already there
+    ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
     FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
@@ -90,7 +69,7 @@
     Pop $1
     FileWrite $8 "Result: [$0] $1$\r$\n"
 
-    ; Remove from user path env var incase already there
+    ; REMOVE AFTER v3.16.x -- Remove from user path env var incase already there
     StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'User')"
     FileWrite $8 "$7$\r$\n"
     nsExec::ExecToStack $7
@@ -107,16 +86,12 @@
     FileWrite $8 "Result: [$0] $1$\r$\n"
     FileWrite $8 "DONE $\r$\n"
 
+    ; REMOVE AFTER v3.16.x
     FileWrite $8 "$\r$\nRemoving deprecated binaries... "
     RMDir /r "$INSTDIR\resources\arm64"
     RMDir /r "$INSTDIR\resources\ia32"
     RMDir /r "$INSTDIR\resources\x64"
     RMDir /r "$INSTDIR\resources\x86"
-    FileWrite $8 "DONE$\r$\n"
-
-    FileWrite $8 "$\r$\nRemoving old installations... "
-    RMDir /r "$INSTDIR\..\remoteit"
-    RMDir /r "$INSTDIR\..\remoteit-bin"
     FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
@@ -136,12 +111,11 @@
 
     ; Detect auto-update
     ${If} ${IsUpdated}
-        FileWrite $8 "$\r$\nIs an update, don't remove files.$\r$\n"
+        FileWrite $8 "$\r$\nIs an update, don't remove config.$\r$\n"
     ${Else}
-        FileWrite $8 "$\r$\nUninstalling ...$\r$\n"
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
-
         config_found:
+            FileWrite $8 "$\r$\nConfig found$\r$\n"
             StrCpy $6 'powershell (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length'
             nsExec::ExecToStack $6
             Pop $0
@@ -161,7 +135,7 @@
                         nsExec::ExecToStack $7
                         Pop $0
                         Pop $1
-                        FileWrite $8 "$7     [$0] $1"
+                        FileWrite $8 "$7 [$0] $1"
 
                         ; Waits for unregister to complete
                         nsExec::ExecToStack '"$INSTDIR\resources\remoteit.exe" status'
@@ -187,24 +161,28 @@
         config_not_found:
             FileWrite $8 "Device config not found$\r$\n"
         end_of_config:
-
-        StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1      
-        FileWrite $8 "$7     [$0] $1"
-        
-        ; Only remove from machine path env var since that's all that's been set here
-        StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
-        FileWrite $8 "$7$\r$\n"
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1
-        FileWrite $8 "Result: [$0] $1"
-
-        RMDir /r "$INSTDIR"
-        FileWrite $8 "RMDir $INSTDIR$\r$\n"
     ${endif}
+
+    FileWrite $8 "$\r$\nUninstalling...$\r$\n"
+
+    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1      
+    FileWrite $8 "$7 [$0] $1"
+    
+    ; Only remove from machine path env var since that's all that's been set here
+    StrCpy $7 "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
+    FileWrite $8 "$7$\r$\n"
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1
+    FileWrite $8 "Result: [$0] $1"
+
+    FileWrite $8 "$\r$\nRemoving installation directories... $\r$\n"
+    FileWrite $8 "RMDir $INSTDIR$\r$\n"
+    RMDir /r "$INSTDIR"
+    FileWrite $8 "DONE$\r$\n"
 
     FileWrite $8 "$\r$\nEnd Remove Files$\r$\n"
     FileClose $8 

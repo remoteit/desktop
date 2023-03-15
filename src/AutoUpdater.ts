@@ -11,6 +11,7 @@ export default class AppUpdater {
   constructor() {
     autoUpdater.logger = Logger
     autoUpdater.autoInstallOnAppQuit = true
+    autoUpdater.disableWebInstaller = true
 
     autoUpdater.on('update-downloaded', info => {
       EventBus.emit(EVENTS.downloaded, info.version)
