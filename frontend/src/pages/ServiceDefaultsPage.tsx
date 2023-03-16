@@ -1,10 +1,8 @@
 import React from 'react'
-import { Box } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { ListItemBack } from '../components/ListItemBack'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ConnectionDefaultsForm } from '../components/ConnectionDefaultsForm'
-import { IconButton } from '../buttons/IconButton'
 import { DeviceContext } from '../services/Context'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
@@ -32,8 +30,10 @@ export const ServiceDefaultsPage: React.FC = () => {
           onCancel={() => history.goBack()}
           onSubmit={async form => {
             if (device?.permissions.includes('MANAGE')) {
-              service.attributes = { ...service.attributes, ...form.attributes }
-              await dispatch.devices.setServiceAttributes(service)
+              await dispatch.devices.setServiceAttributes({
+                ...service,
+                attributes: { ...service.attributes, ...form.attributes },
+              })
               if (device?.configurable) await dispatch.devices.cloudUpdateService({ form, deviceId: device?.id })
             }
           }}
