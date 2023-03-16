@@ -11,7 +11,7 @@ export default async function launch(command: string, terminal: boolean) {
     if (environment.isMac) {
       command = `osascript -e 'tell application "Terminal" to do script "${command
         .replace(/"/g, '\\"')
-        .replace(/\\/g, '\\\\')}" activate'`
+        .replace(/\\/g, '\\')}" activate'`
     } else if (environment.isLinux) {
       command = `gnome-terminal -- /bin/bash -c '${command}; read'`
     }

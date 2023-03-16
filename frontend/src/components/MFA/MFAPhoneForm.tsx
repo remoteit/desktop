@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Button, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { startsWith } from 'lodash'
 import { Notice } from '../Notice'
 
 export interface Props {
@@ -28,10 +27,10 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   const [message, setMessage] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState<boolean>(false)
   const country = 'us'
-  const handleOnChange = (value, data) => {
+  const handleOnChange = (value: string, data) => {
     const newValue = value.replace(/[^0-9]+/g, '')
 
-    if (newValue !== '' && startsWith(newValue, data.dialCode)) {
+    if (newValue !== '' && newValue.startsWith(data.dialCode)) {
       setValidPhone(true)
     } else {
       setValidPhone(false)

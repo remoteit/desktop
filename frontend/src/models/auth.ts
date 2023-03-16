@@ -12,12 +12,12 @@ import {
   DEVELOPER_KEY,
 } from '../shared/constants'
 import { setLocalStorage, removeLocalStorage, isElectron, isPortal } from '../services/Browser'
+import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remote.it'
 import { CognitoUser } from '../cognito/types'
 import { AuthService } from '../cognito/auth'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { Dispatch } from '../store'
 import sleep from '../services/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
@@ -86,29 +86,21 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT END')
     },
     async fetchUser(_: void, state) {
-      const { auth } = dispatch as Dispatch
-      try {
-        const result = await graphQLRequest(
-          ` query Auth {
-              login {
-                id
-                email
-                authhash
-                yoicsId
-              }
-            }`
-        )
-        graphQLGetErrors(result)
-        const data = result?.data?.data?.login
-        const user = { ...data, authHash: data.authhash }
-        auth.set({ user, signInError: undefined })
-        setLocalStorage(state, USER_KEY, user)
-        if (data.authhash && data.yoicsId) {
-          Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
-          auth.signedIn()
-        } else console.warn('Login failed!', data)
-      } catch (error) {
-        await apiError(error)
+      const { auth } = dispatch
+      const response = await graphQLLogin()
+      if (response === 'ERROR') return
+
+      const data = response?.data?.data?.login
+      const user = { ...data, authHash: data.authhash }
+
+      auth.set({ user, signInError: undefined })
+      setLocalStorage(state, USER_KEY, user)
+      if (data.authhash && data.yoicsId) {
+        Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
+        auth.signedIn()
+      } else {
+        console.warn('Login failed!', data)
+        dispatch.ui.set({ errorMessage: 'Login failed.' })
       }
     },
     async changePassword(passwordValues: IPasswordValue, state) {

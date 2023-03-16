@@ -86,7 +86,7 @@ class Controller {
     socket.on('showFolder', this.showFolder)
     socket.on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
-    socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
+    socket.on('filePrompt', type => EventBus.emit(electronInterface.EVENTS.filePrompt, type))
   }
 
   init = () => {

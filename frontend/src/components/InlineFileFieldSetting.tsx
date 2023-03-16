@@ -11,6 +11,7 @@ import classnames from 'classnames'
 type Props = {
   label?: string
   value?: string
+  type: 'path' | 'app'
   variant?: TextFieldProps['variant']
   disabled?: boolean
   disableGutters?: boolean
@@ -22,6 +23,7 @@ type Props = {
 export const InlineFileFieldSetting: React.FC<Props> = ({
   label,
   value = '',
+  type,
   variant,
   disabled,
   disableGutters,
@@ -33,7 +35,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ filled: variant === 'filled' })
 
-  const filePrompt = () => emit('filePrompt')
+  const filePrompt = () => emit('filePrompt', type)
 
   useEffect(() => {
     if (filePath) {

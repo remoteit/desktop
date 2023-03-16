@@ -13,17 +13,19 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
   return (
     <>
       {app.customTokens.map(token =>
-        token === 'path' && !isPortal() ? (
+        (token === 'path' || token === 'app') && !isPortal() ? (
           <InlineFileFieldSetting
             key={token}
+            type={token}
             label="Application Path"
             value={app.value(token)}
             onSave={value => {
               if (!connection) return
               if (value) {
-                setConnection({ ...connection, path: value })
+                setConnection({ ...connection, [token]: value })
               } else {
-                const { path, ...props } = connection
+                let props = { ...connection }
+                delete props[token]
                 setConnection(props)
               }
             }}

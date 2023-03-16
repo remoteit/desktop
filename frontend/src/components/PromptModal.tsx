@@ -54,6 +54,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                 token === 'path' && !isPortal() ? (
                   <InlineFileFieldSetting
                     key={token}
+                    type={token}
                     disableGutters
                     label="Application path"
                     value={app.value(token)}

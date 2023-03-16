@@ -44,7 +44,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
-      dispatch.connections.connect(connection)
+      dispatch.connections.connect({ ...connection, connectOnReady: true })
       dispatch.networks.join(instanceId)
     }
     event && onClick?.(event)
