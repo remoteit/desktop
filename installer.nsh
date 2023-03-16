@@ -4,7 +4,7 @@
 !include WinVer.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.16.0-alpha.4"
+!define PKGVERSION "3.16.0-alpha.5"
 
 !macro customInit
     IfFileExists "$TEMP\remoteit.log" custom_init_log_found custom_init_log_not_found
