@@ -19,6 +19,7 @@ class Platforms {
   nameLookup: INumberLookup<string> = {}
   installed: string[] = [
     'advantech',
+    'alpine',
     'android',
     'arm',
     'aws',
