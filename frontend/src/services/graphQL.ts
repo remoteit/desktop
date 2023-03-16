@@ -94,6 +94,11 @@ export async function apiError(error: unknown) {
       console.log('Incrementing error count: ', errorCount)
       await sleep(1000 * errorCount * errorCount)
       auth.checkSession({ refreshToken: true })
+    } else if (error.code === 'ERR_NETWORK') {
+      ui.set({
+        errorMessage:
+          'API request failure. Your API usage may be throttled. Check the usage on your account and if issues persist please contact support.',
+      })
     }
   }
 
