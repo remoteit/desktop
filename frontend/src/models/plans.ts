@@ -9,9 +9,8 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { selectLicenses, selectRemoteitLicense } from '../selectors/plans'
+import { selectRemoteitLicense, selectOrganization, selectLicenses } from '../selectors/organizations'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { selectOrganization } from '../selectors/organizations'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
 import humanize from 'humanize-duration'

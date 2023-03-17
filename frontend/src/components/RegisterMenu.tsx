@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { selectPermissions } from '../models/organization'
+import { selectPermissions } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 

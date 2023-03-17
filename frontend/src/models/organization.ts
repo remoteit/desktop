@@ -10,11 +10,9 @@ import {
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getActiveUser, getAccountIds } from './accounts'
-import { selectMembership } from '../selectors/accounts'
+import { getAccountIds } from './accounts'
 import { getActiveAccountId } from '../selectors/accounts'
 import { selectOrganization } from '../selectors/organizations'
-import { selectRemoteitLicense } from '../selectors/plans'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
@@ -498,12 +496,6 @@ export function getOrganizationName(state: ApplicationState, accountId?: string)
   return selectOrganization(state, accountId).name || 'Unknown'
 }
 
-export function selectPermissions(state: ApplicationState, accountId?: string): IPermission[] | undefined {
-  const membership = selectMembership(state, accountId)
-  const organization = selectOrganization(state, accountId)
-  return organization.roles.find(r => r.id === membership.roleId)?.permissions
-}
-
 export function selectMembersWithAccess(state: ApplicationState, instance?: IInstance) {
   const organization = selectOrganization(state)
   return organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
@@ -530,21 +522,4 @@ export function canViewByTags(filter: ITagFilter, tags: ITag[]) {
     return filter.values.every(tag => names.includes(tag))
   }
   return true
-}
-
-export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {
-  const user = getActiveUser(state)
-  const license = selectRemoteitLicense(state)
-  return (
-    user && {
-      created: new Date(user.created || ''),
-      roleId: 'OWNER',
-      license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
-      organizationId: user.id,
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-    }
-  )
 }

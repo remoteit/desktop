@@ -15,8 +15,7 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { selectMembership } from '../selectors/accounts'
-import { selectPermissions } from '../models/organization'
-import { selectOrganization, selectLimitsLookup } from '../selectors/organizations'
+import { selectPermissions, selectOrganization, selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { SelectSetting } from '../components/SelectSetting'

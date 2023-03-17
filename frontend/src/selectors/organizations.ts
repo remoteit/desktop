@@ -1,15 +1,23 @@
 import { createSelector } from 'reselect'
-import { getOrganizations, getTestLimits, getLimitsOverride } from './state'
-import { getActiveAccountId, selectMembership, isUserAccount } from './accounts'
+import { REMOTEIT_PRODUCT_ID } from '../models/plans'
+import { getOrganizations, getTestLimits, getLimitsOverride, getPlansTests } from './state'
+import { getActiveAccountId, isUserAccount, getActiveUser } from './accounts'
+import { selectMembership } from './accounts'
 import { defaultState } from '../models/organization'
 
 export const selectOrganization = createSelector(
-  [getActiveAccountId, selectMembership, getOrganizations],
-  (accountId, membership, organizations) =>
-    organizations[accountId] || {
-      ...defaultState,
-      name: membership.name,
-    }
+  [getActiveAccountId, getOrganizations],
+  (accountId, organizations) => organizations[accountId] || defaultState
+)
+
+export const selectLicenses = createSelector([getPlansTests, selectOrganization], (tests, organization) => {
+  if (tests.license) return tests.licenses
+  else return organization.licenses
+})
+
+export const selectRemoteitLicense = createSelector(
+  [selectLicenses],
+  (licenses): ILicense | null => licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 )
 
 export const selectBaseLimits = createSelector(
@@ -27,5 +35,28 @@ export const selectLimitsLookup = createSelector(
     })
 
     return result
+  }
+)
+
+export const selectPermissions = createSelector(
+  [selectMembership, selectOrganization],
+  (membership, organization): IPermission[] | undefined => {
+    return organization.roles.find(r => r.id === membership.roleId)?.permissions
+  }
+)
+
+export const selectOwner = createSelector(
+  [getActiveUser, selectRemoteitLicense],
+  (user, license): IOrganizationMember | undefined => {
+    return {
+      created: new Date(user.created || ''),
+      roleId: 'OWNER',
+      license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
+      organizationId: user.id,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    }
   }
 )

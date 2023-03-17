@@ -3,7 +3,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
 import { getActiveAccountId } from '../selectors/accounts'
-import { selectPermissions } from './organization'
+import { selectPermissions } from '../selectors/organizations'
 import { selectTags } from '../selectors/tags'
 import {
   graphQLSetTag,

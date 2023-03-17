@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
-import { getActiveUser } from '../models/accounts'
+import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { selectConnections } from '../selectors/connections'
