@@ -35,8 +35,8 @@ export const LaunchButton: React.FC<Props> = ({
 }) => {
   const { ui } = useDispatch<Dispatch>()
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const ready = !!app?.connection?.ready
-  const loading = !app?.connection?.ready || app?.connection?.starting
+  const ready = !!app?.connection?.ready || app?.connection?.connectLink
+  const loading = !ready || app?.connection?.starting
   const disabled = !app?.connection?.enabled || loading || !ready
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && app?.connection?.autoLaunch)
 
