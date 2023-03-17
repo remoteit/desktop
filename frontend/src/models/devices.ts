@@ -1,17 +1,16 @@
 import structuredClone from '@ungap/structured-clone'
+import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
   graphQLDeleteDevice,
   graphQLUnShareDevice,
   graphQLRename,
   graphQLSetAttributes,
-  graphQLRegistration,
   graphQLClaimDevice,
   graphQLAddService,
   graphQLUpdateService,
   graphQLRemoveService,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
-  graphQLRestoreDevice,
 } from '../services/graphQLMutation'
 import {
   graphQLFetchDeviceCount,
