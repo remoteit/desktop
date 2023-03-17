@@ -279,16 +279,16 @@ export default createModel<RootModel>()({
     async setOrganization(params: IOrganizationSettings, state) {
       let organization = selectOrganization(state)
       await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
-      const result = await graphQLSetOrganization(params)
+      const result = await graphQLSetOrganization({ ...params, accountId: organization.id })
       if (result !== 'ERROR') {
         if (!organization.id) dispatch.ui.set({ successMessage: 'Your organization has been created.' })
       }
       await dispatch.organization.fetch()
     },
 
-    async setIdentityProvider(params: IIdentityProviderSettings) {
+    async setIdentityProvider(params: IIdentityProviderSettings, state) {
       dispatch.organization.set({ updating: true })
-      const result = await graphQLSetIdentityProvider(params)
+      const result = await graphQLSetIdentityProvider({ ...params, accountId: getActiveAccountId(state) })
       if (result !== 'ERROR') {
         dispatch.ui.set({
           successMessage: params.enabled ? `${params.type} enabled.` : `${params.type} disabled.`,
@@ -343,7 +343,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async removeOrganization(_: void, state) {
+    async removeOrganization(_: void) {
       const result = await graphQLRemoveOrganization()
       if (result !== 'ERROR') {
         dispatch.organization.clearActive()

@@ -165,7 +165,7 @@ export async function graphQLShareDevice(params: IShareProps) {
   )
 }
 
-export async function graphQLSetOrganization(params: IOrganizationSettings) {
+export async function graphQLSetOrganization(params: IOrganizationSettings & { accountId: string }) {
   return await graphQLBasicRequest(
     ` mutation SetOrganization($accountId: String, $name: String, $domain: String, $providers: [AuthenticationProvider!]) {
         setOrganization(accountId: $accountId, name: $name, domain: $domain, providers: $providers)
@@ -174,7 +174,7 @@ export async function graphQLSetOrganization(params: IOrganizationSettings) {
   )
 }
 
-export async function graphQLSetIdentityProvider(params: IIdentityProviderSettings) {
+export async function graphQLSetIdentityProvider(params: IIdentityProviderSettings & { accountId: string }) {
   return await graphQLBasicRequest(
     ` mutation SetIdentityProvider($accountId: String, $enabled: Boolean, $type: String, $metadata: String, $clientId: String, $clientSecret: String, $issuer: String) {
         configureOrgIdentityProvider(
