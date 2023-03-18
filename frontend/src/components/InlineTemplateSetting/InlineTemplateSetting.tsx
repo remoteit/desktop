@@ -1,7 +1,8 @@
 import React from 'react'
 import { Application } from '../../shared/applications'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { newConnection, setConnection, isSecureReverseProxy } from '../../helpers/connectionHelper'
+import { ConfirmButton } from '../../buttons/ConfirmButton'
 import { Tooltip } from '@mui/material'
 import { Icon } from '../Icon'
 
@@ -9,28 +10,43 @@ type Props = {
   app: Application
   service: IService
   connection?: IConnection
-  actionIcon?: React.ReactNode
   disabled?: boolean
   disableGutters?: boolean
 }
 
-export const InlineTemplateSetting: React.FC<Props> = ({
-  app,
-  service,
-  connection,
-  actionIcon,
-  disabled,
-  disableGutters,
-}) => {
+export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connection, disabled, disableGutters }) => {
   if (!connection) connection = newConnection(service)
+  const secureReverseProxy = isSecureReverseProxy(app.template)
+
+  const update = (template: string) =>
+    connection &&
+    setConnection({
+      ...connection,
+      [app.templateKey]: template,
+      disableSecurity: isSecureReverseProxy(template) === false,
+    })
 
   return (
     <InlineTextFieldSetting
-      hideIcon
+      hideIcon={secureReverseProxy === null}
+      actionIcon={
+        secureReverseProxy === null ? undefined : (
+          <ConfirmButton
+            type="solid"
+            confirm={secureReverseProxy}
+            confirmTitle="Disable Web Security"
+            confirmMessage="Are you sure you want to disable secure connections? Your local connection traffic will be sent in the clear, unencrypted."
+            disabled={disabled}
+            size={secureReverseProxy ? undefined : 'md'}
+            name={secureReverseProxy ? 'lock' : 'triangle-exclamation'}
+            color={secureReverseProxy ? undefined : 'danger'}
+            onClick={() => update(app.getReverseProxyTemplate(!secureReverseProxy))}
+          />
+        )
+      }
       disableGutters={disableGutters}
       disabled={disabled}
       value={app.template}
-      actionIcon={actionIcon}
       label={
         <>
           {app.contextTitle} Template
@@ -42,13 +58,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({
         </>
       }
       resetValue={app.defaultTemplate}
-      onSave={template =>
-        connection &&
-        setConnection({
-          ...connection,
-          [app.templateKey]: template.toString(),
-        })
-      }
+      onSave={template => update(template.toString())}
     />
   )
 }

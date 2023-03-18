@@ -2,8 +2,8 @@ import React, { useRef, useState, useEffect } from 'react'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
-import { getEndpoint } from '../helpers/connectionHelper'
-import { Typography, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
+import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
+import { Typography, Tooltip, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
@@ -13,6 +13,7 @@ import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
+import { Icon } from './Icon'
 
 type Props = {
   connection?: IConnection
@@ -59,6 +60,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const endpoint = getEndpoint(connection)
   const endpointName = (connection?.public ? 'Public' : 'Local') + ' Endpoint'
+  const secureReverseProxy = isSecureReverseProxy(app.string)
+  const secureIcon = secureReverseProxy === false && (
+    <Tooltip title="Local connection unencrypted">
+      <Icon name="triangle-exclamation" size="base" type="solid" inlineLeft />
+    </Tooltip>
+  )
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
@@ -73,6 +80,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
           setCopied('Copied!')
         }}
       >
+        {secureIcon}
         {endpoint}
       </Typography>
     </div>
@@ -82,6 +90,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div className={hover === 'host' ? css.show : css.hide}>
       <InputLabel shrink>Host</InputLabel>
       <Typography variant="h3" className={css.h3}>
+        {secureIcon}
         {name && <span>{name}</span>}
         {port && <span className={css.inactive}>:{port}</span>}
       </Typography>
@@ -92,6 +101,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div className={hover === 'port' ? css.show : css.hide}>
       <InputLabel shrink>Port</InputLabel>
       <Typography variant="h3" className={css.h3}>
+        {secureIcon}
         <span className={css.inactive}>{name}:</span>
         <span>{port}</span>
       </Typography>
@@ -102,6 +112,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
       <InputLabel shrink>{endpointName}</InputLabel>
       <Typography variant="h3" className={css.h3}>
+        {secureIcon}
         <span>{endpoint}</span>
       </Typography>
     </div>
@@ -111,6 +122,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div ref={launchRef} className={hover === 'launch' || hover === 'copyLaunch' ? css.show : css.hide}>
       <InputLabel shrink>{app.contextTitle}</InputLabel>
       <Typography variant="h3" className={css.h3}>
+        {secureIcon}
         <span>{app.string}</span>
       </Typography>
     </div>

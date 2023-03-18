@@ -20,6 +20,12 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
   return 'online'
 }
 
+export function isSecureReverseProxy(template: string) {
+  if (template.startsWith('https:')) return true
+  if (template.startsWith('http:')) return false
+  return null
+}
+
 export function isRelay(service?: IService) {
   return !!(service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost')
 }
@@ -62,6 +68,7 @@ export function newConnection(service?: IService | null) {
       typeID: service.typeID,
       targetHost: service.attributes.targetHost,
       description: service.attributes.description,
+      disableSecurity: isSecureReverseProxy(service?.attributes.launchTemplate || cd?.launchTemplate) === false,
     }
     if (service.attributes.defaultPort && !usedPorts(state).includes(service.attributes.defaultPort)) {
       connection.port = service.attributes.defaultPort

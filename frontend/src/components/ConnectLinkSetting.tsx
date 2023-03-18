@@ -20,6 +20,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions })
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
+  const disabled = !canManage || (connection.enabled && !connection.connectLink) || connection.updating
 
   useEffect(() => {
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
@@ -29,7 +30,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions })
     <>
       <ListItemSetting
         icon="globe"
-        disabled={!canManage || (connection.enabled && !connection.connectLink) || connection.updating}
+        disabled={disabled}
         label="Persistent public url"
         subLabel={
           canManage ? (

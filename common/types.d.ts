@@ -158,6 +158,7 @@ declare global {
     default?: boolean // if the connection is in a default state - gets removed on modification
     description?: string
     deviceID?: string
+    disableSecurity?: boolean //disable https security
     disconnecting?: boolean
     enabled: boolean // if the connection is active
     endTime?: number // unix timestamp connection close time

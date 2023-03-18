@@ -5,9 +5,14 @@ import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 
-type Props = { app: Application; service: IService; connection?: IConnection }
+type Props = {
+  app: Application
+  service: IService
+  connection?: IConnection
+  disabled?: boolean
+}
 
-export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connection }) => {
+export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connection, disabled }) => {
   if (!connection) connection = newConnection(service)
 
   return (
@@ -19,6 +24,7 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
             type={token}
             label="Application Path"
             value={app.value(token)}
+            disabled={disabled}
             onSave={value => {
               if (!connection) return
               if (value) {
@@ -36,6 +42,7 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
             key={token}
             label={token}
             value={app.value(token)}
+            disabled={disabled}
             type={token === 'password' ? token : undefined}
             // filter={REGEX_NAME_SAFE} // should be set by application type
             onSave={value =>

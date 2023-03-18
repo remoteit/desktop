@@ -15,6 +15,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
 
   const app = useApplication(service, connection)
+  const disabled = connection?.connected || connection?.connecting || connection?.starting
 
   const handleChange = (value: any) => {
     connection &&
@@ -26,11 +27,11 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   return (
     <>
-      <LaunchTypeSelect app={app} onChange={handleChange} />
+      <LaunchTypeSelect app={app} onChange={handleChange} disabled={disabled} />
       {app.launchType !== 'NONE' && (
         <ListItemQuote>
-          <InlineTemplateSetting app={app} connection={connection} service={service} />
-          <CustomAttributeSettings app={app} connection={connection} service={service} />
+          <InlineTemplateSetting app={app} connection={connection} service={service} disabled={disabled} />
+          <CustomAttributeSettings app={app} connection={connection} service={service} disabled={disabled} />
         </ListItemQuote>
       )}
     </>

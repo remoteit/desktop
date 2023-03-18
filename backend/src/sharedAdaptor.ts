@@ -6,10 +6,6 @@ export function getEnvironment() {
   return environment.frontend
 }
 
-export function certificateEnabled() {
-  return !!preferences.get().useCertificate
-}
-
 export function getCloudData(typeId?: number) {
   return {} as IApplicationType
 }
