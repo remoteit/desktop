@@ -21,6 +21,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
 }
 
 export function isSecureReverseProxy(template: string) {
+  if (!template) return null
   if (template.startsWith('https:')) return true
   if (template.startsWith('http:')) return false
   return null

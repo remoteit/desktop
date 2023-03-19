@@ -18,6 +18,22 @@
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
+    ; ; Install window title
+    ; StrCpy $6 "Remote.It Pre-Installation"
+
+    ; ; Non blocking message box
+    ; nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
+
+    ; ; Stop the agent - don't use install path since it would be different if installed in an arch directory
+    ; FileWrite $8 "Stopping Old Service$\r$\n"
+
+    ; ; Remove agent via path at startup to access old binary
+    ; StrCpy $7 "remoteit.exe agent uninstall"
+    ; nsExec::ExecToStack $7
+    ; Pop $0
+    ; Pop $1
+    ; FileWrite $8 "$7     [$0] $1"
+
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
     CreateDirectory "${REMOTEIT_BACKUP}"
@@ -31,6 +47,9 @@
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
     FileWrite $8 "Backup complete$\r$\n"
     FileClose $8
+
+    ; ; Close the installing window
+    ; nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
 !macroend
 
 !macro customInstall
