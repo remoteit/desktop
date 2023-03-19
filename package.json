@@ -59,8 +59,8 @@
   "build": {
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
-    "productName": "remoteit",
-    "artifactName": "${productName}-installer-${arch}.${ext}",
+    "productName": "Remote.It",
+    "artifactName": "${name}-installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
@@ -80,12 +80,10 @@
       ]
     },
     "nsis": {
-      "oneClick": false,
       "perMachine": true,
       "allowElevation": true,
       "deleteAppDataOnUninstall": true,
-      "include": "build/installer.nsh",
-      "allowToChangeInstallationDirectory": true
+      "include": "build/installer.nsh"
     },
     "linux": {
       "category": "Network",
