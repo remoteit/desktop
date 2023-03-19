@@ -3,10 +3,13 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { List, Typography } from '@mui/material'
-import { selectPermissions } from '../models/organization'
 import { Redirect, useParams } from 'react-router-dom'
-import { selectLimitsLookup, selectOrganization } from '../selectors/organizations'
-import { selectRemoteitLicense } from '../selectors/plans'
+import {
+  selectRemoteitLicense,
+  selectPermissions,
+  selectLimitsLookup,
+  selectOrganization,
+} from '../selectors/organizations'
 import { PlanActionChip } from '../components/PlanActionChip'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'

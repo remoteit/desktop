@@ -176,13 +176,3 @@ export function getAccountIds(state: ApplicationState) {
   state.auth.user && ids.unshift(state.auth.user.id)
   return ids
 }
-
-export function getActiveUser(state: ApplicationState): IUserRef {
-  const id = getActiveAccountId(state)
-  const membershipOrganizations = state.accounts.membership.map(m => ({
-    id: m.account.id || '',
-    email: m.account.email || 'unknown',
-    created: m.created,
-  }))
-  return membershipOrganizations.find(m => m.id === id) || state.user
-}

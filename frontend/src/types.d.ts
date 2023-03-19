@@ -54,7 +54,7 @@ declare global {
   }
 
   type IIdentityProviderSettings = {
-    accountId: string
+    accountId?: string
     enabled: boolean
     type: IOrganizationProvider
     metadata?: string

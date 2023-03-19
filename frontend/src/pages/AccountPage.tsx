@@ -1,7 +1,7 @@
 import React from 'react'
 import { List, Typography, Tooltip, ButtonBase } from '@mui/material'
 import { selectLicenseIndicator } from '../models/plans'
-import { selectRemoteitLicense } from '../selectors/plans'
+import { selectRemoteitLicense } from '../selectors/organizations'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'

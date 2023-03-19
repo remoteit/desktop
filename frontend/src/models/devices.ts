@@ -1,17 +1,16 @@
 import structuredClone from '@ungap/structured-clone'
+import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
   graphQLDeleteDevice,
   graphQLUnShareDevice,
   graphQLRename,
   graphQLSetAttributes,
-  graphQLRegistration,
   graphQLClaimDevice,
   graphQLAddService,
   graphQLUpdateService,
   graphQLRemoveService,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
-  graphQLRestoreDevice,
 } from '../services/graphQLMutation'
 import {
   graphQLFetchDeviceCount,
@@ -389,11 +388,13 @@ export default createModel<RootModel>()({
     },
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
+      const accountId = getActiveAccountId(state)
+
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'aws', step: 2 })
 
-      const result = await graphQLClaimDevice(code, getActiveAccountId(state))
-      if (state.auth.user) await dispatch.accounts.setActive(state.auth.user.id)
+      const result = await graphQLClaimDevice(code, accountId)
+      await dispatch.accounts.setActive(accountId)
 
       if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice

@@ -39,7 +39,7 @@ export const Connect: React.FC = () => {
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    showConnectLink: isReverseProxy(state, service?.typeID) && !(!connection.connectLink && connection.enabled),
+    showConnectLink: isReverseProxy(state, service?.typeID),
   }))
 
   useEffect(() => {

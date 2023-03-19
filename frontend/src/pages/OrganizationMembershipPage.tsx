@@ -12,7 +12,7 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectRemoteitLicense } from '../selectors/plans'
+import { selectRemoteitLicense } from '../selectors/organizations'
 import { getOwnOrganization } from '../models/organization'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'

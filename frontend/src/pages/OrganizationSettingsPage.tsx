@@ -15,8 +15,7 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { selectMembership } from '../selectors/accounts'
-import { selectPermissions } from '../models/organization'
-import { selectOrganization, selectLimitsLookup } from '../selectors/organizations'
+import { selectPermissions, selectOrganization, selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { SelectSetting } from '../components/SelectSetting'
@@ -50,7 +49,6 @@ export const OrganizationSettingsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<IIdentityProviderSettings>({
-    accountId: organization.id,
     enabled: !!organization.identityProvider,
     type: (organization.identityProvider?.type as IOrganizationProvider) || 'SAML',
   })
@@ -61,12 +59,7 @@ export const OrganizationSettingsPage: React.FC = () => {
     (form.type === 'SAML' && !form.metadata) ||
     (form.type === 'OIDC' && !(form.clientId && form.clientSecret && form.issuer))
 
-  const disable = () =>
-    dispatch.organization.setIdentityProvider({
-      accountId: form.accountId,
-      type: form.type,
-      enabled: false,
-    })
+  const disable = () => dispatch.organization.setIdentityProvider({ type: form.type, enabled: false })
 
   const enable = () => {
     if (incomplete) return
@@ -74,7 +67,7 @@ export const OrganizationSettingsPage: React.FC = () => {
   }
 
   React.useEffect(() => {
-    setForm({ ...form, accountId: organization.id, enabled: !!organization.identityProvider })
+    setForm({ ...form, enabled: !!organization.identityProvider })
   }, [organization])
 
   if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
@@ -109,7 +102,7 @@ export const OrganizationSettingsPage: React.FC = () => {
           value={organization.name}
           label="Organization Name"
           resetValue={organization.name}
-          onSave={name => dispatch.organization.setOrganization({ name: name.toString(), accountId: organization.id })}
+          onSave={name => dispatch.organization.setOrganization({ name: name.toString() })}
         />
       </List>
       {limits.saml && (

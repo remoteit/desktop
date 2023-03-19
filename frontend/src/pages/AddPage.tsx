@@ -61,7 +61,7 @@ export const AddPage: React.FC = () => {
             disabled={hasDemo || claiming}
             onClick={() => {
               setCode(DEMO_DEVICE_CLAIM_CODE)
-              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })
+              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
             }}
           >
             <ListItemIcon>
@@ -78,7 +78,7 @@ export const AddPage: React.FC = () => {
               className={css.form}
               onSubmit={e => {
                 e.preventDefault()
-                devices.claimDevice({ code })
+                devices.claimDevice({ code, redirect: true })
               }}
             >
               <TextField
@@ -138,6 +138,7 @@ export const AddPage: React.FC = () => {
             'tinkerboard',
             'ubiquiti',
             'nvidia',
+            'alpine',
             'axis',
             'advantech',
             'ubuntu',

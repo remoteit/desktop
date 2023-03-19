@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
-import { getActiveUser } from '../models/accounts'
+import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { selectConnections } from '../selectors/connections'
@@ -18,6 +18,12 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
     if (connection.enabled) return 'ready'
   }
   return 'online'
+}
+
+export function isSecureReverseProxy(template: string) {
+  if (template.startsWith('https:')) return true
+  if (template.startsWith('http:')) return false
+  return null
 }
 
 export function isRelay(service?: IService) {
@@ -62,6 +68,7 @@ export function newConnection(service?: IService | null) {
       typeID: service.typeID,
       targetHost: service.attributes.targetHost,
       description: service.attributes.description,
+      disableSecurity: isSecureReverseProxy(service?.attributes.launchTemplate || cd?.launchTemplate) === false,
     }
     if (service.attributes.defaultPort && !usedPorts(state).includes(service.attributes.defaultPort)) {
       connection.port = service.attributes.defaultPort

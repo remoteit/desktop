@@ -6,7 +6,7 @@ import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getOwnDevices } from '../selectors/devices'
-import { selectRemoteitLicense } from '../selectors/plans'
+import { selectRemoteitLicense } from '../selectors/organizations'
 import { PERSONAL_PLAN_ID } from '../models/plans'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7

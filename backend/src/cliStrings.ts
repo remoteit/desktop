@@ -43,6 +43,7 @@ export default {
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
+      ${c.disableSecurity ? '--forceHTTP true' : ''} \
       ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
       --enableCertificate ${!!preferences.get().useCertificate} \
       --log ${!!c.log} \
@@ -71,6 +72,7 @@ export default {
     --p2p ${!c.proxyOnly} \
     --enable ${!!c.enabled} \
     --servicetype ${c.typeID} \
+    ${c.disableSecurity ? '--forceHTTP true' : ''} \
     ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
     --enableCertificate ${!!preferences.get().useCertificate} \
     --log ${!!c.log} \

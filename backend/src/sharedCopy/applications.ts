@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment, getCloudData, certificateEnabled } from '../sharedAdaptor'
+import { getEnvironment, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
@@ -175,12 +175,12 @@ export class Application {
     return this.cloudData ? this.cloudData.proxy : false
   }
 
-  private parseReverseProxy(template: string) {
-    return this.reverseProxy && certificateEnabled() ? template.replace('http:', 'https:') : template
+  getReverseProxyTemplate(secure: boolean) {
+    return secure ? this.template.replace('http:', 'https:') : this.template.replace('https:', 'http:')
   }
 
   private get resolvedDefaultLaunchTemplate(): string {
-    return this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.appLaunchTemplate
+    return this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate(): string {
@@ -188,7 +188,7 @@ export class Application {
       this.service?.attributes.commandTemplate ||
       this.globalDefaults.commandTemplate ||
       this.defaultCommandTemplate ||
-      this.appLaunchTemplate
+      this.defaultLaunchTemplate
     )
   }
 
@@ -202,7 +202,7 @@ export class Application {
     })
     template = replaceHost(template, this.localhost)
     if (!lookup.port) template = template.replace(':[port]', '')
-    return this.parseReverseProxy(template)
+    return template
   }
 
   private extractTokens(template: string) {
@@ -224,7 +224,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   return app
 }
 
-export function getApplicationType(typeId: number | undefined) {
+export function getApplicationType(typeId?: number) {
   const { portal, os } = getEnvironment()
   const windows = os === 'windows'
 
@@ -265,7 +265,6 @@ export function getApplicationType(typeId: number | undefined) {
       return new Application({
         title: 'Secure Browser',
         appLaunchType: 'URL',
-        appLaunchTemplate: 'https://[host]:[port]',
         urlForm: true,
       })
     case 7:

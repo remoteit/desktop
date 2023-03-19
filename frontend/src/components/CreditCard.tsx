@@ -3,7 +3,7 @@ import { Typography, Button, List, ListItem, ListItemText, ListItemIcon, ListIte
 import { useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectRemoteitLicense } from '../selectors/plans'
+import { selectRemoteitLicense } from '../selectors/organizations'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 

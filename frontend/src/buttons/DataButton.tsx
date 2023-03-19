@@ -88,5 +88,7 @@ const useStyles = makeStyles(({ palette }) => ({
     margin: 0,
     whiteSpace: 'pre-wrap',
     overflowWrap: 'break-word',
+    userSelect: 'text',
+    cursor: 'text',
   },
 }))

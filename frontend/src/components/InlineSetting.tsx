@@ -43,7 +43,7 @@ export const InlineSetting: React.FC<Props> = ({
   modified,
   disableGutters,
   children,
-  ...viewFormProps
+  ...props
 }) => {
   const css = useStyles()
   const [edit, setEdit] = useState<boolean>(false)
@@ -73,58 +73,61 @@ export const InlineSetting: React.FC<Props> = ({
   icon = <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
 
   const editForm = (
-    <ListItem className={css.active} disableGutters={disableGutters} dense>
-      {icon}
-      <form
-        className={css.form}
-        onSubmit={e => {
-          e.preventDefault()
-          onSubmit()
-          setEdit(false)
-        }}
-      >
-        {children}
-        <ListItemSecondaryAction>
-          {resetValue != null && (
+    <>
+      {props.actionIcon && <span className={css.action}> {props.actionIcon}</span>}
+      <ListItem className={css.active} disableGutters={disableGutters} dense>
+        {icon}
+        <form
+          className={css.form}
+          onSubmit={e => {
+            e.preventDefault()
+            onSubmit()
+            setEdit(false)
+          }}
+        >
+          {children}
+          <ListItemSecondaryAction>
+            {resetValue != null && (
+              <IconButton
+                title="Reset"
+                icon="undo"
+                type="solid"
+                size="md"
+                onMouseDown={cancelBlur}
+                onClick={() => {
+                  onResetClick()
+                  setEdit(false)
+                }}
+              />
+            )}
             <IconButton
-              title="Reset"
-              icon="undo"
+              title="Cancel"
+              icon="times"
+              type="solid"
+              size="md"
+              onClick={() => {
+                !fieldRef && setEdit(false)
+                onCancel()
+              }}
+            />
+            <IconButton
+              title="Save"
+              icon="check"
+              color="primary"
               type="solid"
               size="md"
               onMouseDown={cancelBlur}
-              onClick={() => {
-                onResetClick()
-                setEdit(false)
-              }}
+              submit
             />
-          )}
-          <IconButton
-            title="Cancel"
-            icon="times"
-            type="solid"
-            size="md"
-            onClick={() => {
-              !fieldRef && setEdit(false)
-              onCancel()
-            }}
-          />
-          <IconButton
-            title="Save"
-            icon="check"
-            color="primary"
-            type="solid"
-            size="md"
-            onMouseDown={cancelBlur}
-            submit
-          />
-        </ListItemSecondaryAction>
-      </form>
-    </ListItem>
+          </ListItemSecondaryAction>
+        </form>
+      </ListItem>
+    </>
   )
 
   const viewForm = (
     <FormDisplay
-      {...viewFormProps}
+      {...props}
       icon={icon}
       hideIcon={hideIcon}
       modified={modified}
@@ -168,7 +171,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'center',
     zIndex: 1,
     right: 'auto',
-    left: 20,
+    left: 18,
     marginTop: spacing.xs,
   },
   hideIcon: {
