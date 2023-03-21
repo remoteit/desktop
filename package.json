@@ -1,5 +1,5 @@
 {
-  "name": "remoteit",
+  "name": "remoteit-desktop",
   "version": "3.16.0-alpha.7",
   "private": true,
   "main": "build/index.js",
@@ -59,8 +59,8 @@
   "build": {
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
-    "productName": "remoteit",
-    "artifactName": "${name}-installer-${arch}.${ext}",
+    "productName": "Remote.It",
+    "artifactName": "${productName}-installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
@@ -76,12 +76,6 @@
             "ia32",
             "x64"
           ]
-        }
-      ],
-      "extraResources": [
-        {
-          "from": "./scripts/uninstall-agent.ps1",
-          "to": "./"
         }
       ]
     },

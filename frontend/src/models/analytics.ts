@@ -152,7 +152,7 @@ export default createModel<RootModel>()({
       }
       const { parsedDevices, updatedConnectionTimeseries, updatedLastMonthConnectionCount } = parseDevices({
         devices: gqlData.devices.items,
-        connectionTimeseries: connectionTimeseries,
+        connectionTimeseries: structuredClone(connectionTimeseries),
         lastMonthConnectionCount: lastMonthConnectionCount,
       })
       const devicelist: IAnalyticsDevice[] = devices.length < 1 ? parsedDevices : devices.concat(parsedDevices)
