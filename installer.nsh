@@ -218,7 +218,7 @@ Function OpenLogFile
     custom_init_log_not_found:
         FileOpen $0 "$TEMP\${LOGNAME}" w
     custom_init_log_end:
-    Return $0
+    Push $0
 FunctionEnd
 
 ; test:
