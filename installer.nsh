@@ -8,45 +8,12 @@
 !define LOGNAME "remoteit.log"
 
 !macro customInit
-    IfFileExists "$TEMP\${LOGNAME}" custom_init_log_found custom_init_log_not_found
-    custom_init_log_found:
-        FileOpen $8 "$TEMP\${LOGNAME}" a
-        FileSeek $8 0 END
-        goto custom_init_log_end
-    custom_init_log_not_found:
-        FileOpen $8 "$TEMP\${LOGNAME}" w
-    custom_init_log_end:
+    Call OpenLogFile
+    Pop $8
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
-    ; Install window title
-    StrCpy $6 "Remote.It Pre-Installation"
-
-    ; Check if the agent is installed
-    StrCpy $7 'powershell (Get-Command remoteit.exe).Path.Contains("resources")'
-    nsExec::ExecToStack $7
-    Pop $0
-    Pop $1
-    ${If} $1 == "True"
-        ; Non blocking message box
-        nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
-
-        ; Stop the agent - don't use install path since it would be different if installed in an arch directory
-        FileWrite $8 "Stopping Old Service$\r$\n"
-
-        ; Remove agent via path at startup to access old binary
-        StrCpy $7 "remoteit.exe agent uninstall"
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1
-        FileWrite $8 "$7     [$0] $1"
-
-        ; Close the installing window
-        nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
-    ${Else}
-        ; If the output is not "True", do this command
-        FileWrite $8 "Service not found$\r$\n"
-    ${EndIf}
+    !insertmacro uninstallAgent $8
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -59,28 +26,27 @@
     ; copy the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
-    FileWrite $8 "Backup complete$\r$\n"
+    FileWrite $8 "Init complete$\r$\n"
     FileClose $8
 !macroend
 
+!macro customUnInit
+    Call OpenLogFile
+    Pop $8
+    FileWrite $8 "Uninstall Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+
+    !insertmacro uninstallAgent $8
+
+    FileWrite $8 "Uninstall Init complete$\r$\n"
+    FileClose $8
+
+!macroend
+
 !macro customInstall
-    IfFileExists "$TEMP\${LOGNAME}" file_found file_not_found
-    file_found:
-        FileOpen $8 "$TEMP\${LOGNAME}" a
-        FileSeek $8 0 END
-        goto log_file_end
-    file_not_found:
-        FileOpen $8 "$TEMP\${LOGNAME}" w
-    log_file_end:
+    Call OpenLogFile
+    Pop $8
     FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     FileWrite $8 "Installing Service$\r$\n"
-
-    ; REMOVE AFTER v3.16.x -- Uninstall agent
-    StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
-    nsExec::ExecToStack $7
-    Pop $0
-    Pop $1      
-    FileWrite $8 "$7 [$0] $1"
 
     ; Install agent
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent install'
@@ -124,19 +90,13 @@
     RMDir /r "$INSTDIR\resources\x86"
     FileWrite $8 "DONE$\r$\n"
 
-    FileWrite $8 "$\r$\nEnd Install $\r$\n$\r$\n"
+    FileWrite $8 "End Install$\r$\n"
     FileClose $8
 !macroend
 
 !macro customRemoveFiles
-    IfFileExists "$TEMP\${LOGNAME}" file_found_u file_not_found_u
-    file_found_u:
-        FileOpen $8 "$TEMP\${LOGNAME}" a
-        FileSeek $8 0 END
-        goto end_of_test_u ;<== important for not continuing on the else branch
-    file_not_found_u:
-        FileOpen $8 "$TEMP\${LOGNAME}" w
-    end_of_test_u:
+    Call OpenLogFile
+    Pop $8
     FileWrite $8 "$\r$\nStart Remove Files ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
     ; Detect auto-update
@@ -193,7 +153,7 @@
         end_of_config:
     ${endif}
 
-    FileWrite $8 "$\r$\nUninstalling...$\r$\n"
+    FileWrite $8 "Uninstalling...$\r$\n"
 
     StrCpy $7 '"$INSTDIR\resources\remoteit.exe" agent uninstall'
     nsExec::ExecToStack $7
@@ -214,9 +174,52 @@
     RMDir /r "$INSTDIR"
     FileWrite $8 "DONE$\r$\n"
 
-    FileWrite $8 "$\r$\nEnd Remove Files$\r$\n"
+    FileWrite $8 "End Remove Files$\r$\n"
     FileClose $8 
 !macroend
+
+!macro uninstallAgent $8
+    ; Install window title
+    StrCpy $6 "Remote.It Pre-Installation"
+
+    ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
+    StrCpy $7 'powershell (Get-Command remoteit.exe).Path.Contains("resources")'
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1
+    ${If} $1 == "True"
+        ; Non blocking message box
+        nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
+
+        ; Stop the agent
+        FileWrite $8 "Stopping Old Service$\r$\n"
+
+        ; Remove agent via path at startup to access old binary
+        StrCpy $7 "remoteit.exe agent uninstall"
+        nsExec::ExecToStack $7
+        Pop $0
+        Pop $1
+        FileWrite $8 "$7     [$0] $1"
+
+        ; Close the installing window
+        nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
+    ${Else}
+        ; If the output is not "True", do this command
+        FileWrite $8 "Service not found$\r$\n"
+    ${EndIf}
+!macroend
+
+Function OpenLogFile
+    IfFileExists "$TEMP\${LOGNAME}" custom_init_log_found custom_init_log_not_found
+    custom_init_log_found:
+        FileOpen $0 "$TEMP\${LOGNAME}" a
+        FileSeek $0 0 END
+        goto custom_init_log_end
+    custom_init_log_not_found:
+        FileOpen $0 "$TEMP\${LOGNAME}" w
+    custom_init_log_end:
+    Return $0
+FunctionEnd
 
 ; test:
 ; npm run copy-install && npm run build-electron
