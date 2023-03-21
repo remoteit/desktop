@@ -155,7 +155,7 @@ export function getEndpoint(connection?: IConnection) {
   let name = connection?.host
   let port = connection?.port
 
-  if (!name && connection?.connecting) {
+  if (!name) {
     name = 'Connecting...'
     port = undefined
   }

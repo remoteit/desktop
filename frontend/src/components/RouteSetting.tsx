@@ -48,6 +48,7 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
             ...routeTypeToSettings(route),
             publicRestriction: route === 'public' ? IP_OPEN : undefined,
             enabled: route === 'public' ? false : !!connection.enabled,
+            port: connectionRoute === 'public' ? undefined : connection.port,
           }
 
           if (updated.public && connection.enabled) {
