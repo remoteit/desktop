@@ -8,7 +8,7 @@
 !define LOGNAME "remoteit.log"
 
 !macro customInit
-    Call OpenLogFile
+    !insertmacro openLogFile
     Pop $8
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
@@ -31,7 +31,7 @@
 !macroend
 
 !macro customUnInit
-    Call OpenLogFile
+    !insertmacro openLogFile
     Pop $8
     FileWrite $8 "Uninstall Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
@@ -39,11 +39,10 @@
 
     FileWrite $8 "Uninstall Init complete$\r$\n"
     FileClose $8
-
 !macroend
 
 !macro customInstall
-    Call OpenLogFile
+    !insertmacro openLogFile
     Pop $8
     FileWrite $8 "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
     FileWrite $8 "Installing Service$\r$\n"
@@ -95,7 +94,7 @@
 !macroend
 
 !macro customRemoveFiles
-    Call OpenLogFile
+    !insertmacro openLogFile
     Pop $8
     FileWrite $8 "$\r$\nStart Remove Files ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
@@ -209,7 +208,7 @@
     ${EndIf}
 !macroend
 
-Function OpenLogFile
+!macro openLogFile
     IfFileExists "$TEMP\${LOGNAME}" custom_init_log_found custom_init_log_not_found
     custom_init_log_found:
         FileOpen $0 "$TEMP\${LOGNAME}" a
@@ -219,7 +218,7 @@ Function OpenLogFile
         FileOpen $0 "$TEMP\${LOGNAME}" w
     custom_init_log_end:
     Push $0
-FunctionEnd
+!macroend
 
 ; test:
 ; npm run copy-install && npm run build-electron
