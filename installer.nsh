@@ -13,7 +13,12 @@
     FileWrite $8 "$\r$\n$\r$\n________________________________________________$\r$\n"
     FileWrite $8 "Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
-    !insertmacro uninstallAgent $8
+    StrCpy $7 "powershell -ExecutionPolicy Unrestricted -File '$$pwd\uninstall-agent.ps1'"
+    FileWrite $8 "$7$\r$\n"
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1
+    FileWrite $8 "Result: [$0] $1$\r$\n"
 
     ; create backup directory if doesn't exist
     FileWrite $8 "Starting Back up of config and connections ... "
@@ -35,7 +40,12 @@
     Pop $8
     FileWrite $8 "Uninstall Init ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
-    !insertmacro uninstallAgent $8
+    StrCpy $7 "powershell -ExecutionPolicy Unrestricted -File '$$pwd\uninstall-agent.ps1'"
+    FileWrite $8 "$7$\r$\n"
+    nsExec::ExecToStack $7
+    Pop $0
+    Pop $1
+    FileWrite $8 "Result: [$0] $1$\r$\n"
 
     FileWrite $8 "Uninstall Init complete$\r$\n"
     FileClose $8
@@ -96,15 +106,15 @@
 !macro customRemoveFiles
     !insertmacro openLogFile
     Pop $8
-    FileWrite $8 "$\r$\nStart Remove Files ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    FileWrite $8 "Start Remove Files ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
 
     ; Detect auto-update
     ${If} ${IsUpdated}
-        FileWrite $8 "$\r$\nIs an update, don't remove config.$\r$\n"
+        FileWrite $8 "Is an update, don't remove config.$\r$\n"
     ${Else}
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
         config_found:
-            FileWrite $8 "$\r$\nConfig found$\r$\n"
+            FileWrite $8 "Config found$\r$\n"
             StrCpy $6 'powershell (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length'
             nsExec::ExecToStack $6
             Pop $0
@@ -177,46 +187,15 @@
     FileClose $8 
 !macroend
 
-!macro uninstallAgent $8
-    ; Install window title
-    StrCpy $6 "Remote.It Pre-Installation"
-
-    ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
-    StrCpy $7 'powershell (Get-Command remoteit.exe).Path.Contains("resources")'
-    nsExec::ExecToStack $7
-    Pop $0
-    Pop $1
-    ${If} $1 == "True"
-        ; Non blocking message box
-        nsExec::Exec 'cmd /c start /min powershell -WindowStyle Hidden -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show($\'Please wait while we stop the Remote.It system service...$\', $\'$6$\', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information); [System.Windows.Forms.Form]::Activate()"'
-
-        ; Stop the agent
-        FileWrite $8 "Stopping Old Service$\r$\n"
-
-        ; Remove agent via path at startup to access old binary
-        StrCpy $7 "remoteit.exe agent uninstall"
-        nsExec::ExecToStack $7
-        Pop $0
-        Pop $1
-        FileWrite $8 "$7     [$0] $1"
-
-        ; Close the installing window
-        nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
-    ${Else}
-        ; If the output is not "True", do this command
-        FileWrite $8 "Service not found$\r$\n"
-    ${EndIf}
-!macroend
-
 !macro openLogFile
-    IfFileExists "$TEMP\${LOGNAME}" custom_init_log_found custom_init_log_not_found
-    custom_init_log_found:
+    IfFileExists "$TEMP\${LOGNAME}" logFound logNotFound
+    logFound:
         FileOpen $0 "$TEMP\${LOGNAME}" a
         FileSeek $0 0 END
-        goto custom_init_log_end
-    custom_init_log_not_found:
+        goto logFoundEnd
+    logNotFound:
         FileOpen $0 "$TEMP\${LOGNAME}" w
-    custom_init_log_end:
+    logFoundEnd:
     Push $0
 !macroend
 

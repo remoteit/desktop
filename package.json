@@ -84,8 +84,11 @@
       "perMachine": true,
       "allowElevation": true,
       "deleteAppDataOnUninstall": true,
-      "include": "build/installer.nsh",
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "include": [
+        "build/installer.nsh",
+        "scripts/uninstall-agent.ps1"
+      ]
     },
     "linux": {
       "category": "Network",
