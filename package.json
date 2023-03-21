@@ -77,6 +77,12 @@
             "x64"
           ]
         }
+      ],
+      "extraResources": [
+        {
+          "from": "./scripts/uninstall-agent.ps1",
+          "to": "./"
+        }
       ]
     },
     "nsis": {
@@ -84,11 +90,7 @@
       "perMachine": true,
       "allowElevation": true,
       "deleteAppDataOnUninstall": true,
-      "allowToChangeInstallationDirectory": true,
-      "include": [
-        "build/installer.nsh",
-        "scripts/uninstall-agent.ps1"
-      ]
+      "allowToChangeInstallationDirectory": true
     },
     "linux": {
       "category": "Network",
