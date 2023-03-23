@@ -49,7 +49,7 @@ Var FileHandle
     !insertmacro uninstallAgent
 
     ; Install agent
-    !insertmacro logExec '"$INSTDIR\resources\remoteit.exe" agent install'
+    !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' agent install"
     
     FileWrite $FileHandle "Setting PATH ... $\r$\n"
 
@@ -99,10 +99,10 @@ Var FileHandle
                     true:
                         FileWrite $FileHandle "...unregister your device: YES$\r$\n"
 
-                        !insertmacro logExec '"$INSTDIR\resources\remoteit.exe" unregister --yes'
+                        !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' unregister --yes"
 
                         ; Waits for unregister to complete
-                        !insertmacro logExec '"$INSTDIR\resources\remoteit.exe" status'
+                        !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' status"
 
                         MessageBox MB_OK "Your device was unregistered!"
 
@@ -129,7 +129,7 @@ Var FileHandle
 
     FileWrite $FileHandle "Uninstalling...$\r$\n"
 
-    !insertmacro logExec '"$INSTDIR\resources\remoteit.exe" agent uninstall'
+    !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' agent uninstall"
     
     ; Only remove from machine path env var since that's all that's been set here
     !insertmacro logExec "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
@@ -152,7 +152,7 @@ Var FileHandle
     StrCpy $6 "Remote.It Pre-Installation"
 
     ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
-    !insertmacro logExec 'powershell (Get-Command remoteit.exe).Path.Contains("resources")'
+    !insertmacro logExec "powershell (Get-Command remoteit.exe).Path.Contains('resources')"
     
     ; Remove trailing line break from $1
     StrCpy $1 $1 -1
@@ -178,7 +178,7 @@ Var FileHandle
 !macroend
 
 !macro logExec command
-    StrCpy $R0 "${command}$\r$\n"
+    StrCpy $R0 "${command}"
     FileWrite $FileHandle "$R0 $\r$\n"
     nsExec::ExecToStack ${command}
     Pop $0
