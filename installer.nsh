@@ -3,7 +3,6 @@
 !include x64.nsh
 !include WinVer.nsh
 !include LogicLib.nsh
-!define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 !define LOGNAME "remoteit.log"
 
 Var InstallLocationToRemove
@@ -46,32 +45,30 @@ Var FileHandle
     ${ifNot} $InstallLocationToRemove == ""
         FileWrite $FileHandle "Old installation marked for removal: $InstallLocationToRemove $\r$\n"
     ${endIf}
+    
+    FileWrite $FileHandle "End PreInit $\r$\n"
     FileClose $FileHandle
 !macroend
 
 !macro customInstall
     !insertmacro openLogFile "CustomInstall"
 
-    ; Remove old agent
-    !insertmacro uninstallAgent
+    ; Remove any old agents
+    !insertmacro uninstallAnyAgent
 
-    ; Install agent
+    ; Install new agent
     FileWrite $FileHandle "Installing Agent ... $\r$\n"
-    !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" agent install"
+    !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" agent install"
     
-    FileWrite $FileHandle "Setting PATH ... $\r$\n"
-
     ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
+    FileWrite $FileHandle "Cleaning up old PATH ... $\r$\n"
     !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
-
-    ; REMOVE AFTER v3.16.x -- Remove from user path env var incase already there
     !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'User')"
 
     ; Add to path env var
+    FileWrite $FileHandle "Setting PATH ... $\r$\n"
     !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$INSTDIR\resources', [EnvironmentVariableTarget]::Machine)"
     
-    FileWrite $FileHandle "DONE $\r$\n"
-
     ; REMOVE AFTER v3.16.x
     ${ifNot} $InstallLocationToRemove == ""
         FileWrite $FileHandle "$\r$\nRemoving old installation... "
@@ -79,14 +76,14 @@ Var FileHandle
         FileWrite $FileHandle "DONE$\r$\n"
     ${endIf}
 
-    FileWrite $FileHandle "End Install$\r$\n"
+    FileWrite $FileHandle "End CustomInstall$\r$\n"
     FileClose $FileHandle
 !macroend
 
 !macro customRemoveFiles
     !insertmacro openLogFile "CustomRemoveFiles"
 
-    ; Detect auto-update
+    ; Detect update (auto or manual)
     ${if} ${IsUpdated}
         FileWrite $FileHandle "Updating... do not check for registered device.$\r$\n"
     ${else}
@@ -103,23 +100,17 @@ Var FileHandle
                 thereIsDevice:
                     MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                     true:
-                        FileWrite $FileHandle "...unregister your device: YES$\r$\n"
+                        FileWrite $FileHandle "YES unregister device...$\r$\n"
 
-                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" unregister --yes"
+                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" unregister --yes"
 
-                        ; Waits for unregister to complete
-                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" status"
+                        MessageBox MB_OK "Your device has been unregistered."
 
-                        MessageBox MB_OK "Your device was unregistered!"
-
-                        RMDir /r "$APPDATA\remoteit"
                         FileWrite $FileHandle "RMDir $APPDATA\remoteit$\r$\n"
+                        RMDir /r "$APPDATA\remoteit"
 
-                        RMDir /r "${REMOTEIT_BACKUP}"
-                        FileWrite $FileHandle "RMDir ${REMOTEIT_BACKUP}$\r$\n"
-
-                        RMDir /r "$PROFILE\AppData\Local\remoteit"
                         FileWrite $FileHandle "RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+                        RMDir /r "$PROFILE\AppData\Local\remoteit"
 
                         Goto next
                     false:
@@ -135,17 +126,18 @@ Var FileHandle
 
     FileWrite $FileHandle "Uninstalling...$\r$\n"
 
-    !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" agent uninstall"
+    ; Remove agent
+    !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" agent uninstall"
     
-    ; Only remove from machine path env var since that's all that's been set here
+    ; Remove from path env var
     !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\${PRODUCT_FILENAME}*') -and ($$_ -ne '') }) -join ';', 'Machine')"
 
+    ; Remove files
     FileWrite $FileHandle "$\r$\nRemoving installation directories... $\r$\n"
     FileWrite $FileHandle "RMDir $INSTDIR$\r$\n"
     RMDir /r "$INSTDIR"
-    FileWrite $FileHandle "DONE$\r$\n"
 
-    FileWrite $FileHandle "End Remove Files$\r$\n"
+    FileWrite $FileHandle "End CustomRemoveFiles$\r$\n"
     FileClose $FileHandle 
 !macroend
 
@@ -155,12 +147,12 @@ Var FileHandle
 ;
 ; *******************************************
 
-!macro uninstallAgent
+!macro uninstallAnyAgent
     ; Install window title
-    StrCpy $6 "Remote.It Pre-Installation"
+    StrCpy $6 "Remote.It Agent Uninstall"
 
     ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
-    !insertmacro logPowershell "(Get-Command remoteit.exe).Path.Contains('resources')"
+    !insertmacro logPowershell "(Get-Command remoteit).Path.Contains('resources')"
     
     ; Remove trailing line break from $1
     StrCpy $1 $1 -2
@@ -175,7 +167,7 @@ Var FileHandle
         FileWrite $FileHandle "Stopping Old Service$\r$\n"
 
         ; Remove agent via path at startup to access old binary
-        !insertmacro logExec "remoteit.exe agent uninstall"
+        !insertmacro logExec "remoteit agent uninstall"
 
         ; Close the installing window
         nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
