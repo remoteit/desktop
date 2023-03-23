@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "3.16.0-alpha.6",
+  "version": "3.16.0-alpha.8",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -59,7 +59,7 @@
   "build": {
     "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
-    "productName": "remoteit",
+    "productName": "Remote.It",
     "artifactName": "${productName}-installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
@@ -84,7 +84,6 @@
       "perMachine": true,
       "allowElevation": true,
       "deleteAppDataOnUninstall": true,
-      "include": "build/installer.nsh",
       "allowToChangeInstallationDirectory": true
     },
     "linux": {

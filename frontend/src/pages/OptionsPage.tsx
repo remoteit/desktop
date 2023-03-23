@@ -12,7 +12,7 @@ import { getOwnDevices } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
-import { isRemote, isWindows } from '../services/Browser'
+import { isRemote } from '../services/Browser'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 
@@ -143,7 +143,7 @@ export const OptionsPage: React.FC = () => {
                 confirmMessage="This will stop and attempt to re-install the system agent."
                 onClick={() => binaries.install()}
               />
-              {!isWindows && (
+              {os !== 'windows' && (
                 <ListItemSetting
                   confirm
                   label="Uninstall"

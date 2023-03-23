@@ -371,9 +371,7 @@ export default createModel<RootModel>()({
       const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: true })
       connection.online = service ? service?.state === 'active' : connection.online
-      connection.host = state.backend.preferences.useCertificate
-        ? `${connection.name}.${CERTIFICATE_DOMAIN}`
-        : IP_PRIVATE
+      connection.host = undefined
       connection.error = undefined
       connection.autoStart = undefined
       connection.checkpoint = undefined
@@ -386,6 +384,9 @@ export default createModel<RootModel>()({
       }
 
       connection.starting = true
+      connection.host = state.backend.preferences.useCertificate
+        ? `${connection.name}.${CERTIFICATE_DOMAIN}`
+        : IP_PRIVATE
       dispatch.connections.updateConnection(connection)
       emit('service/connect', connection)
       heartbeat.connect()

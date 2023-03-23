@@ -40,21 +40,31 @@ export const AvatarMenu: React.FC = () => {
     setOpen(false)
     setAltMenu(false)
   }
-  const handleOpen = event => {
-    if (event.altKey && event.shiftKey) setAltMenu(true)
+  const handleOpen = () => {
     setOpen(true)
   }
-  const handleEnter = event => {
+  const handleEnter = () => {
     clearTimeout(enterTimer.current)
     clearTimeout(leaveTimer.current)
     if (sidebarHidden) return
-    enterTimer.current = window.setTimeout(() => handleOpen(event), ENTER_DELAY)
+    enterTimer.current = window.setTimeout(() => handleOpen(), ENTER_DELAY)
   }
   const handleLeave = () => {
     clearTimeout(enterTimer.current)
     clearTimeout(leaveTimer.current)
     leaveTimer.current = window.setTimeout(handleClose, LEAVE_DELAY)
   }
+
+  const checkAltMenu = (event: KeyboardEvent) => {
+    if (event.altKey && event.shiftKey) setAltMenu(true)
+  }
+
+  React.useEffect(() => {
+    window.addEventListener('keydown', checkAltMenu)
+    return () => {
+      window.removeEventListener('keydown', checkAltMenu)
+    }
+  }, [open])
 
   return (
     <>

@@ -36,7 +36,7 @@ export const ConnectAdvanced: React.FC = () => {
       <ConnectionDetails
         connection={connection}
         service={service}
-        show={!!(connection.enabled && connection.host) || connection.connectLink}
+        show={connection.enabled || connection.connectLink}
       />
       <Box display="flex" marginTop={2}>
         <ListItemBack title="Connection configuration" />

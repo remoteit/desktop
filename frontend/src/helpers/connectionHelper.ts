@@ -20,7 +20,8 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
   return 'online'
 }
 
-export function isSecureReverseProxy(template: string) {
+export function isSecureReverseProxy(template?: string) {
+  if (!template) return null
   if (template.startsWith('https:')) return true
   if (template.startsWith('http:')) return false
   return null
@@ -154,7 +155,7 @@ export function getEndpoint(connection?: IConnection) {
   let name = connection?.host
   let port = connection?.port
 
-  if (!name && connection?.connecting) {
+  if (!name) {
     name = 'Connecting...'
     port = undefined
   }

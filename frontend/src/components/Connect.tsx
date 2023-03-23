@@ -58,7 +58,7 @@ export const Connect: React.FC = () => {
           connection={connection}
           service={service}
           session={session}
-          show={!!(connection.enabled && connection.host) || connection.connectLink}
+          show={connection.enabled || connection.connectLink}
         >
           <ConnectionData connection={connection} service={service} session={session} />
         </ConnectionDetails>
