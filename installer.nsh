@@ -4,51 +4,58 @@
 !include WinVer.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.16.0-alpha.7"
 !define LOGNAME "remoteit.log"
 
 Var InstallLocationToRemove
 Var FileHandle
 
 !macro preInit
-    !insertmacro openLogFile
-
-    FileWrite $FileHandle "$\r$\nPreInit ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-    FileWrite $FileHandle "product filename: ${PRODUCT_FILENAME} $\r$\n"
-    FileWrite $FileHandle "version: ${VERSION} $\r$\n"
+    !insertmacro openLogFile "PreInit"
 
     SetRegView 64
     ReadRegStr $1 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
-    FileWrite $FileHandle "64 installation dir: $1 $\r$\n"
+    FileWrite $FileHandle "64bit installation dir: $1 $\r$\n"
     !insertmacro RemovePathBasename $1 $2
 
     ${if} $2 == ""
         SetRegView 32
         ReadRegStr $1 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
-        FileWrite $FileHandle "32 installation dir: $1 $\r$\n"
+        FileWrite $FileHandle "32bit installation dir: $1 $\r$\n"
         !insertmacro RemovePathBasename $1 $2
 
         ${ifNot} $2 == ""
-            FileWrite $FileHandle "Change 32 installation dir: $1 -> $2\Remote.It $\r$\n"
-            WriteRegExpandStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation "$2\Remote.It"
+            ${if} "$2\${PRODUCT_FILENAME}" == $1
+                FileWrite $FileHandle "Same 32bit installation dir: $1 $\r$\n"
+            ${else}
+                FileWrite $FileHandle "Change 32bit installation dir: $1 -> $2\${PRODUCT_FILENAME} $\r$\n"
+                WriteRegExpandStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation "$2\${PRODUCT_FILENAME}"
+                StrCpy $InstallLocationToRemove $1
+            ${endIf}
+        ${endIf}
+
+    ${else}
+        ${if} "$2\${PRODUCT_FILENAME}" == $1
+            FileWrite $FileHandle "Same 64bit installation dir: $1 $\r$\n"
+        ${else}
+            FileWrite $FileHandle "Change 64bit installation dir: $1 -> $2\${PRODUCT_FILENAME} $\r$\n"
+            WriteRegExpandStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation "$2\${PRODUCT_FILENAME}"
             StrCpy $InstallLocationToRemove $1
         ${endIf}
-    ${else}
-        FileWrite $FileHandle "Change 64 installation dir: $1 -> $2\Remote.It $\r$\n"
-        WriteRegExpandStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation "$2\Remote.It"
-        StrCpy $InstallLocationToRemove $1
+    ${endIf}
+
+    ${ifNot} $InstallLocationToRemove == ""
+        FileWrite $FileHandle "Old installation marked for removal: $InstallLocationToRemove $\r$\n"
     ${endIf}
 !macroend
 
 !macro customInstall
-    !insertmacro openLogFile
+    !insertmacro openLogFile "CustomInstall"
 
-    FileWrite $FileHandle "$\r$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
-    FileWrite $FileHandle "Installing Service$\r$\n"
-
+    ; Remove old agent
     !insertmacro uninstallAgent
 
     ; Install agent
+    FileWrite $FileHandle "Installing Agent ... $\r$\n"
     !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' agent install"
     
     FileWrite $FileHandle "Setting PATH ... $\r$\n"
@@ -61,6 +68,7 @@ Var FileHandle
 
     ; Add to path env var
     !insertmacro logExec "powershell [Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$INSTDIR\resources', [EnvironmentVariableTarget]::Machine)"
+    
     FileWrite $FileHandle "DONE $\r$\n"
 
     ; REMOVE AFTER v3.16.x
@@ -75,9 +83,7 @@ Var FileHandle
 !macroend
 
 !macro customRemoveFiles
-    !insertmacro openLogFile
-
-    FileWrite $FileHandle "Start Remove Files ${PKGVERSION} (${__DATE__} ${__TIME__})$\r$\n"
+    !insertmacro openLogFile "CustomRemoveFiles"
 
     ; Detect auto-update
     ${if} ${IsUpdated}
@@ -144,7 +150,9 @@ Var FileHandle
 !macroend
 
 ; *******************************************
-; Custom macros
+;
+;    Custom macros
+;
 ; *******************************************
 
 !macro uninstallAgent
@@ -186,7 +194,7 @@ Var FileHandle
     FileWrite $FileHandle "Result: [$0] $1$\r$\n"
 !macroend
 
-!macro openLogFile
+!macro openLogFile section
     IfFileExists "$TEMP\${LOGNAME}" logFound logNotFound
     logFound:
         FileOpen $FileHandle "$TEMP\${LOGNAME}" a
@@ -195,6 +203,8 @@ Var FileHandle
     logNotFound:
         FileOpen $FileHandle "$TEMP\${LOGNAME}" w
     logFoundEnd:
+
+    FileWrite $FileHandle "$\r$\n${section} ${VERSION} (${__DATE__} ${__TIME__}) $\r$\n"
 !macroend
 
 !macro RemovePathBasename input output
