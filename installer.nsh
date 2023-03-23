@@ -46,6 +46,7 @@ Var FileHandle
     ${ifNot} $InstallLocationToRemove == ""
         FileWrite $FileHandle "Old installation marked for removal: $InstallLocationToRemove $\r$\n"
     ${endIf}
+    FileClose $FileHandle
 !macroend
 
 !macro customInstall
@@ -56,18 +57,18 @@ Var FileHandle
 
     ; Install agent
     FileWrite $FileHandle "Installing Agent ... $\r$\n"
-    !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' agent install"
+    !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" agent install"
     
     FileWrite $FileHandle "Setting PATH ... $\r$\n"
 
     ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
-    !insertmacro logExec "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
+    !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
 
     ; REMOVE AFTER v3.16.x -- Remove from user path env var incase already there
-    !insertmacro logExec "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'User')"
+    !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'User')"
 
     ; Add to path env var
-    !insertmacro logExec "powershell [Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$INSTDIR\resources', [EnvironmentVariableTarget]::Machine)"
+    !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH',[Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::Machine) + ';$INSTDIR\resources', [EnvironmentVariableTarget]::Machine)"
     
     FileWrite $FileHandle "DONE $\r$\n"
 
@@ -87,17 +88,16 @@ Var FileHandle
 
     ; Detect auto-update
     ${if} ${IsUpdated}
-        FileWrite $FileHandle "Is an update, don't remove config.$\r$\n"
+        FileWrite $FileHandle "Updating... do not check for registered device.$\r$\n"
     ${else}
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
         config_found:
             FileWrite $FileHandle "Config found$\r$\n"
             
-            !insertmacro logExec "powershell (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length"
+            !insertmacro logPowershell "(Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length"
             
             IntCmp $1 0 notDevice notDevice thereIsDevice
                 notDevice:
-                    ;MessageBox MB_OK "Not device installed"
                     FileWrite $FileHandle "Device not registered$\r$\n"
                     Goto done
                 thereIsDevice:
@@ -105,10 +105,10 @@ Var FileHandle
                     true:
                         FileWrite $FileHandle "...unregister your device: YES$\r$\n"
 
-                        !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' unregister --yes"
+                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" unregister --yes"
 
                         ; Waits for unregister to complete
-                        !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' status"
+                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" status"
 
                         MessageBox MB_OK "Your device was unregistered!"
 
@@ -135,10 +135,10 @@ Var FileHandle
 
     FileWrite $FileHandle "Uninstalling...$\r$\n"
 
-    !insertmacro logExec "'$INSTDIR\resources\remoteit.exe' agent uninstall"
+    !insertmacro logExec "$\"$INSTDIR\resources\remoteit.exe$\" agent uninstall"
     
     ; Only remove from machine path env var since that's all that's been set here
-    !insertmacro logExec "powershell [Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\remoteit*') -and ($$_ -ne '') }) -join ';', 'Machine')"
+    !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\${PRODUCT_FILENAME}*') -and ($$_ -ne '') }) -join ';', 'Machine')"
 
     FileWrite $FileHandle "$\r$\nRemoving installation directories... $\r$\n"
     FileWrite $FileHandle "RMDir $INSTDIR$\r$\n"
@@ -160,10 +160,10 @@ Var FileHandle
     StrCpy $6 "Remote.It Pre-Installation"
 
     ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
-    !insertmacro logExec "powershell (Get-Command remoteit.exe).Path.Contains('resources')"
+    !insertmacro logPowershell "(Get-Command remoteit.exe).Path.Contains('resources')"
     
     ; Remove trailing line break from $1
-    StrCpy $1 $1 -1
+    StrCpy $1 $1 -2
 
     FileWrite $FileHandle "Is agent installed? '$1'$\r$\n"
 
@@ -181,17 +181,21 @@ Var FileHandle
         nsExec::Exec 'powershell -Command "Get-Process | Where-Object { $$_.MainWindowTitle -eq $\'$6$\' } | ForEach-Object { $$_.CloseMainWindow() }"'
     ${else}
         ; If the output is not "True", do this command
-        FileWrite $FileHandle "Service not found$\r$\n"
+        FileWrite $FileHandle "Agent not found in path.$\r$\n"
     ${endIf}
 !macroend
 
+!macro logPowershell command
+    !insertmacro logExec "powershell -NoProfile -ExecutionPolicy Bypass -Command $\"${command}$\""
+!macroend
+
 !macro logExec command
-    StrCpy $R0 "${command}"
-    FileWrite $FileHandle "$R0 $\r$\n"
-    nsExec::ExecToStack ${command}
+    FileWrite $FileHandle "Command: ${command} $\r$\n"
+    nsExec::ExecToStack "${command}"
     Pop $0
     Pop $1
-    FileWrite $FileHandle "Result: [$0] $1$\r$\n"
+    FileWrite $FileHandle "Result Code: $0$\r$\n"
+    FileWrite $FileHandle "Result Output: $1$\r$\n"
 !macroend
 
 !macro openLogFile section
@@ -204,7 +208,7 @@ Var FileHandle
         FileOpen $FileHandle "$TEMP\${LOGNAME}" w
     logFoundEnd:
 
-    FileWrite $FileHandle "$\r$\n${section} ${VERSION} (${__DATE__} ${__TIME__}) $\r$\n"
+    FileWrite $FileHandle "$\r$\nStart ${section} ${VERSION} (${__DATE__} ${__TIME__}) $\r$\n"
 !macroend
 
 !macro RemovePathBasename input output
