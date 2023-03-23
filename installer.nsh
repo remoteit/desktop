@@ -106,6 +106,9 @@ Var FileHandle
 
                         MessageBox MB_OK "Your device has been unregistered."
 
+                        ; This should be done before removing the app data folder
+                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" agent uninstall"
+
                         FileWrite $FileHandle "RMDir $APPDATA\remoteit$\r$\n"
                         RMDir /r "$APPDATA\remoteit"
 
