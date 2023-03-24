@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { HIDE_SIDEBAR_WIDTH } from '../shared/constants'
@@ -20,11 +20,11 @@ const AVATAR_SIZE = 40
 
 export const AvatarMenu: React.FC = () => {
   const history = useHistory()
-  const [open, setOpen] = React.useState<boolean>(false)
-  const [altMenu, setAltMenu] = React.useState<boolean>(false)
-  const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const enterTimer = React.useRef<number>()
-  const leaveTimer = React.useRef<number>()
+  const [open, setOpen] = useState<boolean>(false)
+  const [altMenu, setAltMenu] = useState<boolean>(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const enterTimer = useRef<number>()
+  const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
@@ -36,12 +36,14 @@ export const AvatarMenu: React.FC = () => {
   }))
 
   const css = useStyles()
+  const handleOpen = () => {
+    window.addEventListener('keydown', checkAltMenu)
+    setOpen(true)
+  }
   const handleClose = () => {
+    window.removeEventListener('keydown', checkAltMenu)
     setOpen(false)
     setAltMenu(false)
-  }
-  const handleOpen = () => {
-    setOpen(true)
   }
   const handleEnter = () => {
     clearTimeout(enterTimer.current)
@@ -54,17 +56,10 @@ export const AvatarMenu: React.FC = () => {
     clearTimeout(leaveTimer.current)
     leaveTimer.current = window.setTimeout(handleClose, LEAVE_DELAY)
   }
-
-  const checkAltMenu = (event: KeyboardEvent) => {
+  const checkAltMenu = useCallback((event: KeyboardEvent) => {
+    console.log('check', event.altKey, event.shiftKey)
     if (event.altKey && event.shiftKey) setAltMenu(true)
-  }
-
-  React.useEffect(() => {
-    window.addEventListener('keydown', checkAltMenu)
-    return () => {
-      window.removeEventListener('keydown', checkAltMenu)
-    }
-  }, [open])
+  }, [])
 
   return (
     <>
