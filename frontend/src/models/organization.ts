@@ -67,7 +67,6 @@ export type IOrganizationState = {
   id: string
   name: string
   created?: Date
-  account?: IUserRef
   licenses: ILicense[]
   limits: ILimit[]
   guests: IGuest[]
@@ -490,10 +489,6 @@ export function parseLicense(data) {
 export function getOwnOrganization(state: ApplicationState) {
   const id = state.auth.user?.id || ''
   return selectOrganization(state, id)
-}
-
-export function getOrganizationName(state: ApplicationState, accountId?: string): string {
-  return selectOrganization(state, accountId).name || 'Unknown'
 }
 
 export function selectMembersWithAccess(state: ApplicationState, instance?: IInstance) {
