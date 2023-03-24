@@ -3,7 +3,6 @@ import { makeStyles } from '@mui/styles'
 import { Typography } from '@mui/material'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { isElectron, isMac } from '../services/Browser'
-import { OrganizationSidebar } from './OrganizationSidebar'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterMenu } from './RegisterMenu'
 import { GuideBubble } from './GuideBubble'
@@ -12,42 +11,39 @@ import { AvatarMenu } from './AvatarMenu'
 import { spacing } from '../styling'
 import { Body } from './Body'
 
-export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const addSpace = isMac() && isElectron() && !layout.showOrgs
+export const Sidebar: React.FC = () => {
+  const addSpace = isMac() && isElectron()
   const css = useStyles({ addSpace })
 
   return (
-    <OrganizationSidebar hide={!layout.showOrgs}>
-      <Body className={css.sidebar} scrollbarBackground="grayLighter">
-        <section className={css.header}>
-          <AvatarMenu />
-          <GuideBubble
-            guide="addDevice"
-            placement="bottom"
-            startDate={new Date('2022-09-20')}
-            enterDelay={400}
-            instructions={
-              <>
-                <Typography variant="h3" gutterBottom>
-                  <b>Add a device</b>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  Enable connections the services (applications) available to a device by installing the Remote.It
-                  agent.
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  Your device will automatically register and appear on the <cite>devices</cite> page.
-                </Typography>
-              </>
-            }
-          >
-            <RegisterMenu />
-          </GuideBubble>
-        </section>
-        <SidebarNav />
-        <RemoteManagement />
-      </Body>
-    </OrganizationSidebar>
+    <Body className={css.sidebar} scrollbarBackground="grayLighter">
+      <section className={css.header}>
+        <AvatarMenu />
+        <GuideBubble
+          guide="addDevice"
+          placement="bottom"
+          startDate={new Date('2022-09-20')}
+          enterDelay={400}
+          instructions={
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>Add a device</b>
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Enable connections the services (applications) available to a device by installing the Remote.It agent.
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Your device will automatically register and appear on the <cite>devices</cite> page.
+              </Typography>
+            </>
+          }
+        >
+          <RegisterMenu />
+        </GuideBubble>
+      </section>
+      <SidebarNav />
+      <RemoteManagement />
+    </Body>
   )
 }
 

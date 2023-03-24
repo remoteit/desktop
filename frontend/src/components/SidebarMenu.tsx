@@ -8,10 +8,7 @@ import { Sidebar } from './Sidebar'
 export const SidebarMenu: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { open, layout } = useSelector((state: ApplicationState) => ({
-    open: state.ui.sidebarMenu,
-    layout: state.ui.layout,
-  }))
+  const open = useSelector((state: ApplicationState) => state.ui.sidebarMenu)
 
   React.useEffect(() => {
     if (open) dispatch.ui.set({ sidebarMenu: false })
@@ -19,7 +16,7 @@ export const SidebarMenu: React.FC = () => {
 
   return (
     <Drawer anchor="left" open={open} onClose={() => dispatch.ui.set({ sidebarMenu: false })}>
-      <Sidebar layout={layout} />
+      <Sidebar />
     </Drawer>
   )
 }

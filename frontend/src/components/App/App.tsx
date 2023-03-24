@@ -15,25 +15,23 @@ import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
+  const { authInitialized, installed, signedOut, waitMessage } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
     installed: state.binaries.installed,
     signedOut: !state.auth.initialized || !state.auth.authenticated,
     waitMessage: state.ui.waitMessage,
-    showOrgs: !!state.accounts.membership.length,
   }))
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
   const layout = {
-    showOrgs,
     hideSidebar,
     singlePanel,
-    sidePanelWidth: hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0),
+    sidePanelWidth: hideSidebar ? 0 : SIDEBAR_WIDTH,
   }
 
   useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [hideSidebar, singlePanel, showOrgs])
+  }, [hideSidebar, singlePanel])
 
   const css = useStyles({ overlapHeader: hideSidebar && isElectron() && isMac() })
 
@@ -68,7 +66,7 @@ export const App: React.FC = () => {
   return (
     <Page>
       <Box className={css.columns}>
-        {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+        {hideSidebar ? <SidebarMenu /> : <Sidebar />}
         <Router />
       </Box>
     </Page>

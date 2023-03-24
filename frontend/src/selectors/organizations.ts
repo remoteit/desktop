@@ -10,6 +10,11 @@ export const selectOrganization = createSelector(
   (accountId, organizations) => organizations[accountId] || defaultState
 )
 
+export const selectOrganizationName = createSelector(
+  [selectOrganization],
+  (organization): string => organization.name || 'Unknown'
+)
+
 export const selectLicenses = createSelector([getPlansTests, selectOrganization], (tests, organization) => {
   if (tests.license) return tests.licenses
   else return organization.licenses

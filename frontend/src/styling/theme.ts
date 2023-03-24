@@ -340,6 +340,13 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            padding: 0,
+          },
+        },
+      },
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
