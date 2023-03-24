@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { HIDE_SIDEBAR_WIDTH } from '../shared/constants'
@@ -6,80 +6,92 @@ import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
+import { selectOrganizationName } from '../selectors/organizations'
+// import { OrganizationSelectList } from './OrganizationSelectList'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemSetting } from './ListItemSetting'
+import { getActiveUser } from '../selectors/accounts'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
-const ENTER_DELAY = 0
-const LEAVE_DELAY = 200
+const ENTER_DELAY = 300
+const LEAVE_DELAY = 400 // must be longer than transition duration
+const TRANSITION_DURATION = 200
 const AVATAR_SIZE = 40
+const AVATAR_BORDER = 6
 
 export const AvatarMenu: React.FC = () => {
   const history = useHistory()
-  const [open, setOpen] = React.useState<boolean>(false)
-  const [altMenu, setAltMenu] = React.useState<boolean>(false)
-  const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const enterTimer = React.useRef<number>()
-  const leaveTimer = React.useRef<number>()
+  const [open, setOpen] = useState<boolean>(false)
+  const [altMenu, setAltMenu] = useState<boolean>(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const enterTimer = useRef<number>()
+  const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator } = useSelector((state: ApplicationState) => ({
-    user: state.auth.user,
-    remoteUI: isRemoteUI(state),
-    testUI: ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''),
-    backendAuthenticated: state.auth.backendAuthenticated,
-    licenseIndicator: selectLicenseIndicator(state),
-  }))
+  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator, activeUser, orgName } = useSelector(
+    (state: ApplicationState) => ({
+      user: state.auth.user,
+      remoteUI: isRemoteUI(state),
+      testUI: ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''),
+      backendAuthenticated: state.auth.backendAuthenticated,
+      licenseIndicator: selectLicenseIndicator(state),
+      activeUser: getActiveUser(state),
+      orgName: selectOrganizationName(state),
+    })
+  )
 
   const css = useStyles()
+  const handleOpen = () => {
+    window.addEventListener('keydown', checkAltMenu)
+    setOpen(true)
+  }
   const handleClose = () => {
+    window.removeEventListener('keydown', checkAltMenu)
     setOpen(false)
     setAltMenu(false)
   }
-  const handleOpen = () => {
-    setOpen(true)
-  }
   const handleEnter = () => {
-    clearTimeout(enterTimer.current)
-    clearTimeout(leaveTimer.current)
+    clearTimers()
     if (sidebarHidden) return
-    enterTimer.current = window.setTimeout(() => handleOpen(), ENTER_DELAY)
+    enterTimer.current = window.setTimeout(handleOpen, ENTER_DELAY)
   }
   const handleLeave = () => {
-    clearTimeout(enterTimer.current)
-    clearTimeout(leaveTimer.current)
+    clearTimers()
     leaveTimer.current = window.setTimeout(handleClose, LEAVE_DELAY)
   }
-
-  const checkAltMenu = (event: KeyboardEvent) => {
-    if (event.altKey && event.shiftKey) setAltMenu(true)
-  }
-
-  React.useEffect(() => {
-    window.addEventListener('keydown', checkAltMenu)
-    return () => {
-      window.removeEventListener('keydown', checkAltMenu)
+  const clearTimers = () => {
+    if (enterTimer.current) {
+      clearTimeout(enterTimer.current)
+      enterTimer.current = undefined
     }
-  }, [open])
+    if (leaveTimer.current) {
+      clearTimeout(leaveTimer.current)
+      leaveTimer.current = undefined
+    }
+  }
+  const checkAltMenu = useCallback((event: KeyboardEvent) => {
+    console.log('check', event.altKey, event.shiftKey)
+    if (event.altKey && event.shiftKey) setAltMenu(true)
+  }, [])
 
   return (
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
-        <Avatar email={user?.email} size={AVATAR_SIZE} button active={open} />
+        <Avatar email={user?.email || activeUser.email} fallback={orgName} size={AVATAR_SIZE} active={open} button />
       </ButtonBase>
       <Menu
         open={open}
         anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
-        PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave }}
+        PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave, onClick: handleClose }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        transitionDuration={200}
+        transitionDuration={TRANSITION_DURATION}
         disableAutoFocusItem
         disableScrollLock
         elevation={2}
@@ -89,19 +101,10 @@ export const AvatarMenu: React.FC = () => {
           title="Account"
           subtitle={user?.email}
           icon="user"
-          // icon={<Avatar email={user?.email} size={24} />}
           pathname="/account"
           badge={licenseIndicator}
-          onClick={handleClose}
         />
-        <ListItemLocation
-          dense
-          exactMatch
-          title="Settings"
-          icon="sliders-h"
-          pathname="/settings"
-          onClick={handleClose}
-        />
+        <ListItemLocation dense exactMatch title="Settings" icon="sliders-h" pathname="/settings" />
         <ListItemLocation
           title="Bug Report"
           icon="spider"
@@ -112,7 +115,6 @@ export const AvatarMenu: React.FC = () => {
               subject: 'Bug Report',
               data: { location: window.location.href },
             })
-            handleClose()
           }}
           dense
         />
@@ -133,16 +135,11 @@ export const AvatarMenu: React.FC = () => {
             onClick={() => {
               dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
               history.push('/settings/test')
-              handleClose()
             }}
           />
         )}
-        {/* <ListItemLink
-          title="System Status &nbsp; &nbsp; "
-          icon="badge-check"
-          href="https://link.remote.it/documentation-desktop/overview"
-          dense
-        /> */}
+        {/* <Divider />
+        <OrganizationSelectList /> */}
         <Divider />
         <DesktopUI>
           <ListItemSetting
@@ -185,12 +182,14 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
       '&::before': {
         content: '""',
         position: 'absolute',
-        top: -AVATAR_SIZE - 4,
-        width: AVATAR_SIZE + 4,
-        height: AVATAR_SIZE + 4,
+        top: -AVATAR_SIZE - AVATAR_BORDER,
+        width: AVATAR_SIZE + AVATAR_BORDER,
+        height: AVATAR_SIZE + AVATAR_BORDER,
         cursor: 'pointer',
       },
     },
-    '& .MuiList-root': { backgroundColor: 'transparent' },
+    '& .MuiList-root': {
+      backgroundColor: 'transparent',
+    },
   },
 }))

@@ -23,6 +23,8 @@ import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 
+const AVATAR_SIZE = 32
+
 export const OrganizationMembershipPage: React.FC = () => {
   const { memberships, organization, license, email } = useSelector((state: ApplicationState) => ({
     memberships: state.accounts.membership,
@@ -46,7 +48,7 @@ export const OrganizationMembershipPage: React.FC = () => {
             <>
               <ListItem key={organization.id}>
                 <ListItemIcon>
-                  <Avatar email={email} title={organization.name} size={28} />
+                  <Avatar email={email} title={organization.name} size={AVATAR_SIZE} />
                 </ListItemIcon>
                 <ListItemText primary={organization.name} secondary="Your organization" />
                 <ListItemSecondaryAction>
@@ -63,7 +65,7 @@ export const OrganizationMembershipPage: React.FC = () => {
           {memberships.map(m => (
             <ListItem key={m.roleId}>
               <ListItemIcon>
-                <Avatar email={m.account.email} fallback={m.name} size={28} />
+                <Avatar email={m.account.email} fallback={m.name} size={AVATAR_SIZE} />
               </ListItemIcon>
               <ListItemText
                 primary={m.name}

@@ -6,12 +6,11 @@ import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Typography, Tooltip, ButtonBase, Box, List, ListItem } from '@mui/material'
-import { getOwnOrganization, getOrganizationName } from '../models/organization'
+import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
-import { Pre } from './Pre'
 
 export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
@@ -21,14 +20,17 @@ export const OrganizationSelect: React.FC = () => {
   const { options, activeOrg, ownOrg, userId, defaultSelection } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
     defaultSelection: state.ui.defaultSelection,
-    options: state.accounts.membership.map(m => ({
-      id: m.account.id,
-      email: m.account.email,
-      name: getOrganizationName(state, m.account.id),
-      roleId: m.roleId,
-      roleName: m.roleName,
-      disabled: !selectOrganization(state, m.account.id).id,
-    })),
+    options: state.accounts.membership.map(m => {
+      const org = selectOrganization(state, m.account.id)
+      return {
+        id: m.account.id,
+        email: m.account.email,
+        name: org.name,
+        roleId: m.roleId,
+        roleName: m.roleName,
+        disabled: !org.id,
+      }
+    }),
     ownOrg: getOwnOrganization(state),
     userId: state.user.id,
   }))
