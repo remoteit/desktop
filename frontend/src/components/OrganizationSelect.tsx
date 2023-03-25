@@ -66,7 +66,7 @@ export const OrganizationSelect: React.FC = () => {
             title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
             icon="house"
             size="md"
-            color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
+            color={ownOrgId === activeOrg.id ? 'black' : 'alwaysWhite'}
             placement="right"
           />
         </ListItem>
