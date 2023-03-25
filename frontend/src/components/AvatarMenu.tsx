@@ -74,7 +74,6 @@ export const AvatarMenu: React.FC = () => {
     }
   }
   const checkAltMenu = useCallback((event: KeyboardEvent) => {
-    console.log('check', event.altKey, event.shiftKey)
     if (event.altKey && event.shiftKey) setAltMenu(true)
   }, [])
 
@@ -88,7 +87,7 @@ export const AvatarMenu: React.FC = () => {
         anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
-        PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave, onClick: handleClose }}
+        PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         transitionDuration={TRANSITION_DURATION}
@@ -103,8 +102,16 @@ export const AvatarMenu: React.FC = () => {
           icon="user"
           pathname="/account"
           badge={licenseIndicator}
+          onClick={handleClose}
         />
-        <ListItemLocation dense exactMatch title="Settings" icon="sliders-h" pathname="/settings" />
+        <ListItemLocation
+          dense
+          exactMatch
+          title="Settings"
+          icon="sliders-h"
+          pathname="/settings"
+          onClick={handleClose}
+        />
         <ListItemLocation
           title="Bug Report"
           icon="spider"
@@ -115,6 +122,7 @@ export const AvatarMenu: React.FC = () => {
               subject: 'Bug Report',
               data: { location: window.location.href },
             })
+            handleClose()
           }}
           dense
         />
@@ -135,6 +143,7 @@ export const AvatarMenu: React.FC = () => {
             onClick={() => {
               dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
               history.push('/settings/test')
+              handleClose()
             }}
           />
         )}
