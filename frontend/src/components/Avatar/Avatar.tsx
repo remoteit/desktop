@@ -71,12 +71,11 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: inline ? spacing.sm : 0,
   }),
   button: ({ active }: StyleProps) => ({
-    backgroundColor: active ? undefined : palette.white.main,
     borderRadius: '50%',
     padding: 1,
     borderWidth: 2,
     borderStyle: 'solid',
-    borderColor: active ? palette.primary.main : palette.grayLighter.main,
+    borderColor: active ? palette.primary.main : 'transparent',
     cursor: 'pointer',
     position: 'relative',
     color: palette.primaryLight.main,

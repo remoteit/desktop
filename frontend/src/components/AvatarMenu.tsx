@@ -81,7 +81,7 @@ export const AvatarMenu: React.FC = () => {
   return (
     <>
       <ButtonBase onClick={handleOpen} ref={buttonRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
-        <Avatar email={user?.email || activeUser.email} fallback={orgName} size={AVATAR_SIZE} active={open} button />
+        <Avatar email={user?.email || activeUser.email} size={AVATAR_SIZE} active={open} button />
       </ButtonBase>
       <Menu
         open={open}

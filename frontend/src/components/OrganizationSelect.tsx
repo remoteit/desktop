@@ -96,6 +96,7 @@ export const OrganizationSelect: React.FC = () => {
             title="Memberships"
             icon="ellipsis-h"
             to="/organization/memberships"
+            color="alwaysWhite"
             placement="right"
             size="md"
           />
@@ -141,7 +142,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& > *': {
       position: 'absolute',
       right: 0,
-      color: palette.grayDarkest.main,
+      color: palette.alwaysWhite.main,
       fontWeight: 300,
       letterSpacing: '0.15em',
       fontSize: fontSizes.base,
