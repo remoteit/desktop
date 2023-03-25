@@ -1,13 +1,22 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { Box } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../store'
 import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
 import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSelect } from './OrganizationSelect'
+import { getActiveUser } from '../selectors/accounts'
+import { createColor } from '../helpers/uiHelper'
+import { labelLookup } from '../models/labels'
 import { spacing } from '../styling'
 
 export const OrganizationSidebar: React.FC<{ hide?: boolean; children?: React.ReactNode }> = ({ hide, children }) => {
-  const css = useStyles({ addSpace: isMac() && isElectron() })
+  const { color } = useSelector((state: ApplicationState) => {
+    const activeOrg = getActiveUser(state)
+    return labelLookup[createColor(activeOrg.email)]
+  })
+  const css = useStyles({ addSpace: isMac() && isElectron(), color })
 
   return hide ? (
     <>{children}</>
@@ -27,8 +36,8 @@ const useStyles = makeStyles(({ palette }) => ({
     height: '100%',
     contain: 'layout',
   },
-  organizationBar: ({ addSpace }: { addSpace: boolean }) => ({
-    backgroundColor: palette.grayLighter.main,
+  organizationBar: ({ addSpace, color }: { addSpace: boolean; color: string }) => ({
+    backgroundColor: /* color || */ palette.grayLighter.main,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',

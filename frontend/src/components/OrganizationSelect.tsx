@@ -17,7 +17,7 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrg, userId, defaultSelection } = useSelector((state: ApplicationState) => ({
+  const { options, activeOrg, ownOrg, user, defaultSelection } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
     defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => {
@@ -26,16 +26,14 @@ export const OrganizationSelect: React.FC = () => {
         id: m.account.id,
         email: m.account.email,
         name: org.name,
-        roleId: m.roleId,
         roleName: m.roleName,
         disabled: !org.id,
       }
     }),
     ownOrg: getOwnOrganization(state),
-    userId: state.user.id,
+    user: state.user,
   }))
 
-  const ownOrgId = ownOrg?.id
   const onSelect = async (id: string) => {
     const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
     if (id) {
@@ -53,43 +51,59 @@ export const OrganizationSelect: React.FC = () => {
   options.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
   if (!options.length) return null
 
+  // add user org to the top of the list
+  options.unshift({
+    id: user.id,
+    email: user?.email || '',
+    name: ownOrg.name,
+    roleName: ownOrg.id ? 'Owner' : 'Personal Account',
+    disabled: false,
+  })
+
   return (
     <>
       <Box className={css.name}>
         <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
       <List dense className={css.list}>
-        <ListItem disableGutters className={css.buttonContainer}>
-          <IconButton
-            onClick={() => onSelect(ownOrgId || userId)}
-            className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
-            title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
-            icon="house"
-            size="md"
-            color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
-            placement="right"
-          />
-        </ListItem>
-        {options.map(option => (
-          <Tooltip
-            key={option.id}
-            title={`${option.name} - ${option.roleName}`}
-            placement="right"
-            enterDelay={800}
-            arrow
-          >
-            <ListItem disableGutters>
-              <ButtonBase disabled={option.disabled} onClick={() => onSelect(option.id)}>
-                <Avatar
-                  email={option.email}
-                  fallback={option.name}
-                  active={option.id === activeOrg.id}
-                  button={!option.disabled}
-                />
-              </ButtonBase>
+        {options.map(option =>
+          option.id === activeOrg.id ? (
+            <ListItem disableGutters className={css.buttonContainer}>
+              <IconButton
+                onClick={() => onSelect(option.id)}
+                className={classnames(css.button, css.active)}
+                title={`${option.name} - ${option.roleName}`}
+                icon="check"
+                type="solid"
+                size="md"
+                color="grayDarker"
+                placement="right"
+              />
             </ListItem>
-          </Tooltip>
-        ))}
+          ) : (
+            <Tooltip
+              key={option.id}
+              title={`${option.name} - ${option.roleName}`}
+              placement="right"
+              enterDelay={800}
+              arrow
+            >
+              <ListItem disableGutters>
+                <ButtonBase
+                  disabled={option.disabled || option.id === activeOrg.id}
+                  onClick={() => onSelect(option.id)}
+                >
+                  <Avatar
+                    email={option.email}
+                    fallback={option.name}
+                    active={option.id === activeOrg.id}
+                    button={!option.disabled}
+                  />
+                </ButtonBase>
+              </ListItem>
+            </Tooltip>
+          )
+        )}
         <ListItem disableGutters className={css.buttonContainer}>
           <IconButton
             className={css.button}
@@ -128,9 +142,9 @@ const useStyles = makeStyles(({ palette }) => ({
     height: 38,
   },
   active: {
-    border: `2px solid ${palette.primary.main}`,
-    boxShadow: `0 0 10px ${palette.primaryLight.main}`,
-    background: palette.grayLightest.main,
+    border: `2px solid ${palette.gray.main}`,
+    boxShadow: `0 0 10px ${palette.white.main}`,
+    background: palette.white.main,
   },
   name: {
     transform: 'rotate(270deg)',
