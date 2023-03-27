@@ -35,7 +35,7 @@ export const OptionsPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      bodyProps={{ gutterTop: true }}
+      bodyProps={{ gutterTop: true, verticalOverflow: true }}
       header={
         <Typography variant="h1" gutterBottom>
           <Title>Application</Title>
