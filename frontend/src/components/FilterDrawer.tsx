@@ -1,5 +1,4 @@
 import React from 'react'
-import structuredClone from '@ungap/structured-clone'
 import { platforms } from '../platforms'
 import { getDeviceModel } from '../selectors/devices'
 import { defaultState } from '../models/devices'
@@ -39,7 +38,7 @@ export const FilterDrawer: React.FC = () => {
   const getColor = useLabel()
   const { devices } = useDispatch<Dispatch>()
   const { state, tags, feature } = useSelector((state: ApplicationState) => ({
-    state: structuredClone(getDeviceModel(state)),
+    state: getDeviceModel(state),
     tags: selectTags(state).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
     feature: selectLimitsLookup(state),
   }))
