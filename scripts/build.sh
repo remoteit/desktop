@@ -12,7 +12,7 @@ CONNECTD=$( (cat ./backend/src/cli-version.json | grep -Eo '"connectd"[^,]*' | g
 
 set -x
 
-rm -r ./bin/*
+rm -rf ./bin/*
 
 if [ "$(uname)" = "Darwin" ]; then
 
