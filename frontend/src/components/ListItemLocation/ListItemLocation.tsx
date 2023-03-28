@@ -8,6 +8,7 @@ import { makeStyles } from '@mui/styles'
 import { Icon } from '../Icon'
 
 export type Props = {
+  key?: React.Key
   pathname?: string
   title?: React.ReactNode
   subtitle?: React.ReactNode
@@ -26,7 +27,7 @@ export type Props = {
   match?: string | string[]
   exactMatch?: boolean
   badge?: number
-  children?: React.ReactNode
+  children?: React.ReactNode | React.ReactNode[]
   onClick?: (event: React.MouseEvent) => void
 }
 
