@@ -5,7 +5,7 @@ import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { Application } from '../../shared/applications'
-import { setConnection } from '../../helpers/connectionHelper'
+import { setConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
 import { DataButton } from '../DataButton'
 import { Icon } from '../../components/Icon'
@@ -19,6 +19,7 @@ type Props = {
   color?: Color
   type?: IconType
   app?: Application
+  connection?: IConnection
   onMouseEnter?: () => void
   onMouseLeave?: () => void
   onLaunch?: () => void
@@ -30,22 +31,23 @@ export const LaunchButton: React.FC<Props> = ({
   onLaunch,
   onMouseEnter,
   onMouseLeave,
+  connection,
   app,
   ...props
 }) => {
   const { ui } = useDispatch<Dispatch>()
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const ready = !!app?.connection?.ready || app?.connection?.connectLink || app?.connection?.connected
-  const loading = !ready || app?.connection?.starting
-  const disabled = !app?.connection?.enabled || loading || !ready
-  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && app?.connection?.autoLaunch)
+  const ready = connection?.connectLink || connection?.ready
+  const loading = !ready || connection?.starting
+  const disabled = !connection?.enabled || loading || !ready
+  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && connection?.autoLaunch)
 
   React.useEffect(() => {
-    if (autoLaunch && !app?.connection?.connectLink && app?.connection?.enabled && ready) {
+    if (autoLaunch && !launchDisabled(connection) && ready) {
       ui.set({ autoLaunch: false })
       clickHandler()
     }
-  }, [autoLaunch, app?.connection])
+  }, [autoLaunch, connection])
 
   if (!app) return null
 
