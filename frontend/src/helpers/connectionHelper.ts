@@ -91,7 +91,8 @@ export function usedPorts(state: ApplicationState) {
   return state.connections.all.map(c => c.port)
 }
 
-export function launchDisabled(connection: IConnection) {
+export function launchDisabled(connection?: IConnection) {
+  if (!connection) return true
   return (
     (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink || connection.launchType === 'NONE'
   )

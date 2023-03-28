@@ -272,6 +272,7 @@ export default createModel<RootModel>()({
         console.log('PROXY CONNECTED', data)
         setConnection({
           ...proxyConnection,
+          ready: true,
           connecting: false,
           connected: true,
           error: undefined,
@@ -377,6 +378,7 @@ export default createModel<RootModel>()({
       connection.checkpoint = undefined
       connection.stopLock = undefined
       connection.enabled = true
+      connection.ready = false
 
       if (connection.public || isPortal()) {
         dispatch.connections.proxyConnect(connection)

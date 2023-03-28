@@ -333,6 +333,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
             '& .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
             '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
+            '& .MuiListItemSecondaryAction-root': { right: spacing.xl },
           },
           dense: {
             '& .MuiInputBase-root': { fontSize: fontSizes.base },
@@ -343,7 +344,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
-            right: spacing.xl,
             zIndex: 2,
             '& .MuiTextField-root': { verticalAlign: 'middle' },
           },
