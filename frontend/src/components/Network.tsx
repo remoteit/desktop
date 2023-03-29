@@ -50,7 +50,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
           type="solid"
           size="sm"
         />
-        <Tags tags={network?.tags || []} small />
+        <Tags tags={network?.tags || []} max={0} small />
       </NetworkListTitle>
       <Collapse in={expanded}>
         {network?.serviceIds.map(id => (

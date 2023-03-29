@@ -28,7 +28,7 @@ export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[]
         <NetworkListTitle key={network.id} network={network}>
           <ListItemSecondaryAction>
             <ClearButton onClick={() => dispatch.networks.remove({ serviceId: service?.id, networkId: network.id })} />
-            <Tags tags={network?.tags || []} small />
+            <Tags tags={network?.tags || []} max={0} small />
           </ListItemSecondaryAction>
         </NetworkListTitle>
       ))}
