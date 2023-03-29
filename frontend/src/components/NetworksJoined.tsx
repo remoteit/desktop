@@ -5,8 +5,9 @@ import { makeStyles } from '@mui/styles'
 import { Typography, List, ListItemSecondaryAction } from '@mui/material'
 import { NetworkListTitle } from './NetworkListTitle'
 import { ClearButton } from '../buttons/ClearButton'
-import { Gutters } from './Gutters'
 import { spacing } from '../styling'
+import { Gutters } from './Gutters'
+import { Tags } from './Tags'
 
 export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[] }> = ({ service, networks }) => {
   const css = useStyles()
@@ -27,6 +28,7 @@ export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[]
         <NetworkListTitle key={network.id} network={network}>
           <ListItemSecondaryAction>
             <ClearButton onClick={() => dispatch.networks.remove({ serviceId: service?.id, networkId: network.id })} />
+            <Tags tags={network?.tags || []} small />
           </ListItemSecondaryAction>
         </NetworkListTitle>
       ))}

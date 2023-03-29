@@ -6,9 +6,10 @@ import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
+import { Typography, Collapse, List, ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
 import { makeStyles } from '@mui/styles'
+import { Tags } from './Tags'
 
 export interface Props {
   network?: INetwork
@@ -49,6 +50,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
           type="solid"
           size="sm"
         />
+        <Tags tags={network?.tags || []} small />
       </NetworkListTitle>
       <Collapse in={expanded}>
         {network?.serviceIds.map(id => (
