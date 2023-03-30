@@ -40,7 +40,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       return
     }
 
-    if (connection?.connecting || connection?.enabled || connection?.starting) {
+    if (connection?.connectLink) {
+      dispatch.connections.setConnectLink({ ...connection, enabled: false })
+    } else if (connection?.connecting || connection?.enabled || connection?.starting) {
       dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
