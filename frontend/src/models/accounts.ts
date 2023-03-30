@@ -6,7 +6,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
-import { mergeDevices } from './devices'
+import { mergeDevicesAndServices } from './devices'
 import { RootModel } from '.'
 
 const ACCOUNT_KEY = 'account'
@@ -97,14 +97,14 @@ export default createModel<RootModel>()({
     async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       const all = getDevices(state, accountId)
-      const mergedDevices = mergeDevices({ overwrite: all, keep: devices })
+      const mergedDevices = mergeDevicesAndServices({ overwrite: all, keep: devices })
       await dispatch.accounts.setDevices({ devices: mergedDevices, accountId })
     },
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
-      if (!devices) return
+      if (!devices || !devices.length) return
       const all = getDevices(state, accountId)
       const unChangedDevices = all.filter(un => !devices.find(d => d.id === un.id))
-      const mergedDevices = mergeDevices({ overwrite: all, keep: devices })
+      const mergedDevices = mergeDevicesAndServices({ overwrite: all, keep: devices })
       await dispatch.accounts.setDevices({
         devices: [...unChangedDevices, ...mergedDevices],
         accountId,

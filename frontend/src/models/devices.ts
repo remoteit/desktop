@@ -545,11 +545,17 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   return [devices, total, id, error]
 }
 
-export function mergeDevices(params: { overwrite: IDevice[]; keep: IDevice[] }) {
+export function mergeDevicesAndServices(params: { overwrite: IDevice[]; keep: IDevice[] }) {
   const { overwrite, keep } = params
   return keep.map(k => {
     const ow = overwrite.find(o => o.id === k.id)
-    return { ...ow, ...k, hidden: k.hidden && (ow ? ow.hidden : k.hidden) }
+    if (!ow) return k
+    return {
+      ...ow,
+      ...k,
+      services: [...ow.services.filter(ows => !k.services.find(ks => ks.id === ows.id)), ...k.services],
+      hidden: k.hidden && ow.hidden,
+    }
   })
 }
 
