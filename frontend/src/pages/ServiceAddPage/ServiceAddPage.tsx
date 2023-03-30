@@ -15,14 +15,14 @@ import { Title } from '../../components/Title'
 type Props = { device?: IDevice; form?: boolean }
 
 export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
-  const { applicationTypes, devices } = useDispatch<Dispatch>()
   const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
   const [forward, setForward] = useState<boolean>(false)
+  const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
-    applicationTypes.fetch()
+    dispatch.applicationTypes.fetch()
   }, [])
 
   const maxReached = device && device.services.length >= setupServicesLimit
@@ -54,7 +54,11 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
           thisDevice={!!device?.thisDevice}
           editable={device?.configurable || !!device?.thisDevice}
           disabled={!device?.permissions.includes('MANAGE')}
-          onSubmit={form => device?.configurable && devices.cloudAddService({ form, deviceId: device?.id })}
+          onSubmit={async form => {
+            dispatch.ui.set({ setupAddingService: true })
+            device?.configurable && (await dispatch.devices.cloudAddService({ form, deviceId: device?.id }))
+            dispatch.ui.set({ setupAddingService: false })
+          }}
           onChange={form => setForward(isRelay(form))}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />

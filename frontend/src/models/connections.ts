@@ -93,7 +93,7 @@ export default createModel<RootModel>()({
               ...connection,
               id: s.id,
               deviceID: d.id,
-              name: connection.name || s.subdomain,
+              name: connection.name || `${d.name} ${s.name}`,
               createdTime: s.link.created.getTime(),
               enabled: s.link.enabled,
               connectLink: s.link.enabled,

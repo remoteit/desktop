@@ -282,11 +282,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async renameDevice(device: IDevice) {
-      dispatch.accounts.setDevice({ id: device.id, device })
-      dispatch.devices.rename(device)
-    },
-
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
       await dispatch.devices.fetchSingle({ id })
@@ -327,7 +322,6 @@ export default createModel<RootModel>()({
 
     async cloudAddService({ form, deviceId }: { form: IService; deviceId: string }) {
       if (!form.host || !form.port) return
-      dispatch.ui.set({ setupServiceBusy: form.id, setupAddingService: true })
       const result = await graphQLAddService({
         deviceId,
         name: form.name,
@@ -344,7 +338,6 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
-      dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
     },
 
     async cloudUpdateDevice({ id, set }: { id: string; set: ILookup<any> }, state) {

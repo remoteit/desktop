@@ -11,15 +11,15 @@ type Props = { device?: IDevice }
 
 export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   const { thisId } = useSelector((state: ApplicationState) => state.backend)
-  const { devices, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID } = useParams<{ serviceID?: string }>()
+  const dispatch = useDispatch<Dispatch>()
   const service = device?.services.find(s => s.id === serviceID)
   const thisDevice = service?.deviceID === thisId
   const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
-    applicationTypes.fetch()
+    dispatch.applicationTypes.fetch()
   }, [])
 
   if (!service) {
@@ -40,11 +40,14 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
           disabled={!device?.permissions.includes('MANAGE')}
           onCancel={exit}
           onSubmit={async form => {
+            dispatch.ui.set({ setupServiceBusy: form.id })
             if (device?.permissions.includes('MANAGE')) {
               service.attributes = { ...service.attributes, ...form.attributes }
-              await devices.setServiceAttributes(service)
-              if (device?.configurable) await devices.cloudUpdateService({ form, deviceId: device?.id })
+              await dispatch.devices.setServiceAttributes(service)
+              if (device?.configurable) await dispatch.devices.cloudUpdateService({ form, deviceId: device?.id })
+              else await dispatch.devices.rename({ id: service.id, name: form.name })
             }
+            dispatch.ui.set({ setupServiceBusy: undefined })
           }}
         />
       </Gutters>

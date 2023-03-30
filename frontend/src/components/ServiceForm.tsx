@@ -48,7 +48,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const { ui } = useDispatch<Dispatch>()
   const { applicationTypes, saving, setupAdded } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
-    saving: !!(state.ui.setupAddingService || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    saving: !!(state.ui.setupAddingService || (service?.id && state.ui.setupServiceBusy === service.id)),
     setupAdded: state.ui.setupAdded,
   }))
 
@@ -109,7 +109,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     >
       <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
         <List>
-          {editable ? (
+          {editable && (
             <>
               <ServiceFormApplications
                 selected={form.typeID}
@@ -240,63 +240,67 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   </ListItem>
                 </>
               )}
-              <ListItem className={css.field}>
-                <TextField
-                  label="Service Name"
-                  value={form.name || ''}
-                  disabled={disabled}
-                  error={!!error}
-                  variant="filled"
-                  helperText={error || ''}
-                  InputLabelProps={{ shrink: true }}
-                  placeholder={serviceNameValidation(appType.name).value}
-                  onChange={event => {
-                    const validation = serviceNameValidation(event.target.value, true)
-                    setForm({ ...form, name: validation.value })
-                    validation.error ? setError(validation.error) : setError(undefined)
-                  }}
-                />
-              </ListItem>
-              <ListItem className={css.field}>
-                <TextField
-                  multiline
-                  label="Service Description"
-                  value={form.attributes.description || ''}
-                  disabled={disabled}
-                  variant="filled"
-                  placeholder="&ndash;"
-                  InputLabelProps={{ shrink: true }}
-                  onChange={event => {
-                    form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
-                    setForm({ ...form })
-                  }}
-                />
-                <Typography variant="caption">
-                  Service description or connection instructions.
-                  <i>Optional</i>
-                </Typography>
-              </ListItem>
-              <ListItemCheckbox
-                checked={form.enabled}
-                label="Enable service"
-                subLabel={
-                  <>
-                    Disabling your service will take it offline.&nbsp;
-                    <i>
-                      Service is
-                      {form.enabled ? ' enabled' : ' disabled'}
-                    </i>
-                  </>
-                }
-                disabled={disabled}
-                onClick={() => setForm({ ...form, enabled: !form.enabled })}
-              />
             </>
+          )}
+          <ListItem className={css.field}>
+            <TextField
+              label="Service Name"
+              value={form.name || ''}
+              disabled={disabled}
+              error={!!error}
+              variant="filled"
+              helperText={error || ''}
+              InputLabelProps={{ shrink: true }}
+              placeholder={serviceNameValidation(appType.name).value}
+              onChange={event => {
+                const validation = serviceNameValidation(event.target.value, true)
+                setForm({ ...form, name: validation.value })
+                validation.error ? setError(validation.error) : setError(undefined)
+              }}
+            />
+          </ListItem>
+          <ListItem className={css.field}>
+            <TextField
+              multiline
+              label="Service Description"
+              value={form.attributes.description || ''}
+              disabled={disabled}
+              variant="filled"
+              placeholder="&ndash;"
+              InputLabelProps={{ shrink: true }}
+              onChange={event => {
+                form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
+                setForm({ ...form })
+              }}
+            />
+            <Typography variant="caption">
+              Service description or connection instructions.
+              <i>Optional</i>
+            </Typography>
+          </ListItem>
+          {editable ? (
+            <ListItemCheckbox
+              checked={form.enabled}
+              label="Enable service"
+              subLabel={
+                <>
+                  Disabling your service will take it offline.&nbsp;
+                  <i>
+                    Service is
+                    {form.enabled ? ' enabled' : ' disabled'}
+                  </i>
+                </>
+              }
+              disabled={disabled}
+              onClick={() => setForm({ ...form, enabled: !form.enabled })}
+            />
           ) : (
-            <Notice>
-              This service isn't remote configurable.
-              <em>Update it's device package to the latest version to be able to remote configure it.</em>
-            </Notice>
+            <ListItem>
+              <Notice>
+                This service isn't remote configurable.
+                <em>Update it's device package to the latest version to be able to remote configure it.</em>
+              </Notice>
+            </ListItem>
           )}
         </List>
       </AccordionMenuItem>
