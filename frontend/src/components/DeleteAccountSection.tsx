@@ -1,24 +1,46 @@
 import React from 'react'
-import { Typography, Box, Button, TextField } from '@mui/material'
+import { Typography, Box, Button, TextField, List } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { ListItemCheckbox } from '../components/ListItemCheckbox'
 import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
+import { spacing } from '../styling'
 
+const REASONS = [
+  "My device isn't supported",
+  'Installation was too difficult',
+  "Couldn't get my device online",
+  "Couldn't connect",
+  'Too hard to use',
+  'Not what I thought it was',
+  'Not using it anymore',
+  'Using something else',
+  'Have another account',
+]
 interface DeleteAccountSectionProps {
   user?: IUser
   paidPlan?: boolean
+  deleteAccount?: boolean
 }
 
-export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user, paidPlan = false }) => {
+export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
+  user,
+  paidPlan = false,
+  deleteAccount,
+}) => {
   const [confirm, setConfirm] = React.useState<boolean>(false)
   const [contact, setContact] = React.useState<boolean>(false)
+  const [reasons, setReasons] = React.useState<string[]>([])
   const [body, setBody] = React.useState<string>('')
   const dispatch = useDispatch<Dispatch>()
 
   const handleDelete = () => setConfirm(true)
+  const handleReason = (reason: string) => {
+    if (reasons.includes(reason)) setReasons(reasons.filter(r => r !== reason))
+    else setReasons([...reasons, reason])
+  }
   const handleConfirm = () => {
     dispatch.feedback.set({
       subject: `Account deletion request for ${user?.email}`,
@@ -26,6 +48,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
       data: {
         email: user?.email,
         userId: user?.id,
+        reasons,
         contactMe: contact ? 'Yes' : 'No',
         createdDate: user?.created?.toLocaleString(navigator.language, {
           month: 'short',
@@ -36,6 +59,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
       snackbar: 'Your account delete request has been sent.',
     })
     dispatch.feedback.sendFeedback()
+    dispatch.ui.set({ deleteAccount: true })
     setConfirm(false)
   }
   return (
@@ -51,7 +75,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
         </Notice>
       ) : (
         <Box pb={2}>
-          <Button color="error" size="small" variant="contained" disabled={!!body.length} onClick={handleDelete}>
+          <Button color="error" size="small" variant="contained" disabled={deleteAccount} onClick={handleDelete}>
             Delete my account
           </Button>
           <Confirm
@@ -60,30 +84,42 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({ user
             color="error"
             maxWidth="sm"
             onDeny={() => setConfirm(false)}
-            title="Delete account?"
+            title="Why do you want to delete your account?"
             action="Delete"
-            disabled={body.length < 8}
+            disabled={body.length < 2 && reasons.length < 1}
           >
-            <Typography variant="body2" gutterBottom>
-              <b>We are sorry so see you go! </b>
+            <Typography variant="body2">
+              Help us improve by telling us why you want to delete your account.
               <br />
-              Please tell us why you want to delete your account.
-              <em> Thank you!</em>
+              <i>We are sorry to see you go! </i>
             </Typography>
+            <List>
+              {REASONS.map((reason, i) => (
+                <ListItemCheckbox
+                  key={i}
+                  label={reason}
+                  height={spacing.xl}
+                  checked={reasons.includes(reason)}
+                  disableGutters
+                  onClick={() => {
+                    handleReason(reason)
+                  }}
+                />
+              ))}
+            </List>
             <TextField
               multiline
               fullWidth
               autoFocus
               rows={3}
-              required
-              label="Reason"
+              label="Other Reason"
               variant="filled"
               value={body}
               onChange={e => setBody(e.target.value)}
             />
             <ListItemCheckbox
               disableGutters
-              label="I'm interested in having someone contact me about my feedback."
+              label="I'm open to having someone contact me about my feedback."
               checked={contact}
               onClick={checked => setContact(checked)}
             />

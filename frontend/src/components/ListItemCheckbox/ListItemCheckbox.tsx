@@ -6,6 +6,7 @@ type Props = {
   keyProp?: string | number
   label: string | React.ReactNode
   subLabel?: string | React.ReactNode
+  height?: number
   disabled?: boolean
   checked?: boolean
   indeterminate?: boolean
@@ -17,6 +18,7 @@ type Props = {
 export const ListItemCheckbox: React.FC<Props> = ({
   label,
   subLabel,
+  height,
   disabled,
   checked,
   indeterminate,
@@ -27,10 +29,11 @@ export const ListItemCheckbox: React.FC<Props> = ({
   const inputRef = useRef<HTMLInputElement>(null)
   return (
     <ListItem
-      disabled={disabled}
-      disableGutters={disableGutters}
-      button
       dense
+      button
+      disabled={disabled}
+      sx={{ height }}
+      disableGutters={disableGutters}
       onClick={() => inputRef.current?.click()}
     >
       <ListItemIcon>

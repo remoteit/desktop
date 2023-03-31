@@ -17,9 +17,10 @@ import { Link } from '../components/Link'
 import { spacing } from '../styling'
 
 export const ProfilePage: React.FC = () => {
-  const { paidPlan, user } = useSelector((state: ApplicationState) => ({
+  const { paidPlan, user, deleteAccount } = useSelector((state: ApplicationState) => ({
     user: state.user,
     paidPlan: !isPersonal(state),
+    deleteAccount: state.ui.deleteAccount,
   }))
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
@@ -70,7 +71,7 @@ export const ProfilePage: React.FC = () => {
         </ListItem>
       </List>
       <Typography variant="subtitle1">Account deletion</Typography>
-      <DeleteAccountSection user={user} paidPlan={paidPlan} />
+      <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
     </Container>
   )
 }
