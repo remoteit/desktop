@@ -10,9 +10,7 @@ import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 
 export const SettingsPage: React.FC = () => {
-  const { preferences } = useSelector((state: ApplicationState) => ({
-    preferences: state.backend.preferences,
-  }))
+  const { preferences } = useSelector((state: ApplicationState) => state.backend)
 
   if (!preferences) return null
 
@@ -44,6 +42,7 @@ export const SettingsPage: React.FC = () => {
           icon="object-intersect"
           dense
         />
+        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />
         <TestUI>
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />

@@ -228,6 +228,10 @@ export const Router: React.FC = () => {
                 <ConnectionDefaultsPage />
               </Route>
 
+              <Route path="/settings/tags">
+                <TagsPage />
+              </Route>
+
               <Route path="/settings/reports">
                 <ReportsPage />
               </Route>
