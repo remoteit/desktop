@@ -31,7 +31,7 @@ export default createModel<RootModel>()({
       try {
         const env = await dispatch.backend.environment()
         let finalBody = body
-        if (data) finalBody += '\n\n-- data\n\n' + JSON.stringify(data, null, 2)
+        if (data) finalBody += '\n\n-- data\n\n' + JSON.stringify(data, null, 4)
         finalBody += '\n\n--\n\n' + fullVersion()
         finalBody += '\n\n' + env + '\n\n' + navigator.userAgent
         await createTicketZendesk({

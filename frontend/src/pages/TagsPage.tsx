@@ -44,6 +44,10 @@ export const TagsPage: React.FC = () => {
     }
   }
 
+  React.useEffect(() => {
+    dispatch.tags.fetchIfEmpty(accountId)
+  }, [dispatch, accountId])
+
   return (
     <Container
       gutterBottom

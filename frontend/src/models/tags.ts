@@ -37,8 +37,8 @@ const defaultState: ITagState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_: void, state) {
-      const accountId = getActiveAccountId(state)
+    async fetch(accountId: string | void, state) {
+      accountId = accountId || getActiveAccountId(state)
       const result = await graphQLBasicRequest(
         ` query Tags($account: String) {
             login {
@@ -60,9 +60,9 @@ export default createModel<RootModel>()({
       if (tags) dispatch.tags.setTags({ tags, accountId })
     },
 
-    async fetchIfEmpty(_: void, state) {
-      const accountId = getActiveAccountId(state)
-      if (!state.tags.all[accountId]) dispatch.tags.fetch()
+    async fetchIfEmpty(accountId: string | void, state) {
+      accountId = accountId || getActiveAccountId(state)
+      if (!state.tags.all[accountId]) dispatch.tags.fetch(accountId)
     },
 
     async parse(result: AxiosResponse<any> | undefined) {
@@ -166,7 +166,7 @@ export default createModel<RootModel>()({
 
     async update({ tag, accountId }: { tag: ITag; accountId: string }, state) {
       dispatch.tags.set({ updating: tag.name })
-      const tags = selectTags(state, accountId)
+      const tags = structuredClone(selectTags(state, accountId))
       const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
