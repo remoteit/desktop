@@ -185,7 +185,9 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                     }}
                   />
                   <Typography variant="caption">
-                    URL of the service you want to connect to. Example: https://localhost:8001/api/dashboard
+                    Full URL of the service you want to connect to. Example: <b>https://localhost:8001/api/dashboard</b>{' '}
+                    or
+                    <b> http://192.168.1.68/ui/login</b>.
                   </Typography>
                 </ListItem>
               ) : (
