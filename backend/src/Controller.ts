@@ -79,7 +79,6 @@ class Controller {
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
     socket.on('preferences', preferences.set)
-    socket.on('restart', this.installAndRestart)
     socket.on('uninstall', this.uninstall)
     socket.on('forceUnregister', this.forceUnregister)
     socket.on('heartbeat', this.check)
@@ -200,11 +199,6 @@ class Controller {
   quit = () => {
     Logger.info('WEB UI QUIT')
     app.quit()
-  }
-
-  installAndRestart = async () => {
-    Logger.info('WEB UI AUTO UPDATE RESTART')
-    EventBus.emit(electronInterface.EVENTS.install)
   }
 
   signOut = async () => {
