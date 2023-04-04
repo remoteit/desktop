@@ -84,6 +84,8 @@ class Controller {
     socket.on('forceUnregister', this.forceUnregister)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
+    socket.on('update/check', action => EventBus.emit(electronInterface.EVENTS.check, true))
+    socket.on('update/install', action => EventBus.emit(electronInterface.EVENTS.install))
     socket.on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', type => EventBus.emit(electronInterface.EVENTS.filePrompt, type))
@@ -103,8 +105,8 @@ class Controller {
   check = (all?: boolean) => {
     this.pool.check()
     lan.check()
-    app.check()
     if (all) binaryInstaller.check()
+    EventBus.emit(electronInterface.EVENTS.check)
   }
 
   connect = async (connection: IConnection) => {
@@ -202,7 +204,7 @@ class Controller {
 
   installAndRestart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
-    EventBus.emit(electronInterface.EVENTS.update)
+    EventBus.emit(electronInterface.EVENTS.install)
   }
 
   signOut = async () => {

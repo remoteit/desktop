@@ -35,6 +35,7 @@ export const SettingsPage: React.FC = () => {
           exactMatch
           dense
         />
+        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Connection Type Defaults"
@@ -42,7 +43,6 @@ export const SettingsPage: React.FC = () => {
           icon="object-intersect"
           dense
         />
-        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />
         <TestUI>
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />

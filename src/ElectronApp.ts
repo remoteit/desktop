@@ -48,16 +48,11 @@ export default class ElectronApp {
     this.app.on('second-instance', this.handleSecondInstance)
     this.app.on('open-url', this.handleOpenUrl)
 
-    EventBus.on(EVENTS.update, this.autoUpdater.update)
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.filePrompt, this.handleFilePrompt)
     EventBus.on(EVENTS.navigate, this.handleNavigate)
     EventBus.on(EVENTS.maximize, this.handleMaximize)
     EventBus.on(EVENTS.open, this.openWindow)
-  }
-
-  check = () => {
-    if (!environment.isHeadless) this.autoUpdater.check()
   }
 
   get url() {

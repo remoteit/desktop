@@ -12,7 +12,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
   const updateReady = useSelector((state: ApplicationState) => selectUpdateNotice(state))
   const [confirm, setConfirm] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(!!updateReady)
-  const { backend } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
 
   const handleClick = () => {
     setConfirm(true)
@@ -21,7 +21,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
   const handleConfirm = () => {
     setOpen(false)
     setConfirm(false)
-    backend.restart()
+    dispatch.backend.install()
   }
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
             key="close"
             onClick={() => {
               setOpen(false)
-              backend.setUpdateNotice(updateReady)
+              dispatch.backend.setUpdateNotice(updateReady)
             }}
             size="large"
           >

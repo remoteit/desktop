@@ -57,6 +57,8 @@ declare global {
     | 'reachablePort'
     | 'useCertificate'
     | 'forceUnregister'
+    | 'update/check'
+    | 'update/install'
 
   type SocketEvent =
     // built-in events

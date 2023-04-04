@@ -13,7 +13,6 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
 import { isRemote } from '../services/Browser'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 
 export const OptionsPage: React.FC = () => {
@@ -92,25 +91,7 @@ export const OptionsPage: React.FC = () => {
           icon="sparkles"
           onClick={() => ui.resetHelp()}
         />
-        {(os === 'mac' || os === 'windows') && (
-          <DesktopUI>
-            <ListItemSetting
-              label="Auto update"
-              icon="chevron-double-up"
-              toggle={!!preferences.autoUpdate}
-              onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-            />
-            <TestUI>
-              <ListItemSetting
-                quote
-                label="Update to pre-release builds"
-                toggle={!!preferences.allowPrerelease}
-                onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
-              />
-            </TestUI>
-          </DesktopUI>
-        )}
-        <UpdateSetting />
+        <UpdateSetting preferences={preferences} os={os} />
       </List>
       {!remoteUI && (
         <DesktopUI>

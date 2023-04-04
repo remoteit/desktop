@@ -193,8 +193,14 @@ function getEventHandlers() {
     'app/canNavigate': canNavigate => backend.set({ canNavigate }),
 
     // AutoUpdate
-    'update/downloaded': (version: string) => {
-      backend.set({ updateReady: version })
+    'update/status': (updateStatus: {
+      version?: string
+      nextCheck: number
+      checking: boolean
+      available: boolean
+      downloaded: boolean
+    }) => {
+      backend.set({ updateStatus })
     },
 
     'cli/error': error => {

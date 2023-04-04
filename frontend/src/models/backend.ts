@@ -14,7 +14,14 @@ type IBackendState = {
   scanData: IScanData
   interfaces: IInterface[]
   freePort?: number
-  updateReady?: string
+  updateStatus: {
+    version?: string
+    nextCheck: number
+    checking: boolean
+    available: boolean
+    downloaded: boolean
+    error: boolean
+  }
   environment: {
     os?: Ios
     osVersion?: string
@@ -39,7 +46,13 @@ const defaultState: IBackendState = {
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
   freePort: undefined,
-  updateReady: undefined,
+  updateStatus: {
+    nextCheck: 0,
+    checking: false,
+    available: false,
+    downloaded: false,
+    error: false,
+  },
   environment: {
     os: getOs(),
     osVersion: '',
@@ -135,9 +148,9 @@ export default createModel<RootModel>()({
     async setUpdateNotice(updateVersion: string | undefined, globalState) {
       setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
     },
-    async restart() {
+    async install() {
       dispatch.ui.set({ waitMessage: 'updating' })
-      emit('restart')
+      emit('update/install')
     },
   }),
 
@@ -154,9 +167,9 @@ export default createModel<RootModel>()({
 })
 
 export function selectUpdateNotice(state: ApplicationState) {
-  const { updateReady } = state.backend
-  if (updateReady && updateReady !== version) {
+  const { updateStatus } = state.backend
+  if (updateStatus.downloaded && updateStatus.version !== version) {
     let notifiedVersion = getLocalStorage(state, NOTICE_VERSION_ID)
-    if (notifiedVersion !== updateReady) return updateReady
+    if (notifiedVersion !== updateStatus.version) return updateStatus.version
   }
 }
