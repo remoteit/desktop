@@ -1,26 +1,25 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
+import { Button } from '@mui/material'
 import { fullVersion, version as currentVersion } from '../../helpers/versionHelper'
-import { ListItem, ListItemIcon, Typography, Divider, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../ListItemSetting'
-import { Duration } from '../Duration'
 import { DesktopUI } from '../DesktopUI'
+import { ColorChip } from '../ColorChip'
+import { Duration } from '../Duration'
 import { TestUI } from '../TestUI'
 
 export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = ({ preferences, os }) => {
-  const { version, nextCheck, checking, downloaded } = useSelector(
+  const { version, nextCheck, checking, downloaded, error } = useSelector(
     (state: ApplicationState) => state.backend.updateStatus
   )
   const dispatch = useDispatch<Dispatch>()
   const updateAvailable = downloaded && version !== currentVersion
 
   let label = 'About'
-  if (updateAvailable) label = 'New version available'
+  if (updateAvailable) label = `Version ${version} available`
   if (checking) label = 'Checking for updates...'
-
-  console.log('UPDATE SETTING', { version, nextCheck, checking, downloaded, updateAvailable, label, os })
 
   return (
     <>
@@ -54,21 +53,26 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
         </DesktopUI>
       )}
       <ListItemSetting
-        disabled={checking}
         label={label}
         subLabel={<>{fullVersion()} — © remot3.it inc.</>}
         icon="copyright"
-        // secondaryContent={
-        //   updateAvailable ? (
-        //     <>
-        //       <Button onClick={dispatch.backend.restart} color="primary" size="small">
-        //         Restart
-        //       </Button>
-        //     </>
-        //   ) : undefined
-        // }
-        onButtonClick={dispatch.backend.install}
-        button={updateAvailable ? 'Install' : undefined}
+        secondaryContent={
+          error ? (
+            <ColorChip label="Update error" typeColor="danger" size="small" />
+          ) : updateAvailable ? (
+            <>
+              <Button
+                onClick={dispatch.backend.install}
+                color="primary"
+                variant="contained"
+                size="small"
+                disabled={checking}
+              >
+                Install
+              </Button>
+            </>
+          ) : undefined
+        }
       />
     </>
   )

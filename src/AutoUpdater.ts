@@ -24,10 +24,10 @@ export default class AppUpdater {
     autoUpdater.forceDevUpdateConfig = environment.isDev
 
     autoUpdater.on('update-downloaded', info => {
-      Logger.info('AUTO UPDATER update-downloaded', info)
       this.downloaded = true
       this.checking = false
       this.version = info.version
+      this.error = false
       this.emitStatus()
     })
     autoUpdater.on('checking-for-update', () => {
@@ -36,25 +36,20 @@ export default class AppUpdater {
       this.emitStatus()
     })
     autoUpdater.on('update-available', info => {
-      Logger.info('AUTO UPDATER update-available', info)
       this.available = true
       this.checking = false
+      this.error = false
       this.version = info.version
       this.emitStatus()
     })
-    autoUpdater.on('update-not-available', info => {
-      Logger.info('AUTO UPDATER update-not-available', info)
+    autoUpdater.on('update-not-available', () => {
       this.available = false
       this.checking = false
+      this.error = false
       this.version = undefined
       this.emitStatus()
     })
     autoUpdater.on('error', error => {
-      Logger.info('AUTO UPDATER error', error)
-      this.available = false
-      this.checking = false
-      this.version = undefined
-      this.downloaded = false
       this.error = true
       this.emitStatus()
     })
@@ -68,7 +63,6 @@ export default class AppUpdater {
   }
 
   emitStatus() {
-    Logger.info('AUTO UPDATE STATUS', { status: this.status })
     EventBus.emit(EVENTS.status, this.status)
   }
 
@@ -79,6 +73,7 @@ export default class AppUpdater {
       checking: this.checking,
       available: this.available,
       downloaded: this.downloaded,
+      error: this.error,
     }
   }
 
