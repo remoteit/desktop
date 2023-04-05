@@ -145,8 +145,11 @@ export default createModel<RootModel>()({
       })
       emit('registration', code)
     },
-    async setUpdateNotice(updateVersion: string | undefined, globalState) {
-      setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
+    async setUpdateNotice(updateVersion: string | undefined, state) {
+      setLocalStorage(state, NOTICE_VERSION_ID, updateVersion)
+    },
+    async disableAutoUpdate(_: void, state) {
+      emit('preferences', { ...state.backend.preferences, autoUpdate: false })
     },
     async install() {
       dispatch.ui.set({ waitMessage: 'updating' })

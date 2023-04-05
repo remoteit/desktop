@@ -24,6 +24,12 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
     dispatch.backend.install()
   }
 
+  const handleDisable = () => {
+    setOpen(false)
+    setConfirm(false)
+    dispatch.backend.disableAutoUpdate()
+  }
+
   useEffect(() => {
     if (updateReady) setOpen(true)
   }, [updateReady])
@@ -38,6 +44,9 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
         message={`An update is available (v${updateReady}).`}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         action={[
+          <Button key="disable" size="small" color="primary" onClick={handleDisable}>
+            Disable Updates
+          </Button>,
           <Button key="restart" variant="contained" color="primary" size="small" onClick={handleClick}>
             Install
           </Button>,
@@ -57,10 +66,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
         <Confirm
           open={confirm}
           onConfirm={handleConfirm}
-          onDeny={() => {
-            setConfirm(false)
-            setOpen(false)
-          }}
+          onDeny={() => setConfirm(false)}
           title="Are you sure?"
           action="Install"
         >
