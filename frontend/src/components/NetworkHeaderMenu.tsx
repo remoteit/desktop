@@ -14,11 +14,11 @@ import { UsersTab } from '../components/UsersTab'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
-export const NetworkHeaderMenu: React.FC<{ network: INetwork; email: string; children: React.ReactNode }> = ({
-  network,
-  email,
-  children,
-}) => {
+export const NetworkHeaderMenu: React.FC<{
+  network: INetwork
+  email: string
+  children?: React.ReactNode | React.ReactNode[]
+}> = ({ network, email, children }) => {
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
 

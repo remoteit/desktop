@@ -1,4 +1,4 @@
-import { EVENTS, environment, preferences, EventBus, Logger, Command } from 'remoteit-headless'
+import { EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import AutoUpdater from './AutoUpdater'
 import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
@@ -48,16 +48,12 @@ export default class ElectronApp {
     this.app.on('second-instance', this.handleSecondInstance)
     this.app.on('open-url', this.handleOpenUrl)
 
-    EventBus.on(EVENTS.update, this.autoUpdater.update)
+    EventBus.on(EVENTS.install, this.handleInstallUpdate)
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.filePrompt, this.handleFilePrompt)
     EventBus.on(EVENTS.navigate, this.handleNavigate)
     EventBus.on(EVENTS.maximize, this.handleMaximize)
     EventBus.on(EVENTS.open, this.openWindow)
-  }
-
-  check = () => {
-    if (!environment.isHeadless) this.autoUpdater.check()
   }
 
   get url() {
@@ -89,6 +85,11 @@ export default class ElectronApp {
     Logger.info('SECOND INSTANCE ARGS', { argv })
     this.setDeepLink(argv.pop())
     this.openWindow()
+  }
+
+  private handleInstallUpdate = () => {
+    this.handleBeforeQuit()
+    this.autoUpdater.install()
   }
 
   private handleOpenUrl = (event: electron.Event, url: string) => {

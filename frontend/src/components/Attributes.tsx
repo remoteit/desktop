@@ -7,6 +7,7 @@ import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { ListItemText, Chip, Typography } from '@mui/material'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
+import { ReactiveTags } from './ReactiveTags'
 import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
@@ -20,7 +21,6 @@ import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
-import { Tags } from './Tags'
 
 export class Attribute {
   id: string = ''
@@ -133,7 +133,7 @@ export const attributes: Attribute[] = [
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
-    value: ({ instance }) => <Tags tags={instance?.tags || []} small />,
+    value: ({ instance }) => <ReactiveTags tags={instance?.tags || []} />,
     feature: 'tagging',
   }),
   new Attribute({

@@ -45,7 +45,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const instance: IInstance | undefined = network || device
 
   useEffect(() => {
-    if (instance?.loaded || device?.loaded || waiting) return
+    if ((instance?.loaded && device?.loaded) || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {
       console.log('LOADING DEVICE DATA', deviceID)
@@ -60,7 +60,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
         dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
       }
     }
-  }, [deviceID, serviceID, waiting, thisId, instance])
+  }, [deviceID, serviceID, waiting, thisId, instance?.loaded, device?.loaded])
 
   return (
     <DeviceContext.Provider

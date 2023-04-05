@@ -1,12 +1,10 @@
 import { createModel } from '@rematch/core'
-import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
-import { ApplicationState } from '../store'
+import { setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { RootModel } from '.'
-import { version } from '../helpers/versionHelper'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 
-const NOTICE_VERSION_ID = 'notice-version'
+export const NOTICE_VERSION_ID = 'notice-version'
 
 type IBackendState = {
   initialized: boolean
@@ -14,7 +12,15 @@ type IBackendState = {
   scanData: IScanData
   interfaces: IInterface[]
   freePort?: number
-  updateReady?: string
+  updateStatus: {
+    version?: string
+    nextCheck: number
+    checking: boolean
+    available: boolean
+    downloaded: boolean
+    downloading: boolean
+    error: boolean
+  }
   environment: {
     os?: Ios
     osVersion?: string
@@ -39,7 +45,14 @@ const defaultState: IBackendState = {
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
   freePort: undefined,
-  updateReady: undefined,
+  updateStatus: {
+    nextCheck: 0,
+    checking: false,
+    available: false,
+    downloaded: false,
+    downloading: false,
+    error: false,
+  },
   environment: {
     os: getOs(),
     osVersion: '',
@@ -132,12 +145,15 @@ export default createModel<RootModel>()({
       })
       emit('registration', code)
     },
-    async setUpdateNotice(updateVersion: string | undefined, globalState) {
-      setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
+    async setUpdateNotice(updateVersion: string | undefined, state) {
+      setLocalStorage(state, NOTICE_VERSION_ID, updateVersion)
     },
-    async restart() {
+    async disableAutoUpdate(_: void, state) {
+      emit('preferences', { ...state.backend.preferences, autoUpdate: false })
+    },
+    async install() {
       dispatch.ui.set({ waitMessage: 'updating' })
-      emit('restart')
+      emit('update/install')
     },
   }),
 
@@ -152,11 +168,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function selectUpdateNotice(state: ApplicationState) {
-  const { updateReady } = state.backend
-  if (updateReady && updateReady !== version) {
-    let notifiedVersion = getLocalStorage(state, NOTICE_VERSION_ID)
-    if (notifiedVersion !== updateReady) return updateReady
-  }
-}

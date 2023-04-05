@@ -8,7 +8,7 @@ import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { getDevices } from '../../selectors/devices'
 
 export const DeviceNameSetting: React.FC = () => {
-  const { devices } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const { device } = useContext(DeviceContext)
   const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
@@ -31,7 +31,10 @@ export const DeviceNameSetting: React.FC = () => {
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}
-      onSave={name => devices.renameDevice({ ...device, name: name.toString() })}
+      onSave={name => {
+        dispatch.accounts.setDevice({ id: device.id, device })
+        dispatch.devices.rename({ id: device.id, name: name.toString() })
+      }}
     />
   )
 }

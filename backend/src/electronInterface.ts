@@ -8,9 +8,11 @@ export const EVENTS = {
   filePrompt: 'app/filePrompt',
   filePath: 'app/filePath',
   preferences: 'preferences',
-  downloaded: 'update/downloaded',
-  update: 'update',
   recapitate: 'recapitate',
   signOut: 'sign-out',
+  // AutoUpdater
+  status: 'update/status',
+  check: 'update/check',
+  install: 'update/install',
 }
 export default { EVENTS }

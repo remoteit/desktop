@@ -10,7 +10,7 @@ const CLIENT_DEPRECATED = '121'
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
     const response = await graphQLRequest(query, variables)
-    const errors = graphQLGetErrors(response)
+    const errors = graphQLGetErrors(response, false, { query, variables })
     return errors ? 'ERROR' : response
   } catch (error) {
     console.error('GRAPHQL QUERY ERROR', { query, variables })
@@ -32,7 +32,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
     headers: { Authorization: token, ...getTestHeader() },
     data: { query, variables },
   }
-  // console.log('GRAPHQL REQUEST', { query, variables, request })
+
   return await axios.request(request)
 }
 
@@ -53,7 +53,11 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
 //   }
 // }
 
-export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silent?: boolean) {
+export function graphQLGetErrors(
+  response: AxiosResponse | 'ERROR' | void,
+  silent?: boolean,
+  details?: { query: String; variables: ILookup<any> }
+) {
   if (!response || response === 'ERROR') return
   const { ui } = store.dispatch
 
@@ -66,7 +70,10 @@ export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silen
   }
 
   if (errors) {
-    errors.forEach(error => console.error('graphQL error:', JSON.stringify(error, null, 2)))
+    errors.forEach(error => {
+      console.error('graphQL error:', JSON.stringify(error, null, 2))
+      if (details) console.error('graphQL error details:', JSON.stringify(details, null, 2))
+    })
     if (!silent)
       store.dispatch.ui.set({
         errorMessage:

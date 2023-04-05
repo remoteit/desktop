@@ -1,4 +1,6 @@
 import { ApplicationState } from '../store'
+import { getLocalStorage } from '../services/Browser'
+import { NOTICE_VERSION_ID } from '../models/backend'
 
 export const getUser = (state: ApplicationState) => state.auth.user || state.user
 export const getUserId = (state: ApplicationState) => state.auth.user?.id || ''
@@ -29,3 +31,6 @@ export const getAllNetworks = (state: ApplicationState) => state.networks.all
 export const getTags = (state: ApplicationState) => state.tags.all
 export const getDefaultSelected = (state: ApplicationState) => state.ui.defaultSelection
 export const getThemeDark = (state: ApplicationState) => state.ui.themeDark
+export const getUpdateStatus = (state: ApplicationState) => state.backend.updateStatus
+export const getPreferences = (state: ApplicationState) => state.backend.preferences
+export const getNotifiedVersion = (state: ApplicationState) => getLocalStorage(state, NOTICE_VERSION_ID)

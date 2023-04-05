@@ -20,10 +20,6 @@ export default class Application {
     if (server.io) new Controller(server.io, this.pool)
   }
 
-  check() {
-    this.electron && this.electron.check()
-  }
-
   quit() {
     this.electron && this.electron.app.quit()
   }

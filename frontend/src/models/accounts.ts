@@ -6,7 +6,7 @@ import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
-import { mergeDevices } from './devices'
+import { mergeDevice } from './devices'
 import { RootModel } from '.'
 
 const ACCOUNT_KEY = 'account'
@@ -97,18 +97,31 @@ export default createModel<RootModel>()({
     async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       const all = getDevices(state, accountId)
-      const mergedDevices = mergeDevices({ overwrite: all, keep: devices })
+
+      const mergedDevices = devices.map(keep => {
+        const overwrite = all.find(o => o.id === keep.id)
+        if (!overwrite) return keep
+        return mergeDevice(overwrite, keep)
+      })
+
       await dispatch.accounts.setDevices({ devices: mergedDevices, accountId })
     },
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
-      if (!devices) return
+      if (!devices || !devices.length) return
       const all = getDevices(state, accountId)
-      const unChangedDevices = all.filter(un => !devices.find(d => d.id === un.id))
-      const mergedDevices = mergeDevices({ overwrite: all, keep: devices })
-      await dispatch.accounts.setDevices({
-        devices: [...unChangedDevices, ...mergedDevices],
-        accountId,
+      let mergedDevices: IDevice[] = []
+
+      all.forEach(overwrite => {
+        const device = devices.find(d => d.id === overwrite.id)
+        if (device) {
+          mergedDevices.push(mergeDevice(overwrite, device))
+        } else {
+          mergedDevices.push(overwrite)
+        }
       })
+
+      const append: IDevice[] = devices.filter(k => !all.find(ow => ow.id === k.id))
+      await dispatch.accounts.setDevices({ devices: [...mergedDevices, ...append], accountId })
     },
     async appendUniqueDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return

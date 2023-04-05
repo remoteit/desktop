@@ -50,13 +50,14 @@ declare global {
     | 'oobCheck'
     | 'interfaces'
     | 'freePort'
-    | 'restart'
     | 'uninstall'
     | 'preferences'
     | 'osInfo'
     | 'reachablePort'
     | 'useCertificate'
     | 'forceUnregister'
+    | 'update/check'
+    | 'update/install'
 
   type SocketEvent =
     // built-in events

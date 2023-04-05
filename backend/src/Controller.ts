@@ -79,11 +79,12 @@ class Controller {
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
     socket.on('preferences', preferences.set)
-    socket.on('restart', this.installAndRestart)
     socket.on('uninstall', this.uninstall)
     socket.on('forceUnregister', this.forceUnregister)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
+    socket.on('update/check', () => EventBus.emit(electronInterface.EVENTS.check, true))
+    socket.on('update/install', () => EventBus.emit(electronInterface.EVENTS.install))
     socket.on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', type => EventBus.emit(electronInterface.EVENTS.filePrompt, type))
@@ -93,6 +94,7 @@ class Controller {
     Logger.info('INIT FRONTEND DATA')
     binaryInstaller.check()
     this.initBackend()
+    EventBus.emit(electronInterface.EVENTS.check, true)
   }
 
   recapitate = () => {
@@ -103,8 +105,8 @@ class Controller {
   check = (all?: boolean) => {
     this.pool.check()
     lan.check()
-    app.check()
     if (all) binaryInstaller.check()
+    EventBus.emit(electronInterface.EVENTS.check)
   }
 
   connect = async (connection: IConnection) => {
@@ -198,11 +200,6 @@ class Controller {
   quit = () => {
     Logger.info('WEB UI QUIT')
     app.quit()
-  }
-
-  installAndRestart = async () => {
-    Logger.info('WEB UI AUTO UPDATE RESTART')
-    EventBus.emit(electronInterface.EVENTS.update)
   }
 
   signOut = async () => {

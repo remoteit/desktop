@@ -182,6 +182,7 @@ export class Environment {
   toJSON() {
     return {
       arch: os.arch(),
+      isDev: this.isDev,
       isPiZero: this.isPiZero,
       isPi: this.isPi,
       isWindows: this.isWindows,

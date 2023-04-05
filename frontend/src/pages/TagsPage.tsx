@@ -12,24 +12,27 @@ import { getActiveAccountId } from '../selectors/accounts'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { REGEX_TAG_SAFE } from '../shared/constants'
+import { useLocation } from 'react-router-dom'
 import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
-import { REGEX_TAG_SAFE } from '../shared/constants'
 import { useLabel } from '../hooks/useLabel'
 
 export const TagsPage: React.FC = () => {
   const getColor = useLabel()
+  const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
   const { accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: ApplicationState) => {
-    const accountId = getActiveAccountId(state)
+    const userAccount = location.pathname.includes('/settings')
+    const accountId = userAccount ? state.user.id : getActiveAccountId(state)
     return {
       accountId,
       deleting: state.tags.deleting,
       updating: state.tags.updating,
       creating: state.tags.creating,
       canEdit: canEditTags(state, accountId),
-      tags: selectTags(state),
+      tags: selectTags(state, accountId),
     }
   })
 
@@ -40,6 +43,10 @@ export const TagsPage: React.FC = () => {
       dispatch.tags.rename({ tag, name, accountId })
     }
   }
+
+  React.useEffect(() => {
+    dispatch.tags.fetchIfEmpty(accountId)
+  }, [dispatch, accountId])
 
   return (
     <Container

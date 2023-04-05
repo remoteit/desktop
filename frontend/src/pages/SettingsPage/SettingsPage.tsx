@@ -10,9 +10,7 @@ import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 
 export const SettingsPage: React.FC = () => {
-  const { preferences } = useSelector((state: ApplicationState) => ({
-    preferences: state.backend.preferences,
-  }))
+  const { preferences } = useSelector((state: ApplicationState) => state.backend)
 
   if (!preferences) return null
 
@@ -37,6 +35,7 @@ export const SettingsPage: React.FC = () => {
           exactMatch
           dense
         />
+        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Connection Type Defaults"
