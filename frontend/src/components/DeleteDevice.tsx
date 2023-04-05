@@ -1,5 +1,6 @@
 import React from 'react'
 import { emit } from '../services/Controller'
+import { Tooltip } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { DeleteButton } from '../buttons/DeleteButton'
@@ -41,7 +42,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
     return null
 
   const destroy = () => {
-    if (device.thisDevice && device.owner.id === userId) {
+    if (device.thisDevice && device.permissions.includes('MANAGE')) {
       ui.set({ setupDeletingDevice: true, setupBusy: true, silent: device.id })
       emit('registration', 'DELETE')
     } else {
@@ -62,7 +63,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
     )
   }
 
-  return (
+  const button = (
     <DeleteButton
       menuItem={menuItem}
       icon={icon}
@@ -72,5 +73,19 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
       destroying={destroying || setupDeletingDevice}
       onDelete={destroy}
     />
+  )
+
+  return disabled ? (
+    <Tooltip
+      key="deviceActions"
+      placement="left"
+      title="Device must be offline"
+      open={device.state !== 'active' ? false : undefined}
+      arrow
+    >
+      <span>{button}</span>
+    </Tooltip>
+  ) : (
+    button
   )
 }

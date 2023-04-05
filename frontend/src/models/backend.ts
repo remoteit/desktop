@@ -93,16 +93,8 @@ export default createModel<RootModel>()({
       if (newId !== thisId) {
         // registered
         if (newId && state.ui.setupRegisteringDevice) {
-          const result = await devices.fetchSingle({ id: newId, thisDevice: true })
-          if (!result) {
-            // Instances were reported where a device wasn't returned
-            await sleep(2000)
-            await devices.fetchList()
-          }
-          ui.set({
-            setupRegisteringDevice: false,
-            successMessage: 'Device registered successfully!',
-          })
+          await sleep(1000)
+          ui.set({ setupRegisteringDevice: false })
 
           // deleted
         } else if (state.ui.setupDeletingDevice) {
@@ -131,17 +123,17 @@ export default createModel<RootModel>()({
 
       backend.set({ thisId: newId })
     },
-    async registerDevice({ services, name }: { services: IService[]; name: string }, state) {
+    async registerDevice({ services, name, accountId }: { services: IService[]; name: string; accountId: string }) {
       dispatch.ui.set({ setupRegisteringDevice: true })
       const code = await dispatch.devices.createRegistration({
         name,
+        accountId,
         services: services.map(t => ({
           name: t.name,
           application: t.typeID,
           port: t.port,
           host: t.host,
         })),
-        accountId: state.user.id,
       })
       emit('registration', code)
     },

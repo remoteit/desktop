@@ -17,8 +17,9 @@ export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> 
       <Confirm
         open={open}
         onConfirm={() => {
-          ui.set({ restoring: true })
+          ui.set({ restoring: true, redirect: '/devices' })
           emit('restore', device.id)
+          setOpen(false)
         }}
         onDeny={() => setOpen(false)}
         title="Restore device from Cloud"

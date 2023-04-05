@@ -4,6 +4,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
 import { TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
+import { getActiveUser } from '../../selectors/accounts'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../selectors/devices'
@@ -15,7 +16,8 @@ import { spacing } from '../../styling'
 type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
-  const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
+  const { activeUser, hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
+    activeUser: getActiveUser(state),
     hostname: state.backend.environment.hostname,
     nameBlacklist: getDevices(state)
       .filter((device: IDevice) => !device.shared)
@@ -46,7 +48,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
         onSubmit={event => {
           if (!name) return
           event.preventDefault()
-          backend.registerDevice({ services: selected, name })
+          backend.registerDevice({ services: selected, name, accountId: activeUser.id })
           history.push('/devices/setupWaiting')
         }}
       >

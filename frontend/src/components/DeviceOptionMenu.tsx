@@ -3,7 +3,7 @@ import { PROTOCOL } from '../shared/constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
-import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
+import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
 import { CopyAsyncMenuItem } from './CopyAsyncMenuItem'
@@ -75,17 +75,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               title="Restore Device"
               request={async () => await dispatch.devices.getRestoreCommand(device.id)}
             />,
-            <Tooltip
-              key="deviceActions"
-              placement="left"
-              title="Device must be offline"
-              open={device.state !== 'active' ? false : undefined}
-              arrow
-            >
-              <span>
-                <DeleteDevice device={device} menuItem />
-              </span>
-            </Tooltip>,
+            <DeleteDevice device={device} menuItem />,
           ]}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>

@@ -295,8 +295,8 @@ declare global {
       connectionType?: string
       isp?: string
     }
-    createdAt: Date
-    contactedAt: Date
+    createdAt?: Date
+    contactedAt?: Date
     shared: boolean
     services: IService[]
     hidden?: boolean
