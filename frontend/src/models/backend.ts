@@ -1,12 +1,10 @@
 import { createModel } from '@rematch/core'
-import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
-import { ApplicationState } from '../store'
+import { setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { RootModel } from '.'
-import { version } from '../helpers/versionHelper'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 
-const NOTICE_VERSION_ID = 'notice-version'
+export const NOTICE_VERSION_ID = 'notice-version'
 
 type IBackendState = {
   initialized: boolean
@@ -20,6 +18,7 @@ type IBackendState = {
     checking: boolean
     available: boolean
     downloaded: boolean
+    downloading: boolean
     error: boolean
   }
   environment: {
@@ -51,6 +50,7 @@ const defaultState: IBackendState = {
     checking: false,
     available: false,
     downloaded: false,
+    downloading: false,
     error: false,
   },
   environment: {
@@ -168,11 +168,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function selectUpdateNotice(state: ApplicationState) {
-  const { updateStatus } = state.backend
-  if (updateStatus.downloaded && updateStatus.version !== version) {
-    let notifiedVersion = getLocalStorage(state, NOTICE_VERSION_ID)
-    if (notifiedVersion !== updateStatus.version) return updateStatus.version
-  }
-}

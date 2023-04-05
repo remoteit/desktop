@@ -94,6 +94,7 @@ class Controller {
     Logger.info('INIT FRONTEND DATA')
     binaryInstaller.check()
     this.initBackend()
+    EventBus.emit(electronInterface.EVENTS.check, true)
   }
 
   recapitate = () => {

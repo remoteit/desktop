@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, Button, IconButton } from '@mui/material'
-import { selectUpdateNotice } from '../../models/backend'
 import { isElectron, isRemote } from '../../services/Browser'
+import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
 import { Icon } from '../Icon'
@@ -31,7 +31,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
   }
 
   useEffect(() => {
-    if (updateReady) setOpen(true)
+    setOpen(!!updateReady)
   }, [updateReady])
 
   if (!isElectron() || isRemote()) return null
@@ -70,10 +70,10 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
           title="Are you sure?"
           action="Install"
         >
-          <Notice severity="error" fullWidth gutterBottom>
-            Restarting while connected over a remote.it connection will cause the connection to be permanently lost.
+          <Notice severity="warning" fullWidth gutterBottom>
+            Restarting while connected over a remote.it connection could cause the connection to be permanently lost.
           </Notice>
-          You must be at the computer locally to update.
+          It is recommended to have a local connection when updating.
         </Confirm>
       )}
     </>

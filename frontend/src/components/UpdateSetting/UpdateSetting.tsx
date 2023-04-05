@@ -11,7 +11,7 @@ import { Duration } from '../Duration'
 import { TestUI } from '../TestUI'
 
 export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = ({ preferences, os }) => {
-  const { version, nextCheck, checking, downloaded, error } = useSelector(
+  const { version, nextCheck, checking, downloaded, downloading, error } = useSelector(
     (state: ApplicationState) => state.backend.updateStatus
   )
   const dispatch = useDispatch<Dispatch>()
@@ -35,8 +35,13 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
               ) : undefined
             }
             icon="chevron-double-up"
-            button={preferences.autoUpdate ? (checking ? 'Checking...' : 'Check') : undefined}
-            onButtonClick={() => !checking && emit('update/check')}
+            secondaryContent={
+              preferences.autoUpdate && (
+                <Button onClick={() => emit('update/check')} color="primary" size="small" disabled={downloading}>
+                  {downloading ? 'Downloading...' : checking ? 'Checking...' : 'Check'}
+                </Button>
+              )
+            }
             toggle={!!preferences.autoUpdate}
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
           />
@@ -58,19 +63,17 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
         icon="copyright"
         secondaryContent={
           error ? (
-            <ColorChip label="Update error" typeColor="danger" size="small" />
-          ) : updateAvailable ? (
-            <>
-              <Button
-                onClick={dispatch.backend.install}
-                color="primary"
-                variant="contained"
-                size="small"
-                disabled={checking}
-              >
-                Install
-              </Button>
-            </>
+            <ColorChip label="Update failed" typeColor="warning" size="small" />
+          ) : updateAvailable && downloaded ? (
+            <Button
+              onClick={dispatch.backend.install}
+              color="primary"
+              variant="contained"
+              size="small"
+              disabled={checking || downloading}
+            >
+              Install
+            </Button>
           ) : undefined
         }
       />

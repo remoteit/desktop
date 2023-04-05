@@ -7,9 +7,10 @@ const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
 
 export default class AppUpdater {
   nextCheck: number = 0
-  checking: boolean = true
+  checking: boolean = false
   available: boolean = false
   downloaded: boolean = false
+  downloading: boolean = false
   version?: string
   error: boolean = false
 
@@ -26,9 +27,15 @@ export default class AppUpdater {
 
     autoUpdater.on('update-downloaded', info => {
       this.downloaded = true
+      this.downloading = false
       this.checking = false
       this.version = info.version
       this.error = false
+      this.emitStatus()
+    })
+    autoUpdater.on('download-progress', info => {
+      this.downloading = true
+      Logger.info('AUTO UPDATE DOWNLOAD PROGRESS', info)
       this.emitStatus()
     })
     autoUpdater.on('checking-for-update', () => {
@@ -51,13 +58,18 @@ export default class AppUpdater {
     })
     autoUpdater.on('error', error => {
       this.error = true
+      this.checking = false
+      this.downloading = false
       this.emitStatus()
     })
 
     EventBus.on(EVENTS.check, this.check)
     EventBus.on(EVENTS.preferences, ({ allowPrerelease }: IPreferences) => {
-      autoUpdater.allowPrerelease = !!allowPrerelease
-      Logger.info('AUTO UPDATE ALLOW PRERELEASE', { allowPrerelease })
+      if (autoUpdater.allowPrerelease !== !!allowPrerelease) {
+        autoUpdater.allowPrerelease = !!allowPrerelease
+        Logger.info('AUTO UPDATE ALLOW PRERELEASE', { allowPrerelease })
+        this.emitStatus()
+      }
     })
   }
 
@@ -71,6 +83,7 @@ export default class AppUpdater {
       nextCheck: this.nextCheck,
       checking: this.checking,
       available: this.available,
+      downloading: this.downloading,
       downloaded: this.downloaded,
       error: this.error,
     }
