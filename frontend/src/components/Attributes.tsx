@@ -13,7 +13,7 @@ import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
-import { ColorChip } from './ColorChip'
+import { StatusChip } from './StatusChip'
 import { lanShared } from '../helpers/lanSharing'
 import { Timestamp } from './Timestamp'
 import { DeviceGeo } from './DeviceGeo'
@@ -118,16 +118,7 @@ export const attributes: Attribute[] = [
     label: 'Status',
     query: 'deviceName',
     defaultWidth: 100,
-    value: ({ device, connection }) =>
-      connection?.connected ? (
-        <ColorChip label="Connected" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
-      ) : connection?.enabled ? (
-        <ColorChip label="Ready" size="small" typeColor="primary" />
-      ) : device?.state === 'active' ? (
-        <ColorChip label="Online" size="small" typeColor="secondary" />
-      ) : (
-        <ColorChip label="Offline" size="small" typeColor="gray" />
-      ),
+    value: ({ device, connection }) => <StatusChip device={device} connection={connection} />,
   }),
   new Attribute({
     id: 'tags',
