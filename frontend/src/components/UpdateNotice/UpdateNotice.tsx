@@ -39,7 +39,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         action={[
           <Button key="restart" variant="contained" color="primary" size="small" onClick={handleClick}>
-            Restart
+            Install
           </Button>,
           <IconButton
             key="close"
@@ -62,7 +62,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
             setOpen(false)
           }}
           title="Are you sure?"
-          action="Restart"
+          action="Install"
         >
           <Notice severity="error" fullWidth gutterBottom>
             Restarting while connected over a remote.it connection will cause the connection to be permanently lost.

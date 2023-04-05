@@ -20,6 +20,7 @@ export default class AppUpdater {
     autoUpdater.autoInstallOnAppQuit = false
     autoUpdater.disableWebInstaller = true
     autoUpdater.autoDownload = true
+    autoUpdater.autoRunAppAfterInstall = true
     autoUpdater.allowPrerelease = !!preferences.get().allowPrerelease
     autoUpdater.forceDevUpdateConfig = environment.isDev
 
@@ -31,7 +32,6 @@ export default class AppUpdater {
       this.emitStatus()
     })
     autoUpdater.on('checking-for-update', () => {
-      Logger.info('AUTO UPDATER checking-for-update')
       this.checking = true
       this.emitStatus()
     })
@@ -55,11 +55,10 @@ export default class AppUpdater {
     })
 
     EventBus.on(EVENTS.check, this.check)
-    EventBus.on(EVENTS.install, this.install)
-    EventBus.on(
-      EVENTS.preferences,
-      ({ allowPrerelease }: IPreferences) => (autoUpdater.allowPrerelease = !!allowPrerelease)
-    )
+    EventBus.on(EVENTS.preferences, ({ allowPrerelease }: IPreferences) => {
+      autoUpdater.allowPrerelease = !!allowPrerelease
+      Logger.info('AUTO UPDATE ALLOW PRERELEASE', { allowPrerelease })
+    })
   }
 
   emitStatus() {
@@ -93,9 +92,8 @@ export default class AppUpdater {
     }
   }
 
-  install = async () => {
+  install = () => {
     Logger.info('QUIT AND INSTALL UPDATE')
-    await autoUpdater.quitAndInstall()
-    electron.app.quit()
+    autoUpdater.quitAndInstall()
   }
 }

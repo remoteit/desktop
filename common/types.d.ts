@@ -50,7 +50,6 @@ declare global {
     | 'oobCheck'
     | 'interfaces'
     | 'freePort'
-    | 'restart'
     | 'uninstall'
     | 'preferences'
     | 'osInfo'

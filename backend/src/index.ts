@@ -61,7 +61,6 @@ export {
   EventBus,
   hostName,
   preferences,
-  Command,
   Logger,
   User,
   user,
