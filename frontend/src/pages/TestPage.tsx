@@ -161,7 +161,6 @@ export const TestPage: React.FC = () => {
           toggle={tests.limit}
           onClick={() => plans.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
         />
-        <ListItemSetting hideIcon label="Clear licenses and limits" onClick={() => plans.testClearLicensing()} />
         <ListItemSetting
           hideIcon
           label="Set service licenses"

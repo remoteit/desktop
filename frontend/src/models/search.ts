@@ -27,7 +27,7 @@ export default createModel<RootModel>()({
       const { total, size } = getDeviceModel(state)
       const { membership: member } = state.accounts
 
-      dispatch.search.set({ cloudSearch: total > size || member.length })
+      dispatch.search.set({ cloudSearch: total > size || !!member.length })
     },
     async fetch(name: string, state) {
       if (!state.auth.user) return
@@ -148,7 +148,7 @@ export default createModel<RootModel>()({
       state = { ...searchState }
       return state
     },
-    set(state, params: ILookup<any>) {
+    set(state, params: Partial<ISearchState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

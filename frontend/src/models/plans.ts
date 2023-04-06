@@ -146,7 +146,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
         return
       }
-      dispatch.plans.set({ purchasing: planId || true })
+      dispatch.plans.set({ purchasing: planId })
       const result = await graphQLUpdateSubscription({ priceId, quantity, accountId })
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
@@ -176,7 +176,7 @@ export default createModel<RootModel>()({
     },
 
     async updateCreditCard(last: string | undefined) {
-      dispatch.plans.set({ updating: last || true })
+      dispatch.plans.set({ updating: last })
       localStorage.setItem(UPDATING_PLAN, last || '')
       const result = await graphQLCreditCard()
       if (result !== 'ERROR') {
@@ -213,20 +213,13 @@ export default createModel<RootModel>()({
       }))
       dispatch.accounts.setDevices({ devices: updated })
     },
-
-    async testClearLicensing() {
-      dispatch.plans.set({
-        licenses: [],
-        limits: [],
-      })
-    },
   }),
   reducers: {
     reset(state: IPlans) {
       state = { ...defaultState }
       return state
     },
-    set(state: IPlans, params: ILookup<any>) {
+    set(state: IPlans, params: Partial<IPlans>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

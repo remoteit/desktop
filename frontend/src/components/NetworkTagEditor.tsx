@@ -32,7 +32,7 @@ export const NetworkTagEditor: React.FC<Props> = ({ network, button }) => {
         tags={network.tags}
         onDelete={canEdit ? tag => dispatch.tags.removeNetwork({ tag, network }) : undefined}
         onClick={tag => {
-          dispatch.devices.set({ tag: { values: [tag.name] } })
+          dispatch.devices.set({ tag: { values: [tag.name], operator: tag.operator } })
           dispatch.devices.fetchList()
           history.push('/devices')
         }}

@@ -159,7 +159,7 @@ export const OrganizationRolePage: React.FC = () => {
                 changeForm(form)
               }}
               onClick={tag => {
-                dispatch.devices.set({ tag: { values: [tag.name] } })
+                dispatch.devices.set({ tag: { values: [tag.name], operator: tag.operator } })
                 dispatch.devices.fetchList()
                 history.push('/devices')
               }}

@@ -221,7 +221,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: ITagState, params: ILookup<any>) {
+    set(state: ITagState, params: Partial<ITagState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

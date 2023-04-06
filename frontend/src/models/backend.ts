@@ -6,7 +6,7 @@ import sleep from '../services/sleep'
 
 export const NOTICE_VERSION_ID = 'notice-version'
 
-type IBackendState = {
+export type IBackendState = {
   initialized: boolean
   thisId: string
   scanData: IScanData
@@ -154,7 +154,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IBackendState, params: ILookup<any>) {
+    set(state: IBackendState, params: Partial<IBackendState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

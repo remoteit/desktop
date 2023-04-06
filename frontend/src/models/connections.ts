@@ -468,7 +468,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IConnectionsState, params: ILookup<any>) {
+    set(state: IConnectionsState, params: Partial<IConnectionsState>) {
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })

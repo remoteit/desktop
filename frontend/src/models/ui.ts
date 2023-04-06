@@ -64,7 +64,7 @@ export type UIState = {
   scanTimestamp: { [interfaceName: string]: number }
   scanInterface: string
   setupBusy: boolean
-  setupAdded?: IService
+  setupAdded?: Partial<IService>
   setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean
@@ -268,7 +268,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: UIState, params: ILookup<any>) {
+    set(state: UIState, params: Partial<UIState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

@@ -349,7 +349,7 @@ export default createModel<RootModel>()({
       })
       await graphQLRemoveService(serviceId)
       await dispatch.devices.fetchSingle({ id: deviceId })
-      dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
+      dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
@@ -476,7 +476,7 @@ export default createModel<RootModel>()({
       dispatch.devices.set(params)
     },
 
-    async set(params: { accountId?: string } & ILookup<any>, state) {
+    async set(params: Partial<IDeviceState>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       const deviceState = { ...getDeviceModel(state, accountId) }
 
