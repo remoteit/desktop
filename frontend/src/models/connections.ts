@@ -66,7 +66,7 @@ export default createModel<RootModel>()({
 
       const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
-      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+      await dispatch.accounts.truncateMergeDevices({ devices, accountId: 'connections' })
 
       cleanOrphanConnections(serviceIds)
     },

@@ -30,34 +30,6 @@ import { RootModel } from '.'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
-// TODO move to connection model?
-export const ROUTES: IRoute[] = [
-  {
-    key: 'failover',
-    icon: 'code-branch',
-    name: 'Peer to peer with proxy failover',
-    description: 'A direct connection to this service that fails over to a private proxy.',
-  },
-  {
-    key: 'p2p',
-    icon: 'arrows-h',
-    name: 'Peer to peer only',
-    description: 'A direct connection to this service.',
-  },
-  {
-    key: 'proxy',
-    icon: 'cloud',
-    name: 'Proxy only',
-    description: 'A private proxy connection routed through the cloud.',
-  },
-  {
-    key: 'public',
-    icon: 'globe',
-    name: 'Public Proxy',
-    description: 'A proxy connection with a temporary public URL.',
-  },
-]
-
 type IDeviceState = {
   all: IDevice[]
   initialized: boolean
@@ -542,7 +514,7 @@ export function mergeDevice(target: IDevice, source: IDevice) {
   return {
     ...target,
     ...source,
-    services: [...target.services.filter(ts => !source.services.find(ss => ss.id === ts.id)), ...source.services],
+    services: [...target.services.filter(ts => !source.services.find(ss => ss.id === ts.id)), ...source.services], // might not need this?
     hidden: source.hidden && target.hidden,
   }
 }

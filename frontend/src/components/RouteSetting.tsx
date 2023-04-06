@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { IP_OPEN } from '../shared/constants'
-import { ROUTES } from '../models/devices'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
@@ -8,6 +7,33 @@ import { ListItem, ListItemIcon, TextField, MenuItem, Typography, Chip, Box } fr
 import { newConnection, setConnection, getRoute, routeTypeToSettings } from '../helpers/connectionHelper'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
+
+export const ROUTES: IRoute[] = [
+  {
+    key: 'failover',
+    icon: 'code-branch',
+    name: 'Peer to peer with proxy failover',
+    description: 'A direct connection to this service that fails over to a private proxy.',
+  },
+  {
+    key: 'p2p',
+    icon: 'arrows-h',
+    name: 'Peer to peer only',
+    description: 'A direct connection to this service.',
+  },
+  {
+    key: 'proxy',
+    icon: 'cloud',
+    name: 'Proxy only',
+    description: 'A private proxy connection routed through the cloud.',
+  },
+  {
+    key: 'public',
+    icon: 'globe',
+    name: 'Public Proxy',
+    description: 'A proxy connection with a temporary public URL.',
+  },
+]
 
 export const RouteSetting: React.FC<{ service: IService; connection: IConnection }> = ({ service, connection }) => {
   const [open, setOpen] = useState<boolean>(false)
