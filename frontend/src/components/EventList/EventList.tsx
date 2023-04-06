@@ -16,15 +16,16 @@ export interface LogListProps {
 export const EventList: React.FC<LogListProps> = ({ device }) => {
   const css = useStyles()
   const { logs } = useDispatch<Dispatch>()
-  const { events, from, size, minDate, selectedDate, planUpgrade, fetching, fetchingMore, user, logLimit } =
-    useSelector((state: ApplicationState) => ({
+  const { events, from, size, planUpgrade, fetching, fetchingMore, user, logLimit } = useSelector(
+    (state: ApplicationState) => ({
       ...state.logs,
       user: state.user,
       logLimit: selectLimit('log-limit', state) || 'P1W',
-    }))
+    })
+  )
 
   const fetchMore = () => {
-    logs.set({ deviceId: device?.id, from: from + size, minDate, maxDate: selectedDate })
+    logs.set({ deviceId: device?.id, from: from + size })
     logs.fetch()
   }
 

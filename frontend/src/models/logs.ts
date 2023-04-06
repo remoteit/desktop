@@ -7,13 +7,13 @@ import { RootModel } from '.'
 type ILogState = {
   from: number
   size: number
-  maxDate: Date
-  minDate: Date
+  maxDate?: Date
+  minDate?: Date
   deviceId?: string
   fetching: boolean
   fetchingMore: boolean
   eventsUrl: string
-  selectedDate: Date | null
+  selectedDate?: Date
   planUpgrade: boolean
   daysAllowed: number
   events: IEventList
@@ -22,13 +22,13 @@ type ILogState = {
 const defaultState: ILogState = {
   from: 0,
   size: 100,
-  maxDate: new Date(),
-  minDate: new Date(),
+  maxDate: undefined,
+  minDate: undefined,
   deviceId: undefined,
   fetching: false,
   fetchingMore: false,
   eventsUrl: '',
-  selectedDate: null,
+  selectedDate: undefined,
   planUpgrade: false,
   daysAllowed: 0,
   events: {
@@ -61,7 +61,6 @@ export default createModel<RootModel>()({
       }
 
       set({
-        // eventsUrl,
         events: {
           ...result.events,
           items: items.concat(result?.events?.items || []),
@@ -99,7 +98,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: ILogState, params: ILookup<any>) {
+    set(state: ILogState, params: Partial<ILogState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

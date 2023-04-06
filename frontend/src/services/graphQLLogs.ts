@@ -36,7 +36,7 @@ const EVENTS = `
 
 const EVENTS_URL = 'eventsUrl(minDate: $minDate, maxDate: $maxDate)'
 
-export async function graphQLGetDeviceLogs(id: string, from: number, size: number, minDate: Date, maxDate: Date) {
+export async function graphQLGetDeviceLogs(id: string, from: number, size: number, minDate?: Date, maxDate?: Date) {
   return await graphQLBasicRequest(
     `  query DeviceLogs($id: [String!]!, $from: Int, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
           login {
@@ -51,14 +51,14 @@ export async function graphQLGetDeviceLogs(id: string, from: number, size: numbe
     {
       id,
       from,
-      minDate: minDate.toISOString(),
-      maxDate: maxDate.toISOString(),
+      minDate: minDate?.toISOString(),
+      maxDate: maxDate?.toISOString(),
       size,
     }
   )
 }
 
-export async function graphQLGetLogs(account: string, from: number, size: number, minDate: Date, maxDate: Date) {
+export async function graphQLGetLogs(account: string, from: number, size: number, minDate?: Date, maxDate?: Date) {
   return await graphQLBasicRequest(
     `  query Logs($account: String!, $from: Int, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
           login {
@@ -72,14 +72,14 @@ export async function graphQLGetLogs(account: string, from: number, size: number
     {
       account,
       from,
-      minDate: minDate.toISOString(),
-      maxDate: maxDate.toISOString(),
+      minDate: minDate?.toISOString(),
+      maxDate: maxDate?.toISOString(),
       size,
     }
   )
 }
 
-export async function graphQLGetDeviceUrl(id: string, minDate: Date, maxDate: Date) {
+export async function graphQLGetDeviceUrl(id: string, minDate?: Date, maxDate?: Date) {
   return await graphQLRequest(
     `   query DeviceLogsUrl($id: [String!]!, $minDate: DateTime, $maxDate: DateTime) {
           login {
@@ -93,13 +93,13 @@ export async function graphQLGetDeviceUrl(id: string, minDate: Date, maxDate: Da
       `,
     {
       id,
-      minDate: minDate.toISOString(),
-      maxDate: maxDate.toISOString(),
+      minDate: minDate?.toISOString(),
+      maxDate: maxDate?.toISOString(),
     }
   )
 }
 
-export async function graphQLGetUrl(minDate: Date, maxDate: Date) {
+export async function graphQLGetUrl(minDate?: Date, maxDate?: Date) {
   return await graphQLRequest(
     `   query LogsUrl($minDate: DateTime, $maxDate: DateTime) {
           login {
@@ -109,8 +109,8 @@ export async function graphQLGetUrl(minDate: Date, maxDate: Date) {
         }
       `,
     {
-      minDate: minDate.toISOString(),
-      maxDate: maxDate.toISOString(),
+      minDate: minDate?.toISOString(),
+      maxDate: maxDate?.toISOString(),
     }
   )
 }

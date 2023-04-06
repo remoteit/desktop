@@ -1,3 +1,10 @@
+export function isToday(dateToCheck: Date): boolean {
+  const today = new Date().toLocaleDateString()
+  const check = dateToCheck.toLocaleDateString()
+
+  return today === check
+}
+
 export const getDateFormatString = () => {
   const formatObj = new Intl.DateTimeFormat(window.navigator.language).formatToParts(new Date())
   return formatObj
@@ -15,6 +22,7 @@ export const getDateFormatString = () => {
     })
     .join('')
 }
+
 export const getTimeZone = () => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }

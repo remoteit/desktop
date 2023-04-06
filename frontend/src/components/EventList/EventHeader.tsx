@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
+import { isToday } from '../../helpers/dateHelper'
 import { DateTime } from 'luxon'
 import { getActiveAccountId } from '../../selectors/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { makeStyles } from '@mui/styles'
 import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
 import { selectLimit, limitDays } from '../../models/plans'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
@@ -12,7 +12,6 @@ import { DatePicker } from '../DatePicker'
 const DAY = 1000 * 60 * 60 * 24
 
 export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const { fetch, set } = dispatch.logs
 
@@ -47,20 +46,27 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   }
 
   useEffect(() => {
-    set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: new Date(), selectedDate: selectedDate || new Date() })
+    set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: undefined, selectedDate: undefined })
     if (!events.items.length || device?.id !== deviceId) {
       set({ deviceId: device?.id, from: 0, events: { ...events, items: [] } })
       fetch()
     }
   }, [activeAccount])
 
-  const handleChangeDate = (date: any) => {
-    set({ selectedDate: date, from: 0, minDate, maxDate: date, events: { ...events, items: [] } })
+  const handleChangeDate = (date: Date | null | undefined) => {
+    date = date || undefined
+    set({
+      selectedDate: date,
+      from: 0,
+      minDate,
+      maxDate: date && isToday(date) ? undefined : date,
+      events: { ...events, items: [] },
+    })
     fetch()
   }
 
   return (
-    <List className={css.list}>
+    <List disablePadding>
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
@@ -70,7 +76,3 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
     </List>
   )
 }
-
-const useStyles = makeStyles({
-  list: { paddingTop: 0 },
-})
