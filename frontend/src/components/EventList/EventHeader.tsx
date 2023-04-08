@@ -48,16 +48,18 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   useEffect(() => {
     set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: undefined, selectedDate: undefined })
     if (!events.items.length || device?.id !== deviceId) {
-      set({ deviceId: device?.id, from: 0, events: { ...events, items: [] } })
+      set({ deviceId: device?.id, after: undefined, events: { ...events, items: [] } })
       fetch()
     }
   }, [activeAccount])
 
   const handleChangeDate = (date: Date | null | undefined) => {
+    // set to end of day
+    date?.setHours(23, 59, 59, 999)
     date = date || undefined
     set({
       selectedDate: date,
-      from: 0,
+      after: undefined,
       minDate,
       maxDate: date && isToday(date) ? undefined : date,
       events: { ...events, items: [] },

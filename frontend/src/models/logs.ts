@@ -5,8 +5,8 @@ import { getActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
 type ILogState = {
-  from: number
   size: number
+  after?: string
   maxDate?: Date
   minDate?: Date
   deviceId?: string
@@ -20,7 +20,7 @@ type ILogState = {
 }
 
 const defaultState: ILogState = {
-  from: 0,
+  after: undefined,
   size: 100,
   maxDate: undefined,
   minDate: undefined,
@@ -33,6 +33,7 @@ const defaultState: ILogState = {
   daysAllowed: 0,
   events: {
     total: 0,
+    last: '',
     items: [],
     hasMore: false,
   },
@@ -43,19 +44,19 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, globalState) {
       const { set } = dispatch.logs
-      const { deviceId, from, size, maxDate, minDate, events } = globalState.logs
+      const { deviceId, size, after, maxDate, minDate, events } = globalState.logs
       const accountId = getActiveAccountId(globalState)
-      let items = from === 0 ? [] : events.items
+      let items = after ? events.items : []
 
-      from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
+      after ? set({ fetching: true }) : set({ fetchingMore: true })
 
       let result, response
       if (deviceId) {
-        response = await graphQLGetDeviceLogs(deviceId, from, size, minDate, maxDate)
+        response = await graphQLGetDeviceLogs(deviceId, size, after, minDate, maxDate)
         if (response === 'ERROR') return
         result = response?.data?.data?.login?.device[0] || {}
       } else {
-        response = await graphQLGetLogs(accountId, from, size, minDate, maxDate)
+        response = await graphQLGetLogs(accountId, size, after, minDate, maxDate)
         if (response === 'ERROR') return
         result = response?.data?.data?.login?.account || {}
       }
@@ -68,7 +69,7 @@ export default createModel<RootModel>()({
         },
       })
 
-      from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
+      after ? set({ fetching: false }) : set({ fetchingMore: false })
     },
 
     async fetchUrl(_: void, globalState): Promise<string | undefined> {

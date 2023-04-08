@@ -586,6 +586,7 @@ declare global {
 
   interface IEventList {
     total: number
+    last: string
     items: IEvent[]
     hasMore: boolean
     deviceId?: string
