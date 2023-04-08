@@ -209,7 +209,10 @@ export default createModel<RootModel>()({
       }
     },
 
-    async remove({ serviceId = '', networkId }: { serviceId?: string; networkId?: string }, state) {
+    async remove(
+      { serviceId = '', networkId, clearOnly }: { serviceId?: string; networkId?: string; clearOnly?: boolean },
+      state
+    ) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
 
@@ -219,7 +222,7 @@ export default createModel<RootModel>()({
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
       dispatch.networks.setNetwork(copy)
-      if (networkId) {
+      if (networkId && !clearOnly) {
         const result = await graphQLRemoveConnection(networkId, serviceId)
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
           console.error('Failed to remove network connection', serviceId, network, result)
@@ -237,7 +240,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async removeById(id: string, state) {
+    async clearById(id: string, state) {
       let all = { ...state.networks.all }
       all[DEFAULT_ID] = [state.networks.default]
       const [_, device] = selectById(state, undefined, id)
@@ -245,7 +248,7 @@ export default createModel<RootModel>()({
       Object.keys(all).forEach(key => {
         all[key].forEach(async network => {
           const match = network.serviceIds.find(serviceId => serviceIds.includes(serviceId))
-          if (match) await dispatch.networks.remove({ serviceId: match, networkId: network.id })
+          if (match) await dispatch.networks.remove({ serviceId: match, networkId: network.id, clearOnly: true })
         })
       })
     },

@@ -38,7 +38,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
         <Notice
           severity="warning"
           button={
-            <Button to="/account/plans" variant="contained" size="small" component={Link}>
+            <Button to="/account/plans" variant="contained" color="warning" size="small" component={Link}>
               Upgrade
             </Button>
           }

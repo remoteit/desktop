@@ -463,7 +463,7 @@ export default createModel<RootModel>()({
 
     async cleanup(deviceId: string) {
       await dispatch.connections.clearByDevice(deviceId)
-      await dispatch.networks.removeById(deviceId)
+      await dispatch.networks.clearById(deviceId)
       await dispatch.devices.fetchList()
       await dispatch.connections.fetch()
     },
