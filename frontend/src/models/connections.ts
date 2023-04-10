@@ -410,7 +410,7 @@ export default createModel<RootModel>()({
         dispatch.connections.updateConnection(connection)
         emit('service/disconnect', connection)
       } else {
-        connection = { ...connection, stopping: true, stopLock: Date.now(), enabled: false }
+        connection = { ...connection, stopping: true, stopLock: Date.now(), error: undefined, enabled: false }
         dispatch.connections.updateConnection(connection)
         emit('service/stop', connection)
       }
