@@ -1,8 +1,7 @@
 const notP2P = (connection: IConnection) =>
   !((connection.connected || connection.connecting || connection.disconnecting) && connection.isP2P)
 
-const notP2PDisconnected = (connection: IConnection) =>
-  !connection.isP2P || !connection.checkpoint?.targetServiceReachable
+const notP2PDisconnected = (connection: IConnection) => !connection.isP2P
 
 const notProxy = (connection: IConnection) =>
   !((connection.connected || connection.connecting || connection.disconnecting) && !connection.isP2P)
