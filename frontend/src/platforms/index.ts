@@ -6,6 +6,7 @@ export interface IPlatform {
   types?: INumberLookup<string>
   services?: IServiceRegistration[]
   installation?: {
+    label?: string
     command?: boolean | string
     instructions?: string | React.ReactNode
     qualifier: string
@@ -26,6 +27,7 @@ class Platforms {
     'axis',
     'azure',
     'docker',
+    'docker-extension',
     'firewalla',
     'gcp',
     'ios',

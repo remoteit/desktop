@@ -4,7 +4,7 @@ import { Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import { DataCopy } from '../components/DataCopy'
+import { ListItemCopy } from '../components/ListItemCopy'
 import { AccountAccessKey } from '../components/AccountAccessKey'
 import { Gutters } from '../components/Gutters'
 
@@ -33,7 +33,7 @@ export const AccessKeyPage: React.FC = () => {
           <br />
           <em>Do not share it with anyone.</em>
         </Typography>
-        <DataCopy showBackground value={apiKey} label="API Key" />
+        <ListItemCopy showBackground value={apiKey} label="API Key" />
       </Gutters>
     </Container>
   )

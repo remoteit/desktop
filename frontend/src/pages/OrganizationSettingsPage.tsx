@@ -24,7 +24,7 @@ import { FormDisplay } from '../components/FormDisplay'
 import { FileUpload } from '../components/FileUpload'
 import { Container } from '../components/Container'
 import { ColorChip } from '../components/ColorChip'
-import { DataCopy } from '../components/DataCopy'
+import { ListItemCopy } from '../components/ListItemCopy'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
@@ -143,14 +143,14 @@ export const OrganizationSettingsPage: React.FC = () => {
                       Add the following CNAME and Value to your DNS records to validate your domain:
                       <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
                     </Typography>
-                    <DataCopy
+                    <ListItemCopy
                       value={organization.verificationCNAME}
                       label="Verification CNAME"
                       showBackground
                       fullWidth
                       gutterBottom
                     />
-                    <DataCopy
+                    <ListItemCopy
                       value={organization.verificationValue}
                       label="Verification Value"
                       showBackground

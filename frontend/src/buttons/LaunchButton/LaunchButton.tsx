@@ -7,14 +7,13 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Color, FontSize } from '../../styling'
 import { Application } from '../../shared/applications'
 import { PromptModal } from '../../components/PromptModal'
-import { DataButton } from '../DataButton'
+import { ListItemButton } from '../ListItemButton'
 import { windowOpen } from '../../services/Browser'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 
 type Props = {
   menuItem?: boolean
-  dataButton?: boolean
   size?: FontSize
   color?: Color
   type?: IconType
@@ -27,7 +26,6 @@ type Props = {
 
 export const LaunchButton: React.FC<Props> = ({
   menuItem,
-  dataButton,
   onLaunch,
   onMouseEnter,
   onMouseLeave,
@@ -90,14 +88,6 @@ export const LaunchButton: React.FC<Props> = ({
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={app.contextTitle} />
         </MenuItem>
-      ) : dataButton ? (
-        <DataButton
-          value={app.string}
-          label={app.contextTitle}
-          title={app.contextTitle}
-          icon={LaunchIcon}
-          onClick={clickHandler}
-        />
       ) : (
         <IconButton onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onClick={clickHandler} disabled={disabled}>
           {LaunchIcon}

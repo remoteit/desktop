@@ -57,6 +57,7 @@ export type UIState = {
   defaultService: ILookup<string | null>
   defaultSelection: ILookup<ILookup<string | undefined>>
   registrationCommand?: string
+  registrationCode?: string
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -117,6 +118,7 @@ export const defaultState: UIState = {
   defaultService: {},
   defaultSelection: {},
   registrationCommand: undefined,
+  registrationCode: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,
