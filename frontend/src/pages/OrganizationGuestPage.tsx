@@ -58,7 +58,7 @@ export const OrganizationGuestPage: React.FC = () => {
     const missing = guest?.deviceIds.filter(id => !devices.find(device => device.id === id))
     if (missing?.length && !fetched) {
       ;(async () => {
-        await dispatch.devices.fetchDevices(missing)
+        await dispatch.devices.fetchDevices({ ids: missing, hidden: true })
         setFetched(true)
       })()
     }

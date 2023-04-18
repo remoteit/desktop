@@ -99,9 +99,6 @@ export default createModel<RootModel>()({
       console.log('RESTORE DEVICE STATES', states)
       await dispatch.devices.set({ ...states, accountId })
     },
-    /* 
-      GraphQL search query for all device data
-    */
     async fetchList(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
@@ -143,7 +140,7 @@ export default createModel<RootModel>()({
       if (!deviceModel.initialized) await dispatch.devices.fetchList()
     },
 
-    async fetchDevices(deviceIds: string[], state) {
+    async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
       const accountId = getActiveAccountId(state)
       const model = getDeviceModel(state)
 
@@ -153,21 +150,21 @@ export default createModel<RootModel>()({
       }
       await dispatch.devices.set({ fetchingArray: true, accountId })
 
-      const gqlResponse = await graphQLPreloadDevices({ account: accountId, ids: deviceIds })
+      const gqlResponse = await graphQLPreloadDevices({ account: accountId, ids })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
 
       await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []
 
-      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden: true })
+      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden })
       if (devices.length) {
         await dispatch.accounts.mergeDevices({ devices, accountId })
         await dispatch.connections.updateConnectionState({ devices, accountId })
       }
     },
 
-    async fetchSingle(
+    async fetchSingleFull(
       {
         id,
         hidden,
@@ -256,7 +253,7 @@ export default createModel<RootModel>()({
 
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
-      await dispatch.devices.fetchSingle({ id })
+      await dispatch.devices.fetchSingleFull({ id })
     },
 
     async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
@@ -306,7 +303,7 @@ export default createModel<RootModel>()({
         const id = result?.data?.data?.addService?.id
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
-          await dispatch.devices.fetchSingle({ id: deviceId })
+          await dispatch.devices.fetchSingleFull({ id: deviceId })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
@@ -335,7 +332,7 @@ export default createModel<RootModel>()({
         enabled: !!form.enabled,
         presenceAddress: form.presenceAddress,
       })
-      await dispatch.devices.fetchSingle({ id: deviceId })
+      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
@@ -348,7 +345,7 @@ export default createModel<RootModel>()({
         redirect: `/devices/${deviceId}/details`,
       })
       await graphQLRemoveService(serviceId)
-      await dispatch.devices.fetchSingle({ id: deviceId })
+      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 
@@ -398,8 +395,8 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)
-        console.log('CREATE REGISTRATION', registrationCommand)
-        dispatch.ui.set({ registrationCommand })
+        console.log('CREATE REGISTRATION', registrationCode)
+        dispatch.ui.set({ registrationCommand, registrationCode })
         return registrationCode
       }
     },

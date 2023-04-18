@@ -61,7 +61,7 @@ export default createModel<RootModel>()({
       set({ deleting: true })
       const result = await graphQLUnShareDevice({ deviceId, email: [email] })
       if (result !== 'ERROR') {
-        await dispatch.devices.fetchSingle({ id: deviceId })
+        await dispatch.devices.fetchSingleFull({ id: deviceId })
         await dispatch.organization.fetch()
         dispatch.ui.set({ successMessage: `${email} successfully removed.` })
       }
@@ -74,7 +74,7 @@ export default createModel<RootModel>()({
       const device = getDevices(state).find((d: IDevice) => d.id === data.deviceId)
       const result = await graphQLShareDevice(data)
       if (result !== 'ERROR') {
-        await dispatch.devices.fetchSingle({ id: data.deviceId })
+        await dispatch.devices.fetchSingleFull({ id: data.deviceId })
         await dispatch.contacts.fetch()
         dispatch.ui.set({
           successMessage:

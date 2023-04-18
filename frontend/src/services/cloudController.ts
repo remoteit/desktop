@@ -142,7 +142,6 @@ class CloudController {
               stateName
               countryName
             }
-  
           }
           ... on DeviceShareEvent {
             scripting
@@ -273,7 +272,7 @@ class CloudController {
             ) {
               if (state.ui.registrationCommand) ui.set({ redirect: `/devices/${target.deviceId}` })
               ui.set({ successMessage: `${target.name} registered successfully!` })
-              devices.fetchSingle({ id: target.deviceId, newDevice: true })
+              devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
             }
           }
         })
@@ -341,10 +340,20 @@ class CloudController {
         else if (accountTo && ['add', 'update'].includes(event.action)) {
           event.target.forEach(target => {
             if (target.typeID === DEVICE_TYPE)
-              devices.fetchSingle({ id: target.deviceId, newDevice: event.action === 'add' })
+              devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
           })
         }
 
+        break
+
+      case 'DEVICE_REFRESH':
+        const ids = event.target.reduce((result: string[], target) => {
+          // Check that it's the bulk service and that the device is loaded in the ui
+          if (target.typeID === DEVICE_TYPE && target.device) result.push(target.deviceId)
+          return result
+        }, [])
+
+        if (ids.length) devices.fetchDevices({ ids })
         break
 
       case 'LICENSE_UPDATED':
