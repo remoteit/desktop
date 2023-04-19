@@ -242,7 +242,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: IAnalyticsState, params: ILookup<any>) {
+    set(state: IAnalyticsState, params: Partial<IAnalyticsState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

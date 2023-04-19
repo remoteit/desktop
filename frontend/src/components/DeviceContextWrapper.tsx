@@ -49,7 +49,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
 
     if (deviceID && !(remoteUI && thisId)) {
       console.log('LOADING DEVICE DATA', deviceID)
-      dispatch.devices.fetchSingle({ id: deviceID, hidden: true, redirect: '/devices' })
+      dispatch.devices.fetchSingleFull({ id: deviceID, hidden: true, redirect: '/devices' })
     } else if (serviceID) {
       const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
       if (network && network.cloud) {
@@ -57,7 +57,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
         dispatch.networks.fetchSingle({ network, redirect })
       } else {
         console.log('LOADING SERVICE DATA', serviceID, redirect)
-        dispatch.devices.fetchSingle({ id: serviceID, hidden: true, redirect, isService: true })
+        dispatch.devices.fetchSingleFull({ id: serviceID, hidden: true, redirect, isService: true })
       }
     }
   }, [deviceID, serviceID, waiting, thisId, instance?.loaded, device?.loaded])

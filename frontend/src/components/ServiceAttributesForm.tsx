@@ -9,7 +9,7 @@ import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
 import { validPort } from '../helpers/connectionHelper'
 import { isPortal } from '../services/Browser'
-import { ROUTES } from '../models/devices'
+import { ROUTES } from './RouteSetting'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
 

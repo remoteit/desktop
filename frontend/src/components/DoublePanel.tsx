@@ -92,7 +92,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
         className={classnames(css.panel, css.secondary)}
         style={{ minWidth: parentWidth ? parentWidth - width : undefined }}
       >
-        {sidebarHidden || isWindows() || <div className={css.header} />}
+        {sidebarHidden || <div className={css.header} />}
         {secondary}
       </div>
     </>
@@ -111,7 +111,7 @@ const useStyles = makeStyles(({ palette }) => ({
     flexShrink: 10,
   },
   header: {
-    height: spacing.lg,
+    height: spacing.md,
   },
   anchor: {
     position: 'relative',

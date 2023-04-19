@@ -64,72 +64,73 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
   }
   return (
     <Gutters>
-      <Typography variant="body2" color="GrayText" gutterBottom>
-        If you no longer want/need your remote.it account, you can request an account deletion. Once your delete request
-        is processed, all your account information is removed permanently.
-      </Typography>
       {paidPlan ? (
-        <Notice severity="warning" fullWidth gutterBottom>
-          You have a paid subscription plan. Please delete or transfer your devices before making an account deletion
-          request.
+        <Notice severity="info" fullWidth gutterBottom>
+          You have a paid subscription plan. <em>Please downgrade to Personal to request an account deletion.</em>
         </Notice>
       ) : (
-        <Box pb={2}>
-          <Button color="error" size="small" variant="contained" disabled={deleteAccount} onClick={handleDelete}>
-            Delete my account
-          </Button>
-          <Confirm
-            open={confirm}
-            onConfirm={handleConfirm}
-            color="error"
-            maxWidth="sm"
-            onDeny={() => setConfirm(false)}
-            title="Why do you want to delete your account?"
-            action="Delete"
-            disabled={body.length < 2 && reasons.length < 1}
-          >
-            <Typography variant="body2">
-              Help us improve by telling us why you want to delete your account.
-              <br />
-              <i>We are sorry to see you go! </i>
-            </Typography>
-            <List>
-              {REASONS.map((reason, i) => (
-                <ListItemCheckbox
-                  key={i}
-                  label={reason}
-                  height={spacing.xl}
-                  checked={reasons.includes(reason)}
-                  disableGutters
-                  onClick={() => {
-                    handleReason(reason)
-                  }}
-                />
-              ))}
-            </List>
-            <TextField
-              multiline
-              fullWidth
-              autoFocus
-              rows={3}
-              label="Other Reason"
-              variant="filled"
-              value={body}
-              onChange={e => setBody(e.target.value)}
-            />
-            <ListItemCheckbox
-              disableGutters
-              label="I'm open to having someone contact me about my feedback."
-              checked={contact}
-              onClick={checked => setContact(checked)}
-            />
-            <Notice severity="error" fullWidth gutterTop>
-              I understand that this is permanent and that accounts and related devices can not be recovered.
-            </Notice>
-          </Confirm>
-        </Box>
+        <>
+          <Typography variant="body2" color="GrayText" gutterBottom>
+            If you no longer want/need your remote.it account, you can request an account deletion. Once your delete
+            request is processed, all your account information is removed permanently.
+          </Typography>
+          <Box pb={2}>
+            <Button color="error" size="small" variant="contained" disabled={deleteAccount} onClick={handleDelete}>
+              Delete my account
+            </Button>
+            <Confirm
+              open={confirm}
+              onConfirm={handleConfirm}
+              color="error"
+              maxWidth="sm"
+              onDeny={() => setConfirm(false)}
+              title="Why do you want to delete your account?"
+              action="Delete"
+              disabled={body.length < 2 && reasons.length < 1}
+            >
+              <Typography variant="body2">
+                Help us improve by telling us why you want to delete your account.
+                <br />
+                <i>We are sorry to see you go! </i>
+              </Typography>
+              <List>
+                {REASONS.map((reason, i) => (
+                  <ListItemCheckbox
+                    key={i}
+                    label={reason}
+                    height={spacing.xl}
+                    checked={reasons.includes(reason)}
+                    disableGutters
+                    onClick={() => {
+                      handleReason(reason)
+                    }}
+                  />
+                ))}
+              </List>
+              <TextField
+                multiline
+                fullWidth
+                autoFocus
+                rows={3}
+                label="Other Reason"
+                variant="filled"
+                value={body}
+                onChange={e => setBody(e.target.value)}
+              />
+              <ListItemCheckbox
+                disableGutters
+                label="I'm open to having someone contact me about my feedback."
+                checked={contact}
+                onClick={checked => setContact(checked)}
+              />
+              <Notice severity="error" fullWidth gutterTop>
+                I understand that this is permanent and that accounts and related devices can not be recovered.
+              </Notice>
+            </Confirm>
+          </Box>
+          <Typography variant="caption">Deletion requests take 3 to 5 business days to complete.</Typography>
+        </>
       )}
-      <Typography variant="caption">Deletion requests take 3 to 5 business days to complete.</Typography>
     </Gutters>
   )
 }

@@ -20,7 +20,7 @@ import { PortSetting } from './PortSetting'
 import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
-import { DataCopy } from './DataCopy'
+import { ListItemCopy } from './ListItemCopy'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
@@ -101,7 +101,7 @@ export const ConnectAdvanced: React.FC = () => {
             <ListItemQuote>
               {connection.commandLog?.map((l, i) => (
                 <ListItem key={i} disablePadding>
-                  <DataCopy value={l} hideIcon fullWidth dense />
+                  <ListItemCopy value={l} hideIcon fullWidth dense />
                 </ListItem>
               ))}
             </ListItemQuote>

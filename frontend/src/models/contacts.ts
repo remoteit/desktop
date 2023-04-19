@@ -40,7 +40,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IContactsState, params: ILookup<any>) {
+    set(state: IContactsState, params: Partial<IContactsState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

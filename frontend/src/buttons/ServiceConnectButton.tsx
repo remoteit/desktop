@@ -10,7 +10,7 @@ import { GuideBubble } from '../components/GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from '../components/DesktopUI'
 import { PortalUI } from '../components/PortalUI'
-import { DataCopy } from '../components/DataCopy'
+import { ListItemCopy } from '../components/ListItemCopy'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 import { Notice } from '../components/Notice'
@@ -35,7 +35,7 @@ export const ServiceConnectButton: React.FC = () => {
           <Typography variant="body2" gutterBottom>
             So you can connect directly without using Remote.It.
           </Typography>
-          <DataCopy
+          <ListItemCopy
             label="Local endpoint"
             value={`${service?.host || '127.0.0.1'}:${service?.port}`}
             showBackground

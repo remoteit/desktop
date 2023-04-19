@@ -16,30 +16,29 @@ export interface LogListProps {
 export const EventList: React.FC<LogListProps> = ({ device }) => {
   const css = useStyles()
   const { logs } = useDispatch<Dispatch>()
-  const { events, from, size, minDate, selectedDate, planUpgrade, fetching, fetchingMore, user, logLimit } =
-    useSelector((state: ApplicationState) => ({
-      ...state.logs,
-      user: state.user,
-      logLimit: selectLimit('log-limit', state) || 'P1W',
-    }))
+  const { events, planUpgrade, fetching, fetchingMore, user, logLimit } = useSelector((state: ApplicationState) => ({
+    ...state.logs,
+    user: state.user,
+    logLimit: selectLimit('log-limit', state) || 'P1W',
+  }))
 
   const fetchMore = () => {
-    logs.set({ deviceId: device?.id, from: from + size, minDate, maxDate: selectedDate })
+    logs.set({ deviceId: device?.id, after: events?.last })
     logs.fetch()
   }
 
   return (
     <>
       <List className={css.item}>
-        {events?.items?.map((item: any) => (
-          <EventItem item={item} device={device} user={user} key={item.id} />
+        {events?.items?.map((item, index) => (
+          <EventItem item={item} device={device} user={user} key={index} />
         ))}
       </List>
       {!events?.hasMore && !fetching && planUpgrade ? (
         <Notice
           severity="warning"
           button={
-            <Button to="/account/plans" variant="contained" size="small" component={Link}>
+            <Button to="/account/plans" variant="contained" color="warning" size="small" component={Link}>
               Upgrade
             </Button>
           }

@@ -30,34 +30,6 @@ import { RootModel } from '.'
 
 const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
-// TODO move to connection model?
-export const ROUTES: IRoute[] = [
-  {
-    key: 'failover',
-    icon: 'code-branch',
-    name: 'Peer to peer with proxy failover',
-    description: 'A direct connection to this service that fails over to a private proxy.',
-  },
-  {
-    key: 'p2p',
-    icon: 'arrows-h',
-    name: 'Peer to peer only',
-    description: 'A direct connection to this service.',
-  },
-  {
-    key: 'proxy',
-    icon: 'cloud',
-    name: 'Proxy only',
-    description: 'A private proxy connection routed through the cloud.',
-  },
-  {
-    key: 'public',
-    icon: 'globe',
-    name: 'Public Proxy',
-    description: 'A proxy connection with a temporary public URL.',
-  },
-]
-
 type IDeviceState = {
   all: IDevice[]
   initialized: boolean
@@ -127,9 +99,6 @@ export default createModel<RootModel>()({
       console.log('RESTORE DEVICE STATES', states)
       await dispatch.devices.set({ ...states, accountId })
     },
-    /* 
-      GraphQL search query for all device data
-    */
     async fetchList(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
@@ -171,7 +140,7 @@ export default createModel<RootModel>()({
       if (!deviceModel.initialized) await dispatch.devices.fetchList()
     },
 
-    async fetchDevices(deviceIds: string[], state) {
+    async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
       const accountId = getActiveAccountId(state)
       const model = getDeviceModel(state)
 
@@ -181,21 +150,21 @@ export default createModel<RootModel>()({
       }
       await dispatch.devices.set({ fetchingArray: true, accountId })
 
-      const gqlResponse = await graphQLPreloadDevices({ account: accountId, ids: deviceIds })
+      const gqlResponse = await graphQLPreloadDevices({ account: accountId, ids })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
 
       await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []
 
-      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden: true })
+      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden })
       if (devices.length) {
         await dispatch.accounts.mergeDevices({ devices, accountId })
         await dispatch.connections.updateConnectionState({ devices, accountId })
       }
     },
 
-    async fetchSingle(
+    async fetchSingleFull(
       {
         id,
         hidden,
@@ -284,7 +253,7 @@ export default createModel<RootModel>()({
 
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
-      await dispatch.devices.fetchSingle({ id })
+      await dispatch.devices.fetchSingleFull({ id })
     },
 
     async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
@@ -334,7 +303,7 @@ export default createModel<RootModel>()({
         const id = result?.data?.data?.addService?.id
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
-          await dispatch.devices.fetchSingle({ id: deviceId })
+          await dispatch.devices.fetchSingleFull({ id: deviceId })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
@@ -363,7 +332,7 @@ export default createModel<RootModel>()({
         enabled: !!form.enabled,
         presenceAddress: form.presenceAddress,
       })
-      await dispatch.devices.fetchSingle({ id: deviceId })
+      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
@@ -376,8 +345,8 @@ export default createModel<RootModel>()({
         redirect: `/devices/${deviceId}/details`,
       })
       await graphQLRemoveService(serviceId)
-      await dispatch.devices.fetchSingle({ id: deviceId })
-      dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
+      await dispatch.devices.fetchSingleFull({ id: deviceId })
+      dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
@@ -426,8 +395,8 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)
-        console.log('CREATE REGISTRATION', registrationCommand)
-        dispatch.ui.set({ registrationCommand })
+        console.log('CREATE REGISTRATION', registrationCode)
+        dispatch.ui.set({ registrationCommand, registrationCode })
         return registrationCode
       }
     },
@@ -491,7 +460,7 @@ export default createModel<RootModel>()({
 
     async cleanup(deviceId: string) {
       await dispatch.connections.clearByDevice(deviceId)
-      await dispatch.networks.removeById(deviceId)
+      await dispatch.networks.clearById(deviceId)
       await dispatch.devices.fetchList()
       await dispatch.connections.fetch()
     },
@@ -504,7 +473,7 @@ export default createModel<RootModel>()({
       dispatch.devices.set(params)
     },
 
-    async set(params: { accountId?: string } & ILookup<any>, state) {
+    async set(params: Partial<IDeviceState>, state) {
       const accountId = params.accountId || getActiveAccountId(state)
       const deviceState = { ...getDeviceModel(state, accountId) }
 
@@ -542,7 +511,7 @@ export function mergeDevice(target: IDevice, source: IDevice) {
   return {
     ...target,
     ...source,
-    services: [...target.services.filter(ts => !source.services.find(ss => ss.id === ts.id)), ...source.services],
+    services: [...target.services.filter(ts => !source.services.find(ss => ss.id === ts.id)), ...source.services], // might not need this?
     hidden: source.hidden && target.hidden,
   }
 }

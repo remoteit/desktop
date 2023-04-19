@@ -25,7 +25,7 @@ export function SignUpVerify({ email, onResend, fullWidth }: SignUpVerifyProps):
         <Typography variant="caption">{email}</Typography>
       </Box>
       <Box mt={4} textAlign="right">
-        <Button to="/sign-in" component={Link}>
+        <Button to="/sign-in" variant="contained" component={Link}>
           {t('global.action.continue-signup')}
           <Icon name="arrow-right" inline />
         </Button>

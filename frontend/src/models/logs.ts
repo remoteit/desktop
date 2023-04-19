@@ -5,34 +5,35 @@ import { getActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
 type ILogState = {
-  from: number
   size: number
-  maxDate: Date
-  minDate: Date
+  after?: string
+  maxDate?: Date
+  minDate?: Date
   deviceId?: string
   fetching: boolean
   fetchingMore: boolean
   eventsUrl: string
-  selectedDate: Date | null
+  selectedDate?: Date
   planUpgrade: boolean
   daysAllowed: number
   events: IEventList
 }
 
 const defaultState: ILogState = {
-  from: 0,
+  after: undefined,
   size: 100,
-  maxDate: new Date(),
-  minDate: new Date(),
+  maxDate: undefined,
+  minDate: undefined,
   deviceId: undefined,
   fetching: false,
   fetchingMore: false,
   eventsUrl: '',
-  selectedDate: null,
+  selectedDate: undefined,
   planUpgrade: false,
   daysAllowed: 0,
   events: {
     total: 0,
+    last: '',
     items: [],
     hasMore: false,
   },
@@ -43,25 +44,24 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, globalState) {
       const { set } = dispatch.logs
-      const { deviceId, from, size, maxDate, minDate, events } = globalState.logs
+      const { deviceId, size, after, maxDate, minDate, events } = globalState.logs
       const accountId = getActiveAccountId(globalState)
-      let items = from === 0 ? [] : events.items
+      let items = after ? events.items : []
 
-      from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
+      after ? set({ fetching: true }) : set({ fetchingMore: true })
 
       let result, response
       if (deviceId) {
-        response = await graphQLGetDeviceLogs(deviceId, from, size, minDate, maxDate)
+        response = await graphQLGetDeviceLogs(deviceId, size, after, minDate, maxDate)
         if (response === 'ERROR') return
         result = response?.data?.data?.login?.device[0] || {}
       } else {
-        response = await graphQLGetLogs(accountId, from, size, minDate, maxDate)
+        response = await graphQLGetLogs(accountId, size, after, minDate, maxDate)
         if (response === 'ERROR') return
         result = response?.data?.data?.login?.account || {}
       }
 
       set({
-        // eventsUrl,
         events: {
           ...result.events,
           items: items.concat(result?.events?.items || []),
@@ -69,7 +69,7 @@ export default createModel<RootModel>()({
         },
       })
 
-      from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
+      after ? set({ fetching: false }) : set({ fetchingMore: false })
     },
 
     async fetchUrl(_: void, globalState): Promise<string | undefined> {
@@ -99,7 +99,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: ILogState, params: ILookup<any>) {
+    set(state: ILogState, params: Partial<ILogState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

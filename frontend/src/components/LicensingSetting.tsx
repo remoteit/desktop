@@ -3,7 +3,7 @@ import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Bu
 import { dateOptions } from './Duration/Duration'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
-import { DataCopy } from './DataCopy'
+import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
 import { Link } from './Link'
 
@@ -50,7 +50,7 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
                       ))}
                     </Box>
                   )}
-                  <DataCopy label="License Key" value={license.id} showBackground />
+                  <ListItemCopy label="License Key" value={license.id} showBackground />
                 </Box>
               </ListItem>
             )}

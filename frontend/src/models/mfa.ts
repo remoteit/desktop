@@ -59,7 +59,7 @@ export default createModel<RootModel>()({
         ...userInfo.attributes,
         authProvider: userInfo.username?.toLowerCase().includes('google') ? 'Google' : '',
       }
-      await dispatch.auth.set({ AWSUser, backupCode: AWSUser['custom:backup_code'] })
+      await dispatch.auth.set({ AWSUser })
     },
 
     async setMFAPreference(mfaMethod: IMfa['mfaMethod']) {
@@ -132,7 +132,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IMfa, params: ILookup<any>) {
+    set(state: IMfa, params: Partial<IMfa>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

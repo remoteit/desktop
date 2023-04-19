@@ -66,8 +66,9 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service
             <Tooltip
               title={
                 <>
-                  {!instance?.permissions.includes('MANAGE') && 'You are not a manager of this device.'}
-                  {instance?.shared && 'You can not add a device shared to you.'}
+                  {!instance?.permissions.includes('MANAGE') &&
+                    'You must be the device owner or manager to modify the networks of this service.'}
+                  {instance?.shared && 'You can not modify the networks of a device shared to you.'}
                 </>
               }
               placement="left"

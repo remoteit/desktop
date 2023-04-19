@@ -75,7 +75,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               title="Restore Device"
               request={async () => await dispatch.devices.getRestoreCommand(device.id)}
             />,
-            <DeleteDevice device={device} menuItem />,
+            <DeleteDevice key="deleteDevice" device={device} menuItem />,
           ]}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>

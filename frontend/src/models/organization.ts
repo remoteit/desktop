@@ -413,7 +413,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: IOrganizationAccountState, params: ILookup<any>) {
+    set(state: IOrganizationAccountState, params: Partial<IOrganizationAccountState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

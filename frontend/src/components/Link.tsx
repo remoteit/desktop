@@ -18,7 +18,7 @@ export const Link = React.forwardRef<any, LinkProps>(({ children, ...props }, re
 
   return (
     <MUILink {...attributes} ref={ref}>
-      {children}
+      {children || attributes.to || attributes.href}
     </MUILink>
   )
 })

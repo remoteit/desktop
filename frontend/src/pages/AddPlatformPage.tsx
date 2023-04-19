@@ -12,12 +12,13 @@ import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
 export const AddPlatformPage: React.FC = () => {
-  let { platform = '' } = useParams<{ platform?: string }>()
+  let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
+  const platformObj = platforms.get(platform)
+  const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
   const [platformTags, setPlatformTags] = useState<string[]>([])
-  const [applicationTypes, setApplicationTypes] = useState<number[]>([28])
+  const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
   const smallScreen = useMediaQuery(`(max-width:1000px)`)
   const css = useStyles({ smallScreen })
-  const platformObj = platforms.get(platform)
 
   return (
     <Body center>
@@ -35,7 +36,7 @@ export const AddPlatformPage: React.FC = () => {
         </Box>
         <Box className={css.box}>
           {platformObj.installation?.command ? (
-            <AddDevice platform={platformObj} tags={platformTags} types={applicationTypes} />
+            <AddDevice platform={platformObj} tags={platformTags} types={applicationTypes} redirect={redirect} />
           ) : (
             <AddDownload platform={platformObj} />
           )}
@@ -65,8 +66,8 @@ const useStyles = makeStyles(({ palette }) => ({
     maxWidth: 600,
     '& .MuiButton-root': { marginTop: spacing.lg, marginBottom: spacing.md },
     '& .MuiTypography-body2': { marginBottom: spacing.xs },
-    '& .MuiIconButton-root': {
-      minHeight: '3em',
+    '& .MuiListItem-root': {
+      minHeight: 80,
       minWidth: 575,
       maxWidth: 575,
       marginTop: spacing.lg,

@@ -57,6 +57,7 @@ export type UIState = {
   defaultService: ILookup<string | null>
   defaultSelection: ILookup<ILookup<string | undefined>>
   registrationCommand?: string
+  registrationCode?: string
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -64,7 +65,7 @@ export type UIState = {
   scanTimestamp: { [interfaceName: string]: number }
   scanInterface: string
   setupBusy: boolean
-  setupAdded?: IService
+  setupAdded?: Partial<IService>
   setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean
@@ -117,6 +118,7 @@ export const defaultState: UIState = {
   defaultService: {},
   defaultSelection: {},
   registrationCommand: undefined,
+  registrationCode: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,
@@ -268,7 +270,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: UIState, params: ILookup<any>) {
+    set(state: UIState, params: Partial<UIState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

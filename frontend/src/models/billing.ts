@@ -65,7 +65,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IBilling, params: ILookup<any>) {
+    set(state: IBilling, params: Partial<IBilling>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

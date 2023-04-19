@@ -276,7 +276,7 @@ export default createModel<RootModel>()({
       state.AWSUser.email = value
       return state
     },
-    set(state: AuthState, params: ILookup<any>) {
+    set(state: AuthState, params: Partial<AuthState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

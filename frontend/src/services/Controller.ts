@@ -1,6 +1,7 @@
 import io, { Socket } from 'socket.io-client'
 import { store } from '../store'
 import { isPortal } from '../services/Browser'
+import { IBackendState } from '../models/backend'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import network from '../services/Network'
@@ -183,7 +184,7 @@ function getEventHandlers() {
       backend.set({ reachablePort: result ? 'REACHABLE' : 'UNREACHABLE' })
     },
 
-    environment: (result: ILookup<any>) => {
+    environment: (result: IBackendState['environment']) => {
       backend.set({ environment: result })
     },
 
@@ -193,13 +194,7 @@ function getEventHandlers() {
     'app/canNavigate': canNavigate => backend.set({ canNavigate }),
 
     // AutoUpdate
-    'update/status': (updateStatus: {
-      version?: string
-      nextCheck: number
-      checking: boolean
-      available: boolean
-      downloaded: boolean
-    }) => {
+    'update/status': (updateStatus: IBackendState['updateStatus']) => {
       backend.set({ updateStatus })
     },
 

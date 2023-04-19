@@ -93,8 +93,12 @@ export function usedPorts(state: ApplicationState) {
 
 export function launchDisabled(connection?: IConnection) {
   if (!connection) return true
-  return (
-    (connection.launchType === 'COMMAND' && isPortal()) || connection.connectLink || connection.launchType === 'NONE'
+  return !!(
+    (connection.launchType === 'COMMAND' && isPortal()) ||
+    connection.connectLink ||
+    connection.launchType === 'NONE' ||
+    !connection.enabled ||
+    connection.error
   )
 }
 

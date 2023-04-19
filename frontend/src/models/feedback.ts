@@ -34,7 +34,7 @@ export default createModel<RootModel>()({
         if (data) finalBody += '\n\n-- data\n\n' + JSON.stringify(data, null, 4)
         finalBody += '\n\n--\n\n' + fullVersion()
         finalBody += '\n\n' + env + '\n\n' + navigator.userAgent
-        await createTicketZendesk({
+        await createZendeskTicket({
           subject,
           body: finalBody,
           name: user?.email,
@@ -60,7 +60,7 @@ export default createModel<RootModel>()({
   },
 })
 
-async function createTicketZendesk(params: FeedbackParams) {
+async function createZendeskTicket(params: FeedbackParams) {
   const result = await axios.post(
     `${ZENDESK_URL}requests.json`,
     {

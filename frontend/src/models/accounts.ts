@@ -94,8 +94,13 @@ export default createModel<RootModel>()({
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }) {
       await dispatch.devices.set({ all: devices, accountId })
     },
+    /*
+       Takes new list of devices and merges the existing into them
+       -- forgets any existing devices that are not in the new devices
+       -- used when new device list query is made
+    */
     async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
-      if (!devices) return
+      if (!devices?.length) return
       const all = getDevices(state, accountId)
 
       const mergedDevices = devices.map(keep => {
@@ -106,6 +111,10 @@ export default createModel<RootModel>()({
 
       await dispatch.accounts.setDevices({ devices: mergedDevices, accountId })
     },
+    /*     
+      Keeps the existing devices and device list order and merges in newly loaded device data
+      -- For adding hidden device data or fully loaded device data
+    */
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices || !devices.length) return
       const all = getDevices(state, accountId)
@@ -121,22 +130,22 @@ export default createModel<RootModel>()({
       })
 
       const append: IDevice[] = devices.filter(k => !all.find(ow => ow.id === k.id))
+      if (append.length) console.log('APPENDING DEVICES IN MERGE', { mergeDevice, append })
+
       await dispatch.accounts.setDevices({ devices: [...mergedDevices, ...append], accountId })
     },
+    /* 
+      Used when loading more devices from device list 
+    */
     async appendUniqueDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
-      if (!devices) return
+      if (!devices?.length) return
+
       accountId = accountId || devices[0]?.accountId
       if (!accountId) return console.error('APPEND DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const existingDevices = getDevices(state, accountId).filter(
-        ed =>
-          !devices.find(d => {
-            if (d.id === ed.id) {
-              d.hidden = d.hidden && ed.hidden
-              return true
-            }
-            return false
-          })
-      )
+
+      // Remove devices in new list
+      const existingDevices = getDevices(state, accountId).filter(ed => !devices.find(d => d.id === ed.id))
+
       await dispatch.accounts.setDevices({
         devices: [...existingDevices, ...devices],
         accountId,
@@ -169,7 +178,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: IAccountsState, params: ILookup<any>) {
+    set(state: IAccountsState, params: Partial<IAccountsState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

@@ -4,11 +4,13 @@ import { DatePicker as MuiDatePicker, LocalizationProvider } from '@mui/x-date-p
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { getDateFormatString } from '../../helpers/dateHelper'
 
-export const DatePicker: React.FC<{ onChange?: (date: any) => void; minDay: any; selectedDate: Date | null }> = ({
-  onChange,
-  minDay,
-  selectedDate,
-}) => {
+type Props = {
+  minDay?: Date
+  selectedDate?: Date
+  onChange?: (date: Date | null) => void
+}
+
+export const DatePicker: React.FC<Props> = ({ onChange, minDay, selectedDate }) => {
   const [open, setOpen] = useState<boolean>(false)
   if (!onChange) return null
   return (
@@ -18,7 +20,7 @@ export const DatePicker: React.FC<{ onChange?: (date: any) => void; minDay: any;
         open={open}
         inputFormat={getDateFormatString()}
         renderInput={props => <TextField {...props} label="From" variant="filled" onClick={() => setOpen(true)} />}
-        value={selectedDate}
+        value={selectedDate || new Date()}
         onChange={onChange}
         onClose={() => setOpen(false)}
         disableFuture={true}

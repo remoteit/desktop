@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { ListItemText, IconButton, InputLabel, Tooltip, darken } from '@mui/material'
+import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, Tooltip, darken } from '@mui/material'
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -15,10 +15,11 @@ export type DataButtonProps = {
   fullWidth?: boolean
   showBackground?: boolean
   alwaysWhite?: boolean
+  action?: React.ReactNode
   onClick: (event?: any) => void
 }
 
-export const DataButton: React.FC<DataButtonProps> = ({
+export const ListItemButton: React.FC<DataButtonProps> = ({
   title,
   value,
   label,
@@ -30,18 +31,22 @@ export const DataButton: React.FC<DataButtonProps> = ({
   showBackground,
   alwaysWhite,
   onClick,
+  action,
 }) => {
   const css = useStyles({ icon: !!icon, showBackground, fullWidth, gutterBottom, alwaysWhite, dense })
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
-      <IconButton className={css.box} onClick={onClick} size="large">
-        {typeof icon === 'string' ? <Icon name={icon} color={iconColor} size="md" fixedWidth /> : icon}
-        <ListItemText>
-          <InputLabel shrink>{label}</InputLabel>
-          <pre className={css.key}>{value}</pre>
-        </ListItemText>
-      </IconButton>
+      <span>
+        <ListItem className={css.box} onClick={onClick} disableGutters button>
+          {typeof icon === 'string' ? <Icon name={icon} color={iconColor} size="md" fixedWidth /> : icon}
+          <ListItemText>
+            <InputLabel shrink>{label}</InputLabel>
+            <pre className={css.key}>{value}</pre>
+          </ListItemText>
+          {action && <ListItemSecondaryAction>{action}</ListItemSecondaryAction>}
+        </ListItem>
+      </span>
     </Tooltip>
   )
 }

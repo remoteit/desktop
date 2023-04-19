@@ -72,8 +72,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
           title={device ? `Refresh ${attributeName(device)} logs` : 'Refresh logs'}
           onClick={async () =>
             await refresh(async () => {
-              if (device) dispatch.devices.fetchSingle({ id: device.id })
-              await dispatch.logs.set({ from: 0, maxDate: new Date() })
+              if (device) dispatch.devices.fetchSingleFull({ id: device.id })
+              await dispatch.logs.set({ after: undefined, maxDate: undefined })
               await dispatch.logs.fetch()
             })
           }
@@ -86,7 +86,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
           onClick={async () =>
             await refresh(async () => {
               if (device) {
-                await dispatch.devices.fetchSingle({ id: device.id })
+                await dispatch.devices.fetchSingleFull({ id: device.id })
               } else {
                 await dispatch.devices.set({ from: 0 })
                 await dispatch.devices.fetchList()

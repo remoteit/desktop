@@ -135,7 +135,7 @@ export const Router: React.FC = () => {
         </DeviceContextWrapper>
       </Route>
       {/* Add */}
-      <Route path="/add/:platform">
+      <Route path="/add/:platform/:redirect?">
         <Panel layout={layout}>
           <AddPlatformPage />
         </Panel>

@@ -66,7 +66,7 @@ export default createModel<RootModel>()({
 
       const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
-      await dispatch.accounts.mergeDevices({ devices, accountId: 'connections' })
+      await dispatch.accounts.truncateMergeDevices({ devices, accountId: 'connections' })
 
       cleanOrphanConnections(serviceIds)
     },
@@ -266,7 +266,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
         setConnection(connection)
-        if (connection.deviceID) dispatch.devices.fetchSingle({ id: connection.deviceID })
+        if (connection.deviceID) dispatch.devices.fetchSingleFull({ id: connection.deviceID })
       } else {
         const data = result?.data?.data?.connect
         console.log('PROXY CONNECTED', data)
@@ -329,7 +329,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
         connection.error = { message: 'Persistent connection update failed. Please contact support.' }
         dispatch.connections.updateConnection(connection)
-        dispatch.devices.fetchSingle({ id: connection.id, isService: true })
+        dispatch.devices.fetchSingleFull({ id: connection.id, isService: true })
         return
       }
 
@@ -364,7 +364,7 @@ export default createModel<RootModel>()({
         await dispatch.connections.updateConnection(connection)
       }
 
-      await dispatch.devices.fetchSingle({ id: connection.id, isService: true })
+      await dispatch.devices.fetchSingleFull({ id: connection.id, isService: true })
     },
 
     async connect(connection: IConnection, state) {
@@ -410,7 +410,7 @@ export default createModel<RootModel>()({
         dispatch.connections.updateConnection(connection)
         emit('service/disconnect', connection)
       } else {
-        connection = { ...connection, stopping: true, stopLock: Date.now(), enabled: false }
+        connection = { ...connection, stopping: true, stopLock: Date.now(), error: undefined, enabled: false }
         dispatch.connections.updateConnection(connection)
         emit('service/stop', connection)
       }
@@ -468,7 +468,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IConnectionsState, params: ILookup<any>) {
+    set(state: IConnectionsState, params: Partial<IConnectionsState>) {
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })

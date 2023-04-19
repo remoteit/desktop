@@ -1,20 +1,19 @@
 import React from 'react'
 import heartbeat from '../../services/Heartbeat'
 import { IconButton, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
-import { windowOpen } from '../../services/Browser'
+import { setConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { Color, FontSize } from '../../styling'
 import { Application } from '../../shared/applications'
-import { setConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
-import { DataButton } from '../DataButton'
+import { ListItemButton } from '../ListItemButton'
+import { windowOpen } from '../../services/Browser'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
-import { Color, FontSize } from '../../styling'
 
 type Props = {
   menuItem?: boolean
-  dataButton?: boolean
   size?: FontSize
   color?: Color
   type?: IconType
@@ -27,7 +26,6 @@ type Props = {
 
 export const LaunchButton: React.FC<Props> = ({
   menuItem,
-  dataButton,
   onLaunch,
   onMouseEnter,
   onMouseLeave,
@@ -39,7 +37,7 @@ export const LaunchButton: React.FC<Props> = ({
   const [prompt, setPrompt] = React.useState<boolean>(false)
   const ready = connection?.connectLink || connection?.ready
   const loading = !ready || connection?.starting
-  const disabled = !connection?.enabled || loading || !ready
+  const disabled = launchDisabled(connection) || loading
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && connection?.autoLaunch)
 
   React.useEffect(() => {
@@ -74,7 +72,14 @@ export const LaunchButton: React.FC<Props> = ({
     heartbeat.connect()
   }
 
-  const LaunchIcon = <Icon {...props} name={loading ? 'spinner-third' : 'launch'} spin={loading} fixedWidth />
+  const LaunchIcon = (
+    <Icon
+      {...props}
+      name={connection?.error ? 'hyphen' : loading ? 'spinner-third' : 'launch'}
+      spin={loading}
+      fixedWidth
+    />
+  )
 
   return (
     <>
@@ -83,14 +88,6 @@ export const LaunchButton: React.FC<Props> = ({
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={app.contextTitle} />
         </MenuItem>
-      ) : dataButton ? (
-        <DataButton
-          value={app.string}
-          label={app.contextTitle}
-          title={app.contextTitle}
-          icon={LaunchIcon}
-          onClick={clickHandler}
-        />
       ) : (
         <IconButton onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onClick={clickHandler} disabled={disabled}>
           {LaunchIcon}

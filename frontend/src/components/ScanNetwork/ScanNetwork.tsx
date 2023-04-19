@@ -14,7 +14,7 @@ import {
 import { Icon } from '../Icon'
 import { makeStyles } from '@mui/styles'
 import { getType } from '../../models/applicationTypes'
-import { DEFAULT_SERVICE, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
+import { REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
