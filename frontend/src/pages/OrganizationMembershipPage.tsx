@@ -29,8 +29,8 @@ export const OrganizationMembershipPage: React.FC = () => {
   const { memberships, organization, license, email } = useSelector((state: ApplicationState) => ({
     memberships: state.accounts.membership,
     organization: getOwnOrganization(state),
-    license: selectRemoteitLicense(state),
-    email: state.auth.user?.email || '',
+    license: selectRemoteitLicense(state, state.user.id),
+    email: state.user.email || '',
   }))
   const { accounts } = useDispatch<Dispatch>()
 
