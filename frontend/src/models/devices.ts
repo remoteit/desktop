@@ -253,7 +253,7 @@ export default createModel<RootModel>()({
 
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
-      await dispatch.devices.fetchSingleFull({ id })
+      await dispatch.devices.fetchDevices({ ids: [id] })
     },
 
     async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
@@ -303,7 +303,6 @@ export default createModel<RootModel>()({
         const id = result?.data?.data?.addService?.id
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
-          await dispatch.devices.fetchSingleFull({ id: deviceId })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
@@ -314,10 +313,7 @@ export default createModel<RootModel>()({
       if (!device) return
       for (const key in set) device[key] = set[key]
       dispatch.accounts.setDevice({ id: device.id, device })
-      await graphQLUpdateService({
-        id,
-        presenceAddress: set.presenceAddress,
-      })
+      await graphQLUpdateService({ id, presenceAddress: set.presenceAddress })
     },
 
     async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
@@ -332,7 +328,6 @@ export default createModel<RootModel>()({
         enabled: !!form.enabled,
         presenceAddress: form.presenceAddress,
       })
-      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
@@ -345,7 +340,6 @@ export default createModel<RootModel>()({
         redirect: `/devices/${deviceId}/details`,
       })
       await graphQLRemoveService(serviceId)
-      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 

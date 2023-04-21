@@ -21,7 +21,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, visible })
     // update device if new connection error
     if (connection?.error && connection?.deviceID && !hasError) {
       console.log('NEW CONNECTION ERROR - Load device')
-      dispatch.devices.fetchSingleFull({ id: connection.deviceID, hidden: true })
+      dispatch.devices.fetchDevices({ ids: [connection.deviceID], hidden: true })
       setHasError(true)
     }
   }, [connection?.error])
