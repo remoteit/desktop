@@ -163,7 +163,10 @@ export default createModel<RootModel>()({
       devices.forEach((d, index) => {
         if (d.id === id) {
           if (device) devices[index] = { ...device, hidden: d.hidden }
-          else devices.splice(index, 1)
+          else {
+            console.log('REMOVE DEVICE FROM LIST', devices[index])
+            devices.splice(index, 1)
+          }
           exists = true
         }
       })

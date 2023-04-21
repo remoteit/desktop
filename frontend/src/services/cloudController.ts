@@ -332,7 +332,7 @@ class CloudController {
         // device unshared from me or my org
         if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) devices.cleanup(target.id)
+            if (target.typeID === DEVICE_TYPE) devices.cleanup({ deviceId: target.id, accountId: event.authUserId })
           })
         }
 
