@@ -10,12 +10,12 @@ import { sudoPromise } from './sudoPromise'
 type StdExecException = ExecException & { stderr: string; stdout: string }
 
 const execPromise = promisify(exec)
+const reportedErrors = new Set<string>()
 
 export default class Command {
   commands: string[] = []
   admin: boolean = false
   quiet: boolean = false
-
   onError: (error: Error) => void = () => {}
 
   constructor(options: { command?: string; admin?: boolean; onError?: ErrorCallback; quiet?: boolean }) {
@@ -56,12 +56,16 @@ export default class Command {
     return this.sanitize({ string: this.commands.join(' && ') }).string?.toString() || ''
   }
 
-  parseStdError(error: string): CliStderr {
+  parseStdError(error: string): Error {
     const cliError = error.match(/{.*}/)
     if (cliError) {
-      return toJson(cliError[0])
+      const json: CliStderr = toJson(cliError[0])
+      const newError = new Error()
+      newError.message = json.message
+      newError.name = json.code.toString()
+      return newError
     }
-    return { message: error, code: -1 }
+    return new Error(error)
   }
 
   async exec() {
@@ -86,7 +90,7 @@ export default class Command {
         this.log(`EXEC *** STD ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error', true)
         const cliError = this.parseStdError(stderr)
         this.airbrake(cliError, stderr.toString(), 'COMMAND STDERR')
-        this.onError(new Error(cliError.message))
+        this.onError(cliError)
       }
 
       if (stdout) {
@@ -96,8 +100,8 @@ export default class Command {
       if (isStdExecException(error)) {
         const cliError = this.parseStdError(error.stderr || error.stdout || error.message)
         this.airbrake(cliError, error, 'COMMAND ERROR')
-        this.log(`EXEC CAUGHT *** STD ERROR ***`, { error, errorStack: error.stack }, 'error', true)
-        this.onError(new Error(cliError.message))
+        this.log(`EXEC CAUGHT *** STD ERROR ***`, { cliError, errorStack: error.stack }, 'error', true)
+        this.onError(cliError)
       } else if (error instanceof Error) {
         this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorStack: error.stack }, 'error', true)
       } else {
@@ -108,7 +112,7 @@ export default class Command {
     return result
   }
 
-  airbrake(cliError: CliStderr, error: string | StdExecException, type: string) {
+  airbrake(cliError: Error, error: string | StdExecException, type: string) {
     if (isErrorReportable(cliError)) {
       AirBrake.notify({
         params: { type, exec: this.toString() },
@@ -124,10 +128,10 @@ function isStdExecException(error: any): error is StdExecException {
   return !!error.stdout || !!error.stderr
 }
 
-function isErrorReportable(error: CliStderr) {
-  const newError = error.code > 0 ? !cli.data.errorCodes.includes(error.code) : true
+function isErrorReportable(error: Error) {
+  const newError = !reportedErrors.has(error.name)
   const reportable = !error.message.includes('read-only file system') && newError
-  if (newError) cli.data.errorCodes.push(error.code)
+  if (newError) reportedErrors.add(error.name)
   return reportable
 }
 

@@ -20,7 +20,6 @@ type IData = {
   admin?: UserCredentials
   device: CLIDeviceProps
   connectionDefaults: IConnectionDefaults
-  errorCodes: number[]
 }
 
 type IExec = {
@@ -81,7 +80,6 @@ export default class CLI {
     admin: undefined,
     device: undefined,
     connectionDefaults: {},
-    errorCodes: [],
   }
 
   configFile: JSONFile<ConfigFile>
@@ -103,6 +101,7 @@ export default class CLI {
 
   isSignedOut() {
     this.readUser()
+    console.log('-------- IS SIGNED OUT', !this.data.admin || !this.data.admin.username)
     return !this.data.admin || !this.data.admin.username
   }
 
@@ -271,6 +270,7 @@ export default class CLI {
   }
 
   async signOut() {
+    console.log('------ SIGN OUT')
     if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], skipSignInCheck: true, checkAuthHash: true })
     this.read()
   }
@@ -336,11 +336,15 @@ export default class CLI {
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
     if (!skipInstalledCheck) {
-      commands.onError = (e: Error) => {
+      commands.onError = async (e: Error) => {
+        console.log('------- CLI ERROR', e.message, e.name)
         if (!quiet) {
           if (typeof onError === 'function') onError(e)
-          EventBus.emit(this.EVENTS.error, e.toString())
+          EventBus.emit(this.EVENTS.error, e.message)
         }
+        // can't decrypt authHash
+        if (e.name === '11') await this.signOut()
+
         binaryInstaller.check()
       }
     }
@@ -352,6 +356,7 @@ export default class CLI {
     if (result) {
       try {
         const json = typeof result === 'string' ? JSON.parse(result) : result
+        console.log('------- CLI JSON', json)
         return json.data
       } catch (error) {
         if (error instanceof Error) {
