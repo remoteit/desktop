@@ -71,7 +71,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
           action="Install"
         >
           <Notice severity="warning" fullWidth gutterBottom>
-            Restarting while connected over a remote.it connection could cause the connection to be permanently lost.
+            Restarting while connected over a Remote.It connection could cause the connection to be permanently lost.
           </Notice>
           It is recommended to have a local connection when updating.
         </Confirm>

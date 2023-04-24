@@ -164,10 +164,7 @@ export function getConnectionLookup(state: ApplicationState) {
   }, {})
 }
 
-export function getEndpoint(connection?: IConnection) {
-  let name = connection?.host
-  let port = connection?.port
-
+export function getEndpoint(name?: string, port?: number) {
   if (!name) {
     name = 'Connecting...'
     port = undefined

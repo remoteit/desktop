@@ -5,10 +5,10 @@ import { makeStyles } from '@mui/styles'
 import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
 import { Typography, Tooltip, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
+import { CopyIconButton } from '../buttons/CopyIconButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
 import { IconButton } from '../buttons/IconButton'
-import { CopyIconButton } from '../buttons/CopyIconButton'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
@@ -58,7 +58,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   let name = connection?.host
   let port = connection?.port
 
-  const endpoint = getEndpoint(connection)
+  const endpoint = getEndpoint(name, port)
   const endpointName = (connection?.public ? 'Public' : 'Local') + ' Endpoint'
   const secureReverseProxy = isSecureReverseProxy(app.string)
   const secureIcon = secureReverseProxy === false && (

@@ -12,7 +12,7 @@ export const SettingsDisableNetworkItem: React.FC = () => {
   const subLabelText = toggleChange ? (
     <span className={css.span}>Please restart for changes to take effect.</span>
   ) : (
-    'This will allow network access to the desktop UI on ports 29999 and 29998 in addition to sharing through remote.it'
+    'This will allow network access to the desktop UI on ports 29999 and 29998 in addition to sharing through Remote.It'
   )
 
   if (!preferences) return null

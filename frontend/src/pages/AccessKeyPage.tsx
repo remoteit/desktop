@@ -29,7 +29,7 @@ export const AccessKeyPage: React.FC = () => {
       <Typography variant="subtitle1">Developer</Typography>
       <Gutters bottom="xl">
         <Typography variant="body2" gutterBottom>
-          This is your unique Developer API key to use and access remote.it APIs.
+          This is your unique Developer API key to use and access Remote.It APIs.
           <br />
           <em>Do not share it with anyone.</em>
         </Typography>

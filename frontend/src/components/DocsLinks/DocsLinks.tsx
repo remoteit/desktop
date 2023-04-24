@@ -13,7 +13,7 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
         See how to:
       </Typography>
       <Link href="https://link.remote.it/documentation-desktop/overview">
-        Use remote.it Desktop
+        Use Remote.It Desktop
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
       <Link href={`https://link.remote.it/documentation-desktop/${os}-connections`}>
@@ -21,7 +21,7 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
       <Link href="https://link.remote.it/documentation-minecraft/overview">
-        Host a Minecraft server with remote.it
+        Host a Minecraft server with Remote.It
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
     </section>

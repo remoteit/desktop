@@ -172,7 +172,7 @@ function SupportRecoveryRequest(): JSX.Element {
       <Box mt={2}>
         <Button
           href={encodeURI(
-            'mailto:support@remote.it?subject=Recover my remote.it account&body=Please reset my account preferences.\n\nI no longer have access to the recovery code and the mobile device to receive verification codes.'
+            'mailto:support@remote.it?subject=Recover my Remote.It account&body=Please reset my account preferences.\n\nI no longer have access to the recovery code and the mobile device to receive verification codes.'
           )}
         >
           {t('pages.account-recovery.lost-recovery-code-button')}

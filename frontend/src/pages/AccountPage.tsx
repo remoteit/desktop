@@ -24,7 +24,7 @@ export const AccountPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Tooltip title="Visit remote.it on the web">
+            <Tooltip title="Visit Remote.It on the web">
               <ButtonBase onClick={() => windowOpen('https://remote.it')}>
                 <Logo width={110} />
               </ButtonBase>

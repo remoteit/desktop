@@ -5,7 +5,7 @@ import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/g
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from '.'
 import { API_URL, DEVELOPER_KEY } from '../shared/constants'
-import { getToken } from '../services/remote.it'
+import { getToken } from '../services/remoteit'
 
 type IUserState = {
   id: string

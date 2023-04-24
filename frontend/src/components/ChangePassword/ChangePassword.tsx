@@ -65,6 +65,6 @@ const useStyles = makeStyles({
 
 // <p>
 //   You are signed in with your Google account. You can change your password in your Google account settings. If
-//   you also have remote.it login and password, you can sign in with those credentials and then change your
+//   you also have Remote.It login and password, you can sign in with those credentials and then change your
 //   password.
 // </p>

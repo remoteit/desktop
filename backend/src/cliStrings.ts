@@ -1,3 +1,4 @@
+import { IP_PRIVATE } from './sharedCopy/constants'
 import environment from './environment'
 import preferences from './preferences'
 import user from './User'
@@ -45,7 +46,7 @@ export default {
       --servicetype ${c.typeID} \
       ${c.disableSecurity ? '--forceHTTP true' : ''} \
       ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
-      --enableCertificate ${!!preferences.get().useCertificate} \
+      --enableCertificate ${!!preferences.get().useCertificate && c.ip === IP_PRIVATE} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
       --manufacture-id ${environment.appCode} \
@@ -74,7 +75,7 @@ export default {
     --servicetype ${c.typeID} \
     ${c.disableSecurity ? '--forceHTTP true' : ''} \
     ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
-    --enableCertificate ${!!preferences.get().useCertificate} \
+    --enableCertificate ${!!preferences.get().useCertificate && c.ip === IP_PRIVATE} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
     --manufacture-id ${environment.appCode} \
