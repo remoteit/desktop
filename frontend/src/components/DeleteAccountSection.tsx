@@ -11,8 +11,9 @@ import { spacing } from '../styling'
 const REASONS = [
   "My device isn't supported",
   'Installation was too difficult',
-  "Couldn't get my device online",
-  "Couldn't connect",
+  'Connection quality or performance issues',
+  'Couldn’t get my device online',
+  'Couldn’t connect',
   'Too hard to use',
   'Not what I thought it was',
   'Not using it anymore',
@@ -71,7 +72,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
       ) : (
         <>
           <Typography variant="body2" color="GrayText" gutterBottom>
-            If you no longer want/need your remote.it account, you can request an account deletion. Once your delete
+            If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete
             request is processed, all your account information is removed permanently.
           </Typography>
           <Box pb={2}>
