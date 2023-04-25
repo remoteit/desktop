@@ -101,7 +101,6 @@ export default class CLI {
 
   isSignedOut() {
     this.readUser()
-    console.log('-------- IS SIGNED OUT', !this.data.admin || !this.data.admin.username)
     return !this.data.admin || !this.data.admin.username
   }
 
@@ -270,7 +269,6 @@ export default class CLI {
   }
 
   async signOut() {
-    console.log('------ SIGN OUT')
     if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], skipSignInCheck: true, checkAuthHash: true })
     this.read()
   }
@@ -337,7 +335,6 @@ export default class CLI {
 
     if (!skipInstalledCheck) {
       commands.onError = async (e: Error) => {
-        console.log('------- CLI ERROR', e.message, e.name)
         if (!quiet) {
           if (typeof onError === 'function') onError(e)
           EventBus.emit(this.EVENTS.error, e.message)
@@ -356,7 +353,6 @@ export default class CLI {
     if (result) {
       try {
         const json = typeof result === 'string' ? JSON.parse(result) : result
-        console.log('------- CLI JSON', json)
         return json.data
       } catch (error) {
         if (error instanceof Error) {
