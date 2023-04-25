@@ -63,8 +63,8 @@ export default class ConnectionPool {
         this.set({
           ...connection,
           ...cliConnection,
-          // to display for LAN Sharing
-          host: connection.ip === IP_PRIVATE ? cliConnection.host : environment.privateIP,
+          // to display for LAN Sharing - disabled while waiting for cli support
+          // host: connection.ip === IP_PRIVATE ? cliConnection.host : environment.privateIP,
           enabled: this.stopLocked(connection) ? false : cliConnection.enabled,
         })
       }
