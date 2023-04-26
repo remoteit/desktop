@@ -38,7 +38,7 @@ export default {
       --name "${c.name}" \
       --port ${c.port} \
       --ip ${c.ip} \
-      --connectAtStart ${!!c.connectOnReady} \
+      --connectAtStart ${!!c.connectOnReady && c.ip === IP_PRIVATE} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \
@@ -46,7 +46,7 @@ export default {
       --servicetype ${c.typeID} \
       ${c.disableSecurity ? '--forceHTTP true' : ''} \
       ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
-      --enableCertificate ${!!preferences.get().useCertificate && c.ip === IP_PRIVATE} \
+      --enableCertificate ${!!preferences.get().useCertificate} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
       --manufacture-id ${environment.appCode} \
@@ -75,7 +75,7 @@ export default {
     --servicetype ${c.typeID} \
     ${c.disableSecurity ? '--forceHTTP true' : ''} \
     ${c.targetHost ? `--targetHostname ${c.targetHost}` : ''} \
-    --enableCertificate ${!!preferences.get().useCertificate && c.ip === IP_PRIVATE} \
+    --enableCertificate ${!!preferences.get().useCertificate} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
     --manufacture-id ${environment.appCode} \
