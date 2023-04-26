@@ -15,15 +15,15 @@ import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 
 export const ConnectionDefaultsPage: React.FC = () => {
-  let customAttributes: ILookup<Set<string>> = {}
-  let customAttributesNote: ILookup<ILookup<React.ReactNode>> = {}
+  let customConnectionSetting: ILookup<Set<string>> = {}
+  let customConnectionNote: ILookup<ILookup<React.ReactNode>> = {}
 
-  function addCustomAttributes(tokens: string[], id: number, el: React.ReactNode) {
-    customAttributes[id] = customAttributes[id] || new Set()
-    customAttributesNote[id] = customAttributesNote[id] || {}
+  function addCustomSettings(tokens: string[], id: number, el: React.ReactNode) {
+    customConnectionSetting[id] = customConnectionSetting[id] || new Set()
+    customConnectionNote[id] = customConnectionNote[id] || {}
     tokens.forEach(item => {
-      customAttributes[id].add(item)
-      customAttributesNote[id][item] = el
+      customConnectionSetting[id].add(item)
+      customConnectionNote[id][item] = el
     })
   }
 
@@ -43,12 +43,12 @@ export const ConnectionDefaultsPage: React.FC = () => {
   const data = connectionDefaults?.[id] || {}
   const changed = !isEqual(form, data)
   const app = getApplication(undefined, { ...form, enabled: false, id: '', typeID: id })
-  addCustomAttributes(app.allCustomTokens, id, <>the application type defaults</>)
+  addCustomSettings(app.allCustomTokens, id, <>the application type defaults</>)
 
   applicationTypes.forEach(t => {
     const a = getApplication(undefined, { ...DEFAULT_CONNECTION, typeID: t.id })
     const el = <>application type {t.name}</>
-    addCustomAttributes(a.allCustomTokens, t.id, el)
+    addCustomSettings(a.allCustomTokens, t.id, el)
   })
   connections.forEach(c => {
     const a = getApplication(undefined, c)
@@ -57,7 +57,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
         connection <Link to={`/connections/${c.id}`}>{c.name}</Link>
       </>
     )
-    addCustomAttributes(a.allCustomTokens, c.typeID || 0, el)
+    addCustomSettings(a.allCustomTokens, c.typeID || 0, el)
   })
   devices.forEach(device =>
     device.services.forEach(service => {
@@ -70,7 +70,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
           </Link>
         </>
       )
-      addCustomAttributes(a.allCustomTokens, service.typeID || 0, el)
+      addCustomSettings(a.allCustomTokens, service.typeID || 0, el)
     })
   )
 
@@ -122,8 +122,8 @@ export const ConnectionDefaultsPage: React.FC = () => {
             connection={connection}
             disabled={false}
             attributes={form}
-            customTokens={[...customAttributes[id]]}
-            customTokensNote={customAttributesNote[id]}
+            customTokens={[...customConnectionSetting[id]]}
+            customTokensNote={customConnectionNote[id]}
             onChange={attributes => setForm({ ...form, ...attributes })}
           />
         </List>

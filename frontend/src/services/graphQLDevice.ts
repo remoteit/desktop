@@ -349,7 +349,7 @@ export function graphQLDeviceAdaptor({
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
   const thisId = state.backend.thisId
-  let metaData = { customAttributes: new Array<string>() }
+  let customAttributes = new Set<string>()
   let data: IDevice[] = gqlDevices?.map((d: any): IDevice => {
     const owner = d.owner || state.auth.user
     return {
@@ -374,7 +374,7 @@ export function graphQLDeviceAdaptor({
       geo: d.endpoint?.geo,
       license: d.license,
       permissions: d.permissions || [],
-      attributes: processDeviceAttributes(d, metaData),
+      attributes: processDeviceAttributes(d, customAttributes),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
       services: graphQLServiceAdaptor(d),
       presenceAddress: d.presenceAddress,
@@ -390,7 +390,7 @@ export function graphQLDeviceAdaptor({
       accountId,
     }
   })
-  store.dispatch.devices.customAttributes({ customAttributes: metaData.customAttributes })
+  store.dispatch.devices.customAttributes(customAttributes)
   store.dispatch.connections.parseConnectionsLinks({ devices: data, accountId })
   return data
 }
@@ -453,10 +453,11 @@ function attributeQuery(attributes: string[]) {
   return query
 }
 
-function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
-  const attributes = processAttributes(response)
-  metaData.customAttributes = metaData.customAttributes.concat(Object.keys(attributes).filter(c => c !== '$remoteit'))
-  return attributes
+function processDeviceAttributes(response: any, customAttributes: Set<string>): IDevice['attributes'] {
+  for (const attribute in response.attributes) {
+    if (attribute !== '$remoteit') customAttributes.add(attribute)
+  }
+  return processAttributes(response)
 }
 
 function processServiceAttributes(response: any): IService['attributes'] {

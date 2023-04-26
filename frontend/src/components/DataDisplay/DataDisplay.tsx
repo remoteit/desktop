@@ -22,8 +22,8 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
         const value = attribute.value(props)
         return (
           value != null && (
-            <ListItem className={css.item} key={attribute.id} disableGutters>
-              <span>
+            <ListItem key={attribute.id} disableGutters>
+              <span className={css.label}>
                 {attribute.label}:
                 {attribute.help && (
                   <Tooltip title={attribute.help}>
@@ -31,7 +31,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
                   </Tooltip>
                 )}
               </span>
-              {value}
+              <span className={css.attribute}>{value}</span>
             </ListItem>
           )
         )
@@ -42,18 +42,22 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
 
 const useStyles = minWidth =>
   makeStyles(({ palette }) => ({
-    list: { width: '100%' },
-    item: {
+    list: {
+      width: '100%',
       padding: `4px 0`,
+    },
+    label: {
+      '& > :first-of-type': { alignSelf: 'start' },
+      color: palette.grayDark.main,
+      textTransform: 'capitalize',
+      alignSelf: 'flex-start',
+      minWidth,
+    },
+    attribute: {
       fontSize: fontSizes.sm,
       fontFamily: 'Roboto Mono',
       color: palette.grayDarker.main,
-      '& > :first-of-type': { alignSelf: 'start' },
-      '& > span': {
-        fontFamily: 'Roboto',
-        color: palette.grayDark.main,
-        textTransform: 'capitalize',
-        minWidth,
-      },
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
   }))

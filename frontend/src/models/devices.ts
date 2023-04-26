@@ -432,8 +432,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: false })
     },
 
-    async customAttributes({ customAttributes }: { customAttributes: string[] }, state) {
-      const unique = new Set(customAttributes.concat(getDeviceModel(state).customAttributes))
+    async customAttributes(customAttributes: Set<string>, state) {
+      const unique = new Set([...customAttributes, ...getDeviceModel(state).customAttributes])
       dispatch.devices.set({ customAttributes: [...Array.from(unique)].sort() })
     },
 

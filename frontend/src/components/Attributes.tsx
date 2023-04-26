@@ -59,7 +59,7 @@ export class Attribute {
   }
 }
 
-class DeviceAttribute extends Attribute {
+export class DeviceAttribute extends Attribute {
   type: Attribute['type'] = 'DEVICE'
 }
 
@@ -335,6 +335,21 @@ export const attributes: Attribute[] = [
     label: 'Users',
     defaultWidth: 200,
     value: ({ device, service }) => <AvatarList users={device?.shared ? [device.owner] : service?.access} size={22} />,
+  }),
+  new ServiceAttribute({
+    id: 'serviceDockerId',
+    label: 'Docker ID',
+    value: ({ service }) => service?.attributes.docker?.id,
+  }),
+  new ServiceAttribute({
+    id: 'serviceDockerName',
+    label: 'Docker Name',
+    value: ({ service }) => service?.attributes.docker?.name,
+  }),
+  new ServiceAttribute({
+    id: 'serviceDockerImage',
+    label: 'Docker Image',
+    value: ({ service }) => service?.attributes.docker?.image,
   }),
   new ServiceAttribute({
     id: 'serviceLastReported',

@@ -1,7 +1,7 @@
 import React from 'react'
 import { ListItemQuote } from '../ListItemQuote'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { CustomAttributeSettings } from '../CustomAttributeSettings'
+import { CustomConnectionSettings } from '../CustomConnectionSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
 import { LaunchTypeSelect } from '../LaunchTypeSelect'
 import { useApplication } from '../../hooks/useApplication'
@@ -31,7 +31,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       {app.launchType !== 'NONE' && (
         <ListItemQuote>
           <InlineTemplateSetting app={app} connection={connection} service={service} disabled={disabled} />
-          <CustomAttributeSettings app={app} connection={connection} service={service} disabled={disabled} />
+          <CustomConnectionSettings app={app} connection={connection} service={service} disabled={disabled} />
         </ListItemQuote>
       )}
     </>
