@@ -61,15 +61,17 @@ export const selectDevice = createSelector(
   }
 )
 
-export const selectDeviceAttributes = createSelector([getDeviceModel], deviceModel =>
-  deviceAttributes.concat(
-    deviceModel.customAttributes.map(
-      id =>
-        new DeviceAttribute({
-          id: `attribute-${id}`,
-          label: id,
-          value: ({ device }) => (device?.attributes[id] ? Attribute(device.attributes[id]) : undefined),
-        })
+export const selectDeviceDetailAttributes = createSelector([getDeviceModel], deviceModel =>
+  deviceAttributes
+    .filter(d => d.details)
+    .concat(
+      deviceModel.customAttributes.map(
+        id =>
+          new DeviceAttribute({
+            id: `attribute-${id}`,
+            label: id,
+            value: ({ device }) => (device?.attributes[id] ? Attribute(device.attributes[id]) : undefined),
+          })
+      )
     )
-  )
 )
