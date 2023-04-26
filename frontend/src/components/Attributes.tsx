@@ -5,16 +5,15 @@ import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { ListItemText, Chip, Typography } from '@mui/material'
+import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ServiceName } from './ServiceName'
 import { ReactiveTags } from './ReactiveTags'
 import { LicenseChip } from './LicenseChip'
-import { replaceHost } from '../shared/nameHelper'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
 import { StatusChip } from './StatusChip'
-import { lanShared } from '../helpers/lanSharing'
 import { Timestamp } from './Timestamp'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -33,21 +32,23 @@ export class Attribute {
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
   feature?: string
   multiline?: boolean
+  details?: boolean = true // show on device details page
   query?: string // key to device query - fall back to id
   value: (options: IDataOptions) => any = () => {}
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
   constructor(options: {
-    id: string
-    label: string
-    help?: string
-    required?: boolean
+    id: Attribute['id']
+    label: Attribute['label']
+    help?: Attribute['help']
+    required?: Attribute['required']
     align?: Attribute['align']
-    column?: boolean
-    defaultWidth?: number
-    feature?: string
-    multiline?: boolean
-    query?: string
+    column?: Attribute['column']
+    defaultWidth?: Attribute['defaultWidth']
+    feature?: Attribute['feature']
+    multiline?: Attribute['multiline']
+    details?: Attribute['details']
+    query?: Attribute['query']
     type?: Attribute['type']
     value?: Attribute['value']
   }) {
@@ -239,6 +240,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'city',
     label: 'City',
+    details: false,
     query: 'endpoint',
     defaultWidth: 115,
     value: ({ device }) => device?.geo?.city,
@@ -246,6 +248,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'state',
     label: 'State',
+    details: false,
     query: 'endpoint',
     defaultWidth: 100,
     value: ({ device }) => device?.geo?.stateName,
@@ -253,6 +256,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'country',
     label: 'Country',
+    details: false,
     query: 'endpoint',
     defaultWidth: 130,
     value: ({ device }) => device?.geo?.countryName,
@@ -423,37 +427,39 @@ export const attributes: Attribute[] = [
     value: ({ session, connection }) =>
       connection ? null : session?.isP2P ? 'Peer to Peer' : session?.public ? 'Public Proxy' : 'Proxy',
   }),
+  // new ConnectionAttribute({
+  //   id: 'security',
+  //   label: 'Security',
+  //   value: ({ connection, application }) => {
+  //     if (!connection) return undefined
+
+  //     if (connection.public)
+  //       return connection.publicRestriction === IP_LATCH
+  //         ? application?.reverseProxy
+  //           ? 'Public randomized url'
+  //           : 'This IP address only'
+  //         : 'Public'
+
+  //     return (
+  //       <>
+  //         <Icon name="shield-alt" type="solid" size="xxs" inlineLeft />
+  //         {lanShared(connection) ? 'Zero Trust (LAN shared)' : 'Zero Trust'}
+  //       </>
+  //     )
+  //   },
+  // }),
   new ConnectionAttribute({
-    id: 'security',
-    label: 'Security',
-    value: ({ connection, application }) => {
-      if (!connection) return undefined
-
-      if (connection.public)
-        return connection.publicRestriction === IP_LATCH
-          ? application?.reverseProxy
-            ? 'Public randomized url'
-            : 'This IP address only'
-          : 'Public'
-
-      return (
-        <>
-          <Icon name="shield-alt" type="solid" size="xxs" inlineLeft />
-          {lanShared(connection) ? 'Zero Trust (LAN shared)' : 'Zero Trust'}
-        </>
-      )
+    id: 'bind',
+    label: 'Bind Address',
+    value: ({ connection }) => {
+      if (lanShared(connection)) return connection?.ip
     },
   }),
   new ConnectionAttribute({
-    id: 'local',
-    label: 'Local Endpoint',
-    value: ({ connection }) => (connection ? `${connection.host}:${connection.port}` : undefined),
-  }),
-  new ConnectionAttribute({
-    id: 'lanShare',
-    label: 'LAN Endpoint',
+    id: 'restrict',
+    label: 'Local Security',
     value: ({ connection }) => {
-      if (connection?.ip && lanShared(connection)) return `${replaceHost(connection.ip)}:${connection.port}`
+      if (lanShared(connection)) return lanShareRestriction(connection)
     },
   }),
 ]
@@ -465,6 +471,7 @@ export const deviceAttributes = attributes.filter(a => a.type === 'DEVICE' || a.
 export const networkAttributes = attributes.filter(a => a.type === 'INSTANCE')
 export const serviceAttributes = attributes.filter(a => a.type === 'SERVICE')
 export const restoreAttributes = attributes.filter(a => a.type === 'RESTORE')
+export const connectionAttributes = attributes.filter(a => a.type === 'CONNECTION')
 
 export function getAttribute(id: string): Attribute {
   return attributeLookup[id] || new Attribute({ id: 'unknown', label: 'Unknown' })
