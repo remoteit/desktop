@@ -214,7 +214,7 @@ export default createModel<RootModel>()({
         if (redirect) dispatch.ui.set({ redirect })
         if (!errors) {
           if (isService) dispatch.connections.forget(id)
-          else dispatch.devices.cleanup(id)
+          else dispatch.devices.cleanup({ deviceId: id, accountId })
         }
       }
 
@@ -253,7 +253,6 @@ export default createModel<RootModel>()({
 
     async rename({ id, name }: { id: string; name: string }) {
       await graphQLRename(id, name)
-      await dispatch.devices.fetchSingleFull({ id })
     },
 
     async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
@@ -303,7 +302,6 @@ export default createModel<RootModel>()({
         const id = result?.data?.data?.addService?.id
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
-          await dispatch.devices.fetchSingleFull({ id: deviceId })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
@@ -314,10 +312,7 @@ export default createModel<RootModel>()({
       if (!device) return
       for (const key in set) device[key] = set[key]
       dispatch.accounts.setDevice({ id: device.id, device })
-      await graphQLUpdateService({
-        id,
-        presenceAddress: set.presenceAddress,
-      })
+      await graphQLUpdateService({ id, presenceAddress: set.presenceAddress })
     },
 
     async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
@@ -332,7 +327,6 @@ export default createModel<RootModel>()({
         enabled: !!form.enabled,
         presenceAddress: form.presenceAddress,
       })
-      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
@@ -345,7 +339,6 @@ export default createModel<RootModel>()({
         redirect: `/devices/${deviceId}/details`,
       })
       await graphQLRemoveService(serviceId)
-      await dispatch.devices.fetchSingleFull({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 
@@ -415,7 +408,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: true, silent: device.id })
       const result = await graphQLDeleteDevice(device.id)
       if (result !== 'ERROR') {
-        dispatch.devices.cleanup(device.id)
+        dispatch.devices.cleanup({ deviceId: device.id, accountId: device.accountId })
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully deleted.`,
         })
@@ -431,7 +424,7 @@ export default createModel<RootModel>()({
         email: [auth.user?.email || ''],
       })
       if (result !== 'ERROR') {
-        dispatch.devices.cleanup(device.id)
+        dispatch.devices.cleanup({ deviceId: device.id, accountId: device.accountId })
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully removed.`,
         })
@@ -439,8 +432,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: false })
     },
 
-    async customAttributes({ customAttributes }: { customAttributes: string[] }, state) {
-      const unique = new Set(customAttributes.concat(getDeviceModel(state).customAttributes))
+    async customAttributes(customAttributes: Set<string>, state) {
+      const unique = new Set([...customAttributes, ...getDeviceModel(state).customAttributes])
       dispatch.devices.set({ customAttributes: [...Array.from(unique)].sort() })
     },
 
@@ -449,7 +442,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ transferring: true, silent: data.device.id })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
-          await dispatch.devices.cleanup(data.device.id)
+          await dispatch.devices.cleanup({ deviceId: data.device.id, accountId: data.device.accountId })
           dispatch.ui.set({
             successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
@@ -458,10 +451,10 @@ export default createModel<RootModel>()({
       }
     },
 
-    async cleanup(deviceId: string) {
+    async cleanup({ deviceId, accountId }: { deviceId: string; accountId: string }) {
       await dispatch.connections.clearByDevice(deviceId)
       await dispatch.networks.clearById(deviceId)
-      await dispatch.devices.fetchList()
+      await dispatch.accounts.setDevice({ id: deviceId, accountId })
       await dispatch.connections.fetch()
     },
 

@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import { getGraphQLApi, getTestHeader } from '../helpers/apiHelper'
-import { getToken } from '../services/remote.it'
+import { getToken } from './remoteit'
 import { store } from '../store'
 import sleep from './sleep'
 

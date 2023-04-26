@@ -1,6 +1,5 @@
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import {
   CLIENT_ID,
   CALLBACK_URL,
@@ -13,7 +12,7 @@ import {
 } from '../shared/constants'
 import { setLocalStorage, removeLocalStorage, isElectron, isPortal } from '../services/Browser'
 import { graphQLLogin } from '../services/graphQLRequest'
-import { getToken } from '../services/remote.it'
+import { getToken } from '../services/remoteit'
 import { CognitoUser } from '../cognito/types'
 import { AuthService } from '../cognito/auth'
 import { createModel } from '@rematch/core'

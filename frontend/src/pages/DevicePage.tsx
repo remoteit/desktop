@@ -10,7 +10,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import { Typography, Tooltip, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
@@ -87,11 +87,15 @@ export const DevicePage: React.FC = () => {
           gutterTop
           severity="info"
           button={
-            <CopyAsyncMenuItem
-              icon="wave-pulse"
-              request={async () => await dispatch.devices.getRestoreCommand(device.id)}
-              className={css.restore}
-            />
+            <Tooltip title="Copy restore command" arrow>
+              <span>
+                <CopyAsyncMenuItem
+                  icon="wave-pulse"
+                  request={async () => await dispatch.devices.getRestoreCommand(device.id)}
+                  className={css.restore}
+                />
+              </span>
+            </Tooltip>
           }
         >
           Device offline

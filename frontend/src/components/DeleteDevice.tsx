@@ -32,7 +32,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
         Deleting devices can't be undone so may require you to physically access the device if you wish to recover it.
       </Notice>
       <Typography variant="body2">
-        We recommend uninstalling remote.it before <br />
+        We recommend uninstalling Remote.It before <br />
         deleting devices.
       </Typography>
     </>

@@ -38,7 +38,6 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
       const code = await dispatch.devices.createRegistration({
         tags,
         accountId,
-        name: platform.name,
         services: types.map(type => ({ application: type })),
         platform: platformType,
         template: platform.installation?.command,

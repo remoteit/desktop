@@ -2,7 +2,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
 import network from '../services/Network'
 import { DEVICE_TYPE } from '../shared/applications'
-import { getToken } from './remote.it'
+import { getToken } from './remoteit'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { getAccountIds } from '../models/accounts'
@@ -332,7 +332,7 @@ class CloudController {
         // device unshared from me or my org
         if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) devices.cleanup(target.id)
+            if (target.typeID === DEVICE_TYPE) devices.cleanup({ deviceId: target.id, accountId: event.authUserId })
           })
         }
 

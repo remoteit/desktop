@@ -1,18 +1,19 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { Typography, List, ListItem, ListItemIcon, Divider, Button } from '@mui/material'
+import { useMediaQuery, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@mui/material'
 import { spacing, fontSizes, radius } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
-  name: string
+  name: string | React.ReactNode
   description: string
   price?: string
   caption: React.ReactNode
   note?: string
   features?: string[]
   button: string
+  promoted?: boolean
   disabled?: boolean
   selected?: boolean
   loading?: boolean
@@ -22,6 +23,7 @@ type Props = {
 
 type StyleProps = {
   wide?: boolean
+  selected?: boolean
 }
 
 export const PlanCard: React.FC<Props> = ({
@@ -32,18 +34,22 @@ export const PlanCard: React.FC<Props> = ({
   note,
   features = [],
   button,
+  promoted,
   disabled,
   selected,
   loading,
   wide,
   onSelect,
 }) => {
-  const css = useStyles({ wide })
+  const small = useMediaQuery(`(max-width:500px)`)
+  wide = wide && !small
+  const css = useStyles({ wide, selected })
+
   return (
-    <div className={classnames(css.card, selected && css.selected)}>
-      {selected && <header>Current plan</header>}
+    <div className={classnames(css.card, selected ? css.selected : promoted && css.promoted)}>
+      {selected ? <header>Current plan</header> : promoted && <header>New</header>}
       <div className={css.plan}>
-        <Typography variant="h2">{name}</Typography>
+        <Typography variant="h1">{name}</Typography>
         <Typography variant="caption">{description}</Typography>
       </div>
       <Divider flexItem variant="inset" />
@@ -65,16 +71,18 @@ export const PlanCard: React.FC<Props> = ({
             {loading ? 'Processing...' : button}
           </Button>
         </div>
-        <div className={css.features}>
-          <List dense>
-            {features[0] && (
-              <Item>
-                <b>{features[0]}</b>
-              </Item>
-            )}
-            {features.map((f, index) => index > 0 && <Item key={index}>{f}</Item>)}
-          </List>
-        </div>
+        {!!features.length && (
+          <div className={css.features}>
+            <List dense>
+              {features[0] && (
+                <Item>
+                  <b>{features[0]}</b>
+                </Item>
+              )}
+              {features.map((f, index) => index > 0 && <Item key={index}>{f}</Item>)}
+            </List>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -92,23 +100,24 @@ export const Item: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  card: ({ wide }: StyleProps) => ({
+  card: ({ wide, selected }: StyleProps) => ({
     display: 'flex',
     width: '100%',
-    maxWidth: wide ? 600 : 280,
+    maxWidth: wide ? 840 : 280,
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
+    backgroundColor: selected ? palette.primaryHighlight.main : wide ? palette.grayLightest.main : undefined,
     '& .planCardColumn': {
+      paddingBottom: spacing.lg,
       display: wide ? 'flex' : 'block',
       '& > div + div': { marginLeft: wide ? spacing.md : undefined },
     },
   }),
   selected: {
-    backgroundColor: palette.primaryHighlight.main,
     borderRadius: radius,
-    overflow: 'hidden',
     position: 'relative',
+    overflow: 'hidden',
     '& .MuiDivider-root': { borderColor: palette.primaryLight.main },
     '& header': {
       width: '100%',
@@ -123,12 +132,31 @@ const useStyles = makeStyles(({ palette }) => ({
       lineHeight: 2,
     },
   },
-  plan: {
-    padding: spacing.md,
-    paddingTop: spacing.xxl,
-    textAlign: 'center',
-    '& h2': { textTransform: 'capitalize' },
+  promoted: {
+    borderRadius: radius,
+    position: 'relative',
+    overflow: 'hidden',
+    '& header': {
+      width: 160,
+      left: -40,
+      top: 24,
+      position: 'absolute',
+      textTransform: 'uppercase',
+      transform: 'rotate(-45deg)',
+      backgroundColor: palette.danger.main,
+      letterSpacing: spacing.xxs,
+      fontSize: fontSizes.xs,
+      color: palette.alwaysWhite.main,
+      fontWeight: 600,
+      lineHeight: 2.6,
+    },
   },
+  plan: ({ wide, selected }: StyleProps) => ({
+    padding: spacing.md,
+    paddingTop: wide && !selected ? spacing.xl : spacing.xxl,
+    textAlign: 'center',
+    '& h1': { textTransform: 'capitalize' },
+  }),
   price: {
     padding: spacing.md,
     textAlign: 'center',
@@ -142,14 +170,13 @@ const useStyles = makeStyles(({ palette }) => ({
   select: {
     marginBottom: spacing.sm,
   },
-  features: {
-    paddingBottom: spacing.lg,
+  features: ({ wide }: StyleProps) => ({
+    paddingRight: spacing.sm,
     color: palette.grayDarker.main,
     fontSize: fontSizes.sm,
-    maxWidth: 250,
+    maxWidth: wide ? 440 : 200,
     lineHeight: 1.3,
-    marginLeft: -spacing.md,
     '& b': { fontWeight: 400, color: palette.grayDarkest.main },
     '& .MuiListItemIcon-root': { minWidth: 40 },
-  },
+  }),
 }))

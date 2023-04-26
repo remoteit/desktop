@@ -2,8 +2,9 @@ import { createSelector } from 'reselect'
 import { ApplicationState } from '../store'
 import { getActiveAccountId } from './accounts'
 import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
-import { masterAttributes, deviceAttributes } from '../components/Attributes'
+import { masterAttributes, deviceAttributes, DeviceAttribute } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
+import { Attribute } from '../components/Attribute'
 
 function getDeviceModelFn(devices: ApplicationState['devices'], activeAccountId: string, accountId?: string) {
   return devices[accountId || activeAccountId] || devices.default
@@ -58,4 +59,17 @@ export const selectDevice = createSelector(
   (allDevices, devices, deviceId) => {
     return devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
   }
+)
+
+export const selectDeviceAttributes = createSelector([getDeviceModel], deviceModel =>
+  deviceAttributes.concat(
+    deviceModel.customAttributes.map(
+      id =>
+        new DeviceAttribute({
+          id: `attribute-${id}`,
+          label: id,
+          value: ({ device }) => (device?.attributes[id] ? Attribute(device.attributes[id]) : undefined),
+        })
+    )
+  )
 )

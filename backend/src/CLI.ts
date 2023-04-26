@@ -3,7 +3,6 @@ import { cliBinary } from './Binary'
 import { toUnicode } from 'punycode'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
-import preferences from './preferences'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import strings from './cliStrings'
@@ -21,7 +20,6 @@ type IData = {
   admin?: UserCredentials
   device: CLIDeviceProps
   connectionDefaults: IConnectionDefaults
-  errorCodes: number[]
 }
 
 type IExec = {
@@ -82,7 +80,6 @@ export default class CLI {
     admin: undefined,
     device: undefined,
     connectionDefaults: {},
-    errorCodes: [],
   }
 
   configFile: JSONFile<ConfigFile>
@@ -337,11 +334,14 @@ export default class CLI {
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
     if (!skipInstalledCheck) {
-      commands.onError = (e: Error) => {
+      commands.onError = async (e: Error) => {
         if (!quiet) {
           if (typeof onError === 'function') onError(e)
-          EventBus.emit(this.EVENTS.error, e.toString())
+          EventBus.emit(this.EVENTS.error, e.message)
         }
+        // can't decrypt authHash
+        if (e.name === '11') await this.signOut()
+
         binaryInstaller.check()
       }
     }

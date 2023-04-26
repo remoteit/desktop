@@ -32,7 +32,7 @@ export const DeviceNameSetting: React.FC = () => {
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}
       onSave={name => {
-        dispatch.accounts.setDevice({ id: device.id, device })
+        dispatch.accounts.setDevice({ id: device.id, device: { ...device, name: name.toString() } })
         dispatch.devices.rename({ id: device.id, name: name.toString() })
       }}
     />

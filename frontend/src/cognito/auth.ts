@@ -307,7 +307,7 @@ export class AuthService {
       return { error: new Error('Backup code is invalid, please double check and try again!') }
     }
 
-    // Now get the remote.it specific account information and
+    // Now get the Remote.It specific account information and
     // then return the full user object.
     // Removing this check for now
     // this.user.remoteitUser = await this.getRemoteitUserInfo(this.username)
@@ -384,7 +384,7 @@ export class AuthService {
   //       .then(() => true)
   //       .catch(() => false),
   //   ])
-  //   if (!remoteitUser) throw new Error('Could not get remote.it user info!')
+  //   if (!remoteitUser) throw new Error('Could not get Remote.It user info!')
   //   return { ...remoteitUser, partnerPortalAccess }
   // }
 

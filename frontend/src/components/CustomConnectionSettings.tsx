@@ -12,7 +12,7 @@ type Props = {
   disabled?: boolean
 }
 
-export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connection, disabled }) => {
+export const CustomConnectionSettings: React.FC<Props> = ({ app, service, connection, disabled }) => {
   if (!connection) connection = newConnection(service)
 
   return (

@@ -1,3 +1,4 @@
+import { IP_PRIVATE } from './sharedCopy/constants'
 import environment from './environment'
 import preferences from './preferences'
 import user from './User'
@@ -37,7 +38,7 @@ export default {
       --name "${c.name}" \
       --port ${c.port} \
       --ip ${c.ip} \
-      --connectAtStart ${!!c.connectOnReady} \
+      --connectAtStart ${!!c.connectOnReady && c.ip === IP_PRIVATE} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \

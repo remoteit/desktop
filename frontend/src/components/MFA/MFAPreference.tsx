@@ -132,7 +132,7 @@ export const MFAPreference: React.FC = () => {
         <Gutters bottom="xl">
           <Typography variant="body2">
             You are signed in with your Google account. You can enable two-factor authentication in your Google account
-            settings. If you also have remote.it login and password, you can sign in with those credentials and then
+            settings. If you also have Remote.It login and password, you can sign in with those credentials and then
             enable two-factor authentication.
           </Typography>
         </Gutters>

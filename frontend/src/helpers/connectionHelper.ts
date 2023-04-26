@@ -95,10 +95,18 @@ export function launchDisabled(connection?: IConnection) {
   if (!connection) return true
   return !!(
     (connection.launchType === 'COMMAND' && isPortal()) ||
-    connection.connectLink ||
     connection.launchType === 'NONE' ||
     !connection.enabled ||
     connection.error
+  )
+}
+
+export function launchSettingHidden(connection?: IConnection) {
+  if (!connection) return true
+  return !!(
+    (connection.launchType === 'COMMAND' && isPortal()) ||
+    connection.connectLink ||
+    connection.launchType === 'NONE'
   )
 }
 
@@ -156,10 +164,7 @@ export function getConnectionLookup(state: ApplicationState) {
   }, {})
 }
 
-export function getEndpoint(connection?: IConnection) {
-  let name = connection?.host
-  let port = connection?.port
-
+export function getEndpoint(name?: string, port?: number) {
   if (!name) {
     name = 'Connecting...'
     port = undefined

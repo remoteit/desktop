@@ -90,7 +90,7 @@ export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
 
 // const TEST_DATA: any = [
 //   {
-//     body: `<p>With its responsive design and resizable panels, remote.it now allows you to customize the layout and information displayed on your screen.</p>
+//     body: `<p>With its responsive design and resizable panels, Remote.It now allows you to customize the layout and information displayed on your screen.</p>
 //       <p>This update includes:</p>
 //       <ul>
 //         <li>New full-screen design and layout for ease of use</li>
@@ -109,7 +109,7 @@ export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
 //     type: 'RELEASE',
 //   },
 //   {
-//     body: 'You can now connect on-demand to keep your connections idle, but always ready to use. Just save the connection settings in your client applications and remote.it will only connect when needed.',
+//     body: 'You can now connect on-demand to keep your connections idle, but always ready to use. Just save the connection settings in your client applications and Remote.It will only connect when needed.',
 //     id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
 //     image: null,
 //     link: '',
@@ -119,13 +119,13 @@ export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
 //     type: 'RELEASE',
 //   },
 //   {
-//     body: '<div>You can now use remote.it to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
+//     body: '<div>You can now use Remote.It to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
 //     id: 'ac6da898-64e2-11eb-8cce-02fe4f7c5a93',
 //     image: 'https://downloads.remote.it/images/aws-marketplace-photo.png',
 //     link: 'https://remote.it/aws/',
 //     modified: '2021-02-01T23:57:23.920Z',
 //     read: null,
-//     title: 'remote.it for AWS Released',
+//     title: 'Remote.It for AWS Released',
 //     type: 'COMMUNICATION',
 //   },
 // ]

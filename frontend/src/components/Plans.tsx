@@ -9,54 +9,73 @@ import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { selectRemoteitLicense } from '../selectors/organizations'
-import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID } from '../models/plans'
+import {
+  REMOTEIT_PRODUCT_ID,
+  PERSONAL_PLAN_ID,
+  PROFESSIONAL_PLAN_ID,
+  BUSINESS_PLAN_ID,
+  SATELLITE_PLAN_ID,
+  ENTERPRISE_PLAN_ID,
+} from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { useMediaQuery } from '@mui/material'
 import { windowOpen } from '../services/Browser'
 import { Confirm } from '../components/Confirm'
+import { Icon } from '../components/Icon'
 
 const Features = {
   [PERSONAL_PLAN_ID]: [
-    'Endpoints: 5',
-    'Prototyping / POC',
+    '5 Devices',
     '7 days of activity logs',
-    'Web support',
-    'Scripts',
     'Limited API usage',
-    'Mobile app',
-    'Non-commercial use',
+    'Web/Desktop/Mobile apps',
     'SSO with Google',
   ],
   [PROFESSIONAL_PLAN_ID]: [
-    'Endpoints: no limit',
+    'Up to 500 devices',
     'Commercial usage',
+    'Organization Management (basic roles)',
+    'Basic device tagging',
+    'Virtual Networks',
     '30 days of activity logs',
-    'Basic endpoint tagging',
-    'Email support',
+    'Limited API usage',
+    'Forum support',
   ],
   [BUSINESS_PLAN_ID]: [
-    'Endpoints: no limit',
-    'Commercial usage',
-    'Organizations',
+    'Up to 2000 devices',
+    'Organization Management including custom roles',
+    'Virtual networks with custom roles, enhanced device tagging',
+    'SSO with SAML or select identity providers',
+    'Scripting',
     '1 year of activity logs',
-    'Custom user roles',
-    'User access control',
-    'SAML single sign on (SSO)',
-    'Enhanced support',
-    'Shared tag management',
     'Unrestricted API usage',
+    'Email support',
   ],
-  enterprise: [
-    'Volume endpoints or user accounts',
-    'Custom activity logs',
-    'Slack support',
-    'Analytics and reporting',
-    'Dedicated infrastructure available',
+  [ENTERPRISE_PLAN_ID]: [
+    'Volume based discounts for users and devices',
+    'Statement of Work based projects: development, support, deployment & onboarding',
+    'Custom activity log retention',
+    'Additional support options: Slack, phone',
+    'Provision of customer specific environments: custom portals, dedicated proxy, named device URLs, and more',
+    'Fixed permanent named endpoint URLs',
+    'Support for embedded devices and custom device packages',
+    'Large-scale solutions for unique and custom use-cases',
+  ],
+  [SATELLITE_PLAN_ID]: [
+    'User and device licenses',
+    'Dedicated Proxy Server',
+    'Custom activity log retention',
+    'Fixed permanent named endpoint URLs',
+    'Live setup and onboarding with technical account manager (TAM)',
+    'Enterprise support options: Slack, phone',
+    'Custom bundled feature pack for customers in CGNAT environments without a global IP address such a mobile 5G, Starlink, other Satellite networks, and more.',
   ],
 }
 
 export const Plans: React.FC = () => {
-  const css = useStyles()
+  const small = useMediaQuery(`(max-width:600px)`)
+  const css = useStyles({ small })
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { initialized, accountId, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
@@ -79,7 +98,8 @@ export const Plans: React.FC = () => {
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
-  const enterprise = !!license && !license.plan.billing
+  const enterprise = !!license && license.plan.id === ENTERPRISE_PLAN_ID
+  const satellite = !!license && license.plan.id === SATELLITE_PLAN_ID
   const userPlan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
 
@@ -95,19 +115,50 @@ export const Plans: React.FC = () => {
 
   return (
     <>
-      <Gutters size="lg" top="xl" className={css.plans}>
-        {form.checkout && (
-          <Overlay>
-            <PlanCheckout
-              plans={plans}
-              form={form}
-              license={license}
-              onChange={form => setForm(form)}
-              onCancel={() => setForm(getDefaults())}
-            />
-          </Overlay>
-        )}
-        {!enterprise && (
+      {form.checkout && (
+        <Overlay>
+          <PlanCheckout
+            plans={plans}
+            form={form}
+            license={license}
+            onChange={form => setForm(form)}
+            onCancel={() => setForm(getDefaults())}
+          />
+        </Overlay>
+      )}
+      {!enterprise && (
+        <Gutters size="md" className={css.plans}>
+          <PlanCard
+            wide
+            promoted
+            name={
+              <>
+                <Icon name="satellite-dish" size="lg" type="solid" inlineLeft />
+                Starlink Access
+              </>
+            }
+            description="Bundle for Satellite, 5G, and other CGNAT environments"
+            price={satellite ? undefined : '$500+'}
+            caption={
+              satellite ? (
+                <>
+                  For changes, see your <br />
+                  administrator or
+                </>
+              ) : (
+                'starting price per month'
+              )
+            }
+            note={satellite ? undefined : 'when billed annually'}
+            button="Contact Us"
+            selected={satellite}
+            onSelect={() => windowOpen('https://remote.it/contact-us/', '_blank')}
+            features={Features[SATELLITE_PLAN_ID]}
+          />
+        </Gutters>
+      )}
+      {!enterprise && !satellite && (
+        <Gutters size="lg" className={css.plans}>
           <>
             <PlanCard
               name="Personal"
@@ -127,7 +178,7 @@ export const Plans: React.FC = () => {
             {plans.map(plan => {
               const planPrice = plan.prices && plan.prices.find(p => p.interval === 'YEAR')
               let price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
-              let caption = 'per month / per user'
+              let caption = 'per user / per month'
               let note: string | undefined = 'when billed annually'
               const selected = license?.plan?.id === plan.id
               if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
@@ -190,42 +241,46 @@ export const Plans: React.FC = () => {
               </ul>
             </Confirm>
           </>
-        )}
-      </Gutters>
-      <Gutters size="md" top={null} bottom="xxl" className={css.plans}>
-        <PlanCard
-          wide
-          name="Enterprise"
-          description="For large volume and OEM"
-          caption={
-            enterprise ? (
-              <>
-                For changes, see
-                <br /> your administrator or
-              </>
-            ) : (
-              <>
-                Large-scale solutions
-                <br /> or custom use cases
-              </>
-            )
-          }
-          button="Contact Us"
-          selected={enterprise}
-          onSelect={() => {
-            if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
-            else windowOpen('https://remote.it/contact-us/', '_blank')
-          }}
-          features={enterprise ? undefined : Features.enterprise}
-        />
-      </Gutters>
+        </Gutters>
+      )}
+      {!satellite && (
+        <Gutters size="md" className={css.plans}>
+          <PlanCard
+            wide
+            name="Enterprise"
+            description="For large volume and OEM"
+            caption={
+              enterprise ? (
+                <>
+                  For changes, see
+                  <br /> your administrator or
+                </>
+              ) : (
+                <>
+                  Large-scale solutions for
+                  <br />
+                  unique and custom use-cases
+                </>
+              )
+            }
+            button="Contact Us"
+            selected={enterprise}
+            onSelect={() => {
+              if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
+              else windowOpen('https://remote.it/contact-us/', '_blank')
+            }}
+            features={enterprise ? undefined : Features[ENTERPRISE_PLAN_ID]}
+          />
+        </Gutters>
+      )}
     </>
   )
 }
 
 const useStyles = makeStyles({
-  plans: {
+  plans: ({ small }: { small: boolean }) => ({
     display: 'flex',
     justifyContent: 'center',
-  },
+    flexWrap: small ? 'wrap' : 'nowrap',
+  }),
 })

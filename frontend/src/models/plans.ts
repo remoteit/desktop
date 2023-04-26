@@ -25,6 +25,7 @@ export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
+export const SATELLITE_PLAN_ID = '949bc12d-e340-11ed-9dd4-06cb97c82db3'
 export const ENTERPRISE_PLAN_ID = 'b44f92a6-a7b9-11eb-b094-02a962787033'
 
 export const LicenseLookup: ILicenseLookup[] = [

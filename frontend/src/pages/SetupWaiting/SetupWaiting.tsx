@@ -31,7 +31,7 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
       <CircularProgress thickness={1.5} size={60} />
       <section>
         <Typography className={css.title} variant="h3" align="center" gutterBottom>
-          Your {osName(os)} is being registered with remote.it
+          Your {osName(os)} is being registered with Remote.It
         </Typography>
         <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
           This may take up to a minute to complete.
