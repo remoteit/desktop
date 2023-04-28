@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { List, Typography } from '@mui/material'
+import { List, Typography, Box } from '@mui/material'
 import { Redirect, useParams } from 'react-router-dom'
 import {
   selectRemoteitLicense,
@@ -14,6 +14,7 @@ import { PlanActionChip } from '../components/PlanActionChip'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 
 export const OrganizationPage: React.FC = () => {
@@ -34,19 +35,22 @@ export const OrganizationPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <>
-          {license && (
-            <Typography variant="subtitle1" component="span">
-              <Title>{license?.plan.description} Plan</Title>
-              <PlanActionChip license={license} />
-            </Typography>
-          )}
-          <Gutters top={null}>
-            <Typography variant="h2" gutterBottom>
-              <Title>{organization.name || '...'}</Title>
-            </Typography>
-          </Gutters>
-        </>
+        <Gutters top={null}>
+          <Box display="flex" alignItems="center" marginTop={2}>
+            <Avatar email={organization.account.email} size={46} inline />
+            <Box>
+              {license && (
+                <Typography variant="subtitle2">
+                  <Title>{license?.plan.description} Plan</Title>
+                  <PlanActionChip license={license} />
+                </Typography>
+              )}
+              <Typography variant="h2">
+                <Title>{organization.name || '...'}</Title>
+              </Typography>
+            </Box>
+          </Box>
+        </Gutters>
       }
     >
       {!admin && (

@@ -14,7 +14,6 @@ type Props = {
   size?: 'icon' | 'medium' | 'small' | 'large'
   fullWidth?: boolean
   disabled?: boolean
-  loading?: boolean
   onClick?: () => void
 }
 

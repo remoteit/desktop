@@ -115,13 +115,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (all) title += ' all'
 
-  if (loading) icon = 'spinner-third'
-  if (props.loading) {
-    title = 'Loading'
-    icon = undefined
-  }
   props.loading = props.loading || loading
 
+  if (props.loading) icon = 'spinner-third'
   if (service?.attributes.route === 'p2p' && isPortal()) disabled = true
   if (disabled && props.size === 'icon') title = ''
   if (connection?.connectLink && state !== 'offline') {

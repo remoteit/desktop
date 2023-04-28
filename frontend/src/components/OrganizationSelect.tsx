@@ -11,6 +11,7 @@ import { selectOrganization } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
+import { Icon } from './Icon'
 
 export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
@@ -59,17 +60,23 @@ export const OrganizationSelect: React.FC = () => {
         <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
       <List dense className={css.list}>
-        <ListItem disableGutters className={css.buttonContainer}>
-          <IconButton
-            onClick={() => onSelect(ownOrgId || userId)}
-            className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
-            title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
-            icon="house"
-            size="md"
-            color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'}
-            placement="right"
-          />
-        </ListItem>
+        <Tooltip
+          title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
+          placement="right"
+          enterDelay={800}
+          arrow
+        >
+          <ListItem disableGutters className={css.buttonContainer}>
+            <ButtonBase
+              className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
+              onClick={() => onSelect(ownOrgId || userId)}
+            >
+              <Box className={css.home}>
+                <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
+              </Box>
+            </ButtonBase>
+          </ListItem>
+        </Tooltip>
         {options.map(option => (
           <Tooltip
             key={option.id}
@@ -79,13 +86,12 @@ export const OrganizationSelect: React.FC = () => {
             arrow
           >
             <ListItem disableGutters>
-              <ButtonBase disabled={option.disabled} onClick={() => onSelect(option.id)}>
-                <Avatar
-                  email={option.email}
-                  fallback={option.name}
-                  active={option.id === activeOrg.id}
-                  button={!option.disabled}
-                />
+              <ButtonBase
+                disabled={option.disabled}
+                onClick={() => onSelect(option.id)}
+                className={classnames(css.button, option.id === activeOrg.id && css.active)}
+              >
+                <Avatar email={option.email} fallback={option.name} size={38} border={2} />
               </ButtonBase>
             </ListItem>
           </Tooltip>
@@ -124,13 +130,32 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   button: {
     borderRadius: '50%',
-    width: 38,
-    height: 38,
+    border: `2px solid ${palette.grayLighter.main}`,
+    transition: 'border-color 0.5s',
+    width: 42,
+    height: 42,
   },
   active: {
-    border: `2px solid ${palette.primary.main}`,
+    borderColor: palette.primary.main,
     boxShadow: `0 0 10px ${palette.primaryLight.main}`,
-    background: palette.grayLightest.main,
+    '& > *': { border: `2px solid ${palette.grayLightest.main}` },
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      right: -16,
+      borderTop: '6px solid transparent',
+      borderRight: `8px solid ${palette.primary.main}`,
+      borderBottom: '6px solid transparent',
+    },
+  },
+  home: {
+    width: 38,
+    height: 38,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.grayLighter.main,
   },
   name: {
     transform: 'rotate(270deg)',
@@ -148,4 +173,9 @@ const useStyles = makeStyles(({ palette }) => ({
       textTransform: 'uppercase',
     },
   },
+  // fade: {
+  //   // opacity: 0.5,
+  //   transition: 'opacity 0.4s',
+  //   '&:hover': { opacity: 1 },
+  // },
 }))

@@ -179,24 +179,19 @@ export const DevicePage: React.FC = () => {
               >
                 <ConnectButton
                   size="icon"
-                  color="primary"
                   iconSize="base"
                   iconType="solid"
                   connection={c}
                   service={s}
+                  loading={setupDeletingService === s.id}
+                  color={setupDeletingService === s.id ? 'danger' : 'primary'}
                   className={css.connect}
                   permissions={device.permissions}
                   disabled={s.state === 'inactive'}
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
-                <ListItemSecondaryAction>
-                  {setupDeletingService === s.id ? (
-                    <CircularProgress color="error" size={fontSizes.md} />
-                  ) : (
-                    <ServiceMiniState service={s} connection={c} />
-                  )}
-                </ListItemSecondaryAction>
+                <ServiceMiniState service={s} connection={c} className={css.service} />
               </ListItemLocation>
             )
           })}
@@ -210,5 +205,6 @@ const useStyles = makeStyles({
   connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
   list: { marginRight: 1 },
+  service: { marginRight: spacing.sm, marginLeft: spacing.sm },
   restore: { marginTop: spacing.xxs, padding: 0 },
 })

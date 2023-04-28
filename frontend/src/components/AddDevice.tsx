@@ -5,8 +5,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectPermissions, selectOrganization } from '../selectors/organizations'
 import { ListItemCopy } from './ListItemCopy'
-import { Notice } from '../components/Notice'
-import { Link } from '../components/Link'
+import { Notice } from './Notice'
+import { Link } from './Link'
 
 type Props = {
   platform: IPlatform
@@ -16,19 +16,19 @@ type Props = {
 }
 
 export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) => {
-  const { organization, registrationCommand, registrationCode, permissions, fetching, userId } = useSelector(
+  const { organization, registrationCommand, registrationCode, permissions, fetching, user } = useSelector(
     (state: ApplicationState) => ({
       organization: selectOrganization(state),
       registrationCommand: state.ui.registrationCommand,
       registrationCode: state.ui.registrationCode,
       permissions: selectPermissions(state),
       fetching: state.ui.fetching,
-      userId: state.user.id,
+      user: state.user,
     })
   )
   const [redirected, setRedirected] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
-  let accountId = organization.id || userId
+  let accountId = organization.id || user.id
   let accountName = organization.name
 
   useEffect(() => {
