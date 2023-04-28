@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box } from '@mui/material'
-import { getAttributes } from './Attributes'
+import { connectionAttributes } from './Attributes'
 import { ConnectionChecklist } from './ConnectionChecklist'
 import { useApplication } from '../hooks/useApplication'
 import { DataDisplay } from './DataDisplay'
@@ -13,7 +13,6 @@ type Props = {
 }
 
 export const ConnectionData: React.FC<Props> = ({ connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'session', 'duration', 'location', 'initiatorPlatform'])
   const app = useApplication(service, connection)
 
   if (!connection && !session) return null
@@ -22,11 +21,10 @@ export const ConnectionData: React.FC<Props> = ({ connection, service, session }
     <Gutters bottom="md">
       <Box display="flex" flexDirection="row" alignItems="center">
         <DataDisplay
-          attributes={attributes}
+          attributes={connectionAttributes}
           connection={connection}
           session={session}
           application={app}
-          width={100}
           disablePadding
         />
         <ConnectionChecklist connection={connection} />

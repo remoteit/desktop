@@ -6,8 +6,14 @@ import { selectMembership } from './accounts'
 import { defaultState } from '../models/organization'
 
 export const selectOrganization = createSelector(
-  [getActiveAccountId, getOrganizations],
-  (accountId, organizations) => organizations[accountId] || defaultState
+  [getActiveAccountId, getOrganizations, selectMembership],
+  (accountId, organizations, membership) => {
+    const organization = organizations[accountId] || defaultState
+    return {
+      ...organization,
+      ...membership,
+    }
+  }
 )
 
 export const selectOrganizationName = createSelector(
@@ -54,7 +60,7 @@ export const selectOwner = createSelector(
   [getActiveUser, selectRemoteitLicense],
   (user, license): IOrganizationMember | undefined => {
     return {
-      created: new Date(user.created || ''),
+      created: user.created || new Date(),
       roleId: 'OWNER',
       license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
       organizationId: user.id,

@@ -22,7 +22,8 @@ export function attributeName(instance?: IDevice | IService) {
   return instance.attributes?.name || instance.name
 }
 
-export function replaceHost(url: string, localhost?: boolean) {
+export function replaceHost(url?: string, localhost?: boolean) {
+  if (!url) return ''
   if (localhost && url.includes(IP_PRIVATE)) {
     return url.replace(new RegExp(IP_PRIVATE, 'g'), 'localhost')
   }

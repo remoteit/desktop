@@ -2,8 +2,9 @@ import React, { useRef, useState, useEffect } from 'react'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
+import { replaceHost } from '../shared/nameHelper'
 import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
-import { Typography, Tooltip, InputLabel, Collapse, Paper, Box, alpha } from '@mui/material'
+import { Typography, Tooltip, Collapse, Paper, Box, alpha } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { LaunchButton } from '../buttons/LaunchButton'
@@ -55,7 +56,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   if (!connection && !session) return null
 
-  let name = connection?.host
+  let name = replaceHost(connection?.host)
   let port = connection?.port
 
   const endpoint = getEndpoint(name, port)
@@ -69,9 +70,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>
+      <Typography variant="h5" color="alwaysWhite.main">
         {endpointName} {copied}
-      </InputLabel>
+      </Typography>
       <Typography
         variant="h3"
         className={css.h3}
@@ -88,7 +89,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const nameDisplay = (
     <div className={hover === 'host' ? css.show : css.hide}>
-      <InputLabel shrink>Host</InputLabel>
+      <Typography variant="h5" color="alwaysWhite.main">
+        Host
+      </Typography>
       <Typography variant="h3" className={css.h3}>
         {secureIcon}
         {name && <span>{name}</span>}
@@ -99,7 +102,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const portDisplay = (
     <div className={hover === 'port' ? css.show : css.hide}>
-      <InputLabel shrink>Port</InputLabel>
+      <Typography variant="h5" color="alwaysWhite.main">
+        Port
+      </Typography>
       <Typography variant="h3" className={css.h3}>
         {secureIcon}
         <span className={css.inactive}>{name}:</span>
@@ -110,7 +115,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const copyDisplay = (
     <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
-      <InputLabel shrink>{endpointName}</InputLabel>
+      <Typography variant="h5" color="alwaysWhite.main">
+        {endpointName}
+      </Typography>
       <Typography variant="h3" className={css.h3}>
         {secureIcon}
         <span>{endpoint}</span>
@@ -120,7 +127,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   const launchDisplay = (
     <div ref={launchRef} className={hover === 'launch' || hover === 'copyLaunch' ? css.show : css.hide}>
-      <InputLabel shrink>{app.contextTitle}</InputLabel>
+      <Typography variant="h5" color="alwaysWhite.main">
+        {app.contextTitle}
+      </Typography>
       <Typography variant="h3" className={css.h3}>
         {secureIcon}
         <span>{app.string}</span>
@@ -134,7 +143,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
         <Box className={classnames(css.address, !(connection?.enabled || session) && css.disabled)}>
           {!!showTitle ? (
             <Gutters size="md">
-              <InputLabel shrink>User</InputLabel>
+              <Typography variant="h5" color="alwaysWhite.main">
+                User
+              </Typography>
               <Typography variant="h2">{showTitle}</Typography>
             </Gutters>
           ) : (
@@ -180,9 +191,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
               >
                 <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
                   <span>
-                    <InputLabel shrink>
+                    <Typography variant="h5" color="alwaysWhite.main">
                       Copy {hover === 'launch' ? '' : hover === 'copyLaunch' ? app.contextTitle : hover}
-                    </InputLabel>
+                    </Typography>
                     <CopyIconButton
                       ref={buttonRef}
                       color="alwaysWhite"
@@ -227,7 +238,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   </span>
                   {app.canShare && (
                     <span className={css.share}>
-                      <InputLabel shrink>Share</InputLabel>
+                      <Typography variant="h5" color="alwaysWhite.main">
+                        Share
+                      </Typography>
                       <CopyIconButton
                         color="alwaysWhite"
                         icon="share"
@@ -238,7 +251,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   )}
                   {app.launchType !== 'NONE' && (
                     <span>
-                      <InputLabel shrink>Launch</InputLabel>
+                      <Typography variant="h5" color="alwaysWhite.main">
+                        Launch
+                      </Typography>
                       {app.canLaunch ? (
                         <LaunchButton
                           app={app}
@@ -292,6 +307,8 @@ const useStyles = makeStyles(({ palette }) => ({
     textOverflow: 'ellipsis',
     display: '-webkit-box',
     transition: 'height 200ms',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xxs,
     '-webkit-line-clamp': 2,
     '-webkit-box-orient': 'vertical',
     '& span': { wordBreak: 'break-word' },

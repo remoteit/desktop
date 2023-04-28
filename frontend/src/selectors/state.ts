@@ -2,7 +2,7 @@ import { ApplicationState } from '../store'
 import { getLocalStorage } from '../services/Browser'
 import { NOTICE_VERSION_ID } from '../models/backend'
 
-export const getUser = (state: ApplicationState) => state.auth.user || state.user
+export const getUser = (state: ApplicationState) => state.user
 export const getUserId = (state: ApplicationState) => state.auth.user?.id || ''
 export const getMemberships = (state: ApplicationState) => state.accounts.membership
 export const optionalAccountId = (_: ApplicationState, accountId?: string) => accountId

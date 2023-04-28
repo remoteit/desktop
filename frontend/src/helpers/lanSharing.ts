@@ -15,7 +15,7 @@ export function lanShareRestriction(connection?: IConnection) {
 }
 
 export function lanShared(connection?: IConnection) {
-  return !connection?.public && !!(connection && connection.ip !== IP_PRIVATE)
+  return !connection?.public && !!(connection?.ip && connection.ip !== IP_PRIVATE)
 }
 
 export function isIPClass(checkIP: ipAddress, privateIP: ipAddress, type: ipClass) {

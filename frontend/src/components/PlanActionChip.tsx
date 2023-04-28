@@ -1,5 +1,11 @@
 import React from 'react'
-import { PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID, ENTERPRISE_PLAN_ID } from '../models/plans'
+import {
+  PERSONAL_PLAN_ID,
+  PROFESSIONAL_PLAN_ID,
+  BUSINESS_PLAN_ID,
+  ENTERPRISE_PLAN_ID,
+  SATELLITE_PLAN_ID,
+} from '../models/plans'
 import { ColorChip, Props as ChipProps } from './ColorChip'
 import { useHistory } from 'react-router-dom'
 
@@ -28,6 +34,8 @@ export const PlanActionChip: React.FC<Props> = ({ license }) => {
       props.label = 'Change'
       break
     case ENTERPRISE_PLAN_ID:
+    case SATELLITE_PLAN_ID:
+    default:
       return null
   }
 

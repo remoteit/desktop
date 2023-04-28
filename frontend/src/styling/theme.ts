@@ -581,7 +581,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontWeight: 500,
           },
           subtitle2: {
-            fontSize: fontSizes.xs,
+            fontSize: fontSizes.xxs,
             color: palette.grayDarkest.main,
             display: 'flex',
             alignItems: 'center',
