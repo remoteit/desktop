@@ -35,7 +35,7 @@ export const GuideBubble: React.FC<Props> = ({
 }) => {
   const { poppedBubbles, expired } = useSelector((state: ApplicationState) => ({
     poppedBubbles: state.ui.poppedBubbles,
-    expired: startDate > state.user.created && !state.ui.unExpireBubbles,
+    expired: startDate > state.user.created && !state.ui.unExpireBubbles && !state.ui.testUI,
   }))
   const { ui } = useDispatch<Dispatch>()
   const [waiting, setWaiting] = React.useState<boolean>(true)

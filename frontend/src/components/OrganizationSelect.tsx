@@ -8,6 +8,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { Typography, Tooltip, ButtonBase, Box, List, ListItem } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
+import { GuideBubble } from './GuideBubble'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
@@ -59,54 +60,71 @@ export const OrganizationSelect: React.FC = () => {
       <Box className={css.name}>
         <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
-      <List dense className={css.list}>
-        <Tooltip
-          title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
-          placement="right"
-          enterDelay={800}
-          arrow
-        >
-          <ListItem disableGutters className={css.buttonContainer}>
-            <ButtonBase
-              className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
-              onClick={() => onSelect(ownOrgId || userId)}
-            >
-              <Box className={css.home}>
-                <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
-              </Box>
-            </ButtonBase>
-          </ListItem>
-        </Tooltip>
-        {options.map(option => (
+      <GuideBubble
+        guide="organizationSelect"
+        placement="right"
+        startDate={new Date('2023-01-01')}
+        queueAfter="addDevice"
+        instructions={
+          <>
+            <Typography variant="h3" gutterBottom>
+              <b>Select an organization</b>
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              See devices, networks and logs that belong to this organization.
+            </Typography>
+          </>
+        }
+      >
+        <List dense className={css.list}>
           <Tooltip
-            key={option.id}
-            title={`${option.name} - ${option.roleName}`}
+            title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
             placement="right"
             enterDelay={800}
             arrow
           >
-            <ListItem disableGutters>
+            <ListItem disableGutters className={css.buttonContainer}>
               <ButtonBase
-                disabled={option.disabled}
-                onClick={() => onSelect(option.id)}
-                className={classnames(css.button, option.id === activeOrg.id && css.active)}
+                className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
+                onClick={() => onSelect(ownOrgId || userId)}
               >
-                <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                <Box className={css.home}>
+                  <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
+                </Box>
               </ButtonBase>
             </ListItem>
           </Tooltip>
-        ))}
-        <ListItem disableGutters className={css.buttonContainer}>
-          <IconButton
-            className={css.button}
-            title="Memberships"
-            icon="ellipsis-h"
-            to="/organization/memberships"
-            placement="right"
-            size="md"
-          />
-        </ListItem>
-      </List>
+          {options.map(option => (
+            <Tooltip
+              key={option.id}
+              title={`${option.name} - ${option.roleName}`}
+              placement="right"
+              enterDelay={800}
+              arrow
+            >
+              <ListItem disableGutters>
+                <ButtonBase
+                  disabled={option.disabled}
+                  onClick={() => onSelect(option.id)}
+                  className={classnames(css.button, option.id === activeOrg.id && css.active)}
+                >
+                  <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                </ButtonBase>
+              </ListItem>
+            </Tooltip>
+          ))}
+          <ListItem disableGutters className={css.buttonContainer}>
+            <IconButton
+              className={css.button}
+              title="Memberships"
+              icon="ellipsis-h"
+              to="/organization/memberships"
+              placement="right"
+              size="md"
+            />
+          </ListItem>
+        </List>
+      </GuideBubble>
     </>
   )
 }
