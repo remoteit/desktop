@@ -60,7 +60,7 @@ platforms.register({
   types: { 769: 'Linux', 1121: 'RedHat Linux', 1200: 'Linux ARM' },
   installation: {
     command: true,
-    qualifier: 'For any Linux based system.',
+    qualifier: 'For any Linux based system',
     link: 'https://link.remote.it/support/streamline-install',
   },
 })

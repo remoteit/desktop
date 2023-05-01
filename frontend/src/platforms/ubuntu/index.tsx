@@ -25,7 +25,7 @@ platforms.register({
   component: Component,
   types: { 1120: 'Debian Linux' },
   installation: {
-    qualifier: 'For Ubuntu Desktop systems.',
+    qualifier: 'For Ubuntu Desktop systems',
     link: 'https://link.remote.it/download/desktop',
     instructions: (
       <>

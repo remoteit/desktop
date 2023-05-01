@@ -73,7 +73,7 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </ListHorizontal>
-        <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
+        <ListHorizontal className={classnames(css.third)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
           <ListItem>
