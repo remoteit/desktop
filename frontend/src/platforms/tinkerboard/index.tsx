@@ -14,7 +14,7 @@ platforms.register({
   types: { 1215: 'ASUS Tinker Board' },
   installation: {
     command: true,
-    qualifier: 'For the ASUS Tinker Board:',
+    qualifier: 'For the ASUS Tinker Board',
     link: 'https://link.remote.it/support/streamline-install',
   },
 })

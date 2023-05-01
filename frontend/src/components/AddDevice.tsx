@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { List, Box, Typography } from '@mui/material'
 import { platforms, IPlatform } from '../platforms'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { List, Box, Typography, ListItemText } from '@mui/material'
 import { selectPermissions, selectOrganization } from '../selectors/organizations'
 import { ListItemCopy } from './ListItemCopy'
+import { Avatar } from '../components/Avatar'
 import { Notice } from './Notice'
 import { Link } from './Link'
 
@@ -29,7 +30,6 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
   const [redirected, setRedirected] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   let accountId = organization.id || user.id
-  let accountName = organization.name
 
   useEffect(() => {
     if (fetching) return
@@ -63,17 +63,13 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
 
   return (
     <>
-      <Typography variant="body2" color="textSecondary">
-        {platform.installation?.qualifier}
-      </Typography>
+      <Box display="flex" marginBottom={3}>
+        <Avatar email={organization.account.email} size={42} inline />
+        <ListItemText primary={organization.name || 'Personal'} secondary="Organization" />
+      </Box>
       <Typography variant="h3">
-        {redirect ? (
-          <>
-            Copy the code below into your {platform.name} {accountName && <>to register it with {accountName}</>}
-          </>
-        ) : (
-          <>Run this terminal command on your device to register it {accountName && <>with {accountName}</>}</>
-        )}
+        {platform.installation?.qualifier},
+        {redirect ? <> copy the code below into your {platform.name}:</> : <> run this command on your device:</>}
       </Typography>
       <List>
         <ListItemCopy
