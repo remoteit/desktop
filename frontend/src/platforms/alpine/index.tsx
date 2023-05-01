@@ -23,7 +23,7 @@ platforms.register({
   types: { 1122: 'Alpine Linux' },
   installation: {
     command: true,
-    qualifier: 'For Alpine Linux based systems.',
+    qualifier: 'For Alpine Linux based systems',
     link: 'https://link.remote.it/support/streamline-install',
   },
 })
