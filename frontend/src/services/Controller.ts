@@ -2,7 +2,7 @@ import io, { Socket } from 'socket.io-client'
 import { store } from '../store'
 import { isPortal } from '../services/Browser'
 import { IBackendState } from '../models/backend'
-import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
+import { PORT, FRONTEND_RETRY_DELAY, IP_PRIVATE } from '../shared/constants'
 import { EventEmitter } from 'events'
 import network from '../services/Network'
 
@@ -15,8 +15,8 @@ class Controller extends EventEmitter {
 
   init() {
     const { protocol, host } = window.location
-    const isDev = host === 'localhost:3000'
-    this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
+    const isDev = host === `${IP_PRIVATE}:3000`
+    this.url = protocol === 'file:' || isDev ? `http://${IP_PRIVATE}:${PORT}` : '/'
     this.onNetworkConnect()
     if (!navigator.onLine) network.offline()
     network.on('connect', this.onNetworkConnect)
