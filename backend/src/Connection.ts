@@ -52,7 +52,7 @@ export default class Connection {
       .replace(/\s+/g, ' ')
       .split(' ')
 
-    const filter = ['--enableCertificate', '--log', '--logfolder', '--manufacture-id', '--authhash']
+    const filter = ['--log', '--logfolder', '--manufacture-id', '--authhash']
     filter.forEach(param => {
       const index = commands.indexOf(param)
       if (index >= 0) commands.splice(index, 2)
