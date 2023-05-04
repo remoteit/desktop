@@ -237,7 +237,7 @@ export function getApplicationType(typeId?: number) {
         defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows
-          ? '"[path]" -Username [username] [host]:[port]'
+          ? '"[path]" -Username "[username]" [host]:[port]'
           : 'open -a "[app]" --args -Username [username] [host]:[port]',
       })
     case 28:

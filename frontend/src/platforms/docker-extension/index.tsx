@@ -1,7 +1,7 @@
 import React from 'react'
 import { platforms } from '..'
 import { Link } from '../../components/Link'
-import logo from './docker.svg'
+import logo from '../docker/docker.svg'
 
 const Component = ({ darkMode, ...props }) => {
   return <img src={logo} alt="Docker" {...props} />
@@ -9,9 +9,9 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'docker-extension',
-  name: 'Docker Desktop',
+  name: 'Docker Jumpbox Extension',
   component: Component,
-  types: { 1220: 'Docker Desktop Extension' },
+  types: { 1220: 'Docker Extension' },
   services: [],
   installation: {
     label: 'Registration Code',
@@ -25,7 +25,7 @@ platforms.register({
         if it's already installed.
       </>
     ),
-    qualifier: '',
+    qualifier: 'For docker desktop',
     link: '',
   },
 })

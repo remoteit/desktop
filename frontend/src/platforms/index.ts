@@ -28,6 +28,7 @@ class Platforms {
     'azure',
     'docker',
     'docker-extension',
+    'docker-jumpbox',
     'firewalla',
     'gcp',
     'ios',

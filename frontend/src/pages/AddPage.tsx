@@ -111,7 +111,7 @@ export const AddPage: React.FC = () => {
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />
-          {['docker', 'aws', 'azure', 'gcp', 'arm'].map(p => {
+          {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation
@@ -134,6 +134,7 @@ export const AddPage: React.FC = () => {
           {[
             'raspberrypi',
             'linux',
+            'docker',
             'nas',
             'openwrt',
             'firewalla',

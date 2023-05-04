@@ -66,7 +66,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
       <OrganizationIndicator avatarSize={42} marginBottom={3} />
       <Typography variant="h3">
         {platform.installation?.qualifier},
-        {redirect ? <> copy the code below into your {platform.name}:</> : <> run this command on your device:</>}
+        {redirect ? <> copy the code below:</> : <> run this command on your device:</>}
       </Typography>
       <List>
         <ListItemCopy

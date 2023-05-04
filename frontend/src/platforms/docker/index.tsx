@@ -9,9 +9,9 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'docker',
-  name: 'Docker',
+  name: 'Docker Agent',
   component: Component,
-  types: { 1219: 'Docker Container' },
+  types: { 1219: 'Docker Agent' },
   installation: {
     command: 'docker run -d -e R3_REGISTRATION_CODE="[CODE]" remoteit/remoteit-agent:latest',
     instructions: (
