@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
-import { selectOrganization } from '../selectors/organizations'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider, Box } from '@mui/material'
+import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
+import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { ListHorizontal } from '../components/ListHorizontal'
@@ -14,7 +14,6 @@ import { IconButton } from '../buttons/IconButton'
 import { platforms } from '../platforms'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
-import { Avatar } from '../components/Avatar'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
@@ -25,10 +24,9 @@ export const AddPage: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo, organization } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
-    organization: selectOrganization(state),
   }))
 
   const handleClose = () => {
@@ -107,10 +105,7 @@ export const AddPage: React.FC = () => {
                 }}
               />
             </form>
-            <Box display="flex" alignItems="center">
-              <Avatar email={organization.account.email} inline />
-              <ListItemText primary={organization.name || 'Personal'} secondary="Account" />
-            </Box>
+            <OrganizationIndicator alignItems="center" />
           </ListItem>
         </ListHorizontal>
         <ListHorizontal className={css.list} dense disablePadding>
