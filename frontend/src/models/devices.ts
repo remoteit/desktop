@@ -384,6 +384,7 @@ export default createModel<RootModel>()({
       accountId: string
       template?: string | boolean
     }) {
+      if (platform === 65535) platform = undefined // Clear out the platform if it's the unknown type
       const result = await graphQLRegistration({ name, services, platform, tags, account: accountId })
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account

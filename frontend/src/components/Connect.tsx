@@ -80,11 +80,16 @@ export const Connect: React.FC = () => {
             <Collapse in={showConnectLink}>
               <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
             </Collapse>
-            <Collapse in={!connection.connectLink}>
-              <ListItemLocation icon="sliders" title="Connection configuration" pathname="advanced" dense>
-                <Icon name="angle-right" inlineLeft fixedWidth />
-              </ListItemLocation>
-            </Collapse>
+            <ListItemLocation
+              icon="sliders"
+              title="Connection configuration"
+              disabled={connection.connectLink}
+              pathname="advanced"
+              showDisabled
+              dense
+            >
+              <Icon name="angle-right" inlineLeft fixedWidth />
+            </ListItemLocation>
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Want Persistent Endpoints?</strong>

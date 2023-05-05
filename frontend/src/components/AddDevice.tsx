@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { platforms, IPlatform } from '../platforms'
+import { List, Box, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { List, Box, Typography, ListItemText } from '@mui/material'
 import { selectPermissions, selectOrganization } from '../selectors/organizations'
+import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { ListItemCopy } from './ListItemCopy'
-import { Avatar } from '../components/Avatar'
 import { Notice } from './Notice'
 import { Link } from './Link'
 
@@ -29,6 +29,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
   )
   const [redirected, setRedirected] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
+  const codeOnly = platform.installation?.command === '[CODE]'
   let accountId = organization.id || user.id
 
   useEffect(() => {
@@ -63,13 +64,10 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
 
   return (
     <>
-      <Box display="flex" marginBottom={3}>
-        <Avatar email={organization.account.email} size={42} inline />
-        <ListItemText primary={organization.name || 'Personal'} secondary="Organization" />
-      </Box>
+      <OrganizationIndicator avatarSize={42} marginBottom={3} />
       <Typography variant="h3">
         {platform.installation?.qualifier},
-        {redirect ? <> copy the code below into your {platform.name}:</> : <> run this command on your device:</>}
+        {codeOnly ? <> copy the code below:</> : <> run this command on your device:</>}
       </Typography>
       <List>
         <ListItemCopy

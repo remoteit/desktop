@@ -37,7 +37,7 @@ export const OrganizationPage: React.FC = () => {
       header={
         <Gutters top={null}>
           <Box display="flex" alignItems="center" marginTop={2}>
-            <Avatar email={organization.account.email} size={46} inline />
+            <Avatar email={organization.account.email} fallback={organization.name} size={46} inline />
             <Box>
               {license && (
                 <Typography variant="subtitle2">

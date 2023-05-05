@@ -13,7 +13,7 @@ platforms.register({
   component: Component,
   types: { 1219: 'Docker Container' },
   installation: {
-    command: 'docker run -d -e R3_REGISTRATION_CODE="[CODE]" remoteit/remoteit-agent:latest',
+    command: 'docker run -d -e R3_REGISTRATION_CODE="[CODE]" --restart unless-stopped remoteit/remoteit-agent:latest',
     instructions: (
       <>
         For production settings please visit our
