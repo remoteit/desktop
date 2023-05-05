@@ -26,6 +26,5 @@ platforms.register({
       </>
     ),
     qualifier: 'For docker desktop',
-    link: '',
   },
 })

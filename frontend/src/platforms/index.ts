@@ -10,7 +10,7 @@ export interface IPlatform {
     command?: boolean | string
     instructions?: string | React.ReactNode
     qualifier: string
-    link: string
+    link?: string
   }
 }
 

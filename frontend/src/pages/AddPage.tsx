@@ -52,8 +52,8 @@ export const AddPage: React.FC = () => {
   return (
     <Body verticalOverflow>
       <Gutters className={css.container}>
-        <DeviceSetupItem className={classnames(css.list, css.third)} onClick={handleClose} />
-        <ListHorizontal className={classnames(css.list, css.third)} dense disablePadding>
+        <DeviceSetupItem className={classnames(css.list, css.quarter)} onClick={handleClose} />
+        <ListHorizontal className={classnames(css.list, css.quarter)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
           <ListItem
@@ -71,7 +71,7 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </ListHorizontal>
-        <ListHorizontal className={classnames(css.third)} dense disablePadding>
+        <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
           <ListItem>
@@ -105,13 +105,26 @@ export const AddPage: React.FC = () => {
                 }}
               />
             </form>
-            <OrganizationIndicator alignItems="center" />
+            <OrganizationIndicator alignItems="center" marginTop={1} />
           </ListItem>
         </ListHorizontal>
+        {/* <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
+          <ListSubheader disableGutters>Get a code</ListSubheader>
+          <Divider />
+          <ListItemLocation
+            iconPlatform
+            iconSize="xxl"
+            icon="unknown"
+            pathname="/add/unknown"
+            title="Generic"
+            subtitle="Registration code"
+            disableGutters
+          />
+        </ListHorizontal> */}
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />
-          {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
+          {['docker', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation
@@ -134,7 +147,6 @@ export const AddPage: React.FC = () => {
           {[
             'raspberrypi',
             'linux',
-            'docker',
             'nas',
             'openwrt',
             'firewalla',
@@ -179,9 +191,9 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
   },
-  third: {
-    width: '33%',
-    minWidth: 220,
+  quarter: {
+    width: '25%',
+    minWidth: 200,
   },
   form: {
     width: 160,

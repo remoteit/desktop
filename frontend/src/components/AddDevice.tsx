@@ -29,6 +29,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
   )
   const [redirected, setRedirected] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
+  const codeOnly = platform.installation?.command === '[CODE]'
   let accountId = organization.id || user.id
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
       <OrganizationIndicator avatarSize={42} marginBottom={3} />
       <Typography variant="h3">
         {platform.installation?.qualifier},
-        {redirect ? <> copy the code below:</> : <> run this command on your device:</>}
+        {codeOnly ? <> copy the code below:</> : <> run this command on your device:</>}
       </Typography>
       <List>
         <ListItemCopy

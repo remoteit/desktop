@@ -15,7 +15,7 @@ platforms.register({
   services: [],
   installation: {
     command:
-      'docker run -d -e R3_REGISTRATION_CODE="[CODE]" -v /var/run/docker.sock:/var/run/docker.sock --name remoteit_docker_jumpbox remoteit/docker-extension:latest',
+      'docker run -d -e R3_REGISTRATION_CODE="[CODE]" -v /var/run/docker.sock:/var/run/docker.sock --restart unless-stopped --name remoteit_docker_jumpbox remoteit/docker-extension:latest',
     instructions: (
       <>
         For production settings please visit our
