@@ -349,6 +349,18 @@ export default createModel<RootModel>()({
         isP2P: false,
       })
 
+      await dispatch.devices.updateService({
+        id: connection.id,
+        set: {
+          link: {
+            url: data?.url,
+            created: new Date(data.created),
+            enabled: !!data?.enabled,
+            password: data?.password,
+          },
+        },
+      })
+
       dispatch.connections.set({ updating: false })
     },
 

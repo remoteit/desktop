@@ -257,6 +257,7 @@ export default createModel<RootModel>()({
 
     async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
       let [_, device] = selectById(state, undefined, id)
+      device = structuredClone(device)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === id)
       for (const key in set) device.services[index][key] = set[key]
