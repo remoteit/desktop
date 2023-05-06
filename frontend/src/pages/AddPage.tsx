@@ -108,7 +108,7 @@ export const AddPage: React.FC = () => {
             <OrganizationIndicator alignItems="center" marginTop={1} />
           </ListItem>
         </ListHorizontal>
-        {/* <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
+        <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
           <ListSubheader disableGutters>Get a code</ListSubheader>
           <Divider />
           <ListItemLocation
@@ -120,7 +120,7 @@ export const AddPage: React.FC = () => {
             subtitle="Registration code"
             disableGutters
           />
-        </ListHorizontal> */}
+        </ListHorizontal>
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />
