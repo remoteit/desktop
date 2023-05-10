@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { isPortal } from '../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { connectionState, newConnection, launchDisabled } from '../helpers/connectionHelper'
+import { connectionState, newConnection, launchDisabled, updateImmutableData } from '../helpers/connectionHelper'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 import { getLicenseChip } from '../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
@@ -46,6 +46,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
+      connection = updateImmutableData(connection, service)
       dispatch.connections.connect({ ...connection, connectOnReady: true })
       dispatch.networks.join(instanceId)
     }

@@ -79,6 +79,15 @@ export function newConnection(service?: IService | null) {
   return connection
 }
 
+export function updateImmutableData(connection: IConnection, service?: IService) {
+  if (!service) return connection
+  return {
+    ...connection,
+    online: service.state === 'active',
+    typeID: service.typeID,
+  }
+}
+
 export function routeTypeToSettings(route: IRouteType) {
   return {
     failover: route !== 'p2p',
