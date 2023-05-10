@@ -218,7 +218,7 @@ class CloudController {
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,
-            deviceId: t.device.id,
+            deviceId: t.device?.id || device?.id,
             deviceCreated: new Date(t.device.created),
             connection: structuredClone(connection),
             service: structuredClone(service),
