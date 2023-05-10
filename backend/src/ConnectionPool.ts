@@ -198,7 +198,7 @@ export default class ConnectionPool {
   forget = async (connection: IConnection) => {
     Logger.info('FORGET', { id: connection.id })
     const instance = this.set(connection, false, true)
-    const index = this.pool.indexOf(instance)
+    const index = this.pool.findIndex(c => c.params.id === instance.params.id)
     await instance.clear()
     this.pool.splice(index, 1)
     this.updated()
@@ -253,9 +253,12 @@ export default class ConnectionPool {
     if (!user.signedIn) return
     const json = this.toJSON()
     this.file?.write(json)
-    if (instance) Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })
-    if (instance) EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
-    else EventBus.emit(ConnectionPool.EVENTS.pool, json)
+    if (instance) {
+      Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })
+      EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
+    } else {
+      EventBus.emit(ConnectionPool.EVENTS.pool, json)
+    }
   }
 
   toJSON = (): IConnection[] => {
