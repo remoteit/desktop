@@ -34,13 +34,13 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
         disabled={disabled}
         label="Persistent public url"
         subLabel={
-          canManage ? (
-            'Create a fixed public endpoint for anyone to connect to'
-          ) : (
-            <Typography variant="caption" color="grayDarkest.main">
-              Requires device 'Manage' permission
-            </Typography>
-          )
+          <Typography variant="caption" color={disabled ? 'grayDarkest.main' : 'grayDark.main'}>
+            {canManage
+              ? disabled
+                ? 'Fixed public endpoints are only available for http(s) services.'
+                : 'Create a fixed public endpoint for anyone to connect to'
+              : "Requires device 'Manage' permission"}
+          </Typography>
         }
         secondaryContent={
           <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />

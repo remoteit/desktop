@@ -77,9 +77,11 @@ export const Connect: React.FC = () => {
             <Collapse in={!connection.connectLink}>
               <AutoLaunchToggle connection={connection} service={service} />
             </Collapse>
-            <Collapse in={showConnectLink}>
-              <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
-            </Collapse>
+            <ConnectLinkSetting
+              connection={connection}
+              permissions={instance.permissions}
+              disabled={!showConnectLink}
+            />
             <ListItemLocation
               icon="sliders"
               title="Connection configuration"
