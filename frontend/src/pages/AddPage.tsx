@@ -53,24 +53,6 @@ export const AddPage: React.FC = () => {
     <Body verticalOverflow>
       <Gutters className={css.container}>
         <DeviceSetupItem className={classnames(css.list, css.quarter)} onClick={handleClose} />
-        <ListHorizontal className={classnames(css.list, css.quarter)} dense disablePadding>
-          <ListSubheader disableGutters>Try a device</ListSubheader>
-          <Divider />
-          <ListItem
-            button
-            disableGutters
-            disabled={hasDemo || claiming}
-            onClick={() => {
-              setCode(DEMO_DEVICE_CLAIM_CODE)
-              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
-            }}
-          >
-            <ListItemIcon>
-              <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
-            </ListItemIcon>
-            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
-          </ListItem>
-        </ListHorizontal>
         <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
@@ -108,6 +90,24 @@ export const AddPage: React.FC = () => {
             <OrganizationIndicator alignItems="center" marginTop={1} />
           </ListItem>
         </ListHorizontal>
+        <ListHorizontal className={classnames(css.list, css.quarter)} dense disablePadding>
+          <ListSubheader disableGutters>Try a device</ListSubheader>
+          <Divider />
+          <ListItem
+            button
+            disableGutters
+            disabled={hasDemo || claiming}
+            onClick={() => {
+              setCode(DEMO_DEVICE_CLAIM_CODE)
+              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
+            }}
+          >
+            <ListItemIcon>
+              <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
+            </ListItemIcon>
+            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
+          </ListItem>
+        </ListHorizontal>
         <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
           <ListSubheader disableGutters>Get a code</ListSubheader>
           <Divider />
@@ -124,7 +124,7 @@ export const AddPage: React.FC = () => {
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />
-          {['docker', 'aws', 'azure', 'gcp', 'arm'].map(p => {
+          {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
               <ListItemLocation
@@ -147,6 +147,7 @@ export const AddPage: React.FC = () => {
           {[
             'raspberrypi',
             'linux',
+            'docker',
             'nas',
             'openwrt',
             'firewalla',
