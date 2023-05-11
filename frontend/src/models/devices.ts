@@ -400,10 +400,11 @@ export default createModel<RootModel>()({
       const accountId = getActiveAccountId(state)
       const result = await graphQLRestoreDevice({ id: deviceId, account: accountId })
       if (result !== 'ERROR') {
-        let { restoreCommand } = result?.data?.data?.login?.account?.device?.[0]
-        console.log('GET RESTORE COMMAND', restoreCommand)
-        return restoreCommand
+        let { restoreCommand, restoreCode } = result?.data?.data?.login?.account?.device?.[0]
+        console.log('GET RESTORE CODE', restoreCode)
+        return { restoreCommand, restoreCode }
       }
+      return {}
     },
 
     async destroy(device: IDevice) {

@@ -14,13 +14,14 @@ const MAX_PASSWORD_LENGTH = 49
 type Props = {
   connection: IConnection
   permissions: IPermission[]
+  disabled?: boolean
 }
 
-export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions }) => {
+export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, disabled }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
-  const disabled = !canManage || (connection.enabled && !connection.connectLink) || connection.updating
+  disabled = disabled || !canManage || (connection.enabled && !connection.connectLink) || connection.updating
 
   useEffect(() => {
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
