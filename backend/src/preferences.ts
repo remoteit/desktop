@@ -1,7 +1,7 @@
+import environment from './environment'
+import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import Logger from './Logger'
-import JSONFile from './JSONFile'
-import environment from './environment'
 import path from 'path'
 
 export class Preferences {
@@ -20,6 +20,7 @@ export class Preferences {
     apiURL: '',
     apiGraphqlURL: '',
     windowState: { width: 1280, height: 800 },
+    sshConfig: false,
   }
 
   private file: JSONFile<IPreferences>

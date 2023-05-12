@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { isPortal } from '../services/Browser'
+import { useApplication } from '../hooks/useApplication'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { connectionState, newConnection, launchDisabled, updateImmutableData } from '../helpers/connectionHelper'
@@ -33,6 +34,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
+  const app = useApplication(service, connection)
 
   let clickHandler = (event?: React.MouseEvent<HTMLButtonElement>) => {
     if (preventDefault) {
@@ -46,7 +48,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       dispatch.connections.disconnect(connection)
     } else {
       connection = connection || newConnection(service)
-      connection = updateImmutableData(connection, service)
+      connection = updateImmutableData(connection, app)
       dispatch.connections.connect({ ...connection, connectOnReady: true })
       dispatch.networks.join(instanceId)
     }

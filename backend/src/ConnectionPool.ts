@@ -8,6 +8,7 @@ import preferences from './preferences'
 import environment from './environment'
 import PortScanner from './PortScanner'
 import Connection from './Connection'
+import sshConfig from './sshConfig'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import Logger from './Logger'
@@ -252,6 +253,7 @@ export default class ConnectionPool {
   updated = (instance?: Connection) => {
     if (!user.signedIn) return
     const json = this.toJSON()
+    sshConfig.update(json)
     this.file?.write(json)
     if (instance) {
       Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })

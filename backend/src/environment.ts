@@ -28,6 +28,7 @@ export class Environment {
   symlinkPath: string
   logPath: string
   cliLogPath: string = ''
+  sshConfigPath: string = ''
   connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
@@ -52,6 +53,7 @@ export class Environment {
     this.version = this.getAppVersion()
     this.isHeadless = !isElectron()
     this.symlinkPath = ''
+    this.sshConfigPath = PATHS.SSH_CONFIG
     this.overrides = {}
 
     if (this.isWindows) {

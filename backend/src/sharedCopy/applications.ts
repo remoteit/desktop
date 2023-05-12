@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment, getCloudData } from '../sharedAdaptor'
+import { getState, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
@@ -34,7 +34,7 @@ export class Application {
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
-    const { os, portal } = getEnvironment()
+    const { os, portal } = getState().environment
     options.windows = os === 'windows'
     options.portal = portal
     Object.assign(this, options)
@@ -225,10 +225,18 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 }
 
 export function getApplicationType(typeId?: number) {
-  const { portal, os } = getEnvironment()
+  const { environment, preferences } = getState()
+  const { portal, os } = environment
+  const { sshConfig } = preferences
   const windows = os === 'windows'
 
   switch (typeId) {
+    case 1:
+      return new Application({
+        title: 'TCP',
+        appLaunchType: 'URL',
+        urlForm: true,
+      })
     case 4:
       return new Application({
         title: 'VNC',
@@ -246,7 +254,11 @@ export function getApplicationType(typeId?: number) {
         appLaunchType: portal ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: windows
-          ? 'start cmd /k ssh [username]@[host] -p [port]'
+          ? sshConfig
+            ? 'start cmd /k ssh [host]'
+            : 'start cmd /k ssh [username]@[host] -p [port]'
+          : sshConfig
+          ? 'ssh [host]'
           : 'ssh -l [username] [host] -p [port]',
       })
     case 5:

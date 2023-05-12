@@ -55,6 +55,7 @@ declare global {
     | 'osInfo'
     | 'reachablePort'
     | 'useCertificate'
+    | 'sshConfig'
     | 'forceUnregister'
     | 'update/check'
     | 'update/install'
@@ -167,6 +168,8 @@ declare global {
     failover?: boolean // allow proxy failover
     host?: string // returned hostname from cli
     id: string
+    identityFilePath?: string // ssh identity file path
+    identityUsername?: string // ssh identity username
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
@@ -703,6 +706,7 @@ declare global {
     webSocketURL?: string
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
+    sshConfig?: boolean
   }
 
   type SegmentContext = {

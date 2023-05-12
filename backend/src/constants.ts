@@ -49,6 +49,8 @@ export const SSL_PORT = WEB_PORT - 1
 
 // Install paths
 export const PATHS = {
+  SSH_CONFIG: path.resolve(os.homedir(), '.ssh/config'),
+
   LINUX_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
   LINUX_BINARIES: path.resolve(__dirname, '../../../../'),
   LINUX_BINARIES_DEV: path.resolve('./bin/', os.arch()),
