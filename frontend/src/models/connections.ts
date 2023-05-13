@@ -112,7 +112,7 @@ export default createModel<RootModel>()({
             }
 
             // disable connection if service is offline
-            if (!online && connection.enabled) {
+            if (!online && !connection.connectLink && connection.enabled) {
               console.log('DISABLING OFFLINE CONNECTION', connection.name)
               await dispatch.connections.disconnect(connection)
             }

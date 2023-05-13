@@ -58,6 +58,7 @@ export default class ConnectionPool {
     cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params || DEFAULT_CONNECTION
       if (connection.public || connection.connectLink) {
+        Logger.info('STOP CLI CONNECTION', { id: connection.id })
         this.stop(connection)
       } else if (this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
@@ -71,11 +72,8 @@ export default class ConnectionPool {
 
     // start any connections: desktop -> cli
     this.pool.forEach(instance => {
-      if (
-        !(instance.params.enabled || instance.params.connected) ||
-        instance.params.public ||
-        instance.params.connectLink
-      ) {
+      if (instance.params.public || instance.params.connectLink) return
+      if (!(instance.params.enabled || instance.params.connected)) {
         this.clearTransitions(instance)
         return
       }
