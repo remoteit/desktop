@@ -319,7 +319,7 @@ export default createModel<RootModel>()({
     async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
       if (!form.host || !form.port) return
       dispatch.ui.set({ setupServiceBusy: form.id })
-      await graphQLUpdateService({
+      const set: ICloudUpdateService = {
         id: form.id || deviceId,
         name: form.name,
         application: form.typeID,
@@ -327,7 +327,9 @@ export default createModel<RootModel>()({
         port: form.port,
         enabled: !!form.enabled,
         presenceAddress: form.presenceAddress,
-      })
+      }
+      await graphQLUpdateService(set)
+      dispatch.devices.updateService({ id: form.id, set })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
