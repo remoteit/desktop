@@ -219,7 +219,7 @@ class CloudController {
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device?.id || device?.id,
-            deviceCreated: new Date(t.device.created),
+            deviceCreated: new Date(t.device?.created),
             connection: structuredClone(connection),
             service: structuredClone(service),
             device: structuredClone(device),
@@ -332,7 +332,7 @@ class CloudController {
         // device unshared from me or my org
         if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) devices.cleanup({ deviceId: target.id, accountId: event.authUserId })
+            if (target.typeID === DEVICE_TYPE) devices.cleanup([target.id])
           })
         }
 
@@ -347,13 +347,20 @@ class CloudController {
         break
 
       case 'DEVICE_REFRESH':
-        const ids = event.target.reduce((result: string[], target) => {
+        const refreshIds = event.target.reduce((result: string[], target) => {
           // Check that it's the bulk service and that the device is loaded in the ui
           if (target.typeID === DEVICE_TYPE && target.device) result.push(target.deviceId)
           return result
         }, [])
+        if (refreshIds.length) devices.fetchDevices({ ids: refreshIds })
+        break
 
-        if (ids.length) devices.fetchDevices({ ids })
+      case 'DEVICE_DELETE':
+        const deleteIds = event.target.reduce((result: string[], target) => {
+          if (target.device) result.push(target.deviceId)
+          return result
+        }, [])
+        if (deleteIds.length) devices.cleanup(deleteIds)
         break
 
       case 'LICENSE_UPDATED':
