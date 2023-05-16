@@ -5,22 +5,25 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
+import { ConfirmButton } from '../buttons/ConfirmButton'
+import { IconButton } from '../buttons/IconButton'
 import { useHistory } from 'react-router-dom'
 import { selectTags } from '../selectors/tags'
-import { TagEditor } from './TagEditor'
-import { Title } from './Title'
 import { Container } from './Container'
-import { IconButton } from '../buttons/IconButton'
+import { TagEditor } from './TagEditor'
+import { Notice } from './Notice'
+import { Title } from './Title'
 import { spacing, radius } from '../styling'
 
 type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[]; children?: React.ReactNode }
 
 export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
-  const { accountId, tags, adding, removing } = useSelector((state: ApplicationState) => ({
+  const { accountId, tags, adding, removing, destroying } = useSelector((state: ApplicationState) => ({
     accountId: getActiveAccountId(state),
     tags: selectTags(state),
     adding: state.tags.adding,
     removing: state.tags.removing,
+    destroying: state.ui.destroying,
   }))
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -43,24 +46,65 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
             <TagEditor
               button="plus"
               tags={tags}
-              buttonProps={{ title: 'Add Tag', color: 'alwaysWhite', loading: adding, disabled: adding }}
+              buttonProps={{
+                title: 'Add Tag',
+                color: 'alwaysWhite',
+                placement: 'bottom',
+                loading: adding,
+                disabled: adding || !selected.length,
+              }}
+              keyboardShortcut={false}
               onCreate={onCreate}
               onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
             />
             <TagEditor
-              allowAdding={false}
-              placeholder="Remove a tag..."
-              tags={getSelectedTags(devices, selected)}
               button="minus"
-              buttonProps={{ title: 'Remove Tag', color: 'alwaysWhite', loading: removing, disabled: removing }}
+              placeholder="Remove a tag..."
+              allowAdding={false}
+              tags={getSelectedTags(devices, selected)}
+              buttonProps={{
+                title: 'Remove Tag',
+                color: 'alwaysWhite',
+                placement: 'bottom',
+                loading: removing,
+                disabled: removing || !selected.length,
+              }}
+              keyboardShortcut={false}
               onCreate={onCreate}
               onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
+            />
+            <Divider orientation="vertical" color="white" />
+            <ConfirmButton
+              icon="trash"
+              title="Delete selected"
+              color="alwaysWhite"
+              placement="bottom"
+              disabled={!selected.length}
+              loading={destroying}
+              onClick={async () => await dispatch.devices.destroySelected(selected)}
+              confirmProps={{
+                title: 'Confirm Device Deletion',
+                color: 'error',
+                action: `Delete ${selected.length} device${selected.length === 1 ? '' : 's'}`,
+                children: (
+                  <>
+                    <Notice severity="error" gutterBottom fullWidth>
+                      Deletion is irreversible and may require device access for recovery.
+                    </Notice>
+                    <Typography variant="body2">
+                      Uninstall the Remote.It agent before deletion for best results.
+                    </Typography>
+                  </>
+                ),
+              }}
+              confirm
             />
             <Divider orientation="vertical" color="white" />
             <IconButton
               icon="times"
               title="Clear selection"
               color="alwaysWhite"
+              placement="bottom"
               onClick={() => {
                 dispatch.ui.set({ selected: [] })
                 history.push('/devices')

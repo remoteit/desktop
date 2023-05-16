@@ -2,6 +2,7 @@ import structuredClone from '@ungap/structured-clone'
 import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
   graphQLDeleteDevice,
+  graphQLDeleteDevices,
   graphQLUnShareDevice,
   graphQLRename,
   graphQLSetAttributes,
@@ -214,7 +215,7 @@ export default createModel<RootModel>()({
         if (redirect) dispatch.ui.set({ redirect })
         if (!errors) {
           if (isService) dispatch.connections.forget(id)
-          else dispatch.devices.cleanup({ deviceId: id, accountId })
+          else dispatch.devices.cleanup([id])
         }
       }
 
@@ -413,9 +414,51 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: true, silent: device.id })
       const result = await graphQLDeleteDevice(device.id)
       if (result !== 'ERROR') {
-        dispatch.devices.cleanup({ deviceId: device.id, accountId: device.accountId })
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully deleted.`,
+        })
+      }
+      dispatch.ui.set({ destroying: false })
+    },
+
+    async destroySelected(deviceIds: string[], state) {
+      if (!deviceIds.length) return
+
+      // Check that delete is allowed for all devices
+      for (const id of deviceIds) {
+        const device = selectDevice(state, undefined, id)
+        if (!device) {
+          dispatch.ui.set({
+            errorMessage: `A device id could not be found. Deselect ${id} and try again.`,
+          })
+          return
+        }
+        if (device.shared) {
+          dispatch.ui.set({
+            errorMessage: `You cannot delete a shared device. Deselect or leave "${device.name}" and try again.`,
+          })
+          return
+        }
+        if (device.state !== 'inactive') {
+          dispatch.ui.set({
+            errorMessage: `You cannot delete an online device. Deselect "${device.name}" and try again.`,
+          })
+          return
+        }
+        if (!device.permissions.includes('MANAGE')) {
+          dispatch.ui.set({
+            errorMessage: `You do not have permission to delete a device. Deselect "${device.name}" and try again.`,
+          })
+          return
+        }
+      }
+
+      dispatch.ui.set({ destroying: true })
+      const result = await graphQLDeleteDevices(deviceIds)
+      if (result !== 'ERROR') {
+        await dispatch.ui.set({ selected: [] })
+        dispatch.ui.set({
+          successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully deleted.`,
         })
       }
       dispatch.ui.set({ destroying: false })
@@ -429,7 +472,7 @@ export default createModel<RootModel>()({
         email: [auth.user?.email || ''],
       })
       if (result !== 'ERROR') {
-        dispatch.devices.cleanup({ deviceId: device.id, accountId: device.accountId })
+        dispatch.devices.cleanup([device.id])
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully removed.`,
         })
@@ -447,7 +490,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ transferring: true, silent: data.device.id })
         const result = await graphQLTransferDevice(data)
         if (result !== 'ERROR') {
-          await dispatch.devices.cleanup({ deviceId: data.device.id, accountId: data.device.accountId })
+          await dispatch.devices.cleanup([data.device.id])
           dispatch.ui.set({
             successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
@@ -456,10 +499,12 @@ export default createModel<RootModel>()({
       }
     },
 
-    async cleanup({ deviceId, accountId }: { deviceId: string; accountId: string }) {
-      await dispatch.connections.clearByDevice(deviceId)
-      await dispatch.networks.clearById(deviceId)
-      await dispatch.accounts.setDevice({ id: deviceId, accountId })
+    async cleanup(deviceIds: string[]) {
+      for (const id of deviceIds) {
+        await dispatch.connections.clearByDevice(id)
+        await dispatch.networks.clearById(id)
+        await dispatch.accounts.removeDevice(id)
+      }
       await dispatch.connections.fetch()
     },
 

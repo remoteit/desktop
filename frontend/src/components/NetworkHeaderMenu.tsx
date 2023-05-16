@@ -36,14 +36,16 @@ export const NetworkHeaderMenu: React.FC<{
                 title="Leave network"
                 icon="arrow-right-from-bracket"
                 size="md"
-                confirmMessage={
-                  <>
-                    <Notice severity="error" fullWidth gutterBottom>
-                      You will be leaving <i>{network.name}. </i>
-                    </Notice>
-                    The network will have to be re-shared to you if you wish to access it again.
-                  </>
-                }
+                confirmProps={{
+                  children: (
+                    <>
+                      <Notice severity="error" fullWidth gutterBottom>
+                        You will be leaving <i>{network.name}. </i>
+                      </Notice>
+                      The network will have to be re-shared to you if you wish to access it again.
+                    </>
+                  ),
+                }}
                 onClick={async () => {
                   await dispatch.networks.unshareNetwork({ networkId: network.id, email })
                   history.push('/networks')

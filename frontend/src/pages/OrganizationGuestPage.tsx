@@ -80,13 +80,14 @@ export const OrganizationGuestPage: React.FC = () => {
             {member && (
               <ConfirmButton
                 confirm
-                confirmMessage={
-                  <>
-                    This will remove <b>{member.user.email}’s </b>
-                    access to all the organization’s devices
-                  </>
-                }
-                confirmTitle="Are you sure?"
+                confirmProps={{
+                  children: (
+                    <>
+                      This will remove <b>{member.user.email}’s </b>
+                      access to all the organization’s devices
+                    </>
+                  ),
+                }}
                 title="Remove Member"
                 icon="trash"
                 size="md"

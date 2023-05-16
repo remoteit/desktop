@@ -34,8 +34,11 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
           <ConfirmButton
             type="solid"
             confirm={secureReverseProxy}
-            confirmTitle="Disable Web Security"
-            confirmMessage="Are you sure you want to disable secure connections? Your local connection traffic will be sent in the clear, unencrypted."
+            confirmProps={{
+              title: 'Disable Web Security',
+              children:
+                'Are you sure you want to disable secure connections? Your local connection traffic will be sent in the clear, unencrypted.',
+            }}
             disabled={disabled}
             size={secureReverseProxy ? undefined : 'md'}
             name={secureReverseProxy ? 'lock' : 'triangle-exclamation'}

@@ -100,8 +100,17 @@ export async function graphQLRename(serviceId: string, name: string) {
 
 export async function graphQLDeleteDevice(deviceId: string) {
   return await graphQLBasicRequest(
-    ` mutation Delete($deviceId: String!) {
+    ` mutation DeleteDevice($deviceId: String!) {
         deleteDevice(deviceId: $deviceId)
+      }`,
+    { deviceId }
+  )
+}
+
+export async function graphQLDeleteDevices(deviceId: string[]) {
+  return await graphQLBasicRequest(
+    ` mutation DeleteDevices($deviceId: [String!]) {
+        deleteDevices(deviceId: $deviceId)
       }`,
     { deviceId }
   )
