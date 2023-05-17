@@ -38,7 +38,7 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
         <ListItemIcon>
           <Icon
             size="md"
-            name={deleting ? 'spinner-third' : 'trash-xmark'}
+            name={deleting ? 'spinner-third' : 'trash'}
             color={deleting ? 'danger' : undefined}
             spin={deleting}
           />
