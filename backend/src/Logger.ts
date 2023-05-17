@@ -18,7 +18,6 @@ const logFormat = format.combine(
       return info
     },
   },
-  format.colorize(),
   format.printf(({ level, message, label, timestamp }) => `${timestamp} ${label || '-'} ${level}: ${message}`)
 )
 

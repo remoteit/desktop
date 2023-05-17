@@ -9,6 +9,7 @@ import {
   newConnection,
   setConnection,
   getConnectionLookup,
+  updateImmutableData,
 } from '../helpers/connectionHelper'
 import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import {
@@ -19,6 +20,7 @@ import {
   graphQLRemoveConnectLink,
 } from '../services/graphQLMutation'
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
+import { selectApplication } from '../selectors/applications'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectConnection } from '../selectors/connections'
 import { selectNetwork } from './networks'
@@ -71,7 +73,7 @@ export default createModel<RootModel>()({
       cleanOrphanConnections(serviceIds)
     },
 
-    async parseConnectionsLinks({ devices, accountId }: { devices: IDevice[]; accountId: string }) {
+    async updateFromServices({ devices, accountId }: { devices: IDevice[]; accountId: string }) {
       await dispatch.connections.updateConnectionState({ devices, accountId })
       await dispatch.connections.updateCLI()
       await dispatch.connections.set({ initialized: true })
@@ -123,6 +125,9 @@ export default createModel<RootModel>()({
               connection.connectLink = DEFAULT_CONNECTION.connectLink
               connection.enabled = DEFAULT_CONNECTION.enabled
             }
+
+            const app = selectApplication(state, s, connection)
+            connection = updateImmutableData(connection, app)
 
             result.push({ ...connection, online })
           }
@@ -440,15 +445,15 @@ export default createModel<RootModel>()({
     async forget(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
+      set({ all: all.filter(c => c.id !== id) })
       if (state.auth.backendAuthenticated) emit('service/forget', { id })
-      else set({ all: all.filter(c => c.id !== id) })
     },
 
     async clear(id: string, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
+      set({ all: all.filter(c => c.id !== id) })
       if (state.auth.backendAuthenticated) emit('service/clear', { id })
-      else set({ all: all.filter(c => c.id !== id) })
     },
 
     async clearByDevice(deviceId: string, state) {

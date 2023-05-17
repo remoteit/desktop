@@ -19,6 +19,7 @@ export class Application {
   appLaunchType: IConnection['launchType'] = 'NONE'
   appCommandTemplate: string = '[host]:[port]'
   appLaunchTemplate: string = 'https://[host]:[port]'
+  displayTemplate?: string
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
@@ -94,6 +95,10 @@ export class Application {
 
   get string() {
     return this.parse(this.template, this.lookup)
+  }
+
+  get displayString() {
+    return this.parse(this.displayTemplate || this.template, this.lookup)
   }
 
   get commandString() {
@@ -254,12 +259,9 @@ export function getApplicationType(typeId?: number) {
         appLaunchType: portal ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: windows
-          ? sshConfig
-            ? 'start cmd /k ssh [host]'
-            : 'start cmd /k ssh [username]@[host] -p [port]'
-          : sshConfig
-          ? 'ssh [host]'
+          ? 'start cmd /k ssh [username]@[host] -p [port]'
           : 'ssh -l [username] [host] -p [port]',
+        displayTemplate: sshConfig && (windows ? 'start cmd /k ssh [host]' : 'ssh [host]'),
       })
     case 5:
       return new Application({
