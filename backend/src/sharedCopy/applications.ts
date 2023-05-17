@@ -240,7 +240,6 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'TCP',
         appLaunchType: 'URL',
-        urlForm: true,
       })
     case 4:
       return new Application({
