@@ -1,16 +1,13 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { makeStyles } from '@mui/styles'
-import { Typography, List, ListItemSecondaryAction } from '@mui/material'
+import { Typography, List } from '@mui/material'
 import { NetworkListTitle } from './NetworkListTitle'
 import { ClearButton } from '../buttons/ClearButton'
-import { spacing } from '../styling'
 import { Gutters } from './Gutters'
 import { Tags } from './Tags'
 
 export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[] }> = ({ service, networks }) => {
-  const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
 
   if (!networks.length)
@@ -23,24 +20,13 @@ export const NetworksJoined: React.FC<{ service?: IService; networks: INetwork[]
     )
 
   return (
-    <List className={css.list}>
+    <List disablePadding>
       {networks.map(network => (
         <NetworkListTitle key={network.id} network={network}>
-          <ListItemSecondaryAction>
-            <ClearButton onClick={() => dispatch.networks.remove({ serviceId: service?.id, networkId: network.id })} />
-            <Tags tags={network?.tags || []} max={0} small />
-          </ListItemSecondaryAction>
+          <Tags tags={network?.tags || []} max={0} small />
+          <ClearButton onClick={() => dispatch.networks.remove({ serviceId: service?.id, networkId: network.id })} />
         </NetworkListTitle>
       ))}
     </List>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  list: {
-    paddingTop: spacing.xs,
-    paddingBottom: 0,
-    '& .MuiListSubheader-root': { display: 'flex' },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.md },
-  },
-}))

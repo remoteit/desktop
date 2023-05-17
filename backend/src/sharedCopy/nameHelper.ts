@@ -13,7 +13,7 @@ import {
   IP_OPEN,
   MAX_NAME_LENGTH,
 } from './constants'
-import { getEnvironment, escapeRegex } from '../sharedAdaptor'
+import { getState, escapeRegex } from '../sharedAdaptor'
 
 const separator = ' - '
 
@@ -28,7 +28,7 @@ export function replaceHost(url?: string, localhost?: boolean) {
     return url.replace(new RegExp(IP_PRIVATE, 'g'), 'localhost')
   }
   if (url.includes(IP_OPEN)) {
-    const { privateIP } = getEnvironment()
+    const { privateIP } = getState().environment
     return url.replace(IP_OPEN, privateIP)
   }
   return url

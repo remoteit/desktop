@@ -166,7 +166,8 @@ export class BinaryInstaller {
     let updated = true
 
     try {
-      updated = semverCompare(previousVersion, thisVersion) < 0
+      updated = previousVersion && semverCompare(previousVersion, thisVersion) < 0
+      if (!previousVersion) this.updateVersions()
     } catch (error) {
       Logger.warn('CLI VERSION COMPARE FAILED', { error, previousVersion, thisVersion })
     }

@@ -1,20 +1,13 @@
 import React from 'react'
 import { IconButton, ButtonProps } from './IconButton'
-import { Confirm } from '../components/Confirm'
+import { Confirm, ConfirmProps } from '../components/Confirm'
 
 type Props = ButtonProps & {
   confirm?: boolean
-  confirmTitle?: string
-  confirmMessage?: React.ReactNode
+  confirmProps?: Omit<ConfirmProps, 'open' | 'onConfirm' | 'onDeny'>
 }
 
-export const ConfirmButton: React.FC<Props> = ({
-  onClick,
-  confirm,
-  confirmMessage = 'Are you sure?',
-  confirmTitle = '',
-  ...props
-}) => {
+export const ConfirmButton: React.FC<Props> = ({ onClick, confirm, confirmProps, ...props }) => {
   const [open, setOpen] = React.useState<boolean>(false)
 
   const handleClick = e => {
@@ -31,8 +24,8 @@ export const ConfirmButton: React.FC<Props> = ({
     <>
       <IconButton {...props} onClick={handleClick} />
       {confirm && onClick && (
-        <Confirm open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)} title={confirmTitle}>
-          {confirmMessage}
+        <Confirm {...confirmProps} open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)}>
+          {confirmProps?.children}
         </Confirm>
       )}
     </>

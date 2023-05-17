@@ -4,6 +4,7 @@ import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { selectConnections } from '../selectors/connections'
+import { Application } from '../shared/applications'
 import { selectById } from '../selectors/devices'
 import { isPortal } from '../services/Browser'
 
@@ -77,6 +78,16 @@ export function newConnection(service?: IService | null) {
   }
 
   return connection
+}
+
+export function updateImmutableData(connection: IConnection, app?: Application) {
+  if (!app) return connection
+  return {
+    ...connection,
+    online: app.service?.state === 'active',
+    typeID: app.service?.typeID,
+    identityUsername: app.lookup?.username,
+  }
 }
 
 export function routeTypeToSettings(route: IRouteType) {

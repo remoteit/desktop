@@ -73,7 +73,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               key="restore"
               icon="wave-pulse"
               title="Restore Device"
-              request={async () => await dispatch.devices.getRestoreCommand(device.id)}
+              request={async () => (await dispatch.devices.getRestoreCommand(device.id)).restoreCommand}
             />,
             <DeleteDevice key="deleteDevice" device={device} menuItem />,
           ]}

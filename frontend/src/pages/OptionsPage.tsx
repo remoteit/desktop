@@ -75,6 +75,13 @@ export const OptionsPage: React.FC = () => {
             onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
           />
           <ListItemSetting
+            label="Managed SSH config"
+            subLabel="Allow Remote.it to include it's managed SSH config file for easier access to your devices."
+            icon="terminal"
+            toggle={!!preferences.sshConfig}
+            onClick={() => emit('sshConfig', !preferences.sshConfig)}
+          />
+          <ListItemSetting
             label="Named connections"
             subLabel="Use a Remote.It HTTPS certificate to handle and name local connections"
             icon="file-certificate"

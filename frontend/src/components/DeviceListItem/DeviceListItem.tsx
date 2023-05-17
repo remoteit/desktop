@@ -39,7 +39,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
             selected ? (
               <Icon name="check-square" size="md" type="solid" color="primary" />
             ) : (
-              <Icon name="square" size="md" type="light" />
+              <Icon name="square" size="md" />
             )
           ) : (
             <>

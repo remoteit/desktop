@@ -4,6 +4,7 @@ import lan from './LAN'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
 import Logger from './Logger'
+import sshConfig from './sshConfig'
 import EventRelay from './EventRelay'
 import showFolder from './showFolder'
 import preferences from './preferences'
@@ -75,6 +76,7 @@ class Controller {
     socket.on('restore', this.restore)
     socket.on('scan', this.scan)
     socket.on('useCertificate', this.useCertificate)
+    socket.on('sshConfig', this.sshConfig)
     socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
@@ -172,9 +174,15 @@ class Controller {
     this.pool.updateAll()
   }
 
+  sshConfig = async (use: boolean) => {
+    preferences.update({ sshConfig: use })
+    sshConfig.toggle(use)
+  }
+
   initBackend = () => {
     cli.read()
     this.pool.init()
+    sshConfig.init()
     this.refresh()
     this.io.emit('dataReady')
     Logger.info('DATA READY')

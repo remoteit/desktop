@@ -1,56 +1,38 @@
 import path from 'path'
 import environment from './environment'
 import { ENVIRONMENT } from './constants'
+import { createLogger, format, transports } from 'winston'
+import { TransformableInfo } from 'logform'
+import util from 'util'
 
-import * as winston from 'winston'
+interface TransformableInfoWithSymbol extends TransformableInfo {
+  [key: symbol]: any
+}
 
-const DEBUG = process.env.DEBUG
-const MAX_LOG_SIZE_BYTES = 1e6 // 1mb
-const MAX_LOG_FILES = 5
+const logFormat = format.combine(
+  format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+  {
+    transform: (info: TransformableInfoWithSymbol) => {
+      const args = info[Symbol.for('splat')]
+      if (args) info.message = util.format(info.message, ...args)
+      return info
+    },
+  },
+  format.printf(({ level, message, label, timestamp }) => `${timestamp} ${label || '-'} ${level}: ${message}`)
+)
 
-const { combine, printf } = winston.format
-const consoleFormat = printf(p => {
-  const { timestamp, level, message, ...rest } = p
-  const localTimestamp = new Date(timestamp).toLocaleString(undefined, {
-    month: 'numeric',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: 'numeric',
-    fractionalSecondDigits: 3,
-  })
-  return `${message} ${level} ${localTimestamp} ${JSON.stringify(rest, null, 4)}`
-})
-
-const transports = [
-  new winston.transports.File({
-    filename: path.join(environment.logPath, 'error.log'),
-    format: consoleFormat,
-    level: 'error',
-    maxsize: MAX_LOG_SIZE_BYTES, // in bytes
-    maxFiles: MAX_LOG_FILES,
-    tailable: true,
-    silent: ENVIRONMENT === 'test',
-  }),
-  new winston.transports.File({
-    filename: path.join(environment.logPath, 'combined.log'),
-    format: consoleFormat,
-    maxsize: MAX_LOG_SIZE_BYTES, // in bytes
-    maxFiles: MAX_LOG_FILES,
-    tailable: true,
-    silent: ENVIRONMENT === 'test',
-  }),
-  new winston.transports.Console({
-    format: combine(winston.format.colorize(), consoleFormat),
-    silent: ENVIRONMENT === 'test' || !!DEBUG,
-  }),
-]
-
-const logger = winston.createLogger({
+const logger = createLogger({
   level: 'info',
-  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-  transports,
+  format: logFormat,
+  transports: [
+    new transports.Console(),
+    new transports.File({
+      filename: path.join(environment.logPath, 'combined.log'),
+      maxsize: 1e6, // approx 1mb
+      maxFiles: 5, // Keep up to 5 rotated log files
+      tailable: true, // Rename the existing log file and create a new one when the limit is reached
+    }),
+  ],
 })
 
 logger.info('REMOTEIT DESKTOP STARTING UP ---------------------------------------------------------')

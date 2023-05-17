@@ -106,10 +106,8 @@ export const useStyles = makeStyles(({ palette }) => ({
   item: {
     marginTop: 0,
     marginBottom: 0,
-    '& .MuiChip-root': {
-      marginBottom: 0,
-      marginRight: spacing.sm,
-    },
+    marginRight: spacing.xs,
+    '& .MuiChip-root': { marginBottom: 0 },
   },
   connectIcon: {
     position: 'relative',

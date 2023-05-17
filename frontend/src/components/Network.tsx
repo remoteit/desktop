@@ -6,7 +6,7 @@ import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, Collapse, List, ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
 import { makeStyles } from '@mui/styles'
 import { Tags } from './Tags'
@@ -39,9 +39,9 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
     <List className={css.list}>
       <NetworkListTitle network={network} noLink={noLink} expanded={expanded} offline={recent} onClick={toggle}>
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
+        <Tags tags={network?.tags || []} max={0} small />
         <IconButton
           onClick={toggle}
-          className="hidden"
           name={expanded ? 'caret-down' : 'caret-up'}
           color={highlight ? 'primary' : 'grayDark'}
           disabled={noLink}
@@ -50,7 +50,6 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
           type="solid"
           size="sm"
         />
-        <Tags tags={network?.tags || []} max={0} small />
       </NetworkListTitle>
       <Collapse in={expanded}>
         {network?.serviceIds.map(id => (

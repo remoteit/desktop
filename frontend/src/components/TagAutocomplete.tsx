@@ -22,7 +22,7 @@ interface Props {
   open: boolean
   items: ITag[]
   filter?: ITag[]
-  targetEl: HTMLDivElement | null
+  targetEl: Element | null
   placeholder: string
   allowAdding?: boolean
   createOnly?: boolean

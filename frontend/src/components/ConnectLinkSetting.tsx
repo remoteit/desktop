@@ -14,13 +14,14 @@ const MAX_PASSWORD_LENGTH = 49
 type Props = {
   connection: IConnection
   permissions: IPermission[]
+  disabled?: boolean
 }
 
-export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions }) => {
+export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, disabled }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
-  const disabled = !canManage || (connection.enabled && !connection.connectLink) || connection.updating
+  disabled = disabled || !canManage || (connection.enabled && !connection.connectLink) || connection.updating
 
   useEffect(() => {
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
@@ -33,13 +34,13 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions })
         disabled={disabled}
         label="Persistent public url"
         subLabel={
-          canManage ? (
-            'Create a fixed public endpoint for anyone to connect to'
-          ) : (
-            <Typography variant="caption" color="grayDarkest.main">
-              Requires device 'Manage' permission
-            </Typography>
-          )
+          <Typography variant="caption" color={disabled ? 'grayDarkest.main' : 'grayDark.main'}>
+            {canManage
+              ? disabled
+                ? 'Fixed public endpoints are only available for http(s) services.'
+                : 'Create a fixed public endpoint for anyone to connect to'
+              : "Requires device 'Manage' permission"}
+          </Typography>
         }
         secondaryContent={
           <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
