@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { ListItemSetting } from './ListItemSetting'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { Typography, Collapse } from '@mui/material'
 import { useDispatch } from 'react-redux'
+import { Typography } from '@mui/material'
 import { ColorChip } from './ColorChip'
 import { Dispatch } from '../store'
 
@@ -51,39 +52,60 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
           if (connection.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
           else dispatch.connections.setConnectLink({ ...connection, enabled: true })
         }}
+        confirm={!connection.connectLink}
+        confirmProps={{
+          color: connection.password ? undefined : 'error',
+          action: 'Make Public',
+          title: 'Are you sure?',
+          children: (
+            <>
+              {connection.password ? (
+                <Notice severity="info" gutterBottom fullWidth>
+                  This endpoint has password protection.
+                </Notice>
+              ) : (
+                <Notice severity="error" gutterBottom fullWidth>
+                  This endpoint has no password protection.
+                </Notice>
+              )}
+              <Typography variant="body2">
+                This will create a fixed public endpoint for anyone {connection.password && 'with the password'} to
+                connect to.
+              </Typography>
+            </>
+          ),
+        }}
       />
-      <Collapse in={connection.connectLink} timeout={800}>
-        <ListItemQuote>
-          <SelectSetting
+      <ListItemQuote>
+        <SelectSetting
+          hideIcon
+          disabled={connection.updating}
+          label="Authentication"
+          value={security}
+          values={[
+            { name: 'None', key: 'OPEN' },
+            { name: 'Password', key: 'PROTECTED' },
+          ]}
+          onChange={value => {
+            setSecurity(value as ISecurity)
+            if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
+          }}
+        />
+        {security === 'PROTECTED' && (
+          <InlineTextFieldSetting
+            required
             hideIcon
             disabled={connection.updating}
-            label="Authentication"
-            value={security}
-            values={[
-              { name: 'None', key: 'OPEN' },
-              { name: 'Password', key: 'PROTECTED' },
-            ]}
-            onChange={value => {
-              setSecurity(value as ISecurity)
-              if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
-            }}
+            displayValue={connection.password?.replaceAll(/./g, '•')}
+            modified={!!connection.password}
+            value={connection.password || ''}
+            label="Password"
+            resetValue=""
+            maxLength={MAX_PASSWORD_LENGTH}
+            onSave={password => dispatch.connections.setConnectLink({ ...connection, password: password.toString() })}
           />
-          {security === 'PROTECTED' && (
-            <InlineTextFieldSetting
-              required
-              hideIcon
-              disabled={connection.updating}
-              displayValue={connection.password?.replaceAll(/./g, '•')}
-              modified={!!connection.password}
-              value={connection.password || ''}
-              label="Password"
-              resetValue=""
-              maxLength={MAX_PASSWORD_LENGTH}
-              onSave={password => dispatch.connections.setConnectLink({ ...connection, password: password.toString() })}
-            />
-          )}
-        </ListItemQuote>
-      </Collapse>
+        )}
+      </ListItemQuote>
     </>
   )
 }

@@ -74,14 +74,6 @@ export const Connect: React.FC = () => {
           action={<ConnectionMenu connection={connection} service={service} />}
         >
           <List disablePadding>
-            <Collapse in={!connection.connectLink}>
-              <AutoLaunchToggle connection={connection} service={service} />
-            </Collapse>
-            <ConnectLinkSetting
-              connection={connection}
-              permissions={instance.permissions}
-              disabled={!showConnectLink}
-            />
             <ListItemLocation
               icon="sliders"
               title="Connection configuration"
@@ -92,6 +84,15 @@ export const Connect: React.FC = () => {
             >
               <Icon name="angle-right" inlineLeft fixedWidth />
             </ListItemLocation>
+            <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 1 }} />
+            <Collapse in={!connection.connectLink}>
+              <AutoLaunchToggle connection={connection} service={service} />
+            </Collapse>
+            <ConnectLinkSetting
+              connection={connection}
+              permissions={instance.permissions}
+              disabled={!showConnectLink}
+            />
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Want Persistent Endpoints?</strong>
@@ -115,7 +116,7 @@ export const Connect: React.FC = () => {
               <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
-              <Divider variant="inset" sx={{ marginTop: 2, marginBottom: 3 }} />
+              <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 2 }} />
             </>
           )}
           <ServiceAttributes device={device} service={service} disablePadding />

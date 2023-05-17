@@ -60,11 +60,11 @@ export const OptionsPage: React.FC = () => {
             subLabel="Remote devices only show target configuration options. Enable for full access."
             icon="sliders-h"
             toggle={!!preferences.remoteUIOverride}
-            confirmTitle="Are you sure?"
-            confirmMessage={`New connections will be from ${
-              thisDevice?.name || 'this device'
-            } and not your local machine.`}
             onClick={() => emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })}
+            confirmProps={{
+              title: 'Are you sure?',
+              children: `New connections will be from ${thisDevice?.name || 'this device'} and not your local machine.`,
+            }}
           />
         )}
         <DesktopUI>
@@ -82,14 +82,16 @@ export const OptionsPage: React.FC = () => {
             onClick={() => emit('sshConfig', !preferences.sshConfig)}
           />
           <ListItemSetting
+            confirm
             label="Named connections"
             subLabel="Use a Remote.It HTTPS certificate to handle and name local connections"
             icon="file-certificate"
             toggle={!!preferences.useCertificate}
             onClick={() => emit('useCertificate', !preferences.useCertificate)}
-            confirmMessage="Changing the certificate handling will require we restart all connections."
-            confirmTitle="Continue?"
-            confirm
+            confirmProps={{
+              title: 'Continue?',
+              children: 'Changing the certificate handling will require we restart all connections.',
+            }}
           />
         </DesktopUI>
         <ListItemSetting
@@ -117,8 +119,11 @@ export const OptionsPage: React.FC = () => {
                 toggle={!!preferences.disableDeepLinks}
                 onClick={() => emit('preferences', { ...preferences, disableDeepLinks: !preferences.disableDeepLinks })}
                 confirm
-                confirmMessage="Please restart the desktop application for changes to take affect. You may also have to reset your default file handler on Linux."
-                confirmTitle="Restart required"
+                confirmProps={{
+                  title: 'Restart required',
+                  children:
+                    'Please restart the desktop application for changes to take affect. You may also have to reset your default file handler on Linux.',
+                }}
               />
               <SettingsDisableNetworkItem />
               <ListItemSetting
@@ -127,9 +132,11 @@ export const OptionsPage: React.FC = () => {
                 subLabel={`Version ${cliVersion}`}
                 disabled={installing}
                 icon="terminal"
-                confirmTitle="Are you sure?"
-                confirmMessage="This will stop and attempt to re-install the system agent."
                 onClick={() => binaries.install()}
+                confirmProps={{
+                  title: 'Are you sure?',
+                  children: 'This will stop and attempt to re-install the system agent.',
+                }}
               />
               {os !== 'windows' && (
                 <ListItemSetting
@@ -140,8 +147,10 @@ export const OptionsPage: React.FC = () => {
                     'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner.'
                   }
                   icon="trash"
-                  confirmTitle="Are you sure?"
-                  confirmMessage="You will remove this system as a host, your connections and command line utilities."
+                  confirmProps={{
+                    title: 'Are you sure?',
+                    children: 'You will remove this system as a host, your connections and command line utilities.',
+                  }}
                   onClick={() => {
                     emit('uninstall')
                     ui.set({ waitMessage: 'uninstalling' })
