@@ -27,26 +27,29 @@ class SSHConfig {
     this.configPath = path.join(environment.userPath, 'ssh')
     this.ready = true
 
-    let data: string
+    let data: string = ''
 
     try {
       data = await fs.readFile(userConfig, 'utf8')
     } catch (error) {
-      // File doesn't exist
-      if (error.code === 'ENOENT') {
-        const include = `Include ${this.configPath}\n`
+      if (error instanceof Error) {
+        // File doesn't exist
+        if ('code' in error && error.code === 'ENOENT') {
+          const include = `Include ${this.configPath}\n`
 
-        try {
-          await fs.writeFile(userConfig, include, 'utf8')
-          Logger.info('SSH CONFIG', { message: 'SSH config created successfully' })
-        } catch (writeErr) {
-          Logger.error('SSH CONFIG ERROR', { message: `Failed to write SSH config: ${writeErr.message}` })
+          try {
+            await fs.writeFile(userConfig, include, 'utf8')
+            Logger.info('SSH CONFIG', { message: 'SSH config created successfully' })
+          } catch (writeErr) {
+            if (!(writeErr instanceof Error)) return
+            Logger.error('SSH CONFIG ERROR', { message: `Failed to write SSH config: ${writeErr.message}` })
+          }
+
+          return
+        } else {
+          Logger.error('SSH CONFIG ERROR', { message: `Failed to read SSH config: ${error.message}` })
+          return
         }
-
-        return
-      } else {
-        Logger.error('SSH CONFIG ERROR', { message: `Failed to read SSH config: ${error.message}` })
-        return
       }
     }
 
@@ -62,7 +65,9 @@ class SSHConfig {
       await fs.writeFile(userConfig, updatedConfig, 'utf8')
       Logger.info('SSH CONFIG', { message: 'SSH config updated successfully' })
     } catch (writeErr) {
-      Logger.error('SSH CONFIG ERROR', { message: `Failed to write SSH config: ${writeErr.message}` })
+      if (writeErr instanceof Error) {
+        Logger.error('SSH CONFIG ERROR', { message: `Failed to write SSH config: ${writeErr.message}` })
+      }
     }
   }
 
@@ -92,8 +97,10 @@ class SSHConfig {
       // Remove the application's own config file
       await fs.unlink(this.configPath)
       Logger.info('SSH CONFIG', { message: 'App SSH config file removed successfully' })
-    } catch (err) {
-      Logger.error('SSH CONFIG ERROR', { message: `Failed to clean SSH config: ${err.message}` })
+    } catch (error) {
+      if (error instanceof Error) {
+        Logger.error('SSH CONFIG ERROR', { message: `Failed to clean SSH config: ${error.message}` })
+      }
     }
   }
 
@@ -116,8 +123,10 @@ class SSHConfig {
     try {
       await fs.writeFile(this.configPath, config, 'utf8')
       Logger.info('SSH CONFIG UPDATE', { path: this.configPath, data: config })
-    } catch (err) {
-      Logger.error('SSH CONFIG UPDATE ERROR', { message: `Failed to write app SSH config: ${err.message}` })
+    } catch (error) {
+      if (error instanceof Error) {
+        Logger.error('SSH CONFIG UPDATE ERROR', { message: `Failed to write app SSH config: ${error.message}` })
+      }
     }
   }
 
