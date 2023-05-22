@@ -1,22 +1,24 @@
 import preferences from './preferences'
 import environment from './environment'
+import isEqual from 'lodash.isequal'
 import Logger from './Logger'
 import path from 'path'
 import fs from 'fs/promises'
 
 const CONFIG_HEADER = `HostKeyAlgorithms +ssh-rsa
-  NoHostAuthenticationForLocalhost yes
-  IdentitiesOnly yes
-  UseKeychain yes
   AddKeysToAgent yes
-  ForwardAgent yes\n`
+  ForwardAgent yes
+  IdentitiesOnly yes
+  NoHostAuthenticationForLocalhost yes
+  UseKeychain yes\n`
 
-type IConfig = Pick<IConnection, 'host' | 'port' | 'identityUsername' | 'identityFilePath'>
+type ConfigType = ILookup<string | number | undefined>
 
 class SSHConfig {
+  filename: string = 'ssh_config'
   ready: boolean = false
   configPath: string = ''
-  lastData: IConfig[] = []
+  lastData: ConfigType[] = []
 
   init() {
     this.setup()
@@ -24,7 +26,7 @@ class SSHConfig {
 
   async setup() {
     const userConfig = environment.sshConfigPath
-    this.configPath = path.join(environment.userPath, 'ssh')
+    this.configPath = path.join(environment.userPath, this.filename)
     this.ready = true
 
     let data: string = ''
@@ -107,13 +109,12 @@ class SSHConfig {
   async update(connections: IConnection[]): Promise<void> {
     if (!preferences.get().sshConfig || !this.ready) return
 
-    const qualified: IConfig[] = connections
-      .filter(c => c.typeID === 28 && c.enabled && c.host && c.port && c.identityUsername)
+    const qualified: ConfigType[] = connections
+      .filter(c => c.typeID === 28 && c.enabled && c.host && c.port)
       .map(c => ({
+        ...c.identity,
         host: c.host,
         port: c.port,
-        identityUsername: c.identityUsername,
-        identityFilePath: c.identityFilePath,
       }))
 
     if (!this.changed(qualified)) return
@@ -130,20 +131,21 @@ class SSHConfig {
     }
   }
 
-  async generateConfig(connections: IConfig[]): Promise<string> {
-    let config = CONFIG_HEADER
+  async generateConfig(configs: ConfigType[]): Promise<string> {
+    let result = CONFIG_HEADER
 
-    connections.forEach(connection => {
-      config += `\nHost ${connection.host}\n  Port ${connection.port}\n  User ${connection.identityUsername}\n`
-      if (connection.identityFilePath) {
-        config += `  IdentityFile ${connection.identityFilePath}\n`
+    for (const config of configs) {
+      result += `\nHost ${config.host}\n`
+      for (const param in config) {
+        if (param === 'host') continue
+        result += `  ${capitalize(param)} ${config[param]}\n`
       }
-    })
+    }
 
-    return config
+    return result
   }
 
-  changed(data: IConfig[]): boolean {
+  changed(data: ConfigType[]): boolean {
     // If the lengths are different, the data has changed
     if (this.lastData.length !== data.length) {
       this.lastData = data
@@ -155,20 +157,16 @@ class SSHConfig {
     for (let i = 0; i < this.lastData.length; i++) {
       const last = this.lastData[i]
       const next = data[i]
-      if (
-        last.host !== next.host ||
-        last.port !== next.port ||
-        last.identityUsername !== next.identityUsername ||
-        last.identityFilePath !== next.identityFilePath
-      ) {
-        this.lastData = data
-        Logger.info('SSH CONFIG UPDATE', {
-          message: 'SSH config item changed',
-          item: data[i],
-          lastItem: this.lastData[i],
-        })
-        return true
-      }
+
+      if (isEqual(last, next)) continue
+
+      this.lastData = data
+      Logger.info('SSH CONFIG UPDATE', {
+        message: 'SSH config item changed',
+        item: data[i],
+        lastItem: this.lastData[i],
+      })
+      return true
     }
 
     return false
@@ -176,3 +174,7 @@ class SSHConfig {
 }
 
 export default new SSHConfig()
+
+function capitalize(string: string): string {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}

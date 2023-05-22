@@ -16,6 +16,7 @@ export class Application {
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   urlForm: boolean = false
+  sshConfig: boolean = false
   appLaunchType: IConnection['launchType'] = 'NONE'
   appCommandTemplate: string = '[host]:[port]'
   appLaunchTemplate: string = 'https://[host]:[port]'
@@ -25,6 +26,7 @@ export class Application {
   globalDefaults: ILookup<any> = {}
   cloudData?: IApplicationType
   localhost?: boolean
+  helpMessage?: string
 
   connection?: IConnection
   service?: IService
@@ -257,10 +259,14 @@ export function getApplicationType(typeId?: number) {
         title: 'SSH',
         appLaunchType: portal ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        appCommandTemplate: windows
+        appCommandTemplate: sshConfig
+          ? 'ssh_config [User]'
+          : windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
           : 'ssh -l [username] [host] -p [port]',
         displayTemplate: sshConfig && (windows ? 'start cmd /k ssh [host]' : 'ssh [host]'),
+        helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
+        sshConfig,
       })
     case 5:
       return new Application({
