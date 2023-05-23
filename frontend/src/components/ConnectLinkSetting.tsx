@@ -35,7 +35,11 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
         disabled={disabled}
         label="Persistent public url"
         subLabel={
-          <Typography variant="caption" color={disabled ? 'grayDarkest.main' : 'grayDark.main'}>
+          <Typography
+            variant="caption"
+            color={disabled ? 'grayDarkest.main' : 'grayDark.main'}
+            sx={{ display: 'block', lineHeight: 1.2, marginTop: 0.4 }}
+          >
             {canManage
               ? disabled
                 ? 'Fixed public endpoints are only available for http(s) services.'
@@ -44,7 +48,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
           </Typography>
         }
         secondaryContent={
-          <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
+          <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="primary" inline />
         }
         secondaryContentWidth="140px"
         toggle={!!connection.connectLink}
@@ -76,36 +80,38 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
           ),
         }}
       />
-      <ListItemQuote>
-        <SelectSetting
-          hideIcon
-          disabled={connection.updating}
-          label="Authentication"
-          value={security}
-          values={[
-            { name: 'None', key: 'OPEN' },
-            { name: 'Password', key: 'PROTECTED' },
-          ]}
-          onChange={value => {
-            setSecurity(value as ISecurity)
-            if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
-          }}
-        />
-        {security === 'PROTECTED' && (
-          <InlineTextFieldSetting
-            required
+      {canManage && (
+        <ListItemQuote>
+          <SelectSetting
             hideIcon
-            disabled={connection.updating}
-            displayValue={connection.password?.replaceAll(/./g, '•')}
-            modified={!!connection.password}
-            value={connection.password || ''}
-            label="Password"
-            resetValue=""
-            maxLength={MAX_PASSWORD_LENGTH}
-            onSave={password => dispatch.connections.setConnectLink({ ...connection, password: password.toString() })}
+            disabled={connection.updating || disabled}
+            label="Authentication"
+            value={security}
+            values={[
+              { name: 'None', key: 'OPEN' },
+              { name: 'Password', key: 'PROTECTED' },
+            ]}
+            onChange={value => {
+              setSecurity(value as ISecurity)
+              if (value === 'OPEN') dispatch.connections.setConnectLink({ ...connection, password: undefined })
+            }}
           />
-        )}
-      </ListItemQuote>
+          {security === 'PROTECTED' && (
+            <InlineTextFieldSetting
+              required
+              hideIcon
+              disabled={connection.updating}
+              displayValue={connection.password?.replaceAll(/./g, '•')}
+              modified={!!connection.password}
+              value={connection.password || ''}
+              label="Password"
+              resetValue=""
+              maxLength={MAX_PASSWORD_LENGTH}
+              onSave={password => dispatch.connections.setConnectLink({ ...connection, password: password.toString() })}
+            />
+          )}
+        </ListItemQuote>
+      )}
     </>
   )
 }

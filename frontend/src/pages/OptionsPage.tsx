@@ -12,6 +12,7 @@ import { getOwnDevices } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
+import { ColorChip } from '../components/ColorChip'
 import { isRemote } from '../services/Browser'
 import { Title } from '../components/Title'
 
@@ -80,6 +81,10 @@ export const OptionsPage: React.FC = () => {
             icon="terminal"
             toggle={!!preferences.sshConfig}
             onClick={() => emit('sshConfig', !preferences.sshConfig)}
+            secondaryContentWidth="140px"
+            secondaryContent={
+              <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="primary" inline />
+            }
           />
           <ListItemSetting
             confirm
