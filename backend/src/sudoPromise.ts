@@ -1,4 +1,4 @@
-import { exec } from 'sudo-prompt'
+import { exec } from '@vscode/sudo-prompt'
 
 export const sudoPromise = async (command: string): Promise<{ stdout: string; stderr: string }> =>
   new Promise(async (resolve, reject) =>
