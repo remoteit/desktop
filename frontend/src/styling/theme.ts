@@ -601,7 +601,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           caption: {
             fontSize: fontSizes.xs,
             color: palette.grayDark.main,
-            lineHeight: '1.5em',
+            lineHeight: '1.25em',
             '& b': { color: palette.grayDarkest.main, fontWeight: 400 },
           },
           gutterBottom: { marginBottom: spacing.md },

@@ -127,7 +127,7 @@ export default class ElectronApp {
     }
   }
 
-  private handleFilePrompt = async (type: 'path' | 'app') => {
+  private handleFilePrompt = async (type: 'app' | string) => {
     if (!this.window) return
 
     const result = await dialog.showOpenDialog(this.window, {

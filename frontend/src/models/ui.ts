@@ -80,7 +80,7 @@ export type UIState = {
   panelWidth: ILookup<number>
   guides: ILookup<IGuide>
   poppedBubbles: string[]
-  unExpireBubbles: boolean
+  expireBubbles: boolean
   confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
   autoConnect: boolean
@@ -148,7 +148,7 @@ export const defaultState: UIState = {
     register: { title: 'Device Registration Guide', step: 1, total: 1, done: true, weight: 10 },
   },
   poppedBubbles: [],
-  unExpireBubbles: false,
+  expireBubbles: false,
   accordion: { config: false, configConnected: false, options: false, service: false, networks: false, logs: false },
   confirm: undefined,
   autoConnect: false,
@@ -235,8 +235,15 @@ export default createModel<RootModel>()({
       poppedBubbles.push(bubble)
       dispatch.ui.setPersistent({ poppedBubbles })
     },
+    async popAll(_: void) {
+      dispatch.ui.setPersistent({ expireBubbles: true })
+    },
     async resetHelp(_: void) {
-      dispatch.ui.setPersistent({ guides: { ...defaultState.guides }, poppedBubbles: [...defaultState.poppedBubbles] })
+      dispatch.ui.setPersistent({
+        guides: { ...defaultState.guides },
+        poppedBubbles: [...defaultState.poppedBubbles],
+        expireBubbles: false,
+      })
     },
     async accordion(params: ILookup<boolean>, state) {
       const accordion = { ...state.ui.accordion, ...params }

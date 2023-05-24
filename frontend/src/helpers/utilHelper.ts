@@ -46,3 +46,14 @@ export const mergeTags = (legacy: ITag[], tags: ITag[]) => {
 export function containsIpAddress(url: URL): boolean {
   return REGEX_VALID_IP.test(url.hostname)
 }
+
+export function createMemoDebugger(componentName) {
+  return (prevProps, nextProps) => {
+    Object.keys(prevProps).forEach(key => {
+      if (prevProps[key] !== nextProps[key]) {
+        console.log(`[${componentName}] ${key} prop changed`)
+      }
+    })
+    return Object.keys(prevProps).every(key => prevProps[key] === nextProps[key])
+  }
+}

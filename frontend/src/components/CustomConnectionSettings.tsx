@@ -3,7 +3,7 @@ import { isPortal } from '../services/Browser'
 import { Application } from '../shared/applications'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
-import { newConnection, setConnection } from '../helpers/connectionHelper'
+import { newConnection, setConnection, updateImmutableData, isFileToken } from '../helpers/connectionHelper'
 
 type Props = {
   app: Application
@@ -12,29 +12,31 @@ type Props = {
   disabled?: boolean
 }
 
-export const CustomConnectionSettings: React.FC<Props> = ({ app, service, connection, disabled }) => {
-  if (!connection) connection = newConnection(service)
+export const CustomConnectionSettings: React.FC<Props> = ({
+  app,
+  service,
+  connection = newConnection(service),
+  disabled,
+}) => {
+  const update = (token: string, value?: string) => {
+    let updated = { ...connection, [token]: value }
+    if (!value) delete updated[token]
+    app.connection = updated
+    updated = updateImmutableData(updated, app)
+    setConnection(updated)
+  }
 
   return (
     <>
       {app.customTokens.map(token =>
-        (token === 'path' || token === 'app') && !isPortal() ? (
+        isFileToken(token) && !isPortal() ? (
           <InlineFileFieldSetting
             key={token}
-            type={token}
-            label="Application Path"
+            token={token}
+            label={token === 'app' ? 'Application Path' : token}
             value={app.value(token)}
             disabled={disabled}
-            onSave={value => {
-              if (!connection) return
-              if (value) {
-                setConnection({ ...connection, [token]: value })
-              } else {
-                let props = { ...connection }
-                delete props[token]
-                setConnection(props)
-              }
-            }}
+            onSave={value => update(token, value)}
           />
         ) : (
           <InlineTextFieldSetting
@@ -45,13 +47,7 @@ export const CustomConnectionSettings: React.FC<Props> = ({ app, service, connec
             disabled={disabled}
             type={token === 'password' ? token : undefined}
             // filter={REGEX_NAME_SAFE} // should be set by application type
-            onSave={value =>
-              connection &&
-              setConnection({
-                ...connection,
-                [token]: value.toString(),
-              })
-            }
+            onSave={value => connection && update(token, value.toString())}
           />
         )
       )}

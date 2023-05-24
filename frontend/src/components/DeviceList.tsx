@@ -1,19 +1,20 @@
+// import { createMemoDebugger } from '../helpers/utilHelper'
 import React from 'react'
 import classnames from 'classnames'
-import { DeviceListContext } from '../../services/Context'
-import { isPortal } from '../../services/Browser'
-import { Dispatch } from '../../store'
+import { DeviceListContext } from '../services/Context'
+import { isPortal } from '../services/Browser'
+import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { ServiceContextualMenu } from '../ServiceContextualMenu'
-import { DeviceListHeader } from '../DeviceListHeader'
+import { ServiceContextualMenu } from './ServiceContextualMenu'
+import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
 import { List, Typography } from '@mui/material'
-import { DeviceListItem } from '../DeviceListItem'
-import { Attribute } from '../Attributes'
-import { isOffline } from '../../models/devices'
-import { GuideBubble } from '../GuideBubble'
-import { LoadMore } from '../LoadMore'
-import { spacing, fontSizes } from '../../styling'
+import { DeviceListItem } from './DeviceListItem'
+import { Attribute } from './Attributes'
+import { isOffline } from '../models/devices'
+import { GuideBubble } from './GuideBubble'
+import { LoadMore } from './LoadMore'
+import { spacing, fontSizes } from '../styling'
 
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
@@ -49,13 +50,14 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           const isSelected = selected?.includes(device.id)
           if (restore && !canRestore) return null
           const onSelect = deviceId => {
+            const select = [...selected]
             if (isSelected) {
-              const index = selected.indexOf(deviceId)
-              selected.splice(index, 1)
+              const index = select.indexOf(deviceId)
+              select.splice(index, 1)
             } else {
-              selected.push(deviceId)
+              select.push(deviceId)
             }
-            dispatch.ui.set({ selected: [...selected] })
+            dispatch.ui.set({ selected: select })
           }
           const row = (
             <DeviceListContext.Provider
@@ -107,6 +109,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     </>
   )
 }
+
+export const DeviceListMemo = React.memo(DeviceList /* , createMemoDebugger('DeviceList') */)
 
 type StyleProps = {
   attributes: Attribute[]

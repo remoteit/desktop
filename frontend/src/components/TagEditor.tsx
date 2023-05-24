@@ -16,6 +16,7 @@ type Props = {
   createOnly?: boolean
   button?: string
   buttonProps?: ButtonProps
+  disabled?: boolean
   keyboardShortcut?: boolean
   onCreate?: (tag: ITag) => void
   onSelect?: (tag: ITag) => void
@@ -31,6 +32,7 @@ export const TagEditor: React.FC<Props> = ({
   createOnly,
   button,
   buttonProps,
+  disabled,
   keyboardShortcut = true,
   onCreate,
   onSelect,
@@ -68,7 +70,7 @@ export const TagEditor: React.FC<Props> = ({
           icon={button}
           loading={creating}
           onClick={handleOpen}
-          disabled={open || tags.length === 0 || buttonProps?.disabled}
+          disabled={open || tags.length === 0 || buttonProps?.disabled || disabled}
           forceTitle
         />
       ) : (

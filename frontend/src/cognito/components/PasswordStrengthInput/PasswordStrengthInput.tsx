@@ -33,13 +33,13 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
   }
 
   function checkTooShort(pass: string): boolean {
-    const value = (pass && pass.length) < PASSWORD_MIN_LENGTH
+    const value = (pass ? pass.length : 0) < PASSWORD_MIN_LENGTH
     setTooShort(value)
     return value
   }
 
   function checkTooLong(pass: string): boolean {
-    const value = (pass && pass.length) > PASSWORD_MAX_LENGTH
+    const value = (pass ? pass.length : 0) > PASSWORD_MAX_LENGTH
     setTooLong(value)
     return value
   }
