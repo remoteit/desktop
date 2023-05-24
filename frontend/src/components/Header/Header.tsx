@@ -1,18 +1,16 @@
 import React, { useState, useRef } from 'react'
 import { emit } from '../../services/Controller'
 import { makeStyles } from '@mui/styles'
-import { getActiveAccountId } from '../../selectors/accounts'
 import { useMediaQuery } from '@mui/material'
+import { selectPermissions } from '../../selectors/organizations'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { getDeviceModel } from '../../selectors/devices'
 import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
-import { selectLimitsLookup } from '../../selectors/organizations'
+import { getDeviceModel } from '../../selectors/devices'
 import { UpgradeNotice } from '../UpgradeNotice'
-import { canEditTags } from '../../models/tags'
-import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
+import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
@@ -22,20 +20,20 @@ import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
-  const { searched, canNavigate, feature, editTags } = useSelector((state: ApplicationState) => {
+  const { searched, canNavigate, permissions } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     return {
-      feature: selectLimitsLookup(state),
       selected: state.ui.selected,
       searched: deviceModel.searched, // debug make true
       canNavigate: state.backend.canNavigate,
-      editTags: canEditTags(state, getActiveAccountId(state)),
+      permissions: selectPermissions(state),
     }
   })
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
+  const manager = permissions?.includes('MANAGE')
   const css = useStyles()
 
   return (
@@ -85,7 +83,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           <FilterButton />
           <ColumnsButton />
         </Route>
-        {feature.tagging && editTags && (
+        {manager && (
           <>
             <Route path="/devices" exact>
               <IconButton to="/devices/select" icon="check-square" title="Show Select" />

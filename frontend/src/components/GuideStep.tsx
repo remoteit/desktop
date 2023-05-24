@@ -152,6 +152,16 @@ export const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     borderRadius: radius,
     '& .MuiTypography-caption': { color: palette.white.main, marginTop: spacing.md, display: 'block' },
+    '& .MuiLink-root': {
+      color: palette.white.main,
+      marginRight: -spacing.sm,
+      textDecoration: 'none',
+      fontSize: fontSizes.xs,
+      fontWeight: 400,
+      cursor: 'pointer',
+      opacity: 0.3,
+    },
+    '& .MuiLink-root:hover': { opacity: 1 },
     '& .IconButtonTooltip': {
       position: 'absolute',
       right: spacing.xs,
