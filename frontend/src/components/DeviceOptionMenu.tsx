@@ -20,7 +20,8 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
   const dispatch = useDispatch<Dispatch>()
-  const devicePage = !!deviceID
+  const devicesSection = !!deviceID
+  const deviceOnly = device && !service
 
   if (!device) return null
 
@@ -38,29 +39,35 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        {!devicePage && (
+        {(!devicesSection || service) && (
           <ListItemLocation
-            title="Device Page"
+            title="Device Details"
             icon="router"
             pathname={`/devices/${device.id}/details`}
             menuItem
             dense
           />
         )}
-        {service ? (
+        {service && (
           <CopyMenuItem
             key="link"
             icon="link"
             title="Service Link"
             value={`${PROTOCOL}devices/${device.id}/${service.id}`}
           />
-        ) : (
-          devicePage && (
-            <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
-          )
         )}
-        {devicePage &&
-          device.permissions.includes('MANAGE') && [
+        {devicesSection && deviceOnly && (
+          <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+        )}
+        {device.permissions.includes('MANAGE') &&
+          devicesSection &&
+          deviceOnly && [
+            <CopyAsyncMenuItem
+              key="restore"
+              icon="wave-pulse"
+              title="Restore Code"
+              request={async () => (await dispatch.devices.getRestoreCommand(device.id)).restoreCode}
+            />,
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
@@ -68,14 +75,13 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               <ListItemText primary="Transfer Device" />
             </MenuItem>,
             <Divider key="divider" />,
-            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
-            <CopyAsyncMenuItem
-              key="restore"
-              icon="wave-pulse"
-              title="Restore Device"
-              request={async () => await dispatch.devices.getRestoreCommand(device.id)}
-            />,
             <DeleteDevice key="deleteDevice" device={device} menuItem />,
+          ]}
+        {device.permissions.includes('MANAGE') &&
+          service &&
+          devicesSection && [
+            <Divider key="divider" />,
+            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
           ]}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>

@@ -18,6 +18,7 @@ import { CopyAsyncMenuItem } from '../components/CopyAsyncMenuItem'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
+import { NetworksIndicator } from '../components/NetworksIndicator'
 import { GuideBubble } from '../components/GuideBubble'
 import { ServiceName } from '../components/ServiceName'
 import { Container } from '../components/Container'
@@ -87,11 +88,11 @@ export const DevicePage: React.FC = () => {
           gutterTop
           severity="info"
           button={
-            <Tooltip title="Copy restore command" arrow>
+            <Tooltip title="Copy restore code" arrow>
               <span>
                 <CopyAsyncMenuItem
                   icon="wave-pulse"
-                  request={async () => await dispatch.devices.getRestoreCommand(device.id)}
+                  request={async () => (await dispatch.devices.getRestoreCommand(device.id)).restoreCode}
                   className={css.restore}
                 />
               </span>
@@ -191,6 +192,7 @@ export const DevicePage: React.FC = () => {
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />
+                <NetworksIndicator instance={device} service={s} />
                 <ServiceMiniState service={s} connection={c} className={css.service} />
               </ListItemLocation>
             )

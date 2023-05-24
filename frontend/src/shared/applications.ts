@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment, getCloudData } from '../sharedAdaptor'
+import { getState, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
@@ -16,14 +16,17 @@ export class Application {
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   urlForm: boolean = false
+  sshConfig: boolean = false
   appLaunchType: IConnection['launchType'] = 'NONE'
   appCommandTemplate: string = '[host]:[port]'
   appLaunchTemplate: string = 'https://[host]:[port]'
+  displayTemplate?: string
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
   cloudData?: IApplicationType
   localhost?: boolean
+  helpMessage?: string
 
   connection?: IConnection
   service?: IService
@@ -34,7 +37,7 @@ export class Application {
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
-    const { os, portal } = getEnvironment()
+    const { os, portal } = getState().environment
     options.windows = os === 'windows'
     options.portal = portal
     Object.assign(this, options)
@@ -94,6 +97,10 @@ export class Application {
 
   get string() {
     return this.parse(this.template, this.lookup)
+  }
+
+  get displayString() {
+    return this.parse(this.displayTemplate || this.template, this.lookup)
   }
 
   get commandString() {
@@ -225,10 +232,17 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 }
 
 export function getApplicationType(typeId?: number) {
-  const { portal, os } = getEnvironment()
+  const { environment, preferences } = getState()
+  const { portal, os } = environment
+  const { sshConfig } = preferences
   const windows = os === 'windows'
 
   switch (typeId) {
+    case 1:
+      return new Application({
+        title: 'TCP',
+        appLaunchType: 'URL',
+      })
     case 4:
       return new Application({
         title: 'VNC',
@@ -237,7 +251,7 @@ export function getApplicationType(typeId?: number) {
         defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows
-          ? '"[path]" -Username [username] [host]:[port]'
+          ? '"[path]" -Username "[username]" [host]:[port]'
           : 'open -a "[app]" --args -Username [username] [host]:[port]',
       })
     case 28:
@@ -245,9 +259,14 @@ export function getApplicationType(typeId?: number) {
         title: 'SSH',
         appLaunchType: portal ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        appCommandTemplate: windows
+        appCommandTemplate: sshConfig
+          ? 'ssh_config [User]'
+          : windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
           : 'ssh -l [username] [host] -p [port]',
+        displayTemplate: sshConfig && (windows ? 'start cmd /k ssh [host]' : 'ssh [host]'),
+        helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
+        sshConfig,
       })
     case 5:
       return new Application({

@@ -2,8 +2,11 @@ import escapeRegexp from 'escape-string-regexp'
 import environment from './environment'
 import preferences from './preferences'
 
-export function getEnvironment() {
-  return environment.frontend
+export function getState() {
+  return {
+    environment: environment.frontend,
+    preferences: preferences.get(),
+  }
 }
 
 export function getCloudData(typeId?: number) {

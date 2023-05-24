@@ -100,11 +100,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     <form
       onSubmit={event => {
         event.preventDefault()
-        onSubmit({
-          ...form,
+        const newForm = {
+          ...structuredClone(form),
           port: form.port || 1,
           name: form.name || serviceNameValidation(appType.name).value,
-        })
+        }
+        onSubmit(newForm)
+        setDefaultForm(newForm)
       }}
     >
       <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>

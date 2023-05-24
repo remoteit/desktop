@@ -42,7 +42,6 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingLeft: spacing.xxs,
     paddingRight: `${spacing.lg}px !important`,
     backgroundColor: palette.white.main,
-    borderBottom: `1px solid ${palette.grayLighter.main}`,
     position: 'relative',
   },
   text: {

@@ -60,13 +60,6 @@
         "button-loading": "Creating..."
       }
     },
-    "contact-selector": {
-      "selected-devices": {
-        "add-shareWithCount_plural": "You are adding connection access to {{count}} selected devices",
-        "remove-shareWithCount_plural": "You are revoking connection access to {{count}} selected devices",
-        "transfer-deviceWithCount_plural": "You are transferring {{count}} selected devices"
-      }
-    },
     "forgot-password-verify": {
       "password-error": {
         "missing-lower": "The password must contain an lowercase letter.",

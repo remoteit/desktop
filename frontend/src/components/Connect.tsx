@@ -74,17 +74,25 @@ export const Connect: React.FC = () => {
           action={<ConnectionMenu connection={connection} service={service} />}
         >
           <List disablePadding>
+            <ListItemLocation
+              icon="sliders"
+              title="Connection configuration"
+              disabled={connection.connectLink}
+              pathname="advanced"
+              showDisabled
+              dense
+            >
+              <Icon name="angle-right" inlineLeft fixedWidth />
+            </ListItemLocation>
+            <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 1 }} />
             <Collapse in={!connection.connectLink}>
               <AutoLaunchToggle connection={connection} service={service} />
             </Collapse>
-            <Collapse in={showConnectLink}>
-              <ConnectLinkSetting connection={connection} permissions={instance.permissions} />
-            </Collapse>
-            <Collapse in={!connection.connectLink}>
-              <ListItemLocation icon="sliders" title="Connection configuration" pathname="advanced" dense>
-                <Icon name="angle-right" inlineLeft fixedWidth />
-              </ListItemLocation>
-            </Collapse>
+            <ConnectLinkSetting
+              connection={connection}
+              permissions={instance.permissions}
+              disabled={!showConnectLink}
+            />
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Want Persistent Endpoints?</strong>
@@ -108,7 +116,7 @@ export const Connect: React.FC = () => {
               <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
-              <Divider variant="inset" sx={{ marginTop: 2, marginBottom: 3 }} />
+              <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 2 }} />
             </>
           )}
           <ServiceAttributes device={device} service={service} disablePadding />

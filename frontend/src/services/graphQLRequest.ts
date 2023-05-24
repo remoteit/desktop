@@ -40,6 +40,7 @@ export async function graphQLRestoreDevice(props: { id: string; account: string 
           account(id: $account) {
             device(id: $id)  {
               restoreCommand
+              restoreCode
             }
           }
         }

@@ -1,9 +1,11 @@
 import { emit } from '../services/Controller'
+import { toLookup } from '../helpers/utilHelper'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { selectConnections } from '../selectors/connections'
+import { Application } from '../shared/applications'
 import { selectById } from '../selectors/devices'
 import { isPortal } from '../services/Browser'
 
@@ -31,6 +33,10 @@ export function isRelay(service?: IService) {
   return !!(service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost')
 }
 
+export function isFileToken(token: string) {
+  return token === 'path' || token === 'app' || token.toLowerCase().includes('file')
+}
+
 export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
   const sessions = state.sessions.all.map(s => s.target.id)
   const connected = connections.filter(c => c.connected && !sessions.includes(c.id)).map(c => c.id)
@@ -41,7 +47,7 @@ export function findLocalConnection(state: ApplicationState, id: string, session
   return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
-export function newConnection(service?: IService | null) {
+export function newConnection(service?: IService | null): IConnection {
   const state = store.getState()
   const user = getActiveUser(state)
   const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
@@ -77,6 +83,23 @@ export function newConnection(service?: IService | null) {
   }
 
   return connection
+}
+
+export function updateImmutableData(connection: IConnection, app?: Application): IConnection {
+  if (!app) return connection
+  let identity: ILookup<string> | undefined
+
+  if (app.sshConfig) {
+    const { lookup, tokens } = app
+    identity = Object.fromEntries(tokens.map(token => [token, lookup?.[token]]))
+  }
+
+  return {
+    ...connection,
+    online: app.service?.state === 'active',
+    typeID: app.service?.typeID,
+    identity,
+  }
 }
 
 export function routeTypeToSettings(route: IRouteType) {

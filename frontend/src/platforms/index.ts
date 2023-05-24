@@ -10,7 +10,7 @@ export interface IPlatform {
     command?: boolean | string
     instructions?: string | React.ReactNode
     qualifier: string
-    link: string
+    link?: string
   }
 }
 
@@ -28,6 +28,7 @@ class Platforms {
     'azure',
     'docker',
     'docker-extension',
+    'docker-jumpbox',
     'firewalla',
     'gcp',
     'ios',

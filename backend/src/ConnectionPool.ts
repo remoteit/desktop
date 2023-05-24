@@ -8,6 +8,7 @@ import preferences from './preferences'
 import environment from './environment'
 import PortScanner from './PortScanner'
 import Connection from './Connection'
+import sshConfig from './sshConfig'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import Logger from './Logger'
@@ -57,6 +58,7 @@ export default class ConnectionPool {
     cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params || DEFAULT_CONNECTION
       if (connection.public || connection.connectLink) {
+        Logger.info('STOP CLI CONNECTION', { id: connection.id })
         this.stop(connection)
       } else if (this.changed(cliConnection, connection)) {
         Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
@@ -70,11 +72,8 @@ export default class ConnectionPool {
 
     // start any connections: desktop -> cli
     this.pool.forEach(instance => {
-      if (
-        !(instance.params.enabled || instance.params.connected) ||
-        instance.params.public ||
-        instance.params.connectLink
-      ) {
+      if (instance.params.public || instance.params.connectLink) return
+      if (!(instance.params.enabled || instance.params.connected)) {
         this.clearTransitions(instance)
         return
       }
@@ -198,7 +197,7 @@ export default class ConnectionPool {
   forget = async (connection: IConnection) => {
     Logger.info('FORGET', { id: connection.id })
     const instance = this.set(connection, false, true)
-    const index = this.pool.indexOf(instance)
+    const index = this.pool.findIndex(c => c.params.id === instance.params.id)
     await instance.clear()
     this.pool.splice(index, 1)
     this.updated()
@@ -252,10 +251,14 @@ export default class ConnectionPool {
   updated = (instance?: Connection) => {
     if (!user.signedIn) return
     const json = this.toJSON()
+    sshConfig.update(json)
     this.file?.write(json)
-    if (instance) Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })
-    if (instance) EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
-    else EventBus.emit(ConnectionPool.EVENTS.pool, json)
+    if (instance) {
+      Logger.info('CONNECTION UPDATE EVENT', { id: instance.params.id, name: instance.params.name })
+      EventBus.emit(ConnectionPool.EVENTS.updated, instance.params)
+    } else {
+      EventBus.emit(ConnectionPool.EVENTS.pool, json)
+    }
   }
 
   toJSON = (): IConnection[] => {

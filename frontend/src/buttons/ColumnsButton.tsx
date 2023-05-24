@@ -15,7 +15,7 @@ export const ColumnsButton: React.FC = () => {
   const css = useStyles({ open })
   const icon = open ? 'times' : 'line-columns'
   return (
-    <Tooltip title={open ? 'Hide Columns' : 'Show Columns'} className={css.button}>
+    <Tooltip title={open ? 'Hide Columns' : 'Show Columns'} className={css.button} arrow>
       <IconButton
         onClick={event => {
           event.stopPropagation()

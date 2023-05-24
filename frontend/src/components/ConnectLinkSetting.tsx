@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { ListItemSetting } from './ListItemSetting'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { Typography, Collapse } from '@mui/material'
 import { useDispatch } from 'react-redux'
+import { Typography } from '@mui/material'
 import { ColorChip } from './ColorChip'
 import { Dispatch } from '../store'
 
@@ -14,13 +15,14 @@ const MAX_PASSWORD_LENGTH = 49
 type Props = {
   connection: IConnection
   permissions: IPermission[]
+  disabled?: boolean
 }
 
-export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions }) => {
+export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, disabled }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
-  const disabled = !canManage || (connection.enabled && !connection.connectLink) || connection.updating
+  disabled = disabled || !canManage || (connection.enabled && !connection.connectLink) || connection.updating
 
   useEffect(() => {
     setSecurity(connection.password ? 'PROTECTED' : 'OPEN')
@@ -33,16 +35,20 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions })
         disabled={disabled}
         label="Persistent public url"
         subLabel={
-          canManage ? (
-            'Create a fixed public endpoint for anyone to connect to'
-          ) : (
-            <Typography variant="caption" color="grayDarkest.main">
-              Requires device 'Manage' permission
-            </Typography>
-          )
+          <Typography
+            variant="caption"
+            color={disabled ? 'grayDarkest.main' : 'grayDark.main'}
+            sx={{ display: 'block', lineHeight: 1.2, marginTop: 0.4 }}
+          >
+            {canManage
+              ? disabled
+                ? 'Fixed public endpoints are only available for http(s) services.'
+                : 'Create a fixed public endpoint for anyone to connect to'
+              : "Requires device 'Manage' permission"}
+          </Typography>
         }
         secondaryContent={
-          <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="success" inline />
+          <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="primary" inline />
         }
         secondaryContentWidth="140px"
         toggle={!!connection.connectLink}
@@ -50,12 +56,35 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions })
           if (connection.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
           else dispatch.connections.setConnectLink({ ...connection, enabled: true })
         }}
+        confirm={!connection.connectLink}
+        confirmProps={{
+          color: connection.password ? undefined : 'error',
+          action: 'Make Public',
+          title: 'Are you sure?',
+          children: (
+            <>
+              {connection.password ? (
+                <Notice severity="info" gutterBottom fullWidth>
+                  This endpoint has password protection.
+                </Notice>
+              ) : (
+                <Notice severity="error" gutterBottom fullWidth>
+                  This endpoint has no password protection.
+                </Notice>
+              )}
+              <Typography variant="body2">
+                This will create a fixed public endpoint for anyone {connection.password && 'with the password'} to
+                connect to.
+              </Typography>
+            </>
+          ),
+        }}
       />
-      <Collapse in={connection.connectLink} timeout={800}>
+      {canManage && (
         <ListItemQuote>
           <SelectSetting
             hideIcon
-            disabled={connection.updating}
+            disabled={connection.updating || disabled}
             label="Authentication"
             value={security}
             values={[
@@ -82,7 +111,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions })
             />
           )}
         </ListItemQuote>
-      </Collapse>
+      )}
     </>
   )
 }

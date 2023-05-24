@@ -2,8 +2,8 @@ import escapeRegexp from 'escape-string-regexp'
 import { findType } from './models/applicationTypes'
 import { store } from './store'
 
-export function getEnvironment() {
-  return store.getState().backend.environment
+export function getState() {
+  return store.getState().backend
 }
 
 export function getCloudData(typeId?: number) {

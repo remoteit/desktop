@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@mui/material'
+import { Confirm, ConfirmProps } from '../Confirm'
 import { Icon, IconProps } from '../Icon'
-import { Confirm } from '../Confirm'
-import { Quote } from '../Quote'
 import { spacing } from '../../styling'
+import { Quote } from '../Quote'
 
 type Props = {
   icon?: string
@@ -19,8 +19,7 @@ type Props = {
   tooltip?: string
   disabled?: boolean
   confirm?: boolean
-  confirmMessage?: React.ReactNode
-  confirmTitle?: string
+  confirmProps?: Omit<ConfirmProps, 'open' | 'onConfirm' | 'onDeny'>
   quote?: boolean
   modified?: boolean
   content?: React.ReactNode
@@ -49,8 +48,7 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
       quote,
       modified,
       confirm,
-      confirmMessage = 'Are you sure?',
-      confirmTitle = '',
+      confirmProps,
       content,
       secondaryContent,
       secondaryContentWidth,
@@ -127,13 +125,20 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
               </Button>
             )}
             {showToggle && (
-              <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} size={size} />
+              <Switch
+                edge="end"
+                color="primary"
+                disabled={disabled}
+                checked={toggle}
+                onClick={handleClick}
+                size={size}
+              />
             )}
           </ListItemSecondaryAction>
         </ListItem>
         {confirm && onClick && (
-          <Confirm open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)} title={confirmTitle}>
-            {confirmMessage}
+          <Confirm {...confirmProps} open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)}>
+            {confirmProps?.children}
           </Confirm>
         )}
       </>

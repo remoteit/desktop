@@ -1,5 +1,4 @@
 import React from 'react'
-import { getDeviceModel } from '../selectors/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Checkbox } from '@mui/material'
@@ -8,12 +7,9 @@ import { Icon } from './Icon'
 type Props = { select?: boolean; devices: IDevice[] }
 
 export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) => {
-  const { selected, total } = useSelector((state: ApplicationState) => ({
-    selected: state.ui.selected,
-    total: getDeviceModel(state).total,
-  }))
+  const { selected } = useSelector((state: ApplicationState) => state.ui)
   const dispatch = useDispatch<Dispatch>()
-  const indeterminate = selected.length > 0 && selected.length < total
+  const indeterminate = selected.length > 0 && selected.length < devices.length
 
   if (!select) return null
 
@@ -29,7 +25,7 @@ export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) =
   return (
     <>
       <Checkbox
-        checked={selected.length === total}
+        checked={selected.length === devices.length}
         indeterminate={indeterminate}
         onClick={onClick}
         checkedIcon={<Icon name="check-square" size="md" type="solid" />}

@@ -175,6 +175,19 @@ export default createModel<RootModel>()({
       if (!exists && device) prepend ? devices.unshift(device) : devices.push(device)
       await dispatch.accounts.setDevices({ devices, accountId })
     },
+    /* 
+      Remove all references to a device for cleanup after device is deleted
+     */
+    async removeDevice(id: string, state) {
+      for (const accountId in state.devices) {
+        const all = state.devices[accountId].all
+        const filtered = all.filter(d => d.id !== id)
+        if (filtered.length !== all.length) {
+          await dispatch.accounts.setDevices({ devices: filtered, accountId })
+          await dispatch.devices.set({ total: state.devices[accountId].total - 1, accountId })
+        }
+      }
+    },
     async setActive(id: string, globalState) {
       setLocalStorage(globalState, ACCOUNT_KEY, id)
       dispatch.accounts.set({ activeId: id })

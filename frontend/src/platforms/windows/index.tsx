@@ -12,8 +12,8 @@ platforms.register({
   component: Component,
   types: { 0: 'Windows', 5: 'Windows Desktop', 10: 'Windows Server' },
   installation: {
-    instructions: 'Install the Desktop or CLI on the Windows system to you want to enable remote access to.',
     qualifier: 'Windows installation',
+    instructions: 'Install the Desktop or CLI on the Windows system to you want to enable remote access to.',
     link: 'https://link.remote.it/download/desktop',
   },
 })

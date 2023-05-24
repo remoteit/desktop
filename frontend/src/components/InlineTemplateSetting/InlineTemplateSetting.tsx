@@ -34,8 +34,11 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
           <ConfirmButton
             type="solid"
             confirm={secureReverseProxy}
-            confirmTitle="Disable Web Security"
-            confirmMessage="Are you sure you want to disable secure connections? Your local connection traffic will be sent in the clear, unencrypted."
+            confirmProps={{
+              title: 'Disable Web Security',
+              children:
+                'Are you sure you want to disable secure connections? Your local connection traffic will be sent in the clear, unencrypted.',
+            }}
             disabled={disabled}
             size={secureReverseProxy ? undefined : 'md'}
             name={secureReverseProxy ? 'lock' : 'triangle-exclamation'}
@@ -50,7 +53,21 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
       label={
         <>
           {app.contextTitle} Template
-          <Tooltip title="Default tokens: [host] [port] [id] [path]" placement="top" arrow>
+          <Tooltip
+            title={
+              <>
+                {app.helpMessage && (
+                  <>
+                    {app.helpMessage}
+                    <br />
+                  </>
+                )}
+                Default tokens - <b>{app.defaultTokens.join(', ')}</b>
+              </>
+            }
+            placement="top"
+            arrow
+          >
             <span style={{ zIndex: 10 }}>
               <Icon name="question-circle" size="sm" type="regular" inline />
             </span>

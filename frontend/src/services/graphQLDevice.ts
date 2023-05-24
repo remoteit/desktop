@@ -391,7 +391,7 @@ export function graphQLDeviceAdaptor({
     }
   })
   store.dispatch.devices.customAttributes(customAttributes)
-  store.dispatch.connections.parseConnectionsLinks({ devices: data, accountId })
+  store.dispatch.connections.updateFromServices({ devices: data, accountId })
   return data
 }
 

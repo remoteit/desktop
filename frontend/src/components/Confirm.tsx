@@ -11,7 +11,7 @@ import {
 import { TransitionProps } from '@mui/material/transitions'
 import React from 'react'
 
-export const Confirm: React.FC<{
+export type ConfirmProps = {
   title?: string
   action?: string
   open: boolean
@@ -21,7 +21,19 @@ export const Confirm: React.FC<{
   children?: React.ReactNode
   onConfirm: (e: React.MouseEvent) => void
   onDeny: () => void
-}> = ({ title, action = 'Ok', open, onConfirm, onDeny, maxWidth = 'xs', color = 'primary', disabled, children }) => (
+}
+
+export const Confirm: React.FC<ConfirmProps> = ({
+  title,
+  action = 'Ok',
+  open,
+  onConfirm,
+  onDeny,
+  maxWidth = 'xs',
+  color = 'primary',
+  disabled,
+  children,
+}) => (
   <Dialog
     open={open}
     maxWidth={maxWidth}

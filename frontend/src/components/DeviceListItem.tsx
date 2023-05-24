@@ -1,14 +1,14 @@
 import React, { useContext } from 'react'
-import { DeviceListContext } from '../../services/Context'
+import { DeviceListContext } from '../services/Context'
 import { useHistory } from 'react-router-dom'
-import { AttributeValue } from '../AttributeValue'
+import { AttributeValueMemo } from './AttributeValue'
 import { makeStyles } from '@mui/styles'
 import { Box, ListItemIcon, ListItem } from '@mui/material'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { DeviceConnectMenu } from '../DeviceConnectMenu'
-import { radius, spacing } from '../../styling'
-import { TestUI } from '../TestUI'
-import { Icon } from '../Icon'
+import { ConnectionStateIcon } from './ConnectionStateIcon'
+import { DeviceConnectMenu } from './DeviceConnectMenu'
+import { radius, spacing } from '../styling'
+import { TestUI } from './TestUI'
+import { Icon } from './Icon'
 
 type Props = {
   restore?: boolean
@@ -39,7 +39,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
             selected ? (
               <Icon name="check-square" size="md" type="solid" color="primary" />
             ) : (
-              <Icon name="square" size="md" type="light" />
+              <Icon name="square" size="md" />
             )
           ) : (
             <>
@@ -52,11 +52,11 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
             </>
           )}
         </ListItemIcon>
-        <AttributeValue attribute={required} connection={connection} />
+        <AttributeValueMemo device={device} attribute={required} connection={connection} connections={connections} />
       </Box>
       {attributes?.map(attribute => (
         <Box key={attribute.id}>
-          <AttributeValue attribute={attribute} connection={connection} />
+          <AttributeValueMemo device={device} attribute={attribute} connection={connection} connections={connections} />
         </Box>
       ))}
     </ListItem>

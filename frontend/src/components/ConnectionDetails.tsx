@@ -132,7 +132,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       </Typography>
       <Typography variant="h3" className={css.h3}>
         {secureIcon}
-        <span>{app.string}</span>
+        <span>{app.displayString}</span>
       </Typography>
     </div>
   )
@@ -228,7 +228,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                             color="alwaysWhite"
                             icon={app.launchType === 'URL' ? 'link' : 'terminal'}
                             app={app}
-                            value={app.string}
+                            value={app.displayString}
                             onMouseEnter={() => setHover('copyLaunch')}
                             onMouseLeave={() => setHover(undefined)}
                           />

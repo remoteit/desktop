@@ -16,6 +16,8 @@ type Props = {
   createOnly?: boolean
   button?: string
   buttonProps?: ButtonProps
+  disabled?: boolean
+  keyboardShortcut?: boolean
   onCreate?: (tag: ITag) => void
   onSelect?: (tag: ITag) => void
 }
@@ -30,13 +32,16 @@ export const TagEditor: React.FC<Props> = ({
   createOnly,
   button,
   buttonProps,
+  disabled,
+  keyboardShortcut = true,
   onCreate,
   onSelect,
 }) => {
   const getColor = useLabel()
   const [open, setOpen] = React.useState<boolean>(false)
   const [creating, setCreating] = React.useState<boolean>(false)
-  const addRef = React.useRef<HTMLDivElement>(null)
+  const buttonRef = React.useRef<HTMLButtonElement>(null)
+  const chipRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
 
   const handleOpen = () => setOpen(!open)
@@ -50,18 +55,24 @@ export const TagEditor: React.FC<Props> = ({
   }
 
   useEffect(() => {
-    window.addEventListener('keydown', onKeyDown)
+    if (keyboardShortcut) window.addEventListener('keydown', onKeyDown)
     return () => {
-      window.removeEventListener('keydown', onKeyDown)
+      if (keyboardShortcut) window.removeEventListener('keydown', onKeyDown)
     }
   }, [])
 
   return (
     <>
       {button ? (
-        <div ref={addRef}>
-          <IconButton {...buttonProps} icon={button} loading={creating} onClick={handleOpen} disabled={open} />
-        </div>
+        <IconButton
+          {...buttonProps}
+          ref={buttonRef}
+          icon={button}
+          loading={creating}
+          onClick={handleOpen}
+          disabled={open || tags.length === 0 || buttonProps?.disabled || disabled}
+          forceTitle
+        />
       ) : (
         <Chip
           label={
@@ -73,7 +84,7 @@ export const TagEditor: React.FC<Props> = ({
           className={css.chip}
           size="small"
           onClick={handleOpen}
-          ref={addRef}
+          ref={chipRef}
         />
       )}
       <TagAutocomplete
@@ -84,10 +95,12 @@ export const TagEditor: React.FC<Props> = ({
         filter={filter}
         createOnly={createOnly}
         placeholder={placeholder}
-        targetEl={addRef.current}
+        targetEl={buttonRef.current || chipRef.current}
         onItemColor={tag => getColor(tag.color)}
+        onClose={handleClose}
+        allowAdding={allowAdding}
         InputProps={{
-          endAdornment: (
+          endAdornment: keyboardShortcut && (
             <Tooltip title="Keyboard shortcut '#'" placement="top" arrow>
               <Chip label="#" size="small" />
             </Tooltip>
@@ -101,8 +114,6 @@ export const TagEditor: React.FC<Props> = ({
           }
           await onSelect?.(tag)
         }}
-        onClose={handleClose}
-        allowAdding={allowAdding}
       />
     </>
   )
