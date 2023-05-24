@@ -37,7 +37,6 @@ export class Preferences {
   get defaults(): IPreferences {
     return {
       ...this.data,
-      version: environment.version,
       autoUpdate: environment.isMac || environment.isWindows,
     }
   }

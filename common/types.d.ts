@@ -168,8 +168,7 @@ declare global {
     failover?: boolean // allow proxy failover
     host?: string // returned hostname from cli
     id: string
-    identityFilePath?: string // ssh identity file path
-    identityUsername?: string // ssh identity username
+    identity?: ISSHIdentity
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
@@ -210,6 +209,12 @@ declare global {
       proxyCanCreate: boolean
       targetServiceReachable: boolean
     }
+  }
+
+  type ISSHIdentity = {
+    User?: string
+    Password?: string
+    IdentityFile?: string // ssh identity file path
   }
 
   type IConnectionState =

@@ -35,6 +35,8 @@ export const getDevices = createSelector(
   (devices, activeAccountId) => getDeviceModelFn(devices, activeAccountId).all || []
 )
 
+export const getVisibleDevices = createSelector([getDevices], devices => devices.filter((d: IDevice) => !d.hidden))
+
 export const getOwnDevices = createSelector(
   [getDevicesState, getUserId],
   (devices, userId) => getDeviceModelFn(devices, userId).all || []
@@ -75,3 +77,18 @@ export const selectDeviceDetailAttributes = createSelector([getDeviceModel], dev
       )
     )
 )
+
+// export const selectDeviceListItemAttributes = createSelector([getDeviceModel], deviceModel =>
+//   deviceAttributes
+//     .filter(d => d.list)
+//     .concat(
+//       deviceModel.customAttributes.map(
+//         id =>
+//           new DeviceAttribute({
+//             id: `attribute-${id}`,
+//             label: id,
+//             value: ({ device }) => (device?.attributes[id] ? Attribute(device.attributes[id]) : undefined),
+//           })
+//       )
+//     )
+// )

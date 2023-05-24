@@ -25,13 +25,13 @@ export function PasswordStrengthInput({ onChange }: Props) {
   }
 
   const checkTooShort = (pass: string) => {
-    const value = (pass && pass.length) < PASSWORD_MIN_LENGTH
+    const value = (pass ? pass.length : 0) < PASSWORD_MIN_LENGTH
     setTooShort(value)
     return value
   }
 
   const checkTooLong = (pass: string) => {
-    const value = (pass && pass.length) > PASSWORD_MAX_LENGTH
+    const value = (pass ? pass.length : 0) > PASSWORD_MAX_LENGTH
     setTooLong(value)
     return value
   }
