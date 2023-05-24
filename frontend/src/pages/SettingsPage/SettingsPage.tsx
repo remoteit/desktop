@@ -3,6 +3,7 @@ import { List, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../../components/ListItemLocation'
+import { selectLimitsLookup } from '../../selectors/organizations'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
@@ -10,7 +11,10 @@ import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 
 export const SettingsPage: React.FC = () => {
-  const { preferences } = useSelector((state: ApplicationState) => state.backend)
+  const { preferences, feature } = useSelector((state: ApplicationState) => ({
+    preferences: state.backend,
+    feature: selectLimitsLookup(state),
+  }))
 
   if (!preferences) return null
 
@@ -35,7 +39,7 @@ export const SettingsPage: React.FC = () => {
           exactMatch
           dense
         />
-        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />
+        {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />}
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Connection Type Defaults"

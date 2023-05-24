@@ -53,7 +53,21 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
       label={
         <>
           {app.contextTitle} Template
-          <Tooltip title="Default tokens: [host] [port] [id] [path]" placement="top" arrow>
+          <Tooltip
+            title={
+              <>
+                {app.helpMessage && (
+                  <>
+                    {app.helpMessage}
+                    <br />
+                  </>
+                )}
+                Default tokens - <b>{app.defaultTokens.join(', ')}</b>
+              </>
+            }
+            placement="top"
+            arrow
+          >
             <span style={{ zIndex: 10 }}>
               <Icon name="question-circle" size="sm" type="regular" inline />
             </span>

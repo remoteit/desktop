@@ -17,16 +17,13 @@ import { emit } from '../services/Controller'
 export const TestPage: React.FC = () => {
   const { plans, ui } = useDispatch<Dispatch>()
   const [testHeader, setTestHeader] = useState<string>(window.localStorage.getItem(TEST_HEADER) || '')
-  const { tests, informed, testUI, unExpireBubbles, preferences, limits, limitsOverride } = useSelector(
-    (state: ApplicationState) => ({
-      ...state.plans,
-      testUI: state.ui.testUI,
-      unExpireBubbles: state.ui.unExpireBubbles,
-      preferences: state.backend.preferences,
-      limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
-      limits: selectBaseLimits(state, state.auth.user?.id),
-    })
-  )
+  const { tests, informed, testUI, preferences, limits, limitsOverride } = useSelector((state: ApplicationState) => ({
+    ...state.plans,
+    testUI: state.ui.testUI,
+    preferences: state.backend.preferences,
+    limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
+    limits: selectBaseLimits(state, state.auth.user?.id),
+  }))
 
   return (
     <Container
@@ -122,12 +119,6 @@ export const TestPage: React.FC = () => {
             </List>
           </Quote>
         </ListItem>
-        <ListItemSetting
-          hideIcon
-          label="Display expired guide bubbles"
-          toggle={unExpireBubbles}
-          onClick={() => ui.set({ unExpireBubbles: !unExpireBubbles })}
-        />
       </List>
       <Typography variant="subtitle1">Features</Typography>
       <List>
