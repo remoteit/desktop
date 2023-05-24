@@ -84,7 +84,7 @@ export class Environment {
   }
 
   isWindowsARM() {
-    const archString = process.env.PROCESSOR_ARCHITECTURE + process.env.PROCESSOR_ARCHITEW6432
+    const archString = '' + process.env.PROCESSOR_ARCHITECTURE + process.env.PROCESSOR_ARCHITEW6432
     return archString.toLowerCase().includes('arm')
   }
 

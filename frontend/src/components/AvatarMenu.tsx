@@ -6,8 +6,6 @@ import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
-import { selectOrganizationName } from '../selectors/organizations'
-// import { OrganizationSelectList } from './OrganizationSelectList'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemSetting } from './ListItemSetting'
 import { getActiveUser } from '../selectors/accounts'
@@ -32,7 +30,7 @@ export const AvatarMenu: React.FC = () => {
   const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator, activeUser, orgName } = useSelector(
+  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator, activeUser } = useSelector(
     (state: ApplicationState) => ({
       user: state.auth.user,
       remoteUI: isRemoteUI(state),
@@ -40,7 +38,6 @@ export const AvatarMenu: React.FC = () => {
       backendAuthenticated: state.auth.backendAuthenticated,
       licenseIndicator: selectLicenseIndicator(state),
       activeUser: getActiveUser(state),
-      orgName: selectOrganizationName(state),
     })
   )
 
@@ -138,8 +135,10 @@ export const AvatarMenu: React.FC = () => {
             confirm={!testUI}
             label={(testUI ? '' : 'Enable ') + 'Test UI'}
             icon="vial"
-            confirmTitle="Are you sure?"
-            confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
+            confirmProps={{
+              title: 'Are you sure?',
+              children: 'Enabling alpha features may be unstable. It is only intended for testing and development.',
+            }}
             onClick={() => {
               dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
               history.push('/settings/test')
@@ -155,17 +154,23 @@ export const AvatarMenu: React.FC = () => {
             confirm
             label="Lock application"
             icon="lock"
-            confirmTitle="Are you sure?"
-            confirmMessage="Locking the app will leave all active connections and hosted services running and prevent others from signing in."
             onClick={() => emit('user/lock')}
+            confirmProps={{
+              title: 'Are you sure?',
+              children:
+                'Locking the app will leave all active connections and hosted services running and prevent others from signing in.',
+            }}
           />
         </DesktopUI>
         <ListItemSetting
           confirm={backendAuthenticated}
           label="Sign out"
           icon="sign-out"
-          confirmMessage="Signing out will allow this device to be transferred or another user to sign in. It will stop all connections."
           onClick={() => dispatch.auth.signOut()}
+          confirmProps={{
+            children:
+              'Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.',
+          }}
         />
         {remoteUI || (
           <DesktopUI>
@@ -173,9 +178,11 @@ export const AvatarMenu: React.FC = () => {
               confirm
               label="Quit"
               icon="power-off"
-              confirmTitle="Are you sure?"
-              confirmMessage="Quitting will not close your connections."
               onClick={() => emit('user/quit')}
+              confirmProps={{
+                title: 'Are you sure?',
+                children: 'Quitting will not close your connections.',
+              }}
             />
           </DesktopUI>
         )}

@@ -3,6 +3,7 @@ import { Box, Tooltip, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { useStyles } from './GuideStep'
+import { Link } from './Link'
 
 type Props = {
   guide: string
@@ -35,7 +36,7 @@ export const GuideBubble: React.FC<Props> = ({
 }) => {
   const { poppedBubbles, expired } = useSelector((state: ApplicationState) => ({
     poppedBubbles: state.ui.poppedBubbles,
-    expired: startDate > state.user.created && !state.ui.unExpireBubbles && !state.ui.testUI,
+    expired: (startDate > state.user.created && !state.ui.testUI) || state.ui.expireBubbles,
   }))
   const { ui } = useDispatch<Dispatch>()
   const [waiting, setWaiting] = React.useState<boolean>(true)
@@ -59,12 +60,12 @@ export const GuideBubble: React.FC<Props> = ({
       title={
         <>
           {instructions}
-          <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
-            Ok
-          </Button>
-          {/* <Box fontSize={10} marginLeft={2} component="span">
-            {guide}
-          </Box> */}
+          <Box display="flex" alignItems="flex-end" justifyContent="space-between">
+            <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
+              Ok
+            </Button>
+            <Link onClick={() => ui.popAll()}>dismiss all</Link>
+          </Box>
         </>
       }
     >

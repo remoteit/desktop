@@ -108,19 +108,6 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </ListHorizontal>
-        <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
-          <ListSubheader disableGutters>Get a code</ListSubheader>
-          <Divider />
-          <ListItemLocation
-            iconPlatform
-            iconSize="xxl"
-            icon="unknown"
-            pathname="/add/unknown"
-            title="Generic"
-            subtitle="Registration code"
-            disableGutters
-          />
-        </ListHorizontal>
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />
@@ -193,7 +180,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
   },
   quarter: {
-    width: '25%',
+    width: '33%',
     minWidth: 200,
   },
   form: {

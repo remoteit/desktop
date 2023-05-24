@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles'
 import { Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { selectLimitsLookup } from '../selectors/organizations'
 import { getActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
 import { ConfirmButton } from '../buttons/ConfirmButton'
@@ -18,8 +19,9 @@ import { spacing, radius } from '../styling'
 type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[]; children?: React.ReactNode }
 
 export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
-  const { accountId, tags, adding, removing, destroying } = useSelector((state: ApplicationState) => ({
+  const { accountId, feature, tags, adding, removing, destroying } = useSelector((state: ApplicationState) => ({
     accountId: getActiveAccountId(state),
+    feature: selectLimitsLookup(state),
     tags: selectTags(state),
     adding: state.tags.adding,
     removing: state.tags.removing,
@@ -42,38 +44,42 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>
             </Title>
-            <InputLabel shrink>tags</InputLabel>
-            <TagEditor
-              button="plus"
-              tags={tags}
-              buttonProps={{
-                title: 'Add Tag',
-                color: 'alwaysWhite',
-                placement: 'bottom',
-                loading: adding,
-                disabled: adding || !selected.length,
-              }}
-              keyboardShortcut={false}
-              onCreate={onCreate}
-              onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
-            />
-            <TagEditor
-              button="minus"
-              placeholder="Remove a tag..."
-              allowAdding={false}
-              tags={getSelectedTags(devices, selected)}
-              buttonProps={{
-                title: 'Remove Tag',
-                color: 'alwaysWhite',
-                placement: 'bottom',
-                loading: removing,
-                disabled: removing || !selected.length,
-              }}
-              keyboardShortcut={false}
-              onCreate={onCreate}
-              onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
-            />
-            <Divider orientation="vertical" color="white" />
+            {feature.tagging && (
+              <>
+                <InputLabel shrink>tags</InputLabel>
+                <TagEditor
+                  button="plus"
+                  tags={tags}
+                  buttonProps={{
+                    title: 'Add Tag',
+                    color: 'alwaysWhite',
+                    placement: 'bottom',
+                    loading: adding,
+                    disabled: adding || !selected.length,
+                  }}
+                  keyboardShortcut={false}
+                  onCreate={onCreate}
+                  onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
+                />
+                <TagEditor
+                  button="minus"
+                  placeholder="Remove a tag..."
+                  allowAdding={false}
+                  tags={getSelectedTags(devices, selected)}
+                  buttonProps={{
+                    title: 'Remove Tag',
+                    color: 'alwaysWhite',
+                    placement: 'bottom',
+                    loading: removing,
+                    disabled: removing || !selected.length,
+                  }}
+                  keyboardShortcut={false}
+                  onCreate={onCreate}
+                  onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
+                />
+                <Divider orientation="vertical" color="white" />
+              </>
+            )}
             <ConfirmButton
               icon="trash"
               title="Delete selected"

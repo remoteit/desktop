@@ -40,12 +40,13 @@ export class BinaryInstaller {
   }
 
   async shouldInstall() {
-    let binariesOutdated = !(await this.cliBinary.isCurrent())
+    const binariesOutdated = !(await this.cliBinary.isCurrent())
     const agentStopped = !(await cli.agentRunning())
     const agentMismatched = (await cli.agentVersion()) !== this.cliBinary.version
     const cliUpdated = await this.cliUpdated()
-    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped: agentStopped, agentMismatched, cliUpdated })
-    return binariesOutdated || agentStopped || agentMismatched || cliUpdated
+    const desktopUpdated = await this.desktopUpdated()
+    Logger.info('SHOULD INSTALL?', { binariesOutdated, agentStopped, agentMismatched, cliUpdated, desktopUpdated })
+    return binariesOutdated || agentStopped || agentMismatched || cliUpdated || desktopUpdated
   }
 
   async install() {
@@ -160,19 +161,19 @@ export class BinaryInstaller {
     return envVar
   }
 
-  async cliUpdated() {
+  async cliUpdated(): Promise<boolean> {
     const previousVersion = preferences.get().cliVersion
     const thisVersion = this.cliBinary.version
-    let updated = true
+    let updated: boolean = true
 
     try {
-      updated = previousVersion && semverCompare(previousVersion, thisVersion) < 0
+      updated = !!previousVersion && semverCompare(previousVersion, thisVersion) < 0
       if (!previousVersion) this.updateVersions()
     } catch (error) {
       Logger.warn('CLI VERSION COMPARE FAILED', { error, previousVersion, thisVersion })
     }
 
-    if (environment.isWindows && updated) {
+    if (environment.isWindows) {
       // Windows has an installer script to update so doesn't need this check
       this.updateVersions()
       return false
@@ -180,6 +181,20 @@ export class BinaryInstaller {
 
     if (updated) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
 
+    return updated
+  }
+
+  desktopUpdated(): boolean {
+    const previousVersion = preferences.get().version
+    const thisVersion = environment.version
+    const updated = !previousVersion || semverCompare(previousVersion, thisVersion) !== 0
+    if (updated)
+      Logger.info('DESKTOP UPDATED', {
+        updated,
+        previousVersion,
+        thisVersion,
+        compare: semverCompare(previousVersion, thisVersion),
+      })
     return updated
   }
 
