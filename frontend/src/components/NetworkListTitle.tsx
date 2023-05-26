@@ -18,7 +18,6 @@ export interface Props {
 
 export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, offline, noLink, onClick, children }) => {
   const css = useStyles({ enabled: network?.enabled, offline })
-  console.log('network', network)
   return (
     <ListItemLocation
       className={css.item}
