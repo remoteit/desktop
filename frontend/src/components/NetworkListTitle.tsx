@@ -5,6 +5,7 @@ import { useStyles } from './ConnectionListItem'
 import { Avatar } from './Avatar'
 import { Title } from './Title'
 import { Icon } from './Icon'
+import { Box } from '@mui/material'
 
 export interface Props {
   network?: INetwork
@@ -17,14 +18,21 @@ export interface Props {
 
 export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, offline, noLink, onClick, children }) => {
   const css = useStyles({ enabled: network?.enabled, offline })
+  console.log('network', network)
   return (
     <ListItemLocation
       className={css.item}
       exactMatch
       icon={
         <>
-          {false ? (
-            <Avatar email={network?.owner?.email} size={24} />
+          {noLink && network?.owner?.id ? (
+            <Box className={css.mergeIcon}>
+              <Avatar
+                email={network?.owner.email}
+                fallback={network?.name === 'Personal' ? undefined : network?.name}
+                size={24}
+              />
+            </Box>
           ) : (
             <Icon
               className={classnames(css.mergeIcon, noLink || 'hoverHide')}
