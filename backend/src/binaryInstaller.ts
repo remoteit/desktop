@@ -23,6 +23,11 @@ export class BinaryInstaller {
     this.cliBinary = cliBinary
   }
 
+  async init() {
+    // Windows and headless have their own update mechanisms
+    if (environment.isWindows || environment.isHeadless) await this.updateVersions()
+  }
+
   async check() {
     if (this.inProgress) return
 
@@ -45,6 +50,7 @@ export class BinaryInstaller {
     const agentMismatched = (await cli.agentVersion()) !== this.cliBinary.version
     const cliUpdated = await this.cliUpdated()
     const desktopUpdated = await this.desktopUpdated()
+
     Logger.info('SHOULD INSTALL?', { binariesOutdated, agentStopped, agentMismatched, cliUpdated, desktopUpdated })
     return binariesOutdated || agentStopped || agentMismatched || cliUpdated || desktopUpdated
   }
@@ -58,7 +64,7 @@ export class BinaryInstaller {
 
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
-    this.updateVersions()
+    await this.updateVersions()
 
     this.inProgress = false
     this.ready = true
@@ -168,15 +174,9 @@ export class BinaryInstaller {
 
     try {
       updated = !!previousVersion && semverCompare(previousVersion, thisVersion) < 0
-      if (!previousVersion) this.updateVersions()
+      if (!previousVersion) await this.updateVersions()
     } catch (error) {
       Logger.warn('CLI VERSION COMPARE FAILED', { error, previousVersion, thisVersion })
-    }
-
-    if (environment.isWindows) {
-      // Windows has an installer script to update so doesn't need this check
-      this.updateVersions()
-      return false
     }
 
     if (updated) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
