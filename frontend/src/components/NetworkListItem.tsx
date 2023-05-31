@@ -30,6 +30,7 @@ export const NetworkListItem: React.FC<Props> = ({
     return { service, device, connection }
   })
 
+  const offline = service?.state !== 'active' && !external
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connectionsPage) pathname = `/connections/${serviceId}/${session?.id || 'none'}`
   const match = pathname
@@ -42,11 +43,11 @@ export const NetworkListItem: React.FC<Props> = ({
       name={connection.name || session?.target.name || fallbackName || serviceId}
       enabled={connection.enabled}
       platform={device?.targetPlatform || session?.target.platform}
-      offline={service?.state !== 'active' && !external}
+      offline={offline}
       connected={session ? session.state === 'connected' : !!connection.connected}
       connection={connection}
       connectionsPage={connectionsPage}
-      networkEnabled
+      networkEnabled={network?.enabled}
     >
       {children}
     </ConnectionListItem>

@@ -1,6 +1,6 @@
 {
   "name": "remoteit-headless",
-  "version": "3.18.0-alpha.1",
+  "version": "3.18.0-alpha.2",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@airbrake/node": "^2.1.8",
+    "@vscode/sudo-prompt": "^9.3.1",
     "axios": "^1.4.0",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
@@ -37,7 +38,6 @@
     "semver": "^7.5.1",
     "socket.io": "^4.6.1",
     "socketio-auth": "^0.1.1",
-    "sudo-prompt": "^9.2.1",
     "win-ca": "^3.5.0",
     "winston": "^3.8.2"
   },
@@ -81,7 +81,6 @@
     "semver",
     "socket.io",
     "socketio-auth",
-    "sudo-prompt",
     "win-ca",
     "winston"
   ]

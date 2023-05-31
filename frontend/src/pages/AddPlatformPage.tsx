@@ -66,9 +66,8 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingLeft: smallScreen ? 0 : spacing.xl,
     paddingTop: spacing.md,
     paddingBottom: spacing.md,
-    maxWidth: 600,
+    maxWidth: 650,
     '& .MuiAvatar-root': { marginTop: spacing.xxs },
-    '& .MuiButton-root': { marginTop: spacing.lg, marginBottom: spacing.md },
     '& .MuiTypography-body2': { marginBottom: spacing.xs },
     '& .MuiListItem-root': {
       minHeight: 80,

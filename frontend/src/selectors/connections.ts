@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
 import { getOwnDevices } from './devices'
-import { getUserId, getOrganizations, getAllConnections, optionalService } from './state'
+import { getUser, getOrganizations, getMemberships, getAllConnections, optionalService } from './state'
 
 export const getConnectionsLookup = createSelector([getAllConnections], allConnections =>
   allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
@@ -33,8 +33,8 @@ export const selectConnection = createSelector(
 )
 
 export const selectConnectionsByAccount = createSelector(
-  [getUserId, getOwnDevices, selectEnabledConnections, getOrganizations],
-  (userId, devices, connections, organizations): INetwork[] => {
+  [getUser, getOwnDevices, selectEnabledConnections, getOrganizations, getMemberships],
+  (user, devices, connections, organizations, memberships): INetwork[] => {
     const ownDeviceIds = devices.filter(d => !d.hidden).map(d => d.id)
     let networks: INetwork[] = []
 
@@ -42,14 +42,15 @@ export const selectConnectionsByAccount = createSelector(
       let accountId = c.accountId || ''
 
       // own device
-      if (ownDeviceIds.includes(c.deviceID || '')) accountId = userId
+      if (ownDeviceIds.includes(c.deviceID || '')) accountId = user.id
       // org device
       else if (c.owner?.id && organizations[c.owner.id]) accountId = c.owner.id
 
       const name = organizations[accountId]?.name || 'Personal'
+      const owner = memberships.find(m => m.account.id === accountId)?.account || user
       const index = networks.findIndex(n => n.id === accountId)
 
-      if (index === -1) networks.push({ ...DEFAULT_NETWORK, id: accountId, name, serviceIds: [c.id] })
+      if (index === -1) networks.push({ ...DEFAULT_NETWORK, id: accountId, name, serviceIds: [c.id], owner })
       else networks[index].serviceIds.push(c.id)
     })
 

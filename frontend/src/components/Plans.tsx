@@ -33,7 +33,7 @@ const Features = {
     'SSO with Google',
   ],
   [PROFESSIONAL_PLAN_ID]: [
-    'Up to 500 devices',
+    '5 Devices + 3 per user',
     'Commercial usage',
     'Organization Management (basic roles)',
     'Basic device tagging',
@@ -43,7 +43,7 @@ const Features = {
     'Forum support',
   ],
   [BUSINESS_PLAN_ID]: [
-    'Up to 2000 devices',
+    '5 Devices + 10 per user',
     'Organization Management including custom roles',
     'Virtual networks with custom roles, enhanced device tagging',
     'SSO with SAML or select identity providers',
