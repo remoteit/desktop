@@ -137,6 +137,7 @@ export default class ConnectionPool {
     const props: (keyof IConnection)[] = [
       'host',
       'port',
+      'ready',
       'enabled',
       'starting',
       'connecting',

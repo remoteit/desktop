@@ -7,7 +7,9 @@ export type Props = {
 }
 
 export const StatusChip: React.FC<Props> = ({ device, connection }) => {
-  return connection?.connected ? (
+  return device?.license === 'UNLICENSED' ? (
+    <ColorChip label="Unlicensed" size="small" typeColor="warning" />
+  ) : connection?.connected ? (
     <ColorChip label="Connected" size="small" typeColor="alwaysWhite" backgroundColor="primary" />
   ) : connection?.enabled ? (
     <ColorChip label="Ready" size="small" typeColor="primary" />

@@ -1,4 +1,5 @@
 import Controller from './Controller'
+import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
@@ -16,6 +17,7 @@ export default class Application {
 
   async constructorSync() {
     await environment.setElevatedState()
+    await binaryInstaller.init()
     server.start()
     if (server.io) new Controller(server.io, this.pool)
   }
