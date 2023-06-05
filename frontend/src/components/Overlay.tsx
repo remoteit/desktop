@@ -12,7 +12,7 @@ const useStyles = makeStyles(({ palette }) => ({
     backgroundColor: palette.white.main,
     padding: spacing.md,
     paddingBottom: '10%',
-    position: 'absolute',
+    position: 'fixed',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',

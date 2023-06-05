@@ -215,11 +215,13 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             color: palette.white.main,
           },
           title: {
-            fontSize: fontSizes.sm,
+            fontSize: fontSizes.xxs,
+            color: palette.white.main,
+            letterSpacing: 0.5,
           },
           action: {
             fontSize: fontSizes.xxs,
-            marginTop: 2,
+            marginTop: 1,
             marginRight: 'initial',
           },
         },

@@ -11,6 +11,7 @@ import { NetworkSettings } from '../components/NetworkSettings'
 import { DataDisplay } from '../components/DataDisplay'
 import { GuideStep } from '../components/GuideStep'
 import { Gutters } from '../components/Gutters'
+import { Notice } from '../components/Notice'
 
 export const NetworkPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -21,6 +22,7 @@ export const NetworkPage: React.FC = () => {
   }))
 
   if (!network) return <NoConnectionPage />
+  const empty = network.serviceIds.length === 0
 
   return (
     <GuideStep
@@ -42,11 +44,17 @@ export const NetworkPage: React.FC = () => {
       autoNext
     >
       <NetworkHeaderMenu network={network} email={email}>
+        {empty && (
+          <Notice gutterTop>
+            Empty network <em>Add services to this network from a service page</em>
+          </Notice>
+        )}
         <Typography variant="subtitle1">Connections</Typography>
         <Gutters bottom="xxl">
           <Button
             variant="contained"
             size="small"
+            disabled={empty}
             onClick={() => dispatch.connections.queueEnable({ ...network, enabled: true })}
           >
             Start All
@@ -55,6 +63,7 @@ export const NetworkPage: React.FC = () => {
             variant="contained"
             color="info"
             size="small"
+            disabled={empty}
             onClick={() => dispatch.connections.queueEnable({ ...network, enabled: false })}
           >
             Stop All
