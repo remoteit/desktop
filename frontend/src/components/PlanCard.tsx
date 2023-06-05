@@ -107,6 +107,7 @@ const useStyles = makeStyles(({ palette }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
+    borderRadius: radius,
     backgroundColor: selected ? palette.primaryHighlight.main : wide ? palette.grayLightest.main : undefined,
     '& .planCardColumn': {
       paddingBottom: spacing.lg,
@@ -133,7 +134,6 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   },
   promoted: {
-    borderRadius: radius,
     position: 'relative',
     overflow: 'hidden',
     '& header': {
