@@ -57,6 +57,7 @@ export const TestPage: React.FC = () => {
             label="Add query header"
             displayValue={testHeader}
             placeholder='Example: "key:value"'
+            multiline={false}
             resetValue=""
             maxLength={200}
             onSave={result => {
