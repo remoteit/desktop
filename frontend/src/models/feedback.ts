@@ -27,13 +27,13 @@ export default createModel<RootModel>()({
     async sendFeedback(_: void, state) {
       const { subject, body, data, snackbar } = state.feedback
       const { user } = state.auth
-      if (body.trim().length === 0) return
       try {
         const env = await dispatch.backend.environment()
         let finalBody = body
         if (data) finalBody += '\n\n-- data\n\n' + JSON.stringify(data, null, 4)
         finalBody += '\n\n--\n\n' + fullVersion()
         finalBody += '\n\n' + env + '\n\n' + navigator.userAgent
+        if (finalBody.trim().length === 0) return
         await createZendeskTicket({
           subject,
           body: finalBody,
