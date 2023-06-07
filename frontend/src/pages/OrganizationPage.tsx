@@ -35,10 +35,10 @@ export const OrganizationPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Gutters top={null}>
+        <Gutters top={null} size="lg">
           <Box display="flex" alignItems="center" marginTop={2}>
             <Avatar email={organization.account.email} fallback={organization.name} size={46} inline />
-            <Box>
+            <Box width="100%">
               {license && (
                 <Typography variant="subtitle2">
                   <Title>{license?.plan.description} Plan</Title>

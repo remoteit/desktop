@@ -18,14 +18,15 @@ export const LicenseSelect: React.FC<Props> = ({ member, size = 'small', disable
   return (
     <TextField
       select
-      hiddenLabel={size === 'small'}
-      label={size === 'small' ? undefined : 'License'}
       size={size}
+      label={size === 'small' ? undefined : 'License'}
+      hiddenLabel={size === 'small'}
       disabled={disabled}
       value={member.license}
       variant="filled"
-      className={css.licensed}
       onChange={e => handleSelect(e.target.value as ILicenseTypes)}
+      onClick={event => event.stopPropagation()}
+      className={css.licensed}
     >
       <MenuItem dense value="LICENSED">
         Licensed

@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { getActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
+import { NoticeCustomPlan } from './NoticeCustomPlan'
 import { InlineSetting } from './InlineSetting'
 import { Confirm } from './Confirm'
 
@@ -44,6 +45,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   }
 
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise) return null
+  if (license?.custom) return <NoticeCustomPlan />
 
   return (
     <List>

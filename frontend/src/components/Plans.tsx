@@ -19,6 +19,7 @@ import {
 } from '../models/plans'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
 import { useMediaQuery } from '@mui/material'
 import { windowOpen } from '../services/Browser'
 import { Confirm } from '../components/Confirm'
@@ -157,90 +158,94 @@ export const Plans: React.FC = () => {
           />
         </Gutters>
       )}
+      {license?.custom && (
+        <Gutters size="xxl">
+          <NoticeCustomPlan fullWidth />
+        </Gutters>
+      )}
       {!enterprise && !satellite && (
         <Gutters size="lg" className={css.plans}>
-          <>
-            <PlanCard
-              name="Personal"
-              description="For non-commercial use"
-              price="$0"
-              caption="Free"
-              button={personal ? 'Current Plan' : 'Select'}
-              selected={personal}
-              disabled={personal}
-              onSelect={() =>
-                userPlan.name.toUpperCase() === 'BUSINESS' && !personal
-                  ? setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
-                  : setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
-              }
-              features={Features[PERSONAL_PLAN_ID]}
-            />
-            {plans.map(plan => {
-              const planPrice = plan.prices && plan.prices.find(p => p.interval === 'YEAR')
-              let price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
-              let caption = 'per user / per month'
-              let note: string | undefined = 'when billed annually'
-              const selected = license?.plan?.id === plan.id
-              if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
-                price =
-                  currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
-                  ` / ${license?.subscription?.price.interval.toLowerCase()}`
-                caption = `${license.quantity} seat${(license.quantity || 0) > 1 ? 's' : ''}`
-                note = undefined
-              }
-              const result = plan.prices?.find(p => p.id === form.priceId)
-              const priceId = result?.id || (plan.prices && plan.prices[0].id)
-              return (
-                <PlanCard
-                  key={plan.id}
-                  name={plan.description}
-                  description="For business use"
-                  price={price}
-                  caption={caption}
-                  note={note}
-                  button={selected ? 'Update' : 'Select'}
-                  selected={selected}
-                  loading={purchasing === plan.id}
-                  onSelect={() =>
-                    userPlan.name.toUpperCase() === 'BUSINESS' && !selected
-                      ? setForm({
-                          ...form,
-                          confirm: true,
-                          checkout: false,
-                          planId: plan.id,
-                          priceId,
-                        })
-                      : setForm({
-                          ...form,
-                          confirm: false,
-                          checkout: true,
-                          planId: plan.id,
-                          priceId,
-                        })
-                  }
-                  features={plan.id && Features[plan.id]}
-                />
-              )
-            })}
-            <Confirm
-              open={!!form.confirm}
-              onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
-              onDeny={() => setForm({ ...form, confirm: false })}
-              title="Confirm Plan Change"
-              action="Downgrade"
-              maxWidth="sm"
-            >
-              <Notice severity="warning" fullWidth gutterBottom>
-                Features only available in business will automatically change when downgrading.
-              </Notice>
-              <i> Do you want to proceed?</i>
-              <ul>
-                <li>Activity Log storage will be reduced</li>
-                <li>Users with custom roles will be reverted to system roles</li>
-                <li>SAML will be disabled</li>
-              </ul>
-            </Confirm>
-          </>
+          <PlanCard
+            name="Personal"
+            description="For non-commercial use"
+            price="$0"
+            caption="Free"
+            button={personal ? 'Current Plan' : 'Select'}
+            selected={personal}
+            disabled={personal}
+            onSelect={() =>
+              userPlan.name.toUpperCase() === 'BUSINESS' && !personal
+                ? setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
+                : setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
+            }
+            features={Features[PERSONAL_PLAN_ID]}
+          />
+          {plans.map(plan => {
+            const planPrice = plan.prices && plan.prices.find(p => p.interval === 'YEAR')
+            let price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
+            let caption = 'per user / per month'
+            let note: string | undefined = 'when billed annually'
+            const selected = license?.plan?.id === plan.id
+            if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
+              price =
+                currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
+                ` / ${license?.subscription?.price.interval.toLowerCase()}`
+              caption = `${license.quantity} seat${(license.quantity || 0) > 1 ? 's' : ''}`
+              note = undefined
+            }
+            const result = plan.prices?.find(p => p.id === form.priceId)
+            const priceId = result?.id || (plan.prices && plan.prices[0].id)
+            return (
+              <PlanCard
+                key={plan.id}
+                name={plan.description}
+                description="For business use"
+                price={price}
+                caption={caption}
+                note={note}
+                disabled={selected && license?.custom}
+                button={selected ? 'Update' : 'Select'}
+                selected={selected}
+                loading={purchasing === plan.id}
+                onSelect={() =>
+                  userPlan.name.toUpperCase() === 'BUSINESS' && !selected
+                    ? setForm({
+                        ...form,
+                        confirm: true,
+                        checkout: false,
+                        planId: plan.id,
+                        priceId,
+                      })
+                    : setForm({
+                        ...form,
+                        confirm: false,
+                        checkout: true,
+                        planId: plan.id,
+                        priceId,
+                      })
+                }
+                features={plan.id && Features[plan.id]}
+              />
+            )
+          })}
+          <Confirm
+            open={!!form.confirm}
+            onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
+            onDeny={() => setForm({ ...form, confirm: false })}
+            title="Confirm Plan Change"
+            action="Downgrade"
+            maxWidth="sm"
+          >
+            <Notice severity="warning" fullWidth gutterBottom>
+              Features only available in business will automatically change when downgrading.
+            </Notice>
+            <i> Do you want to proceed?</i>
+            <ul>
+              <li>Activity Log storage will be reduced</li>
+              <li>Users with custom roles will be reverted to system roles</li>
+              <li>SAML will be disabled</li>
+            </ul>
+          </Confirm>
         </Gutters>
       )}
       {!satellite && (

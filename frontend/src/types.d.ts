@@ -89,6 +89,7 @@ declare global {
     subscription?: ISubscription
     managePath?: string
     limits?: ILimit[]
+    custom: boolean
   }
 
   type ISubscription = {

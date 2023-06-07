@@ -173,6 +173,7 @@ export default createModel<RootModel>()({
             expiration
             valid
             quantity
+            custom
             plan {
               id
               name
@@ -469,10 +470,11 @@ export function parseOrganization(data: any): IOrganizationState {
   }
 }
 
-export function parseLicense(data) {
+export function parseLicense(data): ILicense | null {
   if (!data) return null
   return {
     ...data,
+    // custom: true, // for development
     created: new Date(data.created),
     updated: new Date(data.updated),
     expiration: data.expiration && new Date(data.expiration),
