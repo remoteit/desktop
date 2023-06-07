@@ -60,7 +60,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
   let port = connection?.port
 
   const endpoint = getEndpoint(name, port)
-  const endpointName = (connection?.public ? 'Public' : 'Local') + ' Endpoint'
+  const endpointName = (connection?.public || connection?.connectLink ? 'Public' : 'Local') + ' Endpoint'
   const secureReverseProxy = isSecureReverseProxy(app.string)
   const secureIcon = secureReverseProxy === false && (
     <Tooltip title="Local connection unencrypted">
