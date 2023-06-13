@@ -108,6 +108,8 @@
       "title": "Update Password"
     },
     "verify-account": {
+      "sending": "Sending...",
+      "resent-notice": "Email verification resent.",
       "check-spam": "Check your spam",
       "resend-confirmation": "Resend account confirmation.",
       "verification-received-message": "Didn’t receive your verification link?"

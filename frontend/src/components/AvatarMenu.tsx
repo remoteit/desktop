@@ -166,7 +166,10 @@ export const AvatarMenu: React.FC = () => {
           confirm={backendAuthenticated}
           label="Sign out"
           icon="sign-out"
-          onClick={() => dispatch.auth.signOut()}
+          onClick={async () => {
+            await dispatch.auth.signOut()
+            history.replace('/sign-in')
+          }}
           confirmProps={{
             children:
               'Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.',

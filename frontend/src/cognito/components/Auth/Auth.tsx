@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Switch, useLocation } from 'react-router-dom'
 import {
   CheckSamlFunc,
   CognitoUser,
@@ -80,8 +80,14 @@ function Routes({
   inputEmail,
   fullWidth,
 }: AuthProps): JSX.Element {
+  const location = useLocation()
   const [challenge, setChallenge] = React.useState<ChallengeOption>()
   const [email, setEmail] = React.useState<string>(inputEmail || '')
+
+  // save initial route for after sign in
+  React.useEffect(() => {
+    if (location.pathname !== '/sign-in') window.localStorage.setItem('initialRoute', location.pathname)
+  }, [])
 
   async function handleSignIn(username: string, password?: string): Promise<ChallengeOption | undefined> {
     const challenge = await onSignIn(username, password)
@@ -191,7 +197,7 @@ function Routes({
               showLogo={showLogo}
             />
           )}
-          path={['/', '/sign-in']}
+          path="*"
         />
       </Switch>
     </>

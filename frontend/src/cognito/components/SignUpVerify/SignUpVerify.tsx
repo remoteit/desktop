@@ -1,4 +1,6 @@
 import React from 'react'
+import { Dispatch } from '../../../store'
+import { useDispatch } from 'react-redux'
 import { Box, Button, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { AuthLayout } from '../AuthLayout'
@@ -12,6 +14,8 @@ export type SignUpVerifyProps = {
 }
 
 export function SignUpVerify({ email, onResend, fullWidth }: SignUpVerifyProps): JSX.Element {
+  const [sending, setSending] = React.useState(false)
+  const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
 
   return (
@@ -35,7 +39,16 @@ export function SignUpVerify({ email, onResend, fullWidth }: SignUpVerifyProps):
           {t('pages.verify-account.verification-received-message')}
           <br />
           {t('pages.verify-account.check-spam')}
-          <Link onClick={() => onResend(email)}>{t('pages.verify-account.resend-confirmation')}</Link>
+          <Link
+            onClick={async () => {
+              setSending(true)
+              await onResend(email)
+              dispatch.ui.set({ noticeMessage: t('pages.verify-account.resent-notice') || '' })
+              setSending(false)
+            }}
+          >
+            {sending ? t('pages.verify-account.sending') : t('pages.verify-account.resend-confirmation')}
+          </Link>
         </Typography>
       </Box>
     </AuthLayout>
