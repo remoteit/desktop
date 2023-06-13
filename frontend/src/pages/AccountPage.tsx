@@ -11,7 +11,7 @@ import { Logo } from '../components/Logo'
 
 export const AccountPage: React.FC = () => {
   const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
-    billing: !!selectRemoteitLicense(state)?.plan?.billing,
+    billing: !!selectRemoteitLicense(state, state.user.id)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
   }))
@@ -44,7 +44,6 @@ export const AccountPage: React.FC = () => {
         />
         <ListItemLocation title="Security" pathname="/account/security" icon="lock" dense />
         <ListItemLocation title="Subscription" pathname="/account/plans" icon="shopping-cart" dense />
-        {billing && <ListItemLocation title="Billing" pathname="/account/billing" icon="credit-card-front" dense />}
         <ListItemLocation
           title="Licensing"
           pathname="/account/licensing"
@@ -52,6 +51,7 @@ export const AccountPage: React.FC = () => {
           badge={licenseIndicator}
           dense
         />
+        {billing && <ListItemLocation title="Billing" pathname="/account/billing" icon="credit-card-front" dense />}
         <ListItemLocation title="Access Keys" pathname="/account/accessKey" icon="key" dense />
       </List>
     </Container>

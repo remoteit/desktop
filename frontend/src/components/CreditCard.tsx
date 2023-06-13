@@ -11,7 +11,7 @@ export const CreditCard: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: ApplicationState) => ({
-    license: selectRemoteitLicense(state),
+    license: selectRemoteitLicense(state, state.user.id),
     updating: state.plans.updating,
   }))
   const card = license?.subscription?.card

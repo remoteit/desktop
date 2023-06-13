@@ -16,6 +16,7 @@ export const testData: {
       expiration: new Date('2020-11-05T01:03:48.000Z'),
       valid: true,
       quantity: null,
+      custom: false,
       subscription: {
         total: 1,
         status: 'ACTIVE',
@@ -41,6 +42,7 @@ export const testData: {
       expiration: new Date('2021-02-12T05:44:32.421Z'),
       valid: false,
       quantity: null,
+      custom: false,
       subscription: {
         total: 1,
         status: 'CANCELED',
@@ -66,6 +68,7 @@ export const testData: {
       expiration: new Date('2021-02-12T05:44:32.421Z'),
       valid: false,
       quantity: null,
+      custom: true,
       subscription: {
         total: 1,
         status: 'INCOMPLETE',
@@ -91,6 +94,7 @@ export const testData: {
       expiration: null,
       valid: true,
       quantity: null,
+      custom: false,
       subscription: {
         total: 1,
         status: 'INCOMPLETE_EXPIRED',
@@ -116,6 +120,7 @@ export const testData: {
       expiration: null,
       valid: true,
       quantity: null,
+      custom: false,
       subscription: {
         total: 1,
         status: 'PAST_DUE',
@@ -141,6 +146,7 @@ export const testData: {
       expiration: null,
       valid: true,
       quantity: null,
+      custom: false,
       subscription: {
         total: 1,
         status: 'PAST_DUE',

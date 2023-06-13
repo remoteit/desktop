@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID } from '../models/plans'
-import { List } from '@mui/material'
+import { List, ListItem } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { getActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
+import { NoticeCustomPlan } from './NoticeCustomPlan'
 import { InlineSetting } from './InlineSetting'
 import { Confirm } from './Confirm'
 
@@ -44,6 +45,14 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   }
 
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise) return null
+  if (license?.custom)
+    return (
+      <List>
+        <ListItem>
+          <NoticeCustomPlan />
+        </ListItem>
+      </List>
+    )
 
   return (
     <List>

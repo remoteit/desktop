@@ -142,6 +142,14 @@ export const attributes: Attribute[] = [
     defaultWidth: 350,
   }),
   new DeviceAttribute({
+    id: 'deviceDescription',
+    label: 'Description',
+    query: 'attributes',
+    multiline: true,
+    details: false,
+    value: ({ device }) => device?.attributes?.description,
+  }),
+  new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
     defaultWidth: 180,

@@ -34,25 +34,27 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   return (
     <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
       <Box className={css.sticky}>
-        <ListItemIcon>
-          {select ? (
-            selected ? (
-              <Icon name="check-square" size="md" type="solid" color="primary" />
+        <Box>
+          <ListItemIcon>
+            {select ? (
+              selected ? (
+                <Icon name="check-square" size="md" type="solid" color="primary" />
+              ) : (
+                <Icon name="square" size="md" />
+              )
             ) : (
-              <Icon name="square" size="md" />
-            )
-          ) : (
-            <>
-              <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
-              {/* <TestUI>
+              <>
+                <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
+                {/* <TestUI>
                 <Box className={css.connect}>
                   <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
                 </Box>
               </TestUI> */}
-            </>
-          )}
-        </ListItemIcon>
-        <AttributeValueMemo device={device} attribute={required} connection={connection} connections={connections} />
+              </>
+            )}
+          </ListItemIcon>
+          <AttributeValueMemo device={device} attribute={required} connection={connection} connections={connections} />
+        </Box>
       </Box>
       {attributes?.map(attribute => (
         <Box key={attribute.id}>
@@ -87,12 +89,13 @@ const useStyles = makeStyles(({ palette }) => ({
     left: 0,
     zIndex: 4,
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'start !important',
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
     backgroundImage: `linear-gradient(90deg, ${palette.white.main} 95%, transparent)`,
     overflow: 'visible',
     paddingLeft: spacing.md,
+    height: '100%',
   },
   connect: {
     top: 0,

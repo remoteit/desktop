@@ -17,7 +17,7 @@ export const Link = React.forwardRef<any, LinkProps>(({ children, ...props }, re
   if (attributes.to) attributes.component = RouterLink
 
   return (
-    <MUILink {...attributes} ref={ref}>
+    <MUILink {...attributes} ref={ref} sx={{ cursor: 'pointer' }}>
       {children || attributes.to || attributes.href}
     </MUILink>
   )

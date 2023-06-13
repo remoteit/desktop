@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { spacing, Spacing } from '../styling'
 
-type Props = {
+type Props = React.HTMLAttributes<HTMLDivElement> & {
   inset?: Spacing | 'icon' | null
   size?: Spacing | null
   bottom?: Spacing | null

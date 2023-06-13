@@ -62,13 +62,22 @@ export const Router: React.FC = () => {
   }))
 
   useEffect(() => {
+    const initialRoute = window.localStorage.getItem('initialRoute')
+    if (initialRoute) {
+      if (initialRoute !== location.pathname) history.push(initialRoute)
+      console.log('UI REDIRECT', initialRoute)
+      window.localStorage.removeItem('initialRoute')
+    }
+  }, [])
+
+  useEffect(() => {
     if (redirect) {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)
       ui.set({ redirect: undefined })
     }
     emit('navigate', 'STATUS')
-  }, [history, ui, redirect, location.pathname])
+  }, [history, ui, redirect])
 
   return (
     <Switch>

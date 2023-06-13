@@ -47,9 +47,6 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
               : "Requires device 'Manage' permission"}
           </Typography>
         }
-        secondaryContent={
-          <ColorChip label="BETA" size="small" typeColor="alwaysWhite" backgroundColor="primary" inline />
-        }
         secondaryContentWidth="140px"
         toggle={!!connection.connectLink}
         onClick={() => {

@@ -13,9 +13,9 @@ export const AttributeValue: React.FC<{
   return (
     <Box
       className={`attribute attribute-${attribute?.id}`}
+      style={{ whiteSpace: attribute?.multiline ? 'pre-line' : undefined }}
       textAlign={attribute?.align}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
-      whiteSpace={attribute?.multiline ? 'pre-line' : 'nowrap'} // TODO check that preline dosen't need !important
     >
       {value}
     </Box>

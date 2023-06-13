@@ -32,7 +32,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     const lookupResult = defaultServiceLookup[device?.id || '']
     const validLookup = lookupResult === null || device?.services.find(s => s.id === lookupResult)
     const serviceId = validLookup ? lookupResult : device?.services?.[0]?.id
-    const redirect = serviceId ? `${serviceId}/connect` : 'details'
+    const redirect = device?.state === 'active' && serviceId ? `${serviceId}/connect` : 'details'
     return `/devices/${device?.id}/${redirect}`
   }
 

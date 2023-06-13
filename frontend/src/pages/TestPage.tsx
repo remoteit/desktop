@@ -5,9 +5,9 @@ import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { selectBaseLimits } from '../models/plans'
-import { ListItemSetting } from '../components/ListItemSetting'
 import { selectLimitsLookup } from '../selectors/organizations'
+import { ListItemSetting } from '../components/ListItemSetting'
+import { selectLimits } from '../models/plans'
 import { Container } from '../components/Container'
 import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
@@ -22,7 +22,7 @@ export const TestPage: React.FC = () => {
     testUI: state.ui.testUI,
     preferences: state.backend.preferences,
     limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
-    limits: selectBaseLimits(state, state.auth.user?.id),
+    limits: selectLimits(state, state.auth.user?.id),
   }))
 
   return (
@@ -57,6 +57,7 @@ export const TestPage: React.FC = () => {
             label="Add query header"
             displayValue={testHeader}
             placeholder='Example: "key:value"'
+            multiline={false}
             resetValue=""
             maxLength={200}
             onSave={result => {

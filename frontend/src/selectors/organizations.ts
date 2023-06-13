@@ -31,13 +31,13 @@ export const selectRemoteitLicense = createSelector(
   (licenses): ILicense | null => licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 )
 
-export const selectBaseLimits = createSelector(
+export const selectLimits = createSelector(
   [selectOrganization, getTestLimits],
   (organization, testLimits) => testLimits || organization.limits
 )
 
 export const selectLimitsLookup = createSelector(
-  [selectBaseLimits, isUserAccount, getLimitsOverride],
+  [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {
     let result: ILookup<boolean> = {}
 
