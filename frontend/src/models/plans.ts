@@ -243,13 +243,13 @@ export function isPersonal(state: ApplicationState) {
   return license?.plan.id === PERSONAL_PLAN_ID
 }
 
-export function selectBaseLimits(state: ApplicationState, accountId?: string) {
+export function selectLimits(state: ApplicationState, accountId?: string) {
   if (state.plans.tests.limit) return state.plans.tests.limits
   else return selectOrganization(state, accountId).limits
 }
 
 export function selectLimit(name: string, state: ApplicationState) {
-  return selectBaseLimits(state).find(limit => limit.name === name)?.value
+  return selectLimits(state).find(limit => limit.name === name)?.value
 }
 
 export function getInformed(state: ApplicationState) {
@@ -273,7 +273,7 @@ export function selectFullLicense(
   { productId, license }: { productId?: string; license?: ILicense }
 ) {
   license = license || selectLicenses(state).find(l => l.plan.product.id === productId)
-  const limits = selectBaseLimits(state)
+  const limits = selectLimits(state)
   const informed = getInformed(state)
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
@@ -310,9 +310,9 @@ export function getLicenses(state: ApplicationState, accountId?: string): { lice
     licenses: selectLicenses(state, accountId).map(license => ({
       ...license,
       managePath: lookupLicenseManagePath(license.plan.product.id),
-      limits: selectBaseLimits(state, accountId).filter(limit => limit.license?.id === license.id),
+      limits: selectLimits(state, accountId).filter(limit => limit.license?.id === license.id),
     })),
-    limits: selectBaseLimits(state, accountId).filter(limit => !limit.license),
+    limits: selectLimits(state, accountId).filter(limit => !limit.license),
   }
 }
 

@@ -8,7 +8,7 @@ import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectRemoteitLicense } from '../selectors/organizations'
+import { selectRemoteitLicense, selectLimits } from '../selectors/organizations'
 import {
   REMOTEIT_PRODUCT_ID,
   PERSONAL_PLAN_ID,
@@ -79,12 +79,13 @@ export const Plans: React.FC = () => {
   const css = useStyles({ small })
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const { initialized, accountId, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
+  const { initialized, accountId, plans, license, limits, purchasing } = useSelector((state: ApplicationState) => ({
     initialized: state.organization.initialized,
     accountId: state.user.id,
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: state.plans.purchasing,
-    license: selectRemoteitLicense(state),
+    license: selectRemoteitLicense(state, state.user.id),
+    limits: selectLimits(state, state.user.id),
   }))
   function getDefaults(): IPurchase {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
@@ -103,6 +104,7 @@ export const Plans: React.FC = () => {
   const satellite = !!license && license.plan.id === SATELLITE_PLAN_ID
   const userPlan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
+  const deviceLimit = limits.find(l => l.name === 'iot-devices' && l.license?.id === license?.id)?.value
 
   React.useEffect(() => {
     setForm(getDefaults())
@@ -159,8 +161,8 @@ export const Plans: React.FC = () => {
         </Gutters>
       )}
       {license?.custom && (
-        <Gutters size="xxl">
-          <NoticeCustomPlan fullWidth />
+        <Gutters size="lg" className={css.plans}>
+          <NoticeCustomPlan className={css.notice} fullWidth />
         </Gutters>
       )}
       {!enterprise && !satellite && (
@@ -191,7 +193,7 @@ export const Plans: React.FC = () => {
                 currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
                 ` / ${license?.subscription?.price.interval.toLowerCase()}`
               caption = `${license.quantity} seat${(license.quantity || 0) > 1 ? 's' : ''}`
-              note = undefined
+              note = `${deviceLimit} devices`
             }
             const result = plan.prices?.find(p => p.id === form.priceId)
             const priceId = result?.id || (plan.prices && plan.prices[0].id)
@@ -288,4 +290,7 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     flexWrap: small ? 'wrap' : 'nowrap',
   }),
+  notice: {
+    maxWidth: 840,
+  },
 })
