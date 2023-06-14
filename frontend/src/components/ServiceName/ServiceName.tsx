@@ -50,7 +50,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
       )}
       {device?.newDevice && (
         <sup>
-          <ColorChip label="NEW" size="small" typeColor="alwaysWhite" backgroundColor="success" />
+          <ColorChip label="NEW" size="small" color="success" variant="contained" />
         </sup>
       )}
       {/* {device?.shared && (

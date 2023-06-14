@@ -16,6 +16,7 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
 import { CopyAsyncMenuItem } from '../components/CopyAsyncMenuItem'
 import { LicensingNotice } from '../components/LicensingNotice'
+import { PlanActionChip } from '../components/PlanActionChip'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { NetworksIndicator } from '../components/NetworksIndicator'
@@ -103,7 +104,7 @@ export const DevicePage: React.FC = () => {
         </Notice>
       )}
       {device.license === 'UNLICENSED' && (
-        <Notice severity="warning" gutterTop>
+        <Notice severity="warning" button={<PlanActionChip color="warning" />} gutterTop>
           Device unlicensed
         </Notice>
       )}
