@@ -63,7 +63,7 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
         icon="copyright"
         secondaryContent={
           error ? (
-            <ColorChip label="Update failed" typeColor="warning" size="small" />
+            <ColorChip label="Update failed" color="warning" size="small" />
           ) : updateAvailable && downloaded ? (
             <Button
               onClick={dispatch.backend.install}

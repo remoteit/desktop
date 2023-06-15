@@ -7,6 +7,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { LoadingMessage } from './LoadingMessage'
 import { spacing } from '../styling'
+import { Notice } from './Notice'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
@@ -32,41 +33,49 @@ export const Invoices: React.FC = () => {
   return (
     <>
       <Typography variant="subtitle1">Billing History</Typography>
-      <Gutters size="md">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Plan</TableCell>
-              <TableCell className={css.amount}>Amount</TableCell>
-              <TableCell>Invoice</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {invoices.map((invoice: IInvoice, index) => (
-              <TableRow key={index}>
-                <TableCell>{invoice.created.toLocaleString(navigator.language, dateOptions)}</TableCell>
-                <TableCell className={css.plan}>
-                  {invoice.plan.name.toLowerCase()} /{' '}
-                  {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}
-                </TableCell>
-                <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor}>
-                  {currencyFormatter(invoice.price.currency, invoice.total)}
-                </TableCell>
-                <TableCell>
-                  {invoice.url && (
-                    <Tooltip title="See invoice">
-                      <Link href={invoice.url}>
-                        <Icon name="receipt" />
-                      </Link>
-                    </Tooltip>
-                  )}
-                </TableCell>
+      {!invoices.length && !loading ? (
+        <Gutters size="lg">
+          <Notice severity="info" fullWidth>
+            No invoices found.
+          </Notice>
+        </Gutters>
+      ) : (
+        <Gutters size="md">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Plan</TableCell>
+                <TableCell className={css.amount}>Amount</TableCell>
+                <TableCell>Invoice</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Gutters>
+            </TableHead>
+            <TableBody>
+              {invoices.map((invoice: IInvoice, index) => (
+                <TableRow key={index}>
+                  <TableCell>{invoice.created.toLocaleString(navigator.language, dateOptions)}</TableCell>
+                  <TableCell className={css.plan}>
+                    {invoice.plan.name.toLowerCase()} /{' '}
+                    {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}
+                  </TableCell>
+                  <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor}>
+                    {currencyFormatter(invoice.price.currency, invoice.total)}
+                  </TableCell>
+                  <TableCell>
+                    {invoice.url && (
+                      <Tooltip title="See invoice">
+                        <Link href={invoice.url}>
+                          <Icon name="receipt" />
+                        </Link>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Gutters>
+      )}
     </>
   )
 }

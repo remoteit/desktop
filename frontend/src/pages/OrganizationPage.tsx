@@ -42,7 +42,7 @@ export const OrganizationPage: React.FC = () => {
               {license && (
                 <Typography variant="subtitle2">
                   <Title>{license?.plan.description} Plan</Title>
-                  <PlanActionChip license={license} />
+                  <PlanActionChip />
                 </Typography>
               )}
               <Typography variant="h2">

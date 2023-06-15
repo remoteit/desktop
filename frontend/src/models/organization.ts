@@ -475,6 +475,10 @@ export function parseLicense(data): ILicense | null {
   return {
     ...data,
     // custom: true, // for development
+    // plan: {
+    //   ...data.plan,
+    //   billing: true, // for development
+    // },
     created: new Date(data.created),
     updated: new Date(data.updated),
     expiration: data.expiration && new Date(data.expiration),

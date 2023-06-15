@@ -128,8 +128,8 @@ export const OrganizationSettingsPage: React.FC = () => {
                     primary={
                       <ColorChip
                         label="Verified"
-                        typeColor="alwaysWhite"
-                        backgroundColor="primary"
+                        color="primary"
+                        variant="contained"
                         icon={<Icon name="check" size="sm" fixedWidth inline />}
                       />
                     }
@@ -195,8 +195,8 @@ export const OrganizationSettingsPage: React.FC = () => {
                       primary={
                         <ColorChip
                           label={`${organization.identityProvider.type} Enabled`}
-                          typeColor="alwaysWhite"
-                          backgroundColor="primary"
+                          color="primary"
+                          variant="contained"
                           icon={<Icon name="shield" size="sm" fixedWidth inline />}
                         />
                       }
