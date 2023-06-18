@@ -3,17 +3,7 @@ import { removeDeviceName } from '../shared/nameHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
-const DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES = [
-  'id',
-  'deviceName',
-  'status',
-  'permissions',
-  'owner',
-  'quality',
-  'license',
-]
-
-const DEVICE_PRELOAD_ATTRIBUTES = [...DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES, 'services']
+const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
 const SERVICE_PRELOAD = `
   id
@@ -80,7 +70,7 @@ const DeviceSelectLookup: ILookup<string> = {
   attributes`,
 
   tags: `
-  tags (accountId: $account) {
+  tags (accountId: $accountId) {
     name
     color
     created
@@ -134,7 +124,8 @@ const DeviceSelectLookup: ILookup<string> = {
 }
 
 export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
-  .map(k => (k === 'services' ? '' : DeviceSelectLookup[k]))
+  .filter(k => k !== 'services')
+  .map(k => DeviceSelectLookup[k])
   .join('')
 
 export async function graphQLFetchDeviceList({
@@ -145,14 +136,14 @@ export async function graphQLFetchDeviceList({
   sort,
   owner,
   name,
-  account,
+  accountId,
   platform,
 }: gqlOptions) {
   return await graphQLRequest(
-    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
-          account(id: $account) {
+          account(id: $accountId) {
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
               total
               items {
@@ -169,21 +160,21 @@ export async function graphQLFetchDeviceList({
       state,
       sort,
       owner,
-      account,
+      accountId,
       platform,
       name: name?.trim() || undefined,
     }
   )
 }
 
-export async function graphQLPreloadDevices(params: { account: string; ids: string[] }) {
+export async function graphQLPreloadDevices(params: { accountId: string; ids: string[] }) {
   return await graphQLRequest(
-    ` query DevicePreload($ids: [String!]!, $account: String) {
+    ` query DevicePreload($ids: [String!]!, $accountId: String) {
         login {
           id
-          account(id: $account) {
+          account(id: $accountId) {
             device(id: $ids) {
-              ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
+              ${deviceQueryColumns()}
             }
           }
         }
@@ -210,7 +201,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES_NO_SERVICES)}
+                  ${deviceQueryColumns(['services'])}
                 }          
               }
               name
@@ -241,7 +232,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
         login {
           id
           device(id: $ids)  {
-            ${attributeQuery(DEVICE_PRELOAD_ATTRIBUTES)}
+            ${deviceQueryColumns(['tags'])}
           }
         }
       }`,
@@ -252,9 +243,9 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
 /* 
   Fetches single, or array of devices across shared accounts by id
 */
-export async function graphQLFetchFullDevice(id: string, account: string) {
+export async function graphQLFetchFullDevice(id: string, accountId: string) {
   return await graphQLRequest(
-    ` query Device($id: [String!]!, $account: String) {
+    ` query Device($id: [String!]!, $accountId: String) {
         login {
           id
           device(id: $id) {
@@ -267,7 +258,7 @@ export async function graphQLFetchFullDevice(id: string, account: string) {
       }`,
     {
       id,
-      account,
+      accountId,
     }
   )
 }
@@ -275,9 +266,9 @@ export async function graphQLFetchFullDevice(id: string, account: string) {
 /* 
   Fetches single network across shared accounts by id
 */
-export async function graphQLFetchNetworkServices(id: string, account: string) {
+export async function graphQLFetchNetworkServices(id: string, accountId: string) {
   return await graphQLBasicRequest(
-    ` query NetworkServices($id: String!, $account: String) {
+    ` query NetworkServices($id: String!, $accountId: String) {
         login {
           id
           network(id: $id)  {
@@ -294,17 +285,17 @@ export async function graphQLFetchNetworkServices(id: string, account: string) {
       }`,
     {
       id,
-      account,
+      accountId,
     }
   )
 }
 
-export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gqlOptions) {
+export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: gqlOptions) {
   return await graphQLBasicRequest(
-    ` query DeviceCount($size: Int, $tag: ListFilter, $account: String, $owner: Boolean) {
+    ` query DeviceCount($size: Int, $tag: ListFilter, $accountId: String, $owner: Boolean) {
         login {
           id
-          account(id: $account) {
+          account(id: $accountId) {
             devices(tag: $tag, owner: $owner, size: $size) {
               total
             }
@@ -315,7 +306,7 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, account }: gql
       size,
       tag,
       owner,
-      account,
+      accountId,
     }
   )
 }
@@ -429,9 +420,10 @@ export function graphQLServiceAdaptor(device: any): IService[] {
   )
 }
 
-function deviceQueryColumns() {
+function deviceQueryColumns(filter?: string[]) {
   let columns = DEVICE_PRELOAD_ATTRIBUTES
   columns = columns.concat(store.getState().ui.columns)
+  columns = columns.filter(c => (filter ? !filter.includes(c) : true))
   return attributeQuery(columns)
 }
 

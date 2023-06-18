@@ -111,7 +111,7 @@ export default createModel<RootModel>()({
       const options: gqlOptions = {
         size,
         from,
-        account: accountId,
+        accountId,
         state: filter === 'all' ? undefined : filter,
         tag,
         name: query,
@@ -151,7 +151,7 @@ export default createModel<RootModel>()({
       }
       await dispatch.devices.set({ fetchingArray: true, accountId })
 
-      const gqlResponse = await graphQLPreloadDevices({ account: accountId, ids })
+      const gqlResponse = await graphQLPreloadDevices({ accountId, ids })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
 
@@ -227,8 +227,8 @@ export default createModel<RootModel>()({
       const options: gqlOptions = {
         size: 0,
         from: 0,
-        account: getActiveAccountId(state),
         owner: true,
+        accountId: getActiveAccountId(state),
         tag: params.tag?.values.length ? params.tag : undefined,
       }
 
@@ -244,7 +244,7 @@ export default createModel<RootModel>()({
       try {
         const gqlResponse = await graphQLFetchDeviceList(options)
         const [gqlDevices, total, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLDeviceAdaptor({ gqlDevices, accountId: options.account })
+        const devices = graphQLDeviceAdaptor({ gqlDevices, accountId: options.accountId })
         return { devices, total, error }
       } catch (error) {
         await apiError(error)
@@ -389,7 +389,7 @@ export default createModel<RootModel>()({
       template?: string | boolean
     }) {
       if (platform === 65535) platform = undefined // Clear out the platform if it's the unknown type
-      const result = await graphQLRegistration({ name, services, platform, tags, account: accountId })
+      const result = await graphQLRegistration({ name, services, platform, tags, accountId })
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)
@@ -401,7 +401,7 @@ export default createModel<RootModel>()({
 
     async getRestoreCommand(deviceId, state) {
       const accountId = getActiveAccountId(state)
-      const result = await graphQLRestoreDevice({ id: deviceId, account: accountId })
+      const result = await graphQLRestoreDevice({ id: deviceId, accountId })
       if (result !== 'ERROR') {
         let { restoreCommand, restoreCode } = result?.data?.data?.login?.account?.device?.[0]
         console.log('GET RESTORE CODE', restoreCode)

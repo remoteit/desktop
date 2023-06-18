@@ -604,7 +604,7 @@ declare global {
     tag?: ITagFilter
     size: number
     from: number
-    account: string
+    accountId: string
     state?: string
     owner?: boolean
     sort?: string

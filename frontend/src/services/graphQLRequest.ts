@@ -18,12 +18,12 @@ export async function graphQLRegistration(props: {
   tags?: string[]
   platform?: number
   services: IServiceRegistration[]
-  account: string
+  accountId: string
 }) {
   return await graphQLBasicRequest(
-    ` query Registration($account: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!]) {
+    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!]) {
         login {
-          account(id: $account) {
+          account(id: $accountId) {
             registrationCode(name: $name, platform: $platform, tags: $tags, services: $services)
             registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services)
           }
@@ -33,11 +33,11 @@ export async function graphQLRegistration(props: {
   )
 }
 
-export async function graphQLRestoreDevice(props: { id: string; account: string }) {
+export async function graphQLRestoreDevice(props: { id: string; accountId: string }) {
   return await graphQLBasicRequest(
-    ` query Device($id: [String!]!, $account: String) {
+    ` query Device($id: [String!]!, $accountId: String) {
         login {
-          account(id: $account) {
+          account(id: $accountId) {
             device(id: $id)  {
               restoreCommand
               restoreCode
