@@ -35,7 +35,7 @@ export async function graphQLRegistration(props: {
 
 export async function graphQLRestoreDevice(props: { id: string; accountId: string }) {
   return await graphQLBasicRequest(
-    ` query Device($id: [String!]!, $accountId: String) {
+    ` query Restore($id: [String!]!, $accountId: String) {
         login {
           account(id: $accountId) {
             device(id: $id)  {

@@ -621,7 +621,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiDialogActions: {
         styleOverrides: {
-          root: { margin: `${spacing.sm}px ${spacing.md}px`, padding: 0 },
+          root: { margin: `0 ${spacing.md}px ${spacing.sm}px`, padding: 0 },
         },
       },
       MuiTooltip: {

@@ -399,7 +399,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async getRestoreCommand(deviceId, state) {
+    async getRestoreCommand(deviceId, state): Promise<{ restoreCommand?: string; restoreCode?: string }> {
       const accountId = getActiveAccountId(state)
       const result = await graphQLRestoreDevice({ id: deviceId, accountId })
       if (result !== 'ERROR') {
