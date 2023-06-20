@@ -14,10 +14,11 @@ export const Link = React.forwardRef<any, LinkProps>(({ children, ...props }, re
     attributes.rel = 'noopener'
   }
 
+  if (attributes.sx) attributes.sx = { ...attributes.sx, cursor: 'pointer' }
   if (attributes.to) attributes.component = RouterLink
 
   return (
-    <MUILink {...attributes} ref={ref} sx={{ cursor: 'pointer' }}>
+    <MUILink {...attributes} ref={ref}>
       {children || attributes.to || attributes.href}
     </MUILink>
   )
