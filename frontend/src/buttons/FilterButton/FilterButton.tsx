@@ -1,15 +1,15 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { Tooltip, IconButton, Badge } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
+import { Tooltip, IconButton } from '@mui/material'
 import { selectIsFiltered } from '../../models/devices'
 import { Icon } from '../../components/Icon'
 
 export const FilterButton: React.FC = () => {
-  const { open, changed } = useSelector((state: ApplicationState) => ({
+  const { open, modified } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'FILTER',
-    changed: selectIsFiltered(state),
+    modified: selectIsFiltered(state),
   }))
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles({ open })
@@ -23,13 +23,7 @@ export const FilterButton: React.FC = () => {
         }}
         size="large"
       >
-        {changed ? (
-          <Badge variant="dot" color="primary">
-            <Icon name={icon} size="base" type="regular" fixedWidth />
-          </Badge>
-        ) : (
-          <Icon name={icon} size="base" type="regular" fixedWidth />
-        )}
+        <Icon name={icon} size="base" type="regular" modified={modified} fixedWidth />
       </IconButton>
     </Tooltip>
   )

@@ -1,15 +1,16 @@
 import React from 'react'
+import isEqual from 'lodash.isequal'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Tooltip, IconButton, Badge } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Tooltip, IconButton } from '@mui/material'
 import { defaultState } from '../models/ui'
+import { makeStyles } from '@mui/styles'
 import { Icon } from '../components/Icon'
 
 export const ColumnsButton: React.FC = () => {
-  const { open, changed } = useSelector((state: ApplicationState) => ({
+  const { open, modified } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'COLUMNS',
-    changed: state.ui.columns.length !== defaultState.columns.length,
+    modified: !isEqual(state.ui.columns, defaultState.columns),
   }))
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles({ open })
@@ -23,13 +24,7 @@ export const ColumnsButton: React.FC = () => {
         }}
         size="large"
       >
-        {changed ? (
-          <Badge variant="dot" color="primary">
-            <Icon name={icon} size="base" type="regular" fixedWidth />
-          </Badge>
-        ) : (
-          <Icon name={icon} size="base" type="regular" fixedWidth />
-        )}
+        <Icon name={icon} size="base" type="regular" modified={modified} fixedWidth />
       </IconButton>
     </Tooltip>
   )
