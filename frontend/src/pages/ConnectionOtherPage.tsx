@@ -68,6 +68,7 @@ export const ConnectionOtherPage: React.FC = () => {
           connection={connection}
           session={session}
           service={service}
+          device={device}
           showTitle={session?.user ? session.user.email : undefined}
           show
         >
