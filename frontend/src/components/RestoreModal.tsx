@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { attributeName } from '../shared/nameHelper'
@@ -39,6 +39,10 @@ export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
     <Dialog open={showRestoreModal} onClose={onClose} maxWidth="lg">
       <DialogTitle>Restore “{attributeName(device)}”</DialogTitle>
       <DialogContent sx={{ width: 620 }}>
+        <Typography variant="body1" gutterBottom>
+          If you lost or deleted this device you can restore it by running the <br />
+          following command on the device.
+        </Typography>
         <CopyCodeBlock
           code={result.restoreCode}
           value={result.restoreCommand ? result.restoreCommand : 'generating command...'}
