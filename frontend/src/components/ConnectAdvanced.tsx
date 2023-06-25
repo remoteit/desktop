@@ -16,16 +16,16 @@ import { LanShareSelect } from './LanShareSelect'
 import { ListItemQuote } from './ListItemQuote'
 import { LaunchSelect } from './LaunchSelect'
 import { ListItemBack } from './ListItemBack'
+import { ListItemCopy } from './ListItemCopy'
 import { PortSetting } from './PortSetting'
 import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
-import { ListItemCopy } from './ListItemCopy'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 export const ConnectAdvanced: React.FC = () => {
-  const { connection, service, instance } = React.useContext(DeviceContext)
+  const { connection, service, instance, device } = React.useContext(DeviceContext)
   const accordion = useSelector((state: ApplicationState) => state.ui.accordion)
   const dispatch = useDispatch<Dispatch>()
 
@@ -36,6 +36,7 @@ export const ConnectAdvanced: React.FC = () => {
       <ConnectionDetails
         connection={connection}
         service={service}
+        device={device}
         show={connection.enabled || connection.connectLink}
       />
       <Box display="flex" marginTop={2}>

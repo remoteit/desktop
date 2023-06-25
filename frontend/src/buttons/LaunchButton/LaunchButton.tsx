@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
 import { IconButton, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { setConnection, launchDisabled } from '../../helpers/connectionHelper'
@@ -17,6 +17,7 @@ type Props = {
   color?: Color
   type?: IconType
   app?: Application
+  device?: IDevice
   connection?: IConnection
   onMouseEnter?: () => void
   onMouseLeave?: () => void
@@ -29,26 +30,31 @@ export const LaunchButton: React.FC<Props> = ({
   onMouseEnter,
   onMouseLeave,
   connection,
+  device,
   app,
   ...props
 }) => {
-  const { ui } = useDispatch<Dispatch>()
-  const [prompt, setPrompt] = React.useState<boolean>(false)
+  const dispatch = useDispatch<Dispatch>()
+  const [prompt, setPrompt] = useState<boolean>(false)
   const ready = connection?.connectLink || connection?.ready
   const loading = !ready || connection?.starting
   const disabled = launchDisabled(connection) || loading
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && connection?.autoLaunch)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoLaunch && !launchDisabled(connection) && ready) {
-      ui.set({ autoLaunch: false })
+      dispatch.ui.set({ autoLaunch: false })
       clickHandler()
     }
   }, [autoLaunch, connection])
 
   if (!app) return null
 
-  const clickHandler = () => {
+  const clickHandler = async () => {
+    if (device && !device.loaded) {
+      const loadedDevice = await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
+      app.service = loadedDevice?.services.find(s => s.id === app.service?.id)
+    }
     if (app.prompt) setPrompt(true)
     else launch()
     onLaunch?.()

@@ -14,14 +14,15 @@ import { Typography, Tooltip, List, ListItemText, ListItemSecondaryAction, Circu
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
-import { CopyAsyncMenuItem } from '../components/CopyAsyncMenuItem'
+import { NetworksIndicator } from '../components/NetworksIndicator'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { PlanActionChip } from '../components/PlanActionChip'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
-import { NetworksIndicator } from '../components/NetworksIndicator'
+import { RestoreModal } from '../components/RestoreModal'
 import { GuideBubble } from '../components/GuideBubble'
 import { ServiceName } from '../components/ServiceName'
+import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -89,15 +90,11 @@ export const DevicePage: React.FC = () => {
           gutterTop
           severity="info"
           button={
-            <Tooltip title="Copy restore code" arrow>
-              <span>
-                <CopyAsyncMenuItem
-                  icon="wave-pulse"
-                  request={async () => (await dispatch.devices.getRestoreCommand(device.id)).restoreCode}
-                  className={css.restore}
-                />
-              </span>
-            </Tooltip>
+            editable && (
+              <Tooltip title="Restore Device" arrow>
+                <IconButton icon="wave-pulse" onClick={() => dispatch.ui.set({ showRestoreModal: true })} />
+              </Tooltip>
+            )
           }
         >
           Device offline
@@ -200,6 +197,7 @@ export const DevicePage: React.FC = () => {
           })}
         </GuideBubble>
       </List>
+      <RestoreModal device={device} />
     </Container>
   )
 }
@@ -209,5 +207,4 @@ const useStyles = makeStyles({
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
   list: { marginRight: 1 },
   service: { marginRight: spacing.sm, marginLeft: spacing.sm },
-  restore: { marginTop: spacing.xxs, padding: 0 },
 })

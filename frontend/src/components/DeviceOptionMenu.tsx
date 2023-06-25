@@ -6,7 +6,6 @@ import { Link, useParams } from 'react-router-dom'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
-import { CopyAsyncMenuItem } from './CopyAsyncMenuItem'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
@@ -62,12 +61,12 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         {device.permissions.includes('MANAGE') &&
           devicesSection &&
           deviceOnly && [
-            <CopyAsyncMenuItem
-              key="restore"
-              icon="wave-pulse"
-              title="Restore Code"
-              request={async () => (await dispatch.devices.getRestoreCommand(device.id)).restoreCode}
-            />,
+            <MenuItem dense key="restore" onClick={() => dispatch.ui.set({ showRestoreModal: true })}>
+              <ListItemIcon>
+                <Icon name="wave-pulse" size="md" />
+              </ListItemIcon>
+              <ListItemText primary="Restore Device" />
+            </MenuItem>,
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />

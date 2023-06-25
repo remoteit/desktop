@@ -61,11 +61,11 @@ export function EventIcon(item: IEvent): JSX.Element {
 
     case 'DEVICE_SHARE':
       if (EventActions.includes(item.action)) {
-        icon = 'share'
+        icon = 'user-plus'
         color = 'success'
         title = 'Device Shared'
       } else {
-        icon = 'do-not-enter'
+        icon = 'user-minus'
         color = 'dangerLight'
         title = 'Device Share Removed'
       }

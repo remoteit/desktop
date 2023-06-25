@@ -17,6 +17,7 @@ import { spacing } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
+  device?: IDevice
   connection?: IConnection
   service?: IService
   session?: ISession
@@ -25,7 +26,15 @@ type Props = {
   children?: React.ReactNode
 }
 
-export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session, children }) => {
+export const ConnectionDetails: React.FC<Props> = ({
+  showTitle,
+  show,
+  device,
+  connection,
+  service,
+  session,
+  children,
+}) => {
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -259,6 +268,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                           app={app}
                           size="lg"
                           color="alwaysWhite"
+                          device={device}
                           connection={connection}
                           onMouseEnter={() => setHover('launch')}
                           onMouseLeave={() => setHover(undefined)}

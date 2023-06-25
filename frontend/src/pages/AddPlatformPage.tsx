@@ -67,14 +67,15 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingTop: spacing.md,
     paddingBottom: spacing.md,
     maxWidth: 650,
+    width: 650,
     '& .MuiAvatar-root': { marginTop: spacing.xxs },
     '& .MuiTypography-body2': { marginBottom: spacing.xs },
-    '& .MuiListItem-root': {
-      minHeight: 80,
-      minWidth: 575,
-      maxWidth: 575,
-      marginTop: spacing.sm,
-      marginBottom: spacing.sm,
-    },
+    // '& .MuiListItem-root': {
+    //   minHeight: 80,
+    //   minWidth: 575,
+    //   maxWidth: 575,
+    //   marginTop: spacing.sm,
+    //   marginBottom: spacing.sm,
+    // },
   }),
 }))

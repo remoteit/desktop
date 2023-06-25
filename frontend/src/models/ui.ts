@@ -87,6 +87,7 @@ export type UIState = {
   autoLaunch: boolean
   autoCopy: boolean
   updateNoticeCleared?: number
+  showRestoreModal: boolean
 }
 
 export const defaultState: UIState = {
@@ -155,6 +156,7 @@ export const defaultState: UIState = {
   autoLaunch: false,
   autoCopy: false,
   updateNoticeCleared: undefined,
+  showRestoreModal: false,
 }
 
 export default createModel<RootModel>()({
