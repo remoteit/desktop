@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { notarize } = require('electron-notarize')
+const { notarize } = require('@electron/notarize')
 
 const RED = '\x1b[31m'
 const BLUE = '\x1b[34m'
@@ -24,5 +24,6 @@ exports.default = async function notarizing(context) {
     appPath: `${appOutDir}/${productFilename}.app`,
     appleId: 'appledeveloper@remote.it',
     appleIdPassword: process.env.APPLE_ID_PASSWORD,
+    teamId: process.env.APPLE_TEAM_ID,
   })
 }
