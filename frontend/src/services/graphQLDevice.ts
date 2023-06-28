@@ -3,6 +3,7 @@ import { removeDeviceName } from '../shared/nameHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
+const TIME_ZONE = JSON.stringify(Intl.DateTimeFormat().resolvedOptions().timeZone)
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
 const SERVICE_PRELOAD = `
@@ -31,6 +32,13 @@ export const SERVICE_SELECT = `
   protocol
   attributes
   presenceAddress
+  timeSeries(type: CONNECT_DURATION, resolution: DAY, timezone: ${TIME_ZONE}) {
+    type
+    start
+    end
+    time
+    data
+  }
   access {
     user {
       id
@@ -120,6 +128,15 @@ const DeviceSelectLookup: ILookup<string> = {
   notificationSettings {
     emailNotifications
     desktopNotifications
+  }`,
+
+  timeSeries: `
+  timeSeries(type: ONLINE_DURATION, resolution: DAY, timezone: ${TIME_ZONE}) {
+    type
+    start
+    end
+    time
+    data
   }`,
 }
 
@@ -370,6 +387,7 @@ export function graphQLDeviceAdaptor({
       services: graphQLServiceAdaptor(d),
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
+      timeSeries: processTimeSeries(d),
       access:
         d.access?.map((e: any) => ({
           id: e.user?.id,
@@ -407,6 +425,7 @@ export function graphQLServiceAdaptor(device: any): IService[] {
         host: s.host,
         protocol: s.protocol,
         presenceAddress: s.presenceAddress,
+        timeSeries: processTimeSeries(s),
         link: s.link && {
           ...s.link,
           created: new Date(s.link.created),
@@ -462,4 +481,15 @@ function processAttributes(response: any): ILookup<any> {
   let result = { ...root, ...$ }
   delete result.$remoteit
   return result
+}
+
+function processTimeSeries(response: any): ITimeSeries | undefined {
+  if (!response.timeSeries) return
+  const timeSeries = response.timeSeries
+  return {
+    ...timeSeries,
+    start: new Date(timeSeries.start),
+    end: new Date(timeSeries.end),
+    time: timeSeries.time.map((t: any) => new Date(t)),
+  }
 }

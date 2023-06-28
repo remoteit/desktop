@@ -310,6 +310,7 @@ declare global {
     hidden?: boolean
     newDevice?: boolean
     presenceAddress?: string
+    timeSeries?: ITimeSeries
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -348,9 +349,9 @@ declare global {
     access: IUserRef[]
     license: ILicenseTypes
     presenceAddress?: string
+    timeSeries?: ITimeSeries
     attributes: ILookup<any> & {
-      // altname?: string // can't have this collide with service name
-      route?: IRouteType // p2p with failover | p2p | proxy
+      route?: IRouteType
       defaultPort?: number
       launchTemplate?: string
       commandTemplate?: string
@@ -358,6 +359,24 @@ declare global {
       description?: string
     }
   }
+
+  type ITimeSeries = {
+    type: ITimeSeriesType
+    start: Date
+    end: Date
+    time: Date[]
+    data: number[]
+  }
+
+  type ITimeSeriesType =
+    | 'AVAILABILITY' // Online Percentage
+    | 'ONLINE_DURATION' // Online Duration (in seconds)
+    | 'ONLINE' // Number of online events
+    | 'OFFLINE' // Number of offline events
+    | 'USAGE' // Connected Percentage
+    | 'CONNECT_DURATION' // Connected Duration (in seconds)
+    | 'CONNECT' // Number of connection events
+    | 'DISCONNECT' // Number of disconnect events
 
   type ILinkData = {
     url: string
@@ -680,7 +699,9 @@ declare global {
 
   type IEvents = { [event: string]: string }
 
-  type ILookup<T> = { [key: string]: T }
+  type ILookup<T, U extends string | symbol | number = string> = {
+    [K in U]: T
+  }
 
   type INumberLookup<T> = { [key: number]: T }
 

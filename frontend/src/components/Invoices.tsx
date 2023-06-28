@@ -1,5 +1,6 @@
 import React from 'react'
 import { Gutters } from './Gutters'
+import { Timestamp } from './Timestamp'
 import { makeStyles } from '@mui/styles'
 import { Table, TableHead, TableBody, TableRow, TableCell, Tooltip, Typography } from '@mui/material'
 import { currencyFormatter } from '../helpers/utilHelper'
@@ -10,14 +11,6 @@ import { spacing } from '../styling'
 import { Notice } from './Notice'
 import { Link } from './Link'
 import { Icon } from './Icon'
-
-const dateOptions: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  // hour: '2-digit',
-  // minute: '2-digit',
-}
 
 export const Invoices: React.FC = () => {
   const css = useStyles()
@@ -53,7 +46,9 @@ export const Invoices: React.FC = () => {
             <TableBody>
               {invoices.map((invoice: IInvoice, index) => (
                 <TableRow key={index}>
-                  <TableCell>{invoice.created.toLocaleString(navigator.language, dateOptions)}</TableCell>
+                  <TableCell>
+                    <Timestamp date={invoice.created} variant="short" />
+                  </TableCell>
                   <TableCell className={css.plan}>
                     {invoice.plan.name.toLowerCase()} /{' '}
                     {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}

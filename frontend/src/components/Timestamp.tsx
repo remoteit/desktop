@@ -1,6 +1,9 @@
 import React from 'react'
 
-export const timeOptions: ILookup<Intl.DateTimeFormatOptions> = {
+type FormatProp = 'numeric' | 'short' | 'long'
+type Props = { time?: number; date?: Date; variant?: FormatProp }
+
+export const timeOptions: ILookup<Intl.DateTimeFormatOptions, FormatProp> = {
   numeric: {
     year: 'numeric',
     month: 'numeric',
@@ -9,20 +12,22 @@ export const timeOptions: ILookup<Intl.DateTimeFormatOptions> = {
     minute: 'numeric',
     second: 'numeric',
   },
-  long: {
+  short: {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
+  },
+  long: {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   },
 }
 
-type Props = { startTime?: number; startDate?: Date; format?: 'numeric' | 'long' }
-
-export const Timestamp: React.FC<Props> = ({ startTime, startDate, format = 'numeric' }) => {
+export const Timestamp: React.FC<Props> = ({ time: startTime, date: startDate, variant = 'numeric' }) => {
   startDate = startDate || (startTime ? new Date(startTime) : undefined)
   if (!startDate) return null
-  const display = !isNaN(startDate.getTime()) && startDate.toLocaleDateString(navigator.language, timeOptions[format])
+  const display = !isNaN(startDate.getTime()) && startDate.toLocaleDateString(navigator.language, timeOptions[variant])
   return <>{display || '-'}</>
 }

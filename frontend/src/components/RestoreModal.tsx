@@ -16,7 +16,6 @@ export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
-    console.log('SHOW RESTORE MODAL', showRestoreModal, device?.id)
     if (!showRestoreModal || loading) return
     ;(async () => {
       setLoading(true)

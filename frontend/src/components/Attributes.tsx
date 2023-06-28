@@ -7,13 +7,15 @@ import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { ListItemText, Chip, Typography } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { RestoreButton } from '../buttons/RestoreButton'
-import { ServiceName } from './ServiceName'
+import { TimeConnected } from './TimeConnected'
 import { ReactiveTags } from './ReactiveTags'
+import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
 import { StatusChip } from './StatusChip'
+import { TimeOnline } from './TimeOnline'
 import { Timestamp } from './Timestamp'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -136,6 +138,12 @@ export const attributes: Attribute[] = [
     value: ({ device }) => <QualityDetails device={device} small />,
   }),
   new Attribute({
+    id: 'deviceTimeSeriesOnline',
+    query: 'timeSeries',
+    label: 'Online Graph',
+    value: ({ device }) => <TimeOnline timeSeries={device?.timeSeries} online={device?.state === 'active'} />,
+  }),
+  new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
@@ -161,6 +169,15 @@ export const attributes: Attribute[] = [
     label: 'Stability',
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
+  }),
+  new DeviceAttribute({
+    id: 'deviceTimeSeries',
+    query: 'timeSeries',
+    label: 'Time Online',
+    column: false,
+    value: ({ device }) => (
+      <TimeOnline timeSeries={device?.timeSeries} online={device?.state === 'active'} variant="large" />
+    ),
   }),
   new InstanceAttribute({
     id: 'permissions',
@@ -208,7 +225,7 @@ export const attributes: Attribute[] = [
     defaultWidth: 175,
     value: ({ device }) => (
       <>
-        <Timestamp startDate={device?.lastReported} /> &nbsp;
+        <Timestamp date={device?.lastReported} /> &nbsp;
         {device?.state === 'active' && (
           <Typography variant="caption" component="div">
             since refresh
@@ -221,7 +238,7 @@ export const attributes: Attribute[] = [
     id: 'created',
     label: 'Created date',
     defaultWidth: 175,
-    value: ({ device }) => (device?.createdAt ? <Timestamp startDate={device.createdAt} /> : undefined),
+    value: ({ device }) => (device?.createdAt ? <Timestamp date={device.createdAt} /> : undefined),
   }),
   new DeviceAttribute({
     id: 'isp',
@@ -374,7 +391,7 @@ export const attributes: Attribute[] = [
     id: 'serviceCreated',
     label: 'Service Created',
     defaultWidth: 175,
-    value: ({ service }) => <Timestamp startDate={service?.createdAt} />,
+    value: ({ service }) => <Timestamp date={service?.createdAt} />,
   }),
   new ServiceAttribute({
     id: 'serviceType',
@@ -394,8 +411,12 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'license',
     label: 'License',
-    defaultWidth: 100,
     value: ({ service }) => <LicenseChip license={service?.license} />,
+  }),
+  new ServiceAttribute({
+    id: 'serviceTimeSeries',
+    label: 'Time Connected',
+    value: ({ service }) => <TimeConnected timeSeries={service?.timeSeries} />,
   }),
   new ConnectionAttribute({
     id: 'duration',
