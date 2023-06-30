@@ -32,7 +32,7 @@ export const SERVICE_SELECT = `
   protocol
   attributes
   presenceAddress
-  timeSeries(type: CONNECT_DURATION, resolution: DAY, timezone: ${TIME_ZONE}) {
+  timeSeries(type: $serviceTSType, resolution: $serviceTSResolution, timezone: ${TIME_ZONE}) {
     type
     start
     end
@@ -131,7 +131,7 @@ const DeviceSelectLookup: ILookup<string> = {
   }`,
 
   timeSeries: `
-  timeSeries(type: ONLINE_DURATION, resolution: DAY, timezone: ${TIME_ZONE}) {
+  timeSeries(type: $deviceTSType, resolution: $deviceTSResolution, timezone: ${TIME_ZONE}) {
     type
     start
     end
@@ -145,41 +145,39 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => DeviceSelectLookup[k])
   .join('')
 
-export async function graphQLFetchDeviceList({
-  tag,
-  size,
-  from,
-  state,
-  sort,
-  owner,
-  name,
-  accountId,
-  platform,
-}: gqlOptions) {
+const DEVICE_TIME_SERIES_PARAMS = ', $deviceTSType: TimeSeriesType!, $deviceTSResolution: TimeSeriesResolution!'
+const SERVICE_TIME_SERIES_PARAMS = ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!'
+
+export async function graphQLFetchDeviceList(params: gqlOptions) {
+  const selectedColumns = store.getState().ui.columns
   return await graphQLRequest(
-    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $platform: [Int!]${
+      selectedColumns.includes('deviceTimeSeriesOnline') ? DEVICE_TIME_SERIES_PARAMS : ''
+    }) {
         login {
           id
           account(id: $accountId) {
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
               total
               items {
-                ${deviceQueryColumns()}
+                ${deviceQueryColumns(selectedColumns)}
               }
             }
           }
         }
       }`,
     {
-      tag,
-      size,
-      from,
-      state,
-      sort,
-      owner,
-      accountId,
-      platform,
-      name: name?.trim() || undefined,
+      tag: params.tag,
+      size: params.size,
+      from: params.from,
+      state: params.state,
+      sort: params.sort,
+      owner: params.owner,
+      accountId: params.accountId,
+      platform: params.platform,
+      name: params.name?.trim() || undefined,
+      deviceTSType: params.deviceTimeSeries?.type,
+      deviceTSResolution: params.deviceTimeSeries?.resolution,
     }
   )
 }
@@ -191,7 +189,7 @@ export async function graphQLPreloadDevices(params: { accountId: string; ids: st
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns()}
+              ${deviceQueryColumns(store.getState().ui.columns)}
             }
           }
         }
@@ -218,7 +216,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${deviceQueryColumns(['services'])}
+                  ${deviceQueryColumns(store.getState().ui.columns, ['services', 'deviceTimeSeriesOnline'])}
                 }          
               }
               name
@@ -249,7 +247,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
         login {
           id
           device(id: $ids)  {
-            ${deviceQueryColumns(['tags'])}
+            ${deviceQueryColumns(store.getState().ui.columns, ['tags', 'deviceTimeSeriesOnline'])}
           }
         }
       }`,
@@ -260,9 +258,14 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
 /* 
   Fetches single, or array of devices across shared accounts by id
 */
-export async function graphQLFetchFullDevice(id: string, accountId: string) {
+export async function graphQLFetchFullDevice(
+  id: string,
+  accountId: string,
+  serviceTimeSeries?: ITimeSeriesOptions,
+  deviceTimeSeries?: ITimeSeriesOptions
+) {
   return await graphQLRequest(
-    ` query Device($id: [String!]!, $accountId: String) {
+    ` query Device($id: [String!]!, $accountId: String${DEVICE_TIME_SERIES_PARAMS + SERVICE_TIME_SERIES_PARAMS}) {
         login {
           id
           device(id: $id) {
@@ -276,6 +279,10 @@ export async function graphQLFetchFullDevice(id: string, accountId: string) {
     {
       id,
       accountId,
+      deviceTSType: deviceTimeSeries?.type,
+      deviceTSResolution: deviceTimeSeries?.resolution,
+      serviceTSType: serviceTimeSeries?.type,
+      serviceTSResolution: serviceTimeSeries?.resolution,
     }
   )
 }
@@ -439,9 +446,9 @@ export function graphQLServiceAdaptor(device: any): IService[] {
   )
 }
 
-function deviceQueryColumns(filter?: string[]) {
+function deviceQueryColumns(selectedColumns: string[], filter?: string[]) {
   let columns = DEVICE_PRELOAD_ATTRIBUTES
-  columns = columns.concat(store.getState().ui.columns)
+  columns = columns.concat(selectedColumns)
   columns = columns.filter(c => (filter ? !filter.includes(c) : true))
   return attributeQuery(columns)
 }

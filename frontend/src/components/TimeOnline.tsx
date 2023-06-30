@@ -25,8 +25,7 @@ export const TimeOnline: React.FC<Props> = ({ timeSeries, online, variant = 'sma
   const handleHover = (value?: [Date, number]) => setDisplay(value)
 
   return (
-    <Stack spacing={1} paddingBottom={1}>
-      <Typography variant="caption">Last 30 days</Typography>
+    <Stack spacing={0.5} paddingBottom={1}>
       <Stack direction="row">
         <BarChart
           {...props}
@@ -43,6 +42,7 @@ export const TimeOnline: React.FC<Props> = ({ timeSeries, online, variant = 'sma
           </Stack>
         )}
       </Stack>
+      <Typography variant="caption">Last 30 days</Typography>
     </Stack>
   )
 }

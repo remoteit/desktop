@@ -368,6 +368,13 @@ declare global {
     data: number[]
   }
 
+  type ITimeSeriesOptions = {
+    type: ITimeSeriesType
+    resolution: ITimeSeriesResolution
+  }
+
+  type ITimeSeriesResolution = 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR'
+
   type ITimeSeriesType =
     | 'AVAILABILITY' // Online Percentage
     | 'ONLINE_DURATION' // Online Duration (in seconds)
@@ -629,6 +636,8 @@ declare global {
     sort?: string
     name?: string
     platform?: number[]
+    serviceTimeSeries?: ITimeSeriesOptions
+    deviceTimeSeries?: ITimeSeriesOptions
   }
 
   interface IAppValidation {

@@ -29,7 +29,16 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 
-const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
+const SAVED_STATES = [
+  'filter',
+  'sort',
+  'tag',
+  'owner',
+  'platform',
+  'sortServiceOption',
+  'deviceTimeSeries',
+  'serviceTimeSeries',
+]
 
 type IDeviceState = {
   all: IDevice[]
@@ -53,6 +62,8 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   customAttributes: string[]
+  deviceTimeSeries: ITimeSeriesOptions
+  serviceTimeSeries: ITimeSeriesOptions
 }
 
 export const defaultState: IDeviceState = {
@@ -77,6 +88,8 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   customAttributes: [],
+  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY' },
+  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY' },
 }
 
 type IDeviceAccountState = {
@@ -103,21 +116,26 @@ export default createModel<RootModel>()({
     async fetchList(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
+
       if (!deviceModel.initialized) await dispatch.devices.init()
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
+
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
-      const { query, sort, tag, owner, filter, size, from, append, searched, platform } = deviceModel
+      const { query, owner, filter, append, searched } = deviceModel
+
       const options: gqlOptions = {
-        size,
-        from,
         accountId,
-        state: filter === 'all' ? undefined : filter,
-        tag,
         name: query,
-        sort,
+        size: deviceModel.size,
+        from: deviceModel.from,
+        tag: deviceModel.tag,
+        sort: deviceModel.sort,
+        platform: deviceModel.platform,
+        deviceTimeSeries: deviceModel.deviceTimeSeries,
+        serviceTimeSeries: deviceModel.serviceTimeSeries,
+        state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
-        platform,
       }
 
       set({ fetching: true, accountId })
@@ -186,13 +204,20 @@ export default createModel<RootModel>()({
       if (!id) return
 
       const accountId = getActiveAccountId(state)
+      const deviceModel = getDeviceModel(state, accountId) // if TS circular error - refactor this
+
       let result: IDevice | undefined
       let errors: Error[] | undefined
 
       dispatch.devices.set({ fetching: true, accountId })
 
       try {
-        const gqlResponse = await graphQLFetchFullDevice(id, accountId)
+        const gqlResponse = await graphQLFetchFullDevice(
+          id,
+          accountId,
+          deviceModel.serviceTimeSeries,
+          deviceModel.deviceTimeSeries
+        )
         errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
         if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]

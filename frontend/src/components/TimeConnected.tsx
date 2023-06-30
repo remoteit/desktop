@@ -17,7 +17,6 @@ export const TimeConnected: React.FC<Props> = ({ timeSeries, ...props }) => {
 
   return (
     <Stack spacing={1} paddingBottom={1}>
-      <Typography variant="caption">Last 30 days</Typography>
       <Stack direction="row">
         <BarChart {...props} data={timeSeries} color="primary" onHover={handleHover} width={200} height={40} />
         {display && (
@@ -27,6 +26,7 @@ export const TimeConnected: React.FC<Props> = ({ timeSeries, ...props }) => {
           </Stack>
         )}
       </Stack>
+      <Typography variant="caption">Last 30 days</Typography>
     </Stack>
   )
 }
