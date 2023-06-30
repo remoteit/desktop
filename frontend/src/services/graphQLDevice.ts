@@ -152,7 +152,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
   const selectedColumns = store.getState().ui.columns
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $platform: [Int!]${
-      selectedColumns.includes('deviceTimeSeriesOnline') ? DEVICE_TIME_SERIES_PARAMS : ''
+      selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
     }) {
         login {
           id
@@ -216,7 +216,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${deviceQueryColumns(store.getState().ui.columns, ['services', 'deviceTimeSeriesOnline'])}
+                  ${deviceQueryColumns(store.getState().ui.columns, ['services', 'timeSeries'])}
                 }          
               }
               name
@@ -247,7 +247,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
         login {
           id
           device(id: $ids)  {
-            ${deviceQueryColumns(store.getState().ui.columns, ['tags', 'deviceTimeSeriesOnline'])}
+            ${deviceQueryColumns(store.getState().ui.columns, ['tags', 'timeSeries'])}
           }
         }
       }`,

@@ -138,7 +138,7 @@ export const attributes: Attribute[] = [
     value: ({ device }) => <QualityDetails device={device} small />,
   }),
   new Attribute({
-    id: 'deviceTimeSeriesOnline',
+    id: 'timeSeries',
     query: 'timeSeries',
     label: 'Online Graph',
     value: ({ device }) => <TimeOnline timeSeries={device?.timeSeries} online={device?.state === 'active'} />,

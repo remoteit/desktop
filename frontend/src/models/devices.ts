@@ -21,7 +21,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
+import { getAllDevices, selectDevice, getDeviceModel, getDeviceModelFn, selectById } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
@@ -204,7 +204,7 @@ export default createModel<RootModel>()({
       if (!id) return
 
       const accountId = getActiveAccountId(state)
-      const deviceModel = getDeviceModel(state, accountId) // if TS circular error - refactor this
+      const deviceModel = getDeviceModelFn(state.devices, accountId)
 
       let result: IDevice | undefined
       let errors: Error[] | undefined

@@ -6,7 +6,7 @@ import { masterAttributes, deviceAttributes, DeviceAttribute } from '../componen
 import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 
-function getDeviceModelFn(devices: ApplicationState['devices'], activeAccountId: string, accountId?: string) {
+export function getDeviceModelFn(devices: ApplicationState['devices'], activeAccountId: string, accountId?: string) {
   return devices[accountId || activeAccountId] || devices.default
 }
 
