@@ -1,3 +1,8 @@
+import { ApplicationState } from '../store'
+import { DateTime, Duration } from 'luxon'
+import { selectLimit } from '../models/plans'
+import { Unit } from 'humanize-duration'
+
 export function isToday(dateToCheck: Date): boolean {
   const today = new Date().toLocaleDateString()
   const check = dateToCheck.toLocaleDateString()
@@ -25,4 +30,71 @@ export const getDateFormatString = () => {
 
 export const getTimeZone = () => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
+}
+
+export function limitTimeSeries(state: ApplicationState, timeSeries: ITimeSeriesOptions): ITimeSeriesOptions {
+  const defaultDuration = getMaxDuration(timeSeries.resolution)
+  const logLimit = selectLimit('log-limit', state)
+  const logLimitDuration = Duration.fromISO(logLimit)
+  const shortestDuration = defaultDuration.valueOf() < logLimitDuration.valueOf() ? defaultDuration : logLimitDuration
+  const start = DateTime.local().minus(shortestDuration).toJSDate()
+  return { ...timeSeries, start }
+}
+
+export const getStart = (resolution: ITimeSeriesResolution) => {
+  return DateTime.local().minus(getMaxDuration(resolution)).toJSDate()
+}
+
+export const getDuration = (unit: ITimeSeriesResolution) => {
+  return Duration.fromObject({ [TimeSeriesResolutionLookup[unit]]: 1 })
+}
+
+export const getMaxDuration = (unit: ITimeSeriesResolution) => {
+  return Duration.fromObject({ [resolutionMaxLookup[unit]]: 1 })
+}
+
+export const connectionTypes = ['USAGE', 'CONNECT_DURATION', 'CONNECT', 'DISCONNECT']
+
+export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
+  SECOND: 's',
+  MINUTE: 'm',
+  HOUR: 'h',
+  DAY: 'd',
+  WEEK: 'w',
+  MONTH: 'mo',
+  QUARTER: 'mo',
+  YEAR: 'y',
+}
+
+export const TimeSeriesTypeLookup: ILookup<string, ITimeSeriesType> = {
+  AVAILABILITY: 'Online percentage',
+  ONLINE_DURATION: 'Online duration',
+  ONLINE: 'Number of online events',
+  OFFLINE: 'Number of offline events',
+  USAGE: 'Connected percentage',
+  CONNECT_DURATION: 'Connected duration',
+  CONNECT: 'Number of connection events',
+  DISCONNECT: 'Number of disconnect events',
+}
+
+export const TimeSeriesResolutionLookup: ILookup<string, ITimeSeriesResolution> = {
+  SECOND: 'Second',
+  MINUTE: 'Minute',
+  HOUR: 'Hour',
+  DAY: 'Day',
+  WEEK: 'Week',
+  MONTH: 'Month',
+  QUARTER: 'Quarter',
+  YEAR: 'Year',
+}
+
+const resolutionMaxLookup: ILookup<string, ITimeSeriesResolution> = {
+  SECOND: 'hours',
+  MINUTE: 'days',
+  HOUR: 'weeks',
+  DAY: 'months',
+  WEEK: 'quarters',
+  MONTH: 'years',
+  QUARTER: 'years',
+  YEAR: 'years',
 }

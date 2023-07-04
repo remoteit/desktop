@@ -1,5 +1,5 @@
 import React from 'react'
-import { IP_LATCH, IP_PRIVATE, PROTOCOL } from '../shared/constants'
+import { IP_PRIVATE, PROTOCOL } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -7,15 +7,15 @@ import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { ListItemText, Chip, Typography } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { RestoreButton } from '../buttons/RestoreButton'
-import { TimeConnected } from './TimeConnected'
 import { ReactiveTags } from './ReactiveTags'
+import { GraphColumn } from './GraphColumn'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
 import { StatusChip } from './StatusChip'
-import { TimeOnline } from './TimeOnline'
+import { TimeSeries } from './TimeSeries'
 import { Timestamp } from './Timestamp'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -25,7 +25,7 @@ import { Icon } from './Icon'
 
 export class Attribute {
   id: string = ''
-  label: string = ''
+  label: string | React.ReactNode = ''
   help?: string
   required: boolean = false
   align?: 'left' | 'right' | 'center'
@@ -140,8 +140,8 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'timeSeries',
     query: 'timeSeries',
-    label: 'Online Graph',
-    value: ({ device }) => <TimeOnline timeSeries={device?.timeSeries} online={device?.state === 'active'} />,
+    label: <GraphColumn />,
+    value: ({ device }) => <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />,
   }),
   new Attribute({
     id: 'services',
@@ -176,7 +176,7 @@ export const attributes: Attribute[] = [
     label: 'Time Online',
     column: false,
     value: ({ device }) => (
-      <TimeOnline timeSeries={device?.timeSeries} online={device?.state === 'active'} variant="large" />
+      <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} variant="large" />
     ),
   }),
   new InstanceAttribute({
@@ -416,7 +416,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceTimeSeries',
     label: 'Time Connected',
-    value: ({ service }) => <TimeConnected timeSeries={service?.timeSeries} />,
+    value: ({ service }) => <TimeSeries timeSeries={service?.timeSeries} variant="large" />,
   }),
   new ConnectionAttribute({
     id: 'duration',

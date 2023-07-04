@@ -1,5 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { emit } from '../services/Controller'
+import { getStart } from '../helpers/dateHelper'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
@@ -15,6 +16,7 @@ const SAVED_STATES = [
   'guides',
   'panelWidth',
   'poppedBubbles',
+  'expireBubbles',
   'themeMode',
   'accordion',
   'drawerMenu',
@@ -26,6 +28,8 @@ const SAVED_STATES = [
   'defaultService',
   'testUI',
   'updateNoticeCleared',
+  'deviceTimeSeries',
+  'serviceTimeSeries',
 ]
 
 export type UIState = {
@@ -88,6 +92,8 @@ export type UIState = {
   autoCopy: boolean
   updateNoticeCleared?: number
   showRestoreModal: boolean
+  deviceTimeSeries: ITimeSeriesOptions
+  serviceTimeSeries: ITimeSeriesOptions
 }
 
 export const defaultState: UIState = {
@@ -157,6 +163,8 @@ export const defaultState: UIState = {
   autoCopy: false,
   updateNoticeCleared: undefined,
   showRestoreModal: false,
+  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', start: getStart('DAY') },
+  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', start: getStart('DAY') },
 }
 
 export default createModel<RootModel>()({

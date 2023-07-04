@@ -434,6 +434,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.MuiFilledInput-root .MuiInputBase-input': {
               borderRadius: radius,
             },
+            '& .MuiInputBase-inputSizeSmall': {
+              paddingTop: spacing.xxs,
+              paddingBottom: spacing.xxs,
+            },
           },
           input: {
             paddingTop: spacing.xxs,
@@ -461,10 +465,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiTextField: {
         styleOverrides: {
           root: {
-            marginTop: spacing.xxs,
-            marginBottom: spacing.xxs,
             '& .MuiSelect-iconStandard': { right: spacing.md },
             '& .MuiInputBase-sizeSmall': {
+              marginTop: spacing.xxs,
+              marginBottom: spacing.xxs,
               height: 20,
               borderRadius: 10,
               fontSize: fontSizes.xxs,

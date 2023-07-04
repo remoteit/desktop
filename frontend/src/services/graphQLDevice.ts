@@ -1,9 +1,9 @@
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
+import { getTimeZone } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
-const TIME_ZONE = JSON.stringify(Intl.DateTimeFormat().resolvedOptions().timeZone)
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
 const SERVICE_PRELOAD = `
@@ -32,8 +32,9 @@ export const SERVICE_SELECT = `
   protocol
   attributes
   presenceAddress
-  timeSeries(type: $serviceTSType, resolution: $serviceTSResolution, timezone: ${TIME_ZONE}) {
+  timeSeries(type: $serviceTSType, resolution: $serviceTSResolution, start: $serviceTSStart, timezone: "${getTimeZone()}") {
     type
+    resolution
     start
     end
     time
@@ -131,8 +132,9 @@ const DeviceSelectLookup: ILookup<string> = {
   }`,
 
   timeSeries: `
-  timeSeries(type: $deviceTSType, resolution: $deviceTSResolution, timezone: ${TIME_ZONE}) {
+  timeSeries(type: $deviceTSType, resolution: $deviceTSResolution, start: $deviceTSStart, timezone: "${getTimeZone()}") {
     type
+    resolution
     start
     end
     time
@@ -145,8 +147,10 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .map(k => DeviceSelectLookup[k])
   .join('')
 
-const DEVICE_TIME_SERIES_PARAMS = ', $deviceTSType: TimeSeriesType!, $deviceTSResolution: TimeSeriesResolution!'
-const SERVICE_TIME_SERIES_PARAMS = ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!'
+const DEVICE_TIME_SERIES_PARAMS =
+  ', $deviceTSType: TimeSeriesType!, $deviceTSResolution: TimeSeriesResolution!, $deviceTSStart: DateTime!'
+const SERVICE_TIME_SERIES_PARAMS =
+  ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSStart: DateTime!'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   const selectedColumns = store.getState().ui.columns
@@ -176,25 +180,38 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
-      deviceTSType: params.deviceTimeSeries?.type,
-      deviceTSResolution: params.deviceTimeSeries?.resolution,
+      deviceTSStart: params.timeSeries?.start,
+      deviceTSType: params.timeSeries?.type,
+      deviceTSResolution: params.timeSeries?.resolution,
     }
   )
 }
 
-export async function graphQLPreloadDevices(params: { accountId: string; ids: string[] }) {
+export async function graphQLPreloadDevices(params: {
+  accountId: string
+  ids: string[]
+  timeSeries?: ITimeSeriesOptions
+}) {
+  const selectedColumns = store.getState().ui.columns
   return await graphQLRequest(
-    ` query DevicePreload($ids: [String!]!, $accountId: String) {
+    ` query DevicePreload($ids: [String!]!, $accountId: String${
+      selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
+    }) {
         login {
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns(store.getState().ui.columns)}
+              ${deviceQueryColumns(selectedColumns)}
             }
           }
         }
       }`,
-    params
+    {
+      ...params,
+      deviceTSStart: params.timeSeries?.start,
+      deviceTSType: params.timeSeries?.type,
+      deviceTSResolution: params.timeSeries?.resolution,
+    }
   )
 }
 
@@ -265,7 +282,7 @@ export async function graphQLFetchFullDevice(
   deviceTimeSeries?: ITimeSeriesOptions
 ) {
   return await graphQLRequest(
-    ` query Device($id: [String!]!, $accountId: String${DEVICE_TIME_SERIES_PARAMS + SERVICE_TIME_SERIES_PARAMS}) {
+    ` query Device($id: [String!]!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
           id
           device(id: $id) {
@@ -279,8 +296,10 @@ export async function graphQLFetchFullDevice(
     {
       id,
       accountId,
+      deviceTSStart: deviceTimeSeries?.start,
       deviceTSType: deviceTimeSeries?.type,
       deviceTSResolution: deviceTimeSeries?.resolution,
+      serviceTSStart: serviceTimeSeries?.start,
       serviceTSType: serviceTimeSeries?.type,
       serviceTSResolution: serviceTimeSeries?.resolution,
     }

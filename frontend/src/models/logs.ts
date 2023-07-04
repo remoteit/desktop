@@ -25,7 +25,7 @@ const defaultState: ILogState = {
   maxDate: undefined,
   minDate: undefined,
   deviceId: undefined,
-  fetching: false,
+  fetching: true,
   fetchingMore: false,
   eventsUrl: '',
   selectedDate: undefined,
@@ -69,7 +69,7 @@ export default createModel<RootModel>()({
         },
       })
 
-      after ? set({ fetching: false }) : set({ fetchingMore: false })
+      set({ fetching: false, fetchingMore: false })
     },
 
     async fetchUrl(_: void, globalState): Promise<string | undefined> {

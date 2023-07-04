@@ -40,6 +40,7 @@ import { TagsPage } from '../pages/TagsPage'
 import { Panel } from '../components/Panel'
 import { LogsPage } from '../pages/LogsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { GraphsPage } from '../pages/GraphsPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
@@ -231,6 +232,10 @@ export const Router: React.FC = () => {
             <Switch>
               <Route path="/settings/notifications">
                 <NotificationsPage />
+              </Route>
+
+              <Route path="/settings/graphs">
+                <GraphsPage />
               </Route>
 
               <Route path="/settings/defaults/:applicationID?">

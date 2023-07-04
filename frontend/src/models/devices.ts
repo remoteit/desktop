@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import { limitTimeSeries } from '../helpers/dateHelper'
 import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
   graphQLDeleteDevice,
@@ -21,7 +22,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, getDeviceModelFn, selectById } from '../selectors/devices'
+import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
 import { getActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
@@ -29,16 +30,7 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 
-const SAVED_STATES = [
-  'filter',
-  'sort',
-  'tag',
-  'owner',
-  'platform',
-  'sortServiceOption',
-  'deviceTimeSeries',
-  'serviceTimeSeries',
-]
+const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
 type IDeviceState = {
   all: IDevice[]
@@ -62,8 +54,6 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   customAttributes: string[]
-  deviceTimeSeries: ITimeSeriesOptions
-  serviceTimeSeries: ITimeSeriesOptions
 }
 
 export const defaultState: IDeviceState = {
@@ -88,8 +78,6 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   customAttributes: [],
-  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY' },
-  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY' },
 }
 
 type IDeviceAccountState = {
@@ -132,8 +120,7 @@ export default createModel<RootModel>()({
         tag: deviceModel.tag,
         sort: deviceModel.sort,
         platform: deviceModel.platform,
-        deviceTimeSeries: deviceModel.deviceTimeSeries,
-        serviceTimeSeries: deviceModel.serviceTimeSeries,
+        timeSeries: limitTimeSeries(state, state.ui.deviceTimeSeries),
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
       }
@@ -169,7 +156,11 @@ export default createModel<RootModel>()({
       }
       await dispatch.devices.set({ fetchingArray: true, accountId })
 
-      const gqlResponse = await graphQLPreloadDevices({ accountId, ids })
+      const gqlResponse = await graphQLPreloadDevices({
+        accountId,
+        ids,
+        timeSeries: limitTimeSeries(state, state.ui.deviceTimeSeries),
+      })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
 
@@ -204,7 +195,6 @@ export default createModel<RootModel>()({
       if (!id) return
 
       const accountId = getActiveAccountId(state)
-      const deviceModel = getDeviceModelFn(state.devices, accountId)
 
       let result: IDevice | undefined
       let errors: Error[] | undefined
@@ -215,8 +205,8 @@ export default createModel<RootModel>()({
         const gqlResponse = await graphQLFetchFullDevice(
           id,
           accountId,
-          deviceModel.serviceTimeSeries,
-          deviceModel.deviceTimeSeries
+          limitTimeSeries(state, state.ui.serviceTimeSeries),
+          limitTimeSeries(state, state.ui.deviceTimeSeries)
         )
         errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
@@ -245,7 +235,6 @@ export default createModel<RootModel>()({
       }
 
       dispatch.devices.set({ fetching: false, accountId })
-      return result
     },
 
     async fetchCount(params: IOrganizationRole, state) {
@@ -263,6 +252,15 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0
       return count
+    },
+
+    async clearLoaded(_: void, state) {
+      const accountId = getActiveAccountId(state)
+      const all = [...getDeviceModel(state, accountId).all]
+      for (const id in all) {
+        if (all[id].loaded) all[id] = { ...all[id], loaded: false }
+      }
+      await dispatch.devices.set({ all, accountId })
     },
 
     async graphQLListProcessor(options: gqlOptions) {

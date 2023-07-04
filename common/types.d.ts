@@ -362,6 +362,7 @@ declare global {
 
   type ITimeSeries = {
     type: ITimeSeriesType
+    resolution: ITimeSeriesResolution
     start: Date
     end: Date
     time: Date[]
@@ -371,6 +372,8 @@ declare global {
   type ITimeSeriesOptions = {
     type: ITimeSeriesType
     resolution: ITimeSeriesResolution
+    timezone?: string
+    start?: Date
   }
 
   type ITimeSeriesResolution = 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR'
@@ -636,8 +639,7 @@ declare global {
     sort?: string
     name?: string
     platform?: number[]
-    serviceTimeSeries?: ITimeSeriesOptions
-    deviceTimeSeries?: ITimeSeriesOptions
+    timeSeries?: ITimeSeriesOptions
   }
 
   interface IAppValidation {

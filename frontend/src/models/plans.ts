@@ -1,8 +1,8 @@
-import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { ApplicationState } from '../store'
+import { Duration } from 'luxon'
 import {
   graphQLSubscribe,
   graphQLUnsubscribe,
@@ -249,7 +249,7 @@ export function selectLimits(state: ApplicationState, accountId?: string) {
 }
 
 export function selectLimit(name: string, state: ApplicationState) {
-  return selectLimits(state).find(limit => limit.name === name)?.value
+  return selectLimits(state).find(limit => limit.name === name)?.value || 'P1D'
 }
 
 export function getInformed(state: ApplicationState) {
@@ -329,10 +329,7 @@ export function selectLicenseIndicator(state: ApplicationState) {
 }
 
 export function limitDays(value?: string) {
-  if (value) {
-    return Duration.fromISO(value).as('days')
-  }
-  return 0
+  return value ? Duration.fromISO(value).as('days') : 0
 }
 
 export function humanizeDays(value?: string) {
