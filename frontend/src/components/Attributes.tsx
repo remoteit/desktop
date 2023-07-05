@@ -11,6 +11,7 @@ import { ReactiveTags } from './ReactiveTags'
 import { GraphColumn } from './GraphColumn'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
+import { GraphTitle } from './GraphTitle'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
@@ -173,7 +174,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'deviceTimeSeries',
     query: 'timeSeries',
-    label: 'Time Online',
+    label: <GraphTitle />,
     column: false,
     value: ({ device }) => (
       <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} variant="large" />
@@ -415,7 +416,7 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceTimeSeries',
-    label: 'Time Connected',
+    label: <GraphTitle variant="service" />,
     value: ({ service }) => <TimeSeries timeSeries={service?.timeSeries} variant="large" />,
   }),
   new ConnectionAttribute({

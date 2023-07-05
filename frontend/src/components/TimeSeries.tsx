@@ -1,5 +1,5 @@
 import React from 'react'
-import { humanizeResolutionLookup, connectionTypes, getDuration } from '../helpers/dateHelper'
+import { humanizeResolutionLookup, connectionTypes, secondResolutions, getDuration } from '../helpers/dateHelper'
 import { BarGraph, BarGraphProps } from './BarGraph'
 import { Typography, Stack, Box } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
@@ -38,18 +38,22 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
           max={max}
           onHover={(value?: [Date, number]) => setDisplay(value)}
         />
-        <Stack spacing={1} height={40}>
+        <Stack spacing={2} height={40}>
           {display ? (
-            <>
-              <Timestamp date={display[0]} variant="short" />
+            <Box marginLeft={1}>
+              <Timestamp
+                date={display[0]}
+                variant={secondResolutions.includes(timeSeries.resolution) ? 'numeric' : 'short'}
+              />
               <Box>{humanize(display[1] * 1000, { largest: 2 })}</Box>
-            </>
+            </Box>
           ) : (
             <IconButton name="sliders" color="grayDark" title="configure" to="/settings/graphs" />
           )}
         </Stack>
       </Stack>
       <Typography variant="caption">
+        Last&nbsp;
         {humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
           largest: 1,
           round: true,

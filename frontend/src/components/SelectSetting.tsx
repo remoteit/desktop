@@ -1,5 +1,14 @@
 import React, { useState } from 'react'
-import { ListItem, ListItemIcon, ListItemSecondaryAction, MenuItem, TextField, Tooltip } from '@mui/material'
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  MenuItem,
+  Typography,
+  TextField,
+  Tooltip,
+} from '@mui/material'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -12,6 +21,7 @@ type Props = {
   modified?: boolean
   hideIcon?: boolean
   helpMessage?: string
+  defaultValue?: string | number
   onChange?: (value: string) => void
   children?: React.ReactNode
 }
@@ -25,11 +35,14 @@ export const SelectSetting: React.FC<Props> = ({
   disabled,
   modified,
   helpMessage,
+  defaultValue,
   onChange,
   children,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const handleClick = () => setOpen(!open)
+
+  modified = modified || (!!defaultValue && value !== defaultValue)
 
   return (
     <ListItem dense onClick={handleClick} disabled={disabled} button>
@@ -61,7 +74,14 @@ export const SelectSetting: React.FC<Props> = ({
       >
         {values.map(type => (
           <MenuItem value={type.key} key={type.key}>
-            {type.name}
+            <ListItemText>
+              {type.name}
+              {defaultValue === type.key && modified && (
+                <ListItemSecondaryAction>
+                  <Typography variant="caption">default</Typography>
+                </ListItemSecondaryAction>
+              )}
+            </ListItemText>
           </MenuItem>
         ))}
       </TextField>

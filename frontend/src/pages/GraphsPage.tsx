@@ -1,4 +1,5 @@
 import React from 'react'
+import { getStart } from '../helpers/dateHelper'
 import { Container } from '../components/Container'
 import { selectLimit, humanizeDays } from '../models/plans'
 import { Dispatch, ApplicationState } from '../store'
@@ -8,6 +9,17 @@ import { PlanActionChip } from '../components/PlanActionChip'
 import { Typography } from '@mui/material'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+
+const defaultDeviceTimeSeries: ITimeSeriesOptions = {
+  type: 'ONLINE_DURATION',
+  resolution: 'DAY',
+  start: getStart('DAY'),
+}
+const defaultServiceTimeSeries: ITimeSeriesOptions = {
+  type: 'CONNECT_DURATION',
+  resolution: 'DAY',
+  start: getStart('DAY'),
+}
 
 export const GraphsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -32,6 +44,7 @@ export const GraphsPage: React.FC = () => {
       <TimeSeriesSelect
         timeSeries={timeSeries.deviceTimeSeries}
         logLimit={logLimit}
+        defaults={defaultDeviceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ deviceTimeSeries: value })
           await dispatch.devices.fetchList()
@@ -41,6 +54,7 @@ export const GraphsPage: React.FC = () => {
       <TimeSeriesSelect
         timeSeries={timeSeries.serviceTimeSeries}
         logLimit={logLimit}
+        defaults={defaultServiceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ serviceTimeSeries: value })
           await dispatch.devices.clearLoaded()

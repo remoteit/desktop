@@ -54,6 +54,7 @@ export const getMaxDuration = (unit: ITimeSeriesResolution) => {
 }
 
 export const connectionTypes = ['USAGE', 'CONNECT_DURATION', 'CONNECT', 'DISCONNECT']
+export const secondResolutions = ['SECOND', 'MINUTE', 'HOUR']
 
 export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
   SECOND: 's',
