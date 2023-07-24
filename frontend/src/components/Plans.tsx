@@ -155,7 +155,7 @@ export const Plans: React.FC = () => {
             note={satellite ? undefined : 'when billed annually'}
             button="Contact Us"
             selected={satellite}
-            onSelect={() => windowOpen('https://remote.it/contact-us/', '_blank')}
+            onSelect={() => windowOpen('https://link.remote.it/contact', '_blank')}
             features={Features[SATELLITE_PLAN_ID]}
           />
         </Gutters>
@@ -274,7 +274,7 @@ export const Plans: React.FC = () => {
             selected={enterprise}
             onSelect={() => {
               if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
-              else windowOpen('https://remote.it/contact-us/', '_blank')
+              else windowOpen('https://link.remote.it/contact', '_blank')
             }}
             features={enterprise ? undefined : Features[ENTERPRISE_PLAN_ID]}
           />
