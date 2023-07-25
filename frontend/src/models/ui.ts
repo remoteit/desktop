@@ -94,6 +94,7 @@ export type UIState = {
   showRestoreModal: boolean
   deviceTimeSeries: ITimeSeriesOptions
   serviceTimeSeries: ITimeSeriesOptions
+  connectThisDevice: boolean
 }
 
 export const defaultState: UIState = {
@@ -165,6 +166,7 @@ export const defaultState: UIState = {
   showRestoreModal: false,
   deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', start: getStart('DAY') },
   serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', start: getStart('DAY') },
+  connectThisDevice: false,
 }
 
 export default createModel<RootModel>()({

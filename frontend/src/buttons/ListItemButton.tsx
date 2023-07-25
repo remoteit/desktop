@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, Tooltip, darken } from '@mui/material'
+import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, Tooltip, alpha } from '@mui/material'
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -81,7 +81,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '&:hover': {
       backgroundColor: showBackground
         ? alwaysWhite
-          ? darken(palette.primary.main, 0.15)
+          ? alpha(palette.alwaysWhite.main, 0.1)
           : palette.primaryHighlight.main
         : undefined,
     },
@@ -94,6 +94,5 @@ const useStyles = makeStyles(({ palette }) => ({
     whiteSpace: 'pre-wrap',
     overflowWrap: 'break-word',
     userSelect: 'text',
-    cursor: 'text',
   },
 }))

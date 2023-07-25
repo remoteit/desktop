@@ -42,7 +42,7 @@ export const ListItemCopy: React.FC<Props> = ({ hideIcon, link, ...props }) => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(() => ({
   button: {
     minHeight: 80,
     width: 80,

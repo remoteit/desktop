@@ -1,26 +1,31 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
 import { DeviceContext } from '../services/Context'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
-import { makeStyles } from '@mui/styles'
-import { Typography } from '@mui/material'
+import { ListItemCopy } from '../components/ListItemCopy'
 import { ComboButton } from './ComboButton'
 import { GuideBubble } from '../components/GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
+import { makeStyles } from '@mui/styles'
+import { Typography } from '@mui/material'
 import { DesktopUI } from '../components/DesktopUI'
 import { PortalUI } from '../components/PortalUI'
-import { ListItemCopy } from '../components/ListItemCopy'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 import { Notice } from '../components/Notice'
+import { Link } from '../components/Link'
 
 export const ServiceConnectButton: React.FC = () => {
   const { device, service, connection, instance, user } = useContext(DeviceContext)
-  const [connectThisDevice, setConnectThisDevice] = useState<boolean>(false)
+  const { connectThisDevice } = useSelector((state: ApplicationState) => state.ui)
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
+
+  useEffect(() => {
+    dispatch.ui.set({ connectThisDevice: false })
+  }, [device?.id])
 
   if (connection.connectLink) return null
 
@@ -30,19 +35,29 @@ export const ServiceConnectButton: React.FC = () => {
   return (
     <>
       {displayThisDevice ? (
-        <Notice gutterTop solid onClose={() => setConnectThisDevice(true)}>
-          <Typography variant="h3">You are on the same device as this service.</Typography>
-          <Typography variant="body2" gutterBottom>
-            So you can connect directly without using Remote.It.
-          </Typography>
-          <ListItemCopy
-            label="Local endpoint"
-            value={`${service?.host || '127.0.0.1'}:${service?.port}`}
-            showBackground
-            alwaysWhite
-            fullWidth
-          />
-        </Notice>
+        <>
+          <Notice gutterTop solid severity="info">
+            This service can be connected to from anywhere using Remote.It.
+          </Notice>
+          <Notice gutterTop severity="warning">
+            <Typography variant="body2" gutterBottom>
+              You are on the same device as this service, so you should not connect with Remote.It. Connect directly
+              using the address below:
+            </Typography>
+            <ListItemCopy
+              label="Local endpoint"
+              value={`${service?.host || '127.0.0.1'}:${service?.port}`}
+              showBackground
+              alwaysWhite
+              fullWidth
+            />
+            <Typography variant="caption" display="block" marginTop={2} marginBottom={1}>
+              <Link color="grayDark.main" onClick={() => dispatch.ui.set({ connectThisDevice: true })}>
+                Connect anyway, I know what I'm doing.
+              </Link>
+            </Typography>
+          </Notice>
+        </>
       ) : (
         <GuideBubble
           guide="connectButton"
