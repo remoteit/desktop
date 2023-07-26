@@ -67,6 +67,17 @@ export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
   YEAR: 'y',
 }
 
+export const TimeSeriesTypeScale: ILookup<ITimeSeriesScale, ITimeSeriesType> = {
+  AVAILABILITY: { unit: '%', scale: 100 },
+  ONLINE_DURATION: { unit: 'time', scale: 1 },
+  ONLINE: { unit: 'events', scale: 1 },
+  OFFLINE: { unit: 'events', scale: 1 },
+  USAGE: { unit: '%', scale: 100 },
+  CONNECT_DURATION: { unit: 'time', scale: 1 },
+  CONNECT: { unit: 'events', scale: 1 },
+  DISCONNECT: { unit: 'events', scale: 1 },
+}
+
 export const TimeSeriesTypeLookup: ILookup<string, ITimeSeriesType> = {
   AVAILABILITY: 'Online percentage',
   ONLINE_DURATION: 'Online duration',

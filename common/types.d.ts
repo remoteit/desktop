@@ -388,6 +388,11 @@ declare global {
     | 'CONNECT' // Number of connection events
     | 'DISCONNECT' // Number of disconnect events
 
+  type ITimeSeriesScale = {
+    unit: '%' | 'time' | 'events'
+    scale: number
+  }
+
   type ILinkData = {
     url: string
     created: Date

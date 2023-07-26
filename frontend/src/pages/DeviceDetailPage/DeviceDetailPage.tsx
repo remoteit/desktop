@@ -6,6 +6,7 @@ import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
 import { selectDeviceDetailAttributes } from '../../selectors/devices'
 import { selectLimitsLookup } from '../../selectors/organizations'
 import { DataDisplay } from '../../components/DataDisplay'
+import { GraphItem } from '../../components/GraphItem'
 import { Gutters } from '../../components/Gutters'
 
 export const DeviceDetailPage: React.FC = () => {
@@ -17,6 +18,7 @@ export const DeviceDetailPage: React.FC = () => {
 
   return (
     <DeviceHeaderMenu>
+      <GraphItem device={device} />
       <Gutters>
         <DataDisplay attributes={attributes} device={device} instance={device} limits={limits} />
       </Gutters>

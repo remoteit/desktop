@@ -44,7 +44,7 @@ export const BarGraph: React.FC<BarGraphProps> = ({
   }, [data, width, height])
 
   return (
-    <svg width={width} height={height} className={css.graph} {...props}>
+    <svg width={width} height={height + 1} className={css.graph} {...props}>
       {bars.map((bar, i) => [
         <rect key={i} x={bar.x} y={bar.y} width={bar.width - 1} height={bar.height} fill={theme.palette[color].main} />,
         onHover && (
@@ -68,9 +68,8 @@ const useStyles = makeStyles(({ palette }) => ({
   graph: ({ height }: { height: number }) => ({
     backgroundColor: palette.white.main,
     borderBottomLeftRadius: height / 8,
-    borderBottomRightRadius: height / 8,
-    borderLeft: `1px solid ${palette.grayDark.main}`,
-    borderBottom: `1px solid ${palette.grayDark.main}`,
+    borderLeft: `1px solid ${palette.gray.main}`,
+    borderBottom: `1px solid ${palette.gray.main}`,
   }),
   bar: {
     fill: 'transparent',

@@ -215,9 +215,10 @@ export async function graphQLPreloadDevices(params: {
   )
 }
 
-export async function graphQLPreloadNetworks(accountId: string) {
+export async function graphQLPreloadNetworks(accountId: string, timeSeries?: ITimeSeriesOptions) {
+  const selectedColumns = store.getState().ui.columns
   return await graphQLBasicRequest(
-    ` query Networks($accountId: String) {
+    ` query Networks($accountId: String${selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''}) {
       login {
         account(id: $accountId) {
           networks {
@@ -233,7 +234,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${deviceQueryColumns(store.getState().ui.columns, ['services', 'timeSeries'])}
+                  ${deviceQueryColumns(selectedColumns, ['services'])}
                 }          
               }
               name
@@ -254,7 +255,12 @@ export async function graphQLPreloadNetworks(accountId: string) {
         }
       }
     }`,
-    { accountId }
+    {
+      accountId,
+      deviceTSStart: timeSeries?.start,
+      deviceTSType: timeSeries?.type,
+      deviceTSResolution: timeSeries?.resolution,
+    }
   )
 }
 
@@ -309,9 +315,14 @@ export async function graphQLFetchFullDevice(
 /* 
   Fetches single network across shared accounts by id
 */
-export async function graphQLFetchNetworkServices(id: string, accountId: string) {
+export async function graphQLFetchNetworkServices(
+  id: string,
+  accountId: string,
+  serviceTimeSeries?: ITimeSeriesOptions,
+  deviceTimeSeries?: ITimeSeriesOptions
+) {
   return await graphQLBasicRequest(
-    ` query NetworkServices($id: String!, $accountId: String) {
+    ` query NetworkServices($id: String!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
           id
           network(id: $id)  {
@@ -329,6 +340,12 @@ export async function graphQLFetchNetworkServices(id: string, accountId: string)
     {
       id,
       accountId,
+      deviceTSStart: deviceTimeSeries?.start,
+      deviceTSType: deviceTimeSeries?.type,
+      deviceTSResolution: deviceTimeSeries?.resolution,
+      serviceTSStart: serviceTimeSeries?.start,
+      serviceTSType: serviceTimeSeries?.type,
+      serviceTSResolution: serviceTimeSeries?.resolution,
     }
   )
 }

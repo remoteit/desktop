@@ -55,7 +55,7 @@ export const DevicePage: React.FC = () => {
   const disableThisConnect = thisDevice && !connectThisDevice
 
   // reverse sort services by creation date
-  device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  const services = [...device.services]
   let servicePage = '/' + (location.pathname.split('/')[4] || 'connect')
 
   return (
@@ -167,7 +167,7 @@ export const DevicePage: React.FC = () => {
             </>
           }
         >
-          {device.services.sort(getSortOptions(sortService).sortService).map(s => {
+          {services.sort(getSortOptions(sortService).sortService).map(s => {
             const c = connections?.find(c => c.id === s.id)
             let pathname = `/devices/${device.id}/${s.id}${servicePage}`
             if (pathname === location.pathname) pathname = `/devices/${device.id}/${s.id}/connect`

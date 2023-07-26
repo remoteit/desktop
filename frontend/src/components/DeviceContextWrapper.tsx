@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import structuredClone from '@ungap/structured-clone'
 import { selectById, selectDevice } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'
@@ -63,9 +62,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   }, [deviceID, serviceID, waiting, thisId, instance?.loaded, device?.loaded])
 
   return (
-    <DeviceContext.Provider
-      value={{ user, service, connection, network, device: structuredClone(device), connections, instance, waiting }}
-    >
+    <DeviceContext.Provider value={{ user, service, connection, network, device, connections, instance, waiting }}>
       {children}
     </DeviceContext.Provider>
   )

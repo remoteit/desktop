@@ -171,15 +171,6 @@ export const attributes: Attribute[] = [
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
   }),
-  new DeviceAttribute({
-    id: 'deviceTimeSeries',
-    query: 'timeSeries',
-    label: <GraphTitle />,
-    column: false,
-    value: ({ device }) => (
-      <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} variant="large" />
-    ),
-  }),
   new InstanceAttribute({
     id: 'permissions',
     label: 'Permissions',
@@ -413,11 +404,6 @@ export const attributes: Attribute[] = [
     id: 'license',
     label: 'License',
     value: ({ service }) => <LicenseChip license={service?.license} />,
-  }),
-  new ServiceAttribute({
-    id: 'serviceTimeSeries',
-    label: <GraphTitle variant="service" />,
-    value: ({ service }) => <TimeSeries timeSeries={service?.timeSeries} variant="large" />,
   }),
   new ConnectionAttribute({
     id: 'duration',

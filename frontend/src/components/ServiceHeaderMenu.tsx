@@ -72,7 +72,6 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
                   label="Local endpoint"
                   value={`${service?.host || '127.0.0.1'}:${service?.port}`}
                   showBackground
-                  alwaysWhite
                   fullWidth
                 />
                 <Typography variant="caption" display="block" marginTop={2} marginBottom={1}>

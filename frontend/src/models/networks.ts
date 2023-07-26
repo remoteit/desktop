@@ -1,6 +1,7 @@
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { isPortal } from '../services/Browser'
+import { limitTimeSeries } from '../helpers/dateHelper'
 import { ApplicationState } from '../store'
 import { selectNetworks } from '../selectors/networks'
 import { selectConnection } from '../selectors/connections'
@@ -105,7 +106,7 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId)
+      const response = await graphQLPreloadNetworks(accountId, limitTimeSeries(state, state.ui.deviceTimeSeries))
 
       if (response === 'ERROR') return
 
@@ -119,7 +120,13 @@ export default createModel<RootModel>()({
 
       const accountId = getActiveAccountId(state)
       dispatch.devices.set({ fetching: true, accountId })
-      const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId)
+      const gqlResponse = await graphQLFetchNetworkServices(
+        network.id,
+        accountId,
+        limitTimeSeries(state, state.ui.serviceTimeSeries),
+        limitTimeSeries(state, state.ui.deviceTimeSeries)
+      )
+
       if (gqlResponse === 'ERROR') {
         if (redirect) dispatch.ui.set({ redirect })
         return

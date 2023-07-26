@@ -76,14 +76,10 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingRight: dense ? spacing.md : spacing.lg,
     width: fullWidth ? '100%' : undefined,
     marginBottom: gutterBottom ? spacing.sm : undefined,
-    backgroundColor: showBackground ? (alwaysWhite ? palette.screen.main : palette.grayLightest.main) : undefined,
+    backgroundColor: showBackground ? palette.screen.main : undefined,
     '& .MuiTypography-root > *': { color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main },
     '&:hover': {
-      backgroundColor: showBackground
-        ? alwaysWhite
-          ? alpha(palette.alwaysWhite.main, 0.1)
-          : palette.primaryHighlight.main
-        : undefined,
+      backgroundColor: showBackground ? alpha(palette.black.main, 0.1) : undefined,
     },
     '& svg': { minWidth: 60 },
   }),
