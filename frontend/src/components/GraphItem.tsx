@@ -19,7 +19,7 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
 
   return (
     <Collapse in={!!instance.timeSeries}>
-      <Gutters bottom="lg">
+      <Gutters bottom="md">
         <Typography variant="subtitle2" marginRight={-2} gutterBottom>
           <Title>
             <GraphTitle variant={variant} />
