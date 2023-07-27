@@ -78,7 +78,7 @@ export const Router: React.FC = () => {
       ui.set({ redirect: undefined })
     }
     emit('navigate', 'STATUS')
-  }, [history, ui, redirect])
+  }, [history.location, ui, redirect])
 
   return (
     <Switch>
