@@ -11,7 +11,6 @@ import { ReactiveTags } from './ReactiveTags'
 import { GraphColumn } from './GraphColumn'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
-import { GraphTitle } from './GraphTitle'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
@@ -22,7 +21,6 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
-import { Icon } from './Icon'
 
 export class Attribute {
   id: string = ''
@@ -125,6 +123,12 @@ export const attributes: Attribute[] = [
     value: ({ device, connection }) => <StatusChip device={device} connection={connection} />,
   }),
   new Attribute({
+    id: 'timeSeries',
+    query: 'timeSeries',
+    label: <GraphColumn />,
+    value: ({ device }) => <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />,
+  }),
+  new Attribute({
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
@@ -137,12 +141,6 @@ export const attributes: Attribute[] = [
     label: 'Quality',
     defaultWidth: 120,
     value: ({ device }) => <QualityDetails device={device} small />,
-  }),
-  new Attribute({
-    id: 'timeSeries',
-    query: 'timeSeries',
-    label: <GraphColumn />,
-    value: ({ device }) => <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />,
   }),
   new Attribute({
     id: 'services',

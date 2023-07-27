@@ -1,6 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
 import { emit } from '../services/Controller'
-import { getStart } from '../helpers/dateHelper'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
@@ -117,7 +116,7 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'status', 'tags', 'services'],
+  columns: ['deviceName', 'status', 'timeSeries', 'tags', 'services'],
   columnWidths: { tags: 120 },
   collapsed: ['recent'],
   limitsOverride: {},
@@ -164,8 +163,8 @@ export const defaultState: UIState = {
   autoCopy: false,
   updateNoticeCleared: undefined,
   showRestoreModal: false,
-  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', start: getStart('DAY') },
-  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', start: getStart('DAY') },
+  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', length: 7 },
+  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', length: 7 },
   connectThisDevice: false,
 }
 
