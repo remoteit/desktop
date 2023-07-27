@@ -32,7 +32,7 @@ export const SERVICE_SELECT = `
   protocol
   attributes
   presenceAddress
-  timeSeries(type: $serviceTSType, resolution: $serviceTSResolution, start: $serviceTSStart, timezone: "${getTimeZone()}") {
+  timeSeries(type: $serviceTSType, resolution: $serviceTSResolution, length: $serviceTSLength, timezone: "${getTimeZone()}") {
     type
     resolution
     start
@@ -132,7 +132,7 @@ const DeviceSelectLookup: ILookup<string> = {
   }`,
 
   timeSeries: `
-  timeSeries(type: $deviceTSType, resolution: $deviceTSResolution, start: $deviceTSStart, timezone: "${getTimeZone()}") {
+  timeSeries(type: $deviceTSType, resolution: $deviceTSResolution, length: $deviceTSLength, timezone: "${getTimeZone()}") {
     type
     resolution
     start
@@ -148,9 +148,9 @@ export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .join('')
 
 const DEVICE_TIME_SERIES_PARAMS =
-  ', $deviceTSType: TimeSeriesType!, $deviceTSResolution: TimeSeriesResolution!, $deviceTSStart: DateTime!'
+  ', $deviceTSType: TimeSeriesType!, $deviceTSResolution: TimeSeriesResolution!, $deviceTSLength: Int'
 const SERVICE_TIME_SERIES_PARAMS =
-  ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSStart: DateTime!'
+  ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   const selectedColumns = store.getState().ui.columns
@@ -180,7 +180,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
-      deviceTSStart: params.timeSeries?.start,
+      deviceTSLength: params.timeSeries?.length,
       deviceTSType: params.timeSeries?.type,
       deviceTSResolution: params.timeSeries?.resolution,
     }
@@ -208,7 +208,7 @@ export async function graphQLPreloadDevices(params: {
       }`,
     {
       ...params,
-      deviceTSStart: params.timeSeries?.start,
+      deviceTSLength: params.timeSeries?.length,
       deviceTSType: params.timeSeries?.type,
       deviceTSResolution: params.timeSeries?.resolution,
     }
@@ -257,7 +257,7 @@ export async function graphQLPreloadNetworks(accountId: string, timeSeries?: ITi
     }`,
     {
       accountId,
-      deviceTSStart: timeSeries?.start,
+      deviceTSLength: timeSeries?.length,
       deviceTSType: timeSeries?.type,
       deviceTSResolution: timeSeries?.resolution,
     }
@@ -302,10 +302,10 @@ export async function graphQLFetchFullDevice(
     {
       id,
       accountId,
-      deviceTSStart: deviceTimeSeries?.start,
+      deviceTSLength: deviceTimeSeries?.length,
       deviceTSType: deviceTimeSeries?.type,
       deviceTSResolution: deviceTimeSeries?.resolution,
-      serviceTSStart: serviceTimeSeries?.start,
+      serviceTSLength: serviceTimeSeries?.length,
       serviceTSType: serviceTimeSeries?.type,
       serviceTSResolution: serviceTimeSeries?.resolution,
     }
@@ -340,10 +340,10 @@ export async function graphQLFetchNetworkServices(
     {
       id,
       accountId,
-      deviceTSStart: deviceTimeSeries?.start,
+      deviceTSLength: deviceTimeSeries?.length,
       deviceTSType: deviceTimeSeries?.type,
       deviceTSResolution: deviceTimeSeries?.resolution,
-      serviceTSStart: serviceTimeSeries?.start,
+      serviceTSLength: serviceTimeSeries?.length,
       serviceTSType: serviceTimeSeries?.type,
       serviceTSResolution: serviceTimeSeries?.resolution,
     }

@@ -372,8 +372,8 @@ declare global {
   type ITimeSeriesOptions = {
     type: ITimeSeriesType
     resolution: ITimeSeriesResolution
+    length: number
     timezone?: string
-    start?: Date
   }
 
   type ITimeSeriesResolution = 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR'

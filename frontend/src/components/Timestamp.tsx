@@ -1,6 +1,6 @@
 import React from 'react'
 
-type FormatProp = 'numeric' | 'short' | 'long'
+type FormatProp = 'numeric' | 'minutes' | 'short' | 'long'
 type Props = { time?: number; date?: Date; variant?: FormatProp }
 
 export const timeOptions: ILookup<Intl.DateTimeFormatOptions, FormatProp> = {
@@ -11,6 +11,13 @@ export const timeOptions: ILookup<Intl.DateTimeFormatOptions, FormatProp> = {
     hour: 'numeric',
     minute: 'numeric',
     second: 'numeric',
+  },
+  minutes: {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
   },
   short: {
     year: 'numeric',

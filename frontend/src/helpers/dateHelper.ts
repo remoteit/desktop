@@ -32,21 +32,21 @@ export const getTimeZone = () => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
-export function limitTimeSeries(state: ApplicationState, timeSeries: ITimeSeriesOptions): ITimeSeriesOptions {
-  const defaultDuration = getMaxDuration(timeSeries.resolution)
-  const logLimit = selectLimit('log-limit', state)
-  const logLimitDuration = Duration.fromISO(logLimit)
-  const shortestDuration = defaultDuration.valueOf() < logLimitDuration.valueOf() ? defaultDuration : logLimitDuration
-  const start = DateTime.local().minus(shortestDuration).toJSDate()
-  return { ...timeSeries, start }
-}
+// export function limitTimeSeries(state: ApplicationState, timeSeries: ITimeSeriesOptions): ITimeSeriesOptions {
+//   const defaultDuration = getMaxDuration(timeSeries.resolution)
+//   const logLimit = selectLimit('log-limit', state)
+//   const logLimitDuration = Duration.fromISO(logLimit)
+//   const shortestDuration = defaultDuration.valueOf() < logLimitDuration.valueOf() ? defaultDuration : logLimitDuration
+//   const start = DateTime.local().minus(shortestDuration).toJSDate()
+//   return { ...timeSeries, start }
+// }
+
+// export const getDuration = (unit: ITimeSeriesResolution) => {
+//   return Duration.fromObject({ [TimeSeriesResolutionLookup[unit]]: 1 })
+// }
 
 export const getStart = (resolution: ITimeSeriesResolution) => {
   return DateTime.local().minus(getMaxDuration(resolution)).toJSDate()
-}
-
-export const getDuration = (unit: ITimeSeriesResolution) => {
-  return Duration.fromObject({ [TimeSeriesResolutionLookup[unit]]: 1 })
 }
 
 export const getMaxDuration = (unit: ITimeSeriesResolution) => {
@@ -64,6 +64,17 @@ export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
   WEEK: 'w',
   MONTH: 'mo',
   QUARTER: 'mo',
+  YEAR: 'y',
+}
+
+export const humanizeMaxResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
+  SECOND: 'm',
+  MINUTE: 'h',
+  HOUR: 'd',
+  DAY: 'w',
+  WEEK: 'mo',
+  MONTH: 'y',
+  QUARTER: 'y',
   YEAR: 'y',
 }
 
@@ -89,24 +100,35 @@ export const TimeSeriesTypeLookup: ILookup<string, ITimeSeriesType> = {
   DISCONNECT: 'Number of disconnect events',
 }
 
-export const TimeSeriesResolutionLookup: ILookup<string, ITimeSeriesResolution> = {
-  SECOND: 'Second',
+export const TimeSeriesAvailableResolutions: Partial<ILookup<string, ITimeSeriesResolution>> = {
+  // SECOND: 'Second',
   MINUTE: 'Minute',
   HOUR: 'Hour',
   DAY: 'Day',
   WEEK: 'Week',
   MONTH: 'Month',
-  QUARTER: 'Quarter',
-  YEAR: 'Year',
+  // QUARTER: 'Quarter',
+  // YEAR: 'Year',
 }
 
-const resolutionMaxLookup: ILookup<string, ITimeSeriesResolution> = {
-  SECOND: 'hours',
-  MINUTE: 'days',
-  HOUR: 'weeks',
-  DAY: 'months',
-  WEEK: 'quarters',
-  MONTH: 'years',
+export const TimeSeriesLengths: ILookup<number[], ITimeSeriesResolution> = {
+  SECOND: [60],
+  MINUTE: [60],
+  HOUR: [12, 24, 48, 72],
+  DAY: [7, 14, 30],
+  WEEK: [4, 12],
+  MONTH: [12],
+  QUARTER: [4],
+  YEAR: [1],
+}
+
+export const resolutionMaxLookup: ILookup<string, ITimeSeriesResolution> = {
+  SECOND: 'minutes',
+  MINUTE: 'hours',
+  HOUR: 'days',
+  DAY: 'weeks',
+  WEEK: 'months',
+  MONTH: 'quarters',
   QUARTER: 'years',
   YEAR: 'years',
 }

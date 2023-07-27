@@ -1,5 +1,4 @@
 import structuredClone from '@ungap/structured-clone'
-import { limitTimeSeries } from '../helpers/dateHelper'
 import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
   graphQLDeleteDevice,
@@ -120,7 +119,7 @@ export default createModel<RootModel>()({
         tag: deviceModel.tag,
         sort: deviceModel.sort,
         platform: deviceModel.platform,
-        timeSeries: limitTimeSeries(state, state.ui.deviceTimeSeries),
+        timeSeries: state.ui.deviceTimeSeries,
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
       }
@@ -159,7 +158,7 @@ export default createModel<RootModel>()({
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
         ids,
-        timeSeries: limitTimeSeries(state, state.ui.deviceTimeSeries),
+        timeSeries: state.ui.deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
@@ -205,8 +204,8 @@ export default createModel<RootModel>()({
         const gqlResponse = await graphQLFetchFullDevice(
           id,
           accountId,
-          limitTimeSeries(state, state.ui.serviceTimeSeries),
-          limitTimeSeries(state, state.ui.deviceTimeSeries)
+          state.ui.serviceTimeSeries,
+          state.ui.deviceTimeSeries
         )
         errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}

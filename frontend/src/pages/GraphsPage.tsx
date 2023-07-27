@@ -1,5 +1,4 @@
 import React from 'react'
-import { getStart } from '../helpers/dateHelper'
 import { Container } from '../components/Container'
 import { selectLimit, humanizeDays } from '../models/plans'
 import { Dispatch, ApplicationState } from '../store'
@@ -13,12 +12,12 @@ import { Title } from '../components/Title'
 const defaultDeviceTimeSeries: ITimeSeriesOptions = {
   type: 'ONLINE_DURATION',
   resolution: 'DAY',
-  start: getStart('DAY'),
+  length: 7,
 }
 const defaultServiceTimeSeries: ITimeSeriesOptions = {
   type: 'CONNECT_DURATION',
   resolution: 'DAY',
-  start: getStart('DAY'),
+  length: 7,
 }
 
 export const GraphsPage: React.FC = () => {
@@ -42,7 +41,7 @@ export const GraphsPage: React.FC = () => {
       </Notice>
       <Typography variant="subtitle1">Device list and details</Typography>
       <TimeSeriesSelect
-        timeSeries={timeSeries.deviceTimeSeries}
+        timeSeriesOptions={timeSeries.deviceTimeSeries}
         logLimit={logLimit}
         defaults={defaultDeviceTimeSeries}
         onChange={async value => {
@@ -52,7 +51,7 @@ export const GraphsPage: React.FC = () => {
       />
       <Typography variant="subtitle1">Service details</Typography>
       <TimeSeriesSelect
-        timeSeries={timeSeries.serviceTimeSeries}
+        timeSeriesOptions={timeSeries.serviceTimeSeries}
         logLimit={logLimit}
         defaults={defaultServiceTimeSeries}
         onChange={async value => {

@@ -23,7 +23,6 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
 
   if (!timeSeries) return null
 
-  // disable calculated fixed max value - getDuration(timeSeries?.resolution || 'DAY').as('seconds')
   const max = Math.max(d3.max(timeSeries?.data), 0.1)
 
   if (variant === 'small')
@@ -63,13 +62,17 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
         </Typography>
       </Stack>
       {display && (
-        <Typography variant="caption" sx={{ marginBottom: 3 }}>
-          <Timestamp
-            date={display[0]}
-            variant={secondResolutions.includes(timeSeries.resolution) ? 'numeric' : 'short'}
-          />
-          <Box>{barDisplay(timeSeries.type, display[1])}</Box>
-        </Typography>
+        <Box marginBottom={3}>
+          <Typography variant="caption">
+            <Timestamp
+              date={display[0]}
+              variant={secondResolutions.includes(timeSeries.resolution) ? 'minutes' : 'short'}
+            />
+          </Typography>
+          <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
+            {barDisplay(timeSeries.type, display[1])}
+          </Typography>
+        </Box>
       )}
     </Stack>
   )
