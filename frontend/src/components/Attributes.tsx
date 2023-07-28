@@ -21,6 +21,7 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
+import { Link } from './Link'
 
 export class Attribute {
   id: string = ''
@@ -126,7 +127,15 @@ export const attributes: Attribute[] = [
     id: 'timeSeries',
     query: 'timeSeries',
     label: <GraphColumn />,
-    value: ({ device }) => <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />,
+    value: ({ device }) => (
+      <Link
+        to={`/devices/${device?.id}/details`}
+        onClick={event => event.stopPropagation()}
+        sx={{ position: 'relative', zIndex: 3 }}
+      >
+        <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />
+      </Link>
+    ),
   }),
   new Attribute({
     id: 'tags',

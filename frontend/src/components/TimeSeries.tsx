@@ -25,12 +25,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
 
   const max = Math.max(d3.max(timeSeries?.data), 0.1)
 
-  if (variant === 'small')
-    return (
-      <Stack>
-        <BarGraph {...props} data={timeSeries} color={color} max={max} />
-      </Stack>
-    )
+  if (variant === 'small') return <BarGraph {...props} data={timeSeries} color={color} max={max} />
 
   return (
     <Stack direction="row">
