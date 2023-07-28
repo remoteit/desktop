@@ -42,8 +42,9 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
           onSubmit={async form => {
             dispatch.ui.set({ setupServiceBusy: form.id })
             if (device?.permissions.includes('MANAGE')) {
-              service.attributes = { ...service.attributes, ...form.attributes }
-              await dispatch.devices.setServiceAttributes(service)
+              const updatedService = structuredClone(service)
+              updatedService.attributes = { ...service.attributes, ...form.attributes }
+              await dispatch.devices.setServiceAttributes(updatedService)
               if (device.configurable) {
                 await dispatch.devices.cloudUpdateService({ form, deviceId: device.id })
               } else {
