@@ -721,7 +721,11 @@ declare global {
 
   type INumberLookup<T> = { [key: number]: T }
 
-  type ISelect = { [key: string]: string | number }
+  type ISelect = {
+    key: string | number
+    name: string | number | React.ReactNode
+    disabled?: boolean
+  }
 
   type IGuide = {
     step: number

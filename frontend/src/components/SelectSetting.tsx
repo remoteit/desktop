@@ -73,7 +73,7 @@ export const SelectSetting: React.FC<Props> = ({
         }}
       >
         {values.map(type => (
-          <MenuItem value={type.key} key={type.key}>
+          <MenuItem value={type.key} key={type.key} disabled={type.disabled}>
             <ListItemText>
               {type.name}
               {defaultValue === type.key && modified && (

@@ -29,7 +29,7 @@ export const InlineSelectSetting: React.FC<Props> = ({
     <InlineSetting
       {...props}
       label={label}
-      value={values.find(v => v.key === value)?.name}
+      value={values.find(v => v.key === value)?.name as string}
       fieldRef={fieldRef}
       resetValue={resetValue}
       onResetClick={() => setEditValue(resetValue)}

@@ -1,15 +1,8 @@
 import React from 'react'
-import {
-  TimeSeriesTypeLookup,
-  TimeSeriesAvailableResolutions,
-  humanizeMaxResolutionLookup,
-  TimeSeriesLengths,
-  getMaxDuration,
-} from '../helpers/dateHelper'
-import { Typography, List } from '@mui/material'
+import { TimeSeriesTypeLookup, TimeSeriesAvailableResolutions, TimeSeriesLengths } from '../helpers/dateHelper'
 import { SelectSetting } from './SelectSetting'
-import { Gutters } from './Gutters'
-import humanize from 'humanize-duration'
+import { Duration } from 'luxon'
+import { List } from '@mui/material'
 
 type Props = {
   timeSeriesOptions: ITimeSeriesOptions
@@ -19,6 +12,7 @@ type Props = {
 }
 
 export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit, defaults, onChange }) => {
+  const limitDuration = Duration.fromISO(logLimit)
   return (
     <List>
       <SelectSetting
@@ -34,10 +28,14 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         label="Graph unit"
         value={timeSeriesOptions.resolution}
         defaultValue={defaults.resolution}
-        values={Object.keys(TimeSeriesAvailableResolutions).map(key => ({
-          key,
-          name: TimeSeriesAvailableResolutions[key],
-        }))}
+        values={Object.keys(TimeSeriesAvailableResolutions).map(key => {
+          const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
+          return {
+            key,
+            name: TimeSeriesAvailableResolutions[key] + (disabled ? ' (over limit)' : ''),
+            disabled,
+          }
+        })}
         onChange={value =>
           onChange?.({
             ...timeSeriesOptions,
@@ -51,22 +49,19 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         label="Graph length"
         value={timeSeriesOptions.length}
         defaultValue={defaults.length}
-        values={TimeSeriesLengths[timeSeriesOptions.resolution].map(key => ({
-          key,
-          name: `${key} ${TimeSeriesAvailableResolutions[timeSeriesOptions.resolution]}s`,
-        }))}
+        values={TimeSeriesLengths[timeSeriesOptions.resolution].map(key => {
+          const disabled =
+            limitDuration.valueOf() < Duration.fromObject({ [timeSeriesOptions.resolution]: key }).valueOf()
+          return {
+            key,
+            name: `${key} ${TimeSeriesAvailableResolutions[timeSeriesOptions.resolution]}s${
+              disabled ? ' (over limit)' : ''
+            }`,
+            disabled,
+          }
+        })}
         onChange={value => onChange?.({ ...timeSeriesOptions, length: +value })}
       />
-      <Gutters top={null} bottom={null} inset="icon">
-        <Typography variant="caption" color="textSecondary">
-          View last&nbsp;
-          {humanize(getMaxDuration(timeSeriesOptions.resolution).toMillis(), {
-            largest: 1,
-            round: true,
-            units: [humanizeMaxResolutionLookup[timeSeriesOptions.resolution || 'DAY']],
-          })}
-        </Typography>
-      </Gutters>
     </List>
   )
 }

@@ -8,15 +8,12 @@ import { Dispatch, ApplicationState } from '../../store'
 import isURL from 'validator/lib/isURL'
 
 export const NotificationMode: React.FC = () => {
-  const {
-    notificationUrl = '',
-    urlNotifications = false,
-    emailNotifications = false,
-    desktopNotifications = false,
-  } = useSelector((state: ApplicationState) => state.user.notificationSettings)
+  const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
+    (state: ApplicationState) => state.user.notificationSettings
+  )
   const dispatch = useDispatch<Dispatch>()
   const { updateNotificationSettings } = dispatch.user
-  const [webHookUrl, setWebhookUrl] = useState(notificationUrl)
+  const [webHookUrl, setWebhookUrl] = useState<string>(notificationUrl || '')
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState(false)
   const changed = webHookUrl !== notificationUrl
@@ -28,7 +25,7 @@ export const NotificationMode: React.FC = () => {
   }
 
   useEffect(() => {
-    setWebhookUrl(notificationUrl)
+    setWebhookUrl(notificationUrl || '')
   }, [notificationUrl])
 
   const onEmailChange = (value: boolean) => {
