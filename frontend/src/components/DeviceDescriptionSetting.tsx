@@ -20,8 +20,9 @@ export const DeviceDescriptionSetting: React.FC = () => {
       resetValue={device.attributes.description}
       maxLength={MAX_DESCRIPTION_LENGTH}
       onSave={description => {
-        device.attributes = { ...device.attributes, description: description.toString() }
-        devices.setAttributes(device)
+        const updated = structuredClone(device)
+        updated.attributes = { ...device.attributes, description: description.toString() }
+        devices.setAttributes(updated)
       }}
     />
   )

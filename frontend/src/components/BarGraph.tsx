@@ -8,6 +8,7 @@ export type BarGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   width?: number
   height?: number
   max?: number
+  min?: number
   color?: Color
   onHover?: (value?: [Date, number]) => void
 }
@@ -17,22 +18,22 @@ export const BarGraph: React.FC<BarGraphProps> = ({
   width = 100,
   height = 18,
   max,
+  min,
   color = 'grayDark',
   onHover,
   ...props
 }) => {
   const theme = useTheme()
   const css = useStyles({ height })
-
   const [bars, setBars] = useState<{ x: number; y: number; width: number; height: number }[]>([])
+
+  max ||= Math.max(d3.max(data.data), 0.1)
+  min ||= 0 // Math.max(d3.min(data.data), 0)
 
   useEffect(() => {
     const xScale = d3.scaleBand().domain(data.time).range([0, width])
 
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, max || Math.max(d3.max(data.data), 0.1)])
-      .range([height, 0])
+    const yScale = d3.scaleLinear().domain([min, max]).range([height, 0])
 
     const newBars = data.data.map((d, i) => {
       const x = xScale(data.time[i])

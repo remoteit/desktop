@@ -24,6 +24,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
   if (!timeSeries) return null
 
   const max = Math.max(d3.max(timeSeries?.data), 0.1)
+  const min = 0 // Math.max(d3.min(timeSeries?.data), 0)
 
   if (variant === 'small') return <BarGraph {...props} data={timeSeries} color={color} max={max} />
 
@@ -34,7 +35,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
           {yAxisDisplay(timeSeries, max)}
         </Typography>
         <Typography variant="caption" textAlign="right">
-          0
+          {yAxisDisplay(timeSeries, min)}
         </Typography>
       </Stack>
       <Stack spacing={0.5} marginRight={2}>
@@ -45,6 +46,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
           height={40}
           width={200}
           max={max}
+          min={min}
           onHover={(value?: [Date, number]) => setDisplay(value)}
         />
         <Typography variant="caption" textAlign="center">
