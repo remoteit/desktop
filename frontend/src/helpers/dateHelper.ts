@@ -90,14 +90,14 @@ export const TimeSeriesTypeScale: ILookup<ITimeSeriesScale, ITimeSeriesType> = {
 }
 
 export const TimeSeriesTypeLookup: ILookup<string, ITimeSeriesType> = {
-  AVAILABILITY: 'Online percentage',
-  ONLINE_DURATION: 'Online duration',
-  ONLINE: 'Number of online events',
-  OFFLINE: 'Number of offline events',
-  USAGE: 'Connected percentage',
-  CONNECT_DURATION: 'Connected duration',
-  CONNECT: 'Number of connection events',
-  DISCONNECT: 'Number of disconnect events',
+  AVAILABILITY: 'Online %',
+  ONLINE_DURATION: 'Online Time',
+  ONLINE: 'Online events',
+  OFFLINE: 'Offline events',
+  USAGE: 'Connected %',
+  CONNECT_DURATION: 'Connected Time',
+  CONNECT: 'Connect events',
+  DISCONNECT: 'Disconnect events',
 }
 
 export const TimeSeriesAvailableResolutions: Partial<ILookup<string, ITimeSeriesResolution>> = {
