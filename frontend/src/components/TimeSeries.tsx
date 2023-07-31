@@ -29,48 +29,50 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
   if (variant === 'small') return <BarGraph {...props} data={timeSeries} color={color} max={max} />
 
   return (
-    <Stack direction="row">
-      <Stack maxWidth={60} minWidth={20} marginBottom={3} marginRight={1} height={45} justifyContent="space-between">
+    <Stack direction="row" flexWrap="nowrap">
+      <Stack width={60} minWidth={60} marginBottom={3} marginRight={1} height={45} justifyContent="space-between">
         <Typography variant="caption" textAlign="right">
           {yAxisDisplay(timeSeries, max)}
         </Typography>
         <Typography variant="caption" textAlign="right">
-          {yAxisDisplay(timeSeries, min)}
+          {min}
         </Typography>
       </Stack>
-      <Stack spacing={0.5} marginRight={2}>
-        <BarGraph
-          {...props}
-          data={timeSeries}
-          color={color}
-          height={40}
-          width={200}
-          max={max}
-          min={min}
-          onHover={(value?: [Date, number]) => setDisplay(value)}
-        />
-        <Typography variant="caption" textAlign="center">
-          Last&nbsp;
-          {humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
-            largest: 1,
-            round: true,
-            units: [humanizeResolutionLookup[timeSeries.resolution || 'DAY']],
-          })}
-        </Typography>
+      <Stack direction="row" flexWrap="wrap">
+        <Stack spacing={0.5} marginRight={2}>
+          <BarGraph
+            {...props}
+            data={timeSeries}
+            color={color}
+            height={40}
+            width={200}
+            max={max}
+            min={min}
+            onHover={(value?: [Date, number]) => setDisplay(value)}
+          />
+          <Typography variant="caption" textAlign="center">
+            Last&nbsp;
+            {humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
+              largest: 1,
+              round: true,
+              units: [humanizeResolutionLookup[timeSeries.resolution || 'DAY']],
+            })}
+          </Typography>
+        </Stack>
+        {display && (
+          <Box marginBottom={3} flexGrow={1} minWidth={150}>
+            <Typography variant="caption">
+              <Timestamp
+                date={display[0]}
+                variant={secondResolutions.includes(timeSeries.resolution) ? 'minutes' : 'short'}
+              />
+            </Typography>
+            <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
+              {barDisplay(timeSeries.type, display[1])}
+            </Typography>
+          </Box>
+        )}
       </Stack>
-      {display && (
-        <Box marginBottom={3}>
-          <Typography variant="caption">
-            <Timestamp
-              date={display[0]}
-              variant={secondResolutions.includes(timeSeries.resolution) ? 'minutes' : 'short'}
-            />
-          </Typography>
-          <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
-            {barDisplay(timeSeries.type, display[1])}
-          </Typography>
-        </Box>
-      )}
     </Stack>
   )
 }
