@@ -13,7 +13,7 @@ import { REGEX_LAST_PATH } from '../../shared/constants'
 import { Icon } from '../Icon'
 import { Link } from '../Link'
 
-const BASE_TITLE = 'Remote.It'
+const BASE_TITLE = 'Remote.It Application'
 
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
