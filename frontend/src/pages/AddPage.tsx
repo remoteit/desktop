@@ -14,6 +14,7 @@ import { IconButton } from '../buttons/IconButton'
 import { platforms } from '../platforms'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
+import { TestUI } from '../components/TestUI'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
@@ -24,9 +25,10 @@ export const AddPage: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo, testUI } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
+    testUI: state.ui.testUI,
   }))
 
   const handleClose = () => {
@@ -138,6 +140,7 @@ export const AddPage: React.FC = () => {
             'nas',
             'openwrt',
             'firewalla',
+            'android',
             'tinkerboard',
             'ubiquiti',
             'nvidia',
@@ -149,7 +152,10 @@ export const AddPage: React.FC = () => {
             'mac',
           ].map(p => {
             const platform = platforms.get(p)
-            return (
+            const isTestPlatform = ['android'].includes(p)
+            console.log('PLATFORM', { p, isTestPlatform, testUI })
+            if (isTestPlatform && !testUI) return null
+            const platformIcon = (
               <ListItemLocation
                 key={p}
                 iconPlatform
@@ -161,6 +167,7 @@ export const AddPage: React.FC = () => {
                 disableGutters
               />
             )
+            return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
           })}
         </ListHorizontal>
       </Gutters>
