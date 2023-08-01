@@ -316,6 +316,7 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'Screen Sharing',
         appLaunchType: 'URL',
+        appLaunchTemplate: 'http://[host]:[port]',
       })
     default:
       return new Application({})
