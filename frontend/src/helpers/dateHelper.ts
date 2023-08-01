@@ -102,7 +102,7 @@ export const TimeSeriesTypeLookup: ILookup<string, ITimeSeriesType> = {
 
 export const TimeSeriesAvailableResolutions: Partial<ILookup<string, ITimeSeriesResolution>> = {
   // SECOND: 'Second',
-  MINUTE: 'Minute',
+  // MINUTE: 'Minute',
   HOUR: 'Hour',
   DAY: 'Day',
   WEEK: 'Week',
@@ -114,7 +114,7 @@ export const TimeSeriesAvailableResolutions: Partial<ILookup<string, ITimeSeries
 export const TimeSeriesLengths: ILookup<number[], ITimeSeriesResolution> = {
   SECOND: [60],
   MINUTE: [60],
-  HOUR: [12, 24, 48, 72],
+  HOUR: [12, 24, 48],
   DAY: [7, 14, 30],
   WEEK: [4, 12],
   MONTH: [12],
