@@ -153,7 +153,6 @@ export const AddPage: React.FC = () => {
           ].map(p => {
             const platform = platforms.get(p)
             const isTestPlatform = ['android'].includes(p)
-            console.log('PLATFORM', { p, isTestPlatform, testUI })
             if (isTestPlatform && !testUI) return null
             const platformIcon = (
               <ListItemLocation

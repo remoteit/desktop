@@ -1,5 +1,4 @@
 import { emit } from '../services/Controller'
-import { toLookup } from '../helpers/utilHelper'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'

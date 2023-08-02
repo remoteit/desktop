@@ -16,6 +16,7 @@ import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
 
+console.log('ENVIRONMENT', environment())
 if (environment() !== 'development') analytics.initialize()
 
 const root = createRoot(document.getElementById('root')!)

@@ -3,6 +3,7 @@ import { emit } from '../services/Controller'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
+import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
@@ -77,6 +78,9 @@ export const Router: React.FC = () => {
       history.push(redirect)
       ui.set({ redirect: undefined })
     }
+    // track what page is viewed
+    if (window.clarity) window.clarity('set', 'page', location.pathname.match(REGEX_FIRST_PATH)?.[0])
+    // update navigation state
     emit('navigate', 'STATUS')
   }, [history.location, ui, redirect])
 
