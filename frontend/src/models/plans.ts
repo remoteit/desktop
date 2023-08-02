@@ -41,6 +41,11 @@ export const LicenseLookup: ILicenseLookup[] = [
   },
 ]
 
+const DEVICES_LOOKUP = {
+  [PROFESSIONAL_PLAN_ID]: { base: 5, perUser: 3 },
+  [BUSINESS_PLAN_ID]: { base: 5, perUser: 10 },
+}
+
 const defaultLicense = LicenseLookup[0]
 
 type IPlans = {
@@ -335,4 +340,10 @@ export function limitDays(value?: string) {
 export function humanizeDays(value?: string) {
   const milliseconds = limitDays(value) * 8.64e7
   return humanize(milliseconds, { round: true, largest: 1 })
+}
+
+export function devicesTotal(quantity: number, id?: string) {
+  if (!id) return 0
+  const plan = DEVICES_LOOKUP[id] || { base: 5, perUser: 0 }
+  return plan.base + quantity * plan.perUser
 }
