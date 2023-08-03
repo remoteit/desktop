@@ -197,6 +197,8 @@ declare global {
     typeID?: number // service type ID
     updating?: boolean // waiting for cloud update
     username?: string // support for launching where username could be saved
+    rawEndpoint?: string // raw endpoint from cli
+    rawCommand?: string // raw connectd command from cli
     checkpoint?: {
       canBindToPortLocally: boolean
       connectdCanAuth: boolean

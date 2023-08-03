@@ -107,6 +107,24 @@ export const ConnectAdvanced: React.FC = () => {
               ))}
             </ListItemQuote>
             <ConnectionLogSetting connection={connection} service={service} />
+            {(connection.rawCommand || connection.rawEndpoint) && (
+              <>
+                <ListItem dense>
+                  <ListItemIcon>
+                    <Icon name="code" />
+                  </ListItemIcon>
+                  <ListItemText primary="Debugging" />
+                </ListItem>
+                <ListItemQuote>
+                  <ListItem disablePadding>
+                    <ListItemCopy value={connection.rawEndpoint} label="Agent Endpoint" hideIcon fullWidth dense />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemCopy value={connection.rawCommand} label="Agent Command" hideIcon fullWidth dense />
+                  </ListItem>
+                </ListItemQuote>
+              </>
+            )}
           </List>
         </AccordionMenuItem>
       )}
