@@ -12,6 +12,7 @@ const analytics = {
   },
 
   initializeClarity() {
+    // this also happens in the auth model - might be able to remove it here
     const user = store.getState().user
     if (window.clarity) window.clarity('set', 'user', user.email)
   },

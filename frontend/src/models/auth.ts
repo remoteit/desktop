@@ -200,6 +200,7 @@ export default createModel<RootModel>()({
         return
       }
 
+      window.clarity?.('set', 'user', state.auth.user?.email || 'unknown')
       zendesk.initChat(state.auth.user)
       dispatch.backend.set({ initialized: true })
       dispatch.ui.set({ fetching: true })
