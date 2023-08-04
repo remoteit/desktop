@@ -3,16 +3,19 @@ import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { selectPermissions } from '../selectors/organizations'
-import { IconButton } from '../buttons/IconButton'
+import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { spacing } from '../styling'
 
-export const RegisterMenu: React.FC = () => {
-  const css = useStyles()
+type Props = ButtonProps & { buttonSize?: number }
+
+export const RegisterMenu: React.FC<Props> = ({ buttonSize, ...props }) => {
+  const css = useStyles({ buttonSize })
   const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
   const disabled = !permissions?.includes('MANAGE')
 
   return (
     <IconButton
+      {...props}
       title={
         disabled ? (
           <>
@@ -37,10 +40,10 @@ export const RegisterMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  register: {
+  register: ({ buttonSize }: Props) => ({
     borderRadius: '50%',
     marginRight: spacing.xxs,
-    width: 40,
-    height: 40,
-  },
+    width: buttonSize,
+    height: buttonSize,
+  }),
 })
