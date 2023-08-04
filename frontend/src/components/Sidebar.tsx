@@ -41,7 +41,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </>
             }
           >
-            <RegisterMenu />
+            <RegisterMenu buttonSize={38} size="md" type="light" />
           </GuideBubble>
         </section>
         <SidebarNav />

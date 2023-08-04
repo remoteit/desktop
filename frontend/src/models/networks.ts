@@ -105,7 +105,7 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = getActiveAccountId(state)
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId)
+      const response = await graphQLPreloadNetworks(accountId, state.ui.deviceTimeSeries)
 
       if (response === 'ERROR') return
 
@@ -119,7 +119,13 @@ export default createModel<RootModel>()({
 
       const accountId = getActiveAccountId(state)
       dispatch.devices.set({ fetching: true, accountId })
-      const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId)
+      const gqlResponse = await graphQLFetchNetworkServices(
+        network.id,
+        accountId,
+        state.ui.serviceTimeSeries,
+        state.ui.deviceTimeSeries
+      )
+
       if (gqlResponse === 'ERROR') {
         if (redirect) dispatch.ui.set({ redirect })
         return

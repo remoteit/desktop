@@ -11,6 +11,7 @@ export const ServiceAttributes: React.FC<{
   let attributes = [
     'license',
     'owner',
+    'serviceTimeSeries',
     'serviceLastReported',
     'serviceCreated',
     'servicePort',

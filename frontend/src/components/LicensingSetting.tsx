@@ -1,10 +1,10 @@
 import React from 'react'
 import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@mui/material'
-import { dateOptions } from './Duration/Duration'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
+import { Timestamp } from './Timestamp'
 import { Link } from './Link'
 
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
@@ -25,8 +25,11 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
                 secondary={
                   !license.id
                     ? 'Not subscribed'
-                    : license.expiration &&
-                      `Renews ${license.expiration.toLocaleString(navigator.language, dateOptions)}`
+                    : license.expiration && (
+                        <>
+                          Renews <Timestamp date={license.expiration} variant="long" />
+                        </>
+                      )
                 }
               />
               <ListItemSecondaryAction>

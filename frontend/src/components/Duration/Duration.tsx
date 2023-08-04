@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useInterval } from '../../hooks/useInterval'
-import humanize from 'humanize-duration'
+import humanize, { HumanizerOptions } from 'humanize-duration'
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   weekday: 'long',
@@ -9,9 +9,23 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-type Props = { startTime?: number; endTime?: number; startDate?: Date; endDate?: Date; ago?: boolean }
+type Props = {
+  startTime?: number
+  endTime?: number
+  startDate?: Date
+  endDate?: Date
+  ago?: boolean
+  humanizeOptions?: HumanizerOptions
+}
 
-export const Duration: React.FC<Props> = ({ startTime, endTime, startDate, endDate, ago = false }) => {
+export const Duration: React.FC<Props> = ({
+  startTime,
+  endTime,
+  startDate,
+  endDate,
+  ago = false,
+  humanizeOptions = { largest: 2 },
+}) => {
   startTime = startTime || startDate?.getTime()
   endTime = endTime || endDate?.getTime()
   const [now, setNow] = useState<number>(endTime || Date.now())
@@ -27,7 +41,7 @@ export const Duration: React.FC<Props> = ({ startTime, endTime, startDate, endDa
   const display =
     duration > aDay
       ? new Date(startTime).toLocaleString(navigator.language, dateOptions)
-      : humanize(duration, { largest: 2 }) + (ago ? ' ago' : '')
+      : humanize(duration, humanizeOptions) + (ago ? ' ago' : '')
 
   return <>{display || '-'}</>
 }

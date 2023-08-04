@@ -44,7 +44,9 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
-        <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths }} />
+        <DeviceListContext.Provider value={{ device: devices[0] }}>
+          <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths }} />
+        </DeviceListContext.Provider>
         {devices?.map((device, index) => {
           const canRestore = isOffline(device) && !device.shared
           const isSelected = selected?.includes(device.id)

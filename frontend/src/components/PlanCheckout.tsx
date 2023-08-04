@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { PERSONAL_PLAN_ID, PROFESSIONAL_PLAN_ID, BUSINESS_PLAN_ID } from '../models/plans'
+import { PERSONAL_PLAN_ID, devicesTotal } from '../models/plans'
 import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -9,11 +9,6 @@ import { QuantitySelector } from './QuantitySelector'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 import { Pre } from './Pre'
-
-const DEVICES_LOOKUP = {
-  [PROFESSIONAL_PLAN_ID]: { base: 5, perUser: 3 },
-  [BUSINESS_PLAN_ID]: { base: 5, perUser: 10 },
-}
 
 type Props = {
   plans: IPlan[]
@@ -29,12 +24,6 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   const purchasing = useSelector((state: ApplicationState) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
-
-  const devicesTotal = (id?: string) => {
-    if (!id) return 0
-    const plan = DEVICES_LOOKUP[id] || { base: 5, perUser: 0 }
-    return plan.base + form.quantity * plan.perUser
-  }
 
   const setQuantity = (value: string | number) => {
     let quantity = Math.ceil(Math.max(Math.min(+value, 9999), 0))
@@ -127,7 +116,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           <Typography variant="h3">Devices</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3" display="flex" color="grayDarker.main">
-              {devicesTotal(selectedPlan?.id)}
+              {devicesTotal(form.quantity, selectedPlan?.id)}
               <Icon name="unknown" size="lg" platformIcon inline />
             </Typography>
           </ListItemSecondaryAction>

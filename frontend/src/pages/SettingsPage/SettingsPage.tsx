@@ -40,6 +40,7 @@ export const SettingsPage: React.FC = () => {
           dense
         />
         {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />}
+        <ListItemLocation title="Graphs" pathname="/settings/graphs" icon="chart-column" dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Connection Type Defaults"

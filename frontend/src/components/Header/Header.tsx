@@ -12,6 +12,7 @@ import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
+import { RegisterMenu } from '../RegisterMenu'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
 import { isElectron } from '../../services/Browser'
@@ -93,6 +94,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             </Route>
           </>
         )}
+        {sidebarHidden && <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />}
       </div>
       <UpgradeNotice />
     </>

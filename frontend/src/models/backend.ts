@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { setLocalStorage, getOs, isPortal } from '../services/Browser'
+import { selectDevice } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
@@ -87,7 +88,7 @@ export default createModel<RootModel>()({
       return result
     },
     async targetDeviceUpdated(newId: string, state) {
-      const { ui, backend, devices, connections } = dispatch
+      const { ui, backend, devices } = dispatch
       const { thisId } = state.backend
 
       if (newId !== thisId) {
@@ -99,10 +100,9 @@ export default createModel<RootModel>()({
           // deleted
         } else if (state.ui.setupDeletingDevice) {
           console.log('DELETE THIS DEVICE', thisId)
-          await connections.clearByDevice(thisId)
-          await sleep(2000)
-          await devices.fetchList()
-          await connections.fetch()
+          const device = await selectDevice(state, undefined, thisId)
+          if (device) await devices.destroy(device)
+          else console.warn('COULD NOT DELETE DEVICE, device not found', thisId)
 
           ui.set({
             setupBusy: false,

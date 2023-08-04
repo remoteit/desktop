@@ -14,7 +14,7 @@ import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { dateOptions } from '../Duration/Duration'
+import { Timestamp } from '../Timestamp'
 import { Gutters } from '../Gutters'
 import { Notice } from '../Notice'
 import { Icon } from '../Icon'
@@ -76,10 +76,14 @@ export const AccountAccessKey: React.FC = () => {
               primary={k.key}
               secondary={
                 <>
-                  Created {k.created.toLocaleString(navigator.language, dateOptions)} &nbsp;/ &nbsp;
-                  {k.lastUsed
-                    ? 'Last used ' + k.lastUsed.toLocaleString(navigator.language, dateOptions)
-                    : 'Never used'}
+                  Created <Timestamp date={k.created} variant="long" /> &nbsp;/ &nbsp;
+                  {k.lastUsed ? (
+                    <>
+                      Last used <Timestamp date={k.lastUsed} variant="long" />
+                    </>
+                  ) : (
+                    'Never used'
+                  )}
                 </>
               }
             />

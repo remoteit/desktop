@@ -65,7 +65,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       enabled: !service || service.enabled,
       presenceAddress: service?.presenceAddress,
       name: service?.name || '',
-      attributes: service?.attributes || {},
+      attributes: { ...service?.attributes } || {},
       ...setupAdded,
     }
   }

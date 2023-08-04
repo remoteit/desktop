@@ -1,5 +1,5 @@
 import React from 'react'
-import { IP_LATCH, IP_PRIVATE, PROTOCOL } from '../shared/constants'
+import { IP_PRIVATE, PROTOCOL } from '../shared/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -7,23 +7,25 @@ import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
 import { ListItemText, Chip, Typography } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { RestoreButton } from '../buttons/RestoreButton'
-import { ServiceName } from './ServiceName'
 import { ReactiveTags } from './ReactiveTags'
+import { GraphColumn } from './GraphColumn'
+import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
 import { DeviceRole } from './DeviceRole'
 import { StatusChip } from './StatusChip'
+import { TimeSeries } from './TimeSeries'
 import { Timestamp } from './Timestamp'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
-import { Icon } from './Icon'
+import { Link } from './Link'
 
 export class Attribute {
   id: string = ''
-  label: string = ''
+  label: string | React.ReactNode = ''
   help?: string
   required: boolean = false
   align?: 'left' | 'right' | 'center'
@@ -122,6 +124,20 @@ export const attributes: Attribute[] = [
     value: ({ device, connection }) => <StatusChip device={device} connection={connection} />,
   }),
   new Attribute({
+    id: 'timeSeries',
+    query: 'timeSeries',
+    label: <GraphColumn />,
+    value: ({ device }) => (
+      <Link
+        to={`/devices/${device?.id}/details`}
+        onClick={event => event.stopPropagation()}
+        sx={{ position: 'relative', zIndex: 3 }}
+      >
+        <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />
+      </Link>
+    ),
+  }),
+  new Attribute({
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
@@ -208,7 +224,7 @@ export const attributes: Attribute[] = [
     defaultWidth: 175,
     value: ({ device }) => (
       <>
-        <Timestamp startDate={device?.lastReported} /> &nbsp;
+        <Timestamp date={device?.lastReported} /> &nbsp;
         {device?.state === 'active' && (
           <Typography variant="caption" component="div">
             since refresh
@@ -221,7 +237,7 @@ export const attributes: Attribute[] = [
     id: 'created',
     label: 'Created date',
     defaultWidth: 175,
-    value: ({ device }) => (device?.createdAt ? <Timestamp startDate={device.createdAt} /> : undefined),
+    value: ({ device }) => (device?.createdAt ? <Timestamp date={device.createdAt} /> : undefined),
   }),
   new DeviceAttribute({
     id: 'isp',
@@ -374,7 +390,7 @@ export const attributes: Attribute[] = [
     id: 'serviceCreated',
     label: 'Service Created',
     defaultWidth: 175,
-    value: ({ service }) => <Timestamp startDate={service?.createdAt} />,
+    value: ({ service }) => <Timestamp date={service?.createdAt} />,
   }),
   new ServiceAttribute({
     id: 'serviceType',
@@ -394,7 +410,6 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'license',
     label: 'License',
-    defaultWidth: 100,
     value: ({ service }) => <LicenseChip license={service?.license} />,
   }),
   new ConnectionAttribute({

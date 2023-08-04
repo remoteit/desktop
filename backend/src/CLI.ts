@@ -57,6 +57,9 @@ type IConnectionStatus = {
   addressIsComplete?: boolean
   restrict?: ipAddress
   timeout?: number
+  p2pExtraInfo?: string
+  p2pConnectedEndpoint?: string
+  failoverConnectedEndpoint?: string
   checkpointCanBindToPortLocally?: boolean
   checkpointConnectdCanAuth?: boolean
   checkpointConnectdCanConnectToChatServers?: boolean
@@ -174,6 +177,8 @@ export default class CLI {
         isP2P: c.isP2P,
         restriction: c.restrict,
         timeout: c.timeout,
+        rawEndpoint: c.failoverConnectedEndpoint || c.p2pConnectedEndpoint,
+        rawCommand: c.p2pExtraInfo,
         checkpoint: {
           canBindToPortLocally: !!c.checkpointCanBindToPortLocally,
           connectdCanAuth: !!c.checkpointConnectdCanAuth,

@@ -50,7 +50,7 @@ export const ProfilePage: React.FC = () => {
         <FormDisplay
           icon={<Icon name="calendar-star" />}
           label="Member since"
-          displayValue={<Timestamp startDate={user.created} />}
+          displayValue={<Timestamp date={user.created} />}
           displayOnly
         />
         <ListItem dense className={css.field} button>

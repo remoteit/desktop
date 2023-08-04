@@ -308,9 +308,15 @@ export function getApplicationType(typeId?: number) {
       })
     case 47:
       return new Application({
-        title: 'Docker',
+        title: 'Docker API',
         appLaunchType: 'COMMAND',
         appCommandTemplate: windows ? 'start cmd /k docker -H [host]:[port] ps' : 'docker -H [host]:[port] ps',
+      })
+    case 48:
+      return new Application({
+        title: 'Screen Sharing',
+        appLaunchType: 'URL',
+        appLaunchTemplate: 'http://[host]:[port]',
       })
     default:
       return new Application({})

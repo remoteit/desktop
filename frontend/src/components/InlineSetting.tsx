@@ -11,7 +11,7 @@ type Props = {
   label?: React.ReactNode
   icon?: React.ReactNode
   actionIcon?: React.ReactNode
-  displayValue?: string | number
+  displayValue?: React.ReactNode
   disabled?: boolean
   loading?: boolean
   color?: string

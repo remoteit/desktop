@@ -103,21 +103,25 @@ export default createModel<RootModel>()({
     async fetchList(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
+
       if (!deviceModel.initialized) await dispatch.devices.init()
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
+
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
-      const { query, sort, tag, owner, filter, size, from, append, searched, platform } = deviceModel
+      const { query, owner, filter, append, searched } = deviceModel
+
       const options: gqlOptions = {
-        size,
-        from,
         accountId,
-        state: filter === 'all' ? undefined : filter,
-        tag,
         name: query,
-        sort,
+        size: deviceModel.size,
+        from: deviceModel.from,
+        tag: deviceModel.tag,
+        sort: deviceModel.sort,
+        platform: deviceModel.platform,
+        timeSeries: state.ui.deviceTimeSeries,
+        state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
-        platform,
       }
 
       set({ fetching: true, accountId })
@@ -151,7 +155,11 @@ export default createModel<RootModel>()({
       }
       await dispatch.devices.set({ fetchingArray: true, accountId })
 
-      const gqlResponse = await graphQLPreloadDevices({ accountId, ids })
+      const gqlResponse = await graphQLPreloadDevices({
+        accountId,
+        ids,
+        timeSeries: state.ui.deviceTimeSeries,
+      })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
 
@@ -186,13 +194,19 @@ export default createModel<RootModel>()({
       if (!id) return
 
       const accountId = getActiveAccountId(state)
+
       let result: IDevice | undefined
       let errors: Error[] | undefined
 
       dispatch.devices.set({ fetching: true, accountId })
 
       try {
-        const gqlResponse = await graphQLFetchFullDevice(id, accountId)
+        const gqlResponse = await graphQLFetchFullDevice(
+          id,
+          accountId,
+          state.ui.serviceTimeSeries,
+          state.ui.deviceTimeSeries
+        )
         errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
         if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
@@ -220,7 +234,6 @@ export default createModel<RootModel>()({
       }
 
       dispatch.devices.set({ fetching: false, accountId })
-      return result
     },
 
     async fetchCount(params: IOrganizationRole, state) {
@@ -238,6 +251,15 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0
       return count
+    },
+
+    async clearLoaded(_: void, state) {
+      const accountId = getActiveAccountId(state)
+      const all = [...getDeviceModel(state, accountId).all]
+      for (const id in all) {
+        if (all[id].loaded) all[id] = { ...all[id], loaded: false }
+      }
+      await dispatch.devices.set({ all, accountId })
     },
 
     async graphQLListProcessor(options: gqlOptions) {

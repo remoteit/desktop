@@ -48,6 +48,8 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
+    '& .hoverHide': { opacity: 0, transition: 'opacity 200ms' },
+    '&:hover .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
   },
   drag: {
     right: 0,

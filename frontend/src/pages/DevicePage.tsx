@@ -28,16 +28,19 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const DevicePage: React.FC = () => {
-  const { connections, device } = useContext(DeviceContext)
+  const { connections, device, user } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
-  const { setupAddingService, setupDeletingService, sortService } = useSelector((state: ApplicationState) => ({
-    setupAddingService: state.ui.setupAddingService,
-    setupDeletingService: state.ui.setupDeletingService,
-    sortService: getDeviceModel(state).sortServiceOption,
-  }))
+  const { setupAddingService, setupDeletingService, sortService, connectThisDevice } = useSelector(
+    (state: ApplicationState) => ({
+      setupAddingService: state.ui.setupAddingService,
+      setupDeletingService: state.ui.setupDeletingService,
+      sortService: getDeviceModel(state).sortServiceOption,
+      connectThisDevice: state.ui.connectThisDevice,
+    })
+  )
 
   if (!device)
     return (
@@ -48,9 +51,11 @@ export const DevicePage: React.FC = () => {
 
   const editable = device.thisDevice || (device.configurable && device.permissions.includes('MANAGE'))
   const connection = connections?.find(c => c.deviceID === device.id && c.enabled)
+  const thisDevice = device.thisDevice && device.owner.id === user.id
+  const disableThisConnect = thisDevice && !connectThisDevice
 
   // reverse sort services by creation date
-  device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  const services = [...device.services]
   let servicePage = '/' + (location.pathname.split('/')[4] || 'connect')
 
   return (
@@ -162,7 +167,7 @@ export const DevicePage: React.FC = () => {
             </>
           }
         >
-          {device.services.sort(getSortOptions(sortService).sortService).map(s => {
+          {services.sort(getSortOptions(sortService).sortService).map(s => {
             const c = connections?.find(c => c.id === s.id)
             let pathname = `/devices/${device.id}/${s.id}${servicePage}`
             if (pathname === location.pathname) pathname = `/devices/${device.id}/${s.id}/connect`
@@ -186,7 +191,7 @@ export const DevicePage: React.FC = () => {
                   color={setupDeletingService === s.id ? 'danger' : 'primary'}
                   className={css.connect}
                   permissions={device.permissions}
-                  disabled={s.state === 'inactive'}
+                  disabled={s.state !== 'active' || disableThisConnect}
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
                 <ListItemText primary={<ServiceName service={s} connection={c} />} />

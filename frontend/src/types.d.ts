@@ -3,6 +3,10 @@ import { Attribute } from './components/Attributes'
 import { Color } from './styling'
 
 declare global {
+  interface Window {
+    clarity?: any
+  }
+
   type DiagramGroupType =
     | 'target'
     | 'initiator'

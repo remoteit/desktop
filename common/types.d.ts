@@ -197,6 +197,8 @@ declare global {
     typeID?: number // service type ID
     updating?: boolean // waiting for cloud update
     username?: string // support for launching where username could be saved
+    rawEndpoint?: string // raw endpoint from cli
+    rawCommand?: string // raw connectd command from cli
     checkpoint?: {
       canBindToPortLocally: boolean
       connectdCanAuth: boolean
@@ -310,6 +312,7 @@ declare global {
     hidden?: boolean
     newDevice?: boolean
     presenceAddress?: string
+    timeSeries?: ITimeSeries
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -348,15 +351,48 @@ declare global {
     access: IUserRef[]
     license: ILicenseTypes
     presenceAddress?: string
+    timeSeries?: ITimeSeries
     attributes: ILookup<any> & {
-      // altname?: string // can't have this collide with service name
-      route?: IRouteType // p2p with failover | p2p | proxy
+      route?: IRouteType
       defaultPort?: number
       launchTemplate?: string
       commandTemplate?: string
       targetHost?: string
       description?: string
     }
+  }
+
+  type ITimeSeries = {
+    type: ITimeSeriesType
+    resolution: ITimeSeriesResolution
+    start: Date
+    end: Date
+    time: Date[]
+    data: number[]
+  }
+
+  type ITimeSeriesOptions = {
+    type: ITimeSeriesType
+    resolution: ITimeSeriesResolution
+    length: number
+    timezone?: string
+  }
+
+  type ITimeSeriesResolution = 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR'
+
+  type ITimeSeriesType =
+    | 'AVAILABILITY' // Online Percentage
+    | 'ONLINE_DURATION' // Online Duration (in seconds)
+    | 'ONLINE' // Number of online events
+    | 'OFFLINE' // Number of offline events
+    | 'USAGE' // Connected Percentage
+    | 'CONNECT_DURATION' // Connected Duration (in seconds)
+    | 'CONNECT' // Number of connection events
+    | 'DISCONNECT' // Number of disconnect events
+
+  type ITimeSeriesScale = {
+    unit: '%' | 'time' | 'events'
+    scale: number
   }
 
   type ILinkData = {
@@ -610,6 +646,7 @@ declare global {
     sort?: string
     name?: string
     platform?: number[]
+    timeSeries?: ITimeSeriesOptions
   }
 
   interface IAppValidation {
@@ -680,11 +717,17 @@ declare global {
 
   type IEvents = { [event: string]: string }
 
-  type ILookup<T> = { [key: string]: T }
+  type ILookup<T, U extends string | symbol | number = string> = {
+    [K in U]: T
+  }
 
   type INumberLookup<T> = { [key: number]: T }
 
-  type ISelect = { [key: string]: string | number }
+  type ISelect = {
+    key: string | number
+    name: string | number | React.ReactNode
+    disabled?: boolean
+  }
 
   type IGuide = {
     step: number

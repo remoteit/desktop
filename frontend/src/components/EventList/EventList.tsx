@@ -8,6 +8,7 @@ import { fontSizes, spacing } from '../../styling'
 import { selectLimit, humanizeDays } from '../../models/plans'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
+import { Pre } from '../Pre'
 
 export interface LogListProps {
   device?: IDevice
@@ -47,9 +48,13 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
         </Notice>
       ) : (
         <Box className={css.box}>
-          {events?.hasMore || fetching ? (
-            <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
-              {fetchingMore || fetching ? `Loading ...` : 'Load More'}
+          {fetching || fetchingMore ? (
+            <Button color="primary" disabled size="small">
+              Loading...
+            </Button>
+          ) : events?.hasMore ? (
+            <Button color="primary" onClick={fetchMore} variant="contained" size="small">
+              Load More
             </Button>
           ) : (
             <Typography variant="body2" align="center" color="textSecondary">

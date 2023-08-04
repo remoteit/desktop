@@ -15,6 +15,7 @@ const SAVED_STATES = [
   'guides',
   'panelWidth',
   'poppedBubbles',
+  'expireBubbles',
   'themeMode',
   'accordion',
   'drawerMenu',
@@ -26,6 +27,8 @@ const SAVED_STATES = [
   'defaultService',
   'testUI',
   'updateNoticeCleared',
+  'deviceTimeSeries',
+  'serviceTimeSeries',
 ]
 
 export type UIState = {
@@ -88,6 +91,9 @@ export type UIState = {
   autoCopy: boolean
   updateNoticeCleared?: number
   showRestoreModal: boolean
+  deviceTimeSeries: ITimeSeriesOptions
+  serviceTimeSeries: ITimeSeriesOptions
+  connectThisDevice: boolean
 }
 
 export const defaultState: UIState = {
@@ -110,7 +116,7 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'status', 'tags', 'services'],
+  columns: ['deviceName', 'status', 'timeSeries', 'tags', 'services'],
   columnWidths: { tags: 120 },
   collapsed: ['recent'],
   limitsOverride: {},
@@ -157,6 +163,9 @@ export const defaultState: UIState = {
   autoCopy: false,
   updateNoticeCleared: undefined,
   showRestoreModal: false,
+  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', length: 7 },
+  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', length: 7 },
+  connectThisDevice: false,
 }
 
 export default createModel<RootModel>()({

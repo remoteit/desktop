@@ -52,8 +52,9 @@ export const LaunchButton: React.FC<Props> = ({
 
   const clickHandler = async () => {
     if (device && !device.loaded) {
-      const loadedDevice = await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
-      app.service = loadedDevice?.services.find(s => s.id === app.service?.id)
+      await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
+      dispatch.ui.set({ autoLaunch: true })
+      return
     }
     if (app.prompt) setPrompt(true)
     else launch()

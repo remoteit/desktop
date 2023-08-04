@@ -19,6 +19,7 @@ import { AutoLaunchToggle } from './AutoLaunchToggle'
 import { ConnectionSurvey } from './ConnectionSurvey'
 import { AccessAccordion } from './AccessAccordion'
 import { ConnectionMenu } from './ConnectionMenu'
+import { GraphItem } from './GraphItem'
 import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { Notice } from './Notice'
@@ -117,9 +118,10 @@ export const Connect: React.FC = () => {
               <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
-              <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 2 }} />
+              <Divider variant="inset" sx={{ marginTop: 1 }} />
             </>
           )}
+          <GraphItem service={service} />
           <ServiceAttributes device={device} service={service} disablePadding />
         </AccordionMenuItem>
         <NetworksAccordion

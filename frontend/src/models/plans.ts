@@ -1,8 +1,8 @@
-import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { ApplicationState } from '../store'
+import { Duration } from 'luxon'
 import {
   graphQLSubscribe,
   graphQLUnsubscribe,
@@ -40,6 +40,11 @@ export const LicenseLookup: ILicenseLookup[] = [
     managePath: '/account/plans',
   },
 ]
+
+const DEVICES_LOOKUP = {
+  [PROFESSIONAL_PLAN_ID]: { base: 5, perUser: 3 },
+  [BUSINESS_PLAN_ID]: { base: 5, perUser: 10 },
+}
 
 const defaultLicense = LicenseLookup[0]
 
@@ -249,7 +254,7 @@ export function selectLimits(state: ApplicationState, accountId?: string) {
 }
 
 export function selectLimit(name: string, state: ApplicationState) {
-  return selectLimits(state).find(limit => limit.name === name)?.value
+  return selectLimits(state).find(limit => limit.name === name)?.value || 'P1D'
 }
 
 export function getInformed(state: ApplicationState) {
@@ -329,13 +334,16 @@ export function selectLicenseIndicator(state: ApplicationState) {
 }
 
 export function limitDays(value?: string) {
-  if (value) {
-    return Duration.fromISO(value).as('days')
-  }
-  return 0
+  return value ? Duration.fromISO(value).as('days') : 0
 }
 
 export function humanizeDays(value?: string) {
   const milliseconds = limitDays(value) * 8.64e7
   return humanize(milliseconds, { round: true, largest: 1 })
+}
+
+export function devicesTotal(quantity: number, id?: string) {
+  if (!id) return 0
+  const plan = DEVICES_LOOKUP[id] || { base: 5, perUser: 0 }
+  return plan.base + quantity * plan.perUser
 }

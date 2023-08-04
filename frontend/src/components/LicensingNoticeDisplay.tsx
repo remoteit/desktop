@@ -1,10 +1,10 @@
 import React from 'react'
+import { Dispatch } from '../store'
 import { ListItem, Button, Tooltip, IconButton } from '@mui/material'
 import { PERSONAL_PLAN_ID } from '../models/plans'
-import { Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useDispatch } from 'react-redux'
-import { dateOptions } from './Duration/Duration'
+import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
 import { Link } from './Link'
 import { Icon } from './Icon'
@@ -105,7 +105,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         notice = (
           <Notice severity="info" button={UpgradeButton}>
             {title} will renew on {/* replace with countdown */}
-            {license?.expiration.toLocaleString(navigator.language, dateOptions)}.
+            <Timestamp variant="long" date={license?.expiration} />.
           </Notice>
         )
       break
