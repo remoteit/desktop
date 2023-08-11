@@ -2,7 +2,7 @@ import React from 'react'
 import { Body } from '../../components/Body'
 import { Container } from '../../components/Container'
 import { Typography } from '@mui/material'
-import { ServiceName } from '../../components/ServiceName'
+import { DeviceName } from '../../components/DeviceName'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 
 type Props = { connection?: IConnection; device?: boolean }
@@ -14,7 +14,7 @@ export const UnauthorizedPage: React.FC<Props> = ({ connection, device }) => {
       header={
         <Typography variant="h1">
           <ConnectionStateIcon size="lg" />
-          <ServiceName inline />
+          <DeviceName inline />
         </Typography>
       }
     >

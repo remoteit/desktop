@@ -9,7 +9,7 @@ import { DeviceContext } from '../services/Context'
 import { newConnection } from '../helpers/connectionHelper'
 import { Divider, Menu, MenuItem, ListSubheader, ListItemIcon, Fade, darken } from '@mui/material'
 import { ConnectButton, ConnectButtonProps } from '../buttons/ConnectButton'
-import { ServiceName } from './ServiceName'
+import { DeviceName } from './DeviceName'
 import { Icon } from './Icon'
 
 type Props = ConnectButtonProps
@@ -109,7 +109,7 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
               value={service.id}
               disabled={service.state === 'inactive'}
             >
-              <ServiceName service={service} connection={c} />
+              <DeviceName service={service} connection={c} />
             </MenuItem>
           )
         })}

@@ -1,10 +1,10 @@
 import React from 'react'
-import { Icon } from '../Icon'
-import { Title } from '../Title'
-import { ColorChip } from '../ColorChip'
+import { Icon } from './Icon'
+import { Title } from './Title'
+import { ColorChip } from './ColorChip'
 import { useLocation } from 'react-router-dom'
-import { attributeName } from '../../shared/nameHelper'
-import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { attributeName } from '../shared/nameHelper'
+import { REGEX_FIRST_PATH } from '../shared/constants'
 import { Tooltip } from '@mui/material'
 
 type Props = {
@@ -15,11 +15,11 @@ type Props = {
   inline?: boolean
 }
 
-export const ServiceName: React.FC<Props> = ({ connection, service, device, inline }) => {
+export const DeviceName: React.FC<Props> = ({ connection, service, device, inline }) => {
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
-  const configurable = device?.configurable && device?.permissions.includes('MANAGE')
+  const unConfigurable = device && !(device.configurable && device.permissions.includes('MANAGE'))
   const unlicensed = instance?.license === 'EVALUATION' || instance?.license === 'UNLICENSED'
 
   let name = ''
@@ -41,10 +41,10 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
           </sup>
         </Tooltip>
       )}
-      {configurable && (
-        <Tooltip title="Remote configurable" placement="top" arrow>
+      {unConfigurable && (
+        <Tooltip title="Not remote configurable" placement="top" arrow>
           <sup>
-            <Icon name="wifi" size="xxxs" type="solid" fixedWidth />
+            <Icon name="cloud-slash" size="xxs" type="regular" fixedWidth />
           </sup>
         </Tooltip>
       )}

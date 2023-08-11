@@ -9,7 +9,7 @@ import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ReactiveTags } from './ReactiveTags'
 import { GraphColumn } from './GraphColumn'
-import { ServiceName } from './ServiceName'
+import { DeviceName } from './DeviceName'
 import { LicenseChip } from './LicenseChip'
 import { AvatarList } from './AvatarList'
 import { PERMISSION } from '../models/organization'
@@ -109,7 +109,7 @@ export const attributes: Attribute[] = [
     label: 'Name',
     value: ({ device, connection }) => (
       <ListItemText
-        primary={<ServiceName device={device} connection={connection} />}
+        primary={<DeviceName device={device} connection={connection} />}
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
