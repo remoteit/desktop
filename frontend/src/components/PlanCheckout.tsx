@@ -132,7 +132,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
                 <>
                   {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
                   &nbsp;/&nbsp;
-                  {selectedPrice?.interval.toLowerCase()}
+                  {selectedPrice?.interval?.toLowerCase()}
                 </>
               ) : (
                 <em>Free</em>
