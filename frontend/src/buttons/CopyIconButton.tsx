@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { updateConnection } from '../helpers/connectionHelper'
 import { FontSize, Color } from '../styling'
-import { setConnection } from '../helpers/connectionHelper'
 import { useClipboard } from 'use-clipboard-copy'
 import { Application } from '../shared/applications'
 import { PromptModal } from '../components/PromptModal'
@@ -38,6 +38,8 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
       }
     }, [autoCopy])
 
+    if (!app) return null
+
     const check = () => {
       onClick?.()
       app?.prompt ? setOpen(true) : copy()
@@ -51,7 +53,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
     }
 
     const onSubmit = (tokens: ILookup<string>) => {
-      if (app?.connection) setConnection({ ...app.connection, ...tokens })
+      if (app?.connection) updateConnection(app, { ...app.connection, ...tokens })
       setTimeout(copy, 100)
       setOpen(false)
     }
@@ -71,7 +73,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
         >
           <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
         </IconButton>
-        {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
+        <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
       </>
     )
   }
