@@ -82,7 +82,7 @@ export const OptionsPage: React.FC = () => {
             toggle={!!preferences.sshConfig}
             onClick={() => emit('sshConfig', !preferences.sshConfig)}
             secondaryContentWidth="140px"
-            secondaryContent={<ColorChip label="BETA" size="small" color="primary" variant="contained" inline />}
+            secondaryContent={<ColorChip label="BETA" size="small" color="primary" variant="contained" />}
           />
           <ListItemSetting
             confirm
