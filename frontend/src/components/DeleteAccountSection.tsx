@@ -14,6 +14,7 @@ const REASONS = [
   'Connection quality or performance issues',
   'Couldn’t get my device online',
   'Couldn’t connect',
+  'Cost of service',
   'Too hard to use',
   'Not what I thought it was',
   'Not using it anymore',
