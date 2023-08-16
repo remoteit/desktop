@@ -78,7 +78,7 @@ export default createModel<RootModel>()({
 
     async addDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
       if (!device) return
-      const copy = { ...device }
+      const copy = structuredClone(device)
       copy.tags.push(tag)
       dispatch.accounts.setDevice({ id: copy.id, device: copy })
       const result = await graphQLAddDeviceTag(copy.id, tag.name, accountId)
