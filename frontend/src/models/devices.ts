@@ -40,7 +40,6 @@ type IDeviceState = {
   searched: boolean
   fetching: boolean
   fetchingMore: boolean
-  fetchingArray: boolean
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -64,7 +63,6 @@ export const defaultState: IDeviceState = {
   searched: false,
   fetching: true,
   fetchingMore: false,
-  fetchingArray: false,
   query: '',
   append: false,
   filter: 'all',
@@ -147,13 +145,6 @@ export default createModel<RootModel>()({
 
     async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
       const accountId = getActiveAccountId(state)
-      const model = getDeviceModel(state)
-
-      if (model.fetchingArray) {
-        console.warn('FETCH DEVICES ABORTED, fetching in progress...')
-        return []
-      }
-      await dispatch.devices.set({ fetchingArray: true, accountId })
 
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
@@ -163,7 +154,6 @@ export default createModel<RootModel>()({
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
 
-      await dispatch.devices.set({ fetchingArray: false, accountId })
       if (error) return []
 
       const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden })
