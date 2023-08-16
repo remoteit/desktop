@@ -135,7 +135,7 @@ declare global {
     id: string
     amount: number
     currency: string
-    interval: IPlanInterval
+    interval: IPlanInterval | null
   }
   type IPlanName = 'PERSONAL' | 'PROFESSIONAL' | 'TRIAL' | string
   type IPlanInterval = 'MONTH' | 'YEAR'

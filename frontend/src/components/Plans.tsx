@@ -191,7 +191,7 @@ export const Plans: React.FC = () => {
             if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
               price =
                 currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
-                ` / ${license?.subscription?.price.interval.toLowerCase()}`
+                ` / ${license?.subscription?.price.interval?.toLowerCase()}`
               caption = `${license.quantity} seat${(license.quantity || 0) > 1 ? 's' : ''}`
               note = `${deviceLimit} devices`
             }

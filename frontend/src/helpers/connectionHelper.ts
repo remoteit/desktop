@@ -137,6 +137,12 @@ export const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInp
   return isNaN(port) ? 0 : port
 }
 
+export function updateConnection(app: Application, connection: IConnection) {
+  app.connection = connection
+  connection = updateImmutableData(connection, app)
+  setConnection(connection)
+}
+
 export function setConnection(connection: IConnection) {
   const { auth } = store.getState()
   const { connections } = store.dispatch

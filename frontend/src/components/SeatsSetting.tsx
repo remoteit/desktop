@@ -90,7 +90,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
             &nbsp; &nbsp; &nbsp;
             {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
             &nbsp;/&nbsp;
-            {selectedPrice?.interval.toLowerCase()} &nbsp;
+            {selectedPrice?.interval?.toLowerCase()} &nbsp;
             <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
             {devicesTotal(form.quantity, selectedPlan?.id)} devices
           </>
@@ -113,7 +113,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
           <b>
             {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
             &nbsp;/&nbsp;
-            {selectedPrice?.interval.toLowerCase()}
+            {selectedPrice?.interval?.toLowerCase()}
           </b>
           &nbsp; for {form.quantity} user license{form.quantity > 1 ? 's' : ''}.
         </Confirm>

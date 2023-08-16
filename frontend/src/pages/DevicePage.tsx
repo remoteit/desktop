@@ -21,7 +21,7 @@ import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { RestoreModal } from '../components/RestoreModal'
 import { GuideBubble } from '../components/GuideBubble'
-import { ServiceName } from '../components/ServiceName'
+import { DeviceName } from '../components/DeviceName'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
@@ -79,7 +79,7 @@ export const DevicePage: React.FC = () => {
               exactMatch
               title={
                 <Typography variant="h3">
-                  <ServiceName device={device} connection={connection} />
+                  <DeviceName device={device} connection={connection} />
                 </Typography>
               }
               subtitle={device.thisDevice ? 'This device' : undefined}
@@ -194,7 +194,7 @@ export const DevicePage: React.FC = () => {
                   disabled={s.state !== 'active' || disableThisConnect}
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
-                <ListItemText primary={<ServiceName service={s} connection={c} />} />
+                <ListItemText primary={<DeviceName service={s} connection={c} />} />
                 <NetworksIndicator instance={device} service={s} />
                 <ServiceMiniState service={s} connection={c} className={css.service} />
               </ListItemLocation>

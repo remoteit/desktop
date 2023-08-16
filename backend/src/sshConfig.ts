@@ -25,11 +25,20 @@ class SSHConfig {
   }
 
   async setup() {
+    const userConfigPath = path.resolve(environment.sshConfigPath, '..')
     const userConfig = environment.sshConfigPath
     this.configPath = path.join(environment.userPath, this.filename)
     this.ready = true
 
     let data: string = ''
+
+    try {
+      // Create the config directory if needed
+      await fs.access(userConfigPath)
+    } catch (error) {
+      await fs.mkdir(userConfigPath, { recursive: true })
+      await fs.chmod(userConfigPath, 0o700)
+    }
 
     try {
       data = await fs.readFile(userConfig, 'utf8')

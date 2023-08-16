@@ -6,7 +6,7 @@ const BROWSER = 'browser'
 const DEVELOPMENT = 'development'
 
 export function environment() {
-  if (window.location.origin === 'http://localhost:3000') return DEVELOPMENT
+  if (window.location.origin.includes(':3000')) return DEVELOPMENT
   if (isElectron()) return ELECTRON
   return BROWSER
 }
