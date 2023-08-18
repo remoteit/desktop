@@ -38,8 +38,6 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
       }
     }, [autoCopy])
 
-    if (!app) return null
-
     const check = () => {
       onClick?.()
       app?.prompt ? setOpen(true) : copy()
@@ -73,7 +71,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
         >
           <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
         </IconButton>
-        <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
+        {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
       </>
     )
   }
