@@ -155,7 +155,7 @@ export const attributes: Attribute[] = [
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 350,
+    defaultWidth: 300,
   }),
   new DeviceAttribute({
     id: 'deviceDescription',

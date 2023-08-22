@@ -1,6 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
+import { MOBILE_WIDTH } from '../shared/constants'
 import { useMediaQuery, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@mui/material'
 import { spacing, fontSizes, radius } from '../styling'
 import { Icon } from './Icon'
@@ -41,8 +42,8 @@ export const PlanCard: React.FC<Props> = ({
   wide,
   onSelect,
 }) => {
-  const small = useMediaQuery(`(max-width:500px)`)
-  wide = wide && !small
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  wide = wide && !mobile
   const css = useStyles({ wide, selected })
 
   return (
