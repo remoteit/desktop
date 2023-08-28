@@ -7,7 +7,7 @@ const analytics = {
   initialize() {
     const gtmId = isPortal() ? GOOGLE_TAG_MANAGER_PORTAL_KEY : GOOGLE_TAG_MANAGER_DESKTOP_KEY
     console.log('ANALYTICS INITIALIZE')
-    TagManager.initialize({ gtmId })
+    TagManager.initialize({ gtmId: gtmId?.trim() })
     analytics.initializeClarity()
   },
 

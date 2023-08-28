@@ -7,8 +7,8 @@ export type LinkProps = Omit<RouterLinkProps, 'to'> &
     to?: string
   }
 
-export const Link = React.forwardRef<any, LinkProps>(({ children, ...props }, ref) => {
-  let attributes = { ...props }
+export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ children, ...props }, ref) => {
+  const attributes = { ...props }
   if (attributes.href?.startsWith('http')) {
     attributes.target = '_blank'
     attributes.rel = 'noopener'

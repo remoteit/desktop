@@ -78,7 +78,7 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
           }
 
           if (updated.public && connection.enabled) {
-            dispatch.connections.disconnect(connection)
+            dispatch.connections.disconnect({ connection })
           }
           setConnection(updated)
         }}

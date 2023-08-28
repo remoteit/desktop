@@ -1,6 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
+import { MOBILE_WIDTH } from '../shared/constants'
+import { useMediaQuery, Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLimitsLookup } from '../selectors/organizations'
@@ -27,6 +28,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
     removing: state.tags.removing,
     destroying: state.ui.destroying,
   }))
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -46,7 +48,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devic
             </Title>
             {feature.tagging && (
               <>
-                <InputLabel shrink>tags</InputLabel>
+                {mobile || <InputLabel shrink>tags</InputLabel>}
                 <TagEditor
                   button="plus"
                   tags={tags}

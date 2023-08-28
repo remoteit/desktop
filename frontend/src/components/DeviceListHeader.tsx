@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
-import { ListSubheader, ListItemIcon } from '@mui/material'
+import { ListSubheader, ListItemIcon, useMediaQuery } from '@mui/material'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
 import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
 import { LinearProgress } from './LinearProgress'
@@ -17,6 +17,7 @@ type Props = {
   devices: IDevice[]
   select?: boolean
   fetching?: boolean
+  mobile?: boolean
 }
 
 export const DeviceListHeader: React.FC<Props> = ({
@@ -26,6 +27,7 @@ export const DeviceListHeader: React.FC<Props> = ({
   devices,
   select,
   fetching,
+  mobile,
 }) => {
   const { ui } = useDispatch<Dispatch>()
   const [resize, setResize] = useState<number>(0)
@@ -69,9 +71,10 @@ export const DeviceListHeader: React.FC<Props> = ({
           <DeviceListHeaderCheckbox select={select} devices={devices} />
         </ListItemIcon>
       </DeviceListHeaderTitle>
-      {attributes?.map(attribute => (
-        <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
-      ))}
+      {!mobile &&
+        attributes?.map(attribute => (
+          <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
+        ))}
       <LinearProgress loading={fetching} />
     </ListSubheader>
   )

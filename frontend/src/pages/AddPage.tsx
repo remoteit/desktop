@@ -67,7 +67,6 @@ export const AddPage: React.FC = () => {
               }}
             >
               <TextField
-                autoFocus
                 label="Claim Code"
                 value={code}
                 variant="filled"

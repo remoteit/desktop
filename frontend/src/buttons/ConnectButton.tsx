@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Stack } from '@mui/material'
 import { isPortal } from '../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -34,7 +35,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
 
-  let clickHandler = (event?: React.MouseEvent<HTMLButtonElement>) => {
+  let clickHandler = (event?: React.MouseEvent<HTMLButtonElement>, forceStop?: boolean) => {
     if (preventDefault) {
       event && onClick?.(event)
       return
@@ -43,7 +44,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     if (connection?.connectLink) {
       dispatch.connections.setConnectLink({ ...connection, enabled: false })
     } else if (connection?.connecting || connection?.enabled || connection?.starting) {
-      dispatch.connections.disconnect(connection)
+      dispatch.connections.disconnect({ connection, forceStop })
     } else {
       connection = connection || newConnection(service)
       dispatch.connections.connect({ ...connection, connectOnReady: true })
@@ -125,7 +126,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     icon = 'circle-medium'
   }
 
-  return (
+  const button = (
     <DynamicButton
       title={title}
       variant={variant}
@@ -135,5 +136,21 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       disabled={disabled}
       {...props}
     />
+  )
+
+  return state === 'connected' && props.size === 'large' ? (
+    <Stack flexDirection="row">
+      {button}
+      <DynamicButton
+        icon="stop"
+        color="primary"
+        variant="text"
+        size="medium"
+        iconType="solid"
+        onClick={event => clickHandler(event, true)}
+      />
+    </Stack>
+  ) : (
+    button
   )
 }

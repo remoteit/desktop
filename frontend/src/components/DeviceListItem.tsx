@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { DeviceListContext } from '../services/Context'
 import { AttributeValueMemo } from './AttributeValue'
-import { Box, ListItemIcon, ListItem } from '@mui/material'
+import { useMediaQuery, Box, ListItemIcon, ListItem } from '@mui/material'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
 import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { radius, spacing } from '../styling'
@@ -14,10 +14,11 @@ type Props = {
   restore?: boolean
   select?: boolean
   selected?: boolean
+  mobile?: boolean
   onSelect?: (deviceId: string) => void
 }
 
-export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, onSelect }) => {
+export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, mobile, onSelect }) => {
   const { connections, device, attributes, required } = useContext(DeviceListContext)
   const connection = connections && connections.find(c => c.enabled)
   const history = useHistory()
@@ -56,11 +57,17 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
           <AttributeValueMemo device={device} attribute={required} connection={connection} connections={connections} />
         </Box>
       </Box>
-      {attributes?.map(attribute => (
-        <Box key={attribute.id}>
-          <AttributeValueMemo device={device} attribute={attribute} connection={connection} connections={connections} />
-        </Box>
-      ))}
+      {!mobile &&
+        attributes?.map(attribute => (
+          <Box key={attribute.id}>
+            <AttributeValueMemo
+              device={device}
+              attribute={attribute}
+              connection={connection}
+              connections={connections}
+            />
+          </Box>
+        ))}
     </ListItem>
   )
 }

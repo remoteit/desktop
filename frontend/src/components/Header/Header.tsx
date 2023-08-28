@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react'
+import { HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../shared/constants'
 import { emit } from '../../services/Controller'
 import { makeStyles } from '@mui/styles'
 import { useMediaQuery } from '@mui/material'
 import { selectPermissions } from '../../selectors/organizations'
 import { ApplicationState, Dispatch } from '../../store'
+import { useHistory, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { HIDE_SIDEBAR_WIDTH } from '../../shared/constants'
 import { getDeviceModel } from '../../selectors/devices'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -17,7 +18,6 @@ import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
 import { isElectron } from '../../services/Browser'
 import { Title } from '../Title'
-import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
@@ -32,8 +32,10 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   })
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
   const manager = permissions?.includes('MANAGE')
   const css = useStyles()
 
@@ -82,19 +84,28 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         </Title>
         <Route path={['/devices', '/devices/select']} exact>
           <FilterButton />
-          <ColumnsButton />
+          {!mobile && <ColumnsButton />}
         </Route>
         {manager && (
-          <>
+          <Switch>
             <Route path="/devices" exact>
               <IconButton to="/devices/select" icon="check-square" title="Show Select" />
             </Route>
             <Route path="/devices/select" exact>
               <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
             </Route>
-          </>
+          </Switch>
         )}
-        {sidebarHidden && <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />}
+        {sidebarHidden && (
+          <Switch>
+            <Route path="/add" exact>
+              <IconButton icon="times" size="lg" onClick={history.goBack} />
+            </Route>
+            <Route path="*">
+              <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
+            </Route>
+          </Switch>
+        )}
       </div>
       <UpgradeNotice />
     </>

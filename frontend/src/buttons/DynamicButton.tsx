@@ -8,7 +8,7 @@ import { Color } from '../styling'
 export type DynamicButtonProps = {
   icon?: string
   iconType?: IconProps['type']
-  title: string
+  title?: string
   color?: Color
   size?: 'icon' | 'medium' | 'small' | 'large'
   iconSize?: IconProps['size']
@@ -48,7 +48,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
       type={iconType}
       size={iconSize}
       color={size === 'icon' ? (disabled ? 'grayLight' : color) : undefined}
-      inlineLeft={size !== 'icon'}
+      inlineLeft={size !== 'icon' && !!title}
       spin={loading}
       fixedWidth
     />
@@ -113,6 +113,7 @@ const useStyles = makeStyles(({ palette }) => ({
       '&.MuiButton-root': {
         backgroundColor: background,
         color: foreground,
+        minWidth: 0,
         '&:hover': { backgroundColor: hover },
       },
     }

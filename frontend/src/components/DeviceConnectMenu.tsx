@@ -45,7 +45,7 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
     event.preventDefault()
     closeHandler()
     history.push(`/devices/${device.id}/${serviceId}`)
-    if (c.enabled) dispatch.connections.disconnect(c)
+    if (c.enabled) dispatch.connections.disconnect({ connection: c })
     else dispatch.connections.connect(c)
   }
 

@@ -1,6 +1,7 @@
 // import { createMemoDebugger } from '../helpers/utilHelper'
 import React from 'react'
 import classnames from 'classnames'
+import { MOBILE_WIDTH } from '../shared/constants'
 import { DeviceListContext } from '../services/Context'
 import { isPortal } from '../services/Browser'
 import { Dispatch } from '../store'
@@ -8,7 +9,7 @@ import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from './ServiceContextualMenu'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
-import { List, Typography } from '@mui/material'
+import { List, Typography, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
@@ -39,13 +40,14 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   select,
   selected = [],
 }) => {
-  const css = useStyles({ attributes, required: required, columnWidths })
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
+  const css = useStyles({ attributes, required, columnWidths, mobile })
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
         <DeviceListContext.Provider value={{ device: devices[0] }}>
-          <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths }} />
+          <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths, mobile }} />
         </DeviceListContext.Provider>
         {devices?.map((device, index) => {
           const canRestore = isOffline(device) && !device.shared
@@ -71,6 +73,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 select={select}
                 selected={isSelected}
                 onSelect={onSelect}
+                mobile={mobile}
               />
             </DeviceListContext.Provider>
           )
@@ -118,16 +121,17 @@ type StyleProps = {
   attributes: Attribute[]
   required: Attribute
   columnWidths: ILookup<number>
+  mobile?: boolean
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  grid: ({ attributes, required, columnWidths }: StyleProps) => ({
+  grid: ({ attributes, required, columnWidths, mobile }: StyleProps) => ({
     minWidth: '100%',
-    width: required.width(columnWidths) + attributes?.reduce((w, a) => w + a.width(columnWidths), 0),
+    width: required.width(columnWidths) + (mobile ? 0 : attributes?.reduce((w, a) => w + a.width(columnWidths), 0)),
     '& .MuiListItem-root, & .MuiListSubheader-root': {
-      gridTemplateColumns: `${required.width(columnWidths)}px ${attributes
-        ?.map(a => a.width(columnWidths))
-        .join('px ')}px`,
+      gridTemplateColumns: `${required.width(columnWidths)}px ${
+        mobile ? '' : attributes?.map(a => a.width(columnWidths)).join('px ') + 'px'
+      }`,
     },
   }),
   list: {

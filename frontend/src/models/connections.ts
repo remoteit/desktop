@@ -116,7 +116,7 @@ export default createModel<RootModel>()({
             // disable connection if service is offline
             if (!online && !connection.connectLink && connection.enabled) {
               console.log('DISABLING OFFLINE CONNECTION', connection.name)
-              await dispatch.connections.disconnect(connection)
+              await dispatch.connections.disconnect({ connection })
             }
 
             // remove connect links
@@ -250,7 +250,7 @@ export default createModel<RootModel>()({
 
       if (different) {
         if (trigger.enabled) dispatch.connections.connect({ ...connection, ...trigger, autoStart: true })
-        else dispatch.connections.disconnect({ ...connection, ...trigger })
+        else dispatch.connections.disconnect({ connection: { ...connection, ...trigger } })
       }
 
       dispatch.connections.set({ queue })
@@ -411,7 +411,7 @@ export default createModel<RootModel>()({
       heartbeat.connect()
     },
 
-    async disconnect(connection: IConnection | undefined) {
+    async disconnect({ connection, forceStop }: { connection?: IConnection; forceStop?: boolean }) {
       if (!connection) {
         console.warn('No connection to disconnect')
         return
@@ -422,7 +422,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connection.connected) {
+      if (connection.connected && !forceStop) {
         connection = { ...connection, disconnecting: true }
         dispatch.connections.updateConnection(connection)
         emit('service/disconnect', connection)
@@ -459,10 +459,10 @@ export default createModel<RootModel>()({
     async clearByDevice(deviceId: string, state) {
       const { clear, disconnect } = dispatch.connections
       const { all } = state.connections
-      all.forEach(async c => {
-        if (c.deviceID === deviceId) {
-          if (c.connected) await disconnect(c)
-          await clear(c.id)
+      all.forEach(async connection => {
+        if (connection.deviceID === deviceId) {
+          if (connection.connected) await disconnect({ connection })
+          await clear(connection.id)
         }
       })
     },

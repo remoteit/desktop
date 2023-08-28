@@ -242,7 +242,7 @@ export default createModel<RootModel>()({
       if (joined.length <= 1) {
         const [service] = selectById(state, undefined, serviceId)
         const connection = selectConnection(state, service)
-        dispatch.connections.disconnect(connection)
+        dispatch.connections.disconnect({ connection })
       }
     },
 
