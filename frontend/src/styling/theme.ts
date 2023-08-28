@@ -547,7 +547,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           h1: {
             fontSize: fontSizes.xl,
-            fontWeight: 400,
+            fontWeight: 500,
             color: palette.grayDarkest.main,
             letterSpacing: -0.2,
           },
