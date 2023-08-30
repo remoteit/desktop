@@ -22,6 +22,7 @@ class Platforms {
     'advantech',
     'alpine',
     'android',
+    'android-screenview',
     'arm',
     'aws',
     'axis',
