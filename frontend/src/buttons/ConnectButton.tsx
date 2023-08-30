@@ -138,7 +138,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     />
   )
 
-  return state === 'connected' && props.size === 'large' ? (
+  return state === 'connected' && props.size === 'large' && !isPortal() ? (
     <Stack flexDirection="row">
       {button}
       <DynamicButton
