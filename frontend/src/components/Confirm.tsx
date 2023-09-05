@@ -56,7 +56,7 @@ export const Confirm: React.FC<ConfirmProps> = ({
 )
 
 const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & { children: React.ReactElement<any, any> },
+  props: TransitionProps & { children: React.ReactElement },
   ref: React.Ref<unknown>
 ) {
   return <Slide direction="down" ref={ref} {...props} />

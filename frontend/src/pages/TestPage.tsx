@@ -95,8 +95,9 @@ export const TestPage: React.FC = () => {
               />
               <InlineTextFieldSetting
                 value={getRestApi()}
+                displayValue="This still needs to be hooked up"
                 label="Rest Api"
-                disabled={!preferences.switchApi}
+                disabled={true || !preferences.switchApi}
                 resetValue={getRestApi()}
                 maxLength={200}
                 onSave={url => {
