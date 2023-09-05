@@ -1,0 +1,22 @@
+name: Build/release-s3
+
+on: workflow_dispatch
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    # Only run the deployment if the build workflow succeeded.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download desktop artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.github_token }}
+          path: ./artifacts
+          skip_unpack: true
+      - name: List downloaded artifacts
+        run: |
+          ls -la ./artifacts
