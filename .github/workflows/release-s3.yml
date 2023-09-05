@@ -48,4 +48,4 @@ jobs:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          destination_dir: ${{ github.event.inputs.tag }}/${{ github.event.inputs.tag }}/
+          destination_dir: ${{ github.event.inputs.s3_path }}/${{ github.event.inputs.tag }}/
