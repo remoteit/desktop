@@ -12,19 +12,6 @@ defaults:
     shell: bash
 
 jobs:
-  # release:
-  #   # Only run the deployment if the build workflow succeeded.
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download desktop artifacts
-  #       uses: dawidd6/action-download-artifact@v2
-  #       with:
-  #         github_token: ${{ secrets.github_token }}
-  #         path: ./artifacts
-  #         skip_unpack: true
-  #     - name: List downloaded artifacts
-  #       run: |
-  #         ls -la ./artifacts
 
   release2:
     runs-on: ubuntu-latest
@@ -78,3 +65,12 @@ jobs:
           # Default: "https://api.github.com"
           # Use http(s)://[hostname]/api/v3 to access the API for GitHub Enterprise Server
           # github-api-url: ""
+
+      - name: Upload release assets to S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          source_dir: 'release-assets'
+          aws_key_id: ${{ secrets.AWS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          destination_dir: test/desktop/${{ github.event.inputs.tag }}/
