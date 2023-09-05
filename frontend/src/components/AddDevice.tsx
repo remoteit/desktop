@@ -45,8 +45,15 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
       })
 
       if (!redirect || redirected) return
-      window.location.href = `${decodeURIComponent(redirect)}&code=${code}`
-      setRedirected(true)
+      try {
+        const url = new URL(decodeURIComponent(redirect))
+        url.searchParams.set('code', code)
+        window.location.href = url.toString()
+        console.log('REDIRECT TO:', url.toString())
+        setRedirected(true)
+      } catch (error) {
+        console.warn('Failed to redirect to:', error)
+      }
     })()
 
     return function cleanup() {
