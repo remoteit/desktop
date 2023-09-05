@@ -7,23 +7,22 @@ on:
         description: 'Version tag (ex: v1.0.0)'     
         required: true
         default: 'warning'
+      s3_path:
+        description: 'S3 path (ex: test/desktop/)'     
+        required: true
+        default: 'deskop/'
 defaults:
   run:
     shell: bash
 
 jobs:
 
-  release2:
+  release-s3:
     runs-on: ubuntu-latest
     steps:
-      - name: Download release assets
+      - name: Download release assets to workspace
         uses: robinraju/release-downloader@v1.8
         with: 
-          # The source repository path.
-          # Expected format {owner}/{repo}
-          # Default: ${{ github.repository }}
-          # repository: ""
-          
           # A flag to set the download target as latest release
           # The default value is 'false'
           # latest: true
@@ -31,20 +30,6 @@ jobs:
           # The github tag. e.g: v1.0.1
           # Download assets from a specific tag/version
           tag: "${{ github.event.inputs.tag }}"
-          
-          # The release id to download files from 
-          # releaseId: ""
-          
-          # The name of the file to download.
-          # Use this field only to specify filenames other than tarball or zipball, if any.
-          # Supports wildcard pattern (eg: '*', '*.deb', '*.zip' etc..)
-          # fileName: ""
-          
-          # Download the attached tarball (*.tar.gz)
-          # tarBall: true
-          
-          # Download the attached zipball (*.zip)
-          # zipBall: true
           
           # Relative path under $GITHUB_WORKSPACE to place the downloaded file(s)
           # It will create the target directory automatically if not present
@@ -56,16 +41,6 @@ jobs:
           # Prints a warning if enabled but file is not an archive - but does not fail.
           extract: false
       
-          # Github access token to download files from private repositories
-          # https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
-          # eg: token: ${{ secrets.MY_TOKEN }}
-          # token: ""
-      
-          # The URL of the Github API, only use this input if you are using Github Enterprise
-          # Default: "https://api.github.com"
-          # Use http(s)://[hostname]/api/v3 to access the API for GitHub Enterprise Server
-          # github-api-url: ""
-
       - name: Upload release assets to S3
         uses: shallwefootball/s3-upload-action@master
         with:
@@ -73,4 +48,4 @@ jobs:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          destination_dir: test/desktop/${{ github.event.inputs.tag }}/
+          destination_dir: ${{ github.event.inputs.tag }}/${{ github.event.inputs.tag }}/
