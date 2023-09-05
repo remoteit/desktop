@@ -64,20 +64,12 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
     }
   }, [scanTimestamp, timestamp, loading])
 
-  useEffect(() => {
-    if (scanData && scanData.length !== state.length) {
-      const checked = scanData.map(row => !!applicationTypes.find(t => t.port === row.port))
-      setState(checked)
-      updateTargets(checked)
-    }
-  }, [applicationTypes, scanData])
-
   if (!scanData) return <LoadingMessage message="Scanning..." />
 
   return (
     <>
       <Typography className={css.body} variant="body2" color="textSecondary">
-        <Title>Active services found</Title>
+        <Title>Check an active service to enable it.</Title>
         <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" size="lg" />
       </Typography>
       <List className="collapseList">
@@ -101,7 +93,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
         ))}
       </List>
       <br />
-      <Typography variant="caption">Manually add additional services after registration.</Typography>
+      <Typography variant="caption">You can always add additional services after registration.</Typography>
     </>
   )
 }
