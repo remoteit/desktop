@@ -20,5 +20,6 @@ jobs:
           github_token: ${{ secrets.github_token }}
           path: ./artifacts
           skip_unpack: true
+      - name: List downloaded artifacts
         run: |
           ls -la ./artifacts
