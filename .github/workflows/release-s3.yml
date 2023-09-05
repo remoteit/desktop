@@ -1,22 +1,81 @@
 name: Build/release-s3
 
-on: workflow_dispatch
-
+on: 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag (ex: v1.0.0)'     
+        required: true
+        default: 'warning'
 defaults:
   run:
     shell: bash
 
 jobs:
-  release:
-    # Only run the deployment if the build workflow succeeded.
+  # release:
+  #   # Only run the deployment if the build workflow succeeded.
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download desktop artifacts
+  #       uses: dawidd6/action-download-artifact@v2
+  #       with:
+  #         github_token: ${{ secrets.github_token }}
+  #         path: ./artifacts
+  #         skip_unpack: true
+  #     - name: List downloaded artifacts
+  #       run: |
+  #         ls -la ./artifacts
+
+  release2:
     runs-on: ubuntu-latest
     steps:
-      - name: Download desktop artifacts
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          github_token: ${{ secrets.github_token }}
-          path: ./artifacts
-          skip_unpack: true
-      - name: List downloaded artifacts
-        run: |
-          ls -la ./artifacts
+      - name: Download release assets
+        uses: robinraju/release-downloader@v1.8
+        with: 
+          # The source repository path.
+          # Expected format {owner}/{repo}
+          # Default: ${{ github.repository }}
+          # repository: ""
+          
+          # A flag to set the download target as latest release
+          # The default value is 'false'
+          # latest: true
+          
+          # The github tag. e.g: v1.0.1
+          # Download assets from a specific tag/version
+          tag: "${{ github.event.inputs.tag }}"
+          
+          # The release id to download files from 
+          # releaseId: ""
+          
+          # The name of the file to download.
+          # Use this field only to specify filenames other than tarball or zipball, if any.
+          # Supports wildcard pattern (eg: '*', '*.deb', '*.zip' etc..)
+          # fileName: ""
+          
+          # Download the attached tarball (*.tar.gz)
+          # tarBall: true
+          
+          # Download the attached zipball (*.zip)
+          # zipBall: true
+          
+          # Relative path under $GITHUB_WORKSPACE to place the downloaded file(s)
+          # It will create the target directory automatically if not present
+          # eg: out-file-path: "my-downloads" => It will create directory $GITHUB_WORKSPACE/my-downloads
+          out-file-path: "release-assets"
+      
+          # A flag to set if the downloaded assets are archives and should be extracted
+          # Checks all downloaded files if they end with zip, tar or tar.gz and extracts them, if true.
+          # Prints a warning if enabled but file is not an archive - but does not fail.
+          extract: false
+      
+          # Github access token to download files from private repositories
+          # https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
+          # eg: token: ${{ secrets.MY_TOKEN }}
+          token: ""
+      
+          # The URL of the Github API, only use this input if you are using Github Enterprise
+          # Default: "https://api.github.com"
+          # Use http(s)://[hostname]/api/v3 to access the API for GitHub Enterprise Server
+          # github-api-url: ""
+          
