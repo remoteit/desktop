@@ -1,0 +1,24 @@
+name: Build/release
+
+on: workflow_dispatch
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  VERSION: ''
+
+jobs:
+  release:
+    # Only run the deployment if the build workflow succeeded.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download desktop artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.github_token }}
+          path: ./artifacts
+          skip_unpack: true
+        run: |
+          ls -la ./artifacts
