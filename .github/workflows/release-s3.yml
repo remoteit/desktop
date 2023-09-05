@@ -1,13 +1,10 @@
-name: Build/release
+name: Build/release-s3
 
 on: workflow_dispatch
 
 defaults:
   run:
     shell: bash
-
-env:
-  VERSION: ''
 
 jobs:
   release:
