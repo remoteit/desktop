@@ -6,7 +6,7 @@ on:
       tag:
         description: 'Version tag (ex: v1.0.0)'     
         required: true
-        default: 'warning'
+        default: 'v0.0.0'
       s3_path:
         description: 'S3 path (ex: test/desktop/)'     
         required: true
