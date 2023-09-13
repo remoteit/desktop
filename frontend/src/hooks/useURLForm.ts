@@ -51,6 +51,7 @@ export function useURLForm(
     if (!form || !enabled) return
 
     value = 'http' + value.slice(4)
+    value = value.replace(/\s+/g, '')
     setField(value)
 
     const parsed = safeParse(value)
