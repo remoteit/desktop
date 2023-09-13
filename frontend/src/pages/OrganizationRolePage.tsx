@@ -43,14 +43,14 @@ export const OrganizationRolePage: React.FC = () => {
     roles: selectOrganization(state).roles,
     tags: selectTags(state, getActiveAccountId(state)),
   }))
-  const role = roles?.find(r => r.id === roleID) || structuredClone(DEFAULT_ROLE)
-  const [form, setForm] = useState<IOrganizationRole>(structuredClone(role))
+  const role = structuredClone(roles?.find(r => r.id === roleID) || DEFAULT_ROLE)
+  const [form, setForm] = useState<IOrganizationRole>(role)
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
   const changed = !isEqual(form, role)
 
-  const changeForm = async (changedForm: IOrganizationRole) => setForm({ ...changedForm })
+  const changeForm = async (changedForm: IOrganizationRole) => setForm(structuredClone(changedForm))
   const handlePermissionChange = (toggle, permission) => {
     if (toggle) {
       setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })
@@ -60,7 +60,7 @@ export const OrganizationRolePage: React.FC = () => {
   }
 
   useEffect(() => {
-    changeForm(structuredClone(role))
+    changeForm(role)
   }, [roleID])
 
   return (
@@ -220,7 +220,7 @@ export const OrganizationRolePage: React.FC = () => {
               if (!form.tag && form.access === 'TAG') form.access = 'NONE'
               await dispatch.organization.setRole(form)
               setSaving(false)
-              setForm(structuredClone(form))
+              changeForm(form)
             }}
           >
             {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
