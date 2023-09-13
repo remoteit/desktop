@@ -190,7 +190,10 @@ export default createModel<RootModel>()({
       } else {
         // rename
         const result = await graphQLRenameTag(tag.name, name, accountId)
-        if (result === 'ERROR') return
+        if (result === 'ERROR' || !result?.data?.data?.renameTag) {
+          dispatch.ui.set({ errorMessage: `Your tag (${name}) could not be renamed.` })
+          return
+        }
         tags[index].name = name
       }
       dispatch.tags.setTags({ tags, accountId })
