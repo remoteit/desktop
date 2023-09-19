@@ -93,11 +93,11 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                       <b>Access a device</b>
                     </Typography>
                     <Typography variant="body2" gutterBottom>
-                      A device can host any number of services (applications), and will appear online if it's ready to
-                      be connected to.
+                      A device can host it's own applications (services), or it can host another service on it's local
+                      network.
                     </Typography>
                     <Typography variant="body2" gutterBottom>
-                      Select a device to configure or connect to it.
+                      Select a device to connect to a service, or configure it.
                     </Typography>
                   </>
                 }

@@ -182,7 +182,7 @@ export const ConnectionDetails: React.FC<Props> = ({
                     </Typography>
                     <PortalUI>
                       <Typography variant="body2" gutterBottom>
-                        A connection was created from our proxy server to the service.
+                        A connection was created to this service.
                       </Typography>
                     </PortalUI>
                     <DesktopUI>
@@ -191,9 +191,9 @@ export const ConnectionDetails: React.FC<Props> = ({
                       </Typography>
                     </DesktopUI>
                     <Typography variant="body2" gutterBottom>
-                      Copy the endpoint and its components or launch an application according the the
+                      Copy the endpoint or launch the application according to the
                       <cite> launch method </cite>
-                      configuration below.
+                      configured in the connection configuration.
                     </Typography>
                   </>
                 }

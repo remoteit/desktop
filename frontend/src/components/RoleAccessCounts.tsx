@@ -4,7 +4,7 @@ import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 
 type Props = {
-  role?: IOrganizationRole
+  role: IOrganizationRole
 }
 
 export const RoleAccessCounts: React.FC<Props> = ({ role }) => {
@@ -14,12 +14,11 @@ export const RoleAccessCounts: React.FC<Props> = ({ role }) => {
   useEffect(() => {
     ;(async () => {
       setCounts(null)
-      if (!role) return
       const devices = await dispatch.devices.fetchCount(role)
       const networks = await dispatch.networks.fetchCount(role)
       setCounts({ devices, networks })
     })()
-  }, [role])
+  }, [role.permissions, role.access, role.tag])
 
   return counts === null ? (
     <Chip size="small" label="Counting..." />

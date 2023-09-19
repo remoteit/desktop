@@ -126,9 +126,7 @@ export const OrganizationGuestPage: React.FC = () => {
                   />
                 )}
               </Box>
-              <Box display="flex">
-                <RoleAccessCounts role={role} />
-              </Box>
+              <Box display="flex">{role && <RoleAccessCounts role={role} />}</Box>
             </Box>
           </Gutters>
         </>
