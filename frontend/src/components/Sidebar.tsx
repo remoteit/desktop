@@ -32,8 +32,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
                   <b>Add a device</b>
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  Enable connections the services (applications) available to a device by installing the Remote.It
-                  agent.
+                  First step is to install our agent on any device you would like to connect to.
                 </Typography>
                 <Typography variant="body2" gutterBottom>
                   Your device will automatically register and appear on the <cite>devices</cite> page.
