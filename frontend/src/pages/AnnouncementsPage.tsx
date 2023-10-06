@@ -30,7 +30,7 @@ export const AnnouncementsPage = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>Inbox</Title>
+          <Title>Notifications</Title>
         </Typography>
       }
     >

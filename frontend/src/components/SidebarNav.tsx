@@ -105,7 +105,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
       <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       <Divider variant="inset" />
-      <ListItemLocation title="Inbox" pathname="/announcements" icon="envelope" badge={unreadAnnouncements} dense />
+      <ListItemLocation title="Notifications" pathname="/announcements" icon="bell" badge={unreadAnnouncements} dense />
       {limits.support > 10 ? (
         <ListItemLocation
           className={css.footer}
