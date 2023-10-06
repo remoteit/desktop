@@ -49,7 +49,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
                 await dispatch.devices.cloudUpdateService({ form, deviceId: device.id })
               } else {
                 await dispatch.devices.rename({ id: service.id, name: form.name })
-                await dispatch.devices.fetchDevices({ ids: [device.id] })
+                await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
               }
             }
             dispatch.ui.set({ setupServiceBusy: undefined })
