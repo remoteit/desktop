@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { selectNetworks } from '../selectors/networks'
 import { getDeviceModel } from '../selectors/devices'
@@ -8,10 +8,20 @@ import { selectEnabledConnections } from '../selectors/connections'
 import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@mui/material'
+import {
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemSecondaryAction,
+  Typography,
+  Tooltip,
+  Collapse,
+  Chip,
+} from '@mui/material'
 import { selectActiveCount } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
+import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
@@ -31,6 +41,7 @@ export const SidebarNav: React.FC = () => {
       }
     })
   const dispatch = useDispatch<Dispatch>()
+  const [more, setMore] = useState<boolean>()
   const css = useStyles({ active })
   const pathname = path => defaultSelected[path] || path
 
@@ -100,12 +111,20 @@ export const SidebarNav: React.FC = () => {
       </ListItemLocation>
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
-      <Divider variant="inset" />
-      <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
-      <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
-      <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
-      <Divider variant="inset" />
       <ListItemLocation title="Notifications" pathname="/announcements" icon="bell" badge={unreadAnnouncements} dense />
+      <ListItem sx={{ marginTop: 2 }}>
+        <ListItemButton onClick={() => setMore(!more)}>
+          <Typography variant="subtitle2" color="grayDark.main">
+            More
+            <ExpandIcon open={more} color="grayDark" />
+          </Typography>
+        </ListItemButton>
+      </ListItem>
+      <Collapse in={more}>
+        <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
+        <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
+        <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
+      </Collapse>
       {limits.support > 10 ? (
         <ListItemLocation
           className={css.footer}
