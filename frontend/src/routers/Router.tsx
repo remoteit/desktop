@@ -86,8 +86,6 @@ export const Router: React.FC = () => {
 
   return (
     <Switch>
-      {/* Start */}
-      <Redirect from="/" to="/devices" exact />
       {/* Deep links */}
       <Redirect
         from="/connect/:serviceID"
@@ -211,6 +209,7 @@ export const Router: React.FC = () => {
           <DeviceRouter layout={layout} />
         </DeviceContextWrapper>
       </Route>
+      {/* Logs */}
       <Route path="/logs">
         <Panel layout={layout}>
           <LogsPage />

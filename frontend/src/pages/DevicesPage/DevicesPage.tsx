@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { selectPermissions } from '../../selectors/organizations'
 import { getConnectionsLookup } from '../../selectors/connections'
 import { masterAttributes, restoreAttributes } from '../../components/Attributes'
 import { getVisibleDevices, getDeviceModel, selectMasterAttributes } from '../../selectors/devices'
@@ -14,21 +16,36 @@ import { DeviceListMemo } from '../../components/DeviceList'
 type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
-  const { selected, devices, connections, fetching, columnWidths, attributes, required } = useSelector(
-    (state: ApplicationState) => ({
-      selected: state.ui.selected,
-      attributes: restore ? restoreAttributes : selectMasterAttributes(state),
-      required: masterAttributes.find(a => a.required) || masterAttributes[0],
-      fetching: getDeviceModel(state).fetching || state.ui.fetching,
-      columnWidths: state.ui.columnWidths,
-      devices: getVisibleDevices(state),
-      connections: getConnectionsLookup(state),
+  const history = useHistory()
+  const [initLoad, setInitLoad] = useState<boolean>(false)
+  const { selected, devices, connections, fetching, initialized, permissions, columnWidths, attributes, required } =
+    useSelector((state: ApplicationState) => {
+      const deviceModel = getDeviceModel(state)
+      return {
+        selected: state.ui.selected,
+        attributes: restore ? restoreAttributes : selectMasterAttributes(state),
+        required: masterAttributes.find(a => a.required) || masterAttributes[0],
+        fetching: deviceModel.fetching || state.ui.fetching,
+        initialized: deviceModel.initialized,
+        permissions: selectPermissions(state),
+        columnWidths: state.ui.columnWidths,
+        devices: getVisibleDevices(state),
+        connections: getConnectionsLookup(state),
+      }
     })
-  )
+
+  const shouldRedirect = initLoad && permissions?.includes('MANAGE')
+
+  useEffect(() => {
+    if (!initialized) setInitLoad(true)
+    if (shouldRedirect && !devices.length) {
+      history.push('/add')
+    }
+  }, [initialized])
 
   return (
     <DevicesHeader>
-      {fetching && !devices.length ? (
+      {(fetching || shouldRedirect) && !devices.length ? (
         <LoadingMessage message="Loading..." spinner={false} />
       ) : !devices.length ? (
         <DeviceListEmpty />

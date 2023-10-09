@@ -20,10 +20,10 @@ import {
   graphQLPreloadDevices,
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
-import { getActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { getAllDevices, selectDevice, getDeviceModel, getVisibleDevices, selectById } from '../selectors/devices'
+import { getActiveAccountId } from '../selectors/accounts'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
@@ -98,11 +98,13 @@ export default createModel<RootModel>()({
       console.log('RESTORE DEVICE STATES', states)
       await dispatch.devices.set({ ...states, accountId })
     },
+
     async fetchList(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
+      const initialize = !deviceModel.initialized
 
-      if (!deviceModel.initialized) await dispatch.devices.init()
+      if (initialize) await dispatch.devices.init()
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
 
       const { set, graphQLListProcessor } = dispatch.devices
