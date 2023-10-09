@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Divider } from '@mui/material'
+import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Typography, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
@@ -11,11 +11,12 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { ListHorizontal } from '../components/ListHorizontal'
 import { IconButton } from '../buttons/IconButton'
+import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 import { TestUI } from '../components/TestUI'
-import { Body } from '../components/Body'
+import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 const CLAIM_CODE_LENGTH = 8
@@ -52,45 +53,17 @@ export const AddPage: React.FC = () => {
   }
 
   return (
-    <Body verticalOverflow>
+    <Container
+      integrated
+      bodyProps={{ verticalOverflow: true }}
+      gutterBottom
+      header={
+        <Typography variant="h1" gutterBottom>
+          <Title>What do you want to connect to?</Title>
+        </Typography>
+      }
+    >
       <Gutters className={css.container}>
-        <DeviceSetupItem className={classnames(css.list, css.quarter)} onClick={handleClose} />
-        <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
-          <ListSubheader disableGutters>Claim a device</ListSubheader>
-          <Divider />
-          <ListItem>
-            <form
-              className={css.form}
-              onSubmit={e => {
-                e.preventDefault()
-                devices.claimDevice({ code, redirect: true })
-              }}
-            >
-              <TextField
-                label="Claim Code"
-                value={code}
-                variant="filled"
-                disabled={claiming}
-                onChange={handleChange}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      submit
-                      title="Claim"
-                      icon="check"
-                      size="base"
-                      type="solid"
-                      color={claiming || !valid ? 'grayDark' : 'success'}
-                      loading={claiming}
-                      disabled={claiming || !valid}
-                    />
-                  ),
-                }}
-              />
-            </form>
-            <OrganizationIndicator alignItems="center" marginTop={1} />
-          </ListItem>
-        </ListHorizontal>
         <ListHorizontal className={classnames(css.list, css.quarter)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
@@ -131,7 +104,6 @@ export const AddPage: React.FC = () => {
         <ListHorizontal className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           <Divider />
-
           {[
             'raspberrypi',
             'linux',
@@ -168,8 +140,45 @@ export const AddPage: React.FC = () => {
             return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
           })}
         </ListHorizontal>
+        <DeviceSetupItem className={classnames(css.list, css.quarter)} onClick={handleClose} />
+        <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
+          <ListSubheader disableGutters>Claim a device</ListSubheader>
+          <Divider />
+          <ListItem>
+            <form
+              className={css.form}
+              onSubmit={e => {
+                e.preventDefault()
+                devices.claimDevice({ code, redirect: true })
+              }}
+            >
+              <TextField
+                label="Claim Code"
+                value={code}
+                variant="filled"
+                disabled={claiming}
+                onChange={handleChange}
+                InputProps={{
+                  endAdornment: (
+                    <IconButton
+                      submit
+                      title="Claim"
+                      icon="check"
+                      size="base"
+                      type="solid"
+                      color={claiming || !valid ? 'grayDark' : 'success'}
+                      loading={claiming}
+                      disabled={claiming || !valid}
+                    />
+                  ),
+                }}
+              />
+            </form>
+            <OrganizationIndicator alignItems="center" marginTop={1} />
+          </ListItem>
+        </ListHorizontal>
       </Gutters>
-    </Body>
+    </Container>
   )
 }
 
@@ -180,7 +189,6 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'flex-start',
   },
   list: {
-    '& .MuiListItem-root': { width: 140 },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
   },
