@@ -2,8 +2,8 @@ import React from 'react'
 import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
-  const wifi = darkMode ? '#034B9C' : '#034B9C'
   const r3 = '#1699D6'
+  const wifi = r3 //darkMode ? '#034B9C' : '#034B9C'
   return (
     <svg viewBox="0 0 608 717" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
       <g>
