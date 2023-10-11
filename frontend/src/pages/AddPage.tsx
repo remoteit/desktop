@@ -3,13 +3,22 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { ListItem, ListSubheader, ListItemIcon, ListItemText, TextField, Typography, Divider } from '@mui/material'
+import {
+  List,
+  ListItem,
+  ListSubheader,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  Typography,
+  Divider,
+} from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
-import { ListHorizontal } from '../components/ListHorizontal'
+import { AddPlatform } from '../components/AddPlatform'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
@@ -64,13 +73,14 @@ export const AddPage: React.FC = () => {
       }
     >
       <Gutters className={css.container}>
-        <ListHorizontal className={classnames(css.list, css.quarter)} dense disablePadding>
+        <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
           <ListItem
             button
             disableGutters
             disabled={hasDemo || claiming}
+            className={css.smallItem}
             onClick={() => {
               setCode(DEMO_DEVICE_CLAIM_CODE)
               devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
@@ -81,8 +91,13 @@ export const AddPage: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
-        </ListHorizontal>
-        <ListHorizontal className={css.list} dense disablePadding>
+        </List>
+        <List className={classnames(css.list, css.bigList)} dense disablePadding>
+          <ListSubheader disableGutters>Quick add Command</ListSubheader>
+          <Divider />
+          <AddPlatform />
+        </List>
+        <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
@@ -92,6 +107,7 @@ export const AddPage: React.FC = () => {
                 key={p}
                 iconPlatform
                 iconSize="xxl"
+                className={css.smallItem}
                 icon={platform.id}
                 pathname={`/add/${platform.id}`}
                 title={platform.name}
@@ -100,8 +116,8 @@ export const AddPage: React.FC = () => {
               />
             )
           })}
-        </ListHorizontal>
-        <ListHorizontal className={css.list} dense disablePadding>
+        </List>
+        <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           <Divider />
           {[
@@ -130,6 +146,7 @@ export const AddPage: React.FC = () => {
                 key={p}
                 iconPlatform
                 iconSize="xxl"
+                className={css.smallItem}
                 icon={platform.id}
                 pathname={`/add/${platform.id}`}
                 title={platform.name}
@@ -139,9 +156,9 @@ export const AddPage: React.FC = () => {
             )
             return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
           })}
-        </ListHorizontal>
-        <DeviceSetupItem className={classnames(css.list, css.quarter)} onClick={handleClose} />
-        <ListHorizontal className={classnames(css.quarter)} dense disablePadding>
+        </List>
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} onClick={handleClose} />
+        <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
           <ListItem>
@@ -176,25 +193,49 @@ export const AddPage: React.FC = () => {
             </form>
             <OrganizationIndicator alignItems="center" marginTop={1} />
           </ListItem>
-        </ListHorizontal>
+        </List>
       </Gutters>
     </Container>
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ breakpoints }) => ({
   container: {
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
   },
   list: {
+    minWidth: 200,
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    marginTop: spacing.md,
+    paddingRight: spacing.xs,
+    paddingLeft: spacing.md,
+    '& .MuiListItem-root': {
+      display: 'block',
+      minWidth: 140,
+      paddingLeft: spacing.md,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.sm,
+      paddingRight: spacing.md,
+      margin: 1,
+    },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
+    '& .MuiListSubheader-root': { width: '100%' },
+    '& .MuiDivider-root': { width: '100%' },
   },
-  quarter: {
-    width: '33%',
-    minWidth: 200,
+  smallItem: {
+    width: 140,
+  },
+  smallList: {
+    [breakpoints.up('md')]: { width: '25%' },
+  },
+  bigList: {
+    [breakpoints.up('md')]: { width: '75%' },
   },
   form: {
     width: 160,

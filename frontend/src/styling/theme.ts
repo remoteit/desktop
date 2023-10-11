@@ -569,7 +569,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           h5: {
             fontSize: fontSizes.sm * 0.75, // inputLabel shrink
-            color: palette.grayDark.main,
             letterSpacing: 0.5,
             fontWeight: 500,
             textTransform: 'uppercase',

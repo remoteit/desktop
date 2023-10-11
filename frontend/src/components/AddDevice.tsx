@@ -11,12 +11,13 @@ import { Link } from './Link'
 
 type Props = {
   platform: IPlatform
-  tags: string[]
   types: number[]
+  tags?: string[]
   redirect?: string
+  minimal?: boolean
 }
 
-export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) => {
+export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, minimal }) => {
   const { organization, registrationCommand, registrationCode, permissions, fetching, user } = useSelector(
     (state: ApplicationState) => ({
       organization: selectOrganization(state),
@@ -69,23 +70,29 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect }) 
     )
   }
 
-  return (
+  const codeBlock = (
+    <List>
+      <CopyCodeBlock
+        value={
+          fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
+        }
+        code={registrationCode}
+        link={redirect && registrationCode ? `${decodeURIComponent(redirect)}&code=${registrationCode}` : undefined}
+        label={platform.installation?.label}
+      />
+    </List>
+  )
+
+  return minimal ? (
+    codeBlock
+  ) : (
     <>
       <OrganizationIndicator avatarSize={42} marginBottom={3} />
-      <Typography variant="h3">
+      <Typography variant="h3" sx={{ marginBottom: 1 }}>
         {platform.installation?.qualifier},
         {codeOnly ? <> copy the code below:</> : <> run this command on your device:</>}
       </Typography>
-      <List>
-        <CopyCodeBlock
-          value={
-            fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
-          }
-          code={registrationCode}
-          link={redirect && registrationCode ? `${decodeURIComponent(redirect)}&code=${registrationCode}` : undefined}
-          label={platform.installation?.label}
-        />
-      </List>
+      {codeBlock}
       <Typography variant="body2" color="textSecondary">
         {platform.installation?.instructions ? (
           platform.installation.instructions

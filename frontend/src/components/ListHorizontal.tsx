@@ -1,7 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { MOBILE_WIDTH } from '../shared/constants'
-import { List, ListProps, useMediaQuery } from '@mui/material'
+import { List, ListProps } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
@@ -11,8 +10,7 @@ type Props = ListProps & {
 }
 
 export const ListHorizontal: React.FC<Props> = ({ size = 'large', hideIcons, children, ...props }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
-  const css = useStyles({ hideIcons, mobile, small: size === 'small' })
+  const css = useStyles({ hideIcons, small: size === 'small' })
   return (
     <List {...props} className={classnames(css.horizontal, props.className)}>
       {children}
@@ -27,21 +25,18 @@ const useStyles = makeStyles({
     alignItems: 'flex-start',
     flexWrap: 'wrap',
     marginTop: spacing.md,
-    paddingRight: mobile ? 0 : spacing.xs,
-    paddingLeft: mobile ? 0 : spacing.md,
+    paddingRight: spacing.xs,
+    paddingLeft: spacing.md,
     '& .MuiListItem-root': {
       display: small ? undefined : 'block',
-      minWidth: mobile ? 100 : 140,
-      width: mobile ? 100 : 140,
+      minWidth: 100,
+      width: 100,
       paddingLeft: small ? undefined : spacing.md,
       paddingTop: small ? undefined : spacing.lg,
       paddingBottom: small ? undefined : spacing.sm,
       paddingRight: spacing.md,
       margin: 1,
     },
-    '& .MuiListItemIcon-root': { minWidth: small ? 44 : 'initial' },
-    '& .MuiListSubheader-root': { width: '100%' },
-    '& .MuiDivider-root': { width: '100%' },
   }),
   small: {
     '& .MuiListItemIcon-root': { minWidth: 100 },

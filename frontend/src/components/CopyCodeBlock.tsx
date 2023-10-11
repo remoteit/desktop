@@ -1,16 +1,16 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { Box, Paper, PaperProps, Typography } from '@mui/material'
-import { spacing, fontSizes, radius } from '../styling'
+import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
+import { spacing, fontSizes } from '../styling'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
-import classnames from 'classnames'
 
 type Props = PaperProps & {
   value?: string
   code?: string
   label?: string
   link?: string
+  display?: 'code' | 'command'
   showBackground?: boolean
 }
 
@@ -20,20 +20,9 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...pr
   if (!value) return null
 
   return (
-    <Paper elevation={0} sx={{ backgroundColor: 'grayLightest.main' }} className={css.paper} {...props}>
-      <Box display="flex" padding={2} flexGrow={1} alignItems="stretch">
-        <Box>
-          <CopyIconButton size="md" value={value} placement="left" icon="clone" title="Copy" inlineLeft />
-        </Box>
-        <Box flexGrow={1} display="flex" justifyContent="center" flexDirection="column">
-          {label && <Typography variant="h5">{label}</Typography>}
-          <Typography className={css.key} variant="h4">
-            {value}
-          </Typography>
-        </Box>
-      </Box>
+    <Paper elevation={0} className={css.paper} {...props}>
       {code && value && code !== value && (
-        <Box className={classnames('hidden', css.icons)}>
+        <Box className={css.icons}>
           <Typography variant="h5" marginTop={1}>
             Copy
           </Typography>
@@ -42,8 +31,8 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...pr
             value={value}
             placement="right"
             variant="text"
-            color="grayDark"
-            icon={code ? 'command' : 'copy'}
+            icon={code ? 'command' : 'clone'}
+            type="regular"
             title="Copy command"
           />
           <CopyIconButton
@@ -51,12 +40,18 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...pr
             value={code}
             placement="right"
             variant="text"
-            color="grayDark"
+            type="regular"
             icon={code === value ? 'copy' : 'barcode'}
             title="Copy code"
           />
         </Box>
       )}
+      <Stack flexGrow={1} justifyContent="center" flexDirection="column" alignItems="flex-start" padding={2}>
+        {label && <Typography variant="h5">{label}</Typography>}
+        <Typography className={css.key} variant="h4">
+          {value}
+        </Typography>
+      </Stack>
       {link && (
         <IconButton
           fixedWidth
@@ -77,25 +72,19 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.xs,
-    borderTopRightRadius: radius,
-    borderBottomRightRadius: radius,
+    padding: spacing.xs,
+    borderRight: `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-root': { marginBottom: spacing.xxs },
     '& span': { marginRight: spacing.xs, marginLeft: spacing.xs },
-    '& span + span': { marginTop: -spacing.xxs },
+    '& span + span': { marginTop: -spacing.xs },
   },
   paper: {
-    marginTop: 2,
-    marginBottom: 1,
     display: 'flex',
-    '& .hidden': { opacity: 0, transition: 'opacity 400ms' },
-    '&:hover .hidden': { opacity: 1 },
+    backgroundColor: palette.grayLightest.main,
+    minWidth: 200,
   },
   button: {
-    minHeight: 80,
-    width: 80,
-    marginRight: -spacing.xxl,
+    width: 64,
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   },
