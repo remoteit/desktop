@@ -21,37 +21,48 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...pr
 
   return (
     <Paper elevation={0} className={css.paper} {...props}>
-      {code && value && code !== value && (
-        <Box className={css.icons}>
-          <Typography variant="h5" marginTop={1}>
-            Copy
-          </Typography>
-          <CopyIconButton
-            size="base"
-            value={value}
-            placement="right"
-            variant="text"
-            icon={code ? 'command' : 'clone'}
-            type="regular"
-            title="Copy command"
-          />
-          <CopyIconButton
-            size="base"
-            value={code}
-            placement="right"
-            variant="text"
-            type="regular"
-            icon={code === value ? 'copy' : 'barcode'}
-            title="Copy code"
-          />
-        </Box>
-      )}
-      <Stack flexGrow={1} justifyContent="center" flexDirection="column" alignItems="flex-start" padding={2}>
+      <Stack
+        flexGrow={1}
+        justifyContent="center"
+        flexDirection="column"
+        alignItems="flex-start"
+        padding={2}
+        paddingLeft={3}
+      >
         {label && <Typography variant="h5">{label}</Typography>}
         <Typography className={css.key} variant="h4">
           {value}
         </Typography>
       </Stack>
+      {(code || value) && (
+        <Box className={css.icons}>
+          <Typography variant="h5" marginTop={1}>
+            Copy
+          </Typography>
+          {value && (
+            <CopyIconButton
+              size="base"
+              value={value}
+              placement="right"
+              variant="text"
+              icon={code ? 'command' : 'clone'}
+              type="regular"
+              title="Copy command"
+            />
+          )}
+          {code && (
+            <CopyIconButton
+              size="base"
+              value={code}
+              placement="right"
+              variant="text"
+              type="regular"
+              icon={code === value ? 'copy' : 'barcode'}
+              title="Copy code"
+            />
+          )}
+        </Box>
+      )}
       {link && (
         <IconButton
           fixedWidth
@@ -73,7 +84,7 @@ const useStyles = makeStyles(({ palette }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     padding: spacing.xs,
-    borderRight: `1px solid ${palette.grayLighter.main}`,
+    borderLeft: `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-root': { marginBottom: spacing.xxs },
     '& span': { marginRight: spacing.xs, marginLeft: spacing.xs },
     '& span + span': { marginTop: -spacing.xs },

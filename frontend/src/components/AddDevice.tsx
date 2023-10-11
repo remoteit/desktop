@@ -71,7 +71,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
   }
 
   const codeBlock = (
-    <List>
+    <List disablePadding>
       <CopyCodeBlock
         value={
           fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
