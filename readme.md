@@ -123,6 +123,7 @@ Installation
 nvm install
 nvm use
 npm install -g npm@latest
+npm run build-backend
 npm install
 ```
 
