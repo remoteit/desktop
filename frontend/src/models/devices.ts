@@ -12,6 +12,8 @@ import {
   graphQLRemoveService,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
+  graphQLRemoveLink,
+  graphQLSetLink,
 } from '../services/graphQLMutation'
 import {
   graphQLFetchDeviceCount,
@@ -358,6 +360,39 @@ export default createModel<RootModel>()({
       })
       await graphQLRemoveService(serviceId)
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
+    },
+
+    async setLink({ serviceId, enabled }: { serviceId: string; enabled: boolean }) {
+      if (!serviceId) return
+
+      await dispatch.devices.updateService({ id: serviceId, set: { link: { enabled } } })
+      const result = await graphQLSetLink({ serviceId, enabled })
+
+      if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.code) {
+        dispatch.ui.set({ errorMessage: 'Could not update service.' })
+        return
+      }
+
+      const data = result?.data?.data?.setConnectLink
+      await dispatch.devices.updateService({
+        id: serviceId,
+        set: {
+          link: {
+            ...data,
+            created: new Date(data.created),
+          },
+        },
+      })
+    },
+
+    async removeLink(id: string) {
+      await dispatch.devices.updateService({ id, set: { link: undefined } })
+      const result = await graphQLRemoveLink(id)
+
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'An error occurred when trying to remove the service link.' })
+        await dispatch.devices.fetchSingleFull({ id, isService: true })
+      }
     },
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {

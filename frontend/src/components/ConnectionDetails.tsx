@@ -3,9 +3,9 @@ import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
 import { replaceHost } from '../shared/nameHelper'
-import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
+import { Application } from '../shared/applications'
 import { Typography, Tooltip, Collapse, Paper, Box, alpha } from '@mui/material'
-import { useApplication } from '../hooks/useApplication'
+import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
@@ -17,24 +17,16 @@ import { spacing } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
-  device?: IDevice
-  connection?: IConnection
-  service?: IService
-  session?: ISession
   showTitle?: string
   show?: boolean
+  app: Application
+  device?: IDevice
+  connection?: IConnection
+  session?: ISession
   children?: React.ReactNode
 }
 
-export const ConnectionDetails: React.FC<Props> = ({
-  showTitle,
-  show,
-  device,
-  connection,
-  service,
-  session,
-  children,
-}) => {
+export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, device, connection, session, children }) => {
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -42,7 +34,6 @@ export const ConnectionDetails: React.FC<Props> = ({
   const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copyLaunch' | undefined>()
   const [copied, setCopied] = useState<string | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
-  const app = useApplication(service, connection)
   const css = useStyles()
 
   const measure = () => {
@@ -61,7 +52,7 @@ export const ConnectionDetails: React.FC<Props> = ({
   useEffect(() => {
     const timeout = setTimeout(measure, 100)
     return () => clearTimeout(timeout)
-  }, [connection, service])
+  }, [connection, app])
 
   if (!connection && !session) return null
 
@@ -232,16 +223,14 @@ export const ConnectionDetails: React.FC<Props> = ({
                             />
                           </>
                         )}
-                        {app.launchType !== 'NONE' && (
-                          <CopyIconButton
-                            color="alwaysWhite"
-                            icon={app.launchType === 'URL' ? 'link' : 'terminal'}
-                            app={app}
-                            value={app.displayString}
-                            onMouseEnter={() => setHover('copyLaunch')}
-                            onMouseLeave={() => setHover(undefined)}
-                          />
-                        )}
+                        <CopyIconButton
+                          color="alwaysWhite"
+                          icon={app.launchType !== 'COMMAND' ? 'link' : 'terminal'}
+                          app={app}
+                          value={app.displayString}
+                          onMouseEnter={() => setHover('copyLaunch')}
+                          onMouseLeave={() => setHover(undefined)}
+                        />
                       </>
                     )}
                   </span>
@@ -255,11 +244,13 @@ export const ConnectionDetails: React.FC<Props> = ({
                         icon="share"
                         value={app.string}
                         onClick={() => navigator.share?.({ url: app.string })}
+                        onMouseEnter={() => setHover('copyLaunch')}
+                        onMouseLeave={() => setHover(undefined)}
                       />
                     </span>
                   )}
                   {app.launchType !== 'NONE' && (
-                    <span>
+                    <span className={css.marginLeft}>
                       <Typography variant="h5" color="alwaysWhite.main">
                         Launch
                       </Typography>
@@ -343,10 +334,10 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   share: {
     display: 'inline-flex',
-    justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
-    marginRight: spacing.md,
-    '& label': { transformOrigin: 'top center' },
+  },
+  marginLeft: {
+    marginLeft: spacing.md,
   },
 }))

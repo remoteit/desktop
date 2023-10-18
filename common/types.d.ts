@@ -340,6 +340,7 @@ declare global {
     deviceID: string
     link?: {
       url: string
+      code: string
       created: Date
       enabled: boolean
       password?: string

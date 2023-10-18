@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles'
 import { Box, alpha } from '@mui/material'
 import { spacing, fontSizes, Color, radius } from '../../styling'
 import { getLicenseChip } from '../LicenseChip'
+import { Icon } from '../Icon'
 import classnames from 'classnames'
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick, className }) => {
   let colorName: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
+  let icon: React.ReactNode = null
 
   if (connection) {
     if (connection.connecting || connection.stopping) state = 'transition'
@@ -57,13 +59,20 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
     onClick && onClick({ el: event.currentTarget, serviceID: service.id })
   }
 
+  if (service.link?.enabled) {
+    icon = <Icon name={service.link.url.startsWith('http') ? 'globe' : 'key'} type="solid" size="xxxs" inline />
+  }
+
   return (
     <Box
       component="span"
       className={classnames(onClick && css.clickable, css.indicator, className)}
       onMouseDown={onMouseDown}
     >
-      <span className={css.background}>{service.type}</span>
+      <span className={css.background}>
+        {service.type}
+        {icon}
+      </span>
     </Box>
   )
 }
@@ -90,6 +99,8 @@ const useStyles = makeStyles(({ palette }) => ({
     color: palette[colorName].main,
     backgroundColor: alpha(palette[colorName].main, 0.1),
     textDecoration,
+    display: 'flex',
+    alignItems: 'center',
   }),
   clickable: {
     cursor: 'pointer',

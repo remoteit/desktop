@@ -46,7 +46,7 @@ export const TestPage: React.FC = () => {
           label="Disable Test UI"
           subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
           onClick={() => {
-            ui.setPersistent({ testUI: 'OFF' })
+            ui.setPersistent({ testUI: undefined })
             emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
           }}
         />

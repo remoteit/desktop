@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { selectById } from '../selectors/devices'
 import { Typography } from '@mui/material'
 import { newConnection } from '../helpers/connectionHelper'
+import { useApplication } from '../hooks/useApplication'
 import { ConnectionDetails } from '../components/ConnectionDetails'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -27,6 +28,8 @@ export const ConnectionOtherPage: React.FC = () => {
       session: state.sessions.all.find(s => s.id === sessionID),
     }
   })
+
+  const app = useApplication(service, connection)
 
   if (!session) return <NoConnectionPage />
 
@@ -65,9 +68,9 @@ export const ConnectionOtherPage: React.FC = () => {
     >
       <Gutters top={null} size="md" bottom={null}>
         <ConnectionDetails
+          app={app}
           connection={connection}
           session={session}
-          service={service}
           device={device}
           showTitle={session?.user ? session.user.email : undefined}
           show

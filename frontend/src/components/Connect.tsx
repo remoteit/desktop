@@ -3,6 +3,7 @@ import { List, Button, Collapse, Divider } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
+import { useApplication } from '../hooks/useApplication'
 import { isReverseProxy } from '../models/applicationTypes'
 import { getDeviceModel } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
@@ -14,6 +15,7 @@ import { ConnectLinkSetting } from './ConnectLinkSetting'
 import { ServiceAttributes } from './ServiceAttributes'
 import { NetworksAccordion } from './NetworksAccordion'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { ServiceKeySetting } from './ServiceKeySetting'
 import { ListItemLocation } from './ListItemLocation'
 import { AutoLaunchToggle } from './AutoLaunchToggle'
 import { ConnectionSurvey } from './ConnectionSurvey'
@@ -33,15 +35,18 @@ export const Connect: React.FC = () => {
     autoCopy?: boolean
     autoFeedback?: boolean
   }>()
+  const dispatch = useDispatch<Dispatch>()
   const { sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const { connection, device, service, instance } = React.useContext(DeviceContext)
-  const dispatch = useDispatch<Dispatch>()
-  const { session, accordion, showConnectLink } = useSelector((state: ApplicationState) => ({
+  const { session, accordion, reverseProxy, testUI } = useSelector((state: ApplicationState) => ({
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
-    showConnectLink: isReverseProxy(state, service?.typeID),
+    reverseProxy: isReverseProxy(state, service?.typeID),
+    testUI: state.ui.testUI,
   }))
+
+  const app = useApplication(service, connection)
 
   useEffect(() => {
     if (!location.state) return
@@ -56,11 +61,11 @@ export const Connect: React.FC = () => {
     <>
       <Gutters top={null} size="md" bottom={null}>
         <ConnectionDetails
+          app={app}
           connection={connection}
-          service={service}
           session={session}
           device={device}
-          show={connection.enabled || connection.connectLink}
+          show={connection.enabled || !!connection.connectLink}
         >
           <ConnectionData connection={connection} service={service} session={session} />
         </ConnectionDetails>
@@ -79,7 +84,7 @@ export const Connect: React.FC = () => {
             <ListItemLocation
               icon="sliders"
               title="Connection configuration"
-              disabled={connection.connectLink}
+              disabled={!!connection.connectLink}
               pathname="advanced"
               showDisabled
               dense
@@ -87,14 +92,19 @@ export const Connect: React.FC = () => {
               <Icon name="angle-right" inlineLeft fixedWidth />
             </ListItemLocation>
             <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 1 }} />
-            <Collapse in={!connection.connectLink}>
+            <Collapse in={!connection.connectLink && app.canLaunch}>
               <AutoLaunchToggle connection={connection} service={service} />
             </Collapse>
-            <ConnectLinkSetting
-              connection={connection}
-              permissions={instance.permissions}
-              disabled={!showConnectLink}
-            />
+            {reverseProxy ? (
+              <ConnectLinkSetting
+                connection={connection}
+                permissions={instance.permissions}
+                reverseProxy={reverseProxy}
+                disabled={!reverseProxy && !testUI}
+              />
+            ) : (
+              <ServiceKeySetting connection={connection} service={service} permissions={instance.permissions} />
+            )}
             <PortalUI>
               <Notice gutterTop severity="info">
                 <strong>Want Persistent Endpoints?</strong>

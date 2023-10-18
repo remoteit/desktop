@@ -10,11 +10,10 @@ type Props = PaperProps & {
   code?: string
   label?: string
   link?: string
-  display?: 'code' | 'command'
-  showBackground?: boolean
+  hideCopyLabel?: boolean
 }
 
-export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...props }) => {
+export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, hideCopyLabel, link, ...props }) => {
   const css = useStyles()
 
   if (!value) return null
@@ -36,14 +35,16 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...pr
       </Stack>
       {(code || value) && (
         <Box className={css.icons}>
-          <Typography variant="h5" marginTop={1}>
-            Copy
-          </Typography>
+          {!hideCopyLabel && (
+            <Typography variant="h5" marginTop={1}>
+              Copy
+            </Typography>
+          )}
           {value && (
             <CopyIconButton
               size="base"
               value={value}
-              placement="right"
+              placement="left"
               variant="text"
               icon={code ? 'command' : 'clone'}
               type="regular"
@@ -54,7 +55,7 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, link, ...pr
             <CopyIconButton
               size="base"
               value={code}
-              placement="right"
+              placement="left"
               variant="text"
               type="regular"
               icon={code === value ? 'copy' : 'barcode'}

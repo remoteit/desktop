@@ -22,6 +22,6 @@ export const ListItemQuote: React.FC<Props> = ({ children }) => {
 }
 
 const useStyles = makeStyles({
-  indent: { marginRight: -spacing.lg, marginTop: -spacing.xs },
+  indent: { marginRight: -spacing.md, marginTop: spacing.xs },
   group: { marginBottom: spacing.sm },
 })

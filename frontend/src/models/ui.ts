@@ -34,7 +34,7 @@ const SAVED_STATES = [
 export type UIState = {
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
-  testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
+  testUI?: 'ON' | 'HIGHLIGHT'
   layout: ILayout
   silent: string | null
   selected: IDevice['id'][]
