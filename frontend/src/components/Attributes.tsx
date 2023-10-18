@@ -453,7 +453,7 @@ export const attributes: Attribute[] = [
   new ConnectionAttribute({
     id: 'source',
     label: 'Protocol',
-    value: ({ session }) => (session?.source === 'WEBSOCKET' ? 'WebSocket' : undefined),
+    value: ({ session }) => (session?.source === 'WEBSOCKET' ? 'WebSocket' : null),
   }),
   // new ConnectionAttribute({
   //   id: 'security',
