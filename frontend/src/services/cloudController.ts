@@ -136,6 +136,7 @@ class CloudController {
           ... on DeviceConnectEvent {
             platform
             session
+            source
             proxy
             sourceGeo {
               city
@@ -205,6 +206,7 @@ class CloudController {
         authUserId: state.auth.user?.id || '',
         platform: event.platform,
         sessionId: event.session,
+        source: event.source,
         geo: event.sourceGeo,
         quantity: event.quantity,
         expiration: event.expiration && new Date(event.expiration),
@@ -297,6 +299,7 @@ class CloudController {
             sessions.setSession({
               id: event.sessionId,
               timestamp: event.timestamp,
+              source: event.source,
               platform: event.platform,
               isP2P: event.isP2P,
               user: event.actor,
