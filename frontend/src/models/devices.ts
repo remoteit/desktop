@@ -272,7 +272,7 @@ export default createModel<RootModel>()({
       await graphQLRename(id, name)
     },
 
-    async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
+    async updateService({ id, set }: { id: string; set: Partial<IService> }, state) {
       let [_, device] = selectById(state, undefined, id)
       device = structuredClone(device)
       if (!device) return
@@ -365,7 +365,6 @@ export default createModel<RootModel>()({
     async setLink({ serviceId, enabled }: { serviceId: string; enabled: boolean }) {
       if (!serviceId) return
 
-      await dispatch.devices.updateService({ id: serviceId, set: { link: { enabled } } })
       const result = await graphQLSetLink({ serviceId, enabled })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.code) {
