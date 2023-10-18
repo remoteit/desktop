@@ -1,10 +1,10 @@
 import { emit } from '../services/Controller'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
+import { Application, getApplicationType } from '../shared/applications'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { selectConnections } from '../selectors/connections'
-import { Application } from '../shared/applications'
 import { selectById } from '../selectors/devices'
 import { isPortal } from '../services/Browser'
 
@@ -57,8 +57,7 @@ export function newConnection(service?: IService | null): IConnection {
     ...DEFAULT_CONNECTION,
     ...routeTypeToSettings(routeType),
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    autoLaunch:
-      cd?.autoLaunch === undefined ? [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0) : cd.autoLaunch, // FIXME
+    autoLaunch: cd?.autoLaunch === undefined ? getApplicationType(service?.typeID || 0)?.autoLaunch : cd.autoLaunch,
   }
 
   if (service) {
