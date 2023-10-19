@@ -3,8 +3,8 @@ import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
 import { getActiveAccountId } from '../selectors/accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { mergeDevice } from './devices'
 import { RootModel } from '.'
@@ -30,9 +30,8 @@ export default createModel<RootModel>()({
       await dispatch.accounts.fetch()
     },
     async fetch() {
-      try {
-        const result = await graphQLRequest(
-          ` query Accounts {
+      const result = await graphQLBasicRequest(
+        ` query Accounts {
               login {
                 membership {
                   created
@@ -51,12 +50,9 @@ export default createModel<RootModel>()({
                 }
               }
             }`
-        )
-        graphQLGetErrors(result)
-        await dispatch.accounts.parse(result)
-      } catch (error) {
-        await apiError(error)
-      }
+      )
+      if (result === 'ERROR') return
+      await dispatch.accounts.parse(result)
     },
     async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
       const gqlData = gqlResponse?.data?.data?.login

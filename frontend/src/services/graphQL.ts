@@ -23,7 +23,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   if (store.getState().ui.offline) return
   const token = await getToken()
   if (!token) {
-    console.warn('Unable to get token for graphQL request.')
+    console.warn('Unable to get token for graphQL request.', query, variables)
     return
   }
   const request = {

@@ -9,7 +9,6 @@ import {
   CognitoUserResult,
   SamlOrgResult,
 } from './types'
-// import Amplify, { Auth } from 'aws-amplify'
 import { CognitoUserSession } from 'amazon-cognito-identity-js'
 import axios from 'axios'
 
@@ -36,7 +35,7 @@ const defaultConfig: Config = {
 
 export class AuthService {
   public username?: string
-  private cognitoAuth: any
+  private cognitoAuth: typeof Auth
   private config: Config
   private cognitoUser?: CognitoUser
 
@@ -171,7 +170,7 @@ export class AuthService {
   public async oktaSignIn(): Promise<ICredentials> {
     return this.cognitoAuth.federatedSignIn({
       customState: this.config.redirectURL,
-      provider: 'Okta',
+      customProvider: 'Okta',
     })
   }
 
@@ -192,7 +191,7 @@ export class AuthService {
   public async samlSignIn(domain: string): Promise<ICredentials> {
     return this.cognitoAuth.federatedSignIn({
       customState: this.config.redirectURL,
-      provider: domain,
+      customProvider: domain,
     })
   }
 
@@ -225,7 +224,7 @@ export class AuthService {
     return resp
   }
 
-  public async forgotPasswordSubmit(shortcode: string, password: string, email?: string): Promise<void> {
+  public async forgotPasswordSubmit(shortcode: string, password: string, email?: string): Promise<string> {
     email = email || this.username
     if (!email) throw new Error('Cannot send password reset, no email provided!')
     this.username = email
