@@ -55,8 +55,9 @@ export const FilterDrawer: React.FC = () => {
   }
 
   const onTag = value => {
-    let result = state.tag?.values
+    let result = state.tag ? [...state.tag.values] : undefined
     const index = result && result.indexOf(value)
+    console.log({ value, tag: state.tag, index, result })
 
     if (index !== undefined && index >= 0) result?.splice(index, 1)
     else if (value === '') result = undefined

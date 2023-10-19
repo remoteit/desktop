@@ -229,6 +229,8 @@ declare global {
     | 'stopping'
     | 'ready'
 
+  type IConnectionSource = 'UNKNOWN' | 'INTERNAL' | 'EXTERNAL' | 'WEBSOCKET'
+
   type IConnectionKey = keyof IConnection
 
   interface IosInfo {
@@ -340,6 +342,7 @@ declare global {
     deviceID: string
     link?: {
       url: string
+      code: string
       created: Date
       enabled: boolean
       password?: string
@@ -515,6 +518,7 @@ declare global {
     isP2P?: boolean
     timestamp: Date
     platform: number
+    source: IConnectionSource
     state?: IConnectionState
     user?: IUserRef
     geo?: IGeo
@@ -541,6 +545,7 @@ declare global {
 
   interface ICloudEvent {
     sessionId: string
+    source: IConnectionSource
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'DEVICE_REFRESH' | 'DEVICE_DELETE' | 'LICENSE_UPDATED'
     state: IDevice['state'] | 'connected' | 'disconnected'
     action: 'add' | 'update' | 'remove'

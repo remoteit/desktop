@@ -62,16 +62,12 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
   )
 }
 
-export async function graphQLSetConnectLink(params: {
-  serviceId: string
-  password?: string | null
-  enabled?: boolean
-}) {
+export async function graphQLSetLink(params: { serviceId: string; password?: string | null; enabled?: boolean }) {
   return await graphQLBasicRequest(
     ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean) {
         setConnectLink(serviceId: $serviceId, password: $password, enabled: $enabled) {
           url
-          password
+          code
           enabled
           created
         }
@@ -80,7 +76,7 @@ export async function graphQLSetConnectLink(params: {
   )
 }
 
-export async function graphQLRemoveConnectLink(serviceId: string) {
+export async function graphQLRemoveLink(serviceId: string) {
   return await graphQLBasicRequest(
     ` mutation RemoveLink($serviceId: String!) {
         removeConnectLink(serviceId: $serviceId)

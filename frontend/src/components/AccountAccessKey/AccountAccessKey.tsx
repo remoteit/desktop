@@ -14,6 +14,7 @@ import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { CodeBlock } from '../CodeBlock'
 import { Timestamp } from '../Timestamp'
 import { Gutters } from '../Gutters'
 import { Notice } from '../Notice'
@@ -42,9 +43,11 @@ export const AccountAccessKey: React.FC = () => {
       <Typography variant="subtitle1">Authentication</Typography>
       <Gutters>
         <Typography variant="body2" gutterBottom>
-          Access keys are used to authenticate you with our API. You can create a new key or delete an existing key at
-          any time. You can also temporarily disable a key.
+          Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an
+          existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit
+          directory of your home folder:
         </Typography>
+        <CodeBlock>~/.remoteit/credentials</CodeBlock>
         <Notice severity="warning" fullWidth gutterBottom>
           If you lose or forget your secret key, you cannot retrieve it.
           <em> There is a limit of 2 access keys. Keep your keys in a safe place.</em>

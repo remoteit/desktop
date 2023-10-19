@@ -14,8 +14,10 @@ const SERVICE_PRELOAD = `
   license
   application
   subdomain
-  link {
+  proxy
+  link(type: [HTTPS, WSS]) {
     url
+    code
     created
     password
     enabled

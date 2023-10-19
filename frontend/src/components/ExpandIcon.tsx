@@ -1,13 +1,15 @@
 import React from 'react'
-import { Icon } from './Icon'
+import { Icon, IconProps } from './Icon'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 
-type Props = { open?: boolean }
+type Props = IconProps & { open?: boolean }
 
-export const ExpandIcon: React.FC<Props> = ({ open }) => {
+export const ExpandIcon: React.FC<Props> = ({ open, ...props }) => {
   const css = useStyles({ open })
-  return <Icon className={css.rotate} color="grayDarker" name="caret-down" type="solid" size="sm" fixedWidth />
+  return (
+    <Icon className={css.rotate} color="grayDarker" name="caret-down" type="solid" size="sm" fixedWidth {...props} />
+  )
 }
 
 const useStyles = makeStyles({

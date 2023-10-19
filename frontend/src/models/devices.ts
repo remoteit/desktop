@@ -12,6 +12,8 @@ import {
   graphQLRemoveService,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
+  graphQLRemoveLink,
+  graphQLSetLink,
 } from '../services/graphQLMutation'
 import {
   graphQLFetchDeviceCount,
@@ -20,10 +22,10 @@ import {
   graphQLPreloadDevices,
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
-import { getActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { getAllDevices, selectDevice, getDeviceModel, getVisibleDevices, selectById } from '../selectors/devices'
+import { getActiveAccountId } from '../selectors/accounts'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
@@ -98,11 +100,13 @@ export default createModel<RootModel>()({
       console.log('RESTORE DEVICE STATES', states)
       await dispatch.devices.set({ ...states, accountId })
     },
+
     async fetchList(_: void, state) {
       const accountId = getActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
+      const initialize = !deviceModel.initialized
 
-      if (!deviceModel.initialized) await dispatch.devices.init()
+      if (initialize) await dispatch.devices.init()
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
 
       const { set, graphQLListProcessor } = dispatch.devices
@@ -268,7 +272,7 @@ export default createModel<RootModel>()({
       await graphQLRename(id, name)
     },
 
-    async updateService({ id, set }: { id: string; set: ILookup<any> }, state) {
+    async updateService({ id, set }: { id: string; set: Partial<IService> }, state) {
       let [_, device] = selectById(state, undefined, id)
       device = structuredClone(device)
       if (!device) return
@@ -356,6 +360,38 @@ export default createModel<RootModel>()({
       })
       await graphQLRemoveService(serviceId)
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
+    },
+
+    async setLink({ serviceId, enabled }: { serviceId: string; enabled: boolean }) {
+      if (!serviceId) return
+
+      const result = await graphQLSetLink({ serviceId, enabled })
+
+      if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.code) {
+        dispatch.ui.set({ errorMessage: 'Could not update service.' })
+        return
+      }
+
+      const data = result?.data?.data?.setConnectLink
+      await dispatch.devices.updateService({
+        id: serviceId,
+        set: {
+          link: {
+            ...data,
+            created: new Date(data.created),
+          },
+        },
+      })
+    },
+
+    async removeLink(id: string) {
+      await dispatch.devices.updateService({ id, set: { link: undefined } })
+      const result = await graphQLRemoveLink(id)
+
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'An error occurred when trying to remove the service link.' })
+        await dispatch.devices.fetchSingleFull({ id, isService: true })
+      }
     },
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {

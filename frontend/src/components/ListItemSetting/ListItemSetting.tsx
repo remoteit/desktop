@@ -14,7 +14,7 @@ type Props = {
   label: React.ReactNode
   subLabel?: React.ReactNode
   size?: 'small' | 'medium'
-  button?: string
+  button?: React.ReactNode
   toggle?: boolean
   tooltip?: string
   disabled?: boolean

@@ -16,8 +16,8 @@ import {
   graphQLConnect,
   graphQLDisconnect,
   graphQLSurvey,
-  graphQLSetConnectLink,
-  graphQLRemoveConnectLink,
+  graphQLSetLink,
+  graphQLRemoveLink,
 } from '../services/graphQLMutation'
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
 import { selectApplication } from '../selectors/applications'
@@ -89,7 +89,7 @@ export default createModel<RootModel>()({
           const online = s.state === 'active'
 
           // add / update enabled connect links
-          if (s.link?.enabled) {
+          if (s.link?.enabled && s.link.url.startsWith('http')) {
             connection = connection || newConnection(s)
             connection = {
               ...connection,
@@ -323,7 +323,7 @@ export default createModel<RootModel>()({
       console.log('SET CONNECT LINK', connection)
 
       dispatch.connections.updateConnection(creating)
-      const result = await graphQLSetConnectLink({
+      const result = await graphQLSetLink({
         serviceId: connection.id,
         enabled: connection.enabled,
         password: REGEX_HIDDEN_PASSWORD.test(connection.password || '')
@@ -358,10 +358,8 @@ export default createModel<RootModel>()({
         id: connection.id,
         set: {
           link: {
-            url: data?.url,
+            ...data,
             created: new Date(data.created),
-            enabled: !!data?.enabled,
-            password: data?.password,
           },
         },
       })
@@ -374,7 +372,7 @@ export default createModel<RootModel>()({
 
       dispatch.connections.setConnectLink({ ...connection, enabled: false })
       dispatch.devices.updateService({ id: connection.id, set: { link: undefined } })
-      const result = await graphQLRemoveConnectLink(connection.id)
+      const result = await graphQLRemoveLink(connection.id)
 
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred removing your persistent connection. Please contact support.' }

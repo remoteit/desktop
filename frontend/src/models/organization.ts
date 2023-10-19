@@ -30,10 +30,15 @@ export const PERMISSION: ILookup<{
   SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll', hidden: true },
   MANAGE: {
     name: 'Manage',
-    description: 'Edit, delete, register, transfer and share devices and networks',
+    description: 'Edit, delete, transfer and share devices and networks',
     icon: 'pencil',
   },
-  ADMIN: { name: 'Administer', description: 'Manage organization tags and members', icon: 'user-tag', user: true },
+  ADMIN: {
+    name: 'Administer',
+    description: 'Manage organization tags, members and device registrations',
+    icon: 'user-tag',
+    user: true,
+  },
 }
 
 export const DEFAULT_ROLE: IOrganizationRole = {
@@ -359,6 +364,7 @@ export default createModel<RootModel>()({
         grant: role.permissions,
         revoke: permissions.filter(p => !role.permissions.includes(p)),
         tag: role.tag,
+        access: role.access,
         accountId: getActiveAccountId(state),
       }
 

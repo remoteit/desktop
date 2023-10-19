@@ -123,15 +123,14 @@ Installation
 nvm install
 nvm use
 npm install -g npm@latest
-cd backend && npm run build && cd ../
+npm run build-backend
 npm install
 ```
 
 Start web app
 
 ```shell
-cd frontend
-npm start
+npm run frontend
 ```
 
 Start electron app

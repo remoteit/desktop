@@ -26,6 +26,7 @@ export default createModel<RootModel>()({
                 sessions {
                   id
                   timestamp
+                  source
                   endpoint {
                     proxy
                     platform
@@ -82,6 +83,7 @@ export default createModel<RootModel>()({
         sessions.push({
           id: e.id,
           timestamp: new Date(e.timestamp),
+          source: e.source,
           isP2P: !e.endpoint.proxy,
           platform: e.endpoint.platform,
           user: e.user,

@@ -1,3 +1,4 @@
+import { Color as ColorType, ColorPartial } from '@mui/material/styles/createPalette'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
 import { Color } from './styling'
@@ -228,64 +229,64 @@ declare global {
 
 declare module '@mui/material/styles' {
   interface Palette {
-    primaryLight: Palette['primary']
-    primaryLighter: Palette['primary']
-    primaryHighlight: Palette['primaryHighlight']
-    primaryBackground: Palette['primaryBackground']
-    secondary: Palette['secondary']
-    successLight: Palette['successLight']
-    success: Palette['success']
-    successDark: Palette['successDark']
-    dangerLight: Palette['dangerLight']
-    danger: Palette['danger']
-    warning: Palette['warning']
-    warningLightest: Palette['warningLightest']
-    warningHighlight: Palette['warningHighlight']
-    gray: Palette['gray']
-    grayLightest: Palette['grayLightest']
-    grayLighter: Palette['grayLighter']
-    grayLight: Palette['grayLight']
-    grayDark: Palette['grayDark']
-    grayDarker: Palette['grayDarker']
-    grayDarkest: Palette['grayDarkest']
-    white: Palette['white']
-    black: Palette['black']
-    alwaysWhite?: Palette['alwaysWhite']
-    darken: Palette['darken']
-    screen: Palette['screen']
-    rpi: Palette['rpi']
-    guide: Palette['guide']
-    test: Palette['test']
+    primaryLight: ColorType
+    primaryLighter: ColorType
+    primaryHighlight: ColorType
+    primaryBackground: ColorType
+    secondary: ColorType
+    successLight: ColorType
+    success: ColorType
+    successDark: ColorType
+    dangerLight: ColorType
+    danger: ColorType
+    warning: ColorType
+    warningLightest: ColorType
+    warningHighlight: ColorType
+    gray: ColorType
+    grayLightest: ColorType
+    grayLighter: ColorType
+    grayLight: ColorType
+    grayDark: ColorType
+    grayDarker: ColorType
+    grayDarkest: ColorType
+    white: ColorType
+    black: ColorType
+    alwaysWhite: ColorType
+    darken: ColorType
+    screen: ColorType
+    rpi: ColorType
+    guide: ColorType
+    test: ColorType
   }
   interface PaletteOptions {
-    primaryLight?: PaletteOptions['primary']
-    primaryLighter?: PaletteOptions['primary']
-    primaryHighlight?: Palette['primaryHighlight']
-    primaryBackground?: Palette['primaryBackground']
-    secondary?: Palette['secondary']
-    successLight?: Palette['successLight']
-    success?: Palette['success']
-    successDark?: Palette['successDark']
-    dangerLight?: Palette['dangerLight']
-    danger?: Palette['danger']
-    warning?: Palette['warning']
-    warningLightest: Palette['warningLightest']
-    warningHighlight: Palette['warningHighlight']
-    gray?: Palette['gray']
-    grayLightest?: Palette['grayLightest']
-    grayLighter?: Palette['grayLighter']
-    grayLight?: Palette['grayLight']
-    grayDark?: Palette['grayDark']
-    grayDarker?: Palette['grayDarker']
-    grayDarkest?: Palette['grayDarkest']
-    white?: Palette['white']
-    black?: Palette['black']
-    alwaysWhite?: Palette['alwaysWhite']
-    darken?: Palette['darken']
-    screen?: Palette['screen']
-    rpi?: Palette['rpi']
-    guide?: Palette['guide']
-    test?: Palette['test']
+    primaryLight?: ColorPartial
+    primaryLighter?: ColorPartial
+    primaryHighlight?: ColorPartial
+    primaryBackground?: ColorPartial
+    secondary?: ColorPartial
+    successLight?: ColorPartial
+    success?: ColorPartial
+    successDark?: ColorPartial
+    dangerLight?: ColorPartial
+    danger?: ColorPartial
+    warning?: ColorPartial
+    warningLightest: ColorPartial
+    warningHighlight: ColorPartial
+    gray?: ColorPartial
+    grayLightest?: ColorPartial
+    grayLighter?: ColorPartial
+    grayLight?: ColorPartial
+    grayDark?: ColorPartial
+    grayDarker?: ColorPartial
+    grayDarkest?: ColorPartial
+    white?: ColorPartial
+    black?: ColorPartial
+    alwaysWhite?: ColorPartial
+    darken?: ColorPartial
+    screen?: ColorPartial
+    rpi?: ColorPartial
+    guide?: ColorPartial
+    test?: ColorPartial
   }
 }
 

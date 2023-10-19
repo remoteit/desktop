@@ -100,7 +100,7 @@ export default createModel<RootModel>()({
        -- used when new device list query is made
     */
     async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
-      if (!devices?.length) return
+      if (!devices) return
       const all = getDevices(state, accountId)
 
       const mergedDevices = devices.map(keep => {

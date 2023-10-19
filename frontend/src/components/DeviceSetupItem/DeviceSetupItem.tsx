@@ -1,11 +1,11 @@
 import React from 'react'
-import { emit } from '../../services/Controller'
 import { safeHostname } from '../../shared/nameHelper'
 import { getDeviceModel } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import {
+  List,
   ListItem,
   ListItemText,
   ListSubheader,
@@ -17,7 +17,6 @@ import {
   Typography,
 } from '@mui/material'
 import { isPortal, getOs } from '../../services/Browser'
-import { ListHorizontal } from '../../components/ListHorizontal'
 import { getAllDevices } from '../../selectors/devices'
 import { GuideBubble } from '../../components/GuideBubble'
 import { DesktopUI } from '../../components/DesktopUI'
@@ -28,7 +27,6 @@ type Props = { className?: string; onClick?: () => void }
 
 export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   const history = useHistory()
-  const dispatch = useDispatch<Dispatch>()
   const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: ApplicationState) => ({
     registered: !!state.backend.thisId,
     hostname: safeHostname(state.backend.environment.hostname, []),
@@ -42,9 +40,9 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
 
   if (restoring)
     return (
-      <ListHorizontal className={className} dense disablePadding>
+      <List className={className} dense disablePadding>
         <Notice loading={true}>Restoring device...</Notice>
-      </ListHorizontal>
+      </List>
     )
 
   let secondary: React.ReactNode
@@ -81,7 +79,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
 
   return (
     <DesktopUI>
-      <ListHorizontal className={className} dense disablePadding>
+      <List className={className} dense disablePadding>
         <ListSubheader disableGutters>Add this system</ListSubheader>
         <Divider />
         <GuideBubble
@@ -113,7 +111,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
             )}
           </ListItem>
         </GuideBubble>
-      </ListHorizontal>
+      </List>
     </DesktopUI>
   )
 }

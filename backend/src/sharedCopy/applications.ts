@@ -27,6 +27,8 @@ export class Application {
   cloudData?: IApplicationType
   localhost?: boolean
   helpMessage?: string
+  autoLaunch?: boolean
+  canShare?: boolean
 
   connection?: IConnection
   service?: IService
@@ -53,10 +55,6 @@ export class Application {
 
   get canLaunch() {
     return !(this.portal && this.launchType === 'COMMAND') && this.launchType !== 'NONE'
-  }
-
-  get canShare() {
-    return !!this.connection?.connectLink
   }
 
   get icon() {
@@ -228,6 +226,16 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   app.globalDefaults = globalDefaults?.[typeID || ''] || {}
   app.cloudData = getCloudData(typeID)
 
+  // Handle connect links
+  if (connection?.connectLink && service?.link?.url) {
+    const url = service.link.url
+    app.title = app.reverseProxy ? 'Public' : 'Unauthenticated'
+    app.canShare = true
+    app.appCommandTemplate = url
+    app.appLaunchTemplate = url
+    app.appLaunchType = app.reverseProxy ? 'URL' : 'NONE'
+  }
+
   return app
 }
 
@@ -285,6 +293,7 @@ export function getApplicationType(typeId?: number) {
         title: 'Secure Browser',
         appLaunchType: 'URL',
         urlForm: true,
+        autoLaunch: true,
       })
     case 7:
     case 30:
@@ -295,6 +304,7 @@ export function getApplicationType(typeId?: number) {
         title: 'Browser',
         appLaunchType: 'URL',
         urlForm: true,
+        autoLaunch: true,
       })
     case 34:
       return new Application({
@@ -314,9 +324,9 @@ export function getApplicationType(typeId?: number) {
       })
     case 48:
       return new Application({
-        title: 'Screen Sharing',
+        title: 'Screen View',
         appLaunchType: 'URL',
-        appLaunchTemplate: 'http://[host]:[port]',
+        autoLaunch: true,
       })
     default:
       return new Application({})

@@ -6,7 +6,6 @@ import { ListItemSetting } from './ListItemSetting'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { useDispatch } from 'react-redux'
 import { Typography } from '@mui/material'
-import { ColorChip } from './ColorChip'
 import { Dispatch } from '../store'
 
 type ISecurity = 'PROTECTED' | 'OPEN'
@@ -15,10 +14,11 @@ const MAX_PASSWORD_LENGTH = 49
 type Props = {
   connection: IConnection
   permissions: IPermission[]
+  reverseProxy?: boolean
   disabled?: boolean
 }
 
-export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, disabled }) => {
+export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, reverseProxy, disabled }) => {
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
@@ -77,12 +77,12 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, d
           ),
         }}
       />
-      {canManage && (
+      {canManage && reverseProxy && (
         <ListItemQuote>
           <SelectSetting
             hideIcon
             disabled={connection.updating || disabled}
-            label="Authentication"
+            label="Web Authentication"
             value={security}
             values={[
               { name: 'None', key: 'OPEN' },

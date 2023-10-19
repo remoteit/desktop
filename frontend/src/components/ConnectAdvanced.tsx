@@ -6,6 +6,7 @@ import { PublicSetting } from './PublicSetting'
 import { DeviceContext } from '../services/Context'
 import { RouteSetting } from './RouteSetting'
 import { TimeoutSetting } from './TimeoutSetting'
+import { useApplication } from '../hooks/useApplication'
 import { ConnectionLogSetting } from './ConnectionLogSetting'
 import { HeaderOverrideSetting } from './HeaderOverrideSetting'
 import { AccordionMenuItem } from './AccordionMenuItem'
@@ -28,6 +29,7 @@ export const ConnectAdvanced: React.FC = () => {
   const { connection, service, instance, device } = React.useContext(DeviceContext)
   const accordion = useSelector((state: ApplicationState) => state.ui.accordion)
   const dispatch = useDispatch<Dispatch>()
+  const app = useApplication(service, connection)
 
   if (!service) return <NoConnectionPage />
 
@@ -35,8 +37,8 @@ export const ConnectAdvanced: React.FC = () => {
     <Gutters size="md" top={null} bottom={null}>
       <ConnectionDetails
         connection={connection}
-        service={service}
         device={device}
+        app={app}
         show={connection.enabled || connection.connectLink}
       />
       <Box display="flex" marginTop={2}>

@@ -20,7 +20,7 @@ export const PermissionsList: React.FC<Props> = ({ permissions, allowed, locked,
           <ListItemSetting
             key={p}
             toggle={toggle}
-            disabled={disabled}
+            disabled={disabled || PERMISSION[p].system || locked}
             icon={PERMISSION[p].icon}
             label={PERMISSION[p].name}
             subLabel={PERMISSION[p].description}

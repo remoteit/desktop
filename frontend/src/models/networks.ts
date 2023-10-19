@@ -327,12 +327,12 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: INetworksAccountState, params: Partial<INetworksAccountState>) {
-      Object.keys(params).forEach(key => (state[key] = params[key]))
-      return state
-    },
     reset(state: INetworksAccountState) {
       state = { ...defaultAccountState }
+      return state
+    },
+    set(state: INetworksAccountState, params: Partial<INetworksAccountState>) {
+      Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },

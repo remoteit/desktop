@@ -7,7 +7,7 @@ export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ childre
   const { testUI } = useSelector((state: ApplicationState) => state.ui)
   const css = useStyles()
 
-  if (!testUI || testUI === 'OFF') return null
+  if (!testUI) return null
 
   return (
     <div title="test ui feature" className={testUI === 'HIGHLIGHT' ? css.style : undefined} {...props}>
