@@ -86,7 +86,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
 
   return (
     <DiagramContext.Provider value={{ state, relay, toTypes, activeTypes, highlightTypes, errorTypes }}>
-      {/* <Pre {...{ connection }} /> */}
+      {/* <Pre {...{ state }} /> */}
       <Box className={css.diagram}>
         {lan && (
           <>

@@ -23,7 +23,9 @@ export const ServiceRouter: React.FC<{ basename: string }> = ({ basename }) => {
         <SharePage />
       </Route>
       <Route path={basename}>
-        <ServiceHeaderMenu backgroundColor={connection.enabled ? 'primaryBackground' : 'grayLighter'}>
+        <ServiceHeaderMenu
+          backgroundColor={connection.enabled && connection.online ? 'primaryBackground' : 'grayLighter'}
+        >
           <Switch>
             <Route path={`${basename}/users`}>
               <ServiceUsersPage device={device} />

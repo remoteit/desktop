@@ -90,7 +90,7 @@ export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
       break
   }
 
-  if (active) {
+  if (active && state !== 'offline') {
     props.color = 'primary'
   }
 

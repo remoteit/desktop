@@ -19,7 +19,7 @@ export const selectConnections = createSelector([getAllConnections], connections
 })
 
 export const selectEnabledConnections = createSelector([selectConnections], connections => {
-  return connections.filter(connection => connection.enabled)
+  return connections.filter(connection => connection.online && connection.enabled)
 })
 
 export const selectConnection = createSelector(
