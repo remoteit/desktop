@@ -12,8 +12,8 @@ export const ROUTES: IRoute[] = [
   {
     key: 'failover',
     icon: 'code-branch',
-    name: 'Peer to peer with proxy failover',
-    description: 'A direct connection to this service that fails over to a private proxy.',
+    name: 'Adaptive',
+    description: 'Will pick the best route available, prioritizing a direct connection to this service.',
   },
   {
     key: 'p2p',
@@ -31,7 +31,7 @@ export const ROUTES: IRoute[] = [
     key: 'public',
     icon: 'globe',
     name: 'Public Proxy',
-    description: 'A proxy connection with a temporary public URL.',
+    description: 'A cloud proxy connection with a temporary public URL.',
   },
 ]
 

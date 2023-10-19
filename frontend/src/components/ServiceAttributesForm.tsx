@@ -76,7 +76,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         <Typography variant="caption">
           {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
           <i> Routing is only available on desktop.</i>
-          <b> Default peer to peer with proxy failover</b>
+          <b> Default adaptive routing</b>
         </Typography>
       </ListItem>
       {!globalDefaults && app.reverseProxy && (
