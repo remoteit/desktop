@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectPermissions, selectOrganization } from '../selectors/organizations'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
-import { CopyCodeBlock } from './CopyCodeBlock'
+import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { Notice } from './Notice'
 import { Link } from './Link'
 
@@ -71,8 +71,8 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
   }
 
   const codeBlock = (
-    <List disablePadding>
-      <CopyCodeBlock
+    <List disablePadding={minimal}>
+      <CopyRegistrationCode
         value={
           fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
         }

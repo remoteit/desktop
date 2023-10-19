@@ -20,7 +20,7 @@ export type ConfirmProps = {
   color?: ButtonProps['color']
   children?: React.ReactNode
   onConfirm: (e: React.MouseEvent) => void
-  onDeny: () => void
+  onDeny?: () => void
 }
 
 export const Confirm: React.FC<ConfirmProps> = ({
@@ -39,15 +39,17 @@ export const Confirm: React.FC<ConfirmProps> = ({
     maxWidth={maxWidth}
     TransitionComponent={Transition}
     transitionDuration={200}
-    onClose={onDeny}
+    onClose={onDeny || onConfirm}
     fullWidth
   >
     <DialogTitle>{title}</DialogTitle>
     <DialogContent>{children}</DialogContent>
     <DialogActions>
-      <Button color="primary" onClick={onDeny}>
-        Cancel
-      </Button>
+      {onDeny && (
+        <Button color="primary" onClick={onDeny}>
+          Cancel
+        </Button>
+      )}
       <Button autoFocus variant="contained" color={color} disabled={disabled} onClick={onConfirm}>
         &nbsp; {action} &nbsp;
       </Button>

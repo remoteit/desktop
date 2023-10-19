@@ -5,15 +5,24 @@ import { spacing, fontSizes } from '../styling'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 
-type Props = PaperProps & {
+export type CopyCodeBlockProps = PaperProps & {
   value?: string
   code?: string
   label?: string
   link?: string
   hideCopyLabel?: boolean
+  onCopy?: () => void
 }
 
-export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, hideCopyLabel, link, ...props }) => {
+export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
+  value,
+  code,
+  label,
+  hideCopyLabel,
+  link,
+  onCopy,
+  ...props
+}) => {
   const css = useStyles()
 
   if (!value) return null
@@ -49,6 +58,7 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, hideCopyLab
               icon={code ? 'command' : 'clone'}
               type="regular"
               title="Copy command"
+              onCopy={onCopy}
             />
           )}
           {code && (
@@ -60,6 +70,7 @@ export const CopyCodeBlock: React.FC<Props> = ({ value, code, label, hideCopyLab
               type="regular"
               icon={code === value ? 'copy' : 'barcode'}
               title="Copy code"
+              onCopy={onCopy}
             />
           )}
         </Box>
