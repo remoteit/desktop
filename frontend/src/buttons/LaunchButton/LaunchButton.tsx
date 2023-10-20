@@ -76,14 +76,7 @@ export const LaunchButton: React.FC<Props> = ({
     heartbeat.connect()
   }
 
-  const LaunchIcon = (
-    <Icon
-      {...props}
-      name={connection?.error ? 'hyphen' : loading ? 'spinner-third' : 'launch'}
-      spin={loading}
-      fixedWidth
-    />
-  )
+  const LaunchIcon = <Icon {...props} name={loading ? 'spinner-third' : 'launch'} spin={loading} fixedWidth />
 
   return (
     <>

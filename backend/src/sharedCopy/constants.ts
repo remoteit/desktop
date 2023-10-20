@@ -76,7 +76,9 @@ export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
 export const MOBILE_WIDTH = 500
+
 export const CLI_REACHABLE_ERROR_CODE = 523
+export const CLI_CERT_FAILURE_ERROR_CODE = 496
 
 export const DEFAULT_CONNECTION: IConnection = {
   id: '',
