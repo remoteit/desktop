@@ -1,7 +1,12 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import { WEB_PORT } from './constants'
-import { IP_PRIVATE, DEFAULT_CONNECTION, CLI_CERT_FAILURE_ERROR_CODE } from './sharedCopy/constants'
+import {
+  IP_PRIVATE,
+  DEFAULT_CONNECTION,
+  CLI_CERT_FAILURE_ERROR_CODE,
+  CLI_REACHABLE_ERROR_CODE,
+} from './sharedCopy/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
 import preferences from './preferences'
@@ -86,6 +91,7 @@ export default class ConnectionPool {
       }
 
       this.handleCertificateError(instance)
+      this.handleReachableError(instance)
     })
   }
 
@@ -277,6 +283,24 @@ export default class ConnectionPool {
       instance.params.error?.code === CLI_CERT_FAILURE_ERROR_CODE &&
       instance.params.host !== IP_PRIVATE &&
       certificateEnabled
+    ) {
+      instance.params.error = undefined
+      this.updated(instance)
+    }
+  }
+
+  private handleReachableError = (instance: Connection) => {
+    if (!instance.params.checkpoint) return
+
+    if (instance.params.checkpoint.targetServiceReachable === false) {
+      instance.params.error = {
+        message: 'Remote.It connected, but there is no service running on the remote machine.',
+        code: CLI_REACHABLE_ERROR_CODE,
+      }
+      this.updated(instance)
+    } else if (
+      instance.params.error?.code === CLI_REACHABLE_ERROR_CODE &&
+      instance.params.checkpoint.targetServiceReachable === true
     ) {
       instance.params.error = undefined
       this.updated(instance)
