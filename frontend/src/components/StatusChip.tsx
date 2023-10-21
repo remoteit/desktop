@@ -11,7 +11,7 @@ export const StatusChip: React.FC<Props> = ({ device, connection }) => {
     <ColorChip label="Unlicensed" size="small" color="warning" />
   ) : connection?.connected ? (
     <ColorChip label="Connected" size="small" color="primary" variant="contained" />
-  ) : connection?.enabled ? (
+  ) : connection?.enabled && connection?.online ? (
     <ColorChip label="Ready" size="small" color="primary" />
   ) : device?.state === 'active' ? (
     <ColorChip label="Online" size="small" color="secondary" />
