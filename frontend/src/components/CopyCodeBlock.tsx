@@ -10,6 +10,7 @@ export type CopyCodeBlockProps = PaperProps & {
   code?: string
   label?: string
   link?: string
+  display?: React.ReactNode
   hideCopyLabel?: boolean
   onCopy?: () => void
 }
@@ -18,8 +19,9 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
   value,
   code,
   label,
-  hideCopyLabel,
+  display,
   link,
+  hideCopyLabel,
   onCopy,
   ...props
 }) => {
@@ -39,7 +41,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
       >
         {label && <Typography variant="h5">{label}</Typography>}
         <Typography className={css.key} variant="h4">
-          {value}
+          {display || value}
         </Typography>
       </Stack>
       {(code || value) && (
@@ -57,7 +59,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
               variant="text"
               icon={code ? 'command' : 'clone'}
               type="regular"
-              title="Copy command"
+              title="Copy"
               onCopy={onCopy}
             />
           )}
@@ -95,6 +97,7 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: spacing.xs,
     borderLeft: `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-root': { marginBottom: spacing.xxs },
