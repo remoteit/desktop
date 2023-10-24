@@ -9,6 +9,8 @@ export interface Props {
   session: ISession
 }
 
+/* DEPRECATED - remove if we don't need */
+
 export const SessionListItem: React.FC<Props> = ({ serviceId, session }) => {
   const connection = useSelector((state: ApplicationState) =>
     selectConnections(state).find(c => c.sessionId === session.id)
@@ -26,6 +28,7 @@ export const SessionListItem: React.FC<Props> = ({ serviceId, session }) => {
       match={match}
       offline={false}
       platform={session?.target.platform}
+      anonymous={session?.anonymous}
       networkEnabled
       connectionsPage
       connected
