@@ -241,9 +241,9 @@ export default createModel<RootModel>()({
     async fetchGuests(_: void, state) {
       const accountId = getActiveAccountId(state)
       const result = await graphQLBasicRequest(
-        ` query Guests($id: String) {
+        ` query Guests($accountId: String) {
             login {
-              account(id: $id) {
+              account(id: $accountId) {
                 guest {
                   user {
                     id
@@ -259,7 +259,7 @@ export default createModel<RootModel>()({
               }
             }
           }`,
-        { id: accountId }
+        { accountId }
       )
       if (result === 'ERROR') return
       const guests = parseGuests(result)

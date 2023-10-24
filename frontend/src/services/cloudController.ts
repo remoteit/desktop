@@ -1,6 +1,8 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
 import network from '../services/Network'
+import { PUBLIC_PROXY_MANUFACTURER_CODE } from '../shared/constants'
+import { accountFromTarget } from '../models/accounts'
 import { DEVICE_TYPE } from '../shared/applications'
 import { getToken } from './remoteit'
 import { AxiosResponse } from 'axios'
@@ -127,6 +129,11 @@ class CloudController {
               id
               name
               created
+              access {
+                user {
+                  id
+                }
+              }
             }
           }
           actor {
@@ -138,6 +145,7 @@ class CloudController {
             session
             source
             proxy
+            manufacturer
             sourceGeo {
               city
               stateName
@@ -209,6 +217,7 @@ class CloudController {
         source: event.source,
         geo: event.sourceGeo,
         quantity: event.quantity,
+        manufacturer: event.manufacturer,
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,
         target: event.target.map(t => {
@@ -218,6 +227,7 @@ class CloudController {
             id: t.id,
             name: combinedName(t, t.device),
             owner: t.owner,
+            accountId: accountFromTarget(state, t.owner.id, t.device?.access.map(a => a.user.id) || []),
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device?.id || device?.id,
@@ -296,17 +306,19 @@ class CloudController {
 
           // session state
           if (event.state === 'connected') {
+            const anonymous = event.manufacturer === PUBLIC_PROXY_MANUFACTURER_CODE
             sessions.setSession({
+              anonymous,
               id: event.sessionId,
               timestamp: event.timestamp,
               source: event.source,
               platform: event.platform,
               isP2P: event.isP2P,
-              user: event.actor,
+              user: anonymous ? { id: 'ANON', email: 'Anonymous User' } : event.actor,
               geo: event.geo,
-              public: !!target.connection?.public, // TODO remove this and query for connection data
               target: {
                 id: target.id,
+                accountId: target.accountId,
                 deviceId: target.deviceId,
                 platform: target.platform,
                 name: target.name,
@@ -314,10 +326,6 @@ class CloudController {
             })
           } else {
             sessions.removeSession(event.sessionId)
-          }
-
-          if (target.device?.id) {
-            accounts.setDevice({ id: target.device.id, device: target.device })
           }
 
           this.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
