@@ -448,7 +448,7 @@ export const attributes: Attribute[] = [
     id: 'session',
     label: 'Connection',
     value: ({ session, connection }) =>
-      connection ? null : session?.isP2P ? 'Peer to Peer' : session?.public ? 'Public Proxy' : 'Proxy',
+      connection ? null : session?.isP2P ? 'Peer to Peer' : session?.anonymous ? 'Public Proxy' : 'Proxy',
   }),
   new ConnectionAttribute({
     id: 'source',

@@ -73,6 +73,8 @@ const useStyles = makeStyles(({ palette }) => ({
     width: 500,
     overflow: 'hidden',
     marginTop: spacing.md,
+    marginLeft: spacing.sm,
+    marginRight: spacing.sm,
     backgroundColor: palette.grayLightest.main,
     '& .MuiButtonBase-root': { float: 'right' },
   },

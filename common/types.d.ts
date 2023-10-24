@@ -519,12 +519,12 @@ declare global {
     timestamp: Date
     platform: number
     source: IConnectionSource
-    state?: IConnectionState
     user?: IUserRef
     geo?: IGeo
-    public?: boolean
+    anonymous?: boolean
     target: {
       id: string
+      accountId: string
       deviceId: string
       platform?: number
       name: string // combined service + device names
@@ -556,11 +556,13 @@ declare global {
     platform: number
     authUserId: string
     geo?: IGeo
+    manufacturer?: number
     metadata?: INotificationSetting
     target: {
       id: string
       name: string
       owner: IUserRef
+      accountId: string
       typeID: IService['typeID']
       platform: IDevice['targetPlatform']
       deviceId: string

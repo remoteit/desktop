@@ -205,6 +205,21 @@ export function accountFromDevice(state: ApplicationState, device?: IDevice) {
   return device?.accountId || getActiveAccountId(state)
 }
 
+export function accountFromTarget(state: ApplicationState, ownerId: string, access: string[]) {
+  const accountIds = state.accounts.membership.map(m => m.account.id)
+  accountIds.push(state.user.id) // add current user to accounts
+
+  // My device
+  if (state.user.id === ownerId) return ownerId
+  // Org device
+  if (accountIds.includes(ownerId)) return ownerId
+  // Shared device
+  const sharedId = accountIds.find(a => access.includes(a))
+  if (sharedId) return sharedId
+  // Default
+  return state.user.id
+}
+
 export function getAccountIds(state: ApplicationState) {
   let ids = state.accounts.membership.map(m => m.account.id)
   state.auth.user && ids.unshift(state.auth.user.id)
