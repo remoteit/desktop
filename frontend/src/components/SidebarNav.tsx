@@ -18,7 +18,7 @@ import {
   Collapse,
   Chip,
 } from '@mui/material'
-import { selectActiveCount } from '../helpers/connectionHelper'
+import { selectActiveConnectionIds } from '../selectors/connections'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
@@ -27,19 +27,16 @@ import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
   const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI, limits } =
-    useSelector((state: ApplicationState) => {
-      const connections = selectEnabledConnections(state)
-      return {
-        defaultSelected: selectDefaultSelected(state),
-        unreadAnnouncements: selectAnnouncements(state, true).length,
-        connections: connections.length,
-        networks: selectNetworks(state).length,
-        active: selectActiveCount(state, connections).length,
-        devices: getDeviceModel(state).total,
-        remoteUI: isRemoteUI(state),
-        limits: selectLimitsLookup(state),
-      }
-    })
+    useSelector((state: ApplicationState) => ({
+      defaultSelected: selectDefaultSelected(state),
+      unreadAnnouncements: selectAnnouncements(state, true).length,
+      connections: selectEnabledConnections(state).length,
+      networks: selectNetworks(state).length,
+      active: selectActiveConnectionIds(state).length,
+      devices: getDeviceModel(state).total,
+      remoteUI: isRemoteUI(state),
+      limits: selectLimitsLookup(state),
+    }))
   const dispatch = useDispatch<Dispatch>()
   const [more, setMore] = useState<boolean>()
   const css = useStyles({ active })

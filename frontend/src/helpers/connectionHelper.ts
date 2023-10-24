@@ -36,12 +36,6 @@ export function isFileToken(token: string) {
   return token === 'path' || token === 'app' || token.toLowerCase().includes('file')
 }
 
-export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
-  const sessions = state.sessions.all.map(s => s.target.id)
-  const connected = connections.filter(c => c.connected && !sessions.includes(c.id)).map(c => c.id)
-  return sessions.concat(connected)
-}
-
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {
   return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }

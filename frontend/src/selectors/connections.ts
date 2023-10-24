@@ -3,24 +3,42 @@ import { createSelector } from 'reselect'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
 import { getOwnDevices } from './devices'
-import { getUser, getOrganizations, getMemberships, getAllConnections, optionalService } from './state'
+import { getActiveAccountId } from './accounts'
+import { getUser, getOrganizations, getMemberships, getAllConnections, getSessions, optionalService } from './state'
 
-export const getConnectionsLookup = createSelector([getAllConnections], allConnections =>
-  allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
-    if (!c.deviceID) return lookup
-    if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
-    else lookup[c.deviceID] = [c]
-    return lookup
-  }, {})
+export const getConnectionsLookup = createSelector(
+  [getAllConnections, getActiveAccountId],
+  (allConnections, accountId) =>
+    allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
+      if (!c.deviceID || accountId !== c.accountId) return lookup
+      if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
+      else lookup[c.deviceID] = [c]
+      return lookup
+    }, {})
 )
 
-export const selectConnections = createSelector([getAllConnections], connections => {
-  return connections.filter(c => (!!c.createdTime || c.enabled) && (!isPortal() || c.public || c.connectLink))
+export const selectSessions = createSelector([getSessions, getActiveAccountId], (sessions, accountId) => {
+  return sessions.filter(s => s.target.accountId === accountId)
+})
+
+export const selectConnections = createSelector([getAllConnections, getActiveAccountId], (connections, accountId) => {
+  return connections.filter(
+    c => c.accountId === accountId && (!!c.createdTime || c.enabled) && (!isPortal() || c.public || c.connectLink)
+  )
 })
 
 export const selectEnabledConnections = createSelector([selectConnections], connections => {
   return connections.filter(connection => connection.online && connection.enabled)
 })
+
+export const selectActiveConnectionIds = createSelector(
+  [selectEnabledConnections, selectSessions],
+  (connections, sessions) => {
+    const sessionServiceIds = sessions.map(s => s.target.id)
+    const connected = connections.filter(c => c.connected && !sessionServiceIds.includes(c.id)).map(c => c.id)
+    return sessionServiceIds.concat(connected)
+  }
+)
 
 export const selectConnection = createSelector(
   [getAllConnections, optionalService],

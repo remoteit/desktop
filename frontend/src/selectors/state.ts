@@ -18,6 +18,7 @@ export const getColumns = (state: ApplicationState) => state.ui.columns
 export const optionalId = (_: ApplicationState, accountId?: string, id?: string) => id
 export const optionalDeviceId = (_: ApplicationState, accountId?: string, deviceId?: string) => deviceId
 
+export const getSessions = (state: ApplicationState) => state.sessions.all
 export const getAllConnections = (state: ApplicationState) => state.connections.all
 export const optionalService = (_: ApplicationState, service?: IService) => service
 
