@@ -130,6 +130,22 @@ export default createModel<RootModel>()({
         }
       })
     },
+
+    async disconnect({ id, sessionId }: { id: string; sessionId?: string }) {
+      if (!sessionId) {
+        console.warn('No sessionId for disconnect')
+        return
+      }
+
+      const result = await graphQLDisconnect(id, sessionId)
+
+      if (result === 'ERROR') {
+        return false
+      }
+
+      console.log('PROXY DISCONNECTED', result)
+      return true
+    },
   }),
   reducers: {
     setSession(state, session: ISession) {
