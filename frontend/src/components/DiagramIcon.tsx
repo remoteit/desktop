@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { getAttribute } from './Attributes'
-import { Tooltip, TooltipProps, Divider, Box } from '@mui/material'
+import { Tooltip, TooltipProps, Divider } from '@mui/material'
 import { DiagramContext, DeviceContext } from '../services/Context'
 import { Icon, IconProps } from './Icon'
 import { Link } from './Link'
