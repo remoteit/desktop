@@ -326,7 +326,6 @@ export async function graphQLFetchNetworkServices(
   return await graphQLBasicRequest(
     ` query NetworkServices($id: String!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
-          id
           network(id: $id)  {
             connections {
               service {
@@ -356,7 +355,6 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: g
   return await graphQLBasicRequest(
     ` query DeviceCount($size: Int, $tag: ListFilter, $accountId: String, $owner: Boolean) {
         login {
-          id
           account(id: $accountId) {
             devices(tag: $tag, owner: $owner, size: $size) {
               total
@@ -434,10 +432,10 @@ export function graphQLDeviceAdaptor({
       notificationSettings: d.notificationSettings,
       timeSeries: processTimeSeries(d),
       access:
-        d.access?.map((e: any) => ({
-          id: e.user?.id,
-          email: e.user?.email || e.user?.id,
-          scripting: e.scripting,
+        d.access?.map((a: any) => ({
+          id: a.user?.id,
+          email: a.user?.email || a.user?.id,
+          scripting: a.scripting,
         })) || [],
       thisDevice: d.id === thisId,
       hidden: !!hidden,
