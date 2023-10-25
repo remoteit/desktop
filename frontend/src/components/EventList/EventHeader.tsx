@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { isToday } from '../../helpers/dateHelper'
 import { DateTime } from 'luxon'
-import { getActiveAccountId } from '../../selectors/accounts'
+import { selectActiveAccountId } from '../../selectors/accounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
@@ -18,7 +18,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { events, deviceId, logLimit, activeAccount, minDate, selectedDate } = useSelector(
     (state: ApplicationState) => ({
       logLimit: selectLimit('log-limit', state) || 'P1W',
-      activeAccount: getActiveAccountId(state),
+      activeAccount: selectActiveAccountId(state),
       ...state.logs,
     })
   )

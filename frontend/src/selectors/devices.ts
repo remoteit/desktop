@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import { ApplicationState } from '../store'
-import { getActiveAccountId } from './accounts'
+import { selectActiveAccountId } from './accounts'
 import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
 import { masterAttributes, deviceAttributes, DeviceAttribute } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
@@ -26,12 +26,12 @@ export function findById(devices: IDevice[], id?: string) {
   return [service, device] as [IService | undefined, IDevice | undefined]
 }
 
-export const getDeviceModel = createSelector([getDevicesState, getActiveAccountId], (devices, activeAccountId) =>
+export const getDeviceModel = createSelector([getDevicesState, selectActiveAccountId], (devices, activeAccountId) =>
   getDeviceModelFn(devices, activeAccountId)
 )
 
 export const getDevices = createSelector(
-  [getDevicesState, getActiveAccountId],
+  [getDevicesState, selectActiveAccountId],
   (devices, activeAccountId) => getDeviceModelFn(devices, activeAccountId).all || []
 )
 

@@ -27,6 +27,9 @@ const useStyles = makeStyles({
     marginTop: spacing.md,
     paddingRight: spacing.xs,
     paddingLeft: spacing.md,
+    '& .MuiListItemIcon-root': {
+      justifyContent: 'flex-start',
+    },
     '& .MuiListItem-root': {
       display: small ? undefined : 'block',
       minWidth: 100,

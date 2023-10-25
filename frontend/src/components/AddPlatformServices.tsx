@@ -2,7 +2,7 @@ import React from 'react'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { canEditTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
@@ -12,7 +12,7 @@ type Props = { button?: string; types: number[]; onChange: (tags: number[]) => v
 
 export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange }) => {
   const { allTypes, canEdit } = useSelector((state: ApplicationState) => ({
-    accountId: getActiveAccountId(state),
+    accountId: selectActiveAccountId(state),
     allTypes: state.applicationTypes.all,
     canEdit: canEditTags(state),
   }))

@@ -11,7 +11,7 @@ import {
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getAccountIds } from './accounts'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { selectOrganization } from '../selectors/organizations'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -239,7 +239,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchGuests(_: void, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       const result = await graphQLBasicRequest(
         ` query Guests($accountId: String) {
             login {
@@ -291,7 +291,7 @@ export default createModel<RootModel>()({
 
     async setIdentityProvider(params: IIdentityProviderSettings, state) {
       dispatch.organization.set({ updating: true })
-      const result = await graphQLSetIdentityProvider({ ...params, accountId: getActiveAccountId(state) })
+      const result = await graphQLSetIdentityProvider({ ...params, accountId: selectActiveAccountId(state) })
       if (result !== 'ERROR') {
         dispatch.ui.set({
           successMessage: params.enabled ? `${params.type} enabled.` : `${params.type} disabled.`,
@@ -365,7 +365,7 @@ export default createModel<RootModel>()({
         revoke: permissions.filter(p => !role.permissions.includes(p)),
         tag: role.tag,
         access: role.access,
-        accountId: getActiveAccountId(state),
+        accountId: selectActiveAccountId(state),
       }
 
       let result
@@ -395,7 +395,7 @@ export default createModel<RootModel>()({
       let roles = [...selectOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
       if (index > -1) roles.splice(index, 1)
-      const result = await graphQLRemoveRole(role.id, getActiveAccountId(state))
+      const result = await graphQLRemoveRole(role.id, selectActiveAccountId(state))
 
       if (result === 'ERROR') {
         dispatch.organization.fetch()
@@ -411,7 +411,7 @@ export default createModel<RootModel>()({
     },
 
     async setActive(params: ILookup<any>, state) {
-      const id = params.id || getActiveAccountId(state)
+      const id = params.id || selectActiveAccountId(state)
       let org = { ...selectOrganization(state, id) }
       Object.keys(params).forEach(key => (org[key] = params[key]))
       const accounts = { ...state.organization.accounts }

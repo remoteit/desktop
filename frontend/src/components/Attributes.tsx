@@ -121,7 +121,7 @@ export const attributes: Attribute[] = [
     label: 'Status',
     query: 'deviceName',
     defaultWidth: 100,
-    value: ({ device, connection }) => <StatusChip device={device} connection={connection} />,
+    value: ({ device, connections }) => <StatusChip device={device} connections={connections} />,
   }),
   new Attribute({
     id: 'timeSeries',

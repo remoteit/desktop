@@ -1,18 +1,18 @@
 import { createSelector } from 'reselect'
 import { getUserId, getUser, getActiveId, optionalAccountId, getMemberships } from './state'
 
-export const getActiveAccountId = createSelector(
+export const selectActiveAccountId = createSelector(
   [optionalAccountId, getActiveId, getUserId],
   (accountId, activeId, userId) => accountId || activeId || userId
 )
 
 export const isUserAccount = createSelector(
-  [getActiveAccountId, getUserId],
+  [selectActiveAccountId, getUserId],
   (activeAccountId, userId) => activeAccountId === userId
 )
 
 export const getActiveUser = createSelector(
-  [getActiveAccountId, getMemberships, getUser],
+  [selectActiveAccountId, getMemberships, getUser],
   (accountId, memberships, user): IUserRef => {
     const membershipOrganizations = memberships.map(m => ({
       id: m.account.id || '',
@@ -36,7 +36,7 @@ const getThisMembership = createSelector([getUser], user => ({
 }))
 
 export const selectMembership = createSelector(
-  [getActiveAccountId, getMemberships, getThisMembership, isUserAccount],
+  [selectActiveAccountId, getMemberships, getThisMembership, isUserAccount],
   (accountId, memberships, thisMembership, isUserAccount): IMembership => {
     if (isUserAccount) return thisMembership
     return (

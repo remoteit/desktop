@@ -5,7 +5,7 @@ import { useMediaQuery, Box, Divider, Typography, InputLabel, Collapse } from '@
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLimitsLookup } from '../selectors/organizations'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { IconButton } from '../buttons/IconButton'
@@ -21,7 +21,7 @@ type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[];
 
 export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
   const { accountId, feature, tags, adding, removing, destroying } = useSelector((state: ApplicationState) => ({
-    accountId: getActiveAccountId(state),
+    accountId: selectActiveAccountId(state),
     feature: selectLimitsLookup(state),
     tags: selectTags(state),
     adding: state.tags.adding,

@@ -24,8 +24,8 @@ import {
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, getVisibleDevices, selectById } from '../selectors/devices'
-import { getActiveAccountId } from '../selectors/accounts'
+import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
@@ -91,7 +91,7 @@ export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
     async init(_: void, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       let states = { accountId }
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `device-${accountId}-${key}`)
@@ -102,7 +102,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchList(_: void, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       const deviceModel = getDeviceModel(state, accountId)
       const initialize = !deviceModel.initialized
 
@@ -148,7 +148,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
 
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
@@ -187,7 +187,7 @@ export default createModel<RootModel>()({
     ) {
       if (!id) return
 
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
 
       let result: IDevice | undefined
       let errors: Error[] | undefined
@@ -235,7 +235,7 @@ export default createModel<RootModel>()({
         size: 0,
         from: 0,
         owner: true,
-        accountId: getActiveAccountId(state),
+        accountId: selectActiveAccountId(state),
         tag: params.tag?.values.length ? params.tag : undefined,
       }
 
@@ -248,7 +248,7 @@ export default createModel<RootModel>()({
     },
 
     async clearLoaded(_: void, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       const all = [...getDeviceModel(state, accountId).all]
       for (const id in all) {
         if (all[id].loaded) all[id] = { ...all[id], loaded: false }
@@ -395,7 +395,7 @@ export default createModel<RootModel>()({
     },
 
     async claimDevice({ code, redirect }: { code: string; redirect?: boolean }, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
 
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'aws', step: 2 })
@@ -448,7 +448,7 @@ export default createModel<RootModel>()({
     },
 
     async getRestoreCommand(deviceId, state): Promise<{ restoreCommand?: string; restoreCode?: string }> {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       const result = await graphQLRestoreDevice({ id: deviceId, accountId })
       if (result !== 'ERROR') {
         let { restoreCommand, restoreCode } = result?.data?.data?.login?.account?.device?.[0]
@@ -557,7 +557,7 @@ export default createModel<RootModel>()({
     },
 
     async setPersistent(params: ILookup<any>, state) {
-      const accountId = params.accountId || getActiveAccountId(state)
+      const accountId = params.accountId || selectActiveAccountId(state)
       Object.keys(params).forEach(key => {
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${accountId}-${key}`, params[key] || '')
       })
@@ -565,7 +565,7 @@ export default createModel<RootModel>()({
     },
 
     async set(params: Partial<IDeviceState>, state) {
-      const accountId = params.accountId || getActiveAccountId(state)
+      const accountId = params.accountId || selectActiveAccountId(state)
       const deviceState = { ...getDeviceModel(state, accountId) }
 
       Object.keys(params).forEach(key => {

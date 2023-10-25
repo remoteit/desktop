@@ -733,6 +733,7 @@ declare global {
   type ISelect = {
     key: string | number
     name: string | number | React.ReactNode
+    description?: string
     disabled?: boolean
   }
 

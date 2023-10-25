@@ -5,7 +5,7 @@ import { REGEX_SERVICE_ID } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
 type ISearchState = ILookup<any> & {
@@ -36,7 +36,7 @@ export default createModel<RootModel>()({
 
       dispatch.search.set({ fetching: true })
 
-      const id = getActiveAccountId(state)
+      const id = selectActiveAccountId(state)
       const size = 10
       const accountQuery = `
         account(id: $id) {

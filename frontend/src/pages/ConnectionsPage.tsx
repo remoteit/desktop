@@ -1,7 +1,7 @@
 import React from 'react'
 import { Typography, Divider } from '@mui/material'
 import { defaultNetwork, recentNetwork } from '../models/networks'
-import { selectConnectionsByAccount, selectConnections, selectSessions } from '../selectors/connections'
+import { selectConnectionsByAccount, selectConnections, selectConnectionSessions } from '../selectors/connections'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
@@ -20,7 +20,8 @@ export const ConnectionsPage: React.FC = () => {
   const { active, recent, local, initialized, loading } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
     // const localSessionIds = allConnections.map(c => c.sessionId)
-    const sessions = selectSessions(state)
+    // const sessions = selectSessions(state)
+    const sessions = selectConnectionSessions(state)
     const deviceModel = getDeviceModel(state)
     let active: ILookup<INetwork> | undefined
 
@@ -54,7 +55,7 @@ export const ConnectionsPage: React.FC = () => {
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
       local: selectConnectionsByAccount(state),
-      initialized: deviceModel.initialized,
+      initialized: state.connections.initialized,
       loading: deviceModel.fetching,
     }
   })

@@ -4,7 +4,7 @@ import { selectNetworks } from '../selectors/networks'
 import { getDeviceModel } from '../selectors/devices'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelected } from '../selectors/ui'
-import { selectEnabledConnections } from '../selectors/connections'
+import { selectAllConnectionsCount } from '../selectors/connections'
 import { selectAnnouncements } from '../models/announcements'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -18,7 +18,7 @@ import {
   Collapse,
   Chip,
 } from '@mui/material'
-import { selectActiveConnectionIds } from '../selectors/connections'
+import { selectConnectionSessions } from '../selectors/connections'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
@@ -30,9 +30,9 @@ export const SidebarNav: React.FC = () => {
     useSelector((state: ApplicationState) => ({
       defaultSelected: selectDefaultSelected(state),
       unreadAnnouncements: selectAnnouncements(state, true).length,
-      connections: selectEnabledConnections(state).length,
+      connections: selectAllConnectionsCount(state),
       networks: selectNetworks(state).length,
-      active: selectActiveConnectionIds(state).length,
+      active: selectConnectionSessions(state).length,
       devices: getDeviceModel(state).total,
       remoteUI: isRemoteUI(state),
       limits: selectLimitsLookup(state),
@@ -66,12 +66,12 @@ export const SidebarNav: React.FC = () => {
         dense
       >
         <ListItemSecondaryAction>
-          {!!connections && !active && (
+          {!!connections && (
             <Tooltip title={`${connections.toLocaleString()} Idle Connections`} placement="top" arrow>
               <Chip size="small" label={connections.toLocaleString()} />
             </Tooltip>
           )}
-          {!!active && (
+          {/* {!!active && (
             <Tooltip
               title={`${connections.toLocaleString()} Connections - ${active.toLocaleString()} Connected`}
               placement="top"
@@ -85,7 +85,7 @@ export const SidebarNav: React.FC = () => {
                 color="primary"
               />
             </Tooltip>
-          )}
+          )} */}
         </ListItemSecondaryAction>
       </ListItemLocation>
       <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" dense>

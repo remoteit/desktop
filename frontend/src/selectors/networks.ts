@@ -1,8 +1,8 @@
 import { createSelector } from 'reselect'
 import { getAllNetworks } from './state'
-import { getActiveAccountId } from './accounts'
+import { selectActiveAccountId } from './accounts'
 
 export const selectNetworks = createSelector(
-  [getActiveAccountId, getAllNetworks],
+  [selectActiveAccountId, getAllNetworks],
   (activeAccountId, allNetworks) => allNetworks[activeAccountId] || []
 )

@@ -4,7 +4,7 @@ import { isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { selectNetworks } from '../selectors/networks'
 import { selectConnection } from '../selectors/connections'
-import { getActiveAccountId, getActiveUser } from '../selectors/accounts'
+import { selectActiveAccountId, getActiveUser } from '../selectors/accounts'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById } from '../selectors/devices'
 import {
@@ -103,7 +103,7 @@ export default createModel<RootModel>()({
     },
 
     async fetch(_: void, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       dispatch.networks.set({ loading: true })
       const response = await graphQLPreloadNetworks(accountId, state.ui.deviceTimeSeries)
 
@@ -117,7 +117,7 @@ export default createModel<RootModel>()({
     async fetchSingle({ network, redirect }: { network: INetwork; redirect?: string }, state) {
       if (!network || !network.cloud) return
 
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       dispatch.devices.set({ fetching: true, accountId })
       const gqlResponse = await graphQLFetchNetworkServices(
         network.id,
@@ -139,7 +139,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchIfEmpty(_: void, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       if (!state.networks.all[accountId]) {
         await dispatch.networks.set({ initialized: false })
         await dispatch.networks.fetch()
@@ -260,7 +260,7 @@ export default createModel<RootModel>()({
     },
 
     async deleteNetwork(params: INetwork, state) {
-      const id = getActiveAccountId(state)
+      const id = selectActiveAccountId(state)
       const response = await graphQLDeleteNetwork(params.id)
       if (response === 'ERROR') return
       let networks = [...state.networks.all[id]] || []
@@ -270,7 +270,7 @@ export default createModel<RootModel>()({
     },
 
     async addNetwork(params: INetwork, state) {
-      const id = getActiveAccountId(state)
+      const id = selectActiveAccountId(state)
       const response = await graphQLAddNetwork(params.name, id)
       if (response === 'ERROR') return
       params.id = response?.data?.data?.createNetwork?.id
@@ -309,7 +309,7 @@ export default createModel<RootModel>()({
     },
 
     async setNetwork(params: INetwork, state) {
-      const id = getActiveAccountId(state)
+      const id = selectActiveAccountId(state)
       if (params.id === DEFAULT_ID) return
 
       let networks: INetwork[] = [...(state.networks.all[id] || [])]
@@ -322,7 +322,7 @@ export default createModel<RootModel>()({
     },
 
     async setNetworks(props: { networks: INetwork[]; accountId?: string }, state) {
-      const id = props.accountId || getActiveAccountId(state)
+      const id = props.accountId || selectActiveAccountId(state)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...props.networks] } })
     },
   }),
@@ -341,7 +341,7 @@ export default createModel<RootModel>()({
 export function defaultNetwork(state?: ApplicationState): INetwork {
   if (state) {
     const owner = getActiveUser(state)
-    const accountId = getActiveAccountId(state)
+    const accountId = selectActiveAccountId(state)
     return { ...state.networks.default, owner, accountId }
   }
   return DEFAULT_NETWORK

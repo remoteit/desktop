@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
@@ -201,23 +201,20 @@ export default createModel<RootModel>()({
   },
 })
 
-export function accountFromDevice(state: ApplicationState, device?: IDevice) {
-  return device?.accountId || getActiveAccountId(state)
-}
-
-export function accountFromTarget(state: ApplicationState, ownerId: string, access: string[]) {
-  const accountIds = state.accounts.membership.map(m => m.account.id)
-  accountIds.push(state.user.id) // add current user to accounts
+export function accountFromDevice(state: ApplicationState, ownerId: string, access: string[]) {
+  const userId = state.auth.user?.id || state.user.id
+  const orgIds = state.accounts.membership.map(m => m.account.id)
+  orgIds.push(userId) // add current user to accounts
 
   // My device
-  if (state.user.id === ownerId) return ownerId
+  if (userId === ownerId) return ownerId
   // Org device
-  if (accountIds.includes(ownerId)) return ownerId
+  if (orgIds.includes(ownerId)) return ownerId
   // Shared device
-  const sharedId = accountIds.find(a => access.includes(a))
+  const sharedId = orgIds.find(a => access.includes(a))
   if (sharedId) return sharedId
   // Default
-  return state.user.id
+  return userId
 }
 
 export function getAccountIds(state: ApplicationState) {

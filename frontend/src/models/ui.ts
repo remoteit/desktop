@@ -6,7 +6,7 @@ import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { ApplicationState } from '../store'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -266,7 +266,7 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ defaultService: all })
     },
     async setDefaultSelected({ key, value }: { key: string; value?: string }, state) {
-      const accountId = getActiveAccountId(state)
+      const accountId = selectActiveAccountId(state)
       let defaultSelection = structuredClone(state.ui.defaultSelection)
       defaultSelection[accountId] = defaultSelection[accountId] || {}
       defaultSelection[accountId][key] = value

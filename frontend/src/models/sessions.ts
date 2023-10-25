@@ -2,12 +2,12 @@ import { createModel } from '@rematch/core'
 import { PUBLIC_PROXY_MANUFACTURER_CODE } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLDisconnect } from '../services/graphQLMutation'
-import { setConnection } from '../helpers/connectionHelper'
-import { accountFromTarget } from './accounts'
+import { accountFromDevice } from './accounts'
 import { selectConnections } from '../selectors/connections'
-import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
+import { setConnection } from '../helpers/connectionHelper'
 import { AxiosResponse } from 'axios'
+import { combinedName } from '../shared/nameHelper'
 import { RootModel } from '.'
 
 type ISessionsState = ILookup<ISession[]> & {
@@ -105,7 +105,7 @@ export default createModel<RootModel>()({
           geo: e.endpoint.geo,
           target: {
             id: e.target.id,
-            accountId: accountFromTarget(
+            accountId: accountFromDevice(
               state,
               e.target.owner.id,
               e.target.device.access.map(a => a.user.id)

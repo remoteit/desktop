@@ -1,11 +1,11 @@
 import { createSelector } from 'reselect'
 import { getDefaultSelected, getThemeDark, getUpdateStatus, getNotifiedVersion, getPreferences } from './state'
-import { getActiveAccountId } from './accounts'
+import { selectActiveAccountId } from './accounts'
 import { getTheme } from '../styling/theme'
 import { version } from '../helpers/versionHelper'
 
 export const selectDefaultSelected = createSelector(
-  [getActiveAccountId, getDefaultSelected],
+  [selectActiveAccountId, getDefaultSelected],
   (activeAccountId, defaultSelected) => defaultSelected[activeAccountId] || {}
 )
 

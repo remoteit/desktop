@@ -16,7 +16,7 @@ export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstanc
       value={connection.name}
       label="Subdomain"
       resetValue={resetValue}
-      disabled={connection.connected || connection.public}
+      disabled={connection.public}
       maxLength={MAX_CONNECTION_NAME_LENGTH}
       onSave={name =>
         setConnection({

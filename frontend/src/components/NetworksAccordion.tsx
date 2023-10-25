@@ -1,7 +1,7 @@
 import React from 'react'
 import { Chip, Box, Tooltip } from '@mui/material'
 import { NetworksJoined } from './NetworksJoined'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectNetworkByService } from '../models/networks'
@@ -21,7 +21,7 @@ type Props = {
 export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service, connection, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
   const { ownerId, allNetworks, joinedNetworks } = useSelector((state: ApplicationState) => ({
-    ownerId: getActiveAccountId(state),
+    ownerId: selectActiveAccountId(state),
     allNetworks: selectNetworks(state),
     joinedNetworks: selectNetworkByService(state, connection.id),
   }))

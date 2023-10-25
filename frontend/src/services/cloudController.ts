@@ -2,7 +2,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
 import network from '../services/Network'
 import { PUBLIC_PROXY_MANUFACTURER_CODE } from '../shared/constants'
-import { accountFromTarget } from '../models/accounts'
+import { accountFromDevice } from '../models/accounts'
 import { DEVICE_TYPE } from '../shared/applications'
 import { getToken } from './remoteit'
 import { AxiosResponse } from 'axios'
@@ -14,7 +14,7 @@ import { notify } from './Notifications'
 import { selectById } from '../selectors/devices'
 import { combinedName } from '../shared/nameHelper'
 import { setConnection, findLocalConnection } from '../helpers/connectionHelper'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors } from './graphQL'
 import { agent } from '../services/Browser'
 import { emit } from './Controller'
@@ -227,7 +227,7 @@ class CloudController {
             id: t.id,
             name: combinedName(t, t.device),
             owner: t.owner,
-            accountId: accountFromTarget(state, t.owner.id, t.device?.access.map(a => a.user.id) || []),
+            accountId: accountFromDevice(state, t.owner.id, t.device?.access.map(a => a.user.id) || []),
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device?.id || device?.id,
@@ -279,7 +279,7 @@ class CloudController {
 
             // Device created within one minute of the event
             if (
-              target.owner?.id === getActiveAccountId(state) &&
+              target.owner?.id === selectActiveAccountId(state) &&
               event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
             ) {
               if (state.ui.registrationCommand) ui.set({ redirect: `/devices/${target.deviceId}` })

@@ -8,7 +8,7 @@ import { Container } from '../components/Container'
 import { ColorSelect } from '../components/ColorSelect'
 import { findTagIndex } from '../helpers/utilHelper'
 import { Typography, List } from '@mui/material'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -25,7 +25,7 @@ export const TagsPage: React.FC = () => {
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
   const { accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: ApplicationState) => {
     const userAccount = location.pathname.includes('/settings')
-    const accountId = userAccount ? state.user.id : getActiveAccountId(state)
+    const accountId = userAccount ? state.user.id : selectActiveAccountId(state)
     return {
       accountId,
       deleting: state.tags.deleting,
