@@ -1,7 +1,7 @@
 import React from 'react'
-import { Typography, Tooltip, Divider } from '@mui/material'
+import { Typography, Divider } from '@mui/material'
 import { defaultNetwork, recentNetwork } from '../models/networks'
-import { selectConnectionsByAccount, selectConnections } from '../selectors/connections'
+import { selectConnectionsByType, selectConnections, selectConnectionSessions } from '../selectors/connections'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
@@ -17,19 +17,17 @@ import { Icon } from '../components/Icon'
 
 export const ConnectionsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { other, recent, active, initialized, loading } = useSelector((state: ApplicationState) => {
+  const { active, recent, idle, initialized, loading } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
-    const activeSessionIds = allConnections.map(c => c.sessionId)
-    const otherSessions = state.sessions.all.filter(s => !activeSessionIds.includes(s.id))
+    const sessions = selectConnectionSessions(state)
     const deviceModel = getDeviceModel(state)
-    let other: ILookup<INetwork> | undefined
+    let active: ILookup<INetwork> = {}
 
-    otherSessions.forEach(s => {
+    sessions.forEach(s => {
       const id = s.user?.id || 'default'
-      other = other || {}
-      if (!other[id]) {
+      if (!active[id]) {
         const [icon, iconType] = initiatorPlatformIcon({ id: s.platform })
-        other[id] = {
+        active[id] = {
           ...defaultNetwork(),
           id: 'other',
           enabled: true,
@@ -39,32 +37,33 @@ export const ConnectionsPage: React.FC = () => {
           sessions: [],
         }
       }
-      other[id].sessions?.push(s)
+      active[id].sessions?.push(s)
     })
 
-    if (other) {
-      const otherKeys = Object.keys(other)
-      if (!otherKeys.length || !other[otherKeys[0]]?.sessions?.length) other = undefined
+    if (active) {
+      const otherKeys = Object.keys(active)
+      if (!otherKeys.length || !active[otherKeys[0]]?.sessions?.length) active = {}
     }
 
     return {
-      other,
+      active,
       recent: {
         ...recentNetwork,
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
-      active: selectConnectionsByAccount(state),
-      initialized: deviceModel.initialized,
+      idle: selectConnectionsByType(state),
+      initialized: state.connections.initialized,
       loading: deviceModel.fetching,
     }
   })
 
-  const empty = !active?.length
+  const empty = !idle?.length
 
   return (
     <Container bodyProps={{ verticalOverflow: true }} gutterBottom>
+      <SessionsList title="Connected" networks={active} />
       <StickyTitle loading={loading}>
-        <Title>Local Connections</Title>
+        <Title>Idle</Title>
       </StickyTitle>
       {initialized ? (
         <>
@@ -77,29 +76,9 @@ export const ConnectionsPage: React.FC = () => {
               <Typography variant="caption">Begin by selecting a device's service from the Devices menu.</Typography>
             </Gutters>
           )}
-          {active.map(n => (
+          {idle.map(n => (
             <Network noLink key={n.id} network={n} connectionsPage />
           ))}
-          <SessionsList
-            title="External connections"
-            networks={other}
-            action={
-              <Tooltip
-                title={
-                  <>
-                    <Typography variant="body2">
-                      Any connection that didn't originate from this user and application.
-                    </Typography>
-                    <p>These are connections to any device you manage. Even if started by another application.</p>
-                  </>
-                }
-                placement="top"
-                arrow
-              >
-                <Icon name="circle-question" color="grayDark" size="sm" />
-              </Tooltip>
-            }
-          />
           {!!recent.serviceIds.length && (
             <>
               <br />

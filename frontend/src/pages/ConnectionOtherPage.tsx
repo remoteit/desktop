@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { selectById } from '../selectors/devices'
 import { Typography } from '@mui/material'
@@ -17,7 +17,7 @@ import { Title } from '../components/Title'
 
 export const ConnectionOtherPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const [stopping, setStopping] = React.useState<string>()
+  const [stopping, setStopping] = useState<string>()
   const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
   const { service, device, connection, session } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, undefined, serviceID)
@@ -43,7 +43,7 @@ export const ConnectionOtherPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1" gutterBottom>
-            <Title>{session?.target.name}</Title>
+            <Title>{session.target.name}</Title>
             {device && <InfoButton device={device} service={service} />}
           </Typography>
           <Gutters top={null} bottom="lg">
@@ -58,7 +58,7 @@ export const ConnectionOtherPage: React.FC = () => {
               disabled={thisStopping}
               onClick={async () => {
                 setStopping(session.id)
-                await dispatch.connections.proxyDisconnect({ ...connection, sessionId: session.id })
+                await dispatch.sessions.disconnect({ id: connection.id, sessionId: session.id })
               }}
               fullWidth
             />
@@ -75,7 +75,7 @@ export const ConnectionOtherPage: React.FC = () => {
           showTitle={session?.user ? session.user.email : undefined}
           show
         >
-          <ConnectionData connection={connection} service={service} session={session} />
+          <ConnectionData service={service} session={session} />
         </ConnectionDetails>
       </Gutters>
     </Container>

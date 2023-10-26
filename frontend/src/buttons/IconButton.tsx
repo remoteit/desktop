@@ -7,6 +7,7 @@ import { spacing } from '../styling'
 import classnames from 'classnames'
 
 export type ButtonProps = Omit<IconProps, 'title'> & {
+  to?: string
   title?: React.ReactNode
   forceTitle?: boolean
   icon?: string
@@ -14,7 +15,6 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   disabled?: boolean
   hideDisableFade?: boolean
   iconInlineLeft?: boolean
-  to?: string
   buttonBaseSize?: 'small' | 'medium' | 'large'
   variant?: 'text' | 'contained' | 'outlined'
   shiftDown?: boolean
@@ -32,6 +32,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
 export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
+      to,
       title,
       forceTitle,
       icon,
@@ -39,7 +40,6 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       hideDisableFade,
       spin,
-      to,
       color,
       variant,
       shiftDown,

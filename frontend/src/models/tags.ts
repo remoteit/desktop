@@ -2,7 +2,7 @@ import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { selectPermissions } from '../selectors/organizations'
 import { selectTags } from '../selectors/tags'
 import {
@@ -38,7 +38,7 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async fetch(accountId: string | void, state) {
-      accountId = accountId || getActiveAccountId(state)
+      accountId = accountId || selectActiveAccountId(state)
       const result = await graphQLBasicRequest(
         ` query Tags($account: String) {
             login {
@@ -61,7 +61,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchIfEmpty(accountId: string | void, state) {
-      accountId = accountId || getActiveAccountId(state)
+      accountId = accountId || selectActiveAccountId(state)
       if (!state.tags.all[accountId]) dispatch.tags.fetch(accountId)
     },
 
@@ -109,7 +109,7 @@ export default createModel<RootModel>()({
           dispatch.accounts.setDevice({ id: device.id, device })
         }
       })
-      const result = await graphQLAddDeviceTag(add, tag.name, getActiveAccountId(state))
+      const result = await graphQLAddDeviceTag(add, tag.name, selectActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} added to ${add.length} device${add.length === 1 ? '' : 's'}.`,
@@ -146,7 +146,7 @@ export default createModel<RootModel>()({
           dispatch.accounts.setDevice({ id: device.id, device })
         }
       })
-      const result = await graphQLRemoveDeviceTag(selected, tag.name, getActiveAccountId(state))
+      const result = await graphQLRemoveDeviceTag(selected, tag.name, selectActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} removed from ${count} device${count > 1 ? 's' : ''}.`,

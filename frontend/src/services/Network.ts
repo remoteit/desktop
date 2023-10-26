@@ -5,7 +5,7 @@ class Network extends EventEmitter {
   // connect, disconnect, change events are emitted
 
   tickDuration = 60 * 1000 // 1 minute
-  sleepDuration = 60 * this.tickDuration // 1 hour
+  sleepDuration = 30 * this.tickDuration // 13 minutes
   then = Date.now()
   interval?: NodeJS.Timeout
   shouldConnect: boolean = false

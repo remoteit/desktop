@@ -4,7 +4,7 @@ import { Application, getApplicationType } from '../shared/applications'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
-import { selectConnections } from '../selectors/connections'
+import { selectFetchConnections } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
 import { isPortal } from '../services/Browser'
 
@@ -34,12 +34,6 @@ export function isRelay(service?: IService) {
 
 export function isFileToken(token: string) {
   return token === 'path' || token === 'app' || token.toLowerCase().includes('file')
-}
-
-export function selectActiveCount(state: ApplicationState, connections: IConnection[]): string[] {
-  const sessions = state.sessions.all.map(s => s.target.id)
-  const connected = connections.filter(c => c.connected && !sessions.includes(c.id)).map(c => c.id)
-  return sessions.concat(connected)
 }
 
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {
@@ -163,9 +157,9 @@ export function clearConnectionError(connection: IConnection) {
   setConnection({ ...connection, error: undefined })
 }
 
-export function getConnectionServiceIds(state: ApplicationState) {
+export function getFetchConnectionIds(state: ApplicationState) {
   const thisId = state.backend.thisId
-  const serviceIds = selectConnections(state).map(c => {
+  const serviceIds = selectFetchConnections(state).map(c => {
     // @TODO see if it would be better to put the connections into the correct accountId device model
     // console.log('connection ids', c.id, c.accountId)
     return c.id

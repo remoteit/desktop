@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { attributeName } from '../shared/nameHelper'
-import { CopyCodeBlock } from './CopyCodeBlock'
 
 type Props = Omit<DialogProps, 'open'> & {
   device: IDevice
@@ -42,7 +42,7 @@ export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
           If you lost or deleted this device you can restore it by running the <br />
           following command on the device.
         </Typography>
-        <CopyCodeBlock
+        <CopyRegistrationCode
           code={result.restoreCode}
           value={result.restoreCommand ? result.restoreCommand : 'generating command...'}
           label="Restore Code"

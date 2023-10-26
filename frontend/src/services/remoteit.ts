@@ -5,6 +5,7 @@ export async function getToken(): Promise<string> {
 
   try {
     const currentSession = await store.getState().auth.authService?.currentCognitoSession()
+    if (!currentSession) throw new Error('No current cognito session')
     const token = 'Bearer ' + currentSession?.getAccessToken().getJwtToken()
     return token
   } catch (error) {

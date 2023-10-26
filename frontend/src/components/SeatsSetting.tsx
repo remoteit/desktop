@@ -4,7 +4,7 @@ import { List, ListItem, Stack } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
 import { InlineSetting } from './InlineSetting'
@@ -15,7 +15,7 @@ import { Icon } from './Icon'
 export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }) => {
   const dispatch = useDispatch<Dispatch>()
   const { accountId, plans, purchasing, limits } = useSelector((state: ApplicationState) => ({
-    accountId: getActiveAccountId(state),
+    accountId: selectActiveAccountId(state),
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: !!state.plans.purchasing,
     limits: selectLimits(state, state.user.id),

@@ -57,7 +57,7 @@ export const DiagramPath: React.FC<Props> = ({ type, flexGrow = 1 }) => {
       if (type !== 'initiator') sx.borderColor = 'grayLight.main'
   }
 
-  if (active) {
+  if (active && state !== 'offline') {
     sx.borderColor = 'primary.main'
   }
 

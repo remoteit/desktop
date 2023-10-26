@@ -1,7 +1,12 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import { WEB_PORT } from './constants'
-import { IP_PRIVATE, DEFAULT_CONNECTION } from './sharedCopy/constants'
+import {
+  IP_PRIVATE,
+  DEFAULT_CONNECTION,
+  CLI_CERT_FAILURE_ERROR_CODE,
+  CLI_REACHABLE_ERROR_CODE,
+} from './sharedCopy/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
 import preferences from './preferences'
@@ -85,21 +90,8 @@ export default class ConnectionPool {
         this.updated(instance)
       }
 
-      if (
-        instance.params.host === IP_PRIVATE &&
-        preferences.get().useCertificate &&
-        instance.params.ip === IP_PRIVATE
-      ) {
-        if (!instance.params.error) {
-          Logger.warn('HOSTNAME ERROR', { connection: instance.params })
-          instance.error(
-            new Error(
-              'Unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.'
-            )
-          )
-          this.updated(instance)
-        }
-      }
+      this.handleCertificateError(instance)
+      this.handleReachableError(instance)
     })
   }
 
@@ -274,6 +266,45 @@ export default class ConnectionPool {
     const next = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
     Logger.info('NEXT_FREE_PORT', { next })
     return next
+  }
+
+  private handleCertificateError = (instance: Connection) => {
+    const certificateEnabled = preferences.get().useCertificate && instance.params.ip === IP_PRIVATE
+
+    if (!instance.params.error && instance.params.host === IP_PRIVATE && certificateEnabled) {
+      Logger.warn('HOSTNAME ERROR', { connection: instance.params })
+      instance.params.error = {
+        message:
+          'Unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.',
+        code: CLI_CERT_FAILURE_ERROR_CODE,
+      }
+      this.updated(instance)
+    } else if (
+      instance.params.error?.code === CLI_CERT_FAILURE_ERROR_CODE &&
+      instance.params.host !== IP_PRIVATE &&
+      certificateEnabled
+    ) {
+      instance.params.error = undefined
+      this.updated(instance)
+    }
+  }
+
+  private handleReachableError = (instance: Connection) => {
+    if (!instance.params.checkpoint) return
+
+    if (instance.params.checkpoint.targetServiceReachable === false) {
+      instance.params.error = {
+        message: 'Remote.It connected, but there is no service running on the remote machine.',
+        code: CLI_REACHABLE_ERROR_CODE,
+      }
+      this.updated(instance)
+    } else if (
+      instance.params.error?.code === CLI_REACHABLE_ERROR_CODE &&
+      instance.params.checkpoint.targetServiceReachable === true
+    ) {
+      instance.params.error = undefined
+      this.updated(instance)
+    }
   }
 
   private assignPort = async (connection: IConnection) => {

@@ -1,31 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@mui/styles'
-import {
-  Dialog,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Typography,
-  Switch,
-} from '@mui/material'
+import { Button, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Switch } from '@mui/material'
 import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { ListItemSetting } from '../ListItemSetting'
 import { CodeBlock } from '../CodeBlock'
 import { Timestamp } from '../Timestamp'
 import { Gutters } from '../Gutters'
 import { Notice } from '../Notice'
 import { Icon } from '../Icon'
-import { spacing } from '../../styling'
 
 export const AccountAccessKey: React.FC = () => {
   const [showDialog, setShowDialog] = useState(false)
   const { accessKeys, secretKey, key, updating } = useSelector((state: ApplicationState) => state.keys)
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   useEffect(() => {
     dispatch.keys.init()
@@ -42,16 +31,16 @@ export const AccountAccessKey: React.FC = () => {
     <>
       <Typography variant="subtitle1">Authentication</Typography>
       <Gutters>
+        <Notice severity="warning" fullWidth gutterBottom>
+          If you lose or forget your secret key, you cannot retrieve it.
+          <em> There is a limit of 2 access keys. Keep your keys safe.</em>
+        </Notice>
         <Typography variant="body2" gutterBottom>
           Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an
           existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit
           directory of your home folder:
         </Typography>
         <CodeBlock>~/.remoteit/credentials</CodeBlock>
-        <Notice severity="warning" fullWidth gutterBottom>
-          If you lose or forget your secret key, you cannot retrieve it.
-          <em> There is a limit of 2 access keys. Keep your keys in a safe place.</em>
-        </Notice>
         <Button
           variant="contained"
           color="primary"
@@ -61,23 +50,27 @@ export const AccountAccessKey: React.FC = () => {
             setShowDialog(true)
           }}
         >
-          Create Access key
+          Generate Credentials
         </Button>
       </Gutters>
-      <List>
-        {accessKeys?.map((k, index) => (
-          <ListItem
-            className={css.row}
-            key={index}
-            onClick={() => handleToggle(k)}
-            disabled={updating === k.key}
-            button
-            dense
-          >
-            <ListItemText
-              classes={{ primary: css.primary }}
-              primary={k.key}
-              secondary={
+      <Gutters size="sm">
+        <List>
+          {accessKeys?.map((k, index) => (
+            <ListItemSetting
+              hideIcon
+              key={index}
+              label={k.key}
+              disabled={updating === k.key}
+              toggle={k.enabled}
+              onClick={() => handleToggle(k)}
+              secondaryContent={
+                updating === k.key ? (
+                  <Icon name="spinner-third" spin inlineLeft />
+                ) : k.enabled ? undefined : (
+                  <DeleteAccessKey deleteKey={k} />
+                )
+              }
+              subLabel={
                 <>
                   Created <Timestamp date={k.created} variant="long" /> &nbsp;/ &nbsp;
                   {k.lastUsed ? (
@@ -90,32 +83,18 @@ export const AccountAccessKey: React.FC = () => {
                 </>
               }
             />
-            <ListItemSecondaryAction>
-              <DeleteAccessKey deleteKey={k} />
-              {updating === k.key ? (
-                <Icon name="spinner-third" spin inlineLeft />
-              ) : (
-                <Switch color="primary" onChange={() => handleToggle(k)} checked={k.enabled} />
-              )}
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
-      <Dialog
+          ))}
+        </List>
+      </Gutters>
+      <CreateAccessKey
         open={showDialog}
         onClose={() => {
-          setShowDialog(false)
           dispatch.keys.set({ key: undefined, secretKey: undefined })
+          setShowDialog(false)
         }}
-        fullWidth
-      >
-        <CreateAccessKey newKey={key} secretKey={secretKey} />
-      </Dialog>
+        newKey={key}
+        secretKey={secretKey}
+      />
     </>
   )
 }
-
-const useStyles = makeStyles(theme => ({
-  row: { '& .MuiListItemText-root': { marginLeft: spacing.md } },
-  primary: { fontFamily: 'Roboto Mono', color: theme.palette.grayDarker.main, fontWeight: 300, letterSpacing: 0.5 },
-}))

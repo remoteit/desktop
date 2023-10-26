@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { makeStyles } from '@mui/styles'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { useParams, useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
@@ -38,10 +38,10 @@ export const OrganizationRolePage: React.FC = () => {
   const history = useHistory()
   const css = useStyles()
   const { accountId, disabled, roles, tags } = useSelector((state: ApplicationState) => ({
-    accountId: getActiveAccountId(state),
+    accountId: selectActiveAccountId(state),
     disabled: state.organization.updating,
     roles: selectOrganization(state).roles,
-    tags: selectTags(state, getActiveAccountId(state)),
+    tags: selectTags(state, selectActiveAccountId(state)),
   }))
   const role = structuredClone(roles?.find(r => r.id === roleID) || DEFAULT_ROLE)
   const [form, setForm] = useState<IOrganizationRole>(role)

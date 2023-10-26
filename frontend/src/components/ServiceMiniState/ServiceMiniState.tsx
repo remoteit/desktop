@@ -18,7 +18,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   let state = service ? service.state : 'unknown'
   let icon: React.ReactNode = null
 
-  if (connection) {
+  if (state !== 'inactive' && connection) {
     if (connection.connecting || connection.stopping) state = 'transition'
     if (connection.connected || connection.enabled) state = 'connected'
     if (connection.error?.message) state = 'error'

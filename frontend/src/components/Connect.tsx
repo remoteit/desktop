@@ -107,7 +107,7 @@ export const Connect: React.FC = () => {
             )}
             <PortalUI>
               <Notice gutterTop severity="info">
-                <strong>Want Persistent Endpoints?</strong>
+                <strong>Want Persistent Private Endpoints?</strong>
                 <em>On demand connections with persistent endpoints, remote access, and improved launch commands.</em>
                 <Button
                   size="small"

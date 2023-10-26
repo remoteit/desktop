@@ -1,6 +1,6 @@
 import React from 'react'
 import { Title } from '../Title'
-import { SessionListItem } from '../SessionListItem'
+import { NetworkListItem } from '../NetworkListItem'
 import { NetworkListTitle } from '../NetworkListTitle'
 import { StickyTitle } from '../StickyTitle'
 import { List, Box } from '@mui/material'
@@ -13,7 +13,7 @@ export interface Props {
 }
 
 export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
-  if (!networks) return null
+  if (!networks || !Object.keys(networks).length) return null
   return (
     <>
       <StickyTitle>
@@ -24,7 +24,7 @@ export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
         <List key={k}>
           <NetworkListTitle network={networks[k]} noLink />
           {networks[k].sessions?.map((s, i) => (
-            <SessionListItem key={i} session={s} serviceId={s.target.id} />
+            <NetworkListItem key={i} serviceId={s.target.id} network={networks[k]} session={s} connectionsPage />
           ))}
         </List>
       ))}

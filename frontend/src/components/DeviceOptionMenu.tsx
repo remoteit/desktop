@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { PROTOCOL } from '../shared/constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
@@ -9,13 +9,14 @@ import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
+import { InfoButton } from '../buttons/InfoButton'
 import { Icon } from './Icon'
 
 type Props = { device?: IDevice; service?: IService; user?: IUser }
 
 export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
   const dispatch = useDispatch<Dispatch>()
@@ -23,6 +24,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const deviceOnly = device && !service
 
   if (!device) return null
+  if (!devicesSection) return <InfoButton device={device} service={service} />
 
   return (
     <>

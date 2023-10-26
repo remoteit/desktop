@@ -1,5 +1,5 @@
 import { getTags } from './state'
 import { createSelector } from 'reselect'
-import { getActiveAccountId } from './accounts'
+import { selectActiveAccountId } from './accounts'
 
-export const selectTags = createSelector([getTags, getActiveAccountId], (tags, accountId) => tags[accountId] || [])
+export const selectTags = createSelector([getTags, selectActiveAccountId], (tags, accountId) => tags[accountId] || [])

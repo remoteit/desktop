@@ -146,23 +146,7 @@ export default class CLI {
   async readConnections() {
     const connections = await this.connectionStatus()
     return connections.map(c => {
-      let error: ISimpleError | undefined
-
-      if (c.checkpointIsTargetServiceReachable === false) {
-        error = {
-          message: 'Remote.It connected, but there is no service running on the remote machine.',
-          code: CLI_REACHABLE_ERROR_CODE,
-        }
-      } else if (c.checkpointIsTargetServiceReachable === true) {
-        if (error && error?.code === CLI_REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
-      }
-
-      if (c.error?.message) {
-        error = { message: c.error.message, code: c.error.code }
-      }
-
       d('CONNECTION STATE', c.id, c.state)
-      // if (c.id === '80:00:00:00:01:26:69:30') Logger.info('CONNECTION STATUS', c)
 
       let result: IConnection = {
         id: c.id,
@@ -203,7 +187,7 @@ export default class CLI {
       if (c.createdAt) result.createdTime = Date.parse(c.createdAt)
       if (c.startedAt) result.startTime = Date.parse(c.startedAt)
       if (c.stoppedAt) result.endTime = Date.parse(c.stoppedAt)
-      if (error) result.error = error
+      if (c.error?.message) result.error = { message: c.error.message, code: c.error.code }
 
       return result
     })

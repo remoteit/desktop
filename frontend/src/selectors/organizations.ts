@@ -1,12 +1,12 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
 import { getOrganizations, getTestLimits, getLimitsOverride, getPlansTests } from './state'
-import { getActiveAccountId, isUserAccount, getActiveUser } from './accounts'
+import { selectActiveAccountId, isUserAccount, getActiveUser } from './accounts'
 import { selectMembership } from './accounts'
 import { defaultState } from '../models/organization'
 
 export const selectOrganization = createSelector(
-  [getActiveAccountId, getOrganizations, selectMembership],
+  [selectActiveAccountId, getOrganizations, selectMembership],
   (accountId, organizations, membership) => {
     const organization = organizations[accountId] || defaultState
     return {

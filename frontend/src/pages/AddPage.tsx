@@ -1,25 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import {
-  List,
-  ListItem,
-  ListSubheader,
-  ListItemIcon,
-  ListItemText,
-  TextField,
-  Typography,
-  Divider,
-} from '@mui/material'
+import { List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
+import { ClaimDevice } from '../components/ClaimDevice'
 import { AddPlatform } from '../components/AddPlatform'
-import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { Gutters } from '../components/Gutters'
@@ -28,38 +18,14 @@ import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
-const CLAIM_CODE_LENGTH = 8
-
 export const AddPage: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const [code, setCode] = useState<string>('')
-  const [valid, setValid] = useState<boolean>(false)
   const { claiming, hasDemo, testUI } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
     testUI: state.ui.testUI,
   }))
-
-  const handleClose = () => {
-    setValid(false)
-    setCode('')
-  }
-
-  useEffect(() => {
-    if (!claiming) handleClose()
-  }, [claiming])
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let { value } = event.target
-    if (value.length >= CLAIM_CODE_LENGTH) {
-      value = value.substring(0, CLAIM_CODE_LENGTH)
-      setValid(true)
-    } else {
-      setValid(false)
-    }
-    setCode(value.toUpperCase())
-  }
 
   return (
     <Container
@@ -82,7 +48,6 @@ export const AddPage: React.FC = () => {
             disabled={hasDemo || claiming}
             className={css.smallItem}
             onClick={() => {
-              setCode(DEMO_DEVICE_CLAIM_CODE)
               devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
             }}
           >
@@ -157,41 +122,12 @@ export const AddPage: React.FC = () => {
             return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
           })}
         </List>
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} onClick={handleClose} />
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
           <ListItem>
-            <form
-              className={css.form}
-              onSubmit={e => {
-                e.preventDefault()
-                devices.claimDevice({ code, redirect: true })
-              }}
-            >
-              <TextField
-                label="Claim Code"
-                value={code}
-                variant="filled"
-                disabled={claiming}
-                onChange={handleChange}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      submit
-                      title="Claim"
-                      icon="check"
-                      size="base"
-                      type="solid"
-                      color={claiming || !valid ? 'grayDark' : 'success'}
-                      loading={claiming}
-                      disabled={claiming || !valid}
-                    />
-                  ),
-                }}
-              />
-            </form>
-            <OrganizationIndicator alignItems="center" marginTop={1} />
+            <ClaimDevice />
           </ListItem>
         </List>
       </Gutters>
@@ -236,11 +172,5 @@ const useStyles = makeStyles(({ breakpoints }) => ({
   },
   bigList: {
     [breakpoints.up('md')]: { width: '75%' },
-  },
-  form: {
-    width: 160,
-    display: 'flex',
-    '& .MuiIconButton-root': { marginRight: spacing.xs },
-    '& .MuiFilledInput-root': { fontSize: 14 },
   },
 }))

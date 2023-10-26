@@ -19,6 +19,7 @@ export interface Props {
   offline: boolean
   platform?: number
   enabled?: boolean
+  anonymous?: boolean
   networkEnabled?: boolean
   children?: React.ReactNode
 }
@@ -33,15 +34,18 @@ export const ConnectionListItem: React.FC<Props> = ({
   offline,
   platform,
   enabled,
+  anonymous,
   networkEnabled,
   children,
 }) => {
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles({ offline, enabled, connected, networkEnabled })
+  const error = !!connection?.error
+  const color = offline ? 'gray' : error ? 'error' : enabled ? 'primary' : 'grayDarkest'
+  const css = useStyles({ connected, networkEnabled, color })
 
   let icon: React.ReactNode | null = null
-  if (connected) icon = <Icon color="primary" name="play" size="sm" type="solid" />
-  if (connection?.connectLink) icon = <Icon color="primary" name="circle-medium" type="solid" size="sm" />
+  if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
+  if (connection?.connectLink || anonymous) icon = <Icon color={color} name="globe" type="solid" size="xxs" />
 
   return (
     <ListItemLocation
@@ -63,39 +67,25 @@ export const ConnectionListItem: React.FC<Props> = ({
       <ListItemIcon className={css.platform}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
-      <ListItemText primary={<ConnectionName name={name} port={connection?.port} />} className={css.text} />
+      <ListItemText primary={<ConnectionName name={name} port={connection?.port} color={color} />} />
       {children}
     </ListItemLocation>
   )
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
-  text: ({ offline, enabled }: any) => ({
-    opacity: offline ? 0.3 : 1,
-    fontWeight: 400,
-    whiteSpace: 'nowrap',
-    '& span': {
-      color: enabled ? palette.primary.main : palette.grayDarkest.main,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-    },
+  connection: ({ networkEnabled, connected, color }: any) => ({
+    borderColor: networkEnabled || connected ? palette.primary.main : palette[color]?.main,
+    borderBottomColor: palette[color]?.main,
+    borderWidth: '0 0 1px 1px',
+    borderBottomWidth: 1,
+    borderBottomStyle: connected ? 'solid' : 'dotted',
+    borderStyle: 'solid',
+    height: '2.7em',
+    width: '1.5em',
+    marginTop: '-2.7em',
+    marginRight: '-1.5em',
   }),
-  connection: ({ offline, networkEnabled, connected }: any) => {
-    let color = palette.grayDark.main
-    if (networkEnabled || connected) color = palette.primary.main
-    return {
-      borderColor: color,
-      borderBottomColor: offline ? palette.gray.main : color,
-      borderWidth: '0 0 1px 1px',
-      borderBottomWidth: 1,
-      borderBottomStyle: connected ? 'solid' : 'dotted',
-      borderStyle: 'solid',
-      height: '2.7em',
-      width: '1.5em',
-      marginTop: '-2.7em',
-      marginRight: '-1.5em',
-    }
-  },
   hover: {
     position: 'absolute',
     marginTop: -1,

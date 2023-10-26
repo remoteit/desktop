@@ -59,6 +59,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
   let name = replaceHost(connection?.host)
   let port = connection?.port
 
+  const disabled = !(connection?.enabled || session) || !connection?.online
   const endpoint = getEndpoint(name, port)
   const endpointName = (connection?.public || connection?.connectLink ? 'Public' : 'Local') + ' Endpoint'
   const secureReverseProxy = isSecureReverseProxy(app.string)
@@ -140,7 +141,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
   return (
     <Collapse in={show}>
       <Paper className={css.paper} elevation={0}>
-        <Box className={classnames(css.address, !(connection?.enabled || session) && css.disabled)}>
+        <Box className={classnames(css.address, disabled && css.disabled)}>
           {!!showTitle ? (
             <Gutters size="md">
               <Typography variant="h5" color="alwaysWhite.main">

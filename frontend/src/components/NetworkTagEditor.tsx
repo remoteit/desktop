@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 
@@ -13,7 +13,7 @@ type Props = { network?: INetwork; button?: string }
 
 export const NetworkTagEditor: React.FC<Props> = ({ network, button }) => {
   const { tags, accountId, canEdit } = useSelector((state: ApplicationState) => {
-    const accountId = getActiveAccountId(state)
+    const accountId = selectActiveAccountId(state)
     return {
       accountId,
       tags: selectTags(state, accountId),

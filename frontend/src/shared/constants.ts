@@ -43,6 +43,7 @@ export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 export const CERTIFICATE_DOMAIN = 'at.remote.it'
+export const PUBLIC_PROXY_MANUFACTURER_CODE = 34560
 
 export const REGEX_LAST_PATH = /\/[^/]+$/g
 export const REGEX_FIRST_PATH = /^\/(\w+)/g
@@ -76,7 +77,9 @@ export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
 export const MOBILE_WIDTH = 500
+
 export const CLI_REACHABLE_ERROR_CODE = 523
+export const CLI_CERT_FAILURE_ERROR_CODE = 496
 
 export const DEFAULT_CONNECTION: IConnection = {
   id: '',

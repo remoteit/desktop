@@ -1,10 +1,10 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
-import { getActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { mergeDevice } from './devices'
 import { RootModel } from '.'
@@ -30,9 +30,8 @@ export default createModel<RootModel>()({
       await dispatch.accounts.fetch()
     },
     async fetch() {
-      try {
-        const result = await graphQLRequest(
-          ` query Accounts {
+      const result = await graphQLBasicRequest(
+        ` query Accounts {
               login {
                 membership {
                   created
@@ -51,12 +50,9 @@ export default createModel<RootModel>()({
                 }
               }
             }`
-        )
-        graphQLGetErrors(result)
-        await dispatch.accounts.parse(result)
-      } catch (error) {
-        await apiError(error)
-      }
+      )
+      if (result === 'ERROR') return
+      await dispatch.accounts.parse(result)
     },
     async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
       const gqlData = gqlResponse?.data?.data?.login
@@ -205,8 +201,20 @@ export default createModel<RootModel>()({
   },
 })
 
-export function accountFromDevice(state: ApplicationState, device?: IDevice) {
-  return device?.accountId || getActiveAccountId(state)
+export function accountFromDevice(state: ApplicationState, ownerId: string, access: string[]) {
+  const userId = state.auth.user?.id || state.user.id
+  const orgIds = state.accounts.membership.map(m => m.account.id)
+  orgIds.push(userId) // add current user to accounts
+
+  // My device
+  if (userId === ownerId) return ownerId
+  // Org device
+  if (orgIds.includes(ownerId)) return ownerId
+  // Shared device
+  const sharedId = orgIds.find(a => access.includes(a))
+  if (sharedId) return sharedId
+  // Default
+  return userId
 }
 
 export function getAccountIds(state: ApplicationState) {

@@ -37,7 +37,7 @@ export const LaunchButton: React.FC<Props> = ({
   const dispatch = useDispatch<Dispatch>()
   const [prompt, setPrompt] = useState<boolean>(false)
   const ready = connection?.connectLink || connection?.ready
-  const loading = !ready || connection?.starting
+  const loading = !ready || connection?.starting || (device && !device?.loaded)
   const disabled = launchDisabled(connection) || loading
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && connection?.autoLaunch)
 
@@ -76,14 +76,7 @@ export const LaunchButton: React.FC<Props> = ({
     heartbeat.connect()
   }
 
-  const LaunchIcon = (
-    <Icon
-      {...props}
-      name={connection?.error ? 'hyphen' : loading ? 'spinner-third' : 'launch'}
-      spin={loading}
-      fixedWidth
-    />
-  )
+  const LaunchIcon = <Icon {...props} name={loading ? 'spinner-third' : 'launch'} spin={loading} fixedWidth />
 
   return (
     <>

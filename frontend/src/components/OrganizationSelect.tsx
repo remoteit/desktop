@@ -5,7 +5,7 @@ import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography, Tooltip, ButtonBase, Box, List, ListItem } from '@mui/material'
+import { Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
@@ -19,7 +19,7 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrg, userId, defaultSelection } = useSelector((state: ApplicationState) => ({
+  const { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
     defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => {
@@ -34,6 +34,7 @@ export const OrganizationSelect: React.FC = () => {
       }
     }),
     ownOrg: getOwnOrganization(state),
+    sessions: state.sessions.all,
     userId: state.user.id,
   }))
 
@@ -46,7 +47,7 @@ export const OrganizationSelect: React.FC = () => {
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()
-      if (['/devices', '/networks'].includes(menu)) {
+      if (['/devices', '/networks', '/connections'].includes(menu)) {
         history.push(defaultSelection[id]?.[menu] || menu)
       }
     }
@@ -54,6 +55,8 @@ export const OrganizationSelect: React.FC = () => {
 
   options.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
   if (!options.length) return null
+
+  const mySessions = sessions.filter(s => s.target.accountId === ownOrg?.id).length
 
   return (
     <>
@@ -77,42 +80,59 @@ export const OrganizationSelect: React.FC = () => {
         }
       >
         <List dense className={css.list}>
-          <Tooltip
-            title={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'}
-            placement="right"
-            enterDelay={800}
-            arrow
+          <Badge
+            overlap="circular"
+            classes={{ badge: css.badge }}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            badgeContent={mySessions}
           >
-            <ListItem disableGutters className={css.buttonContainer}>
-              <ButtonBase
-                className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
-                onClick={() => onSelect(ownOrgId || userId)}
-              >
-                <Box className={css.home}>
-                  <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
-                </Box>
-              </ButtonBase>
-            </ListItem>
-          </Tooltip>
-          {options.map(option => (
             <Tooltip
-              key={option.id}
-              title={`${option.name} - ${option.roleName}`}
+              title={<Title primary={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'} count={mySessions} />}
               placement="right"
               enterDelay={800}
               arrow
             >
-              <ListItem disableGutters>
+              <ListItem disableGutters className={css.buttonContainer}>
                 <ButtonBase
-                  disabled={option.disabled}
-                  onClick={() => onSelect(option.id)}
-                  className={classnames(css.button, option.id === activeOrg.id && css.active)}
+                  className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
+                  onClick={() => onSelect(ownOrgId || userId)}
                 >
-                  <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                  <Box className={css.home}>
+                    <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
+                  </Box>
                 </ButtonBase>
               </ListItem>
             </Tooltip>
-          ))}
+          </Badge>
+          {options.map(option => {
+            const count = sessions.filter(s => s.target.accountId === option.id).length
+            return (
+              <Badge
+                key={option.id}
+                overlap="circular"
+                classes={{ badge: css.badge }}
+                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                badgeContent={count}
+              >
+                <Tooltip
+                  title={<Title primary={`${option.name} - ${option.roleName}`} count={count} />}
+                  placement="right"
+                  enterDelay={800}
+                  arrow
+                >
+                  <ListItem disableGutters>
+                    <ButtonBase
+                      disabled={option.disabled}
+                      onClick={() => onSelect(option.id)}
+                      className={classnames(css.button, option.id === activeOrg.id && css.active)}
+                    >
+                      <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                    </ButtonBase>
+                  </ListItem>
+                </Tooltip>
+              </Badge>
+            )
+          })}
           <ListItem disableGutters className={css.buttonContainer}>
             <IconButton
               className={css.button}
@@ -125,6 +145,20 @@ export const OrganizationSelect: React.FC = () => {
           </ListItem>
         </List>
       </GuideBubble>
+    </>
+  )
+}
+
+function Title({ primary, count }: { primary: string; count: number }) {
+  return (
+    <>
+      {primary}
+      {!!count && (
+        <>
+          <Divider />
+          {count} active connection{count > 1 ? 's' : ''}
+        </>
+      )}
     </>
   )
 }
@@ -157,6 +191,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderColor: palette.primary.main,
     boxShadow: `0 0 10px ${palette.primaryLight.main}`,
     '& > *': { border: `2px solid ${palette.grayLightest.main}` },
+    '& > .MuiBox-root': { backgroundColor: palette.grayLightest.main },
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -173,7 +208,14 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: palette.grayLighter.main,
+    backgroundColor: palette.white.main,
+  },
+  badge: {
+    fontWeight: 600,
+    marginTop: 3,
+    marginLeft: 1,
+    color: palette.alwaysWhite.main,
+    backgroundColor: palette.primary.main,
   },
   name: {
     transform: 'rotate(270deg)',

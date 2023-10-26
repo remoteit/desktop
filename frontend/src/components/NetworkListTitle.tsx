@@ -40,7 +40,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
               color={network?.enabled ? 'primary' : undefined}
             />
           )}
-          {noLink || (
+          {!noLink && (
             <Icon
               className={classnames(css.mergeIcon, css.hover, 'hidden')}
               name="sliders-h"
@@ -54,7 +54,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
       pathname={noLink ? undefined : `/networks/${network?.id}`}
       onClick={noLink ? onClick : undefined}
       title={
-        <Title className={css.text}>
+        <Title>
           {network?.name}
           {expanded ? '' : ' ...'}
         </Title>

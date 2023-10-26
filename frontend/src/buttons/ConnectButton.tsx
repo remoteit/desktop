@@ -97,7 +97,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       break
     case 'offline':
       title = 'Offline'
-      disabled = !connection?.enabled
+      disabled = disabled || !connection?.enabled
+      color = 'grayLight'
       variant = 'contained'
       icon = 'stop'
       break

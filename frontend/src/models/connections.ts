@@ -5,7 +5,7 @@ import { pickTruthy, dedupe } from '../helpers/utilHelper'
 import { DEFAULT_CONNECTION, REGEX_HIDDEN_PASSWORD, IP_PRIVATE, CERTIFICATE_DOMAIN } from '../shared/constants'
 import {
   cleanOrphanConnections,
-  getConnectionServiceIds,
+  getFetchConnectionIds,
   newConnection,
   setConnection,
   getConnectionLookup,
@@ -21,6 +21,7 @@ import {
 } from '../services/graphQLMutation'
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
 import { selectApplication } from '../selectors/applications'
+import { accountFromDevice } from './accounts'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectConnection } from '../selectors/connections'
 import { selectNetwork } from './networks'
@@ -62,7 +63,7 @@ export default createModel<RootModel>()({
 
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
-      const serviceIds = getConnectionServiceIds(state)
+      const serviceIds = getFetchConnectionIds(state)
       const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
       if (graphQLGetErrors(gqlResponse)) return
 
@@ -108,10 +109,12 @@ export default createModel<RootModel>()({
           }
 
           if (connection) {
-            if (!connection.accountId) {
-              const membership = state.accounts.membership.find(m => m.account.id === d.owner.id)
-              connection.accountId = membership ? membership.account.id : accountId
-            }
+            // assign account id
+            connection.accountId = accountFromDevice(
+              state,
+              d.owner.id,
+              d.access.map(a => a.id)
+            )
 
             // disable connection if service is offline
             if (!online && !connection.connectLink && connection.enabled) {
@@ -129,7 +132,7 @@ export default createModel<RootModel>()({
             const app = selectApplication(state, s, connection)
             connection = updateImmutableData(connection, app)
 
-            result.push({ ...connection, online })
+            result.push(connection)
           }
         })
       })

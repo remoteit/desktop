@@ -13,14 +13,17 @@ export const AnnouncementsPage = () => {
   const bodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const currentBodyRef = bodyRef.current
+
     const onScroll = () => {
       const top = bodyRef.current?.scrollTop || 0
       const height = bodyRef.current?.offsetHeight || 0
       setScrollPosition(top + height)
     }
     onScroll()
-    bodyRef.current?.addEventListener('scroll', onScroll)
-    return () => bodyRef.current?.removeEventListener('scroll', onScroll)
+
+    currentBodyRef?.addEventListener('scroll', onScroll)
+    return () => currentBodyRef?.removeEventListener('scroll', onScroll)
   }, [])
 
   return (

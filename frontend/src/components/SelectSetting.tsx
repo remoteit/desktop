@@ -7,23 +7,22 @@ import {
   MenuItem,
   Typography,
   TextField,
+  TextFieldProps,
   Tooltip,
 } from '@mui/material'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
-type Props = {
+type Props = Omit<TextFieldProps, 'onChange'> & {
   label: string
   value?: string | number
   values: ISelect[]
   icon?: string
-  disabled?: boolean
   modified?: boolean
   hideIcon?: boolean
   helpMessage?: string
   defaultValue?: string | number
   onChange?: (value: string) => void
-  children?: React.ReactNode
 }
 
 export const SelectSetting: React.FC<Props> = ({
@@ -38,6 +37,7 @@ export const SelectSetting: React.FC<Props> = ({
   defaultValue,
   onChange,
   children,
+  ...props
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const handleClick = () => setOpen(!open)
@@ -50,10 +50,11 @@ export const SelectSetting: React.FC<Props> = ({
         {hideIcon ? null : <Icon name={icon} size="md" modified={modified} fixedWidth />}
       </ListItemIcon>
       <TextField
+        {...props}
         select
         fullWidth
         variant="standard"
-        SelectProps={{ open }}
+        SelectProps={{ open, renderValue: value => values.find(r => r.key === value)?.name }}
         label={
           <>
             {label}
@@ -73,15 +74,25 @@ export const SelectSetting: React.FC<Props> = ({
         }}
       >
         {values.map(type => (
-          <MenuItem value={type.key} key={type.key} disabled={type.disabled}>
-            <ListItemText>
-              {type.name}
-              {defaultValue === type.key && modified && (
-                <ListItemSecondaryAction>
-                  <Typography variant="caption">default</Typography>
-                </ListItemSecondaryAction>
-              )}
-            </ListItemText>
+          <MenuItem value={type.key} key={type.key} disabled={type.disabled} sx={{ display: 'block', paddingY: 1.3 }}>
+            <ListItemText>{type.name}</ListItemText>
+            {type.description && (
+              <Typography
+                variant="caption"
+                sx={{
+                  width: 'calc(100% - 48px)',
+                  display: 'block',
+                  whiteSpace: 'wrap',
+                }}
+              >
+                {type.description}
+              </Typography>
+            )}
+            {defaultValue === type.key && modified && (
+              <ListItemSecondaryAction>
+                <Typography variant="caption">default</Typography>
+              </ListItemSecondaryAction>
+            )}
           </MenuItem>
         ))}
       </TextField>
