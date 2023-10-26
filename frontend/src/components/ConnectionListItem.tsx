@@ -67,22 +67,13 @@ export const ConnectionListItem: React.FC<Props> = ({
       <ListItemIcon className={css.platform}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
-      <ListItemText primary={<ConnectionName name={name} port={connection?.port} />} className={css.text} />
+      <ListItemText primary={<ConnectionName name={name} port={connection?.port} color={color} />} />
       {children}
     </ListItemLocation>
   )
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
-  text: ({ color }: any) => ({
-    fontWeight: 400,
-    whiteSpace: 'nowrap',
-    '& span': {
-      color: palette[color]?.main,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-    },
-  }),
   connection: ({ networkEnabled, connected, color }: any) => ({
     borderColor: networkEnabled || connected ? palette.primary.main : palette[color]?.main,
     borderBottomColor: palette[color]?.main,

@@ -13,7 +13,7 @@ export interface Props {
 }
 
 export const SessionsList: React.FC<Props> = ({ networks, title, action }) => {
-  if (!networks) return null
+  if (!networks || !Object.keys(networks).length) return null
   return (
     <>
       <StickyTitle>

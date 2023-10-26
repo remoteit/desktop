@@ -1,18 +1,18 @@
-import { isPortal } from '../services/Browser'
 import { createSelector } from 'reselect'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
-import { getOwnDevices } from './devices'
-import { selectActiveAccountId } from './accounts'
-import { getUser, getOrganizations, getMemberships, getAllConnections, getSessions, optionalService } from './state'
+import { selectActiveAccountId, getActiveUser } from './accounts'
+import { getUser, getAllConnections, getSessions, optionalService } from './state'
 
-export const getConnectionsLookup = createSelector([getAllConnections, selectActiveAccountId], (allConnections, accountId) =>
-  allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
-    if (!c.deviceID || accountId !== c.accountId) return lookup
-    if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
-    else lookup[c.deviceID] = [c]
-    return lookup
-  }, {})
+export const getConnectionsLookup = createSelector(
+  [getAllConnections, selectActiveAccountId],
+  (allConnections, accountId) =>
+    allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
+      if (!c.deviceID || accountId !== c.accountId) return lookup
+      if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
+      else lookup[c.deviceID] = [c]
+      return lookup
+    }, {})
 )
 
 export const selectSessions = createSelector([getSessions, selectActiveAccountId], (sessions, accountId) => {
@@ -82,21 +82,37 @@ export const selectConnection = createSelector(
   }
 )
 
-export const selectConnectionsByAccount = createSelector(
-  [getUser, selectIdleConnections, getOrganizations, getMemberships],
-  (user, connections, organizations, memberships): INetwork[] => {
-    let networks: INetwork[] = []
+export const selectConnectionsByType = createSelector(
+  [getActiveUser, selectIdleConnections],
+  (activeUser, connections): INetwork[] => {
+    const connection = connections[0]
+
+    const networks: INetwork[] = [
+      {
+        ...DEFAULT_NETWORK,
+        cloud: true,
+        id: 'public',
+        name: 'Public',
+        icon: 'globe',
+        accountId: connection.accountId || activeUser.id,
+        serviceIds: [],
+      },
+      {
+        ...DEFAULT_NETWORK,
+        id: 'local',
+        name: 'Local',
+        icon: 'network-wired',
+        accountId: connection.accountId || activeUser.id,
+        serviceIds: [],
+      },
+    ]
 
     connections.forEach(c => {
-      let accountId = c.accountId || ''
-
-      const name = organizations[accountId]?.name || 'Personal'
-      const owner = memberships.find(m => m.account.id === accountId)?.account || user
-      const index = networks.findIndex(n => n.id === accountId)
-
-      if (index === -1) networks.push({ ...DEFAULT_NETWORK, id: accountId, name, serviceIds: [c.id], owner })
-      else networks[index].serviceIds.push(c.id)
+      if (c.public || c.connectLink) networks[0].serviceIds.push(c.id)
+      else networks[1].serviceIds.push(c.id)
     })
+
+    if (networks[0].serviceIds.length === 0) networks.shift()
 
     return networks
   }

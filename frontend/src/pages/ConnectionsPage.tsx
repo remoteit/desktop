@@ -1,7 +1,7 @@
 import React from 'react'
 import { Typography, Divider } from '@mui/material'
 import { defaultNetwork, recentNetwork } from '../models/networks'
-import { selectConnectionsByAccount, selectConnections, selectConnectionSessions } from '../selectors/connections'
+import { selectConnectionsByType, selectConnections, selectConnectionSessions } from '../selectors/connections'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
@@ -17,17 +17,14 @@ import { Icon } from '../components/Icon'
 
 export const ConnectionsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { active, recent, local, initialized, loading } = useSelector((state: ApplicationState) => {
+  const { active, recent, idle, initialized, loading } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
-    // const localSessionIds = allConnections.map(c => c.sessionId)
-    // const sessions = selectSessions(state)
     const sessions = selectConnectionSessions(state)
     const deviceModel = getDeviceModel(state)
-    let active: ILookup<INetwork> | undefined
+    let active: ILookup<INetwork> = {}
 
     sessions.forEach(s => {
       const id = s.user?.id || 'default'
-      active = active || {}
       if (!active[id]) {
         const [icon, iconType] = initiatorPlatformIcon({ id: s.platform })
         active[id] = {
@@ -45,7 +42,7 @@ export const ConnectionsPage: React.FC = () => {
 
     if (active) {
       const otherKeys = Object.keys(active)
-      if (!otherKeys.length || !active[otherKeys[0]]?.sessions?.length) active = undefined
+      if (!otherKeys.length || !active[otherKeys[0]]?.sessions?.length) active = {}
     }
 
     return {
@@ -54,13 +51,13 @@ export const ConnectionsPage: React.FC = () => {
         ...recentNetwork,
         serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
       },
-      local: selectConnectionsByAccount(state),
+      idle: selectConnectionsByType(state),
       initialized: state.connections.initialized,
       loading: deviceModel.fetching,
     }
   })
 
-  const empty = !local?.length
+  const empty = !idle?.length
 
   return (
     <Container bodyProps={{ verticalOverflow: true }} gutterBottom>
@@ -79,7 +76,7 @@ export const ConnectionsPage: React.FC = () => {
               <Typography variant="caption">Begin by selecting a device's service from the Devices menu.</Typography>
             </Gutters>
           )}
-          {local.map(n => (
+          {idle.map(n => (
             <Network noLink key={n.id} network={n} connectionsPage />
           ))}
           {!!recent.serviceIds.length && (
