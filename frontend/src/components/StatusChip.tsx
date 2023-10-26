@@ -13,7 +13,7 @@ export const StatusChip: React.FC<Props> = ({ device, connections, session }) =>
   ) : connections?.some(c => c.connected) ? (
     <ColorChip label="Connected" size="small" color="primary" variant="contained" />
   ) : connections?.some(c => c.enabled && c.online) ? (
-    <ColorChip label="Ready" size="small" color="primary" />
+    <ColorChip label="Idle" size="small" color="primary" />
   ) : device?.state === 'active' ? (
     <ColorChip label="Online" size="small" color="secondary" />
   ) : (

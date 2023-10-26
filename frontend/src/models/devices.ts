@@ -462,6 +462,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ destroying: true, silent: device.id })
       const result = await graphQLDeleteDevice(device.id)
       if (result !== 'ERROR') {
+        await dispatch.devices.cleanup([device.id])
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully deleted.`,
         })
@@ -520,7 +521,7 @@ export default createModel<RootModel>()({
         email: [auth.user?.email || ''],
       })
       if (result !== 'ERROR') {
-        dispatch.devices.cleanup([device.id])
+        await dispatch.devices.cleanup([device.id])
         dispatch.ui.set({
           successMessage: `"${device.name}" was successfully removed.`,
         })
