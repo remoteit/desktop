@@ -8,7 +8,9 @@
     "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-*",
     "build-dev": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=development NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
+    "build-frontend": "cd frontend && npm run build",
     "build-electron": "electron-builder",
+    "build-mobile": "run-s build-frontend sync-mobile",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-env": "cp .env frontend/ && cp .env backend/",
@@ -21,10 +23,13 @@
     "install-electron": "electron-builder install-app-deps",
     "install-frontend": "cd frontend && npm i",
     "install-binaries": "sh scripts/build.sh",
+    "open-ios": "npx cap open ios",
+    "open-android": "npx cap open android",
     "postinstall": "run-s install-*",
     "frontend": "cd frontend && npm start",
     "version": "sh scripts/version.sh $npm_package_version",
     "start": "npm-run-all -l -n -p copy-* watch-*",
+    "sync-mobile": "npx cap sync",
     "test": "cd backend && npm run test",
     "test-watch": "cd backend && npm run test-watch",
     "watch-backend": "cd backend && npm run watch",
@@ -33,6 +38,9 @@
     "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
+    "@capacitor/android": "^5.5.1",
+    "@capacitor/core": "^5.5.1",
+    "@capacitor/ios": "^5.5.1",
     "electron-updater": "^6.1.4",
     "remoteit-headless": "file:backend"
   },
