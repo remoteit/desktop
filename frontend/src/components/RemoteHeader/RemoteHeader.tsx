@@ -9,12 +9,12 @@ import { Logo } from '../Logo'
 import classnames from 'classnames'
 import screenfull from 'screenfull'
 
-type Props = { device?: IDevice; color?: string; children: React.ReactNode }
+type Props = { device?: IDevice; color?: string; insets: ILayout['insets']; children: React.ReactNode }
 
-export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
+export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children }) => {
   const showFrame = isRemote()
   const showBorder = !isMac() && !showFrame
-  const css = useStyles(showBorder)()
+  const css = useStyles({ showBorder, insets })
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
 
@@ -53,41 +53,50 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
   )
 }
 
-const useStyles = showBorder =>
-  makeStyles(({ palette }) => ({
-    full: {
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      position: 'fixed',
-    },
-    page: {
-      overflow: 'hidden',
-      display: 'flex',
-      flexFlow: 'column',
-      backgroundColor: palette.white.main,
-      margin: 'auto',
-      borderTop: showBorder ? `1px solid ${palette.grayLighter.main}` : undefined,
-      contain: 'layout',
-    },
-    inset: {
-      top: spacing.xl,
-      left: spacing.sm,
-      right: spacing.sm,
-      bottom: spacing.sm,
-      borderRadius: spacing.sm,
-    },
-    default: { backgroundColor: palette.grayDarker.main, padding: spacing.xs },
-    remote: {
-      color: palette.white.main,
-      textAlign: 'center',
-      '& button': { position: 'absolute', left: 0, top: 0, color: palette.white.main },
-    },
-    icon: {
-      position: 'absolute',
-      height: spacing.lg,
-      right: spacing.md,
-      top: spacing.xs,
-    },
-  }))
+type styleProps = {
+  insets: ILayout['insets']
+  showBorder: boolean
+}
+
+const useStyles = makeStyles(({ palette }) => ({
+  full: ({ insets }: styleProps) => ({
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    position: 'fixed',
+    // for iOS mobile
+    paddingTop: insets.top,
+    paddingBottom: insets.bottom,
+    paddingLeft: insets.left,
+    paddingRight: insets.right,
+  }),
+  page: ({ showBorder }: styleProps) => ({
+    overflow: 'hidden',
+    display: 'flex',
+    flexFlow: 'column',
+    backgroundColor: palette.white.main,
+    margin: 'auto',
+    borderTop: showBorder ? `1px solid ${palette.grayLighter.main}` : undefined,
+    contain: 'layout',
+  }),
+  inset: {
+    top: spacing.xl,
+    left: spacing.sm,
+    right: spacing.sm,
+    bottom: spacing.sm,
+    borderRadius: spacing.sm,
+  },
+  default: { backgroundColor: palette.grayDarker.main, padding: spacing.xs },
+  remote: {
+    color: palette.white.main,
+    textAlign: 'center',
+    '& button': { position: 'absolute', left: 0, top: 0, color: palette.white.main },
+  },
+  icon: {
+    position: 'absolute',
+    height: spacing.lg,
+    right: spacing.md,
+    top: spacing.xs,
+  },
+}))

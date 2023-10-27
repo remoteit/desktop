@@ -41,6 +41,7 @@
     "@capacitor/android": "^5.5.1",
     "@capacitor/core": "^5.5.1",
     "@capacitor/ios": "^5.5.1",
+    "capacitor-plugin-safe-area": "^2.0.5",
     "electron-updater": "^6.1.4",
     "remoteit-headless": "file:backend"
   },

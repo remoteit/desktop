@@ -58,7 +58,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   if (backendAuthenticated && !connected) snackbar = 'retry'
 
   return (
-    <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
+    <RemoteHeader device={device} insets={layout.insets} color={label?.id ? label.color : undefined}>
       <DragAppRegion />
       {children}
       {offline && (

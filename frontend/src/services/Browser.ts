@@ -1,5 +1,6 @@
 import { IP_PRIVATE, PORTAL } from '../shared/constants'
 import { ApplicationState, store } from '../store'
+import { Capacitor } from '@capacitor/core'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -23,13 +24,22 @@ export function agent() {
 }
 
 export function isPortal() {
-  return PORTAL || (!isElectron() && window.location.port === '3000')
+  return PORTAL || isMobile() || (!isElectron() && window.location.port === '3000')
+}
+
+export function isMobile() {
+  return Capacitor.isNativePlatform()
 }
 
 // limited remote management interface
 export function isRemote() {
   const { port, hostname } = window.location
-  return !(isElectron() || ((port === '29999' || port === '29998') && hostname === IP_PRIVATE) || isPortal())
+  return !(
+    isElectron() ||
+    isPortal() ||
+    isMobile() ||
+    ((port === '29999' || port === '29998') && hostname === IP_PRIVATE)
+  )
 }
 
 export function isElectron() {

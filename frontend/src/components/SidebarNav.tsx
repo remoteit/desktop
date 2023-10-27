@@ -26,7 +26,7 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
-  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI, limits } =
+  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI, limits, insets } =
     useSelector((state: ApplicationState) => ({
       defaultSelected: selectDefaultSelected(state),
       unreadAnnouncements: selectAnnouncements(state, true).length,
@@ -36,10 +36,11 @@ export const SidebarNav: React.FC = () => {
       devices: getDeviceModel(state).total,
       remoteUI: isRemoteUI(state),
       limits: selectLimitsLookup(state),
+      insets: state.ui.layout.insets,
     }))
   const dispatch = useDispatch<Dispatch>()
   const [more, setMore] = useState<boolean>()
-  const css = useStyles({ active })
+  const css = useStyles({ active, insets })
   const pathname = path => defaultSelected[path] || path
 
   if (remoteUI)
@@ -144,6 +145,11 @@ export const SidebarNav: React.FC = () => {
   )
 }
 
+type StyleProps = {
+  active: number
+  insets: ILayout['insets']
+}
+
 const useStyles = makeStyles(({ palette }) => ({
   list: {
     position: 'static',
@@ -160,7 +166,7 @@ const useStyles = makeStyles(({ palette }) => ({
       },
     },
   },
-  connections: ({ active }: { active: number }) => ({
+  connections: ({ active }: StyleProps) => ({
     borderTopRightRadius: active ? 0 : undefined,
     borderBottomRightRadius: active ? 0 : undefined,
     paddingRight: active ? spacing.xs : undefined,
@@ -168,10 +174,10 @@ const useStyles = makeStyles(({ palette }) => ({
   active: {
     fontWeight: 500,
   },
-  footer: {
+  footer: ({ insets }: StyleProps) => ({
     position: 'fixed',
-    bottom: spacing.lg,
+    bottom: spacing.lg + insets.bottom,
     backgroundColor: palette.grayLighter.main,
     zIndex: 3,
-  },
+  }),
 }))

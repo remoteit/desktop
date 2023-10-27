@@ -1,4 +1,5 @@
 import { Color as ColorType, ColorPartial } from '@mui/material/styles/createPalette'
+import { SafeAreaInsets } from 'capacitor-plugin-safe-area'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
 import { Color } from './styling'
@@ -220,6 +221,7 @@ declare global {
   }
 
   type ILayout = {
+    insets: SafeAreaInsets['insets']
     showOrgs: boolean
     hideSidebar: boolean
     singlePanel: boolean

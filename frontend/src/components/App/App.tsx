@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import useSafeArea from '../../hooks/useSafeArea'
 import { useSelector, useDispatch } from 'react-redux'
 import { HIDE_SIDEBAR_WIDTH, HIDE_TWO_PANEL_WIDTH, SIDEBAR_WIDTH, ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
@@ -14,6 +15,7 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
+  const { insets } = useSafeArea()
   const dispatch = useDispatch<Dispatch>()
   const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
@@ -25,6 +27,7 @@ export const App: React.FC = () => {
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
   const layout = {
+    insets,
     showOrgs,
     hideSidebar,
     singlePanel,
@@ -33,7 +36,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [hideSidebar, singlePanel, showOrgs])
+  }, [hideSidebar, singlePanel, showOrgs, insets])
 
   const css = useStyles({ overlapHeader: hideSidebar && isElectron() && isMac() })
 
