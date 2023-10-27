@@ -85,7 +85,7 @@ export const selectConnection = createSelector(
 export const selectConnectionsByType = createSelector(
   [getActiveUser, selectIdleConnections],
   (activeUser, connections): INetwork[] => {
-    const connection = connections[0]
+    const connection: IConnection | undefined = connections[0]
 
     const networks: INetwork[] = [
       {
@@ -94,7 +94,7 @@ export const selectConnectionsByType = createSelector(
         id: 'public',
         name: 'Public',
         icon: 'globe',
-        accountId: connection.accountId || activeUser.id,
+        accountId: connection?.accountId || activeUser.id,
         serviceIds: [],
       },
       {
@@ -102,7 +102,7 @@ export const selectConnectionsByType = createSelector(
         id: 'local',
         name: 'Local',
         icon: 'network-wired',
-        accountId: connection.accountId || activeUser.id,
+        accountId: connection?.accountId || activeUser.id,
         serviceIds: [],
       },
     ]
