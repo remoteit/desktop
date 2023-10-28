@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import useMobileNavigation from '../hooks/useMobileNavigation'
 import { emit } from '../services/Controller'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
@@ -51,6 +52,7 @@ import { NotificationsPage } from '../pages/NotificationsPage'
 import browser, { getOs } from '../services/Browser'
 
 export const Router: React.FC = () => {
+  useMobileNavigation()
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()

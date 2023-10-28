@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { selectNetworks } from '../selectors/networks'
 import { getDeviceModel } from '../selectors/devices'
@@ -41,7 +42,7 @@ export const SidebarNav: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const [more, setMore] = useState<boolean>()
   const css = useStyles({ active, insets })
-  const pathname = path => defaultSelected[path] || path
+  const pathname = path => (browser.isMobile ? path : defaultSelected[path] || path)
 
   if (remoteUI)
     return (

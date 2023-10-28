@@ -1,12 +1,13 @@
+import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../shared/constants'
 import React, { useState, useRef } from 'react'
+import useMobileBack from '../../hooks/useMobileBack'
 import browser from '../../services/Browser'
-import { HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../shared/constants'
 import { emit } from '../../services/Controller'
 import { makeStyles } from '@mui/styles'
 import { useMediaQuery } from '@mui/material'
 import { selectPermissions } from '../../selectors/organizations'
 import { ApplicationState, Dispatch } from '../../store'
-import { useHistory, Switch, Route } from 'react-router-dom'
+import { useHistory, useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../selectors/devices'
 import { UpgradeNotice } from '../UpgradeNotice'
@@ -17,10 +18,12 @@ import { FilterButton } from '../../buttons/FilterButton'
 import { RegisterMenu } from '../RegisterMenu'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
-import { Title } from '../Title'
 import { spacing } from '../../styling'
+import { Title } from '../Title'
+import { Pre } from '../Pre'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
+  const mobileGoBack = useMobileBack()
   const { searched, canNavigate, permissions } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     return {
@@ -35,9 +38,12 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
+  const location = useLocation()
   const history = useHistory()
   const manager = permissions?.includes('MANAGE')
   const css = useStyles()
+  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
+  const isRootMenu = menu === location.pathname
 
   return (
     <>
@@ -65,6 +71,9 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
               color={canNavigate.canGoForward ? 'grayDarker' : 'grayLight'}
             />
           </>
+        )}
+        {!(showSearch || searched) && !isRootMenu && menu && browser.isMobile && (
+          <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         <Title className={css.search}>
