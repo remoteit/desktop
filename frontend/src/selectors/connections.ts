@@ -20,24 +20,22 @@ export const selectSessions = createSelector([getSessions, selectActiveAccountId
 })
 
 export const selectFetchConnections = createSelector([getAllConnections], connections => {
-  return connections.filter(
-    c => !!c.createdTime || c.enabled // && (!isPortal() || c.public || c.connectLink)
-  )
+  return connections.filter(c => !!c.createdTime || c.enabled)
 })
 
 export const selectConnections = createSelector(
   [getAllConnections, selectActiveAccountId],
   (connections, accountId) => {
-    return connections.filter(
-      c => c.accountId === accountId && (!!c.createdTime || c.enabled) //&& (!isPortal() || c.public || c.connectLink)
-    )
+    return connections.filter(c => c.accountId === accountId && (!!c.createdTime || c.enabled))
   }
 )
 
 export const selectAllConnectionsCount = createSelector(
   [selectConnections, selectSessions],
   (connections, sessions) => {
-    const enabled = connections.filter(connection => connection.online && connection.enabled).length
+    const enabled = connections.filter(
+      connection => connection.online && connection.enabled && !sessions.find(s => s.target.id === connection.id)
+    ).length
     return sessions.length + enabled
   }
 )
