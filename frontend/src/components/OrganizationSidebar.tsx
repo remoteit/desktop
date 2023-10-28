@@ -1,15 +1,15 @@
 import React from 'react'
+import browser from '../services/Browser'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
-import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSelect } from './OrganizationSelect'
 import { spacing } from '../styling'
 
 type Props = { hide?: boolean; insets: ILayout['insets']; children?: React.ReactNode }
 
 export const OrganizationSidebar: React.FC<Props> = ({ hide, insets, children }) => {
-  const css = useStyles({ addSpace: isMac() && isElectron(), insets })
+  const css = useStyles({ addSpace: browser.isMac && browser.isElectron, insets })
 
   return hide ? (
     <>{children}</>
@@ -29,13 +29,15 @@ type StyleProps = {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  container: {
+  container: ({ insets }: StyleProps) => ({
+    backgroundColor: palette.grayLighter.main,
     display: 'flex',
     height: '100%',
     contain: 'layout',
-  },
+    // for iOS mobile
+    paddingLeft: insets.left ? insets.left - spacing.sm : undefined,
+  }),
   organizationBar: ({ insets, addSpace }: StyleProps) => ({
-    backgroundColor: palette.grayLighter.main,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -47,7 +49,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     overflow: 'hidden',
     // for iOS mobile
-    paddingTop: insets.top || (addSpace ? spacing.xl : spacing.md),
-    paddingBottom: insets.bottom,
+    paddingTop: insets.top ? insets.top - spacing.xs : addSpace ? spacing.xl : spacing.md,
+    paddingBottom: insets.bottom ? insets.bottom - spacing.md : undefined,
   }),
 }))

@@ -6,7 +6,7 @@ import { getAllDevices } from '../selectors/devices'
 import { ApplicationState, store } from '../store'
 import { selectFetchConnections } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
-import { isPortal } from '../services/Browser'
+import browser from '../services/Browser'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -45,7 +45,7 @@ export function newConnection(service?: IService | null): IConnection {
   const user = getActiveUser(state)
   const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
   let routeType: IRouteType = service?.attributes.route || cd?.route || 'failover'
-  if (isPortal() && routeType === 'failover') routeType = 'public'
+  if (!browser.hasBackend && routeType === 'failover') routeType = 'public'
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
@@ -109,7 +109,7 @@ export function usedPorts(state: ApplicationState) {
 export function launchDisabled(connection?: IConnection) {
   if (!connection) return true
   return !!(
-    (connection.launchType === 'COMMAND' && isPortal()) ||
+    (connection.launchType === 'COMMAND' && !browser.hasBackend) ||
     connection.launchType === 'NONE' ||
     !connection.enabled ||
     connection.error
@@ -119,7 +119,7 @@ export function launchDisabled(connection?: IConnection) {
 export function launchSettingHidden(connection?: IConnection) {
   if (!connection) return true
   return !!(
-    (connection.launchType === 'COMMAND' && isPortal()) ||
+    (connection.launchType === 'COMMAND' && !browser.hasBackend) ||
     connection.connectLink ||
     connection.launchType === 'NONE'
   )
@@ -145,7 +145,7 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
-  if (isPortal()) {
+  if (!browser.hasBackend) {
     connections.updateConnection({ ...connection, default: false })
   } else if (auth.backendAuthenticated) {
     emit('connection', { ...connection, default: false })

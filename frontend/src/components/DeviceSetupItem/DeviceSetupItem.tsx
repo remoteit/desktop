@@ -1,4 +1,5 @@
 import React from 'react'
+import browser, { getOs } from '../../services/Browser'
 import { safeHostname } from '../../shared/nameHelper'
 import { getDeviceModel } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
@@ -16,7 +17,6 @@ import {
   Divider,
   Typography,
 } from '@mui/material'
-import { isPortal, getOs } from '../../services/Browser'
 import { getAllDevices } from '../../selectors/devices'
 import { GuideBubble } from '../../components/GuideBubble'
 import { DesktopUI } from '../../components/DesktopUI'
@@ -75,7 +75,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   }
 
   let thisLink = '/devices/setup'
-  if (isPortal()) thisLink = `/add/${getOs()}`
+  if (!browser.hasBackend) thisLink = `/add/${getOs()}`
 
   return (
     <DesktopUI>

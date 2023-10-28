@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
+import browser from '../services/Browser'
 import { Stack } from '@mui/material'
-import { isPortal } from '../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { connectionState, newConnection, launchDisabled } from '../helpers/connectionHelper'
@@ -120,7 +120,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   props.loading = props.loading || loading
 
   if (props.loading) icon = 'spinner-third'
-  if (service?.attributes.route === 'p2p' && isPortal()) disabled = true
+  if (service?.attributes.route === 'p2p' && !browser.hasBackend) disabled = true
   if (disabled && props.size === 'icon') title = ''
   if (connection?.connectLink && state !== 'offline') {
     title = connection.enabled ? 'Disable' : 'Enable'
@@ -139,7 +139,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     />
   )
 
-  return state === 'connected' && props.size === 'large' && !isPortal() ? (
+  return state === 'connected' && props.size === 'large' && browser.hasBackend ? (
     <Stack flexDirection="row">
       {button}
       <DynamicButton

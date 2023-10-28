@@ -47,8 +47,8 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
-import { isPortal, getOs } from '../services/Browser'
 import { NotificationsPage } from '../pages/NotificationsPage'
+import browser, { getOs } from '../services/Browser'
 
 export const Router: React.FC = () => {
   const history = useHistory()
@@ -161,12 +161,12 @@ export const Router: React.FC = () => {
       <Route path="/devices/setup">
         {registered ? (
           <Redirect to={`/devices/${thisId}`} />
-        ) : isPortal() ? (
-          <Redirect to={`/add/${os}`} />
-        ) : (
+        ) : browser.hasBackend ? (
           <Panel layout={layout}>
             <SetupDevice os={os} />
           </Panel>
+        ) : (
+          <Redirect to={`/add/${os}`} />
         )}
       </Route>
       <Route path="/devices/membership">

@@ -1,8 +1,8 @@
 import React from 'react'
 import Controller from './services/Controller'
+import browser from './services/Browser'
 import { App } from './components/App'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { environment } from './services/Browser'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline } from '@mui/material'
 import { HashRouter } from 'react-router-dom'
@@ -16,8 +16,7 @@ import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
 
-console.log('ENVIRONMENT', environment())
-if (environment() !== 'development') analytics.initialize()
+if (browser.environment() !== 'development') analytics.initialize()
 
 const root = createRoot(document.getElementById('root')!)
 root.render(

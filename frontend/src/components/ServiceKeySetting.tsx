@@ -20,7 +20,7 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
   const dispatch = useDispatch<Dispatch>()
   const canManage = permissions.includes('MANAGE')
   const enabled = service.link?.enabled
-  disabled = disabled || !canManage || (connection.enabled && !connection.connectLink) || connection.updating
+  disabled = disabled || !canManage || connection.updating
 
   return (
     <>

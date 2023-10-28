@@ -7,7 +7,7 @@ import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
+import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -285,7 +285,7 @@ export default createModel<RootModel>()({
       })
     },
     async deprecated(_: void, state) {
-      if (!isElectron() || isHeadless()) return
+      if (!browser.isElectron) return
       const { preferences } = state.backend
       dispatch.ui.set({
         errorMessage: 'This version of Desktop is no longer supported. It should auto update shortly.',

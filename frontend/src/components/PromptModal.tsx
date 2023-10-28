@@ -12,7 +12,7 @@ import {
 import React, { useState, useEffect } from 'react'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { Application } from '../shared/applications'
-import { isPortal } from '../services/Browser'
+import browser from '../services/Browser'
 
 type Props = {
   app: Application
@@ -50,7 +50,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
           <Typography variant="h4">{app.preview(tokens)}</Typography>
           <List dense>
             {app.missingTokens.map((token, index) =>
-              token === 'path' && !isPortal() ? (
+              token === 'path' && browser.hasBackend ? (
                 <InlineFileFieldSetting
                   key={token}
                   token={token}

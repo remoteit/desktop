@@ -4,7 +4,6 @@ import { spacing } from '../styling'
 import { usePanelWidth } from '../hooks/usePanelWidth'
 import { useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { isWindows } from '../services/Browser'
 import { Header } from './Header'
 import classnames from 'classnames'
 

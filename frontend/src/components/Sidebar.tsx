@@ -1,8 +1,8 @@
 import React from 'react'
+import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { Typography } from '@mui/material'
 import { SIDEBAR_WIDTH } from '../shared/constants'
-import { isElectron, isMac } from '../services/Browser'
 import { OrganizationSidebar } from './OrganizationSidebar'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterMenu } from './RegisterMenu'
@@ -13,7 +13,7 @@ import { spacing } from '../styling'
 import { Body } from './Body'
 
 export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const addSpace = isMac() && isElectron() && !layout.showOrgs
+  const addSpace = browser.isMac && browser.isElectron && !layout.showOrgs
   const css = useStyles({ insets: layout.insets, addSpace })
 
   return (
@@ -67,8 +67,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px`, padding: 0 },
     '& section:first-of-type': { marginTop: spacing.sm },
     // for iOS mobile
-    paddingTop: insets.top || (addSpace ? spacing.xl : spacing.md),
-    paddingBottom: insets.bottom,
+    paddingTop: insets.top ? insets.top - spacing.xs : addSpace ? spacing.xl : spacing.md,
   }),
   header: {
     display: 'flex',

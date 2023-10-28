@@ -2,8 +2,8 @@ import { DEVICE_TYPE } from '../shared/applications'
 import { getAccountIds } from '../models/accounts'
 import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'
-import { isPortal } from '../services/Browser'
 import { store } from '../store'
+import browser from '../services/Browser'
 import icon from '../assets/noticeIcon.png'
 
 const actions = {
@@ -101,7 +101,7 @@ function shareNotification(event: ICloudEvent) {
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {
   console.log('CREATE NOTIFICATION', arguments)
-  const notification = new Notification(title, { ...options, icon: isPortal() ? icon : undefined })
+  const notification = new Notification(title, { ...options, icon: browser.isPortal ? icon : undefined })
   notification.onclick = () => store.dispatch.ui.set({ redirect })
   notification.onclose = e => e.preventDefault()
 }

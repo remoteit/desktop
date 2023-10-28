@@ -9,10 +9,10 @@ const config: CapacitorConfig = {
   }
 };
 
-console.log('\nNode Environment:', process.env.NODE_ENV, '\n')
+console.log('\nNode Environment:', process.env.NODE_ENV)
 
-if (process.env.CAPACITOR_DESKTOP_LIVE_RELOAD) {
-  console.log('Using live reload server:', process.env.CAPACITOR_DESKTOP_LIVE_RELOAD)
+if (process.env.CAPACITOR_DESKTOP_LIVE_RELOAD && process.env.NODE_ENV === 'development') {
+  console.log('Using live reload server:', process.env.CAPACITOR_DESKTOP_LIVE_RELOAD, '\n')
   config.server = {
     androidScheme: 'https',
     url: process.env.CAPACITOR_DESKTOP_LIVE_RELOAD,

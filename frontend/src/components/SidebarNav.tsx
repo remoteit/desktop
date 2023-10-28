@@ -176,7 +176,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   footer: ({ insets }: StyleProps) => ({
     position: 'fixed',
-    bottom: spacing.lg + insets.bottom,
+    bottom: insets.bottom || spacing.lg,
     backgroundColor: palette.grayLighter.main,
     zIndex: 3,
   }),

@@ -1,15 +1,94 @@
 import { IP_PRIVATE, PORTAL } from '../shared/constants'
 import { ApplicationState, store } from '../store'
+import { fullVersion } from '../helpers/versionHelper'
 import { Capacitor } from '@capacitor/core'
 
-const ELECTRON = 'electron'
-const BROWSER = 'browser'
-const DEVELOPMENT = 'development'
+function startLog() {
+  console.log(
+    `%c
 
-export function environment() {
-  if (window.location.origin.includes(':3000')) return DEVELOPMENT
-  if (isElectron()) return ELECTRON
-  return BROWSER
+         s t a r t i n g
+      ______ _____ ________ _______ ________ _____    __ _______ 
+    /  ____/  ___/        /   _   /__   ___/  ___/  /  /__   __/ 
+   /  /   /  ___/  /  /  /  /_/  /  /  /  /  ___/__/  /  /  /    
+  /__/   /_____/__/__/__/_______/  /__/  /_____/__/__/  /__/     
+
+  ${fullVersion()}
+  Set window.stateLogging = true to enable redux state logging
+
+  `,
+    'font-family:monospace'
+  )
+}
+
+class Environment {
+  isElectron: boolean = false
+  isMobile: boolean = false
+  isPortal: boolean = false
+  isRemote: boolean = false
+  isMac: boolean = false
+  isWindows: boolean = false
+  hasBackend: boolean = false
+
+  constructor() {
+    this.isElectron = isElectron()
+    this.isMobile = isMobile()
+    this.isPortal = isPortal()
+    this.isRemote = isRemote()
+
+    this.isMac = isMac()
+    this.isWindows = isWindows()
+
+    this.hasBackend = !this.isPortal && !this.isMobile
+    console.log('Environment', this)
+  }
+
+  platform() {
+    if (this.isElectron) return 'electron'
+    if (this.isMobile) return 'mobile'
+    if (this.isPortal) return 'portal'
+    if (this.isRemote) return 'remote'
+    return 'unknown'
+  }
+
+  environment() {
+    return process.env.NODE_ENV || 'unknown'
+  }
+}
+
+export default new Environment()
+
+startLog()
+
+function isPortal() {
+  return PORTAL || (!isElectron() && !isMobile() && window.location.port === '3000')
+}
+
+function isMobile() {
+  return Capacitor.isNativePlatform()
+}
+
+// limited remote management interface
+function isRemote() {
+  const { port, hostname } = window.location
+  return !(
+    isElectron() ||
+    isPortal() ||
+    isMobile() ||
+    ((port === '29999' || port === '29998') && hostname === IP_PRIVATE)
+  )
+}
+
+function isElectron() {
+  return navigator.userAgent.toLowerCase().includes('electron')
+}
+
+function isMac() {
+  return navigator.userAgent.toLowerCase().includes('mac')
+}
+
+function isWindows() {
+  return navigator.userAgent.toLowerCase().includes('win')
 }
 
 export function getOs(): Ios {
@@ -21,45 +100,6 @@ export function getOs(): Ios {
 export function agent() {
   const result = navigator.userAgent.match(/\(.*?\)/)
   return result?.length ? result[0] : ''
-}
-
-export function isPortal() {
-  return PORTAL || isMobile() || (!isElectron() && window.location.port === '3000')
-}
-
-export function isMobile() {
-  return Capacitor.isNativePlatform()
-}
-
-// limited remote management interface
-export function isRemote() {
-  const { port, hostname } = window.location
-  return !(
-    isElectron() ||
-    isPortal() ||
-    isMobile() ||
-    ((port === '29999' || port === '29998') && hostname === IP_PRIVATE)
-  )
-}
-
-export function isElectron() {
-  return navigator.userAgent.toLowerCase().includes('electron')
-}
-
-export function isMac() {
-  return navigator.userAgent.toLowerCase().includes('mac')
-}
-
-export function isWindows() {
-  return navigator.userAgent.toLowerCase().includes('win')
-}
-
-export function isHeadless() {
-  return !isElectron()
-}
-
-export function isDev() {
-  return environment() === DEVELOPMENT
 }
 
 // this is a function to save information per user session in local storage

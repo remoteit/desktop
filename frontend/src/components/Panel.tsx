@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
-import { isMobile } from '../services/Browser'
+import browser from '../services/Browser'
 
 type Props = { layout: ILayout; children?: React.ReactNode }
 
@@ -10,7 +10,7 @@ export const Panel: React.FC<Props> = ({ layout, children }) => {
 
   return (
     <div className={css.panel}>
-      <Header breadcrumbs={layout.singlePanel && !isMobile()} />
+      <Header breadcrumbs={layout.singlePanel && !browser.isMobile} />
       {children}
     </div>
   )

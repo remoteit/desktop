@@ -1,5 +1,5 @@
 import network from '../services/Network'
-import { isPortal } from './Browser'
+import browser from './Browser'
 import { store } from '../store'
 import { emit } from './Controller'
 
@@ -13,7 +13,7 @@ class Heartbeat {
   checkAll?: true = undefined
 
   init() {
-    if (!isPortal()) {
+    if (browser.hasBackend) {
       window.onfocus = this.start
       window.onblur = this.stop
       network.on('connect', this.start)

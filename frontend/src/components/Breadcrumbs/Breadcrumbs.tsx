@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { isDev } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
@@ -60,8 +59,7 @@ export const Breadcrumbs: React.FC<{ show?: boolean }> = ({ show }) => {
     document.title = BASE_TITLE + parts.join(' - ')
   }, [crumbs])
 
-  if (!show || !crumbs.join())
-    return false && isDev() ? <Typography variant="caption">{location.pathname}</Typography> : null
+  if (!show || !crumbs.join()) return null
 
   return (
     <Typography className={css.header}>

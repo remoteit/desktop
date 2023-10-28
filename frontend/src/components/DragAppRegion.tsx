@@ -1,12 +1,12 @@
 import React from 'react'
+import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
-import { isElectron, isMac } from '../services/Browser'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'
 
 export const DragAppRegion: React.FC = () => {
   const css = useStyles()
-  if (!isElectron() || !isMac()) return null
+  if (!browser.isElectron || !browser.isMac) return null
   return <div className={css.drag} onDoubleClick={() => emit('maximize')} />
 }
 

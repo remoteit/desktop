@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import browser from '../../services/Browser'
 import { HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../shared/constants'
 import { emit } from '../../services/Controller'
 import { makeStyles } from '@mui/styles'
@@ -16,7 +17,6 @@ import { FilterButton } from '../../buttons/FilterButton'
 import { RegisterMenu } from '../RegisterMenu'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
-import { isElectron } from '../../services/Browser'
 import { Title } from '../Title'
 import { spacing } from '../../styling'
 
@@ -46,7 +46,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         {sidebarHidden && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
-        {!(showSearch || searched) && isElectron() && (
+        {!(showSearch || searched) && browser.isElectron && (
           <>
             <IconButton
               title="Back"

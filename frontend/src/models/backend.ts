@@ -1,5 +1,5 @@
+import browser, { setLocalStorage, getOs } from '../services/Browser'
 import { createModel } from '@rematch/core'
-import { setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { selectDevice } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
@@ -31,7 +31,7 @@ export type IBackendState = {
     hostname: string
     oobAvailable: boolean
     overrides: IOverrides
-    portal?: boolean
+    portal: boolean
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
@@ -63,7 +63,7 @@ const defaultState: IBackendState = {
     hostname: '',
     oobAvailable: false,
     overrides: {},
-    portal: isPortal(),
+    portal: true,
   },
   preferences: {
     version: '',
@@ -78,6 +78,12 @@ const defaultState: IBackendState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
+    async init(_: void, state) {
+      dispatch.backend.set({
+        initialized: true,
+        environment: { ...state.backend.environment, portal: browser.isPortal },
+      })
+    },
     async environment(_: void, state) {
       let result: string = ''
       const keys = ['os', 'osVersion', 'arch', 'manufacturerDetails']

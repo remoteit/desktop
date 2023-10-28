@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react'
+import browser from '../../services/Browser'
 import useSafeArea from '../../hooks/useSafeArea'
 import { useSelector, useDispatch } from 'react-redux'
 import { HIDE_SIDEBAR_WIDTH, HIDE_TWO_PANEL_WIDTH, SIDEBAR_WIDTH, ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { useMediaQuery, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
-import { isElectron, isMac } from '../../services/Browser'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
 import { SignInPage } from '../../pages/SignInPage'
@@ -38,7 +38,7 @@ export const App: React.FC = () => {
     dispatch.ui.set({ layout })
   }, [hideSidebar, singlePanel, showOrgs, insets])
 
-  const css = useStyles({ overlapHeader: hideSidebar && isElectron() && isMac() })
+  const css = useStyles({ overlapHeader: hideSidebar && browser.isElectron && browser.isMac })
 
   if (waitMessage)
     return (

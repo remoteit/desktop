@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
+import browser from '../services/Browser'
 import classnames from 'classnames'
-import { isMobile } from '../services/Browser'
 import { spacing, Color } from '../styling'
 import { makeStyles } from '@mui/styles'
 
@@ -62,7 +62,7 @@ export const Body: React.FC<BodyProps> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   body: ({ scrollbarBackground, verticalOverflow, horizontalOverflow }: BodyProps) => {
-    const SCROLLBAR_WIDTH = isMobile() ? 0 : 15
+    const SCROLLBAR_WIDTH = browser.isMobile ? 0 : 15
     const background = scrollbarBackground ? palette[scrollbarBackground].main : palette.white.main
     return {
       flexGrow: 1,

@@ -1,19 +1,19 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, IconButton } from '@mui/material'
-import { isMac, isRemote } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 import classnames from 'classnames'
 import screenfull from 'screenfull'
+import browser from '../../services/Browser'
 
 type Props = { device?: IDevice; color?: string; insets: ILayout['insets']; children: React.ReactNode }
 
 export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children }) => {
-  const showFrame = isRemote()
-  const showBorder = !isMac() && !showFrame
+  const showFrame = browser.isRemote
+  const showBorder = !browser.isMac && !showFrame
   const css = useStyles({ showBorder, insets })
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
@@ -66,7 +66,7 @@ const useStyles = makeStyles(({ palette }) => ({
     bottom: 0,
     position: 'fixed',
     // for iOS mobile
-    paddingTop: insets.top,
+    paddingTop: insets.top ? insets.top - spacing.sm : undefined,
     paddingBottom: insets.bottom,
     paddingLeft: insets.left,
     paddingRight: insets.right,

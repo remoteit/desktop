@@ -1,5 +1,6 @@
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
+import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
 import {
   CLIENT_ID,
   CALLBACK_URL,
@@ -10,7 +11,6 @@ import {
   API_URL,
   DEVELOPER_KEY,
 } from '../shared/constants'
-import { setLocalStorage, removeLocalStorage, isElectron, isPortal } from '../services/Browser'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { CognitoUser } from '../cognito/types'
@@ -58,15 +58,19 @@ const defaultState: AuthState = {
   AWSUser: { authProvider: '' },
 }
 
-export const authServiceConfig = {
+const authServiceConfig = () => ({
   cognitoClientID: CLIENT_ID,
   cognitoUserPoolID: COGNITO_USER_POOL_ID,
   cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
   checkSamlURL: AUTH_API_URL + '/checkSaml',
-  redirectURL: isPortal() || isElectron() ? '' : window.origin + '/v1/callback/',
-  callbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
-  signoutCallbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
-}
+  redirectURL: browser.isPortal || browser.isElectron || browser.isMobile ? undefined : window.origin + '/v1/callback/',
+  callbackURL: browser.isPortal ? window.origin : browser.isElectron || browser.isMobile ? REDIRECT_URL : CALLBACK_URL,
+  signoutCallbackURL: browser.isPortal
+    ? window.origin
+    : browser.isElectron || browser.isMobile
+    ? REDIRECT_URL
+    : CALLBACK_URL,
+})
 
 export default createModel<RootModel>()({
   state: defaultState,
@@ -75,7 +79,7 @@ export default createModel<RootModel>()({
       let { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
-        const authService = new AuthService(authServiceConfig)
+        const authService = new AuthService(authServiceConfig())
         console.log('AUTH INIT', { authService })
         await sleep(500)
         await dispatch.auth.set({ authService })
@@ -177,7 +181,7 @@ export default createModel<RootModel>()({
       }
     },
     async disconnect(_: void, state) {
-      if (!state.auth.authenticated && !state.auth.backendAuthenticated && !isPortal()) {
+      if (!state.auth.authenticated && !state.auth.backendAuthenticated && browser.hasBackend) {
         await dispatch.auth.signedOut()
         if (!state.auth.signInError) dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
       }
@@ -202,8 +206,8 @@ export default createModel<RootModel>()({
 
       window.clarity?.('set', 'user', state.auth.user?.email || 'unknown')
       zendesk.initChat(state.auth.user)
-      dispatch.backend.set({ initialized: true })
       dispatch.ui.set({ fetching: true })
+      dispatch.backend.init()
       dispatch.plans.init()
       await cloudController.init()
       await dispatch.accounts.init()
@@ -222,7 +226,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ fetching: false })
     },
     async signedIn() {
-      if (isPortal()) dispatch.auth.dataReady()
+      if (!browser.hasBackend) dispatch.auth.dataReady()
       dispatch.ui.init()
     },
     async signOut(_: void, state) {

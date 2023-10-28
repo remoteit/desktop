@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, Button, IconButton } from '@mui/material'
-import { isElectron, isRemote } from '../../services/Browser'
 import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
 import { Icon } from '../Icon'
+import browser from '../../services/Browser'
 
 export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
   const updateReady = useSelector((state: ApplicationState) => selectUpdateNotice(state))
@@ -34,7 +34,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
     setOpen(!!updateReady)
   }, [updateReady])
 
-  if (!isElectron() || isRemote()) return null
+  if (!browser.isElectron || browser.isRemote) return null
 
   return (
     <>

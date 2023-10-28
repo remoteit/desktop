@@ -8,9 +8,9 @@ import { attributeName } from '../shared/nameHelper'
 import { getOwnDevices } from '../selectors/devices'
 import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { isRemote } from '../services/Browser'
 import { RemoteOnLan } from '../assets/RemoteOnLan'
 import { RemoteOnRemote } from '../assets/RemoteOnRemote'
+import browser from '../services/Browser'
 
 type NetworkType = { primary: string; secondary?: string }
 
@@ -28,7 +28,7 @@ export const RemoteManagement: React.FC = () => {
   })
 
   const css = useStyles()
-  if (!isRemote()) return null
+  if (!browser.isRemote) return null
 
   let Graphic = RemoteOnLan
   let diagram: NetworkType[] = [
