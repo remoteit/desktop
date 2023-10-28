@@ -2,6 +2,7 @@ import { IP_PRIVATE, PORTAL } from '../shared/constants'
 import { ApplicationState, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
 import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 
 function startLog() {
   console.log(
@@ -56,7 +57,8 @@ class Environment {
   }
 }
 
-export default new Environment()
+const browser = new Environment()
+export default browser
 
 startLog()
 
@@ -124,11 +126,18 @@ export async function removeLocalStorage(state: ApplicationState, key: string) {
 }
 
 export function windowOpen(url?: string, target?: string) {
-  const { ui } = store.dispatch
+  console.log('WINDOW OPEN', url, target)
+  if (!url) return
+
+  if (browser.isMobile) {
+    Browser.open({ url, windowName: target })
+    return
+  }
+
   try {
     window.open(url, target)
   } catch {
-    ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
+    store.dispatch.ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
   }
 }
 
