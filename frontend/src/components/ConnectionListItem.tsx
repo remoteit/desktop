@@ -20,6 +20,7 @@ export interface Props {
   platform?: number
   enabled?: boolean
   anonymous?: boolean
+  reverseProxy?: boolean
   networkEnabled?: boolean
   children?: React.ReactNode
 }
@@ -35,6 +36,7 @@ export const ConnectionListItem: React.FC<Props> = ({
   platform,
   enabled,
   anonymous,
+  reverseProxy,
   networkEnabled,
   children,
 }) => {
@@ -45,7 +47,8 @@ export const ConnectionListItem: React.FC<Props> = ({
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
-  if (connection?.connectLink || anonymous) icon = <Icon color={color} name="globe" type="solid" size="xxs" />
+  if (connection?.connectLink || anonymous)
+    icon = <Icon color={color} name={reverseProxy ? 'globe' : 'key'} type="solid" size="xxs" />
 
   return (
     <ListItemLocation

@@ -2,6 +2,7 @@ import React from 'react'
 import { selectConnection } from '../selectors/connections'
 import { ApplicationState } from '../store'
 import { ConnectionListItem } from './ConnectionListItem'
+import { isReverseProxy } from '../models/applicationTypes'
 import { useSelector } from 'react-redux'
 import { selectById } from '../selectors/devices'
 
@@ -24,10 +25,11 @@ export const NetworkListItem: React.FC<Props> = ({
   connectionsPage,
   children,
 }) => {
-  const { service, device, connection } = useSelector((state: ApplicationState) => {
+  const { service, device, connection, reverseProxy } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, undefined, serviceId)
     const connection = selectConnection(state, service)
-    return { service, device, connection }
+    const reverseProxy = isReverseProxy(state, service?.typeID)
+    return { service, device, connection, reverseProxy }
   })
 
   const offline = service?.state !== 'active' && !external
@@ -45,6 +47,7 @@ export const NetworkListItem: React.FC<Props> = ({
       platform={device?.targetPlatform || session?.target.platform}
       offline={offline}
       anonymous={session?.anonymous}
+      reverseProxy={reverseProxy}
       connected={!!session || !!connection.connected}
       connection={connection}
       connectionsPage={connectionsPage}

@@ -448,12 +448,15 @@ export const attributes: Attribute[] = [
     id: 'session',
     label: 'Connection',
     value: ({ session, connection }) =>
-      connection ? null : session?.isP2P ? 'Peer to Peer' : session?.anonymous ? 'Public Proxy' : 'Proxy',
-  }),
-  new ConnectionAttribute({
-    id: 'source',
-    label: 'Protocol',
-    value: ({ session }) => (session?.source === 'WEBSOCKET' ? 'WebSocket' : null),
+      connection
+        ? null
+        : session?.isP2P
+        ? session?.source === 'WEBSOCKET'
+          ? 'Peer to Peer WebSocket'
+          : 'Peer to Peer'
+        : session?.anonymous
+        ? 'Public Proxy'
+        : 'Proxy',
   }),
   // new ConnectionAttribute({
   //   id: 'security',
