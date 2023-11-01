@@ -302,7 +302,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: radius,
             '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
-            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
+            // '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
             '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
             '& > .hoverHide, & > div > .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
             '&:hover': {

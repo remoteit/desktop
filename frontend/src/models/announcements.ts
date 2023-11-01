@@ -88,44 +88,87 @@ export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
   return state.announcements.all.filter(a => !unread || !a.read)
 }
 
-// const TEST_DATA: any = [
-//   {
-//     body: `<p>With its responsive design and resizable panels, Remote.It now allows you to customize the layout and information displayed on your screen.</p>
-//       <p>This update includes:</p>
-//       <ul>
-//         <li>New full-screen design and layout for ease of use</li>
-//         <li>Responsive layout with resizable panels that adapt to different screen sizes</li>
-//         <li>Enhanced connection search across multiple device lists</li>
-//         <li>Connect on-demand for greater convenience when launching your connections</li>
-//         <li>New Account Management menu</li>
-//       </ul>
-//       `,
-//     id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
-//     image: '/large-screen.jpg',
-//     link: '',
-//     modified: '2021-02-01T23:57:07.420Z',
-//     read: null,
-//     title: 'Full-screen layout',
-//     type: 'RELEASE',
-//   },
-//   {
-//     body: 'You can now connect on-demand to keep your connections idle, but always ready to use. Just save the connection settings in your client applications and Remote.It will only connect when needed.',
-//     id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
-//     image: null,
-//     link: '',
-//     modified: '2021-02-01T23:57:07.420Z',
-//     read: null,
-//     title: 'Connect on demand',
-//     type: 'RELEASE',
-//   },
-//   {
-//     body: '<div>You can now use Remote.It to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
-//     id: 'ac6da898-64e2-11eb-8cce-02fe4f7c5a93',
-//     image: 'https://downloads.remote.it/images/aws-marketplace-photo.png',
-//     link: 'https://remote.it/aws/',
-//     modified: '2021-02-01T23:57:23.920Z',
-//     read: null,
-//     title: 'Remote.It for AWS Released',
-//     type: 'COMMUNICATION',
-//   },
-// ]
+const TEST_DATA: any = [
+  {
+    body: `<p>
+    We&rsquor;re excited to announce an enhanced security feature for our <b>Persistant Public URLs:</b>
+    Web Application Firewall (WAF) integration!
+  </p>
+  <p>
+    <b>What does this mean for you?</b>
+  </p>
+  <ul>
+    <li>
+      <b>Enhanced Security:</b> The WAF acts as a protective shield for your web
+      endpoint, blocking malicious requests and known vulnerabilities.
+    </li>
+    <li>
+      <b>Peace of Mind:</b>With this added layer, you can be more confident that
+      your endpoint and our infrastructure are better protected from attacks.
+    </li>
+    <li>
+      <b> Automated Protection:</b> No need for manual configuration; the WAF
+      automatically blocks threats before they reach your service.
+    </li>
+  </ul>
+  <p>
+    <b>How Does It Work?</b>
+  </p>
+  <p>
+    The WAF examines incoming traffic to your web endpoint, identifying and
+    blocking any suspicious activity or known exploits. This all happens before
+    the requests even get to your service, making your interaction with Remote.It
+    more secure than ever.
+  </p>
+  <p>
+    We&rsquor;re committed to providing a safe and secure experience for all our
+    users, and this is just another step in that direction.
+  </p>`,
+    id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
+    image: '/large-screen.jpg',
+    link: '',
+    modified: '2021-02-01T23:57:07.420Z',
+    read: null,
+    title: 'Public URL Firewall Protection',
+    type: 'COMMUNICATION',
+  },
+  {
+    body: `<p>With its responsive design and resizable panels, Remote.It now allows you to customize the layout and information displayed on your screen.</p>
+      <p>This update includes:</p>
+      <ul>
+        <li>New full-screen design and layout for ease of use</li>
+        <li>Responsive layout with resizable panels that adapt to different screen sizes</li>
+        <li>Enhanced connection search across multiple device lists</li>
+        <li>Connect on-demand for greater convenience when launching your connections</li>
+        <li>New Account Management menu</li>
+      </ul>
+      `,
+    id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
+    image: '/large-screen.jpg',
+    link: '',
+    modified: '2021-02-01T23:57:07.420Z',
+    read: null,
+    title: 'Full-screen layout',
+    type: 'RELEASE',
+  },
+  {
+    body: 'You can now connect on-demand to keep your connections idle, but always ready to use. Just save the connection settings in your client applications and Remote.It will only connect when needed.',
+    id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
+    image: null,
+    link: '',
+    modified: '2021-02-01T23:57:07.420Z',
+    read: null,
+    title: 'Connect on demand',
+    type: 'RELEASE',
+  },
+  {
+    body: '<div>You can now use Remote.It to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
+    id: 'ac6da898-64e2-11eb-8cce-02fe4f7c5a93',
+    image: 'https://downloads.remote.it/images/aws-marketplace-photo.png',
+    link: 'https://remote.it/aws/',
+    modified: '2021-02-01T23:57:23.920Z',
+    read: null,
+    title: 'Remote.It for AWS Released',
+    type: 'COMMUNICATION',
+  },
+]

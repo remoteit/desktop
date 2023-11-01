@@ -9,7 +9,7 @@ import { spacing } from '../styling'
 const types = {
   GENERIC: 'Notice',
   SYSTEM: 'System Update',
-  RELEASE: 'New',
+  RELEASE: 'Release Note',
   SECURITY: 'Security Notice',
   COMMUNICATION: 'Announcement',
 }
