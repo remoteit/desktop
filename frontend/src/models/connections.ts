@@ -347,7 +347,6 @@ export default createModel<RootModel>()({
       setConnection({
         ...creating,
         updating: undefined,
-        password: data?.password,
         enabled: !!data?.enabled,
         createdTime: new Date(data.created).getTime(),
         port: url.port ? parseInt(url.port, 10) : undefined,
