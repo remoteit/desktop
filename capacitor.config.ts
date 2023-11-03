@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'it.remote.app',
+  appId: 'com.remoteit.mobile.ios',
   appName: 'Remote.It',
   webDir: 'frontend/build',
   ios: {
