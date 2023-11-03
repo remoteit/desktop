@@ -4,10 +4,13 @@ const config: CapacitorConfig = {
   appId: 'it.remote.app',
   appName: 'Remote.It',
   webDir: 'frontend/build',
+  ios: {
+    scheme: 'Remote.It',
+  },
   server: {
-    androidScheme: 'https'
-  }
-};
+    androidScheme: 'https',
+  },
+}
 
 console.log('\nNode Environment:', process.env.NODE_ENV)
 
