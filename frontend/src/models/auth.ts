@@ -63,7 +63,9 @@ const authServiceConfig = () => ({
   cognitoUserPoolID: COGNITO_USER_POOL_ID,
   cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
   checkSamlURL: AUTH_API_URL + '/checkSaml',
-  redirectURL: browser.isPortal || browser.isElectron || browser.isMobile ? undefined : window.origin + '/v1/callback/',
+  cognitoRegion: 'US-WEST-2',
+  redirectURL:
+    browser.isPortal || browser.isElectron || browser.isMobile ? window.origin : window.origin + '/v1/callback/',
   callbackURL: browser.isPortal ? window.origin : browser.isElectron || browser.isMobile ? REDIRECT_URL : CALLBACK_URL,
   signoutCallbackURL: browser.isPortal
     ? window.origin

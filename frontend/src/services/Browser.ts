@@ -1,4 +1,4 @@
-import { IP_PRIVATE, PORTAL } from '../shared/constants'
+import { IP_PRIVATE, PORTAL, NODE_ENV } from '../shared/constants'
 import { ApplicationState, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
 import { Capacitor } from '@capacitor/core'
@@ -42,6 +42,7 @@ class Environment {
 
     this.hasBackend = !this.isPortal && !this.isMobile
     console.log('Environment', this)
+    console.log('Build Environment', this.environment())
   }
 
   platform() {
@@ -53,7 +54,7 @@ class Environment {
   }
 
   environment() {
-    return process.env.NODE_ENV || 'unknown'
+    return NODE_ENV
   }
 }
 

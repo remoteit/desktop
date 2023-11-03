@@ -1,3 +1,4 @@
+import './env'
 import React from 'react'
 import Controller from './services/Controller'
 import browser from './services/Browser'
@@ -11,7 +12,6 @@ import { Layout } from './components/Layout'
 import { store } from './store'
 import heartbeat from './services/Heartbeat'
 import analytics from './services/analytics'
-import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
@@ -32,9 +32,5 @@ root.render(
   </ErrorBoundary>
 )
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister()
 heartbeat.init()
 Controller.init()

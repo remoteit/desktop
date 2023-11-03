@@ -101,11 +101,3 @@ export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
 export type IconWeight = 'light' | 'regular' | 'solid'
 
 export type Currency = 'USD'
-
-declare global {
-  interface Window {
-    MSStream?: boolean
-    isEnterprise?: boolean
-    opera?: string
-  }
-}

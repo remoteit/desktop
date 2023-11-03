@@ -85,9 +85,9 @@ export const useStyles = makeStyles(({ palette }) => ({
     borderBottomStyle: connected ? 'solid' : 'dotted',
     borderStyle: 'solid',
     height: '2.7em',
-    width: '1.5em',
+    width: '1.4em',
     marginTop: '-2.7em',
-    marginRight: '-1.5em',
+    marginRight: '-1.4em',
   }),
   hover: {
     position: 'absolute',
@@ -104,7 +104,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   },
   connectIcon: {
     position: 'relative',
-    '& > svg': { position: 'absolute', right: 6, transform: 'translate(0px, -55%)' },
+    '& > svg': { position: 'absolute', right: 2, transform: 'translate(0px, -55%)' },
   },
   platform: {
     minWidth: 48,

@@ -353,7 +353,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 60, color: palette.grayDark.main },
+          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main },
         },
       },
       MuiListItemText: {

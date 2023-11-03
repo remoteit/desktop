@@ -1,6 +1,7 @@
 import zxcvbn from 'zxcvbn'
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../shared/constants'
 import { Grid, TextField, Typography } from '@mui/material'
 import { ProgressBar } from './ProgressBar'
 import { Notice } from '../Notice'
@@ -10,8 +11,6 @@ export interface Props {
 }
 
 export function PasswordStrengthInput({ onChange }: Props) {
-  const PASSWORD_MIN_LENGTH = Number(process.env.PASSWORD_MIN_LENGTH)
-  const PASSWORD_MAX_LENGTH = Number(process.env.PASSWORD_MAX_LENGTH)
   const [password, setPassword] = useState<string>('')
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)

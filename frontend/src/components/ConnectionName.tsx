@@ -22,7 +22,7 @@ export const ConnectionName: React.FC<Props> = ({ name = 'Unknown', port, color 
   )
 }
 
-export const useStyles = makeStyles(({ palette }) => ({
+export const useStyles = makeStyles(({ palette, spacing }) => ({
   text: ({ color }: any) => ({
     display: 'flex',
     whiteSpace: 'nowrap',
@@ -41,5 +41,6 @@ export const useStyles = makeStyles(({ palette }) => ({
     fontWeight: 500,
     fontStyle: 'normal',
     marginLeft: 2,
+    marginRight: spacing(2),
   },
 }))

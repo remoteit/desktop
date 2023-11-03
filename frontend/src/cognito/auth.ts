@@ -1,4 +1,5 @@
 import { ICredentials } from '@aws-amplify/core'
+import { DEVELOPER_KEY } from '../shared/constants'
 import { CognitoHostedUIIdentityProvider, Auth } from '@aws-amplify/auth'
 import {
   AuthProvider,
@@ -24,23 +25,14 @@ export interface Config {
   urlOpener?: any
 }
 
-const defaultConfig: Config = {
-  cognitoAuthDomain: process.env.COGNITO_AUTH || 'auth.remote.it',
-  cognitoRegion: process.env.COGNITO_REGION || 'US-WEST-2',
-  cognitoUserPoolID: process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg',
-  callbackURL: process.env.CALLBACK_URL || 'https://auth.api.remote.it/v1/callback',
-  checkSamlURL: process.env.CHECK_SAML_URL || 'https://auth.api.remote.it/v1/checkSaml',
-  redirectURL: window.origin,
-}
-
 export class AuthService {
   public username?: string
   private cognitoAuth: typeof Auth
   private config: Config
   private cognitoUser?: CognitoUser
 
-  constructor(config: Partial<Config>) {
-    this.config = this.combineConfig(config)
+  constructor(config: Config) {
+    this.config = config
     this.cognitoAuth = this.configureCognito()
   }
 
@@ -48,7 +40,7 @@ export class AuthService {
     const response = await axios.post(
       this.config.checkSamlURL,
       { username },
-      { headers: { developerKey: process.env.DEVELOPER_KEY } }
+      { headers: { developerKey: DEVELOPER_KEY } }
     )
 
     // console.log ('setMFAPreference MFA PREF RESPONSE')
@@ -424,9 +416,5 @@ export class AuthService {
     Auth.configure({ oauth })
 
     return Auth
-  }
-
-  private combineConfig(config?: Partial<Config>): Config {
-    return { ...defaultConfig, ...config }
   }
 }
