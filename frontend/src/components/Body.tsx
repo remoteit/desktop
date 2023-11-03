@@ -68,6 +68,7 @@ const useStyles = makeStyles(({ palette }) => ({
       flexGrow: 1,
       height: '100%',
       overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
+      overflowX: browser.isMobile ? 'hidden' : undefined,
       position: 'relative',
       '-webkit-overflow-scrolling': 'touch',
       '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },

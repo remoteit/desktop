@@ -25,7 +25,7 @@ const defaultState: ILogState = {
   maxDate: undefined,
   minDate: undefined,
   deviceId: undefined,
-  fetching: true,
+  fetching: false,
   fetchingMore: false,
   eventsUrl: '',
   selectedDate: undefined,

@@ -29,6 +29,8 @@ class Environment {
   isRemote: boolean = false
   isMac: boolean = false
   isWindows: boolean = false
+  isIOS: boolean = false
+  isAndroid: boolean = false
   hasBackend: boolean = false
 
   constructor() {
@@ -36,6 +38,8 @@ class Environment {
     this.isMobile = isMobile()
     this.isPortal = isPortal()
     this.isRemote = isRemote()
+    this.isIOS = Capacitor.getPlatform() === 'ios'
+    this.isAndroid = Capacitor.getPlatform() === 'android'
 
     this.isMac = isMac()
     this.isWindows = isWindows()

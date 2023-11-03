@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SafeArea } from 'capacitor-plugin-safe-area'
+import browser from '../services/Browser'
 
 type UseSafeAreaResult = {
   insets: ILayout['insets']
@@ -11,23 +12,22 @@ const useSafeArea = (): UseSafeAreaResult => {
   const [statusBarHeight, setStatusBarHeight] = useState<number>(0)
 
   useEffect(() => {
-    // Fetch initial safe area insets
-    SafeArea.getSafeAreaInsets().then(({ insets }) => {
+    if (!browser.isIOS) return
+
+    const fetchInsets = async () => {
+      const { insets } = await SafeArea.getSafeAreaInsets()
+      const { statusBarHeight } = await SafeArea.getStatusBarHeight()
       setInsets(insets)
-    })
-
-    // Fetch initial status bar height
-    SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
       setStatusBarHeight(statusBarHeight)
-    })
+    }
 
-    // Listen for changes to the safe area
+    fetchInsets()
+
     const eventListener = SafeArea.addListener('safeAreaChanged', data => {
       setInsets(data.insets)
     })
 
     return () => {
-      // Remove event listener
       eventListener.remove()
     }
   }, [])
