@@ -38,8 +38,12 @@ const useNavigationListener = () => {
       const menu = nextLocation.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
       const currentDepth = getDepth(nextLocation.pathname)
 
-      if (menu !== nextHistory[0]) {
+      
+      if (nextLocation.pathname === menu) {
+        // if the next location is a root menu, reset the history
+        // if (menu !== nextHistory[0]) {
         // If the menu has changed, reset the history
+        // @TODO see if we can improve this so it doesn't reset when not navigating to a root menu
         nextHistory = [menu]
       } else if (currentDepth === 1) {
         // If at the root, replace the last entry

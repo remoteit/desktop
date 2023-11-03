@@ -47,7 +47,6 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
               : "Requires device 'Manage' permission"}
           </Typography>
         }
-        secondaryContentWidth="140px"
         toggle={!!connection.connectLink}
         onClick={() => {
           if (connection.connectLink) dispatch.connections.setConnectLink({ ...connection, enabled: false })
