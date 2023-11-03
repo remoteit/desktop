@@ -53,7 +53,7 @@ class Platforms {
   }
 
   initialize() {
-    this.installed.forEach(async platform => await import(/* @vite-ignore */ `./${platform}`))
+    this.installed.forEach(async platform => await import(`./${platform}/index.tsx`))
   }
 
   register(platform: IPlatform) {

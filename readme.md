@@ -194,6 +194,27 @@ To build the whole app for production: `npm run build --arch = 'XXX' ` (possible
 To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
 The final build will be produced in the `dist` directory
 
+### Generating Mobile Assets
+
+```
+npx @capacitor/assets generate --iconBackgroundColor '#0096e7' --splashBackgroundColor '#0096e7' --android --ios
+```
+
+### Releasing Mobile
+
+iOS process:
+
+```
+npm run build-mobile
+npm run open-ios
+```
+
+In XCode:
+
+1. Select "Any iOS Device"
+2. Select "Product" > "Archive"
+3. Select "Distribute App"
+
 ### Packaging
 
 In order to be able to build on your local machine:
