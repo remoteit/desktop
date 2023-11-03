@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'frontend/build',
   ios: {
     scheme: 'Remote.It',
+    backgroundColor: '#0096e7',
   },
   server: {
     androidScheme: 'https',
