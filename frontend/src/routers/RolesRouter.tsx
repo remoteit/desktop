@@ -1,0 +1,30 @@
+import React from 'react'
+import { Switch, Route, Redirect } from 'react-router-dom'
+import { ApplicationState } from '../store'
+import { selectOrganization } from '../selectors/organizations'
+import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
+import { OrganizationRolePage } from '../pages/OrganizationRolePage'
+import { DynamicPanel } from '../components/DynamicPanel'
+import { useSelector } from 'react-redux'
+
+export const RolesRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
+  const organization = useSelector((state: ApplicationState) => selectOrganization(state))
+
+  return (
+    <DynamicPanel
+      primary={<OrganizationRolesPage />}
+      secondary={
+        <Switch>
+          <Route path="/organization/roles/:roleID">
+            <OrganizationRolePage />
+          </Route>
+          <Route path="/organization/roles">
+            <Redirect to={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`} />
+          </Route>
+        </Switch>
+      }
+      layout={layout}
+      root="/organization/roles"
+    />
+  )
+}

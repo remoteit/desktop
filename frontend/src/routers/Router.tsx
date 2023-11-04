@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import useMobileNavigation from '../hooks/useMobileNavigation'
 import { emit } from '../services/Controller'
+import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
@@ -23,9 +24,7 @@ import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
-import { OrganizationRolePage } from '../pages/OrganizationRolePage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
-import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
 import { OrganizationGuestPage } from '../pages/OrganizationGuestPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
@@ -275,16 +274,7 @@ export const Router: React.FC = () => {
         </Panel>
       </Route>
       <Route path={['/organization/roles', '/organization/roles/:roleID']}>
-        <DynamicPanel
-          primary={<OrganizationRolesPage />}
-          secondary={
-            <Route path="/organization/roles/:roleID">
-              <OrganizationRolePage />
-            </Route>
-          }
-          layout={layout}
-          root="/organization"
-        />
+        <RolesRouter layout={layout} />
       </Route>
       <Route path="/organization/empty">
         <Panel layout={layout}>
