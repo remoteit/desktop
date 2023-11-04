@@ -49,7 +49,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
     <>
       <Breadcrumbs show={breadcrumbs} />
       <div className={css.header}>
-        {sidebarHidden && (
+        {sidebarHidden && (browser.isMobile ? isRootMenu : true) && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
         {!(showSearch || searched) && browser.isElectron && (
