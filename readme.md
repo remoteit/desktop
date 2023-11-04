@@ -177,7 +177,7 @@ Will need to Install:
 - Git Bash
 - VS Code (recommended)
 
-To build the whole app for production: `npm run build --arch = 'XXX' ` (possible options: win, mac, linux, armv7l, arm64)
+To build the whole app for production: `npm run build --arch = 'XXX'` (possible options: win, mac, linux, armv7l, arm64)
 
 - But this requires the physical signing key.
   To build without signing you must remove the signing credentials from `package.json`
@@ -196,15 +196,13 @@ The final build will be produced in the `dist` directory
 
 ### Generating Mobile Assets
 
-```
+``` shell
 npx @capacitor/assets generate --iconBackgroundColor '#0096e7' --splashBackgroundColor '#0096e7' --android --ios
 ```
 
-### Releasing Mobile
+### Release iOS
 
-iOS process:
-
-```
+``` shell
 npm run build-mobile
 npm run open-ios
 ```
@@ -214,6 +212,26 @@ In XCode:
 1. Select "Any iOS Device"
 2. Select "Product" > "Archive"
 3. Select "Distribute App"
+
+### Release Android
+
+``` shell
+npm run build-mobile
+npm run open-android
+```
+
+To build the signed android app you will need to place the following files
+
+- `/android/key.properties`
+- `/android/androiduploadkey.jks`
+
+Please ask for these private files from the project owner.
+You may also need to have the following environment variables set:
+
+```bash
+mac: export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+linux: export JAVA_HOME=/opt/android-studio/jbr
+```
 
 ### Packaging
 

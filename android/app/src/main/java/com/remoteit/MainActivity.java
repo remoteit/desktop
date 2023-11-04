@@ -1,4 +1,4 @@
-package it.remote.app;
+package com.remoteit;
 
 import com.getcapacitor.BridgeActivity;
 

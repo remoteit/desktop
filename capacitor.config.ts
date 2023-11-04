@@ -1,12 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.remoteit.mobile.ios',
   appName: 'Remote.It',
   webDir: 'frontend/build',
+  backgroundColor: '#0096e7',
   ios: {
     scheme: 'Remote.It',
-    backgroundColor: '#0096e7',
   },
   server: {
     androidScheme: 'https',
