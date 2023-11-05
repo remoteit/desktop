@@ -10,7 +10,7 @@ sanitize_version_string() {
 }
 
 update_ios_version() {
-  pbxprojFile="ios/App/Remote.It.xcodeproj/project.pbxproj"
+  pbxprojFile="ios/App/App.xcodeproj/project.pbxproj"
   sanitizedVersion=$(sanitize_version_string "$1")
 
   # Update the marketing version
