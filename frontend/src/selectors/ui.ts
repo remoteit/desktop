@@ -4,7 +4,7 @@ import { selectActiveAccountId } from './accounts'
 import { getTheme } from '../styling/theme'
 import { version } from '../helpers/versionHelper'
 
-export const selectDefaultSelected = createSelector(
+export const selectDefaultSelectedPage = createSelector(
   [selectActiveAccountId, getDefaultSelected],
   (activeAccountId, defaultSelected) => defaultSelected[activeAccountId] || {}
 )

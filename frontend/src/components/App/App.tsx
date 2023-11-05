@@ -2,7 +2,13 @@ import React, { useEffect } from 'react'
 import browser from '../../services/Browser'
 import useSafeArea from '../../hooks/useSafeArea'
 import { useSelector, useDispatch } from 'react-redux'
-import { HIDE_SIDEBAR_WIDTH, HIDE_TWO_PANEL_WIDTH, SIDEBAR_WIDTH, ORGANIZATION_BAR_WIDTH } from '../../shared/constants'
+import {
+  HIDE_SIDEBAR_WIDTH,
+  HIDE_TWO_PANEL_WIDTH,
+  SIDEBAR_WIDTH,
+  MOBILE_WIDTH,
+  ORGANIZATION_BAR_WIDTH,
+} from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { useMediaQuery, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
@@ -10,6 +16,7 @@ import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SidebarMenu } from '../SidebarMenu'
+import { BottomMenu } from '../BottomMenu'
 import { Sidebar } from '../Sidebar'
 import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
@@ -26,8 +33,10 @@ export const App: React.FC = () => {
   }))
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
-  const layout = {
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const layout: ILayout = {
     insets,
+    mobile,
     showOrgs,
     hideSidebar,
     singlePanel,
@@ -74,6 +83,7 @@ export const App: React.FC = () => {
         {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
         <Router />
       </Box>
+      {mobile && <BottomMenu />}
     </Page>
   )
 }

@@ -49,7 +49,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
     <>
       <Breadcrumbs show={breadcrumbs} />
       <div className={css.header}>
-        {sidebarHidden && (browser.isMobile ? isRootMenu : true) && (
+        {sidebarHidden && (mobile ? isRootMenu : true) && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
         {!(showSearch || searched) && browser.isElectron && (
@@ -72,7 +72,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        {!(showSearch || searched) && !isRootMenu && menu && browser.isMobile && (
+        {!(showSearch || searched) && !isRootMenu && menu && mobile && (
           <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}

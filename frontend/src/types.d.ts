@@ -222,6 +222,7 @@ declare global {
 
   type ILayout = {
     insets: SafeAreaInsets['insets']
+    mobile: boolean
     showOrgs: boolean
     hideSidebar: boolean
     singlePanel: boolean

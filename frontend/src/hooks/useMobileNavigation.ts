@@ -3,7 +3,6 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { REGEX_FIRST_PATH } from '../shared/constants'
-import browser from '../services/Browser'
 
 const getDepth = (path: string) => {
   return path.split('/').filter(Boolean).length
@@ -16,8 +15,6 @@ const useNavigationListener = () => {
   const customHistory = useSelector((state: ApplicationState) => state.ui.mobileNavigation)
 
   useEffect(() => {
-    if (!browser.isMobile) return
-
     const currentDepth = getDepth(location.pathname)
     const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
     const nextHistory: string[] = []
@@ -31,14 +28,11 @@ const useNavigationListener = () => {
   }, [])
 
   useEffect(() => {
-    if (!browser.isMobile) return
-
     const unListen = history.listen(nextLocation => {
       let nextHistory = [...customHistory]
       const menu = nextLocation.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
       const currentDepth = getDepth(nextLocation.pathname)
 
-      
       if (nextLocation.pathname === menu) {
         // if the next location is a root menu, reset the history
         // if (menu !== nextHistory[0]) {
