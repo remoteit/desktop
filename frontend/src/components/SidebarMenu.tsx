@@ -9,15 +9,15 @@ import { Sidebar } from './Sidebar'
 export const SidebarMenu: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { activeOrg, open, layout } = useSelector((state: ApplicationState) => ({
-    activeOrg: selectOrganization(state),
+  const { activeOrgId, open, layout } = useSelector((state: ApplicationState) => ({
+    activeOrgId: selectOrganization(state).id,
     open: state.ui.sidebarMenu,
     layout: state.ui.layout,
   }))
 
   React.useEffect(() => {
     if (open) dispatch.ui.set({ sidebarMenu: false })
-  }, [location, activeOrg])
+  }, [location, activeOrgId])
 
   return (
     <Drawer anchor="left" open={open} onClose={() => dispatch.ui.set({ sidebarMenu: false })}>

@@ -225,13 +225,12 @@ To build the signed android app you will need to place the following files
 - `/android/key.properties`
 - `/android/androiduploadkey.jks`
 
-Please ask for these private files from the project owner.
-You may also need to have the following environment variables set:
+In android studio:
 
-```bash
-mac: export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-linux: export JAVA_HOME=/opt/android-studio/jbr
-```
+- build > Generate signed bundle
+- select aab
+
+Upload to google play console
 
 ### Packaging
 
