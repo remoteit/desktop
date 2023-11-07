@@ -23,7 +23,7 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
-  useCapacitor()
+  const hideSplashScreen = useCapacitor()
   const { insets } = useSafeArea()
   const dispatch = useDispatch<Dispatch>()
   const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
@@ -46,6 +46,7 @@ export const App: React.FC = () => {
   }
 
   useEffect(() => {
+    hideSplashScreen()
     dispatch.ui.set({ layout })
   }, [hideSidebar, singlePanel, showOrgs, insets])
 

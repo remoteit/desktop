@@ -16,8 +16,8 @@ export const GRAPHQL_API = env.VITE_GRAPHQL_API
 export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API
 export const DEVELOPER_KEY =
   env.VITE_DEVELOPER_KEY || env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
-// export const PROTOCOL = env.PROTOCOL || 'remoteit://'
-export const PROTOCOL = env.PROTOCOL || env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
+export const PROTOCOL = env.PROTOCOL || 'remoteit://'
+// export const PROTOCOL = env.PROTOCOL || env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const REDIRECT_URL = env.VITE_REDIRECT_URL || env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const CALLBACK_URL =

@@ -10,6 +10,12 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
   },
+  plugins: {
+    SplashScreen: {
+      launchAutoHide: false,
+      backgroundColor: '#0096e7',
+    },
+  },
 }
 
 console.log('\nNode Environment:', process.env.NODE_ENV)

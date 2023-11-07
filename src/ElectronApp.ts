@@ -23,7 +23,7 @@ export default class ElectronApp {
     this.quitSelected = false
     this.isMaximized = false
     this.autoUpdater = new AutoUpdater()
-    this.protocol = PROTOCOL
+    this.protocol = PROTOCOL.substring(0, PROTOCOL.length - 3)
 
     if (!this.app.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
@@ -93,6 +93,7 @@ export default class ElectronApp {
 
   private handleOpenUrl = (event: electron.Event, url: string) => {
     // Mac deep link support
+    Logger.info('OPEN URL', { url })
     event.preventDefault()
     this.setDeepLink(url)
     this.openWindow()
@@ -164,11 +165,14 @@ export default class ElectronApp {
 
     if (url.includes('authCallback')) {
       this.authCallback = true
-      Logger.info('Auth Callback', { link: url })
+      Logger.info('SET AUTH CALLBACK')
     }
 
     const match = URL_REGEX.exec(url)
-    if (match) electron.shell.openExternal(url.substring(match.index))
+    if (match) {
+      Logger.info('OPEN EXTERNAL LINK', { url, match })
+      electron.shell.openExternal(url.substring(match.index))
+    }
   }
 
   private createMainWindow = () => {
@@ -304,10 +308,10 @@ export default class ElectronApp {
         const parameters = location.substring(index)
         fullUrl = fullUrl + parameters
       }
-      Logger.info('Opening', { url: fullUrl })
+      Logger.info('OPENING AUTH URL', { url: fullUrl })
       this.window.loadURL(fullUrl)
     } else if (location) {
-      Logger.info('Open location', { location })
+      Logger.info('OPENING WINDOW LOCATION', { location })
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
 

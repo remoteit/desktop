@@ -1,3 +1,4 @@
+// import browser, { windowOpen } from '../services/Browser'
 import { ICredentials } from '@aws-amplify/core'
 import { DEVELOPER_KEY } from '../shared/constants'
 import { CognitoHostedUIIdentityProvider, Auth } from '@aws-amplify/auth'
@@ -152,8 +153,13 @@ export class AuthService {
     return { cognitoUser: this.cognitoUser }
   }
 
-  public async googleSignIn(): Promise<ICredentials> {
-    return this.cognitoAuth.federatedSignIn({
+  public async googleSignIn() {
+    // if (browser.isMobile) {
+    //   const authUrl = `https://your-cognito-domain.auth.region.amazoncognito.com/login?response_type=code&client_id=${this.config.cognitoClientID}&redirect_uri=${this.config.redirectURL}&identity_provider=Google`
+    //   await windowOpen(authUrl)
+    // }
+
+    await this.cognitoAuth.federatedSignIn({
       customState: this.config.redirectURL,
       provider: CognitoHostedUIIdentityProvider.Google,
     })

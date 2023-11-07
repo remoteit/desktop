@@ -130,12 +130,12 @@ export async function removeLocalStorage(state: ApplicationState, key: string) {
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 
-export function windowOpen(url?: string, target?: string) {
+export async function windowOpen(url?: string, target?: string) {
   console.log('WINDOW OPEN', url, target)
   if (!url) return
 
   if (browser.isMobile) {
-    Browser.open({ url, windowName: target })
+    await Browser.open({ url, windowName: target })
     return
   }
 

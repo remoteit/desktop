@@ -1,6 +1,7 @@
 import browser from '../services/Browser'
 import { PROTOCOL } from '../shared/constants'
 import { App, URLOpenListenerEvent } from '@capacitor/app'
+import { SplashScreen } from '@capacitor/splash-screen'
 import { useHistory } from 'react-router-dom'
 import { useEffect } from 'react'
 
@@ -22,6 +23,10 @@ function useCapacitor() {
     App.removeAllListeners()
   }
 
+  async function hideSplashScreen() {
+    await SplashScreen.hide()
+  }
+
   async function urlOpen(data: URLOpenListenerEvent) {
     if (!data.url.includes(PROTOCOL)) {
       console.warn('BAD APP URL', data.url)
@@ -29,9 +34,17 @@ function useCapacitor() {
     }
 
     const path = data.url.substring(PROTOCOL.length)
+
+    if (path.includes('authCallback')) {
+      location.href = window.origin + path.replace('authCallback', '')
+      return
+    }
+
     console.log('APP URL OPENED', path)
     history.push(path)
   }
+
+  return hideSplashScreen
 }
 
 export default useCapacitor
