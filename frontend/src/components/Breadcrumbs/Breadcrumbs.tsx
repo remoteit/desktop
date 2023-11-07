@@ -22,7 +22,7 @@ const pageNameMap: { [path: string]: string } = {
   setupServices: 'This Device',
 }
 
-export const Breadcrumbs: React.FC<{ show?: boolean }> = ({ show }) => {
+export const Breadcrumbs: React.FC = () => {
   const css = useStyles()
   const location = useLocation()
   const { devices, networks } = useSelector((state: ApplicationState) => ({
@@ -59,7 +59,7 @@ export const Breadcrumbs: React.FC<{ show?: boolean }> = ({ show }) => {
     document.title = BASE_TITLE + parts.join(' - ')
   }, [crumbs])
 
-  if (!show || !crumbs.join()) return null
+  if (!crumbs.join()) return null
 
   return (
     <Typography className={css.header}>

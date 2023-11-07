@@ -47,8 +47,11 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     hideSplashScreen()
+  }, [])
+
+  useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [hideSidebar, singlePanel, showOrgs, insets])
+  }, [hideSidebar, singlePanel, showOrgs, insets, mobile])
 
   const css = useStyles({ overlapHeader: hideSidebar && browser.isElectron && browser.isMac })
 
