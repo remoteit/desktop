@@ -7,6 +7,7 @@ ONLY EDIT THE SOURCE FILE IN frontend
 import { env } from '../env'
 export const NODE_ENV = env.NODE_ENV || 'development'
 export const CLIENT_ID = env.VITE_CLIENT_ID
+export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID
 export const COGNITO_USER_POOL_ID = env.VITE_COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
 export const COGNITO_AUTH_DOMAIN = env.VITE_COGNITO_AUTH_DOMAIN || 'auth.remote.it'
 export const API_URL = env.VITE_API_URL || env.API_URL || 'https://api.remote.it/apv/v27'
@@ -15,6 +16,7 @@ export const GRAPHQL_API = env.VITE_GRAPHQL_API
 export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API
 export const DEVELOPER_KEY =
   env.VITE_DEVELOPER_KEY || env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+// export const PROTOCOL = env.PROTOCOL || 'remoteit://'
 export const PROTOCOL = env.PROTOCOL || env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const REDIRECT_URL = env.VITE_REDIRECT_URL || env.REDIRECT_URL || PROTOCOL + 'authCallback'

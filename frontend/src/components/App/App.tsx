@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import browser from '../../services/Browser'
 import useSafeArea from '../../hooks/useSafeArea'
+import useCapacitor from '../../hooks/useCapacitor'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   HIDE_SIDEBAR_WIDTH,
@@ -22,6 +23,7 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
+  useCapacitor()
   const { insets } = useSafeArea()
   const dispatch = useDispatch<Dispatch>()
   const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({

@@ -3,6 +3,7 @@ import Controller, { emit } from '../services/Controller'
 import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
 import {
   CLIENT_ID,
+  MOBILE_CLIENT_ID,
   CALLBACK_URL,
   AUTH_API_URL,
   COGNITO_USER_POOL_ID,
@@ -59,7 +60,7 @@ const defaultState: AuthState = {
 }
 
 const authServiceConfig = () => ({
-  cognitoClientID: CLIENT_ID,
+  cognitoClientID: browser.isMobile ? MOBILE_CLIENT_ID : CLIENT_ID,
   cognitoUserPoolID: COGNITO_USER_POOL_ID,
   cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
   checkSamlURL: AUTH_API_URL + '/checkSaml',
@@ -81,6 +82,7 @@ export default createModel<RootModel>()({
       let { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
+        console.log('AUTH SERVICE CONFIG', authServiceConfig())
         const authService = new AuthService(authServiceConfig())
         console.log('AUTH INIT', { authService })
         await sleep(500)

@@ -1,11 +1,9 @@
-import { EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import { EVENTS, PROTOCOL, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import AutoUpdater from './AutoUpdater'
 import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
 import path from 'path'
 
-const DEEP_LINK_PROTOCOL = 'remoteit'
-const DEEP_LINK_PROTOCOL_DEV = 'remoteitdev'
 const URL_REGEX = new RegExp('^https?://')
 const IP_PRIVATE = '127.0.0.1'
 
@@ -25,7 +23,7 @@ export default class ElectronApp {
     this.quitSelected = false
     this.isMaximized = false
     this.autoUpdater = new AutoUpdater()
-    this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
+    this.protocol = PROTOCOL
 
     if (!this.app.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
