@@ -43,7 +43,7 @@ export const NetworksPage: React.FC = () => {
               <GuideBubble
                 guide="addNetwork"
                 enterDelay={400}
-                placement="right"
+                placement="bottom"
                 startDate={new Date('2002-01-01')}
                 instructions={
                   <>

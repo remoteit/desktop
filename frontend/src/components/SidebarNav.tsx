@@ -6,6 +6,7 @@ import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import {
+  Box,
   List,
   ListItem,
   ListItemButton,
@@ -113,13 +114,6 @@ export const SidebarNav: React.FC = () => {
       )}
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
-      <ListItemLocation
-        title="Notifications"
-        pathname="/announcements"
-        icon="bell"
-        badge={counts.unreadAnnouncements}
-        dense
-      />
       <ListItem sx={{ marginTop: 2 }}>
         <ListItemButton onClick={() => setMore(!more)}>
           <Typography variant="subtitle2" color="grayDark.main">
@@ -133,24 +127,26 @@ export const SidebarNav: React.FC = () => {
         <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
         <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
-      {limits.support > 10 ? (
+      <Box className={css.footer}>
         <ListItemLocation
-          className={css.footer}
-          title="Contact"
-          onClick={() => dispatch.feedback.reset()}
-          pathname="/feedback"
-          icon="envelope-open-text"
+          title="Notifications"
+          pathname="/announcements"
+          icon="bell"
+          badge={counts.unreadAnnouncements}
           dense
         />
-      ) : (
-        <ListItemLink
-          title="Support Forum"
-          href="https://link.remote.it/forum"
-          icon="comments"
-          className={css.footer}
-          dense
-        />
-      )}
+        {limits.support > 10 ? (
+          <ListItemLocation
+            title="Contact"
+            onClick={() => dispatch.feedback.reset()}
+            pathname="/feedback"
+            icon="envelope-open-text"
+            dense
+          />
+        ) : (
+          <ListItemLink title="Support Forum" href="https://link.remote.it/forum" icon="comments" dense />
+        )}
+      </Box>
     </List>
   )
 }
@@ -185,6 +181,7 @@ const useStyles = makeStyles(({ palette }) => ({
     fontWeight: 500,
   },
   footer: ({ insets }: StyleProps) => ({
+    width: '100%',
     position: 'fixed',
     bottom: insets.bottom || spacing.lg,
     backgroundColor: palette.grayLighter.main,
