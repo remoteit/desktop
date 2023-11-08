@@ -23,7 +23,7 @@ import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
-export const OrganizationGuestPage: React.FC = () => {
+export const OrganizationUserPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -110,8 +110,8 @@ export const OrganizationGuestPage: React.FC = () => {
         <>
           <Typography variant="subtitle1">Member</Typography>
           <Gutters>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Box display="flex" marginRight={2} gap={2}>
+            <Box display="flex" flexWrap="wrap" alignItems="center" justifyContent="space-between">
+              <Box display="flex" marginRight={2} gap={1}>
                 <RoleSelect
                   size="medium"
                   roles={organization.roles}
@@ -126,7 +126,9 @@ export const OrganizationGuestPage: React.FC = () => {
                   />
                 )}
               </Box>
-              <Box display="flex">{role && <RoleAccessCounts role={role} />}</Box>
+              <Box display="flex" marginTop={1}>
+                {role && <RoleAccessCounts role={role} />}
+              </Box>
             </Box>
           </Gutters>
         </>

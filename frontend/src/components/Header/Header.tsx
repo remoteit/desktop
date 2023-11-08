@@ -7,7 +7,7 @@ import { makeStyles } from '@mui/styles'
 import { useMediaQuery } from '@mui/material'
 import { selectPermissions } from '../../selectors/organizations'
 import { ApplicationState, Dispatch } from '../../store'
-import { useHistory, useLocation, Switch, Route } from 'react-router-dom'
+import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../selectors/devices'
 import { UpgradeNotice } from '../UpgradeNotice'
@@ -24,13 +24,14 @@ import { Pre } from '../Pre'
 
 export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
   const mobileGoBack = useMobileBack()
-  const { searched, canNavigate, permissions } = useSelector((state: ApplicationState) => {
+  const { searched, canNavigate, permissions, layout } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     return {
       selected: state.ui.selected,
       searched: deviceModel.searched, // debug make true
       canNavigate: state.backend.canNavigate,
       permissions: selectPermissions(state),
+      layout: state.ui.layout,
     }
   })
   const [showSearch, setShowSearch] = useState<boolean>(false)
@@ -39,7 +40,6 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const history = useHistory()
   const manager = permissions?.includes('MANAGE')
   const css = useStyles()
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
@@ -49,7 +49,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
     <>
       {breadcrumbs && <Breadcrumbs />}
       <div className={css.header}>
-        {sidebarHidden && (mobile ? isRootMenu : true) && (
+        {sidebarHidden && (layout.hideSidebar ? isRootMenu : true) && menu !== '/add' && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
         {!(showSearch || searched) && browser.isElectron && (
@@ -72,7 +72,10 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        {!(showSearch || searched) && !isRootMenu && menu && mobile && (
+        <Route path="/add" exact>
+          <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+        </Route>
+        {!isRootMenu && layout.hideSidebar && (
           <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
@@ -106,14 +109,9 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           </Switch>
         )}
         {sidebarHidden && (
-          <Switch>
-            <Route path="/add" exact>
-              <IconButton icon="times" size="lg" onClick={history.goBack} />
-            </Route>
-            <Route path="/devices" exact>
-              <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
-            </Route>
-          </Switch>
+          <Route path="/devices" exact>
+            <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
+          </Route>
         )}
       </div>
       <UpgradeNotice />

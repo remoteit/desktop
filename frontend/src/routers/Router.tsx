@@ -25,7 +25,7 @@ import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
-import { OrganizationGuestPage } from '../pages/OrganizationGuestPage'
+import { OrganizationUserPage } from '../pages/OrganizationUserPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
@@ -307,7 +307,7 @@ export const Router: React.FC = () => {
               </Route>
 
               <Route path={['/organization/guests/:userID', '/organization/members/:userID']}>
-                <OrganizationGuestPage />
+                <OrganizationUserPage />
               </Route>
 
               <Route path="/organization/guests">

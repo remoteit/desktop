@@ -1,31 +1,29 @@
 import React from 'react'
-import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
+import { Stack, StackProps } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { canEditTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 
 const TEMP_DATE = new Date()
-type Props = { button?: string; types: number[]; onChange: (tags: number[]) => void }
+type Props = StackProps & { button?: string; types: number[]; onChange: (tags: number[]) => void }
 
-export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange }) => {
+export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange, ...props }) => {
   const { allTypes, canEdit } = useSelector((state: ApplicationState) => ({
     accountId: selectActiveAccountId(state),
     allTypes: state.applicationTypes.all,
     canEdit: canEditTags(state),
   }))
-  // const dispatch = useDispatch<Dispatch>()
   const selectedApplicationTypes = allTypes.filter(t => types.includes(t.id))
   const selectedTags = selectedApplicationTypes.map(t => ({ name: t.name, created: TEMP_DATE, color: t.id }))
   const allTags = allTypes.map(t => ({ name: t.name, created: TEMP_DATE, color: t.id }))
 
   return (
-    <Box display="flex" flexWrap="wrap" justifyContent="flex-end" marginTop={2}>
+    <Stack flexWrap="wrap" marginTop={2} {...props}>
       <Tags
         hideLabels
-        textAlign="right"
         showEmpty={!canEdit}
         tags={selectedTags}
         onDelete={canEdit ? tag => onChange(types.filter(t => t !== tag.color)) : undefined}
@@ -42,6 +40,6 @@ export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange }
           button={button}
         />
       )}
-    </Box>
+    </Stack>
   )
 }
