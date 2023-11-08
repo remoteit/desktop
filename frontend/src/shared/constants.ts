@@ -20,6 +20,7 @@ export const PROTOCOL = env.PROTOCOL || 'remoteit://'
 // export const PROTOCOL = env.PROTOCOL || env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const REDIRECT_URL = env.VITE_REDIRECT_URL || env.REDIRECT_URL || PROTOCOL + 'authCallback'
+export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
 export const CALLBACK_URL =
   env.VITE_CALLBACK_URL || env.CALLBACK_URL || env.NODE_ENV === 'development'
     ? env.VITE_DEV_CALLBACK_URL

@@ -130,19 +130,29 @@ export async function removeLocalStorage(state: ApplicationState, key: string) {
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 
-export async function windowOpen(url?: string, target?: string) {
-  console.log('WINDOW OPEN', url, target)
+export async function windowOpen(url?: string, windowName?: string) {
+  console.log('WINDOW OPEN', url, windowName)
   if (!url) return
 
   if (browser.isMobile) {
-    await Browser.open({ url, windowName: target })
+    await Browser.open({ url, windowName })
     return
   }
 
   try {
-    window.open(url, target)
+    window.open(url, windowName)
   } catch {
     store.dispatch.ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
+  }
+}
+
+export async function windowClose() {
+  if (browser.isMobile) {
+    try {
+      await Browser.close()
+    } catch (e) {
+      console.warn('NO BROWSER WINDOW OPEN', e)
+    }
   }
 }
 

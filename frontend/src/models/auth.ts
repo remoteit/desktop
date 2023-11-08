@@ -9,6 +9,7 @@ import {
   COGNITO_USER_POOL_ID,
   COGNITO_AUTH_DOMAIN,
   REDIRECT_URL,
+  SIGNOUT_REDIRECT_URL,
   API_URL,
   DEVELOPER_KEY,
 } from '../shared/constants'
@@ -71,7 +72,7 @@ const authServiceConfig = () => ({
   signoutCallbackURL: browser.isPortal
     ? window.origin
     : browser.isElectron || browser.isMobile
-    ? REDIRECT_URL
+    ? SIGNOUT_REDIRECT_URL
     : CALLBACK_URL,
 })
 

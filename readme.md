@@ -141,6 +141,13 @@ npm start
 
 Command+option+I to open with dev tools.
 
+### Mobile Development
+
+```shell
+  npm run frontend
+  npm run mobile-ios
+```
+
 ## Testing
 
 Tests are written using Jest.

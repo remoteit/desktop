@@ -1,4 +1,4 @@
-import browser from '../services/Browser'
+import browser, { windowClose } from '../services/Browser'
 import { PROTOCOL } from '../shared/constants'
 import { App, URLOpenListenerEvent } from '@capacitor/app'
 import { SplashScreen } from '@capacitor/splash-screen'
@@ -36,7 +36,16 @@ function useCapacitor() {
     const path = data.url.substring(PROTOCOL.length)
 
     if (path.includes('authCallback')) {
+      await windowClose()
+      SplashScreen.show()
+      console.log('AUTH CALLBACK', window.origin + path.replace('authCallback', ''))
       location.href = window.origin + path.replace('authCallback', '')
+      return
+    }
+
+    if (path.includes('signoutCallback')) {
+      await windowClose()
+      console.log('LOGOUT CALLBACK', path)
       return
     }
 
