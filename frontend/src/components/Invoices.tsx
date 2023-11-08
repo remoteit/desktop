@@ -77,12 +77,10 @@ export const Invoices: React.FC = () => {
 
 const useStyles = makeStyles(({ palette }) => ({
   amount: {
-    paddingRight: spacing.md,
     textAlign: 'right',
     color: palette.danger,
   },
   amountWithoutColor: {
-    paddingRight: spacing.md,
     textAlign: 'right',
   },
   plan: { textTransform: 'capitalize' },

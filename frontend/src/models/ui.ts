@@ -102,6 +102,7 @@ export const defaultState: UIState = {
   themeDark: isDarkMode(),
   testUI: undefined,
   layout: {
+    mobile: false,
     showOrgs: false,
     hideSidebar: false,
     singlePanel: false,

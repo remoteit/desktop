@@ -45,9 +45,9 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
             {!!(license.id || license.limits?.length) && (
               <ListItem>
                 <ListItemIcon />
-                <Box>
+                <Box width="100%">
                   {license.limits && (
-                    <Box width={400} marginBottom={3} marginTop={1}>
+                    <Box marginBottom={3} marginTop={1}>
                       {license.limits?.map(limit => (
                         <LimitSetting key={limit.name} limit={limit} />
                       ))}

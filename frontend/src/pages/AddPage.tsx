@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
+import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -38,7 +38,7 @@ export const AddPage: React.FC = () => {
         </Typography>
       }
     >
-      <Gutters className={css.container}>
+      <Stack flexWrap="wrap" alignItems="flex-start" paddingX={{ xs: 1, sm: 4 }}>
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
@@ -130,17 +130,12 @@ export const AddPage: React.FC = () => {
             <ClaimDevice />
           </ListItem>
         </List>
-      </Gutters>
+      </Stack>
     </Container>
   )
 }
 
 const useStyles = makeStyles(({ breakpoints }) => ({
-  container: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
-  },
   list: {
     minWidth: 200,
     display: 'flex',

@@ -1,8 +1,7 @@
 import zxcvbn from 'zxcvbn'
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
 import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../shared/constants'
-import { Grid, TextField, Typography } from '@mui/material'
+import { Stack, TextField, Typography } from '@mui/material'
 import { ProgressBar } from './ProgressBar'
 import { Notice } from '../Notice'
 
@@ -17,7 +16,6 @@ export function PasswordStrengthInput({ onChange }: Props) {
   const [tooShort, setTooShort] = useState<boolean>(true)
   const [tooLong, setTooLong] = useState<boolean>(false)
   const [hasMatch, setHasMatch] = useState<boolean>(false)
-  const css = useStyles()
 
   const checkTestedResult = (pass: string) => {
     return zxcvbn(pass).score
@@ -84,17 +82,16 @@ export function PasswordStrengthInput({ onChange }: Props) {
 
   return (
     <>
-      <Grid container wrap="nowrap">
-        <Grid item>
-          <TextField variant="filled" type="password" label="Enter new password" onChange={e => checkPassword(e)} />
-        </Grid>
-        <Grid item>
-          <Typography variant="caption" display="block" className={css.caption} gutterBottom>
-            Passwords must be 7-64 characters in length.
-          </Typography>
-        </Grid>
-      </Grid>
       <TextField
+        variant="filled"
+        type="password"
+        label="Enter new password"
+        helperText="Password must be 7-64 characters in length."
+        onChange={e => checkPassword(e)}
+        fullWidth
+      />
+      <TextField
+        fullWidth
         variant="filled"
         type="password"
         label="Confirm new password"
@@ -117,15 +114,3 @@ export function PasswordStrengthInput({ onChange }: Props) {
     </>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  danger: {
-    color: palette.error.main,
-    fontSize: 11,
-    marginBottom: 10,
-  },
-  caption: {
-    minWidth: 150,
-    paddingTop: 10,
-  },
-}))

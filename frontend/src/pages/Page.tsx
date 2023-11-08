@@ -4,6 +4,7 @@ import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Snackbar, IconButton, Dialog, Button } from '@mui/material'
+import { spacing } from '../styling'
 import { makeStyles } from '@mui/styles'
 import { getOwnDevices } from '../selectors/devices'
 import { DragAppRegion } from '../components/DragAppRegion'
@@ -48,7 +49,10 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
-  const css = useStyles({ spacing: layout.showOrgs ? ORGANIZATION_BAR_WIDTH : 0 })
+  const css = useStyles({
+    margin: layout.showOrgs && !layout.hideSidebar ? ORGANIZATION_BAR_WIDTH : spacing.sm,
+    mobile: layout.mobile,
+  })
 
   // only show one message at a time
   let snackbar = ''
@@ -58,32 +62,36 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   if (backendAuthenticated && !connected) snackbar = 'retry'
 
   return (
-    <RemoteHeader device={device} insets={layout.insets} color={label?.id ? label.color : undefined}>
-      <DragAppRegion />
-      {children}
-      {offline && (
-        <Dialog open maxWidth="xs" fullWidth>
-          <Notice
-            severity={offline.severity}
-            button={
-              <Button
-                size="small"
-                onClick={() => window.location.reload()}
-                color={offline.severity}
-                variant="contained"
-              >
-                Reload
-              </Button>
-            }
-            onClose={() => ui.set({ offline: undefined })}
-            fullWidth
-          >
-            {offline.title}
-            {offline.message && <em>{offline.message}</em>}
-          </Notice>
-        </Dialog>
-      )}
-      <GlobalConfirm />
+    <>
+      <RemoteHeader device={device} insets={layout.insets} color={label?.id ? label.color : undefined}>
+        <DragAppRegion />
+        {children}
+        {offline && (
+          <Dialog open maxWidth="xs" fullWidth>
+            <Notice
+              severity={offline.severity}
+              button={
+                <Button
+                  size="small"
+                  onClick={() => window.location.reload()}
+                  color={offline.severity}
+                  variant="contained"
+                >
+                  Reload
+                </Button>
+              }
+              onClose={() => ui.set({ offline: undefined })}
+              fullWidth
+            >
+              {offline.title}
+              {offline.message && <em>{offline.message}</em>}
+            </Notice>
+          </Dialog>
+        )}
+        <GlobalConfirm />
+        <ConnectionNotice className={css.snackbar} />
+        <UpdateNotice className={css.snackbar} />
+      </RemoteHeader>
       <Snackbar
         className={css.snackbar}
         open={snackbar === 'retry'}
@@ -146,14 +154,14 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
         onClose={clearSuccessMessage}
       />
-      <ConnectionNotice className={css.snackbar} />
-      <UpdateNotice className={css.snackbar} />
-    </RemoteHeader>
+    </>
   )
 }
 
 const useStyles = makeStyles({
-  snackbar: ({ spacing }: { spacing: number }) => ({
-    marginLeft: spacing,
+  snackbar: ({ margin, mobile }: { margin: number; mobile: boolean }) => ({
+    marginLeft: mobile ? spacing.xs : margin,
+    marginRight: mobile ? spacing.xs : margin,
+    bottom: `${mobile ? 110 : 80}px !important`,
   }),
 })

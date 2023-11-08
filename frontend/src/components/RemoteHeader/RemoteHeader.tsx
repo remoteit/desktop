@@ -14,7 +14,7 @@ type Props = { device?: IDevice; color?: string; insets: ILayout['insets']; chil
 export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children }) => {
   const showFrame = browser.isRemote
   const showBorder = !browser.isMac && !showFrame
-  const css = useStyles({ showBorder, insets })
+  const css = useStyles({ showBorder, insets, color })
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
 
@@ -27,12 +27,16 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children 
   let pageCss = classnames(css.full, css.page)
 
   if (showFrame) {
-    pageCss = classnames(pageCss, css.inset)
+    pageCss = classnames(css.page, css.inset)
     remoteCss = classnames(css.full, css.default)
   }
 
+  const page = <div className={pageCss}>{children}</div>
+
+  if (!remoteCss && !showFrame) return page
+
   return (
-    <div className={remoteCss} style={{ backgroundColor: color }}>
+    <div className={remoteCss}>
       {showFrame && (
         <div className={css.remote}>
           {fullscreenEnabled && (
@@ -48,7 +52,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children 
           <Logo width={80} margin="auto" color="white" />
         </div>
       )}
-      <div className={pageCss}>{children}</div>
+      {page}
     </div>
   )
 }
@@ -56,6 +60,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children 
 type styleProps = {
   insets: ILayout['insets']
   showBorder: boolean
+  color?: string
 }
 
 const useStyles = makeStyles(({ palette }) => ({
@@ -85,14 +90,15 @@ const useStyles = makeStyles(({ palette }) => ({
     left: spacing.sm,
     right: spacing.sm,
     bottom: spacing.sm,
-    borderRadius: spacing.sm,
+    position: 'fixed',
+    borderRadius: spacing.lg,
   },
   default: { backgroundColor: palette.grayDarker.main, padding: spacing.xs },
-  remote: {
-    color: palette.white.main,
+  remote: ({ color }: styleProps) => ({
+    color: color || palette.white.main,
     textAlign: 'center',
     '& button': { position: 'absolute', left: 0, top: 0, color: palette.white.main },
-  },
+  }),
   icon: {
     position: 'absolute',
     height: spacing.lg,

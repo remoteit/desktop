@@ -9,6 +9,7 @@ export const BillingPage: React.FC = () => {
   return (
     <Container
       gutterBottom
+      bodyProps={{ verticalOverflow: true }}
       header={
         <Typography variant="h1">
           <Title>Billing</Title>

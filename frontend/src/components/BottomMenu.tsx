@@ -38,7 +38,6 @@ export const BottomMenu: React.FC = () => {
 
 const useStyles = makeStyles(({ palette }) => ({
   list: {
-    backgroundColor: palette.primary.main,
     '& .MuiBadge-badge': {
       top: -2,
       right: -10,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
+import browser from '../services/Browser'
 import classnames from 'classnames'
-import { MOBILE_WIDTH } from '../shared/constants'
 import { useMediaQuery } from '@mui/material'
 import { spacing, Color } from '../styling'
 import { makeStyles } from '@mui/styles'
@@ -34,8 +34,7 @@ export const Body: React.FC<BodyProps> = ({
   scrollbarBackground,
   children,
 }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
-  const css = useStyles({ mobile, scrollbarBackground, horizontalOverflow, verticalOverflow })
+  const css = useStyles({ scrollbarBackground, horizontalOverflow, verticalOverflow })
   const [hover, setHover] = useState<boolean>(true)
   className = classnames(
     className,
@@ -63,8 +62,8 @@ export const Body: React.FC<BodyProps> = ({
 }
 
 const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  body: ({ mobile, scrollbarBackground, verticalOverflow, horizontalOverflow }: BodyProps & { mobile: boolean }) => {
-    const SCROLLBAR_WIDTH = mobile ? 0 : 15
+  body: ({ scrollbarBackground, verticalOverflow, horizontalOverflow }: BodyProps) => {
+    const SCROLLBAR_WIDTH = browser.isMobile ? 0 : 15
     const background = scrollbarBackground ? palette[scrollbarBackground].main : palette.white.main
     return {
       flexGrow: 1,

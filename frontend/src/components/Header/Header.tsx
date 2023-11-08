@@ -110,7 +110,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             <Route path="/add" exact>
               <IconButton icon="times" size="lg" onClick={history.goBack} />
             </Route>
-            <Route path="*">
+            <Route path="/devices" exact>
               <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
             </Route>
           </Switch>

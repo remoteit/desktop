@@ -196,11 +196,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
-      MuiSnackbar: {
-        styleOverrides: {
-          anchorOriginBottomLeft: { bottom: '80px !important', marginRight: spacing.lg },
-        },
-      },
       MuiSnackbarContent: {
         styleOverrides: {
           root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },
@@ -636,7 +631,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiTableCell: {
         styleOverrides: {
-          root: { padding: `${spacing.xs}px ${spacing.xl}px`, borderBottom: `1px solid ${palette.grayLighter.main}` },
+          root: {
+            borderBottom: `1px solid ${palette.grayLighter.main}`,
+          },
+        },
+      },
+      MuiBottomNavigation: {
+        styleOverrides: {
+          root: { backgroundColor: palette.white.main },
         },
       },
     },
