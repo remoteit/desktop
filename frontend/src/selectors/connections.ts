@@ -20,24 +20,22 @@ export const selectSessions = createSelector([getSessions, selectActiveAccountId
 })
 
 export const selectFetchConnections = createSelector([getAllConnections], connections => {
-  return connections.filter(
-    c => !!c.createdTime || c.enabled // && (!isPortal() || c.public || c.connectLink)
-  )
+  return connections.filter(c => !!c.createdTime || c.enabled)
 })
 
 export const selectConnections = createSelector(
   [getAllConnections, selectActiveAccountId],
   (connections, accountId) => {
-    return connections.filter(
-      c => c.accountId === accountId && (!!c.createdTime || c.enabled) //&& (!isPortal() || c.public || c.connectLink)
-    )
+    return connections.filter(c => c.accountId === accountId && (!!c.createdTime || c.enabled))
   }
 )
 
 export const selectAllConnectionsCount = createSelector(
   [selectConnections, selectSessions],
   (connections, sessions) => {
-    const enabled = connections.filter(connection => connection.online && connection.enabled).length
+    const enabled = connections.filter(
+      connection => connection.online && connection.enabled && !sessions.find(s => s.target.id === connection.id)
+    ).length
     return sessions.length + enabled
   }
 )
@@ -85,7 +83,7 @@ export const selectConnection = createSelector(
 export const selectConnectionsByType = createSelector(
   [getActiveUser, selectIdleConnections],
   (activeUser, connections): INetwork[] => {
-    const connection = connections[0]
+    const connection: IConnection | undefined = connections[0]
 
     const networks: INetwork[] = [
       {
@@ -94,7 +92,7 @@ export const selectConnectionsByType = createSelector(
         id: 'public',
         name: 'Public',
         icon: 'globe',
-        accountId: connection.accountId || activeUser.id,
+        accountId: connection?.accountId || activeUser.id,
         serviceIds: [],
       },
       {
@@ -102,7 +100,7 @@ export const selectConnectionsByType = createSelector(
         id: 'local',
         name: 'Local',
         icon: 'network-wired',
-        accountId: connection.accountId || activeUser.id,
+        accountId: connection?.accountId || activeUser.id,
         serviceIds: [],
       },
     ]
