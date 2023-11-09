@@ -128,7 +128,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.xs,
             padding: `${spacing.sm}px ${spacing.md}px`,
             '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
-            '& + .MuiButton-root': { marginLeft: spacing.sm },
           },
           containedPrimary: {
             '&:hover': { backgroundColor: palette.primaryLight.main },

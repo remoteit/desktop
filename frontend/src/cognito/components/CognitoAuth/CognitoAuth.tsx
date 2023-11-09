@@ -82,10 +82,6 @@ export function CognitoAuth({
     return
   }
 
-  async function handleGoogleSignIn(): Promise<any> {
-    return await cognito.googleSignIn()
-  }
-
   async function handleSamlSignIn(domain: string): Promise<any> {
     return await cognito.samlSignIn(domain)
   }
@@ -148,7 +144,8 @@ export function CognitoAuth({
       hideCaptcha={hideCaptcha}
       onCheckSaml={handleCheckSaml}
       onConfirmSignIn={handleConfirmSignIn}
-      onGoogleSignIn={handleGoogleSignIn}
+      onGoogleSignIn={() => cognito.googleSignIn()}
+      onAppleSignIn={() => cognito.appleSignIn()}
       onOktaSignIn={handleOktaSignIn}
       onRecoverPasswordRequest={handleRecoverPasswordRequest}
       onRecoverySignIn={handleRecoverySignIn}

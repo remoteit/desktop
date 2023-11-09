@@ -82,10 +82,6 @@ export type ResendFunc = (username: string) => Promise<void>
 
 export type ConfirmSignInFunc = (code: string, challengeName?: ChallengeOption) => Promise<void>
 
-export type GoogleSignInFunc = () => void
-
-export type OktaSignInFunc = () => void
-
 export type SendCustomChallengeAnswerFunc = (code: string) => Promise<CognitoUser>
 
 export type VerifyRecoveryCodeFunc = (emailVerificationCode: string, recoveryCode: string) => Promise<CognitoUserResult>

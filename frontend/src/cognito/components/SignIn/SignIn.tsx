@@ -1,20 +1,14 @@
-import React, { ReactElement, useEffect } from 'react'
+import React from 'react'
 import { rememberMe } from '../../../helpers/userHelper'
 import { makeStyles } from '@mui/styles'
 import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel, Collapse } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import {
-  GoogleSignInFunc,
-  OktaSignInFunc,
-  SignInFunc,
-  SamlSignInFunc,
-  UsernameChangeFunc,
-  CheckSamlFunc,
-} from '../../types'
+import { SignInFunc, SamlSignInFunc, UsernameChangeFunc, CheckSamlFunc } from '../../types'
 import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
 import { AuthLayout } from '../AuthLayout'
 import { GoogleSignInButton } from '../GoogleSignInButton'
+import { AppleSignInButton } from '../AppleSignInButton'
 import { Link } from '../../../components/Link'
 import { spacing } from '../../../styling'
 import { useHistory } from 'react-router-dom'
@@ -33,8 +27,9 @@ export type SignInProps = {
   email?: string
   onCheckSaml: CheckSamlFunc
   onUsernameChange?: UsernameChangeFunc
-  onGoogleSignIn: GoogleSignInFunc
-  onOktaSignIn: OktaSignInFunc
+  onGoogleSignIn: () => void
+  onAppleSignIn: () => void
+  onOktaSignIn: () => void
   onSignIn: SignInFunc
   onSamlSignIn: SamlSignInFunc
   showLogo?: boolean
@@ -47,6 +42,7 @@ export function SignIn({
   onCheckSaml,
   onUsernameChange,
   onGoogleSignIn,
+  onAppleSignIn,
   onOktaSignIn,
   onSignIn,
   onSamlSignIn,
@@ -122,7 +118,8 @@ export function SignIn({
   return (
     <AuthLayout fullWidth={fullWidth} showLogo={showLogo}>
       <Box mt={4} textAlign="center">
-        <GoogleSignInButton color="primary" fullWidth onClick={onGoogleSignIn} variant="outlined" />
+        <GoogleSignInButton fullWidth onClick={onGoogleSignIn} />
+        <AppleSignInButton fullWidth onClick={onAppleSignIn} />
       </Box>
       <Box className={css.or} mb={3} mt={3}>
         <Divider />

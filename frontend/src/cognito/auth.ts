@@ -1,5 +1,5 @@
 import browser, { windowOpen } from '../services/Browser'
-import { OAuth2Client } from '@byteowls/capacitor-oauth2'
+// import { OAuth2Client } from '@byteowls/capacitor-oauth2'
 import { ICredentials } from '@aws-amplify/core'
 import { DEVELOPER_KEY } from '../shared/constants'
 import { CognitoHostedUIIdentityProvider, Auth } from '@aws-amplify/auth'
@@ -158,16 +158,7 @@ export class AuthService {
 
   public async googleSignIn() {
     if (browser.isMobile) {
-      const params = [
-        `identity_provider=Google`,
-        `redirect_uri=${this.config.callbackURL}`,
-        `client_id=${this.config.cognitoClientID}`,
-        `response_type=${this.responseType}`,
-        `scope=${this.scope.join('+')}`,
-      ]
-      const authUrl = `https://${this.config.cognitoAuthDomain}/oauth2/authorize?${params.join('&')}`
-      await windowOpen(authUrl, 'auth')
-      // await this.loginWithCognito() @TODO implement with oauth2
+      this.mobileAuth(CognitoHostedUIIdentityProvider.Google)
     } else {
       await this.cognitoAuth.federatedSignIn({
         customState: this.config.redirectURL,
@@ -217,11 +208,15 @@ export class AuthService {
     })
   }
 
-  public async appleSignIn(): Promise<ICredentials> {
-    return this.cognitoAuth.federatedSignIn({
-      customState: this.config.redirectURL,
-      provider: CognitoHostedUIIdentityProvider.Apple,
-    })
+  public async appleSignIn() {
+    if (browser.isMobile) {
+      this.mobileAuth(CognitoHostedUIIdentityProvider.Apple)
+    } else {
+      this.cognitoAuth.federatedSignIn({
+        customState: this.config.redirectURL,
+        provider: CognitoHostedUIIdentityProvider.Apple,
+      })
+    }
   }
 
   public async amazonSignIn(): Promise<ICredentials> {
@@ -236,6 +231,19 @@ export class AuthService {
       customState: this.config.redirectURL,
       customProvider: domain,
     })
+  }
+
+  public async mobileAuth(provider: string) {
+    const params = [
+      `identity_provider=${provider}`,
+      `redirect_uri=${this.config.callbackURL}`,
+      `client_id=${this.config.cognitoClientID}`,
+      `response_type=${this.responseType}`,
+      `scope=${this.scope.join('+')}`,
+    ]
+    const authUrl = `https://${this.config.cognitoAuthDomain}/oauth2/authorize?${params.join('&')}`
+    await windowOpen(authUrl, 'auth')
+    // await this.loginWithCognito() @TODO implement with oauth2
   }
 
   public async signUp(username: string, password: string): Promise<CognitoUserResult> {
