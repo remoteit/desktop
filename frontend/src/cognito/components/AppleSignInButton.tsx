@@ -1,12 +1,10 @@
 import React from 'react'
-import browser from '../../services/Browser'
 import { Stack, Button, ButtonProps } from '@mui/material'
 import { Icon } from '../../components/Icon'
 
 export type AppleSignInButtonProps = Omit<ButtonProps, 'children'>
 
 export function AppleSignInButton(props: AppleSignInButtonProps) {
-  if (!browser.isIOS) return null
   return (
     <Button
       {...props}
