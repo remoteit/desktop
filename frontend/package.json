@@ -12,6 +12,7 @@
     "@capacitor/app": "^5.0.6",
     "@capacitor/browser": "^5.1.0",
     "@capacitor/core": "^5.5.1",
+    "@capacitor/splash-screen": "^5.0.6",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
