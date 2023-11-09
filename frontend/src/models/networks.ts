@@ -1,6 +1,6 @@
+import browser from '../services/Browser'
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
-import { isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { selectNetworks } from '../selectors/networks'
 import { selectConnection } from '../selectors/connections'
@@ -89,7 +89,7 @@ type INetworksAccountState = {
 const defaultAccountState: INetworksAccountState = {
   initialized: false,
   loading: false,
-  default: isPortal() ? defaultCloudNetwork : defaultLocalNetwork,
+  default: defaultCloudNetwork,
   all: {},
 }
 
@@ -342,7 +342,8 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
   if (state) {
     const owner = getActiveUser(state)
     const accountId = selectActiveAccountId(state)
-    return { ...state.networks.default, owner, accountId }
+    const defaultNetwork = browser.hasBackend ? defaultLocalNetwork : defaultCloudNetwork
+    return { ...defaultNetwork, owner, accountId }
   }
   return DEFAULT_NETWORK
 }

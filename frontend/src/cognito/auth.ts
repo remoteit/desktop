@@ -1,4 +1,7 @@
+import browser, { windowOpen } from '../services/Browser'
+// import { OAuth2Client } from '@byteowls/capacitor-oauth2'
 import { ICredentials } from '@aws-amplify/core'
+import { DEVELOPER_KEY } from '../shared/constants'
 import { CognitoHostedUIIdentityProvider, Auth } from '@aws-amplify/auth'
 import {
   AuthProvider,
@@ -24,23 +27,16 @@ export interface Config {
   urlOpener?: any
 }
 
-const defaultConfig: Config = {
-  cognitoAuthDomain: process.env.COGNITO_AUTH || 'auth.remote.it',
-  cognitoRegion: process.env.COGNITO_REGION || 'US-WEST-2',
-  cognitoUserPoolID: process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg',
-  callbackURL: process.env.CALLBACK_URL || 'https://auth.api.remote.it/v1/callback',
-  checkSamlURL: process.env.CHECK_SAML_URL || 'https://auth.api.remote.it/v1/checkSaml',
-  redirectURL: window.origin,
-}
-
 export class AuthService {
   public username?: string
   private cognitoAuth: typeof Auth
   private config: Config
   private cognitoUser?: CognitoUser
+  scope = ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin']
+  responseType = 'code'
 
-  constructor(config: Partial<Config>) {
-    this.config = this.combineConfig(config)
+  constructor(config: Config) {
+    this.config = config
     this.cognitoAuth = this.configureCognito()
   }
 
@@ -48,7 +44,7 @@ export class AuthService {
     const response = await axios.post(
       this.config.checkSamlURL,
       { username },
-      { headers: { developerKey: process.env.DEVELOPER_KEY } }
+      { headers: { developerKey: DEVELOPER_KEY } }
     )
 
     // console.log ('setMFAPreference MFA PREF RESPONSE')
@@ -160,12 +156,50 @@ export class AuthService {
     return { cognitoUser: this.cognitoUser }
   }
 
-  public async googleSignIn(): Promise<ICredentials> {
-    return this.cognitoAuth.federatedSignIn({
-      customState: this.config.redirectURL,
-      provider: CognitoHostedUIIdentityProvider.Google,
-    })
+  public async googleSignIn() {
+    if (browser.isMobile) {
+      this.mobileAuth(CognitoHostedUIIdentityProvider.Google)
+    } else {
+      await this.cognitoAuth.federatedSignIn({
+        customState: this.config.redirectURL,
+        provider: CognitoHostedUIIdentityProvider.Google,
+      })
+    }
   }
+
+  // async loginWithCognito() {
+  //   const oauth2Options = {
+  //     appId: '4r5la59beqqc82gkefqmq3pejh',
+  //     authorizationBaseUrl: 'https://auth.remote.it/oauth2/authorize',
+  //     accessTokenEndpoint: 'https://auth.remote.it/oauth2/token',
+  //     responseType: 'code', // You're using authorization code flow
+  //     redirectUrl: 'remoteit://authCallback', // Must match the registered redirect URI
+  //     scope: 'openid profile email', // Adjust the scope to match what is required for your Cognito setup
+  //     additionalParameters: {
+  //       // These parameters should reflect the Cognito and Google setup
+  //       response_type: 'code',
+  //       client_id: '4r5la59beqqc82gkefqmq3pejh',
+  //       redirect_uri: 'remoteit://authCallback',
+  //       identity_provider: 'Google',
+  //     },
+  //     pkceEnabled: true,
+  //     android: {
+  //       responseType: 'code', // Set to 'code' to ensure the use of the authorization code flow
+  //     },
+  //     ios: {
+  //       responseType: 'code', // Set to 'code' to ensure the use of the authorization code flow
+  //     },
+  //   }
+
+  //   try {
+  //     const result = await OAuth2Client.authenticate(oauth2Options)
+  //     console.log('OAuth result:', result)
+
+  //     // The result object will contain "access_token" among other tokens
+  //   } catch (e) {
+  //     console.error('OAuth failed:', e)
+  //   }
+  // }
 
   public async oktaSignIn(): Promise<ICredentials> {
     return this.cognitoAuth.federatedSignIn({
@@ -174,11 +208,15 @@ export class AuthService {
     })
   }
 
-  public async appleSignIn(): Promise<ICredentials> {
-    return this.cognitoAuth.federatedSignIn({
-      customState: this.config.redirectURL,
-      provider: CognitoHostedUIIdentityProvider.Apple,
-    })
+  public async appleSignIn() {
+    if (browser.isMobile) {
+      this.mobileAuth(CognitoHostedUIIdentityProvider.Apple)
+    } else {
+      this.cognitoAuth.federatedSignIn({
+        customState: this.config.redirectURL,
+        provider: CognitoHostedUIIdentityProvider.Apple,
+      })
+    }
   }
 
   public async amazonSignIn(): Promise<ICredentials> {
@@ -193,6 +231,19 @@ export class AuthService {
       customState: this.config.redirectURL,
       customProvider: domain,
     })
+  }
+
+  public async mobileAuth(provider: string) {
+    const params = [
+      `identity_provider=${provider}`,
+      `redirect_uri=${this.config.callbackURL}`,
+      `client_id=${this.config.cognitoClientID}`,
+      `response_type=${this.responseType}`,
+      `scope=${this.scope.join('+')}`,
+    ]
+    const authUrl = `https://${this.config.cognitoAuthDomain}/oauth2/authorize?${params.join('&')}`
+    await windowOpen(authUrl, 'auth')
+    // await this.loginWithCognito() @TODO implement with oauth2
   }
 
   public async signUp(username: string, password: string): Promise<CognitoUserResult> {
@@ -363,8 +414,19 @@ export class AuthService {
     await Auth.changePassword(awsUser, existingPassword, newPassword)
   }
 
-  public async signOut(): Promise<void> {
+  public async signOut() {
     try {
+      if (browser.isMobile) {
+        const params = [
+          `client_id=${this.config.cognitoClientID}`,
+          `redirect_uri=${this.config.redirectURL}`,
+          `logout_uri=${this.config.signoutCallbackURL}`,
+          `response_type=${this.responseType}`,
+          `scope=${this.scope.join('+')}`,
+        ]
+        const logoutUrl = `https://${this.config.cognitoAuthDomain}/logout?${params.join('&')}`
+        await windowOpen(logoutUrl, 'auth')
+      }
       await this.cognitoAuth.signOut()
     } catch {}
   }
@@ -413,10 +475,10 @@ export class AuthService {
 
     let oauth = {
       domain: config.cognitoAuthDomain,
-      scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+      scope: this.scope,
       redirectSignIn: config.callbackURL,
       redirectSignOut: config.signoutCallbackURL ? config.signoutCallbackURL : config.callbackURL,
-      responseType: 'code', // or 'token', note that REFRESH token will only be generated when the responseType is code
+      responseType: this.responseType, // or 'token', note that REFRESH token will only be generated when the responseType is code
       urlOpener: config.urlOpener,
     }
 
@@ -424,9 +486,5 @@ export class AuthService {
     Auth.configure({ oauth })
 
     return Auth
-  }
-
-  private combineConfig(config?: Partial<Config>): Config {
-    return { ...defaultConfig, ...config }
   }
 }

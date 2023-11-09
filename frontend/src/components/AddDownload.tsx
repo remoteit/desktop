@@ -1,6 +1,6 @@
 import React from 'react'
+import browser, { windowOpen, getOs } from '../services/Browser'
 import { safeHostname } from '../shared/nameHelper'
-import { windowOpen, isPortal, getOs } from '../services/Browser'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Button, Typography } from '@mui/material'
@@ -27,7 +27,7 @@ export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => 
         onClick={openDownloads}
         endIcon={<Icon name="launch" size="md" inline />}
       >
-        {isPortal() ? 'Download' : 'Downloads Page'}
+        {browser.hasBackend ? 'Downloads Page' : 'Download'}
       </Button>
       <DesktopUI>
         {getOs() === platform.id && (

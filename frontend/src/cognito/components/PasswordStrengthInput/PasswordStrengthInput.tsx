@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
 import { Box, TextField, Typography } from '@mui/material'
 import zxcvbn from 'zxcvbn'
 
-const PASSWORD_MIN_LENGTH = process.env.PASSWORD_MIN_LENGTH ? Number(process.env.PASSWORD_MIN_LENGTH) : 7
-const PASSWORD_MAX_LENGTH = process.env.PASSWORD_MAX_LENGTH ? Number(process.env.PASSWORD_MAX_LENGTH) : 64
 
 export type Props = {
   isNewPassword?: boolean

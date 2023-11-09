@@ -5,7 +5,6 @@ import {
   CognitoUser,
   ChallengeOption,
   ConfirmSignInFunc,
-  GoogleSignInFunc,
   RecoverPasswordRequestFunc,
   SendCustomChallengeAnswerFunc,
   SignInFunc,
@@ -15,7 +14,6 @@ import {
   VerifyPasswordChangeFunc,
   VerifyRecoveryCodeFunc,
   ResendFunc,
-  OktaSignInFunc,
 } from '../../types'
 import { AccountRecovery } from '../AccountRecovery'
 import { ForgotPassword } from '../ForgotPassword'
@@ -28,8 +26,9 @@ import { Wrapper } from '../Wrapper'
 
 export type AuthProps = {
   onConfirmSignIn: ConfirmSignInFunc
-  onGoogleSignIn: GoogleSignInFunc
-  onOktaSignIn: OktaSignInFunc
+  onGoogleSignIn: () => void
+  onAppleSignIn: () => void
+  onOktaSignIn: () => void
   onRecoverPasswordRequest: RecoverPasswordRequestFunc
   onSendCustomChallengeAnswer: SendCustomChallengeAnswerFunc
   onSignIn: SignInFunc
@@ -62,6 +61,7 @@ function Routes({
   onCheckSaml,
   onConfirmSignIn,
   onGoogleSignIn,
+  onAppleSignIn,
   onOktaSignIn,
   onRecoverPasswordRequest,
   onSendCustomChallengeAnswer,
@@ -190,6 +190,7 @@ function Routes({
               fullWidth={fullWidth}
               onCheckSaml={onCheckSaml}
               onGoogleSignIn={onGoogleSignIn}
+              onAppleSignIn={onAppleSignIn}
               onOktaSignIn={onOktaSignIn}
               onSamlSignIn={handleSamlSignIn}
               onSignIn={handleSignIn}

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { useMediaQuery, Box, Divider } from '@mui/material'
+import { useMediaQuery, Box, Divider, Theme } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
@@ -21,7 +21,7 @@ export const AddPlatformPage: React.FC = () => {
   const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
-  const smallScreen = useMediaQuery(`(max-width:1000px)`)
+  const smallScreen = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
   const css = useStyles({ smallScreen })
 
   return (
@@ -32,7 +32,11 @@ export const AddPlatformPage: React.FC = () => {
           {platformObj.installation?.command && permissions?.includes('MANAGE') && (
             <>
               <Divider sx={{ marginTop: 4, width: '80%' }} />
-              <AddPlatformServices types={applicationTypes} onChange={type => setApplicationTypes(type)} />
+              <AddPlatformServices
+                types={applicationTypes}
+                onChange={type => setApplicationTypes(type)}
+                textAlign={{ xs: 'center', md: 'right' }}
+              />
               <AddPlatformTags tags={platformTags} onChange={tags => setPlatformTags(tags)} />
             </>
           )}
@@ -50,18 +54,21 @@ export const AddPlatformPage: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  icon: {
+  icon: ({ smallScreen }: any) => ({
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'flex-end',
+    alignItems: smallScreen ? 'center' : 'flex-end',
     maxWidth: 130,
     marginTop: spacing.md,
     marginRight: spacing.xl,
-  },
+    marginBottom: smallScreen ? spacing.lg : 0,
+  }),
   box: ({ smallScreen }: any) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    textAlign: smallScreen ? 'center' : undefined,
+    alignItems: smallScreen ? 'center' : undefined,
     borderLeft: smallScreen ? undefined : `1px solid ${palette.divider}`,
     paddingLeft: smallScreen ? 0 : spacing.xl,
     paddingTop: spacing.md,
@@ -70,6 +77,8 @@ const useStyles = makeStyles(({ palette }) => ({
     width: smallScreen ? '100%' : 650,
     '& .MuiAvatar-root': { marginTop: spacing.xxs },
     '& .MuiTypography-body2': { marginBottom: spacing.xs },
+    '& .MuiTypography-h3': smallScreen ? { paddingLeft: spacing.md, paddingRight: spacing.md } : undefined,
+
     // '& .MuiListItem-root': {
     //   minHeight: 80,
     //   minWidth: 575,

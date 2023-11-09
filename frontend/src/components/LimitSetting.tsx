@@ -98,7 +98,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
 
 const useStyles = makeStyles(({ palette }) => ({
   box: {
-    width: '70%',
+    maxWidth: 400,
     marginBottom: spacing.sm,
   },
   root: {

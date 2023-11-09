@@ -8,30 +8,21 @@ export type CognitoAuthProps = {
   onSignInSuccess: SignInSuccessFunc
   clientId?: string
   errorMessage?: string
-  redirectURL?: string
   hideCaptcha?: boolean
-  authService?: AuthService
+  authService: AuthService
   fullWidth?: boolean
 }
 
 export function CognitoAuth({
   onSignInSuccess,
-  clientId,
   errorMessage,
-  redirectURL,
   authService,
   hideCaptcha,
   fullWidth,
 }: CognitoAuthProps): JSX.Element {
   const [authUser, setAuthUser] = React.useState<CognitoUser>()
   const [loading, setLoading] = React.useState<boolean>(false)
-  const [cognito] = React.useState<AuthService>(
-    authService ||
-      new AuthService({
-        cognitoClientID: clientId,
-        redirectURL: redirectURL,
-      })
-  )
+  const [cognito] = React.useState<AuthService>(authService)
 
   React.useEffect(() => {
     handleCheckSignIn()
@@ -89,10 +80,6 @@ export function CognitoAuth({
     }
 
     return
-  }
-
-  async function handleGoogleSignIn(): Promise<any> {
-    return await cognito.googleSignIn()
   }
 
   async function handleSamlSignIn(domain: string): Promise<any> {
@@ -157,7 +144,8 @@ export function CognitoAuth({
       hideCaptcha={hideCaptcha}
       onCheckSaml={handleCheckSaml}
       onConfirmSignIn={handleConfirmSignIn}
-      onGoogleSignIn={handleGoogleSignIn}
+      onGoogleSignIn={() => cognito.googleSignIn()}
+      onAppleSignIn={() => cognito.appleSignIn()}
       onOktaSignIn={handleOktaSignIn}
       onRecoverPasswordRequest={handleRecoverPasswordRequest}
       onRecoverySignIn={handleRecoverySignIn}

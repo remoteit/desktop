@@ -1,5 +1,5 @@
 import React from 'react'
-import { isPortal } from '../services/Browser'
+import browser from '../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -16,8 +16,8 @@ export const ConnectionNotice: React.FC<{ className: string }> = ({ className })
 
   const clearConnectionsMessage = () => connections.set({ queueCount: 0, queueFinished: false })
 
-  const stopped = isPortal() ? 'disconnected' : 'stopped'
-  const started = isPortal() ? 'connected' : 'started'
+  const stopped = browser.hasBackend ? 'stopped' : 'disconnected'
+  const started = browser.hasBackend ? 'started' : 'connected' 
   let message = `${queueCount} connection${queueCount === 1 ? '' : 's'}`
   message += queueEnabling ? ` ${started}.` : ` ${stopped}.`
 

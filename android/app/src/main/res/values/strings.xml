@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Remote.It</string>
+    <string name="title_activity_main">Remote.It</string>
+    <string name="package_name">com.remoteit</string>
+    <string name="custom_url_scheme">remoteit</string>
+</resources>

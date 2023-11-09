@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
+import useMobileNavigation from '../hooks/useMobileNavigation'
 import { emit } from '../services/Controller'
+import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
@@ -22,10 +24,8 @@ import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
-import { OrganizationRolePage } from '../pages/OrganizationRolePage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
-import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
-import { OrganizationGuestPage } from '../pages/OrganizationGuestPage'
+import { OrganizationUserPage } from '../pages/OrganizationUserPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
@@ -47,10 +47,11 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
-import { isPortal, getOs } from '../services/Browser'
 import { NotificationsPage } from '../pages/NotificationsPage'
+import browser, { getOs } from '../services/Browser'
 
 export const Router: React.FC = () => {
+  useMobileNavigation()
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
@@ -161,12 +162,12 @@ export const Router: React.FC = () => {
       <Route path="/devices/setup">
         {registered ? (
           <Redirect to={`/devices/${thisId}`} />
-        ) : isPortal() ? (
-          <Redirect to={`/add/${os}`} />
-        ) : (
+        ) : browser.hasBackend ? (
           <Panel layout={layout}>
             <SetupDevice os={os} />
           </Panel>
+        ) : (
+          <Redirect to={`/add/${os}`} />
         )}
       </Route>
       <Route path="/devices/membership">
@@ -273,16 +274,7 @@ export const Router: React.FC = () => {
         </Panel>
       </Route>
       <Route path={['/organization/roles', '/organization/roles/:roleID']}>
-        <DynamicPanel
-          primary={<OrganizationRolesPage />}
-          secondary={
-            <Route path="/organization/roles/:roleID">
-              <OrganizationRolePage />
-            </Route>
-          }
-          layout={layout}
-          root="/organization"
-        />
+        <RolesRouter layout={layout} />
       </Route>
       <Route path="/organization/empty">
         <Panel layout={layout}>
@@ -315,7 +307,7 @@ export const Router: React.FC = () => {
               </Route>
 
               <Route path={['/organization/guests/:userID', '/organization/members/:userID']}>
-                <OrganizationGuestPage />
+                <OrganizationUserPage />
               </Route>
 
               <Route path="/organization/guests">

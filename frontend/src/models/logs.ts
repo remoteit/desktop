@@ -25,7 +25,7 @@ const defaultState: ILogState = {
   maxDate: undefined,
   minDate: undefined,
   deviceId: undefined,
-  fetching: true,
+  fetching: false,
   fetchingMore: false,
   eventsUrl: '',
   selectedDate: undefined,
@@ -42,13 +42,13 @@ const defaultState: ILogState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_: void, globalState) {
+    async fetch(_: void, state) {
       const { set } = dispatch.logs
-      const { deviceId, size, after, maxDate, minDate, events } = globalState.logs
-      const accountId = selectActiveAccountId(globalState)
+      const { deviceId, size, after, maxDate, minDate, events } = state.logs
+      const accountId = selectActiveAccountId(state)
       let items = after ? events.items : []
 
-      after ? set({ fetching: true }) : set({ fetchingMore: true })
+      after ? set({ fetchingMore: true }) : set({ fetching: true })
 
       let result, response
       if (deviceId) {
@@ -72,8 +72,8 @@ export default createModel<RootModel>()({
       set({ fetching: false, fetchingMore: false })
     },
 
-    async fetchUrl(_: void, globalState): Promise<string | undefined> {
-      const { deviceId, minDate, maxDate } = globalState.logs
+    async fetchUrl(_: void, state): Promise<string | undefined> {
+      const { deviceId, minDate, maxDate } = state.logs
       try {
         let result, response
         if (deviceId) {

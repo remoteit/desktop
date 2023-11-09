@@ -3,13 +3,13 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
-import { List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
+import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { ClaimDevice } from '../components/ClaimDevice'
-import { AddPlatform } from '../components/AddPlatform'
+import { AddQuickPlatform } from '../components/AddQuickPlatform'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { Gutters } from '../components/Gutters'
@@ -33,12 +33,12 @@ export const AddPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       gutterBottom
       header={
-        <Typography variant="h1" gutterBottom>
+        <Typography variant="h1" gutterBottom sx={{ marginRight: 4 }}>
           <Title>What do you want to connect to?</Title>
         </Typography>
       }
     >
-      <Gutters className={css.container}>
+      <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" paddingX={{ xs: 1, sm: 4 }}>
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <Divider />
@@ -60,7 +60,7 @@ export const AddPage: React.FC = () => {
         <List className={classnames(css.list, css.bigList)} dense disablePadding>
           <ListSubheader disableGutters>Quick add Command</ListSubheader>
           <Divider />
-          <AddPlatform />
+          <AddQuickPlatform />
         </List>
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
@@ -130,17 +130,12 @@ export const AddPage: React.FC = () => {
             <ClaimDevice />
           </ListItem>
         </List>
-      </Gutters>
+      </Stack>
     </Container>
   )
 }
 
 const useStyles = makeStyles(({ breakpoints }) => ({
-  container: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
-  },
   list: {
     minWidth: 200,
     display: 'flex',

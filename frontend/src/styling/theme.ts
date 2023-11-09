@@ -128,7 +128,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.xs,
             padding: `${spacing.sm}px ${spacing.md}px`,
             '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
-            '& + .MuiButton-root': { marginLeft: spacing.sm },
           },
           containedPrimary: {
             '&:hover': { backgroundColor: palette.primaryLight.main },
@@ -194,11 +193,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderColor: palette.grayLighter.main,
             color: palette.grayDarker.main,
           },
-        },
-      },
-      MuiSnackbar: {
-        styleOverrides: {
-          anchorOriginBottomLeft: { bottom: '80px !important', marginRight: spacing.lg },
         },
       },
       MuiSnackbarContent: {
@@ -302,7 +296,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: radius,
             '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
             '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
-            '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
+            // '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
             '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
             '& > .hoverHide, & > div > .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
             '&:hover': {
@@ -353,7 +347,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 60, color: palette.grayDark.main },
+          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main },
         },
       },
       MuiListItemText: {
@@ -636,7 +630,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiTableCell: {
         styleOverrides: {
-          root: { padding: `${spacing.xs}px ${spacing.xl}px`, borderBottom: `1px solid ${palette.grayLighter.main}` },
+          root: {
+            borderBottom: `1px solid ${palette.grayLighter.main}`,
+          },
+        },
+      },
+      MuiBottomNavigation: {
+        styleOverrides: {
+          root: { backgroundColor: palette.white.main },
         },
       },
     },

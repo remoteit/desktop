@@ -31,6 +31,7 @@ export const ChangePassword = () => {
       <form onSubmit={updatePassword} className={css.form}>
         <Gutters>
           <TextField
+            fullWidth
             variant="filled"
             type="password"
             label="Current Password"
@@ -59,7 +60,7 @@ export const ChangePassword = () => {
 const useStyles = makeStyles({
   form: {
     maxWidth: 422,
-    '& .MuiTextField-root': { marginRight: spacing.lg, minWidth: 350, marginBottom: spacing.sm },
+    '& .MuiTextField-root': { marginRight: spacing.lg, marginBottom: spacing.sm },
   },
 })
 

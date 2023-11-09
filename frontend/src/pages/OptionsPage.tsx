@@ -1,4 +1,5 @@
 import React from 'react'
+import browser from '../services/Browser'
 import { emit } from '../services/Controller'
 import { List, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -13,7 +14,6 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
 import { ColorChip } from '../components/ColorChip'
-import { isRemote } from '../services/Browser'
 import { Title } from '../components/Title'
 
 export const OptionsPage: React.FC = () => {
@@ -54,7 +54,7 @@ export const OptionsPage: React.FC = () => {
           ]}
           onChange={e => ui.setTheme(e.target.value as ApplicationState['ui']['themeMode'])}
         />
-        {isRemote() && (
+        {browser.isRemote && (
           <ListItemSetting
             confirm={!preferences.remoteUIOverride}
             label="Show full interface"

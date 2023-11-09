@@ -79,6 +79,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
         code={registrationCode}
         link={redirect && registrationCode ? `${decodeURIComponent(redirect)}&code=${registrationCode}` : undefined}
         label={platform.installation?.label}
+        sx={{ textAlign: 'left' }}
       />
     </List>
   )
@@ -87,7 +88,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
     codeBlock
   ) : (
     <>
-      <OrganizationIndicator avatarSize={42} marginBottom={3} />
+      <OrganizationIndicator avatarSize={42} marginBottom={3} display="inline-flex" />
       <Typography variant="h3" sx={{ marginBottom: 1 }}>
         {platform.installation?.qualifier},
         {codeOnly ? <> copy the code below:</> : <> run this command on your device:</>}

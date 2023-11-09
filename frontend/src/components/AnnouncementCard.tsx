@@ -9,7 +9,7 @@ import { spacing } from '../styling'
 const types = {
   GENERIC: 'Notice',
   SYSTEM: 'System Update',
-  RELEASE: 'New',
+  RELEASE: 'Release Note',
   SECURITY: 'Security Notice',
   COMMUNICATION: 'Announcement',
 }
@@ -68,7 +68,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, breakpoints }) => ({
   card: {
     width: 500,
     overflow: 'hidden',
@@ -77,6 +77,7 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: spacing.sm,
     backgroundColor: palette.grayLightest.main,
     '& .MuiButtonBase-root': { float: 'right' },
+    [breakpoints.down('sm')]: { marginLeft: 0, marginRight: 0, width: '100%' },
   },
   header: ({ unread }: { unread: boolean }) => ({
     transition: 'background-color 1s',
@@ -85,5 +86,6 @@ const useStyles = makeStyles(({ palette }) => ({
   media: {
     height: 150,
     backgroundColor: palette.primaryLight.main,
+    [breakpoints.down('sm')]: { height: 100 },
   },
 }))

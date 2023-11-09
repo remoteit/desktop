@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
+import browser from '../services/Browser'
 import classnames from 'classnames'
+import { useMediaQuery } from '@mui/material'
 import { spacing, Color } from '../styling'
 import { makeStyles } from '@mui/styles'
-
-const SCROLLBAR_WIDTH = 15
 
 export type BodyProps = {
   inset?: boolean
@@ -61,8 +61,9 @@ export const Body: React.FC<BodyProps> = ({
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, breakpoints }) => ({
   body: ({ scrollbarBackground, verticalOverflow, horizontalOverflow }: BodyProps) => {
+    const SCROLLBAR_WIDTH = browser.isMobile ? 0 : 15
     const background = scrollbarBackground ? palette[scrollbarBackground].main : palette.white.main
     return {
       flexGrow: 1,
@@ -78,6 +79,9 @@ const useStyles = makeStyles(({ palette }) => ({
         borderRadius: 8,
         border: `4px solid ${background}`,
         backgroundColor: `${background}`,
+      },
+      [breakpoints.down('sm')]: {
+        overflowX: 'hidden',
       },
       '& > *:first-of-type': horizontalOverflow ? { minHeight: '100.1%' } : undefined, // forces right scrollbar to appear (overflow: scroll causes extra padding)
       '&::after': verticalOverflow

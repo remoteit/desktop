@@ -8,13 +8,12 @@ import preferences from './preferences'
 import { getApplication } from './sharedCopy/applications'
 import ConnectionPool from './ConnectionPool'
 import EventBus from './EventBus'
-import Command from './Command'
 import Logger from './Logger'
 import LAN from './LAN'
 import user, { User } from './User'
 import cli from './cliInterface'
 import { hostName } from './sharedCopy/nameHelper'
-import { IP_PRIVATE } from './sharedCopy/constants'
+import { IP_PRIVATE, PROTOCOL } from './sharedCopy/constants'
 import { WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
@@ -68,4 +67,5 @@ export {
   LAN,
   IP_PRIVATE,
   WEB_DIR,
+  PROTOCOL,
 }

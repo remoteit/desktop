@@ -12,7 +12,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const { deviceID } = useParams<{ deviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const { fetching, device } = useSelector((state: ApplicationState) => ({
-    fetching: getDeviceModel(state).fetching || (device && state.logs.fetching) || state.ui.fetching,
+    fetching: getDeviceModel(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching,
     device: selectDevice(state, undefined, deviceID),
   }))
 

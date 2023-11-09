@@ -1,14 +1,101 @@
-import { IP_PRIVATE, PORTAL } from '../shared/constants'
+import { IP_PRIVATE, PORTAL, NODE_ENV } from '../shared/constants'
 import { ApplicationState, store } from '../store'
+import { fullVersion } from '../helpers/versionHelper'
+import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 
-const ELECTRON = 'electron'
-const BROWSER = 'browser'
-const DEVELOPMENT = 'development'
+function startLog() {
+  console.log(
+    `%c
 
-export function environment() {
-  if (window.location.origin.includes(':3000')) return DEVELOPMENT
-  if (isElectron()) return ELECTRON
-  return BROWSER
+         s t a r t i n g
+      ______ _____ ________ _______ ________ _____    __ _______ 
+    /  ____/  ___/        /   _   /__   ___/  ___/  /  /__   __/ 
+   /  /   /  ___/  /  /  /  /_/  /  /  /  /  ___/__/  /  /  /    
+  /__/   /_____/__/__/__/_______/  /__/  /_____/__/__/  /__/     
+
+  ${fullVersion()}
+  Set window.stateLogging = true to enable redux state logging
+
+  `,
+    'font-family:monospace'
+  )
+}
+
+class Environment {
+  isElectron: boolean = false
+  isMobile: boolean = false
+  isPortal: boolean = false
+  isRemote: boolean = false
+  isMac: boolean = false
+  isWindows: boolean = false
+  isIOS: boolean = false
+  isAndroid: boolean = false
+  hasBackend: boolean = false
+
+  constructor() {
+    this.isElectron = isElectron()
+    this.isMobile = isMobile()
+    this.isPortal = isPortal()
+    this.isRemote = isRemote()
+    this.isIOS = Capacitor.getPlatform() === 'ios'
+    this.isAndroid = Capacitor.getPlatform() === 'android'
+
+    this.isMac = isMac()
+    this.isWindows = isWindows()
+
+    this.hasBackend = !this.isPortal && !this.isMobile
+    console.log('Environment', this)
+    console.log('Build Environment', this.environment())
+  }
+
+  platform() {
+    if (this.isElectron) return 'electron'
+    if (this.isMobile) return 'mobile'
+    if (this.isPortal) return 'portal'
+    if (this.isRemote) return 'remote'
+    return 'unknown'
+  }
+
+  environment() {
+    return NODE_ENV
+  }
+}
+
+const browser = new Environment()
+export default browser
+
+startLog()
+
+function isPortal() {
+  return PORTAL || (!isElectron() && !isMobile() && window.location.port === '3000')
+}
+
+function isMobile() {
+  return Capacitor.isNativePlatform()
+}
+
+// limited remote management interface
+function isRemote() {
+  const { port, hostname } = window.location
+  return !(
+    isElectron() ||
+    isPortal() ||
+    isMobile() ||
+    ((port === '29999' || port === '29998') && hostname === IP_PRIVATE)
+  )
+}
+
+function isElectron() {
+  return navigator.userAgent.toLowerCase().includes('electron')
+}
+
+function isMac() {
+  return navigator.userAgent.toLowerCase().includes('mac')
+}
+
+function isWindows() {
+  return navigator.userAgent.toLowerCase().includes('win')
 }
 
 export function getOs(): Ios {
@@ -20,36 +107,6 @@ export function getOs(): Ios {
 export function agent() {
   const result = navigator.userAgent.match(/\(.*?\)/)
   return result?.length ? result[0] : ''
-}
-
-export function isPortal() {
-  return PORTAL || (!isElectron() && window.location.port === '3000')
-}
-
-// limited remote management interface
-export function isRemote() {
-  const { port, hostname } = window.location
-  return !(isElectron() || ((port === '29999' || port === '29998') && hostname === IP_PRIVATE) || isPortal())
-}
-
-export function isElectron() {
-  return navigator.userAgent.toLowerCase().includes('electron')
-}
-
-export function isMac() {
-  return navigator.userAgent.toLowerCase().includes('mac')
-}
-
-export function isWindows() {
-  return navigator.userAgent.toLowerCase().includes('win')
-}
-
-export function isHeadless() {
-  return !isElectron()
-}
-
-export function isDev() {
-  return environment() === DEVELOPMENT
 }
 
 // this is a function to save information per user session in local storage
@@ -73,12 +130,29 @@ export async function removeLocalStorage(state: ApplicationState, key: string) {
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 
-export function windowOpen(url?: string, target?: string) {
-  const { ui } = store.dispatch
+export async function windowOpen(url?: string, windowName?: string) {
+  console.log('WINDOW OPEN', url, windowName)
+  if (!url) return
+
+  if (browser.isMobile) {
+    await Browser.open({ url, windowName })
+    return
+  }
+
   try {
-    window.open(url, target)
+    window.open(url, windowName)
   } catch {
-    ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
+    store.dispatch.ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
+  }
+}
+
+export async function windowClose() {
+  if (browser.isMobile) {
+    try {
+      await Browser.close()
+    } catch (e) {
+      console.warn('NO BROWSER WINDOW OPEN', e)
+    }
   }
 }
 

@@ -1,9 +1,9 @@
 // import { createMemoDebugger } from '../helpers/utilHelper'
 import React from 'react'
+import browser from '../services/Browser'
 import classnames from 'classnames'
 import { MOBILE_WIDTH } from '../shared/constants'
 import { DeviceListContext } from '../services/Context'
-import { isPortal } from '../services/Browser'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from './ServiceContextualMenu'
@@ -86,7 +86,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 guide="deviceList"
                 placement="bottom"
                 startDate={new Date('2022-09-20')}
-                queueAfter={isPortal() ? 'addDevice' : 'registerMenu'}
+                queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
                 instructions={
                   <>
                     <Typography variant="h3" gutterBottom>

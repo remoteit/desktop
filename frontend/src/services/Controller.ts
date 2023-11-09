@@ -1,6 +1,6 @@
 import io, { Socket } from 'socket.io-client'
+import browser from '../services/Browser'
 import { store } from '../store'
-import { isPortal } from '../services/Browser'
 import { IBackendState } from '../models/backend'
 import { PORT, FRONTEND_RETRY_DELAY, IP_PRIVATE } from '../shared/constants'
 import { EventEmitter } from 'events'
@@ -47,7 +47,7 @@ class Controller extends EventEmitter {
     this.credentials = credentials
     this.handlers = getEventHandlers()
 
-    if (isPortal()) return
+    if (!browser.hasBackend) return
 
     this.socket = io(this.url, {
       transports: ['websocket'],
@@ -78,7 +78,7 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    if (!isPortal()) emit('authentication', this.credentials)
+    if (browser.hasBackend) emit('authentication', this.credentials)
   }
 
   // Retry open with delay, force skips delay
@@ -113,7 +113,7 @@ class Controller extends EventEmitter {
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     if (!this.socket?.connected) {
-      if (!isPortal()) this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
+      if (browser.hasBackend) this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
       return false
     }
     this.log('Controller emit', event, ...args)

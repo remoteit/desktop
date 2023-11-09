@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { selectNetworks } from '../selectors/networks'
-import { getDeviceModel } from '../selectors/devices'
+import { MOBILE_WIDTH } from '../shared/constants'
 import { selectLimitsLookup } from '../selectors/organizations'
-import { selectDefaultSelected } from '../selectors/ui'
-import { selectAllConnectionsCount } from '../selectors/connections'
-import { selectAnnouncements } from '../models/announcements'
+import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import {
+  Box,
   List,
   ListItem,
   ListItemButton,
@@ -17,30 +15,28 @@ import {
   Tooltip,
   Collapse,
   Chip,
+  useMediaQuery,
 } from '@mui/material'
-import { selectConnectionSessions } from '../selectors/connections'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
+import { useCounts } from '../hooks/useCounts'
 
 export const SidebarNav: React.FC = () => {
-  const { defaultSelected, unreadAnnouncements, connections, networks, active, devices, remoteUI, limits } =
-    useSelector((state: ApplicationState) => ({
-      defaultSelected: selectDefaultSelected(state),
-      unreadAnnouncements: selectAnnouncements(state, true).length,
-      connections: selectAllConnectionsCount(state),
-      networks: selectNetworks(state).length,
-      active: selectConnectionSessions(state).length,
-      devices: getDeviceModel(state).total,
-      remoteUI: isRemoteUI(state),
-      limits: selectLimitsLookup(state),
-    }))
+  const counts = useCounts()
+  const { defaultSelectedPage, remoteUI, limits, insets } = useSelector((state: ApplicationState) => ({
+    defaultSelectedPage: selectDefaultSelectedPage(state),
+    remoteUI: isRemoteUI(state),
+    limits: selectLimitsLookup(state),
+    insets: state.ui.layout.insets,
+  }))
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const [more, setMore] = useState<boolean>()
-  const css = useStyles({ active })
-  const pathname = path => defaultSelected[path] || path
+  const css = useStyles({ active: counts.active, insets })
+  const pathname = path => defaultSelectedPage[path] || path
 
   if (remoteUI)
     return (
@@ -58,57 +54,66 @@ export const SidebarNav: React.FC = () => {
 
   return (
     <List className={css.list}>
-      <ListItemLocation
-        title="Connections"
-        icon="arrow-right-arrow-left"
-        pathname={pathname('/connections')}
-        match="/connections"
-        dense
-      >
-        <ListItemSecondaryAction>
-          {!!connections && (
-            <Tooltip title={`${connections.toLocaleString()} Idle Connections`} placement="top" arrow>
-              <Chip size="small" label={connections.toLocaleString()} />
-            </Tooltip>
-          )}
-          {/* {!!active && (
-            <Tooltip
-              title={`${connections.toLocaleString()} Connections - ${active.toLocaleString()} Connected`}
-              placement="top"
-              arrow
-            >
-              <Chip
-                size="small"
-                label={active.toLocaleString()}
-                className={css.active}
-                variant="filled"
-                color="primary"
-              />
-            </Tooltip>
-          )} */}
-        </ListItemSecondaryAction>
-      </ListItemLocation>
-      <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" dense>
-        {!!devices && (
-          <ListItemSecondaryAction>
-            <Tooltip title="Total Devices" placement="top" arrow>
-              <Chip size="small" label={devices.toLocaleString()} />
-            </Tooltip>
-          </ListItemSecondaryAction>
-        )}
-      </ListItemLocation>
-      <ListItemLocation title="Networks" icon="chart-network" pathname={pathname('/networks')} match="/networks" dense>
-        <ListItemSecondaryAction>
-          {!!networks && (
-            <Tooltip title="Total Networks" placement="top" arrow>
-              <Chip size="small" label={networks.toLocaleString()} />
-            </Tooltip>
-          )}
-        </ListItemSecondaryAction>
-      </ListItemLocation>
+      {!mobile && (
+        <>
+          <ListItemLocation
+            title="Connections"
+            icon="arrow-right-arrow-left"
+            pathname={pathname('/connections')}
+            match="/connections"
+            dense
+          >
+            <ListItemSecondaryAction>
+              {!!counts.connections && (
+                <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
+                  <Chip size="small" label={counts.connections.toLocaleString()} />
+                </Tooltip>
+              )}
+              {!!counts.active && !counts.memberships && (
+                <Tooltip
+                  title={`${counts.connections.toLocaleString()} Connections - ${counts.active.toLocaleString()} Connected`}
+                  placement="top"
+                  arrow
+                >
+                  <Chip
+                    size="small"
+                    label={counts.active.toLocaleString()}
+                    className={css.active}
+                    variant="filled"
+                    color="primary"
+                  />
+                </Tooltip>
+              )}
+            </ListItemSecondaryAction>
+          </ListItemLocation>
+          <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" dense>
+            {!!counts.devices && (
+              <ListItemSecondaryAction>
+                <Tooltip title="Total Devices" placement="top" arrow>
+                  <Chip size="small" label={counts.devices.toLocaleString()} />
+                </Tooltip>
+              </ListItemSecondaryAction>
+            )}
+          </ListItemLocation>
+          <ListItemLocation
+            title="Networks"
+            icon="chart-network"
+            pathname={pathname('/networks')}
+            match="/networks"
+            dense
+          >
+            <ListItemSecondaryAction>
+              {!!counts.networks && (
+                <Tooltip title="Total Networks" placement="top" arrow>
+                  <Chip size="small" label={counts.networks.toLocaleString()} />
+                </Tooltip>
+              )}
+            </ListItemSecondaryAction>
+          </ListItemLocation>
+        </>
+      )}
       <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
-      <ListItemLocation title="Notifications" pathname="/announcements" icon="bell" badge={unreadAnnouncements} dense />
       <ListItem sx={{ marginTop: 2 }}>
         <ListItemButton onClick={() => setMore(!more)}>
           <Typography variant="subtitle2" color="grayDark.main">
@@ -122,26 +127,33 @@ export const SidebarNav: React.FC = () => {
         <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
         <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
-      {limits.support > 10 ? (
+      <Box className={css.footer}>
         <ListItemLocation
-          className={css.footer}
-          title="Contact"
-          onClick={() => dispatch.feedback.reset()}
-          pathname="/feedback"
-          icon="envelope-open-text"
+          title="Notifications"
+          pathname="/announcements"
+          icon="bell"
+          badge={counts.unreadAnnouncements}
           dense
         />
-      ) : (
-        <ListItemLink
-          title="Support Forum"
-          href="https://link.remote.it/forum"
-          icon="comments"
-          className={css.footer}
-          dense
-        />
-      )}
+        {limits.support > 10 ? (
+          <ListItemLocation
+            title="Contact"
+            onClick={() => dispatch.feedback.reset()}
+            pathname="/feedback"
+            icon="envelope-open-text"
+            dense
+          />
+        ) : (
+          <ListItemLink title="Support Forum" href="https://link.remote.it/forum" icon="comments" dense />
+        )}
+      </Box>
     </List>
   )
+}
+
+type StyleProps = {
+  active: number
+  insets: ILayout['insets']
 }
 
 const useStyles = makeStyles(({ palette }) => ({
@@ -160,7 +172,7 @@ const useStyles = makeStyles(({ palette }) => ({
       },
     },
   },
-  connections: ({ active }: { active: number }) => ({
+  connections: ({ active }: StyleProps) => ({
     borderTopRightRadius: active ? 0 : undefined,
     borderBottomRightRadius: active ? 0 : undefined,
     paddingRight: active ? spacing.xs : undefined,
@@ -168,10 +180,11 @@ const useStyles = makeStyles(({ palette }) => ({
   active: {
     fontWeight: 500,
   },
-  footer: {
+  footer: ({ insets }: StyleProps) => ({
+    width: '100%',
     position: 'fixed',
-    bottom: spacing.lg,
+    bottom: insets.bottom || spacing.lg,
     backgroundColor: palette.grayLighter.main,
     zIndex: 3,
-  },
+  }),
 }))

@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo } from 'react'
+import browser from '../services/Browser'
 import { Store } from '../store'
 import { AIRBRAKE_ID, AIRBRAKE_KEY } from '../shared/constants'
-import { environment } from '../services/Browser'
 import { Notifier } from '@airbrake/browser'
 import { version } from '../helpers/versionHelper'
 import '../styling/error.css'
@@ -22,7 +22,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   private airbrake = new Notifier({
     projectId: AIRBRAKE_ID,
     projectKey: AIRBRAKE_KEY,
-    environment: environment(),
+    environment: browser.environment(),
   })
 
   constructor(props: ErrorBoundaryProps) {

@@ -141,6 +141,13 @@ npm start
 
 Command+option+I to open with dev tools.
 
+### Mobile Development
+
+```shell
+  npm run frontend
+  npm run mobile-ios
+```
+
 ## Testing
 
 Tests are written using Jest.
@@ -177,7 +184,7 @@ Will need to Install:
 - Git Bash
 - VS Code (recommended)
 
-To build the whole app for production: `npm run build --arch = 'XXX' ` (possible options: win, mac, linux, armv7l, arm64)
+To build the whole app for production: `npm run build --arch = 'XXX'` (possible options: win, mac, linux, armv7l, arm64)
 
 - But this requires the physical signing key.
   To build without signing you must remove the signing credentials from `package.json`
@@ -193,6 +200,44 @@ To build the whole app for production: `npm run build --arch = 'XXX' ` (possible
 
 To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
 The final build will be produced in the `dist` directory
+
+### Generating Mobile Assets
+
+``` shell
+npx @capacitor/assets generate --iconBackgroundColor '#0096e7' --splashBackgroundColor '#0096e7' --android --ios
+```
+
+### Release iOS
+
+``` shell
+npm run build-mobile
+npm run open-ios
+```
+
+In XCode:
+
+1. Select "Any iOS Device"
+2. Select "Product" > "Archive"
+3. Select "Distribute App"
+
+### Release Android
+
+``` shell
+npm run build-mobile
+npm run open-android
+```
+
+To build the signed android app you will need to place the following files
+
+- `/android/key.properties`
+- `/android/androiduploadkey.jks`
+
+In android studio:
+
+- build > Generate signed bundle
+- select aab
+
+Upload to google play console
 
 ### Packaging
 

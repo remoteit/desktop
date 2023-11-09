@@ -78,12 +78,12 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <MuiIconButton
         ref={ref}
+        disabled={disabled}
+        size={buttonBaseSize}
         onClick={clickHandler}
         onMouseDown={onMouseDown}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        disabled={disabled}
-        size={buttonBaseSize}
         className={classnames(className, variant && css[variant])}
         type={submit ? 'submit' : undefined}
         style={{
@@ -128,5 +128,4 @@ const useStyles = makeStyles(({ palette }) => ({
   outlined: ({ color = 'primary' }: IconProps) => ({
     border: `1px solid ${palette[color].main}`,
   }),
-  text: {},
 }))

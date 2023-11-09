@@ -41,15 +41,14 @@ export const OrganizationSelect: React.FC = () => {
   const ownOrgId = ownOrg?.id
   const onSelect = async (id: string) => {
     const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
-    if (id) {
-      await logs.reset()
-      await accounts.setActive(id.toString())
-      networks.fetchIfEmpty()
-      devices.fetchIfEmpty()
-      tags.fetchIfEmpty()
-      if (['/devices', '/networks', '/connections'].includes(menu)) {
-        history.push(defaultSelection[id]?.[menu] || menu)
-      }
+    id = id || userId
+    await logs.reset()
+    await accounts.setActive(id.toString())
+    networks.fetchIfEmpty()
+    devices.fetchIfEmpty()
+    tags.fetchIfEmpty()
+    if (['/devices', '/networks', '/connections'].includes(menu)) {
+      history.push(defaultSelection[id]?.[menu] || menu)
     }
   }
 

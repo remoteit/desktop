@@ -1,10 +1,10 @@
 import { ApplicationState } from '../store'
-import { isRemote, isPortal } from '../services/Browser'
 import seedRandom from 'seedrandom'
+import browser from '../services/Browser'
 
 export function isRemoteUI(state: ApplicationState) {
   const { preferences } = state.backend
-  return isRemote() && !preferences.remoteUIOverride && !isPortal()
+  return browser.isRemote && !preferences.remoteUIOverride
 }
 
 export function createColor(email?: string) {

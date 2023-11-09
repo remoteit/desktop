@@ -7,7 +7,7 @@ import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../shared/constants'
 import { ApplicationState } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
+import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -40,6 +40,7 @@ export type UIState = {
   selected: IDevice['id'][]
   connected: boolean
   offline?: { severity: NoticeProps['severity']; title: string; message: NoticeProps['children'] }
+  mobileNavigation: string[]
   waitMessage?: string
   claiming: boolean
   fetching: boolean
@@ -100,11 +101,19 @@ export const defaultState: UIState = {
   themeMode: 'system',
   themeDark: isDarkMode(),
   testUI: undefined,
-  layout: { showOrgs: false, hideSidebar: false, singlePanel: false, sidePanelWidth: SIDEBAR_WIDTH },
+  layout: {
+    mobile: false,
+    showOrgs: false,
+    hideSidebar: false,
+    singlePanel: false,
+    sidePanelWidth: SIDEBAR_WIDTH,
+    insets: { top: 0, left: 0, bottom: 0, right: 0 },
+  },
   silent: null,
   selected: [],
   connected: false,
   offline: undefined,
+  mobileNavigation: [],
   waitMessage: undefined,
   claiming: false,
   fetching: false,
@@ -279,7 +288,7 @@ export default createModel<RootModel>()({
       })
     },
     async deprecated(_: void, state) {
-      if (!isElectron() || isHeadless()) return
+      if (!browser.isElectron) return
       const { preferences } = state.backend
       dispatch.ui.set({
         errorMessage: 'This version of Desktop is no longer supported. It should auto update shortly.',

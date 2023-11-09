@@ -90,29 +90,29 @@ export default createModel<RootModel>()({
       console.log('SESSION DATA', data)
       const dates = data.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
-      return sorted.reduce((sessions: ISession[], e: any) => {
+      return sorted.reduce((sessions: ISession[], s: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
-        const anonymous = e.endpoint.manufacturer === PUBLIC_PROXY_MANUFACTURER_CODE
-        if (!e.endpoint) return sessions
+        const anonymous = s.endpoint.manufacturer === PUBLIC_PROXY_MANUFACTURER_CODE
+        if (!s.endpoint) return sessions
         sessions.push({
           anonymous,
-          id: e.id,
-          timestamp: new Date(e.timestamp),
-          source: e.source,
-          isP2P: !e.endpoint.proxy,
-          platform: e.endpoint.platform,
-          user: anonymous ? { id: 'ANON', email: 'Anonymous User' } : e.user,
-          geo: e.endpoint.geo,
+          id: s.id,
+          timestamp: new Date(s.timestamp),
+          source: s.source,
+          isP2P: !s.endpoint.proxy,
+          platform: s.endpoint.platform,
+          user: anonymous ? { id: 'ANON', email: 'Anonymous User' } : s.user,
+          geo: s.endpoint.geo,
           target: {
-            id: e.target.id,
+            id: s.target.id,
             accountId: accountFromDevice(
               state,
-              e.target.owner.id,
-              e.target.device.access.map(a => a.user.id)
+              s.target.owner.id,
+              s.target.device.access.map(a => a.user.id)
             ),
-            deviceId: e.target.device.id,
-            platform: e.target.platform,
-            name: combinedName(e.target, e.target.device),
+            deviceId: s.target.device.id,
+            platform: s.target.platform,
+            name: combinedName(s.target, s.target.device),
           },
         })
         return sessions

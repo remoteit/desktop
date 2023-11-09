@@ -29,7 +29,7 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
     if (device) name += ' - '
     name += attributeName(service)
   }
-  if (connection?.name && menu && menu[0] === '/networks') name = connection.name
+  if (connection?.name && menu?.[0] === '/networks') name = connection.name
 
   return (
     <Title inline={inline} offline={service?.state === 'inactive'}>

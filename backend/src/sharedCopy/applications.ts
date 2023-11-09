@@ -86,10 +86,12 @@ export class Application {
   }
 
   get launchTemplate() {
+    if (this.connection?.connectLink) return this.resolvedDefaultLaunchTemplate
     return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
   }
 
   get commandTemplate() {
+    if (this.connection?.connectLink) return this.resolvedDefaultCommandTemplate
     return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
   }
 
@@ -227,7 +229,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   app.cloudData = getCloudData(typeID)
 
   // Handle connect links
-  if (connection?.connectLink && service?.link?.url) {
+  if (app.connection?.connectLink && service?.link?.url) {
     const url = service.link.url
     app.title = app.reverseProxy ? 'Public' : 'Unauthenticated'
     app.canShare = true

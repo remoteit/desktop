@@ -1,5 +1,5 @@
 import React from 'react'
-import { isPortal } from '../services/Browser'
+import browser from '../services/Browser'
 import { Application } from '../shared/applications'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
@@ -27,7 +27,7 @@ export const CustomConnectionSettings: React.FC<Props> = ({
   return (
     <>
       {app.customTokens.map(token =>
-        isFileToken(token) && !isPortal() ? (
+        isFileToken(token) && browser.hasBackend ? (
           <InlineFileFieldSetting
             key={token}
             token={token}

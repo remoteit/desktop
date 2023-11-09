@@ -1,7 +1,6 @@
 import React from 'react'
 import ReCAPTCHA from 'reaptcha'
-
-const SITE_KEY = String(process.env.RECAPTCHA_SITE_KEY || '6Ldt3W4UAAAAAFtJAA4erruG9zT9TCOulJHO4L5e')
+import { RECAPTCHA_SITE_KEY } from '../../../shared/constants'
 
 export type CaptchaProps = {
   id?: string
@@ -9,5 +8,5 @@ export type CaptchaProps = {
 }
 
 export function Captcha({ ...props }: CaptchaProps): JSX.Element {
-  return <ReCAPTCHA sitekey={SITE_KEY} {...props} />
+  return <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} {...props} />
 }

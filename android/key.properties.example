@@ -1,0 +1,4 @@
+storePassword=<store_pass>
+keyPassword=<key_pass>
+keyAlias=androiduploadkey
+storeFile=../../androiduploadkey.jks

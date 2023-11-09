@@ -20,6 +20,7 @@ export interface Props {
   platform?: number
   enabled?: boolean
   anonymous?: boolean
+  reverseProxy?: boolean
   networkEnabled?: boolean
   children?: React.ReactNode
 }
@@ -35,6 +36,7 @@ export const ConnectionListItem: React.FC<Props> = ({
   platform,
   enabled,
   anonymous,
+  reverseProxy,
   networkEnabled,
   children,
 }) => {
@@ -45,7 +47,8 @@ export const ConnectionListItem: React.FC<Props> = ({
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
-  if (connection?.connectLink || anonymous) icon = <Icon color={color} name="globe" type="solid" size="xxs" />
+  if (connection?.connectLink || anonymous)
+    icon = <Icon color={color} name={reverseProxy ? 'globe' : 'key'} type="solid" size="xxs" />
 
   return (
     <ListItemLocation
@@ -82,9 +85,9 @@ export const useStyles = makeStyles(({ palette }) => ({
     borderBottomStyle: connected ? 'solid' : 'dotted',
     borderStyle: 'solid',
     height: '2.7em',
-    width: '1.5em',
+    width: '1.4em',
     marginTop: '-2.7em',
-    marginRight: '-1.5em',
+    marginRight: '-1.4em',
   }),
   hover: {
     position: 'absolute',
@@ -101,7 +104,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   },
   connectIcon: {
     position: 'relative',
-    '& > svg': { position: 'absolute', right: 6, transform: 'translate(0px, -55%)' },
+    '& > svg': { position: 'absolute', right: 2, transform: 'translate(0px, -55%)' },
   },
   platform: {
     minWidth: 48,

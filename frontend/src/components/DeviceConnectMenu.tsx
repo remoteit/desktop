@@ -1,6 +1,6 @@
 import classnames from 'classnames'
 import React, { useState, useContext } from 'react'
-import { isPortal } from '../services/Browser'
+import browser from '../services/Browser'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -28,11 +28,11 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
   const clickHandler = event => {
     event.stopPropagation()
     event.preventDefault()
-    if (isPortal()) {
+    if (browser.hasBackend) {
+      allHandler()
+    } else {
       setAnchorEl(event.currentTarget)
       setMenuWidth(event.currentTarget.offsetWidth)
-    } else {
-      allHandler()
     }
   }
 
@@ -119,12 +119,12 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
             <Icon name={connection?.enabled ? 'stop' : 'forward'} type="solid" color="primary" />
           </ListItemIcon>
           {connection?.enabled
-            ? isPortal()
-              ? 'Disconnect all'
-              : 'Stop all'
-            : isPortal()
-            ? 'Connect all'
-            : 'Start all'}
+            ? browser.hasBackend
+              ? 'Stop all'
+              : 'Disconnect all'
+            : browser.hasBackend
+            ? 'Start all'
+            : 'Connect all'}
           &nbsp;
         </MenuItem>
       </Menu>

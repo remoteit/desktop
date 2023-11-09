@@ -12,6 +12,8 @@ export function SignInForm() {
     setTimeout(() => auth.handleSignInSuccess(user), 100)
   }
 
+  if (!authService) return null
+
   return (
     <CognitoAuth
       fullWidth

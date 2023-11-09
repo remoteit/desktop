@@ -9,7 +9,7 @@ export const Panel: React.FC<Props> = ({ layout, children }) => {
 
   return (
     <div className={css.panel}>
-      <Header breadcrumbs={layout.singlePanel} />
+      <Header breadcrumbs={layout.singlePanel && !layout.mobile} />
       {children}
     </div>
   )

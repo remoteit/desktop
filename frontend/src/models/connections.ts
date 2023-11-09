@@ -2,6 +2,7 @@ import structuredClone from '@ungap/structured-clone'
 import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
+import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { DEFAULT_CONNECTION, REGEX_HIDDEN_PASSWORD, IP_PRIVATE, CERTIFICATE_DOMAIN } from '../shared/constants'
 import {
   cleanOrphanConnections,
@@ -11,7 +12,6 @@ import {
   getConnectionLookup,
   updateImmutableData,
 } from '../helpers/connectionHelper'
-import { getLocalStorage, setLocalStorage, isPortal } from '../services/Browser'
 import {
   graphQLConnect,
   graphQLDisconnect,
@@ -347,7 +347,6 @@ export default createModel<RootModel>()({
       setConnection({
         ...creating,
         updating: undefined,
-        password: data?.password,
         enabled: !!data?.enabled,
         createdTime: new Date(data.created).getTime(),
         port: url.port ? parseInt(url.port, 10) : undefined,
@@ -398,7 +397,7 @@ export default createModel<RootModel>()({
       connection.enabled = true
       connection.ready = false
 
-      if (connection.public || isPortal()) {
+      if (connection.public || !browser.hasBackend) {
         dispatch.connections.proxyConnect(connection)
         return
       }
@@ -418,7 +417,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connection.public || isPortal()) {
+      if (connection.public || !browser.hasBackend) {
         dispatch.connections.proxyDisconnect(connection)
         return
       }

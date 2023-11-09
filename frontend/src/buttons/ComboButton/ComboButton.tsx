@@ -1,9 +1,9 @@
 import React from 'react'
+import browser, { windowOpen } from '../../services/Browser'
 import { PROTOCOL } from '../../shared/constants'
 import { makeStyles } from '@mui/styles'
 import { ConnectButton } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'
-import { windowOpen, isPortal } from '../../services/Browser'
 import { Notice } from '../../components/Notice'
 
 type Props = {
@@ -21,7 +21,7 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
   const css = useStyles(props.fullWidth)()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
-      {props.service?.attributes.route === 'p2p' && isPortal() ? (
+      {props.service?.attributes.route === 'p2p' && !browser.hasBackend ? (
         <div>
           <Notice fullWidth severity="info" gutterBottom>
             {props.size === 'small' ? (
@@ -29,11 +29,11 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
             ) : (
               <>
                 You cannot make a proxy connection to this service, it is set to peer to peer only.
-                {!isPortal() && <i> Please try again in a few minutes.</i>}
+                {browser.hasBackend && <i> Please try again in a few minutes.</i>}
               </>
             )}
           </Notice>
-          {isPortal() && (
+          {browser.isPortal && (
             <DynamicButton
               {...props}
               title="Launch Desktop"

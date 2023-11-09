@@ -104,7 +104,7 @@ const useStyles = makeStyles(({ palette }) => ({
   card: ({ wide, selected }: StyleProps) => ({
     display: 'flex',
     width: '100%',
-    maxWidth: wide ? 840 : 280,
+    maxWidth: 840,
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',

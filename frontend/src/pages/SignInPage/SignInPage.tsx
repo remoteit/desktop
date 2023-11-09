@@ -1,9 +1,9 @@
 import React from 'react'
+import browser from '../../services/Browser'
 import { Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { SignInForm } from '../../components/SignInForm'
 import { IP_PRIVATE } from '../../shared/constants'
-import { isElectron } from '../../services/Browser'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import { Link } from '../../components/Link'
@@ -12,7 +12,8 @@ import { spacing } from '../../styling'
 export function SignInPage() {
   const css = useStyles()
   const { hostname, protocol } = window.location
-  const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== IP_PRIVATE && hostname
+  const allowSwitch =
+    !browser.isElectron && !browser.isMobile && hostname !== 'localhost' && hostname !== IP_PRIVATE && hostname
   const secure: boolean = protocol.includes('https')
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
 

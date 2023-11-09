@@ -85,7 +85,7 @@ export const OrganizationPage: React.FC = () => {
         <ListItemLocation
           title="Roles"
           icon="user-shield"
-          pathname={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`}
+          pathname="/organization/roles"
           disabled={!admin}
           showDisabled
           dense
