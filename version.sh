@@ -37,6 +37,11 @@ update_android_version() {
 
 set -x
 
+# Update the electron version
+cd electron
+npm version $1 --no-git-tag-version
+cd ../
+
 # Update the iOS version
 update_ios_version $1
 
@@ -44,7 +49,7 @@ update_ios_version $1
 update_android_version $1
 
 # Install dependencies and add the changes
-npm install
+npm install --legacy-peer-deps
 git add --all
 
 set +x

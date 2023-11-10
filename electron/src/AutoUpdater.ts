@@ -1,4 +1,3 @@
-import electron from 'electron'
 import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 

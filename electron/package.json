@@ -1,15 +1,12 @@
 {
-  "name": "remoteit-electron",
+  "name": "remoteit",
   "version": "3.24.0-beta.4",
   "private": true,
   "main": "build/index.js",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "run-s clean build-backend install-binaries compile copy-*",
-    "build-dev": "run-s clean build-backend install-binaries compile copy-* build-electron",
-    "build-backend": "cd ../backend && npm run build",
-    "build-frontend": "cd ../frontend && npm run build",
-    "build-electron": "electron-builder",
+    "build": "run-s clean install-* copy-* compile",
+    "build-electron": "cross-env NODE_ARCH=$npm_config_arch electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R src/icons build/",
@@ -17,6 +14,9 @@
     "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
+    "postinstall": "run-s install-*",
+    "install-electron": "electron-builder install-app-deps",
+    "install-binaries": "sh ./scripts/build.sh",
     "start": "npm-run-all -l -n -p copy-* watch-*",
     "watch-backend": "cd ../backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
@@ -25,13 +25,22 @@
   },
   "dependencies": {
     "electron-updater": "^6.1.4",
-    "remoteit-headless": "file:../backend"
+    "remoteit-headless": "file:../backend/build"
   },
   "devDependencies": {
     "@electron/notarize": "^2.1.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.3.1",
     "electron": "^27.0.4",
     "electron-builder": "^24.6.4",
-    "rimraf": "^3.0.2"
+    "npm-run-all": "4.1.5",
+    "onchange": "^7.1.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^5.2.2"
+  },
+  "repository": {
+    "url": "git+ssh://git@github.com/remoteit/desktop.git",
+    "type": "git"
   },
   "build": {
     "appId": "it.remote.desktop",
@@ -100,7 +109,7 @@
     },
     "extraResources": [
       {
-        "from": "./backend/src/cli-version.json",
+        "from": "../backend/src/cli-version.json",
         "to": "./"
       },
       {
@@ -110,8 +119,7 @@
     ],
     "files": [
       "build/**/*",
-      "node_modules/**/*",
-      "frontend/build/**/*"
+      "node_modules/**/*"
     ]
   }
 }

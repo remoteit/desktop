@@ -44,6 +44,7 @@ jobs:
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
+          build_script_name: build-desktop
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
 
