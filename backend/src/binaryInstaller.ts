@@ -112,7 +112,7 @@ export class BinaryInstaller {
     toDelete.forEach(file => {
       try {
         Logger.info('REMOVING FILE', { file })
-        rimraf.sync(file, { disableGlob: true })
+        rimraf.sync(file)
       } catch (e) {
         Logger.warn('FILE REMOVAL FAILED', { file })
       }

@@ -1,0 +1,117 @@
+{
+  "name": "remoteit-electron",
+  "version": "3.24.0-beta.4",
+  "private": true,
+  "main": "build/index.js",
+  "description": "Remote.It cross platform desktop application for creating and hosting connections",
+  "scripts": {
+    "build": "run-s clean build-backend install-binaries compile copy-*",
+    "build-dev": "run-s clean build-backend install-binaries compile copy-* build-electron",
+    "build-backend": "cd ../backend && npm run build",
+    "build-frontend": "cd ../frontend && npm run build",
+    "build-electron": "electron-builder",
+    "clean": "rimraf build/* dist/*",
+    "compile": "tsc",
+    "copy-icons": "cp -R src/icons build/",
+    "copy-images": "cp -R src/images build/",
+    "copy-install": "cp installer.nsh build/",
+    "copy-entitlements": "cp entitlements.mac.plist build/",
+    "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
+    "start": "npm-run-all -l -n -p copy-* watch-*",
+    "watch-backend": "cd ../backend && npm run watch",
+    "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
+    "watch-build": "tsc --watch",
+    "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' '../backend/build/**/*' -- npm run electron"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.4",
+    "remoteit-headless": "file:../backend"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.1.0",
+    "electron": "^27.0.4",
+    "electron-builder": "^24.6.4",
+    "rimraf": "^3.0.2"
+  },
+  "build": {
+    "appId": "it.remote.desktop",
+    "copyright": "remot3.it, Inc",
+    "productName": "Remote.It",
+    "artifactName": "${productName}-Installer-${arch}.${ext}",
+    "afterSign": "scripts/notarize.js",
+    "generateUpdatesFilesForAllChannels": true,
+    "win": {
+      "sign": "./scripts/sign.js",
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "arm64",
+            "ia32",
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "deleteAppDataOnUninstall": true,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "category": "Network",
+      "packageCategory": "net",
+      "target": [
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "armv7l",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "darkModeSupport": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      },
+      "target": [
+        {
+          "target": "default",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "extraResources": [
+      {
+        "from": "./backend/src/cli-version.json",
+        "to": "./"
+      },
+      {
+        "from": "./bin/${arch}",
+        "to": "./"
+      }
+    ],
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "frontend/build/**/*"
+    ]
+  }
+}

@@ -37,16 +37,6 @@ update_android_version() {
 
 set -x
 
-# Update the frontend version
-cd frontend
-npm version $1 --no-git-tag-version
-cd ../
-
-# Update the backend version
-cd backend
-npm version $1 --no-git-tag-version
-cd ../
-
 # Update the iOS version
 update_ios_version $1
 
@@ -54,7 +44,6 @@ update_ios_version $1
 update_android_version $1
 
 # Install dependencies and add the changes
-npm i --legacy-peer-deps
 npm install
 git add --all
 

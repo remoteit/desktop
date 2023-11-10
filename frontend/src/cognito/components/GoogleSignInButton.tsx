@@ -5,7 +5,16 @@ export type GoogleSignInButtonProps = Omit<ButtonProps, 'children'>
 
 export function GoogleSignInButton(props: GoogleSignInButtonProps): JSX.Element {
   return (
-    <Button {...props} variant="contained" sx={{ color: 'white.main', bgcolor: 'grayDarkest.main', padding: 1 }}>
+    <Button
+      {...props}
+      variant="contained"
+      sx={{
+        color: 'white.main',
+        bgcolor: 'grayDarkest.main',
+        padding: 1,
+        '&:hover': { bgcolor: 'black.main' },
+      }}
+    >
       <svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1">
         <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
           <g id="google" transform="translate(11.000000, 11.000000)">
