@@ -4,6 +4,12 @@
   "private": true,
   "main": "build/index.js",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
+  "homepage": "https://app.remote.it",
+  "license": "MIT",
+  "author": {
+    "name": "Remote.It",
+    "email": "support@remote.it"
+  },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s copy-env build-frontend build-backend clean install-* copy-* compile",
     "build-dev": "cross-env NODE_ENV=production run-s copy-env build-frontend build-backend clean install-* copy-* compile build-electron",
