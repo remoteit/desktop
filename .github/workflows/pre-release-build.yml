@@ -27,10 +27,10 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
       - name: Set npm version
-        run: npm install -g npm@8
+        run: npm install -g npm@10
 
       - name: Authenticate with fontawesome NPM repo
         run: |
