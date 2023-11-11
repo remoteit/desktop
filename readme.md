@@ -209,6 +209,9 @@ For electron app icon
 
 ``` shell
 ./electron/scripts/icns-creator assets/app-icon.png
+mv -f ./iconbuilder.iconset/* ./electron/src/icons
+mv -f iconbuilder.icns ./electron/src/icons/icon.icns
+rm -rf iconbuilder.iconset
 ```
 
 Then move all the generated icons to `electron/src/icons`
