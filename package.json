@@ -9,8 +9,6 @@
   ],
   "scripts": {
     "build-backend": "npm run build -w=backend",
-    "build-desktop": "cross-env NODE_ENV=production run-s copy-env build-frontend build-backend build-electron",
-    "build-desktop-dev": "cross-env NODE_ENV=development run-s copy-env build-frontend build-backend build-electron electron-builder",
     "build-electron": "cd electron/ && npm run build",
     "build-frontend": "npm run build -w=frontend",
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
@@ -22,7 +20,7 @@
     "mobile-sync": "npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
-    "postinstall": "npm run build-backend && cd electron && npm install",
+    "postinstall": "cd electron && npm install",
     "start": "npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",

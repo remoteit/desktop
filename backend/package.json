@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s clean copy-* compile",
-    "copy-frontend": "mkdir -p ../frontend/build && cp -R ../frontend/build/* ./build",
+    "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
     "copy-shared": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/*",
     "clean": "rimraf build && mkdir build",
     "compile": "tsc",
@@ -66,29 +66,5 @@
     "build",
     "scripts",
     "ssl"
-  ],
-  "bundledDependencies": [
-    "@airbrake/node",
-    "@vscode/sudo-prompt",
-    "axios",
-    "cors",
-    "debug",
-    "detect-rpi",
-    "dotenv",
-    "escape-string-regexp",
-    "express",
-    "is-electron",
-    "is-elevated",
-    "is-port-reachable",
-    "lodash.isequal",
-    "netmask",
-    "network",
-    "plist",
-    "rimraf",
-    "semver",
-    "socket.io",
-    "socketio-auth",
-    "win-ca",
-    "winston"
   ]
 }
