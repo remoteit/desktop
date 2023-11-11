@@ -25,7 +25,7 @@
     "start": "npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",
-    "version": "npm version $npm_package_version --workspaces && sh scripts/version.sh $npm_package_version",
+    "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version",
     "watch-backend": "npm run watch -w=backend",
     "watch-build": "tsc --watch",
     "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron",
