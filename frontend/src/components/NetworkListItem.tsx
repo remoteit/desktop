@@ -12,7 +12,6 @@ export interface Props {
   network?: INetwork
   connectionsPage?: boolean
   fallbackName?: string
-  external?: boolean
   children?: React.ReactNode
 }
 
@@ -21,7 +20,6 @@ export const NetworkListItem: React.FC<Props> = ({
   serviceId,
   session,
   fallbackName,
-  external,
   connectionsPage,
   children,
 }) => {
@@ -32,11 +30,12 @@ export const NetworkListItem: React.FC<Props> = ({
     return { service, device, connection, reverseProxy }
   })
 
+  const external = session?.id && session.id !== connection.sessionId
   const offline = service?.state !== 'active' && !external
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connectionsPage) pathname = `/connections/${serviceId}/${session?.id || 'none'}`
   const match = pathname
-  pathname += connection && !session?.anonymous ? '/connect' : '/other'
+  pathname += connection && !session?.anonymous && !external ? '/connect' : '/other'
 
   return (
     <ConnectionListItem
