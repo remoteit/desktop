@@ -10,6 +10,7 @@
   "scripts": {
     "build-backend": "npm run build -w=backend",
     "build-electron": "cd electron/ && npm run build",
+    "build-electron-dev": "cd electron/ && npm run build-dev",
     "build-frontend": "npm run build -w=frontend",
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "cp .env frontend/ && cp .env backend/ && cp .env electron/",
