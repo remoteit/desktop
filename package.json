@@ -1,46 +1,35 @@
 {
-  "name": "remoteit",
-  "version": "3.24.0-beta.4",
+  "name": "remoteit-capacitor",
+  "version": "3.24.0-beta.5",
   "private": true,
-  "main": "build/index.js",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
-    "build": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-*",
-    "build-dev": "cross-env NODE_ARCH=$npm_config_arch NODE_ENV=development NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-env build-backend install-binaries compile copy-* build-electron",
-    "build-backend": "cd backend && npm run build",
-    "build-frontend": "cd frontend && npm run build",
-    "build-electron": "electron-builder",
+    "build-backend": "npm run build -w=backend",
+    "build-electron": "cd electron/ && npm run build",
+    "build-electron-dev": "cd electron/ && npm run build-dev",
+    "build-frontend": "npm run build -w=frontend",
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
-    "clean": "rimraf build/* dist/*",
-    "compile": "tsc",
-    "copy-env": "cp .env frontend/ && cp .env backend/",
-    "copy-icons": "cp -R src/icons build/",
-    "copy-images": "cp -R src/images build/",
-    "copy-install": "cp installer.nsh build/",
-    "copy-entitlements": "cp entitlements.mac.plist build/",
-    "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
-    "install-backend": "cd backend && npm install",
-    "install-electron": "electron-builder install-app-deps",
-    "install-frontend": "cd frontend && npm i",
-    "install-binaries": "sh scripts/build.sh",
-    "install-deps": "electron-builder install-app-deps",
-    "open-ios": "npx cap open ios",
-    "open-android": "npx cap open android",
-    "postinstall": "run-s install-*",
-    "frontend": "cd frontend && npm start",
-    "mobile-ios": "cross-env NODE_ENV=development run-s mobile-sync mobile-run-ios",
-    "mobile-android": "cross-env NODE_ENV=development run-s mobile-sync mobile-run-android",
+    "copy-env": "cp .env frontend/ && cp .env backend/ && cp .env electron/",
+    "electron": "cd electron && npm start",
+    "electron-builder": "cd electron && npm run build-electron",
+    "mobile-android": "cross-env NODE_ENV=development npx cap run android",
+    "mobile-ios": "cross-env NODE_ENV=development npx cap run ios --target=\"7BBB57E2-D942-4D1B-9794-24258E41F79B\"",
     "mobile-sync": "npx cap sync",
-    "mobile-run-ios": "npx cap run ios --target=\"7BBB57E2-D942-4D1B-9794-24258E41F79B\"",
-    "mobile-run-android": "npx cap run android",
-    "version": "sh scripts/version.sh $npm_package_version",
-    "start": "npm-run-all -l -n -p copy-* watch-*",
-    "test": "cd backend && npm run test",
-    "test-watch": "cd backend && npm run test-watch",
-    "watch-backend": "cd backend && npm run watch",
-    "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
+    "open-android": "npx cap open android",
+    "open-ios": "npx cap open ios",
+    "postinstall": "cd electron && npm install",
+    "start": "npm start -w=frontend",
+    "test-watch": "npm run test-watch -w=backend",
+    "test": "npm run test -w=backend",
+    "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version",
+    "watch-backend": "npm run watch -w=backend",
     "watch-build": "tsc --watch",
-    "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
+    "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron",
+    "watch-images": "onchange 'src/images/**/*' -- npm run copy-images"
   },
   "dependencies": {
     "@capacitor/android": "^5.5.1",
@@ -51,112 +40,13 @@
     "@capacitor/core": "^5.5.1",
     "@capacitor/ios": "^5.5.1",
     "@capacitor/splash-screen": "^5.0.6",
-    "@rematch/immer": "^2.1.3",
-    "capacitor-plugin-safe-area": "^2.0.5",
-    "electron-updater": "^6.1.4",
-    "immer": "^10.0.3",
-    "remoteit-headless": "file:backend"
+    "capacitor-plugin-safe-area": "^2.0.5"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.1.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
-    "electron": "^27.0.4",
-    "electron-builder": "^24.6.4",
     "npm-run-all": "4.1.5",
     "onchange": "^7.1.0",
-    "rimraf": "^3.0.2",
     "typescript": "^5.2.2"
-  },
-  "homepage": "https://remote.it",
-  "repository": {
-    "url": "git+ssh://git@github.com/remoteit/desktop.git",
-    "type": "git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "remote.it",
-    "email": "support@remote.it"
-  },
-  "build": {
-    "appId": "it.remote.desktop",
-    "copyright": "remot3.it, Inc",
-    "productName": "Remote.It",
-    "artifactName": "${productName}-Installer-${arch}.${ext}",
-    "afterSign": "scripts/notarize.js",
-    "generateUpdatesFilesForAllChannels": true,
-    "win": {
-      "sign": "./scripts/sign.js",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "arm64",
-            "ia32",
-            "x64"
-          ]
-        }
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowElevation": true,
-      "deleteAppDataOnUninstall": true,
-      "allowToChangeInstallationDirectory": true
-    },
-    "linux": {
-      "category": "Network",
-      "packageCategory": "net",
-      "target": [
-        {
-          "target": "deb",
-          "arch": [
-            "x64",
-            "armv7l",
-            "arm64"
-          ]
-        }
-      ]
-    },
-    "mac": {
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "darkModeSupport": true,
-      "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
-      "extendInfo": {
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true
-        }
-      },
-      "target": [
-        {
-          "target": "default",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ]
-    },
-    "extraResources": [
-      {
-        "from": "./backend/src/cli-version.json",
-        "to": "./"
-      },
-      {
-        "from": "./bin/${arch}",
-        "to": "./"
-      }
-    ],
-    "files": [
-      "build/**/*",
-      "node_modules/**/*",
-      "frontend/build/**/*"
-    ]
   }
 }

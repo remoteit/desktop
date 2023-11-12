@@ -27,10 +27,10 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
       - name: Set npm version
-        run: npm install -g npm@8
+        run: npm install -g npm@10
 
       - name: Authenticate with fontawesome NPM repo
         run: |
@@ -41,9 +41,13 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
         with:
+          package_root: electron
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
 

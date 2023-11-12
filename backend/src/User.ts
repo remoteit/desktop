@@ -1,5 +1,4 @@
 import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
-import preferences from './preferences'
 import environment from './environment'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
@@ -96,7 +95,7 @@ export class User {
 
     EventBus.emit(User.EVENTS.signedOut)
     try {
-      rimraf.sync(path.join(environment.userPath, 'user.json'), { disableGlob: true })
+      rimraf.sync(path.join(environment.userPath, 'user.json'))
     } catch (error) {
       Logger.info('NO USER FILE TO CLEAN UP', { error })
     }

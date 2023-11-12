@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import {
   Box,
+  Badge,
   List,
   ListItem,
   ListItemButton,
@@ -64,12 +65,7 @@ export const SidebarNav: React.FC = () => {
             dense
           >
             <ListItemSecondaryAction>
-              {!!counts.connections && (
-                <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
-                  <Chip size="small" label={counts.connections.toLocaleString()} />
-                </Tooltip>
-              )}
-              {!!counts.active && !counts.memberships && (
+              {!!counts.active && !counts.memberships ? (
                 <Tooltip
                   title={`${counts.connections.toLocaleString()} Connections - ${counts.active.toLocaleString()} Connected`}
                   placement="top"
@@ -83,6 +79,26 @@ export const SidebarNav: React.FC = () => {
                     color="primary"
                   />
                 </Tooltip>
+              ) : (
+                !!counts.connections && (
+                  <Badge
+                    variant={counts.active && counts.memberships ? 'dot' : undefined}
+                    color="primary"
+                    overlap="circular"
+                  >
+                    <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
+                      <Chip
+                        size="small"
+                        label={counts.connections.toLocaleString()}
+                        sx={{
+                          border: counts.active && counts.memberships ? 'initial' : undefined,
+                          borderColor: 'primary.main',
+                          borderStyle: 'solid',
+                        }}
+                      />
+                    </Tooltip>
+                  </Badge>
+                )
               )}
             </ListItemSecondaryAction>
           </ListItemLocation>
@@ -172,11 +188,6 @@ const useStyles = makeStyles(({ palette }) => ({
       },
     },
   },
-  connections: ({ active }: StyleProps) => ({
-    borderTopRightRadius: active ? 0 : undefined,
-    borderBottomRightRadius: active ? 0 : undefined,
-    paddingRight: active ? spacing.xs : undefined,
-  }),
   active: {
     fontWeight: 500,
   },

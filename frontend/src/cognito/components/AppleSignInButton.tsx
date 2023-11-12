@@ -9,7 +9,13 @@ export function AppleSignInButton(props: AppleSignInButtonProps) {
     <Button
       {...props}
       variant="contained"
-      sx={{ marginTop: 1, padding: 1, color: 'white.main', bgcolor: 'grayDarkest.main' }}
+      sx={{
+        marginTop: 1,
+        padding: 1,
+        color: 'white.main',
+        bgcolor: 'grayDarkest.main',
+        '&:hover': { bgcolor: 'black.main' },
+      }}
     >
       <Stack height={36} width={40} marginBottom="4px" justifyContent="center">
         <Icon name="apple" type="brands" fontSize={22} />

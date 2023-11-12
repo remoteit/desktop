@@ -231,7 +231,7 @@ class Controller {
     await binaryInstaller.uninstall()
     await this.pool.clearMemory()
     try {
-      rimraf.sync(environment.userPath, { disableGlob: true })
+      rimraf.sync(environment.userPath)
     } catch (error) {
       Logger.warn('FILE REMOVAL FAILED', { error, path: environment.userPath })
     }

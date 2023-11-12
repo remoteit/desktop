@@ -28,5 +28,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-bin/*
+electron/bin/*
 logs/code_signing_tool.log

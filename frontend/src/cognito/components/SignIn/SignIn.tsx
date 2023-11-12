@@ -210,7 +210,7 @@ export function SignIn({
           </Grid>
         </Box>
       </form>
-      <Box mt={4} textAlign="center">
+      <Box textAlign="center">
         <Typography variant="caption">
           {t('pages.sign-in.create-account')}
           <Link to="/sign-up">{t('pages.sign-in.sign-up-link')}</Link>

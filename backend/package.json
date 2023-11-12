@@ -1,20 +1,20 @@
 {
   "name": "remoteit-headless",
-  "version": "3.24.0-beta.4",
+  "version": "3.24.0-beta.5",
   "private": true,
   "main": "build/index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-and-lock compile build-frontend pack",
-    "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "copy-and-lock": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/* && cp ./src/cli-version.json ./build",
+    "build": "cross-env NODE_ENV=production run-s clean copy-* compile",
+    "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
+    "copy-shared": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/*",
     "clean": "rimraf build && mkdir build",
     "compile": "tsc",
     "start": "node build/index.js",
     "test": "NODE_ENV=test jest",
-    "pack": "npm-pack-all --output ../dist/remoteit-headless.tgz",
+    "pack": "npm-pack-all --output ./dist/remoteit-headless.tgz",
     "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p copy-* watch-*",
     "watch-compile": "tsc --watch",
-    "watch-shared": "onchange '../frontend/src/shared/**/*' -- npm run copy-and-lock",
+    "watch-shared": "onchange '../frontend/src/shared/**/*' -- npm run copy-shared",
     "test-watch": "npm run test -- --watch"
   },
   "dependencies": {
@@ -62,26 +62,9 @@
   "optionalDependencies": {
     "fsevents": "^2.3.3"
   },
-  "bundleDependencies": [
-    "@airbrake/node",
-    "axios",
-    "cors",
-    "debug",
-    "detect-rpi",
-    "dotenv",
-    "express",
-    "fsevents",
-    "is-electron",
-    "is-elevated",
-    "is-port-reachable",
-    "netmask",
-    "network",
-    "plist",
-    "rimraf",
-    "semver",
-    "socket.io",
-    "socketio-auth",
-    "win-ca",
-    "winston"
+  "files": [
+    "build",
+    "scripts",
+    "ssl"
   ]
 }

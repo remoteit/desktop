@@ -122,21 +122,19 @@ Installation
 ```shell
 nvm install
 nvm use
-npm install -g npm@latest
-npm run build-backend
 npm install
 ```
 
 Start web app
 
 ```shell
-npm run frontend
+npm start
 ```
 
 Start electron app
 
 ```shell
-npm start
+npm run electron
 ```
 
 Command+option+I to open with dev tools.
@@ -201,11 +199,22 @@ To build the whole app for production: `npm run build --arch = 'XXX'` (possible 
 To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
 The final build will be produced in the `dist` directory
 
-### Generating Mobile Assets
+### Generating Assets
 
 ``` shell
 npx @capacitor/assets generate --iconBackgroundColor '#0096e7' --splashBackgroundColor '#0096e7' --android --ios
 ```
+
+For electron app icon
+
+``` shell
+./electron/scripts/icns-creator assets/app-icon.png
+mv -f ./iconbuilder.iconset/* ./electron/src/icons
+mv -f iconbuilder.icns ./electron/src/icons/icon.icns
+rm -rf iconbuilder.iconset
+```
+
+Then move all the generated icons to `electron/src/icons`
 
 ### Release iOS
 
