@@ -13,11 +13,11 @@ export function AppleSignInButton(props: AppleSignInButtonProps) {
         marginTop: 1,
         padding: 1,
         color: 'white.main',
-        bgcolor: 'grayDarkest.main',
-        '&:hover': { bgcolor: 'black.main' },
+        bgcolor: 'grayDarker.main',
+        '&:hover': { bgcolor: 'grayDarkest.main' },
       }}
     >
-      <Stack height={36} width={40} marginBottom="4px" justifyContent="center">
+      <Stack height={32} width={40} marginBottom="4px" justifyContent="center">
         <Icon name="apple" type="brands" fontSize={22} />
       </Stack>
       Sign in with Apple
