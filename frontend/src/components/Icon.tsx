@@ -107,6 +107,10 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
         icon={[fontType, name as IconName]}
         spin={spin}
         fixedWidth={fixedWidth}
+        style={{
+          // moved here because sometimes wouldn't render in class
+          transform: rotate ? `rotate(${rotate}deg)` : undefined,
+        }}
         className={classnames(props.className, css.icon)}
       />
     )
@@ -123,14 +127,13 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 )
 
 const useStyles = makeStyles(({ palette }) => ({
-  icon: ({ color, inline, inlineLeft, size, fontSize, rotate, scale }: IconProps) => {
+  icon: ({ color, inline, inlineLeft, size, fontSize, scale }: IconProps) => {
     const styles: any = { objectFit: 'contain' }
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 1.5 : spacing.md
     if (size) styles.fontSize = styles.height = fontSizes[size]
     if (fontSize) styles.fontSize = styles.height = fontSize
-    if (rotate) styles.transform = `rotate(${rotate}deg)`
     if (styles.fontSize) styles.maxWidth = styles.fontSize + spacing.sm
     if (scale) styles.height *= scale
     return styles

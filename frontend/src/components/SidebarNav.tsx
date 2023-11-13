@@ -87,15 +87,7 @@ export const SidebarNav: React.FC = () => {
                     overlap="circular"
                   >
                     <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
-                      <Chip
-                        size="small"
-                        label={counts.connections.toLocaleString()}
-                        sx={{
-                          border: counts.active && counts.memberships ? 'initial' : undefined,
-                          borderColor: 'primary.main',
-                          borderStyle: 'solid',
-                        }}
-                      />
+                      <Chip size="small" label={counts.connections.toLocaleString()} />
                     </Tooltip>
                   </Badge>
                 )

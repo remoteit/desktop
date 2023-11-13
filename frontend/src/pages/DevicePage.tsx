@@ -72,7 +72,6 @@ export const DevicePage: React.FC = () => {
                 `/devices/${device.id}/edit`,
                 `/devices/${device.id}/users`,
                 `/devices/${device.id}/logs`,
-                `/devices/${device.id}`,
               ]}
               icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
               onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}

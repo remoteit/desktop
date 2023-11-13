@@ -6,17 +6,25 @@ import { spacing } from '../styling'
 type Props = IconProps & { open?: boolean }
 
 export const ExpandIcon: React.FC<Props> = ({ open, ...props }) => {
-  const css = useStyles({ open })
+  const css = useStyles()
   return (
-    <Icon className={css.rotate} color="grayDarker" name="caret-down" type="solid" size="sm" fixedWidth {...props} />
+    <Icon
+      className={css.icon}
+      rotate={open ? 0 : -90}
+      color="grayDarker"
+      name="caret-down"
+      type="solid"
+      size="sm"
+      fixedWidth
+      {...props}
+    />
   )
 }
 
 const useStyles = makeStyles({
-  rotate: ({ open }: Props) => ({
+  icon: {
     marginLeft: spacing.sm,
-    transform: `rotate(${open ? 0 : -90}deg)`,
     transformOrigin: 'center',
     transition: 'transform 300ms, margin-bottom 300ms',
-  }),
+  },
 })

@@ -61,7 +61,6 @@ const useNavigationListener = () => {
         nextHistory.push(nextLocation.pathname)
       }
 
-      console.log('MOBILE NAVIGATION', nextHistory)
       dispatch.ui.set({ mobileNavigation: nextHistory })
     })
 
