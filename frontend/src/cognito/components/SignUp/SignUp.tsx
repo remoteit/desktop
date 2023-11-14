@@ -29,21 +29,8 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
   const [password, setPassword] = React.useState<string>('')
   const [verified, setVerified] = useState<boolean>(hideCaptcha || false)
   const [isValidPassword, setIsValidPassword] = useState<boolean>(false)
-  const [email, setEmail] = useState<string>('')
+  const [email, setEmail] = useState<string>(decodeURIComponent(params?.email || ''))
   const css = useStyles()
-  const defaultEmail = decodeURIComponent(params?.email || '')
-
-  // const callSignUp = useCallback(() => {
-  //   ;(async () => {
-  //     const signupResponse = await onSignUp(email, password)
-  //     if (signupResponse?.error) {
-  //       console.log('Got error, setting error: ', signupResponse.error)
-  //       setError(signupResponse.error)
-  //     } else {
-  //       history.push(`/sign-up/verify`)
-  //     }
-  //   })()
-  // }, [email, password])
 
   async function resend() {
     onResend(email)
@@ -52,24 +39,12 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
   async function forgotPassword() {
     history.push(`/forgot-password`)
   }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    // try {
-    // if (segmentSettings) {
-    //   analytics.track(email, segmentSettings)
-    // }
-
-    // const signupResponse = await onSignUp(email, password)
-    // ;(async () => {
-    //   const signupResponse = await onSignUp(email, password)
-
-    // })()
-    // let signupResponse: CognitoUserResult
-    // ;(async () => (signupResponse = await onSignUp(email, password)))()
-    // const signupResponse = { error: { name: 'anerror', message: 'a new error' } }
     await onSignUp(email, password)
       .then(() => history.push(`/sign-up/verify`))
       .catch((err: Error) => {
@@ -78,15 +53,6 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
         }
         setError(err)
       })
-    // if (signupResponse?.error) {
-    //   console.log('Got error, setting error: ', signupResponse.error)
-    //   setError(signupResponse.error.message)
-    // } else {
-    // }
-    // callSignUp()
-    // } catch (e) {
-    //   setError(e)
-    // }
 
     setLoading(false)
   }
@@ -101,8 +67,6 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
     setIsValidPassword(isValidPassword)
   }
 
-  console.log('Render Signup')
-
   return (
     <AuthLayout back backLink="/sign-in" fullWidth={fullWidth} i18nKey="pages.sign-up.title">
       {alert && (
@@ -112,7 +76,7 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
       )}
       <form onSubmit={handleSubmit}>
         {error && (
-          <Notice severity="error" fullWidth>
+          <Notice severity="error" fullWidth gutterBottom>
             {error.message}
           </Notice>
         )}
@@ -139,9 +103,9 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
             autoFocus
             disabled={loading}
             fullWidth
+            value={email}
             id="sign-up-email"
             label="Email Address"
-            defaultValue={defaultEmail}
             onChange={e => setEmail(e.currentTarget.value.toLowerCase().trim())}
             inputProps={{ maxLength: 254 }}
             placeholder="Email address..."
