@@ -30,7 +30,6 @@ export const ConnectionsPage: React.FC = () => {
         active[id] = {
           ...defaultNetwork(),
           id: 'other',
-          enabled: true,
           name: s.user?.email || 'Unknown',
           icon,
           iconType,

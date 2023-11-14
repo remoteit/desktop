@@ -38,7 +38,7 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
       action={
         <Box display="flex" alignItems="center">
           {!total && <Typography variant="caption">No&nbsp;users</Typography>}
-          {!!connected && <Chip size="small" color="primary" label={connected} />} &nbsp;
+          {!!connected && <Chip size="small" color="primary" label={connected} sx={{ marginLeft: 2 }} />} &nbsp;
           {!!total && !expanded && <Chip size="small" label={total} />}
           <AddUserButton
             to="share"

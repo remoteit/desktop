@@ -30,7 +30,6 @@ export const DEFAULT_NETWORK: INetwork = {
   id: '',
   name: '',
   cloud: false,
-  enabled: true,
   shared: false,
   loaded: false,
   accountId: '',
@@ -48,7 +47,6 @@ const defaultLocalNetwork: INetwork = {
   id: DEFAULT_ID,
   name: 'Active',
   permissions: [],
-  enabled: true,
   shared: false,
   icon: 'network-wired',
 }
@@ -58,7 +56,6 @@ const defaultCloudNetwork: INetwork = {
   id: DEFAULT_ID,
   name: 'Cloud Proxy',
   permissions: [],
-  enabled: true,
   icon: 'cloud',
 }
 
@@ -67,7 +64,6 @@ export const recentNetwork: INetwork = {
   id: 'recent',
   name: 'Recent',
   permissions: [],
-  enabled: false,
   icon: 'clock-rotate-left',
 }
 

@@ -6,6 +6,7 @@ import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
+import { selectConnectionSessions, selectConnections } from '../selectors/connections'
 import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
 import { makeStyles } from '@mui/styles'
@@ -22,11 +23,16 @@ export interface Props {
 
 export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, network, connectionsPage }) => {
   const dispatch = useDispatch<Dispatch>()
-  const collapsed = useSelector((state: ApplicationState) => [...state.ui.collapsed])
+  const { collapsed, sessions, networkEnabled } = useSelector((state: ApplicationState) => ({
+    collapsed: [...state.ui.collapsed],
+    sessions: selectConnectionSessions(state),
+    networkEnabled: selectConnections(state).some(c => c.enabled && network?.serviceIds.includes(c.id)),
+  }))
   const css = useStyles({ highlight })
 
   if (!network?.id) return null
 
+  const networkConnected = sessions.some(s => network?.serviceIds.includes(s.target.id))
   const expanded = !collapsed.includes(network.id)
   const toggle = (event: React.MouseEvent) => {
     event.stopPropagation()
@@ -37,7 +43,14 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
 
   return (
     <List className={css.list}>
-      <NetworkListTitle network={network} noLink={noLink} expanded={expanded} offline={recent} onClick={toggle}>
+      <NetworkListTitle
+        network={network}
+        enabled={networkConnected || networkEnabled}
+        noLink={noLink}
+        expanded={expanded}
+        offline={recent}
+        onClick={toggle}
+      >
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
         <Tags tags={network?.tags || []} max={0} small />
         <IconButton
@@ -57,6 +70,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
             key={id}
             serviceId={id}
             network={network}
+            session={sessions.find(s => s.target.id === id)}
             fallbackName={network.connectionNames[id]}
             connectionsPage={connectionsPage}
           >

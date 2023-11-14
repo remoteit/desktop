@@ -135,7 +135,6 @@ declare global {
 
   interface INetwork extends IInstance {
     accountId: string
-    enabled: boolean
     cloud: boolean
     connectionNames: INameLookupByServiceId
     serviceIds: string[]
@@ -518,10 +517,11 @@ declare global {
     isP2P?: boolean
     timestamp: Date
     platform: number
+    reverseProxy: boolean
     source: IConnectionSource
     user?: IUserRef
     geo?: IGeo
-    anonymous?: boolean
+    manufacturer: 'WARP' | 'ANONYMOUS' | 'UNKNOWN'
     target: {
       id: string
       accountId: string
@@ -556,6 +556,7 @@ declare global {
     platform: number
     authUserId: string
     geo?: IGeo
+    reverseProxy: boolean
     manufacturer?: number
     metadata?: INotificationSetting
     target: {

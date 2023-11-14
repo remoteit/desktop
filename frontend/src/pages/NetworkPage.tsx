@@ -65,6 +65,7 @@ export const NetworkPage: React.FC = () => {
             size="small"
             disabled={empty}
             onClick={() => dispatch.connections.queueEnable({ ...network, enabled: false })}
+            sx={{ marginLeft: 1 }}
           >
             Stop All
           </Button>
