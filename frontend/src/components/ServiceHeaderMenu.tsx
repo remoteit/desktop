@@ -51,7 +51,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           <Typography variant="h1" gutterBottom={!service?.attributes.description}>
             <Title>
               {layout.mobile && (
-                <Typography variant="caption" component="div" gutterBottom>
+                <Typography variant="caption" component="div">
                   {deviceName}
                 </Typography>
               )}
@@ -61,7 +61,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
-            <Gutters top={null}>
+            <Gutters top="sm">
               <Typography variant="body2" color="textSecondary">
                 {service.attributes.description}
               </Typography>

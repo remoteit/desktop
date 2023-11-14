@@ -15,7 +15,6 @@ export const OrganizationSelectList: React.FC = () => {
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, user } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
-    defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => {
       const org = selectOrganization(state, m.account.id)
       return {

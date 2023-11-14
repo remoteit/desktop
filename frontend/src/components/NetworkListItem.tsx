@@ -6,7 +6,7 @@ import { isReverseProxy } from '../models/applicationTypes'
 import { useSelector } from 'react-redux'
 import { selectById } from '../selectors/devices'
 
-export interface Props {
+export interface NetworkListItemProps {
   serviceId: string
   session?: ISession
   network?: INetwork
@@ -15,7 +15,7 @@ export interface Props {
   children?: React.ReactNode
 }
 
-export const NetworkListItem: React.FC<Props> = ({
+export const NetworkListItem: React.FC<NetworkListItemProps> = ({
   network,
   serviceId,
   session,
@@ -23,11 +23,10 @@ export const NetworkListItem: React.FC<Props> = ({
   connectionsPage,
   children,
 }) => {
-  const { service, device, connection, reverseProxy } = useSelector((state: ApplicationState) => {
+  const { service, device, connection } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, undefined, serviceId)
     const connection = selectConnection(state, service)
-    const reverseProxy = isReverseProxy(state, service?.typeID)
-    return { service, device, connection, reverseProxy }
+    return { service, device, connection }
   })
 
   const external = session?.id && session.id !== connection.sessionId
@@ -35,7 +34,7 @@ export const NetworkListItem: React.FC<Props> = ({
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connectionsPage) pathname = `/connections/${serviceId}/${session?.id || 'none'}`
   const match = pathname
-  pathname += connection && !session?.anonymous && !external ? '/connect' : '/other'
+  pathname += connection && session?.manufacturer !== 'UNKNOWN' && !external ? '/connect' : '/other'
 
   return (
     <ConnectionListItem
@@ -45,12 +44,10 @@ export const NetworkListItem: React.FC<Props> = ({
       enabled={connection.enabled || !!session}
       platform={device?.targetPlatform || session?.target.platform}
       offline={offline}
-      anonymous={session?.anonymous}
-      reverseProxy={reverseProxy}
+      manufacturer={session?.manufacturer}
       connected={!!session || !!connection.connected}
       connection={connection}
       connectionsPage={connectionsPage}
-      networkEnabled={network?.enabled}
     >
       {children}
     </ConnectionListItem>

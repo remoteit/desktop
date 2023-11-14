@@ -1,11 +1,11 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem } from '@mui/material'
+import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../shared/constants'
+import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
@@ -18,6 +18,7 @@ export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
+  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
@@ -47,7 +48,7 @@ export const OrganizationSelect: React.FC = () => {
     networks.fetchIfEmpty()
     devices.fetchIfEmpty()
     tags.fetchIfEmpty()
-    if (['/devices', '/networks', '/connections'].includes(menu)) {
+    if (!mobile && ['/devices', '/networks', '/connections'].includes(menu)) {
       history.push(defaultSelection[id]?.[menu] || menu)
     }
   }

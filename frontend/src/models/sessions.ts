@@ -1,11 +1,11 @@
 import { createModel } from '@rematch/core'
-import { PUBLIC_PROXY_MANUFACTURER_CODE } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { setConnection, getManufacturerType, getManufacturerUser } from '../helpers/connectionHelper'
 import { graphQLDisconnect } from '../services/graphQLMutation'
 import { accountFromDevice } from './accounts'
 import { selectConnections } from '../selectors/connections'
 import { ApplicationState } from '../store'
-import { setConnection } from '../helpers/connectionHelper'
+import { isReverseProxy } from './applicationTypes'
 import { AxiosResponse } from 'axios'
 import { combinedName } from '../shared/nameHelper'
 import { RootModel } from '.'
@@ -49,6 +49,7 @@ export default createModel<RootModel>()({
                       id
                       name
                       platform
+                      application
                       owner {
                         id
                       }
@@ -92,16 +93,17 @@ export default createModel<RootModel>()({
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
       return sorted.reduce((sessions: ISession[], s: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
-        const anonymous = s.endpoint.manufacturer === PUBLIC_PROXY_MANUFACTURER_CODE
         if (!s.endpoint) return sessions
+        const reverseProxy = isReverseProxy(state, s.target.application)
         sessions.push({
-          anonymous,
           id: s.id,
+          reverseProxy,
+          manufacturer: getManufacturerType(s.endpoint.manufacturer, reverseProxy),
           timestamp: new Date(s.timestamp),
           source: s.source,
           isP2P: !s.endpoint.proxy,
           platform: s.endpoint.platform,
-          user: anonymous ? { id: 'ANON', email: 'Anonymous User' } : s.user,
+          user: getManufacturerUser(s.endpoint.manufacturer, reverseProxy) || s.user,
           geo: s.endpoint.geo,
           target: {
             id: s.target.id,

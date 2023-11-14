@@ -26,6 +26,16 @@ export function findById(devices: IDevice[], id?: string) {
   return [service, device] as [IService | undefined, IDevice | undefined]
 }
 
+export function selectAllByIds(state: ApplicationState, ids?: string[]) {
+  return (
+    ids?.reduce((result: [IService, IDevice | undefined][], serviceId: string) => {
+      const [service, device] = selectById(state, undefined, serviceId)
+      if (service) result.push([service, device])
+      return result
+    }, []) || []
+  )
+}
+
 export const getDeviceModel = createSelector([getDevicesState, selectActiveAccountId], (devices, activeAccountId) =>
   getDeviceModelFn(devices, activeAccountId)
 )

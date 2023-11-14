@@ -454,8 +454,10 @@ export const attributes: Attribute[] = [
         ? session?.source === 'WEBSOCKET'
           ? 'Peer to Peer WebSocket'
           : 'Peer to Peer'
-        : session?.anonymous
-        ? 'Public Proxy'
+        : session?.manufacturer === 'ANONYMOUS'
+        ? 'Public Reverse Proxy'
+        : session?.manufacturer === 'WARP'
+        ? 'Public Service Key'
         : 'Proxy',
   }),
   // new ConnectionAttribute({

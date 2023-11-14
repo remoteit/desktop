@@ -313,13 +313,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async enable({ connection, networkId }: { connection: IConnection; networkId: string }, state) {
-      const network = selectNetwork(state, networkId)
-      if (network.enabled && !connection.enabled) {
-        dispatch.connections.queueEnable({ serviceIds: [connection.id], enabled: true })
-      }
-    },
-
     async setConnectLink(connection: IConnection) {
       const creating: IConnection = { ...connection, connectLink: connection.enabled, updating: true }
 

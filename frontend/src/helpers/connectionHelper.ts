@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { IP_PRIVATE, DEFAULT_CONNECTION } from '../shared/constants'
+import { IP_PRIVATE, DEFAULT_CONNECTION, ANONYMOUS_MANUFACTURER_CODE } from '../shared/constants'
 import { Application, getApplicationType } from '../shared/applications'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
@@ -19,6 +19,20 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
     if (connection.enabled) return 'ready'
   }
   return 'online'
+}
+
+export function getManufacturerType(code?: number, reverseProxy?: boolean): ISession['manufacturer'] {
+  if (code === ANONYMOUS_MANUFACTURER_CODE) {
+    return reverseProxy ? 'ANONYMOUS' : 'WARP'
+  }
+  return 'UNKNOWN'
+}
+
+export function getManufacturerUser(code?: number, reverseProxy?: boolean): IUserRef | undefined {
+  if (code === ANONYMOUS_MANUFACTURER_CODE) {
+    return reverseProxy ? { id: 'ANON', email: 'Anonymous User' } : { id: 'WARP', email: 'Service Key User' }
+  }
+  return undefined
 }
 
 export function isSecureReverseProxy(template?: string) {
