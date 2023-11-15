@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Button, List, Typography, TextField, MenuItem, Box } from '@mui/material'
-import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../shared/constants'
+import { REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../constants'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE } from '@common/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { setConnection } from '../../helpers/connectionHelper'
 import { selectConnection } from '../../selectors/connections'

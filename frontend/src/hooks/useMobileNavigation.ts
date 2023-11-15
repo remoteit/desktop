@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { REGEX_FIRST_PATH } from '../shared/constants'
+import { REGEX_FIRST_PATH } from '../constants'
 
 const getDepth = (path: string) => {
   return path.split('/').filter(Boolean).length

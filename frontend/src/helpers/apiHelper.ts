@@ -1,12 +1,4 @@
-import {
-  GRAPHQL_API,
-  GRAPHQL_BETA_API,
-  API_URL,
-  WEBSOCKET_BETA_URL,
-  WEBSOCKET_URL,
-  TEST_HEADER,
-} from '../shared/constants'
-
+import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER } from '../constants'
 import { version } from './versionHelper'
 import { store } from '../store'
 

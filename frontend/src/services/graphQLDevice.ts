@@ -1,5 +1,5 @@
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
-import { removeDeviceName } from '../shared/nameHelper'
+import { removeDeviceName } from '@common/nameHelper'
 import { getTimeZone } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'

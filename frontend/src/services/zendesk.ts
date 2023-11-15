@@ -1,5 +1,5 @@
 import { insertScript } from './Browser'
-import { ZENDESK_KEY } from '../shared/constants'
+import { ZENDESK_KEY } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { store } from '../store'
 import sleep from '../services/sleep'

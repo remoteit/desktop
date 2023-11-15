@@ -1,8 +1,9 @@
 import io, { Socket } from 'socket.io-client'
 import browser from '../services/Browser'
 import { store } from '../store'
+import { IP_PRIVATE } from '@common/constants'
 import { IBackendState } from '../models/backend'
-import { PORT, FRONTEND_RETRY_DELAY, IP_PRIVATE } from '../shared/constants'
+import { PORT, FRONTEND_RETRY_DELAY } from '../constants'
 import { EventEmitter } from 'events'
 import network from '../services/Network'
 

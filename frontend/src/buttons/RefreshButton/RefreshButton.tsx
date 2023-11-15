@@ -6,7 +6,7 @@ import { getDeviceModel, selectDevice } from '../../selectors/devices'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
-import { attributeName } from '../../shared/nameHelper'
+import { attributeName } from '@common/nameHelper'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const { deviceID } = useParams<{ deviceID?: string }>()

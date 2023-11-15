@@ -1,5 +1,5 @@
 import React from 'react'
-import { Application } from '../shared/applications'
+import { Application } from '@common/applications'
 import { SelectSetting } from './SelectSetting'
 
 type Props = {

@@ -2,7 +2,7 @@
 import React from 'react'
 import browser from '../services/Browser'
 import classnames from 'classnames'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'

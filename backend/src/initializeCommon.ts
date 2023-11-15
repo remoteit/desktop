@@ -7,7 +7,6 @@ initialize({
   getState: getState,
   getCloudData: getCloudData,
   escapeRegex: escapeRegexp,
-  env: process.env,
 })
 
 function getState() {

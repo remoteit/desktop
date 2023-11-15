@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { IP_OPEN } from '../shared/constants'
+import { IP_OPEN } from '@common/constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { newConnection, setConnection, getRoute, routeTypeToSettings } from '../helpers/connectionHelper'

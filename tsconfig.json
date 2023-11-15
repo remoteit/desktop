@@ -1,12 +1,13 @@
+// root
 {
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
     "downlevelIteration": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "useUnknownInCatchVariables": false,
     "isolatedModules": true,
     "lib": ["esnext"],
     "module": "CommonJS",
@@ -16,10 +17,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "baseUrl": ".",
-    "paths": {
-      "@common/*": ["common/build/*"]
-    }
+    "useUnknownInCatchVariables": false
   },
-  "exclude": ["android", "ios", "node_modules", "*/build", "*/dist"]
+  "exclude": ["android", "ios", "node_modules", "build", "dist"]
 }

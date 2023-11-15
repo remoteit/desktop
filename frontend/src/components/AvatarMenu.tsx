@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
-import { HIDE_SIDEBAR_WIDTH } from '../shared/constants'
+import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'

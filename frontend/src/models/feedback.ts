@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { createModel } from '@rematch/core'
-import { ZENDESK_URL } from '../shared/constants'
+import { ZENDESK_URL } from '../constants'
 import { RootModel } from '.'
 import { apiError } from '../helpers/apiHelper'
 import { fullVersion } from '../helpers/versionHelper'

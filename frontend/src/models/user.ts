@@ -1,10 +1,9 @@
 import axios, { AxiosResponse } from 'axios'
-import { LANGUAGES } from '../shared/constants'
 import { createModel } from '@rematch/core'
+import { API_URL, DEVELOPER_KEY, LANGUAGES } from '../constants'
 import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from '.'
-import { API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { getToken } from '../services/remoteit'
 
 type IUserState = {

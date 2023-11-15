@@ -1,7 +1,7 @@
 import React from 'react'
 import { setConnection } from '../helpers/connectionHelper'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { MAX_CONNECTION_NAME_LENGTH } from '../shared/constants'
+import { MAX_CONNECTION_NAME_LENGTH } from '../constants'
 
 export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstance; connection: IConnection }> = ({
   service,

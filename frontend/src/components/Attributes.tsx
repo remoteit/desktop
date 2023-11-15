@@ -1,5 +1,6 @@
 import React from 'react'
-import { IP_PRIVATE, PROTOCOL } from '../shared/constants'
+import { IP_PRIVATE } from '@common/constants'
+import { PROTOCOL } from '../constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'

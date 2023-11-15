@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { MAX_NAME_LENGTH } from '../shared/constants'
+import { MAX_NAME_LENGTH } from '@common/constants'
 import { useHistory } from 'react-router-dom'
 import { TextField, Button } from '@mui/material'
 import { selectNetwork } from '../models/networks'

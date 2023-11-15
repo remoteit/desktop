@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
-import { MAX_DESCRIPTION_LENGTH } from '../shared/constants'
+import { MAX_DESCRIPTION_LENGTH } from '../constants'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'

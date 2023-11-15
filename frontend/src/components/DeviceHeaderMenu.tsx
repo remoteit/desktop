@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
 import { Typography } from '@mui/material'
-import { attributeName } from '../shared/nameHelper'
+import { attributeName } from '@common/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'

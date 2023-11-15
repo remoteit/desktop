@@ -3,7 +3,7 @@ import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle,
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
-import { attributeName } from '../shared/nameHelper'
+import { attributeName } from '@common/nameHelper'
 
 type Props = Omit<DialogProps, 'open'> & {
   device: IDevice

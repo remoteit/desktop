@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { setConnection } from '../../helpers/connectionHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { ApplicationState } from '../../store'
-import { REGEX_PORT_SAFE } from '../../shared/constants'
+import { REGEX_PORT_SAFE } from '../../constants'
 
 export const PortSetting: React.FC<{ service: IService; connection: IConnection }> = ({ service, connection }) => {
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)

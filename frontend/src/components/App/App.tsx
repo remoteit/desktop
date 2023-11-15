@@ -9,7 +9,7 @@ import {
   SIDEBAR_WIDTH,
   MOBILE_WIDTH,
   ORGANIZATION_BAR_WIDTH,
-} from '../../shared/constants'
+} from '../../constants'
 import { makeStyles } from '@mui/styles'
 import { useMediaQuery, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'

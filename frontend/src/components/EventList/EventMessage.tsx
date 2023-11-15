@@ -1,5 +1,5 @@
 import React from 'react'
-import { combinedName } from '../../shared/nameHelper'
+import { combinedName } from '@common/nameHelper'
 
 export const EventActions = ['add', 'update']
 

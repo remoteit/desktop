@@ -1,4 +1,4 @@
-import { DEVICE_TYPE } from '../shared/applications'
+import { DEVICE_TYPE } from '@common/applications'
 import { getAccountIds } from '../models/accounts'
 import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Application } from '../../shared/applications'
+import { Application } from '@common/applications'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { newConnection, setConnection, isSecureReverseProxy } from '../../helpers/connectionHelper'
 import { ConfirmButton } from '../../buttons/ConfirmButton'
