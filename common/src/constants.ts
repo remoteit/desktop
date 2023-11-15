@@ -1,10 +1,6 @@
-/* 
-This is a shared file between backend and frontend
-It will be copied from the frontend to the backend on build
+import { adaptor } from './adaptor'
 
-ONLY EDIT THE SOURCE FILE IN frontend
-*/
-import { env } from '../env'
+const env = adaptor?.env || {}
 export const NODE_ENV = env.NODE_ENV || 'development'
 export const CLIENT_ID = env.VITE_CLIENT_ID
 export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID

@@ -19,5 +19,5 @@
     "noFallthroughCasesInSwitch": false,
     "noEmit": true
   },
-  "include": ["src", "../common"]
+  "include": ["src", "../common", "../types.d.ts"]
 }

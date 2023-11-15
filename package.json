@@ -8,6 +8,7 @@
     "frontend"
   ],
   "scripts": {
+    "build-common": "tsc -b common/tsconfig.json",
     "build-backend": "npm run build -w=backend",
     "build-electron": "cd electron/ && npm run build",
     "build-electron-dev": "cd electron/ && npm run build-dev",

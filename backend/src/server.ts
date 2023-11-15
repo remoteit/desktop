@@ -16,7 +16,7 @@ import Preferences from './preferences'
 import environment from './environment'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
-import { IP_PRIVATE, IP_OPEN } from './sharedCopy/constants'
+import { IP_PRIVATE, IP_OPEN } from '@common/constants'
 
 const d = debug('Server')
 

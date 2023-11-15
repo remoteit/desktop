@@ -1,6 +1,5 @@
 # dependencies
 node_modules
-.npm-pack-all-tmp
 
 # testing
 /coverage
@@ -8,7 +7,6 @@ node_modules
 __mocks__
 
 # production
-archive
 dist
 src
 tsconfig.json

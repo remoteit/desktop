@@ -1,3 +1,4 @@
+// backend/tsconfig.json
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
@@ -5,6 +6,6 @@
     "rootDir": "src",
     "declaration": true
   },
-  "exclude": ["node_modules"],
-  "include": ["src", "src/*.json", "../common"]
+  "references": [{ "path": "../common" }],
+  "include": ["src/**/*", "../types.d.ts"]
 }
