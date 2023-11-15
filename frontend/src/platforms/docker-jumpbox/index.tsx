@@ -19,6 +19,7 @@ platforms.register({
  -v /var/run/docker.sock:/var/run/docker.sock \\
  --restart unless-stopped \\
  --name remoteit_docker_jumpbox \\
+ --pull always \\
  remoteit/docker-extension:latest`,
     instructions: (
       <>
