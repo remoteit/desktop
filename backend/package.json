@@ -4,17 +4,16 @@
   "private": true,
   "main": "build/index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s clean copy-* compile",
+    "build": "cross-env NODE_ENV=production run-s clean compile copy-* pack",
     "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
-    "copy-shared": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/*",
-    "clean": "rimraf build && mkdir build",
-    "compile": "tsc",
+    "copy-common": "[ -d ../common/build ] && [ -d ./build ] && cp -r ../common/build ./build/common",
+    "clean": "rimraf build && mkdir build && rimraf dist && mkdir dist",
+    "compile": "tsc -b",
     "start": "node build/index.js",
     "test": "NODE_ENV=test jest",
-    "pack": "npm-pack-all --output ./dist/remoteit-headless.tgz",
+    "pack": "npm pack && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz",
     "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p copy-* watch-*",
     "watch-compile": "tsc --watch",
-    "watch-shared": "onchange '../frontend/src/shared/**/*' -- npm run copy-shared",
     "test-watch": "npm run test -- --watch"
   },
   "dependencies": {
@@ -53,7 +52,6 @@
     "@types/semver": "^7.5.5",
     "cross-env": "^7.0.3",
     "jest": "^29.7.0",
-    "npm-pack-all": "^1.12.7",
     "npm-run-all": "^4.1.5",
     "onchange": "^7.1.0",
     "ts-jest": "^29.1.1",
@@ -63,8 +61,9 @@
     "fsevents": "^2.3.3"
   },
   "files": [
-    "build",
-    "scripts",
-    "ssl"
+    "build/**/*",
+    "scripts/**/*",
+    "ssl/**/*",
+    "../common/build/**/*"
   ]
 }

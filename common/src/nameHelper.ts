@@ -1,10 +1,3 @@
-/* 
-  This is a shared file between backend and frontend
-  It will be copied from the frontend to the backend on build
-  
-  ONLY EDIT THE SOURCE FILE IN frontend
-*/
-
 import {
   REGEX_LAST_NUMBER,
   REGEX_NAME_SAFE,
@@ -13,7 +6,7 @@ import {
   IP_OPEN,
   MAX_NAME_LENGTH,
 } from './constants'
-import { getState, escapeRegex } from '../sharedAdaptor'
+import { adaptor } from './adaptor'
 
 const separator = ' - '
 
@@ -28,7 +21,7 @@ export function replaceHost(url?: string, localhost?: boolean) {
     return url.replace(new RegExp(IP_PRIVATE, 'g'), 'localhost')
   }
   if (url.includes(IP_OPEN)) {
-    const { privateIP } = getState().environment
+    const { privateIP } = adaptor?.getState().environment
     return url.replace(IP_OPEN, privateIP)
   }
   return url
@@ -42,7 +35,7 @@ export function hostName(connection?: IConnection) {
 }
 
 export function removeDeviceName(deviceName: string, name?: string) {
-  const nameExt = new RegExp(`^${escapeRegex(deviceName)}[- _]+`, 'gi')
+  const nameExt = new RegExp(`^${adaptor?.escapeRegex(deviceName)}[- _]+`, 'gi')
   return name?.toString().replace(nameExt, '') || ''
 }
 

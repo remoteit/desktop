@@ -1,4 +1,4 @@
-import { API_URL, DEVELOPER_KEY } from './sharedCopy/constants'
+import { API_URL, DEVELOPER_KEY } from '@common/constants'
 import environment from './environment'
 import cli from './cliInterface'
 import rimraf from 'rimraf'

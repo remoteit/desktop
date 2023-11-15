@@ -98,6 +98,13 @@ declare global {
 
   type Ios = 'mac' | 'windows' | 'linux' | 'rpi'
 
+  interface CommonAdaptorInterface {
+    getState: () => { environment: IEnvironment; preferences: IPreferences }
+    getCloudData: (typeId?: number) => IApplicationType
+    escapeRegex: (string: string) => string
+    env: NodeJS.ProcessEnv
+  }
+
   interface InstallationInfo {
     name: string
     path: string

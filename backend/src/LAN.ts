@@ -1,4 +1,4 @@
-import { IP_PRIVATE } from './sharedCopy/constants'
+import { IP_PRIVATE } from '@common/constants'
 import environment from './environment'
 import Logger from './Logger'
 import EventBus from './EventBus'

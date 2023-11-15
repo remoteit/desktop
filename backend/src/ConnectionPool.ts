@@ -6,7 +6,7 @@ import {
   DEFAULT_CONNECTION,
   CLI_CERT_FAILURE_ERROR_CODE,
   CLI_REACHABLE_ERROR_CODE,
-} from './sharedCopy/constants'
+} from '@common/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
 import preferences from './preferences'

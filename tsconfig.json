@@ -12,11 +12,14 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "rootDir": "./",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "baseUrl": ".",
+    "paths": {
+      "@common/*": ["common/build/*"]
+    }
   },
-  "exclude": ["android", "ios", "node_modules"]
+  "exclude": ["android", "ios", "node_modules", "*/build", "*/dist"]
 }

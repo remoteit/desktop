@@ -1,12 +1,5 @@
-/* 
-  This is a shared file between backend and frontend
-  It will be copied from the frontend to the backend on build
-  
-  ONLY EDIT THE SOURCE FILE IN frontend
-*/
-
+import { adaptor } from './adaptor'
 import { replaceHost } from './nameHelper'
-import { getState, getCloudData } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
@@ -39,7 +32,7 @@ export class Application {
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
-    const { os, portal } = getState().environment
+    const { os, portal } = adaptor?.getState().environment
     options.windows = os === 'windows'
     options.portal = portal
     Object.assign(this, options)
@@ -226,7 +219,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   app.service = service
   app.connection = connection
   app.globalDefaults = globalDefaults?.[typeID || ''] || {}
-  app.cloudData = getCloudData(typeID)
+  app.cloudData = adaptor?.getCloudData(typeID)
 
   // Handle connect links
   if (app.connection?.connectLink && service?.link?.url) {
@@ -242,9 +235,9 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 }
 
 export function getApplicationType(typeId?: number) {
-  const { environment, preferences } = getState()
+  const { environment, preferences } = adaptor?.getState() || {}
   const { portal, os } = environment
-  const { sshConfig } = preferences
+  const { sshConfig } = preferences || {}
   const windows = os === 'windows'
 
   switch (typeId) {
