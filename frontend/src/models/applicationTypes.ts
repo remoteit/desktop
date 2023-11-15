@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { DEFAULT_SERVICE } from '../shared/constants'
+import { DEFAULT_SERVICE } from '@common/constants'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'

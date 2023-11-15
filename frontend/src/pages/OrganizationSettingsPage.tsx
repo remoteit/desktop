@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Redirect } from 'react-router-dom'
-import { REGEX_DOMAIN_SAFE } from '../shared/constants'
+import { REGEX_DOMAIN_SAFE } from '../constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import {

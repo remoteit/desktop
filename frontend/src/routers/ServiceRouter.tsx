@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
-import { REGEX_FIRST_PATH } from '../shared/constants'
+import { REGEX_FIRST_PATH } from '../constants'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { ServiceDefaultsPage } from '../pages/ServiceDefaultsPage'
 import { ServiceHeaderMenu } from '../components/ServiceHeaderMenu'

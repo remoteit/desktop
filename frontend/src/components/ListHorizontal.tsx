@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { List, ListProps, useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'

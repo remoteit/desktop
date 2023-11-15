@@ -1,6 +1,6 @@
 import React from 'react'
 import browser, { windowOpen } from '../../services/Browser'
-import { PROTOCOL } from '../../shared/constants'
+import { PROTOCOL } from '../../constants'
 import { makeStyles } from '@mui/styles'
 import { ConnectButton } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'

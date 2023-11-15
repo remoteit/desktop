@@ -1,6 +1,6 @@
 import React from 'react'
 import Controller from '../services/Controller'
-import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
+import { ORGANIZATION_BAR_WIDTH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Snackbar, IconButton, Dialog, Button } from '@mui/material'

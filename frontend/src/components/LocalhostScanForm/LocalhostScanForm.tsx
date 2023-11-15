@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { DEFAULT_SERVICE, REGEX_NAME_SAFE } from '../../shared/constants'
+import { DEFAULT_SERVICE, REGEX_NAME_SAFE } from '@common/constants'
 import { List, Chip, Typography } from '@mui/material'
 import { getType, findType } from '../../models/applicationTypes'
 import { useSelector, useDispatch } from 'react-redux'

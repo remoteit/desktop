@@ -3,7 +3,8 @@ import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
 import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { DEFAULT_CONNECTION, REGEX_HIDDEN_PASSWORD, IP_PRIVATE, CERTIFICATE_DOMAIN } from '../shared/constants'
+import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
+import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
 import {
   cleanOrphanConnections,
   getFetchConnectionIds,

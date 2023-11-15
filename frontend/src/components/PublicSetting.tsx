@@ -1,6 +1,6 @@
 import React from 'react'
 import { setConnection } from '../helpers/connectionHelper'
-import { IP_OPEN, IP_LATCH } from '../shared/constants'
+import { IP_OPEN, IP_LATCH } from '@common/constants'
 import { SelectSetting } from './SelectSetting'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {

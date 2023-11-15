@@ -3,7 +3,7 @@ import { List } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { MAX_NAME_LENGTH } from '../shared/constants'
+import { MAX_NAME_LENGTH } from '@common/constants'
 
 export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> = ({ network, orgName }) => {
   const dispatch = useDispatch<Dispatch>()

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
+import { safeHostname, osName, serviceNameValidation } from '@common/nameHelper'
 import { TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
 import { getActiveUser } from '../../selectors/accounts'

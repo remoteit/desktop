@@ -1,5 +1,5 @@
 import browser, { windowClose } from '../services/Browser'
-import { PROTOCOL } from '../shared/constants'
+import { PROTOCOL } from '../constants'
 import { App, URLOpenListenerEvent } from '@capacitor/app'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { useHistory } from 'react-router-dom'

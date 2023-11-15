@@ -102,7 +102,6 @@ declare global {
     getState: () => { environment: IEnvironment; preferences: IPreferences }
     getCloudData: (typeId?: number) => IApplicationType
     escapeRegex: (string: string) => string
-    env: NodeJS.ProcessEnv
   }
 
   interface InstallationInfo {

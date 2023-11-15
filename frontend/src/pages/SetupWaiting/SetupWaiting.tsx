@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom'
 import { getDevices } from '../../selectors/devices'
 import { makeStyles } from '@mui/styles'
 import { DocsLinks } from '../../components/DocsLinks'
-import { osName } from '../../shared/nameHelper'
+import { osName } from '@common/nameHelper'
 import { Body } from '../../components/Body'
 import { spacing } from '../../styling'
 

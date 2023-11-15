@@ -1,4 +1,5 @@
-import { IP_PRIVATE, PORTAL, NODE_ENV } from '../shared/constants'
+import { IP_PRIVATE } from '@common/constants'
+import { PORTAL, NODE_ENV } from '../constants'
 import { ApplicationState, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
 import { Capacitor } from '@capacitor/core'

@@ -1,7 +1,7 @@
 // import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { REGEX_FIRST_PATH } from '../shared/constants'
+import { REGEX_FIRST_PATH } from '../constants'
 import { useLocation } from 'react-router-dom'
 
 export function usePanelWidth(): [number, (value: number) => void] {

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReCAPTCHA from 'reaptcha'
-import { RECAPTCHA_SITE_KEY } from '../../../shared/constants'
+import { RECAPTCHA_SITE_KEY } from '../../../constants'
 
 export type CaptchaProps = {
   id?: string

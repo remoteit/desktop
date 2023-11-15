@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TEST_HEADER } from '../shared/constants'
+import { TEST_HEADER } from '../constants'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'

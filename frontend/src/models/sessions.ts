@@ -7,7 +7,7 @@ import { selectConnections } from '../selectors/connections'
 import { ApplicationState } from '../store'
 import { isReverseProxy } from './applicationTypes'
 import { AxiosResponse } from 'axios'
-import { combinedName } from '../shared/nameHelper'
+import { combinedName } from '@common/nameHelper'
 import { RootModel } from '.'
 
 type ISessionsState = ILookup<ISession[]> & {

@@ -13,9 +13,9 @@ import LAN from './LAN'
 import cli from './cliInterface'
 import user, { User } from './User'
 import { hostName } from '@common/nameHelper'
-import { IP_PRIVATE, PROTOCOL } from '@common/constants'
+import { IP_PRIVATE } from '@common/constants'
 import { getApplication } from '@common/applications'
-import { WEB_DIR } from './constants'
+import { PROTOCOL, WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 

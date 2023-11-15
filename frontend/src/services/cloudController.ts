@@ -3,7 +3,7 @@ import structuredClone from '@ungap/structured-clone'
 import network from '../services/Network'
 import { isReverseProxy } from '../models/applicationTypes'
 import { accountFromDevice } from '../models/accounts'
-import { DEVICE_TYPE } from '../shared/applications'
+import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
@@ -12,7 +12,7 @@ import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectById } from '../selectors/devices'
-import { combinedName } from '../shared/nameHelper'
+import { combinedName } from '@common/nameHelper'
 import {
   setConnection,
   findLocalConnection,

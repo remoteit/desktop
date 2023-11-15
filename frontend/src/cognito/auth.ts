@@ -1,7 +1,7 @@
 import browser, { windowOpen } from '../services/Browser'
 // import { OAuth2Client } from '@byteowls/capacitor-oauth2'
 import { ICredentials } from '@aws-amplify/core'
-import { DEVELOPER_KEY } from '../shared/constants'
+import { DEVELOPER_KEY } from '../constants'
 import { CognitoHostedUIIdentityProvider, Auth } from '@aws-amplify/auth'
 import {
   AuthProvider,
@@ -15,7 +15,7 @@ import {
 import { CognitoUserSession } from 'amazon-cognito-identity-js'
 import axios from 'axios'
 
-export interface Config {
+export interface ConfigInterface {
   cognitoAuthDomain: string
   cognitoClientID?: string
   cognitoRegion: string
@@ -30,12 +30,12 @@ export interface Config {
 export class AuthService {
   public username?: string
   private cognitoAuth: typeof Auth
-  private config: Config
+  private config: ConfigInterface
   private cognitoUser?: CognitoUser
   scope = ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin']
   responseType = 'code'
 
-  constructor(config: Config) {
+  constructor(config: ConfigInterface) {
     this.config = config
     this.cognitoAuth = this.configureCognito()
   }

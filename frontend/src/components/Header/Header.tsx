@@ -1,4 +1,4 @@
-import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../shared/constants'
+import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
 import React, { useState, useRef } from 'react'
 import useMobileBack from '../../hooks/useMobileBack'
 import browser from '../../services/Browser'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { LANGUAGES } from '../shared/constants'
+import { LANGUAGES } from '../constants'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'

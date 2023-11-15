@@ -14,7 +14,7 @@ import {
   Autocomplete,
 } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
-import { REGEX_TAG_SAFE } from '../shared/constants'
+import { REGEX_TAG_SAFE } from '../constants'
 import { tagsInclude } from '../helpers/utilHelper'
 import { Icon } from './Icon'
 

@@ -95,9 +95,11 @@ export const DevicePage: React.FC = () => {
           severity="info"
           button={
             editable && (
-              <Tooltip title="Restore Device" arrow>
-                <IconButton icon="wave-pulse" onClick={() => dispatch.ui.set({ showRestoreModal: true })} />
-              </Tooltip>
+              <IconButton
+                icon="wave-pulse"
+                title="Restore Device"
+                onClick={() => dispatch.ui.set({ showRestoreModal: true })}
+              />
             )
           }
         >

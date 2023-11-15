@@ -1,6 +1,6 @@
 import zxcvbn from 'zxcvbn'
 import React, { useState } from 'react'
-import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../shared/constants'
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../constants'
 import { Stack, TextField, Typography } from '@mui/material'
 import { ProgressBar } from './ProgressBar'
 import { Notice } from '../Notice'

@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import React, { useState, useEffect } from 'react'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
-import { Application } from '../shared/applications'
+import { Application } from '@common/applications'
 import browser from '../services/Browser'
 
 type Props = {

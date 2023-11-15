@@ -3,8 +3,8 @@ import { Icon } from './Icon'
 import { Title } from './Title'
 import { ColorChip } from './ColorChip'
 import { useLocation } from 'react-router-dom'
-import { attributeName } from '../shared/nameHelper'
-import { REGEX_FIRST_PATH } from '../shared/constants'
+import { attributeName } from '@common/nameHelper'
+import { REGEX_FIRST_PATH } from '../constants'
 import { Tooltip } from '@mui/material'
 
 type Props = {

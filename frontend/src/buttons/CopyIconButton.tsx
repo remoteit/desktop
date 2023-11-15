@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { updateConnection } from '../helpers/connectionHelper'
 import { FontSize, Color } from '../styling'
 import { useClipboard } from 'use-clipboard-copy'
-import { Application } from '../shared/applications'
+import { Application } from '@common/applications'
 import { PromptModal } from '../components/PromptModal'
 import { IconButton, ButtonProps } from './IconButton'
 

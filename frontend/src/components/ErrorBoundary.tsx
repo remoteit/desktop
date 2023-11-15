@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo } from 'react'
 import browser from '../services/Browser'
 import { Store } from '../store'
-import { AIRBRAKE_ID, AIRBRAKE_KEY } from '../shared/constants'
+import { AIRBRAKE_ID, AIRBRAKE_KEY } from '../constants'
 import { Notifier } from '@airbrake/browser'
 import { version } from '../helpers/versionHelper'
 import '../styling/error.css'

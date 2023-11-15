@@ -1,10 +1,13 @@
-// backend/tsconfig.json
+// backend
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./build",
     "rootDir": "src",
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@common/*": ["common/build/*"]
+    }
   },
   "references": [{ "path": "../common" }],
   "include": ["src/**/*", "../types.d.ts"]

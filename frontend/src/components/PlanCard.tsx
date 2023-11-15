@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@mui/material'
 import { spacing, fontSizes, radius } from '../styling'
 import { Icon } from './Icon'

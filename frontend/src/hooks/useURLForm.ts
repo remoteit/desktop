@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { REGEX_URL_PATHNAME } from '../shared/constants'
-import { getApplicationType } from '../shared/applications'
+import { REGEX_URL_PATHNAME } from '../constants'
+import { getApplicationType } from '@common/applications'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 

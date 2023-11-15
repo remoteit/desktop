@@ -12,11 +12,11 @@ import {
   SIGNOUT_REDIRECT_URL,
   API_URL,
   DEVELOPER_KEY,
-} from '../shared/constants'
+} from '../constants'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { CognitoUser } from '../cognito/types'
-import { AuthService } from '../cognito/auth'
+import { AuthService, ConfigInterface } from '../cognito/auth'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import sleep from '../services/sleep'
@@ -60,7 +60,7 @@ const defaultState: AuthState = {
   AWSUser: { authProvider: '' },
 }
 
-const authServiceConfig = () => ({
+const authServiceConfig = (): ConfigInterface => ({
   cognitoClientID: browser.isMobile ? MOBILE_CLIENT_ID : CLIENT_ID,
   cognitoUserPoolID: COGNITO_USER_POOL_ID,
   cognitoAuthDomain: COGNITO_AUTH_DOMAIN,

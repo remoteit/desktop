@@ -1,13 +1,18 @@
 import escapeRegexp from 'escape-string-regexp'
+import { initialize } from '@common/adaptor'
 import { findType } from './models/applicationTypes'
 import { store } from './store'
 
-export function getState() {
+initialize({
+  getState: getState,
+  getCloudData: getCloudData,
+  escapeRegex: escapeRegexp,
+})
+
+function getState() {
   return store.getState().backend
 }
 
-export function getCloudData(typeId?: number) {
+function getCloudData(typeId?: number) {
   return findType(store.getState().applicationTypes.all, typeId)
 }
-
-export const escapeRegex = escapeRegexp

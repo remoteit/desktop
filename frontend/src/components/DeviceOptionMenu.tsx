@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { PROTOCOL } from '../shared/constants'
+import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'

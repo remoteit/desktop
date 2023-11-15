@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Typography, Container } from '@mui/material'
-import { NODE_ENV } from '../../../shared/constants'
+import { NODE_ENV } from '../../../constants'
 import { Link } from '../../../components/Link'
 
 export type Props = {
