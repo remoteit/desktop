@@ -12,12 +12,8 @@ export function GoogleSignInButton(props: GoogleSignInButtonProps): JSX.Element 
         color: 'grayDarker.main',
         bgcolor: 'grayLightest.main',
         padding: 0.5,
-        // '&:hover': { bgcolor: 'grayDarkest.main' },
       }}
     >
-      {/* <Stack height={36} width={40} justifyContent="center">
-        <Icon name="google" type="brands" fontSize={20} />
-      </Stack> */}
       <svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1">
         <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
           <g id="google" transform="translate(11.000000, 11.000000)">
