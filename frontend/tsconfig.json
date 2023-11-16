@@ -16,6 +16,6 @@
     }
   },
   "references": [{ "path": "../common" }],
-  "exclude": ["dist", "*.js", "*.d.ts"],
+  "exclude": ["dist"],
   "include": ["src/**/*", "../types.d.ts"]
 }
