@@ -5,16 +5,16 @@
   "main": "build/index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s clean compile copy-* pack",
-    "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
-    "copy-common": "[ -d ../common/build ] && [ -d ./build ] && cp -r ../common/build ./build/common",
     "clean": "rimraf build && mkdir build && rimraf dist && mkdir dist",
     "compile": "tsc -b",
+    "copy-common": "[ -d ../common/build ] && [ -d ./build ] && cp -r ../common/build ./build/common",
+    "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
+    "pack": "npm pack && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz",
     "start": "node build/index.js",
     "test": "NODE_ENV=test jest",
-    "pack": "npm pack && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz",
+    "test-watch": "npm run test -- --watch",
     "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p copy-* watch-*",
-    "watch-compile": "tsc --watch",
-    "test-watch": "npm run test -- --watch"
+    "watch-compile": "tsc --watch"
   },
   "dependencies": {
     "@airbrake/node": "^2.1.8",
