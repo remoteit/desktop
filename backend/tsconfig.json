@@ -9,6 +9,5 @@
       "@common/*": ["common/build/*"]
     }
   },
-  "references": [{ "path": "../common" }],
   "include": ["src/**/*", "../types.d.ts"]
 }
