@@ -158,6 +158,15 @@ npm run test-watch
 
 The build is now handled by github actions. The build artifacts are uploaded to the github releases page.
 
+### Test build electron
+
+If you want to build the app locally on your machine you can do so with the following commands:
+
+```shell
+cd electron
+npm run build-local
+```
+
 ### Generating Assets
 
 ```shell
