@@ -30,6 +30,7 @@
     "is-elevated": "^3.0.0",
     "is-port-reachable": "^3.1.0",
     "lodash.isequal": "^4.5.0",
+    "module-alias": "^2.2.3",
     "netmask": "^2.0.2",
     "network": "^0.6.1",
     "plist": "^3.1.0",
@@ -63,7 +64,6 @@
   "files": [
     "build/**/*",
     "scripts/**/*",
-    "ssl/**/*",
-    "../common/build/**/*"
+    "ssl/**/*"
   ]
 }
