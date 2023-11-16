@@ -15,6 +15,5 @@
       "@common/*": ["common/src/*"]
     }
   },
-  "references": [{ "path": "../common" }],
   "include": ["src/**/*", "../types.d.ts"]
 }

@@ -19,5 +19,6 @@
     "target": "es2017",
     "useUnknownInCatchVariables": false
   },
+  "references": [{ "path": "./electron" }, { "path": "./common" }, { "path": "./frontend" }, { "path": "./backend" }],
   "exclude": ["android", "ios"]
 }

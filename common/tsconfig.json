@@ -1,4 +1,4 @@
-// common/tsconfig.json
+// common
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
