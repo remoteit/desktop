@@ -25,7 +25,7 @@
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
     "npm-install": "npm install ../backend/dist/remoteit-headless.tgz",
-    "postinstall": "run-s install-electron",
+    "postinstall": "run-s install-*",
     "install-electron": "electron-builder install-app-deps",
     "install-binaries": "sh ./scripts/build.sh",
     "start": "npm-run-all -l -n -p copy-* watch-*",
