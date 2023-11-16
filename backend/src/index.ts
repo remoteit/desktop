@@ -1,3 +1,6 @@
+const moduleAlias = require('module-alias')
+moduleAlias.addAlias('@common', __dirname + '/common')
+
 import 'win-ca'
 import * as dotenv from 'dotenv'
 import './initializeCommon'
