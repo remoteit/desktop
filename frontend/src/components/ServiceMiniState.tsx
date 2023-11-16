@@ -1,9 +1,9 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { Box, alpha } from '@mui/material'
-import { spacing, fontSizes, Color, radius } from '../../styling'
-import { getLicenseChip } from '../LicenseChip'
-import { Icon } from '../Icon'
+import { Box, alpha, useTheme } from '@mui/material'
+import { spacing, fontSizes, Color, radius } from '../styling'
+import { getLicenseChip } from './LicenseChip'
+import { Icon } from './Icon'
 import classnames from 'classnames'
 
 interface Props {
@@ -14,7 +14,10 @@ interface Props {
 }
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick, className }) => {
-  let colorName: Color = 'grayDarker'
+  const theme = useTheme()
+  const css = useStyles()
+
+  let color: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
   let icon: React.ReactNode = null
 
@@ -26,33 +29,28 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
 
   switch (state) {
     case 'error':
-      colorName = 'danger'
+      color = 'danger'
       break
     case 'active':
-      colorName = 'grayDarker'
+      color = 'grayDarker'
       break
     case 'connected':
-      colorName = 'primary'
+      color = 'primary'
       break
     case 'transition':
-      colorName = 'grayDarkest'
+      color = 'grayDarkest'
       break
     case 'restricted':
-      colorName = 'danger'
+      color = 'danger'
       break
     case 'unknown':
-      colorName = 'grayLight'
+      color = 'grayLight'
   }
-
-  const css = useStyles({ colorName, textDecoration: state === 'inactive' ? 'line-through' : undefined })
 
   if (!service) return null
 
   const chip = getLicenseChip(service.license)
-
-  if (chip.show) {
-    colorName = chip.colorName
-  }
+  if (chip.show) color = chip.colorName
 
   const onMouseDown = event => {
     event.stopPropagation()
@@ -69,10 +67,17 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
       className={classnames(onClick && css.clickable, css.indicator, className)}
       onMouseDown={onMouseDown}
     >
-      <span className={css.background}>
+      <Box
+        component="span"
+        sx={{
+          color: `${color}.main`,
+          backgroundColor: alpha(theme.palette[color].main, 0.1),
+          textDecoration: state === 'inactive' ? 'line-through' : undefined,
+        }}
+      >
         {service.type}
         {icon}
-      </span>
+      </Box>
     </Box>
   )
 }
@@ -95,13 +100,10 @@ const useStyles = makeStyles(({ palette }) => ({
       '& svg': { marginRight: 2 },
     },
   },
-  background: ({ colorName, textDecoration }: { colorName: Color; textDecoration?: string }) => ({
-    color: palette[colorName].main,
-    backgroundColor: alpha(palette[colorName].main, 0.1),
-    textDecoration,
+  background: {
     display: 'flex',
     alignItems: 'center',
-  }),
+  },
   clickable: {
     cursor: 'pointer',
     '&:hover > span': {

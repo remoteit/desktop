@@ -148,7 +148,7 @@ const useStyles = makeStyles(({ palette }) => ({
       color: palette.grayDarkest.main,
       '&:hover': { backgroundColor: palette.primaryHighlight.main },
     },
-    '& .MuiBox-root': {
+    '& > * > .MuiBox-root, & > * > * > .MuiBox-root': {
       display: 'flex',
       alignItems: 'center',
       minHeight: 36,
