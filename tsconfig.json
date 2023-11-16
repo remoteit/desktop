@@ -19,5 +19,5 @@
     "target": "es2017",
     "useUnknownInCatchVariables": false
   },
-  "exclude": ["android", "ios", "node_modules", "build", "dist"]
+  "exclude": ["android", "ios"]
 }

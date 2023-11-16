@@ -10,6 +10,7 @@
     "noFallthroughCasesInSwitch": false,
     "noImplicitAny": false,
     "target": "ESNext",
+    "outDir": "./build",
     "paths": {
       "@common/*": ["common/src/*"]
     }
