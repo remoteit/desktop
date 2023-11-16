@@ -13,7 +13,7 @@
     "build-frontend": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=4096' npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
-    "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env backend/ && cp .env electron/",
+    "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env backend/ && cp .env electron/ || true",
     "electron": "cd electron && npm start",
     "mobile-android": "cross-env NODE_ENV=development npx cap run android",
     "mobile-ios": "cross-env NODE_ENV=development npx cap run ios --target=\"7BBB57E2-D942-4D1B-9794-24258E41F79B\"",
