@@ -1,6 +1,6 @@
 import 'win-ca'
 import * as dotenv from 'dotenv'
-import 'initializeCommon'
+import './initializeCommon'
 import debug from 'debug'
 import AirBrake from './AirBrake'
 import environment from './environment'

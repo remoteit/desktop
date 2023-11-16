@@ -3,7 +3,7 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "downlevelIteration": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -19,5 +19,5 @@
     "target": "es2017",
     "useUnknownInCatchVariables": false
   },
-  "exclude": ["android", "ios", "*/*.js", "*/*/*.js"]
+  "exclude": ["android", "ios", "frontend/dist", "*/*.js", "*/*/*.js"]
 }
