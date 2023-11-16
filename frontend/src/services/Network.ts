@@ -40,6 +40,7 @@ class Network extends EventEmitter {
   awake = () => {
     this.log('WAKE')
     this.shouldConnect = true
+    this.connect()
   }
 
   focus = () => {
