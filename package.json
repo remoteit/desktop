@@ -20,7 +20,7 @@
     "mobile-sync": "npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
-    "postinstall": "npm run build -w=backend && cd electron && npm install",
+    "postinstall": "cd electron && npm install",
     "start": "npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",

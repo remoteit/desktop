@@ -5,6 +5,6 @@
     "outDir": "./build",
     "rootDir": "src"
   },
-  "exclude": ["dist"],
+  "exclude": ["dist", "*.js", "*.d.ts"],
   "include": ["src/**/*", "../types.d.ts"]
 }
