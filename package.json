@@ -21,7 +21,7 @@
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
     "postinstall": "run-s copy-env build-frontend build-backend install-electron",
-    "install-electron": "cd electron && npm run npm-install",
+    "install-electron": "cd electron && npm install",
     "start": "npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",
