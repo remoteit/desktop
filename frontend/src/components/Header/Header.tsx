@@ -75,7 +75,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         <Route path="/add" exact>
           <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
         </Route>
-        {!isRootMenu && layout.hideSidebar && (
+        {!isRootMenu && layout.hideSidebar && !browser.isElectron && (
           <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
