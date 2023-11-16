@@ -24,7 +24,7 @@
     "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
-    "npm-install": "npm install",
+    "npm-install": "npm install ../backend/dist/remoteit-headless.tgz",
     "postinstall": "run-s install-electron",
     "install-electron": "electron-builder install-app-deps",
     "install-binaries": "sh ./scripts/build.sh",
