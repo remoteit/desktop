@@ -21,12 +21,12 @@ export function Title({ children, inline, enabled, offline, className }: TitlePr
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         opacity: offline ? 0.4 : undefined,
-        marginLeft: inline ? spacing.lg : 0,
+        marginLeft: inline ? `${spacing.lg}px` : 0,
         color: enabled ? 'primary.main' : 'text.primary',
         '& sup': {
           lineHeight: 1,
-          marginLeft: spacing.xs,
-          marginRight: spacing.xxs,
+          marginLeft: `${spacing.xs}px`,
+          marginRight: `${spacing.xxs}px`,
           color: enabled ? 'primary.main' : 'grayDark.main',
         },
       }}
