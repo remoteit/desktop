@@ -5,7 +5,8 @@
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "workspaces": [
     "backend",
-    "frontend"
+    "frontend",
+    "common"
   ],
   "scripts": {
     "build-common": "tsc -b common/tsconfig.json",
@@ -20,7 +21,7 @@
     "mobile-sync": "npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
-    "postinstall": "run-s copy-env build-frontend build-backend install-electron",
+    "postinstall": "npm run copy-env",
     "install-electron": "cd electron && npm install",
     "start": "npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
