@@ -439,8 +439,10 @@ export const attributes: Attribute[] = [
             : 'Public Proxy'
           : !connection.connected && !session
           ? 'Idle - Connect on demand'
+          : session?.source === 'WEBSOCKET'
+          ? 'Peer to Peer WebSocket'
           : connection.isP2P || session?.isP2P
-          ? 'Local Peer to Peer'
+          ? 'Peer to Peer'
           : 'Local Proxy'
         : 'Inactive'
     },
@@ -458,7 +460,7 @@ export const attributes: Attribute[] = [
         : session?.manufacturer === 'ANONYMOUS'
         ? 'Public Reverse Proxy'
         : session?.manufacturer === 'WARP'
-        ? 'Public Service Key'
+        ? 'Service Key'
         : 'Proxy',
   }),
   // new ConnectionAttribute({
