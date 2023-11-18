@@ -57,7 +57,6 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
               )}
               {service.name || 'unknown'}
             </Title>
-            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} title="Share access" />
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
