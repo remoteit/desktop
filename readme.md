@@ -125,6 +125,12 @@ Start web app
 npm start
 ```
 
+Optionally install electron
+
+```shell
+npm install-electron
+```
+
 Start electron app
 
 ```shell
