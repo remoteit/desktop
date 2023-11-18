@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { List, ListItem, ListItemText, Collapse } from '@mui/material'
+import { ConnectionErrorMenu } from '../ConnectionErrorMenu'
+import { radius, spacing } from '../../styling'
+import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
-import { clearConnectionError } from '../../helpers/connectionHelper'
-import { List, ListItem, ListItemSecondaryAction, ListItemText, Collapse } from '@mui/material'
-import { IconButton } from '../../buttons/IconButton'
 import { Gutters } from '../Gutters'
-import { radius, spacing } from '../../styling'
 
 type Props = { connection?: IConnection; visible?: boolean }
 
@@ -35,28 +34,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, visible })
         <List disablePadding>
           <ListItem>
             <ListItemText primary="Connection Error" secondary={connection.error.message} />
-            <ListItemSecondaryAction>
-              <IconButton
-                title="Report Issue"
-                name="flag"
-                color="alwaysWhite"
-                onClick={async () => {
-                  await dispatch.feedback.set({
-                    subject: `Connection Issue Report for ${connection?.name}`,
-                    data: connection,
-                  })
-                  history.push('/feedback')
-                }}
-                size="base"
-              />
-              <IconButton
-                title="Clear"
-                name="times"
-                color="alwaysWhite"
-                onClick={() => clearConnectionError(connection)}
-                size="md"
-              />
-            </ListItemSecondaryAction>
+            <ConnectionErrorMenu connection={connection} />
           </ListItem>
         </List>
       </Gutters>
