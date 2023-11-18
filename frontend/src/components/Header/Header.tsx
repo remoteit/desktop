@@ -74,14 +74,12 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        {!browser.isElectron && (
+        {!browser.isElectron && layout.hideSidebar && (
           <>
             <Route path="/add" exact>
               <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
             </Route>
-            {!isRootMenu && layout.hideSidebar && (
-              <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
-            )}
+            {!isRootMenu && <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />}
           </>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
