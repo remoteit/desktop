@@ -6,7 +6,6 @@ import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
-import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersTab } from './UsersTab'
 import { Container } from './Container'
 import { Gutters } from './Gutters'
@@ -25,11 +24,6 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            <AddUserButton
-              to={`/devices/${device.id}/share`}
-              hide={!device.permissions.includes('MANAGE')}
-              title="Share access"
-            />
             <DeviceOptionMenu device={device} />
           </Typography>
           {device.attributes.description && (

@@ -40,6 +40,19 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
+        {device.permissions.includes('MANAGE') && (
+          <MenuItem
+            dense
+            key="restore"
+            to={`/devices/${device.id}/${service ? service.id + '/' : ''}share`}
+            component={Link}
+          >
+            <ListItemIcon>
+              <Icon name="share" size="md" />
+            </ListItemIcon>
+            <ListItemText primary="Share access" />
+          </MenuItem>
+        )}
         {(!devicesSection || service) && (
           <ListItemLocation
             title="Device Details"
