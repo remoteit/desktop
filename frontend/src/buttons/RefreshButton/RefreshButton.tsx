@@ -18,6 +18,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
   let attributes = { ...props }
   attributes.title = 'Refresh application'
+  attributes.placement = 'bottom'
   attributes.disabled = fetching
   attributes.icon = 'sync'
   attributes.spin = fetching
