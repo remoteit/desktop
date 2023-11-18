@@ -12,7 +12,6 @@ import { ClaimDevice } from '../components/ClaimDevice'
 import { AddQuickPlatform } from '../components/AddQuickPlatform'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
-import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
@@ -55,6 +54,14 @@ export const AddPage: React.FC = () => {
               <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
             </ListItemIcon>
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
+          </ListItem>
+        </List>
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
+        <List className={classnames(css.list, css.smallList)} dense disablePadding>
+          <ListSubheader disableGutters>Claim a device</ListSubheader>
+          <Divider />
+          <ListItem>
+            <ClaimDevice />
           </ListItem>
         </List>
         <List className={classnames(css.list, css.bigList)} dense disablePadding>
@@ -122,14 +129,6 @@ export const AddPage: React.FC = () => {
             return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
           })}
         </List>
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.smallList)} dense disablePadding>
-          <ListSubheader disableGutters>Claim a device</ListSubheader>
-          <Divider />
-          <ListItem>
-            <ClaimDevice />
-          </ListItem>
-        </List>
       </Stack>
     </Container>
   )
@@ -148,6 +147,7 @@ const useStyles = makeStyles(({ breakpoints }) => ({
     '& .MuiListItem-root': {
       display: 'block',
       minWidth: 140,
+      minHeight: 85,
       paddingLeft: spacing.md,
       paddingTop: spacing.lg,
       paddingBottom: spacing.sm,
@@ -163,9 +163,11 @@ const useStyles = makeStyles(({ breakpoints }) => ({
     width: 140,
   },
   smallList: {
-    [breakpoints.up('md')]: { width: '25%' },
+    width: '100%',
+    [breakpoints.up('sm')]: { width: '33%' },
   },
   bigList: {
+    width: '100%',
     [breakpoints.up('md')]: { width: '75%' },
   },
 }))
