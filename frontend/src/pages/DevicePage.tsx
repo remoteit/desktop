@@ -10,7 +10,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, Tooltip, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
@@ -19,6 +19,7 @@ import { LicensingNotice } from '../components/LicensingNotice'
 import { PlanActionChip } from '../components/PlanActionChip'
 import { LinearProgress } from '../components/LinearProgress'
 import { ConnectButton } from '../buttons/ConnectButton'
+import { JumpIndicator } from '../components/JumpIndicator'
 import { RestoreModal } from '../components/RestoreModal'
 import { GuideBubble } from '../components/GuideBubble'
 import { DeviceName } from '../components/DeviceName'
@@ -73,16 +74,33 @@ export const DevicePage: React.FC = () => {
                 `/devices/${device.id}/users`,
                 `/devices/${device.id}/logs`,
               ]}
-              icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
-              onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
-              exactMatch
               title={
                 <Typography variant="h3">
                   <DeviceName device={device} connection={connection} />
                 </Typography>
               }
               subtitle={device.thisDevice ? 'This device' : undefined}
-            />
+              icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
+              onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
+              exactMatch
+            >
+              {editable && (
+                <ListItemSecondaryAction className="hidden">
+                  <IconButton
+                    title="Rename Device"
+                    buttonBaseSize="small"
+                    onClick={event => {
+                      event.stopPropagation()
+                      history.push(`/devices/${device.id}/edit`)
+                    }}
+                    icon="pencil"
+                    color="grayDark"
+                    size="sm"
+                    shiftDown
+                  />
+                </ListItemSecondaryAction>
+              )}
+            </ListItemLocation>
             <DeviceTagEditor device={device} />
           </List>
           <LinearProgress loading={!device.loaded} />
@@ -197,7 +215,8 @@ export const DevicePage: React.FC = () => {
                 />
                 <ListItemText primary={<DeviceName service={s} connection={c} />} />
                 <NetworksIndicator instance={device} service={s} />
-                <ServiceMiniState service={s} connection={c} className={css.service} />
+                <JumpIndicator service={s} />
+                <ServiceMiniState service={s} connection={c} />
               </ListItemLocation>
             )
           })}
@@ -211,6 +230,5 @@ export const DevicePage: React.FC = () => {
 const useStyles = makeStyles({
   connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
-  list: { marginRight: 1 },
-  service: { marginRight: spacing.sm, marginLeft: spacing.sm },
+  list: { '& .MuiListItem-root': { paddingRight: spacing.sm } },
 })
