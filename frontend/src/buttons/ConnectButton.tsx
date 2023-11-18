@@ -141,7 +141,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   return state === 'connected' && props.size === 'large' && browser.hasBackend ? (
     <Stack flexDirection="row">
-      {button}
+      {button} &nbsp;
       <DynamicButton
         icon="stop"
         color="primary"
