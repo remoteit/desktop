@@ -275,7 +275,7 @@ export default class ConnectionPool {
       Logger.warn('HOSTNAME ERROR', { connection: instance.params })
       instance.params.error = {
         message:
-          'Unable to use custom hostname. If this continues turn off "Named Connections" in the Application Settings page.',
+          'Unable to use custom hostname. If this continues turn off "Named Connections" or try "Re-install system agent" on the Application Settings page.',
         code: CLI_CERT_FAILURE_ERROR_CODE,
       }
       this.updated(instance)
