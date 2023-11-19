@@ -2,8 +2,10 @@ import React, { useContext, useEffect } from 'react'
 import { DeviceContext } from '../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
+import { attributeName } from '@common/nameHelper'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
+import { DeviceName } from '../components/DeviceName'
 import { Typography } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
@@ -24,7 +26,7 @@ type Props = {
 }
 
 export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, children }) => {
-  const { connectThisDevice } = useSelector((state: ApplicationState) => state.ui)
+  const { connectThisDevice, layout } = useSelector((state: ApplicationState) => state.ui)
   const { device, service, instance, user } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
 
@@ -36,6 +38,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
 
   const thisDevice = device?.thisDevice && instance?.owner.id === user.id
   const displayThisDevice = thisDevice && !connectThisDevice
+  const deviceName = attributeName(device)
 
   return (
     <Container
@@ -46,12 +49,18 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
         <>
           <OutOfBand />
           <Typography variant="h1" gutterBottom={!service?.attributes.description}>
-            <Title>{service.name || 'unknown'}</Title>
-            <AddUserButton to="share" hide={!device.permissions.includes('MANAGE')} title="Share access" />
+            <Title>
+              {layout.mobile && (
+                <Typography variant="caption" component="div">
+                  {deviceName}
+                </Typography>
+              )}
+              {service.name || 'unknown'}
+            </Title>
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
-            <Gutters top={null}>
+            <Gutters top="sm">
               <Typography variant="body2" color="textSecondary">
                 {service.attributes.description}
               </Typography>

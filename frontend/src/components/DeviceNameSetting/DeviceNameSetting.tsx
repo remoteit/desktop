@@ -1,9 +1,9 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../../services/Context'
-import { MAX_NAME_LENGTH } from '../../shared/constants'
+import { MAX_NAME_LENGTH } from '@common/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { safeHostname, attributeName } from '../../shared/nameHelper'
+import { safeHostname, attributeName } from '@common/nameHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { getDevices } from '../../selectors/devices'
 

@@ -1,8 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { HIDE_SIDEBAR_WIDTH } from '../shared/constants'
 import { spacing } from '../styling'
 import { usePanelWidth } from '../hooks/usePanelWidth'
-import { useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
 import classnames from 'classnames'
@@ -17,7 +15,6 @@ const MIN_WIDTH = 300
 const PADDING = 9
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => {
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const [panelWidth, setPanelWidth] = usePanelWidth()
   const handleRef = useRef<number>(panelWidth)
   const primaryRef = useRef<HTMLDivElement>(null)

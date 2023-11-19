@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../../shared/constants'
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../../constants'
 import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
 import { Box, TextField, Typography } from '@mui/material'

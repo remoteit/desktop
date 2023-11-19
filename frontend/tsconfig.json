@@ -1,23 +1,21 @@
+// frontend
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
-    "useUnknownInCatchVariables": false,
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ESNext",
-    "isolatedModules": true,
-    "noImplicitAny": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
     "noFallthroughCasesInSwitch": false,
-    "noEmit": true
+    "noImplicitAny": false,
+    "target": "ESNext",
+    "outDir": "./build",
+    "paths": {
+      "@common/*": ["common/src/*"]
+    }
   },
-  "include": ["src", "../common"]
+  "references": [{ "path": "../common" }],
+  "exclude": ["dist"],
+  "include": ["src/**/*", "../types.d.ts"]
 }

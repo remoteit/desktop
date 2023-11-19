@@ -1,4 +1,3 @@
-import { CLI_REACHABLE_ERROR_CODE } from './sharedCopy/constants'
 import { cliBinary } from './Binary'
 import { toUnicode } from 'punycode'
 import binaryInstaller from './binaryInstaller'

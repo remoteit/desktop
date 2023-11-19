@@ -1,4 +1,4 @@
-import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../shared/constants'
+import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
 import React, { useState, useRef } from 'react'
 import useMobileBack from '../../hooks/useMobileBack'
 import browser from '../../services/Browser'
@@ -56,6 +56,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           <>
             <IconButton
               title="Back"
+              placement="bottom"
               disabled={!canNavigate.canGoBack}
               onClick={() => emit('navigate', 'BACK')}
               icon="chevron-left"
@@ -64,6 +65,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
             <IconButton
               title="Forward"
+              placement="bottom"
               disabled={!canNavigate.canGoForward}
               onClick={() => emit('navigate', 'FORWARD')}
               icon="chevron-right"
@@ -72,11 +74,13 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             />
           </>
         )}
-        <Route path="/add" exact>
-          <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
-        </Route>
-        {!isRootMenu && layout.hideSidebar && (
-          <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
+        {!browser.isElectron && layout.hideSidebar && (
+          <>
+            <Route path="/add" exact>
+              <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+            </Route>
+            {!isRootMenu && <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />}
+          </>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         <Title className={css.search}>

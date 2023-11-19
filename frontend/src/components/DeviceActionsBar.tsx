@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'

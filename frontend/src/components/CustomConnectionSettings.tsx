@@ -1,6 +1,6 @@
 import React from 'react'
 import browser from '../services/Browser'
-import { Application } from '../shared/applications'
+import { Application } from '@common/applications'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { newConnection, updateConnection, isFileToken } from '../helpers/connectionHelper'

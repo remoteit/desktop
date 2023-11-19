@@ -1,9 +1,10 @@
+// electron
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./build",
     "rootDir": "src"
   },
-  "exclude": ["node_modules"],
-  "include": ["src", "../common"]
+  "exclude": ["dist"],
+  "include": ["src/**/*", "../types.d.ts"]
 }

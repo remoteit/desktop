@@ -7,12 +7,11 @@ export function GoogleSignInButton(props: GoogleSignInButtonProps): JSX.Element 
   return (
     <Button
       {...props}
-      variant="contained"
+      variant="outlined"
       sx={{
-        color: 'white.main',
-        bgcolor: 'grayDarkest.main',
-        padding: 1,
-        '&:hover': { bgcolor: 'black.main' },
+        color: 'grayDarker.main',
+        bgcolor: 'grayLightest.main',
+        padding: 0.5,
       }}
     >
       <svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1">

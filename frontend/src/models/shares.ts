@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { getAccess } from '../helpers/userHelper'
-import { attributeName } from '../shared/nameHelper'
+import { attributeName } from '@common/nameHelper'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
 

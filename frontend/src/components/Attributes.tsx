@@ -1,5 +1,6 @@
 import React from 'react'
-import { IP_PRIVATE, PROTOCOL } from '../shared/constants'
+import { IP_PRIVATE } from '@common/constants'
+import { PROTOCOL } from '../constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
@@ -438,8 +439,10 @@ export const attributes: Attribute[] = [
             : 'Public Proxy'
           : !connection.connected && !session
           ? 'Idle - Connect on demand'
+          : session?.source === 'WEBSOCKET'
+          ? 'Peer to Peer WebSocket'
           : connection.isP2P || session?.isP2P
-          ? 'Local Peer to Peer'
+          ? 'Peer to Peer'
           : 'Local Proxy'
         : 'Inactive'
     },
@@ -454,8 +457,10 @@ export const attributes: Attribute[] = [
         ? session?.source === 'WEBSOCKET'
           ? 'Peer to Peer WebSocket'
           : 'Peer to Peer'
-        : session?.anonymous
-        ? 'Public Proxy'
+        : session?.manufacturer === 'ANONYMOUS'
+        ? 'Public Reverse Proxy'
+        : session?.manufacturer === 'WARP'
+        ? 'Service Key'
         : 'Proxy',
   }),
   // new ConnectionAttribute({

@@ -2,7 +2,7 @@
 import React from 'react'
 import browser from '../services/Browser'
 import classnames from 'classnames'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
@@ -148,7 +148,7 @@ const useStyles = makeStyles(({ palette }) => ({
       color: palette.grayDarkest.main,
       '&:hover': { backgroundColor: palette.primaryHighlight.main },
     },
-    '& .MuiBox-root': {
+    '& > * > .MuiBox-root, & > * > * > .MuiBox-root': {
       display: 'flex',
       alignItems: 'center',
       minHeight: 36,

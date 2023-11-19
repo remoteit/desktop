@@ -57,6 +57,8 @@ export const selectConnectionSessions = createSelector(
         timestamp: new Date(c.startTime || 0),
         platform: 1, // FIXME this device state platform
         source: 'UNKNOWN',
+        manufacturer: 'UNKNOWN',
+        reverseProxy: false,
         user: user,
         target: {
           id: c.id,

@@ -29,10 +29,7 @@ export const NetworksIndicator: React.FC<Props> = ({ instance, service }) => {
         </>
       }
     >
-      <Typography variant="caption" color="grayDarker.main">
-        <Icon name="chart-network" size="xxs" inlineLeft />
-        {joinedNetworks.length > 1 ? joinedNetworks.length.toLocaleString() : undefined}
-      </Typography>
+      <Icon name="chart-network" size="xxs" color="grayDark" inlineLeft />
     </Tooltip>
   )
 }

@@ -19,9 +19,7 @@ export interface Props {
   offline: boolean
   platform?: number
   enabled?: boolean
-  anonymous?: boolean
-  reverseProxy?: boolean
-  networkEnabled?: boolean
+  manufacturer?: ISession['manufacturer']
   children?: React.ReactNode
 }
 
@@ -35,20 +33,19 @@ export const ConnectionListItem: React.FC<Props> = ({
   offline,
   platform,
   enabled,
-  anonymous,
-  reverseProxy,
-  networkEnabled,
+  manufacturer,
   children,
 }) => {
   const dispatch = useDispatch<Dispatch>()
   const error = !!connection?.error
   const color = offline ? 'gray' : error ? 'error' : enabled ? 'primary' : 'grayDarkest'
-  const css = useStyles({ connected, networkEnabled, color })
+  const borderColor = error ? 'error' : enabled ? 'primary' : 'grayDark'
+  const css = useStyles({ connected, color: borderColor })
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
-  if (connection?.connectLink || anonymous)
-    icon = <Icon color={color} name={reverseProxy ? 'globe' : 'key'} type="solid" size="xxs" />
+  if (connection?.connectLink || manufacturer === 'ANONYMOUS' || manufacturer === 'WARP')
+    icon = <Icon color={color} name={manufacturer === 'WARP' ? 'key' : 'globe'} type="solid" size="xxs" />
 
   return (
     <ListItemLocation
@@ -77,8 +74,8 @@ export const ConnectionListItem: React.FC<Props> = ({
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
-  connection: ({ networkEnabled, connected, color }: any) => ({
-    borderColor: networkEnabled || connected ? palette.primary.main : palette[color]?.main,
+  connection: ({ connected, color }: any) => ({
+    borderColor: connected ? palette.primary.main : palette[color]?.main,
     borderBottomColor: palette[color]?.main,
     borderWidth: '0 0 1px 1px',
     borderBottomWidth: 1,

@@ -26,27 +26,9 @@ The desktop application serves one primary purpose which is to create a Peer-to-
 
 - Windows
 - Mac
-- Raspberry Pi
-- Ubuntu
-- Headless (No GUI system)
-
-## Headless
-
-The desktop can also be installed only as a web-service to manage a device in a headless environment. Install and run headless.
-
-```shell
-curl -O -L https://github.com/remoteit/desktop/releases/download/latest/remoteit-headless.tgz
-tar -xf remoteit-headless.tgz
-sudo node package/build
-```
-
-To run in the background
-
-```shell
-nohup sudo node package/build &
-```
-
-Desktop can then be accessed on port 29999, either on localhost or over the local network.
+- Linux
+- iOS
+- Android
 
 ## Start as root / admin
 
@@ -80,44 +62,56 @@ The desktop app runs a web service at port 29999 for remote access.
 
 If things aren't working the best way to clear everything and start over is to use the **Uninstall command line tools** menu in the advanced settings screen.
 
-**CLI tools**
+### CLI tools
 
 The Desktop installs and depends on the remote.it CLI tools.
 At startup they are installed here:
 
-```
+```shell
 Mac      /Applications/Remoteit.app/Contents/Resources/mac
 Linux    /usr/bin/
 Windows  C:/Program Files/remoteit/resources
 ```
 
-**Configuration and log files**
+### Configuration and log files
 
-```
+```shell
 Mac      ~/.remoteit/
 Linux    ~/.remoteit/
 Windows  C:\Users\%username%\AppData\Local\remoteit\
          C:\Users\%username%\AppData\Temp\remoteit.log
 ```
 
-**CLI config files**
+### CLI config files
 
-```
+```shell
 Mac      /etc/remoteit/
 Linux    /etc/remoteit/
 Windows  C:\ProgramData\remoteit\
 ```
 
-**Windows installer log**
+### Windows installer log
 
-```
+```shell
 Windows  C:\Users\%username%\AppData\Local\temp\remoteit.log
 ```
 
 ## Development
 
-_See setup instructions below_
-Installation
+### Setup
+
+Get a copy of the .env file
+place the .env file in the root directory - it will be copied into the sub projects at start
+
+To use the fontawesome fonts:
+[Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
+
+```shell
+npm config set "@fortawesome:registry" https://npm.fontawesome.com/
+npm config set "//npm.fontawesome.com/:_authToken" [FONT_AWESOME_TOKEN]
+```
+
+### Installation
 
 ```shell
 nvm install
@@ -129,6 +123,12 @@ Start web app
 
 ```shell
 npm start
+```
+
+Optionally install electron
+
+```shell
+npm install-electron
 ```
 
 Start electron app
@@ -160,65 +160,37 @@ or
 npm run test-watch
 ```
 
-### Setup
+## Building
 
-Get a copy of the .env file
-place the .env file in the root directory - it will be copied into the sub projects at start
+The build is now handled by github actions. The build artifacts are uploaded to the github releases page.
 
-To use the fontawesome fonts:
-[Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
+### Test build electron
+
+If you want to build the app locally on your machine you can do so with the following commands:
 
 ```shell
-npm config set "@fortawesome:registry" https://npm.fontawesome.com/
-npm config set "//npm.fontawesome.com/:_authToken" [FONT_AWESOME_TOKEN]
+cd electron
+npm run build-local
 ```
-
-### Building
-
-On windows:
-Will need to Install:
-
-- NodeJS 11.6 or higher
-- Git Bash
-- VS Code (recommended)
-
-To build the whole app for production: `npm run build --arch = 'XXX'` (possible options: win, mac, linux, armv7l, arm64)
-
-- But this requires the physical signing key.
-  To build without signing you must remove the signing credentials from `package.json`
-
-  - Remove these two attributes under Build > Win: `certificateSubjectName` and `certificateSha1`
-  - Then run `npm run build --arch = 'XXX'`
-
-- Example
-  - npm run build --arch=arm64
-  - npm run build --arch=win
-  - npm run build --arch=mac
-  - npm run build --arch=armv7l
-
-To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
-The final build will be produced in the `dist` directory
 
 ### Generating Assets
 
-``` shell
+```shell
 npx @capacitor/assets generate --iconBackgroundColor '#0096e7' --splashBackgroundColor '#0096e7' --android --ios
 ```
 
 For electron app icon
 
-``` shell
+```shell
 ./electron/scripts/icns-creator assets/app-icon.png
 mv -f ./iconbuilder.iconset/* ./electron/src/icons
 mv -f iconbuilder.icns ./electron/src/icons/icon.icns
 rm -rf iconbuilder.iconset
 ```
 
-Then move all the generated icons to `electron/src/icons`
-
 ### Release iOS
 
-``` shell
+```shell
 npm run build-mobile
 npm run open-ios
 ```
@@ -231,7 +203,7 @@ In XCode:
 
 ### Release Android
 
-``` shell
+```shell
 npm run build-mobile
 npm run open-android
 ```
@@ -262,34 +234,20 @@ If it's not working check that the developer account is signed into XCode and th
 
 More info can be found in this setup guide: [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)
 
-#### Packaging for running headless
-
-```cmd
-npm run package
-```
-
 #### Packaging for linux snaps
 
 To test install a snap package:
 
-```cmd
+```shell
 sudo snap install my-snap-name_0.1_amd64.snap --dangerous --devmode
 ```
 
 To install and uninstall a deb package:
 
-```
+```shell
 sudo dpkg -i /home/jamie/Code/desktop/dist/remoteit-amd64-installer.deb
 sudo dpkg -r remoteit-desktop
 ```
-
-### Publishing
-
-You should have an env var set `export GH_TOKEN="<YOUR_TOKEN_HERE>"`
-
-to publish `npm run publish`
-
-<!-- "release": "build -p always",  -->
 
 ### Windows full app signing
 
@@ -305,11 +263,11 @@ to publish `npm run publish`
   - Find the 'Path' variable
   - Add the signtool directory
 
-**Set the sign tool to auto respond to the password prompt:**
+#### Set the sign tool to auto respond to the password prompt:
 
 With an EV signing cert you cannot automate the token password, but you can set the sign tool to remember the password for the logged in session: https://stackoverflow.com/questions/17927895/automate-extended-validation-ev-code-signing
 
-**To sign the application follow these steps:**
+#### To sign the application follow these steps:
 
 1. Insert USB Certificate
 2. `npm run build`
@@ -343,13 +301,7 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 
 The application should now be signed. It will not support auto-updating.
 
-## Windows Debug command
-
-```bash
-DEBUG=electron-builder ./node_modules/.bin/electron-builder -w
-```
-
-### Update process
+## Update process
 
 Check dependencies
 `npx depcheck`

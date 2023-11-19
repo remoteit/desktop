@@ -5,7 +5,7 @@ import {
   GOOGLE_TAG_MANAGER_PORTAL_KEY,
   GOOGLE_TAG_MANAGER_ANDROID_KEY,
   GOOGLE_TAG_MANAGER_IOS_KEY,
-} from '../shared/constants'
+} from '../constants'
 import TagManager from 'react-gtm-module'
 
 const analytics = {

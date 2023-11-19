@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { List, ListProps, useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
@@ -34,14 +34,16 @@ const useStyles = makeStyles({
     },
     '& .MuiListItem-root': {
       display: small ? undefined : 'block',
-      minWidth: mobile ? undefined : 100,
-      width: mobile ? 60 : 100,
+      minWidth: mobile ? undefined : 120,
+      width: mobile ? 90 : 100,
       paddingLeft: small ? undefined : spacing.md,
       paddingTop: small ? undefined : spacing.lg,
       paddingBottom: small ? undefined : spacing.sm,
       paddingRight: spacing.md,
       margin: 1,
     },
-    '& .MuiListItemText-root': { display: mobile ? 'none' : undefined },
+    '& .MuiListItemText-root > .MuiTypography-root': {
+      fontSize: mobile ? '12px' : undefined,
+    },
   }),
 })

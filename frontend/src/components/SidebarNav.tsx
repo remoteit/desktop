@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { MOBILE_WIDTH } from '../shared/constants'
+import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
@@ -87,15 +87,7 @@ export const SidebarNav: React.FC = () => {
                     overlap="circular"
                   >
                     <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
-                      <Chip
-                        size="small"
-                        label={counts.connections.toLocaleString()}
-                        sx={{
-                          border: counts.active && counts.memberships ? 'initial' : undefined,
-                          borderColor: 'primary.main',
-                          borderStyle: 'solid',
-                        }}
-                      />
+                      <Chip size="small" label={counts.connections.toLocaleString()} />
                     </Tooltip>
                   </Badge>
                 )

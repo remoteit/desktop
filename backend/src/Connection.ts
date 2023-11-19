@@ -1,6 +1,6 @@
 import cli from './cliInterface'
 import debug from 'debug'
-import { IP_OPEN, IP_PRIVATE } from './sharedCopy/constants'
+import { IP_OPEN, IP_PRIVATE } from '@common/constants'
 
 const d = debug('r3:backend:Connection')
 const MAX_COMMAND_LOGS = 5

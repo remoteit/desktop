@@ -1,6 +1,6 @@
 import React from 'react'
 import browser, { windowOpen, getOs } from '../services/Browser'
-import { safeHostname } from '../shared/nameHelper'
+import { safeHostname } from '@common/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Button, Typography } from '@mui/material'

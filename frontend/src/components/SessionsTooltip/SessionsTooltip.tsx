@@ -1,5 +1,5 @@
 import React from 'react'
-import { attributeName } from '../../shared/nameHelper'
+import { attributeName } from '@common/nameHelper'
 import { Tooltip, TooltipProps, Divider } from '@mui/material'
 
 const MAX_SESSIONS_DISPLAY = 3

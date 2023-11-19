@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+const path = require('path')
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -7,12 +8,10 @@ export default defineConfig({
     outDir: 'build',
     minify: process.env.NODE_ENV === 'production',
     emptyOutDir: true,
-  },
-  optimizeDeps: {
-    // exclude: ['immer'],
+    sourcemap: true,
   },
   plugins: [react()],
-  // resolve: {
-  //   alias: { '@shared': path.resolve(__dirname, '../shared') },
-  // },
+  resolve: {
+    alias: { '@common': path.resolve(__dirname, '../common/src') },
+  },
 })

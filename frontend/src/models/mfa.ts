@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { AUTH_API_URL, DEVELOPER_KEY } from '../shared/constants'
+import { AUTH_API_URL, DEVELOPER_KEY } from '../constants'
 import { getToken } from '../services/remoteit'
 import { RootModel } from '.'
 import axios from 'axios'

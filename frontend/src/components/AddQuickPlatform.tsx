@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Stack, ListItemIcon, Box } from '@mui/material'
@@ -15,24 +15,18 @@ export const AddQuickPlatform: React.FC = () => {
   const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
 
+  useEffect(() => {
+    setApplicationTypes(defaultServices)
+  }, [platform])
+
   return (
-    <Stack flexWrap={{ xs: 'wrap', md: 'nowrap' }} width="100%" flexDirection="row">
-      <Stack
-        flexDirection="column"
-        alignItems={{ xs: 'flex-start', md: 'flex-end' }}
-        maxWidth={130}
-        marginTop={3}
-        paddingRight={2}
-      >
+    <Stack flexWrap={{ xs: 'wrap', md: 'nowrap' }} width="100%" flexDirection="row" marginBottom={3}>
+      <Stack flexDirection="column" alignItems="flex-start" maxWidth={130} marginTop={3} paddingRight={2}>
         <ListItemIcon>
           <Icon name={platform} size="xxl" platformIcon fixedWidth />
         </ListItemIcon>
         {permissions?.includes('MANAGE') && (
-          <AddPlatformServices
-            types={applicationTypes}
-            onChange={type => setApplicationTypes(type)}
-            textAlign={{ md: 'right' }}
-          />
+          <AddPlatformServices types={applicationTypes} onChange={type => setApplicationTypes(type)} />
         )}
       </Stack>
       <Box paddingTop={2}>

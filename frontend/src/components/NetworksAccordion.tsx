@@ -44,7 +44,6 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service
                 options={accessibleNetworks.map(n => ({
                   value: n.id,
                   label: n.name,
-                  color: n.enabled ? 'primary' : undefined,
                   disabled: !!joinedNetworks.some(j => j.id === n.id),
                 }))}
                 title={!accessibleNetworks.length ? 'Add a network' : 'Connect to network'}

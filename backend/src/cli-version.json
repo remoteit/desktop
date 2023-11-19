@@ -1,6 +1,6 @@
 {
   "cli": "3.0.36",
-  "connectd": "5.0.0alpha",
+  "connectd": "5.0.1",
   "muxer": "0.7.0",
   "demuxer": "0.7.0",
   "cliUrl": "https://downloads.remote.it/cli/v",

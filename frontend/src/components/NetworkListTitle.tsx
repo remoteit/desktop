@@ -12,12 +12,21 @@ export interface Props {
   expanded?: boolean
   offline?: boolean
   noLink?: boolean
+  enabled?: boolean
   onClick?: (event: React.MouseEvent) => void
   children?: React.ReactNode
 }
 
-export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, offline, noLink, onClick, children }) => {
-  const css = useStyles({ enabled: network?.enabled, offline })
+export const NetworkListTitle: React.FC<Props> = ({
+  network,
+  expanded = true,
+  offline,
+  noLink,
+  enabled,
+  onClick,
+  children,
+}) => {
+  const css = useStyles({ enabled, offline })
   return (
     <ListItemLocation
       className={css.item}
@@ -37,7 +46,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
               className={classnames(css.mergeIcon, noLink || 'hoverHide')}
               name={network?.icon}
               type={network?.iconType}
-              color={network?.enabled ? 'primary' : undefined}
+              color={enabled ? 'primary' : undefined}
             />
           )}
           {!noLink && (
@@ -46,7 +55,7 @@ export const NetworkListTitle: React.FC<Props> = ({ network, expanded = true, of
               name="sliders-h"
               type="light"
               size="md"
-              color={network?.enabled ? 'primary' : undefined}
+              color={enabled ? 'primary' : undefined}
             />
           )}
         </>

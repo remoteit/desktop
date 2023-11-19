@@ -1,6 +1,6 @@
 import React from 'react'
 import browser, { getOs } from '../../services/Browser'
-import { safeHostname } from '../../shared/nameHelper'
+import { safeHostname } from '@common/nameHelper'
 import { getDeviceModel } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -80,7 +80,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   return (
     <DesktopUI>
       <List className={className} dense disablePadding>
-        <ListSubheader disableGutters>Add this system</ListSubheader>
+        <ListSubheader disableGutters>This system</ListSubheader>
         <Divider />
         <GuideBubble
           enterDelay={400}

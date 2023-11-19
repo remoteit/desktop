@@ -2,7 +2,7 @@ import React from 'react'
 import browser from '../services/Browser'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { ORGANIZATION_BAR_WIDTH } from '../shared/constants'
+import { ORGANIZATION_BAR_WIDTH } from '../constants'
 import { OrganizationSelect } from './OrganizationSelect'
 import { spacing } from '../styling'
 

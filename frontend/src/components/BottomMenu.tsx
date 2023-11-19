@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { REGEX_FIRST_PATH } from '../shared/constants'
+import { REGEX_FIRST_PATH } from '../constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Box, BottomNavigation, BottomNavigationAction, Badge } from '@mui/material'
 import { useCounts } from '../hooks/useCounts'

@@ -41,7 +41,7 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm install
 
       - name: Build/release Electron app

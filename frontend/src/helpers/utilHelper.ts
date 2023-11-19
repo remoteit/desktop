@@ -1,4 +1,4 @@
-import { REGEX_VALID_IP } from '../shared/constants'
+import { REGEX_VALID_IP } from '../constants'
 
 export function toLookup<T>(array: T[], key: string): ILookup<T> {
   return array.reduce((obj, item) => ({ ...obj, [item[key]]: item }), {})

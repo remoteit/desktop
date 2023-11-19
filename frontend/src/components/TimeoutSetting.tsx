@@ -1,8 +1,9 @@
 import React from 'react'
 import { Tooltip } from '@mui/material'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { DEFAULT_CONNECTION, REGEX_CHARACTERS } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
+import { DEFAULT_CONNECTION } from '@common/constants'
+import { REGEX_CHARACTERS } from '../constants'
 import { Icon } from './Icon'
 
 const PUBLIC_TIMEOUT = 15

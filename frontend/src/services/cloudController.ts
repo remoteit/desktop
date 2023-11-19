@@ -1,9 +1,9 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
 import network from '../services/Network'
-import { PUBLIC_PROXY_MANUFACTURER_CODE } from '../shared/constants'
+import { isReverseProxy } from '../models/applicationTypes'
 import { accountFromDevice } from '../models/accounts'
-import { DEVICE_TYPE } from '../shared/applications'
+import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
@@ -12,8 +12,13 @@ import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectById } from '../selectors/devices'
-import { combinedName } from '../shared/nameHelper'
-import { setConnection, findLocalConnection } from '../helpers/connectionHelper'
+import { combinedName } from '@common/nameHelper'
+import {
+  setConnection,
+  findLocalConnection,
+  getManufacturerType,
+  getManufacturerUser,
+} from '../helpers/connectionHelper'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors } from './graphQL'
 import { agent } from '../services/Browser'
@@ -217,6 +222,7 @@ class CloudController {
         source: event.source,
         geo: event.sourceGeo,
         quantity: event.quantity,
+        reverseProxy: isReverseProxy(state, event.target[0]?.application),
         manufacturer: event.manufacturer,
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,
@@ -306,15 +312,15 @@ class CloudController {
 
           // session state
           if (event.state === 'connected') {
-            const anonymous = event.manufacturer === PUBLIC_PROXY_MANUFACTURER_CODE
             sessions.setSession({
-              anonymous,
               id: event.sessionId,
+              manufacturer: getManufacturerType(event.manufacturer, event.reverseProxy),
+              reverseProxy: event.reverseProxy,
               timestamp: event.timestamp,
               source: event.source,
               platform: event.platform,
               isP2P: event.isP2P,
-              user: anonymous ? { id: 'ANON', email: 'Anonymous User' } : event.actor,
+              user: getManufacturerUser(event.manufacturer, event.reverseProxy) || event.actor,
               geo: event.geo,
               target: {
                 id: target.id,

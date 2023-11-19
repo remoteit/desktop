@@ -1,4 +1,3 @@
-import cli from './cliInterface'
 import user from './User'
 import AirBrake from './AirBrake'
 import Logger from './Logger'

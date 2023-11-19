@@ -1,5 +1,5 @@
 import React from 'react'
-import { PROTOCOL } from '../../shared/constants'
+import { PROTOCOL } from '../../constants'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { CopyIconButton } from '../../buttons/CopyIconButton'

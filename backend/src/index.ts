@@ -1,20 +1,24 @@
+const moduleAlias = require('module-alias')
+moduleAlias.addAlias('@common', __dirname + '/common')
+
 import 'win-ca'
 import * as dotenv from 'dotenv'
+import './initializeCommon'
 import debug from 'debug'
 import AirBrake from './AirBrake'
 import environment from './environment'
 import Application from './Application'
 import preferences from './preferences'
-import { getApplication } from './sharedCopy/applications'
 import ConnectionPool from './ConnectionPool'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import LAN from './LAN'
-import user, { User } from './User'
 import cli from './cliInterface'
-import { hostName } from './sharedCopy/nameHelper'
-import { IP_PRIVATE, PROTOCOL } from './sharedCopy/constants'
-import { WEB_DIR } from './constants'
+import user, { User } from './User'
+import { hostName } from '@common/nameHelper'
+import { IP_PRIVATE } from '@common/constants'
+import { getApplication } from '@common/applications'
+import { PROTOCOL, WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 
