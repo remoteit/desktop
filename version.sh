@@ -14,7 +14,7 @@ update_ios_version() {
   sanitizedVersion=$(sanitize_version_string "$1")
 
   # Update the marketing version
-  sed -i '' "s/MARKETING_VERSION = \".*\";/MARKETING_VERSION = \"$sanitizedVersion\";/" "$pbxprojFile"
+  sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $sanitizedVersion;/" "$pbxprojFile"
 
   # Increment the build number
   buildNumber=$(grep -m1 -E 'CURRENT_PROJECT_VERSION = [0-9]+;' "$pbxprojFile" | awk -F ' = ' '{print $2}' | tr -d ';')
