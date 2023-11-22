@@ -112,7 +112,7 @@ export const DevicePage: React.FC = () => {
           gutterTop
           severity="info"
           button={
-            editable && (
+            device.permissions.includes('MANAGE') && (
               <IconButton
                 icon="wave-pulse"
                 title="Restore Device"
