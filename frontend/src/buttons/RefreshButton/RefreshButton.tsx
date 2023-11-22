@@ -1,7 +1,7 @@
 import React from 'react'
 import network from '../../services/Network'
 import { emit } from '../../services/Controller'
-import { Switch, Route, useParams } from 'react-router-dom'
+import { Switch, Route, matchPath, useParams, useRouteMatch } from 'react-router-dom'
 import { getDeviceModel, selectDevice } from '../../selectors/devices'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,6 +15,51 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     fetching: getDeviceModel(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching,
     device: selectDevice(state, undefined, deviceID),
   }))
+
+  const connectionPage = useRouteMatch('/connections')
+  const networkPage = useRouteMatch('/networks')
+  const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
+  const devicesPage = useRouteMatch('/devices')
+
+  let title = 'Refresh application'
+  let callback = () => {}
+
+  // connection pages
+  if (connectionPage) {
+    title = 'Refresh connections'
+    callback = async () => {
+      await dispatch.connections.fetch()
+    }
+
+    // network pages
+  } else if (networkPage) {
+    title = 'Refresh networks'
+    callback = async () => {
+      await dispatch.connections.fetch()
+      await dispatch.networks.fetch()
+    }
+
+    // log pages
+  } else if (logsPage) {
+    title = device ? `Refresh ${attributeName(device)} logs` : 'Refresh logs'
+    callback = async () => {
+      if (device) dispatch.devices.fetchSingleFull({ id: device.id })
+      await dispatch.logs.set({ after: undefined, maxDate: undefined })
+      await dispatch.logs.fetch()
+    }
+
+    // device pages
+  } else if (devicesPage) {
+    title = device ? `Refresh ${attributeName(device)}` : 'Refresh devices'
+    callback = async () => {
+      if (device) {
+        await dispatch.devices.fetchSingleFull({ id: device.id })
+      } else {
+        await dispatch.devices.set({ from: 0 })
+        await dispatch.devices.fetchList()
+      }
+    }
+  }
 
   let attributes = { ...props }
   attributes.title = 'Refresh application'
@@ -42,63 +87,12 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     dispatch.ui.set({ fetching: false })
   }
 
-  return (
-    <Switch>
-      <Route path="/connections">
-        <IconButton
-          {...attributes}
-          title="Refresh networks"
-          onClick={async () =>
-            await refresh(async () => {
-              await dispatch.connections.fetch()
-            })
-          }
-        />
-      </Route>
-      <Route path="/networks">
-        <IconButton
-          {...attributes}
-          title="Refresh networks"
-          onClick={async () =>
-            await refresh(async () => {
-              await dispatch.connections.fetch()
-              await dispatch.networks.fetch()
-            })
-          }
-        />
-      </Route>
-      <Route path={['/logs', '/devices/:deviceID/logs']}>
-        <IconButton
-          {...attributes}
-          title={device ? `Refresh ${attributeName(device)} logs` : 'Refresh logs'}
-          onClick={async () =>
-            await refresh(async () => {
-              if (device) dispatch.devices.fetchSingleFull({ id: device.id })
-              await dispatch.logs.set({ after: undefined, maxDate: undefined })
-              await dispatch.logs.fetch()
-            })
-          }
-        />
-      </Route>
-      <Route path="/devices">
-        <IconButton
-          {...attributes}
-          title={device ? `Refresh ${attributeName(device)}` : 'Refresh devices'}
-          onClick={async () =>
-            await refresh(async () => {
-              if (device) {
-                await dispatch.devices.fetchSingleFull({ id: device.id })
-              } else {
-                await dispatch.devices.set({ from: 0 })
-                await dispatch.devices.fetchList()
-              }
-            })
-          }
-        />
-      </Route>
-      <Route path="*">
-        <IconButton {...attributes} title="Refresh Application" onClick={async () => await refresh(() => {})} />
-      </Route>
-    </Switch>
-  )
+  React.useEffect(() => {
+    network.on('connect', () => refresh(callback))
+    return () => {
+      network.off('connect', refresh)
+    }
+  }, [])
+
+  return <IconButton {...attributes} title={title} onClick={async () => await refresh(callback)} />
 }

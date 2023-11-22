@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.24.0-beta.7",
+  "version": "3.24.1",
   "private": true,
   "main": "build/index.js",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
@@ -24,7 +24,6 @@
     "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
-    "preinstall": "run-s build-frontend build-backend",
     "postinstall": "run-s install-*",
     "install-electron": "electron-builder install-app-deps",
     "install-binaries": "sh ./scripts/build.sh",

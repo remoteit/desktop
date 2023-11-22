@@ -5,12 +5,10 @@ import { Dispatch, ApplicationState } from '../store'
 import { attributeName } from '@common/nameHelper'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
-import { DeviceName } from '../components/DeviceName'
 import { Typography } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
-import { AddUserButton } from '../buttons/AddUserButton'
 import { ListItemCopy } from '../components/ListItemCopy'
 import { Container } from './Container'
 import { Gutters } from './Gutters'
@@ -18,6 +16,7 @@ import { Diagram } from './Diagram'
 import { Notice } from '../components/Notice'
 import { Color } from '../styling'
 import { Link } from '../components/Link'
+import { Icon } from '../components/Icon'
 
 type Props = {
   footer?: React.ReactNode
@@ -51,7 +50,8 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           <Typography variant="h1" gutterBottom={!service?.attributes.description}>
             <Title>
               {layout.mobile && (
-                <Typography variant="caption" component="div">
+                <Typography variant="caption" component="div" sx={{ marginTop: 1, marginBottom: 1.5 }}>
+                  <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
                   {deviceName}
                 </Typography>
               )}

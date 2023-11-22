@@ -128,7 +128,7 @@ npm start
 Optionally install electron
 
 ```shell
-npm install-electron
+npm run install-electron
 ```
 
 Start electron app

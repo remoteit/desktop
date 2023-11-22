@@ -31,22 +31,23 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
 
   const external = session?.id && session.id !== connection.sessionId
   const offline = service?.state !== 'active' && !external
+  const name = external ? session.target.name : connection.name || session?.target.name
   let pathname = `/networks/${network?.id}/${serviceId}`
   if (connectionsPage) pathname = `/connections/${serviceId}/${session?.id || 'none'}`
   const match = pathname
-  pathname += connection && session?.manufacturer !== 'UNKNOWN' && !external ? '/connect' : '/other'
+  pathname += connection && !external ? '/connect' : '/other'
 
   return (
     <ConnectionListItem
       pathname={pathname}
       match={match}
-      name={connection.name || session?.target.name || fallbackName || serviceId}
+      name={name || fallbackName || serviceId}
       enabled={connection.enabled || !!session}
       platform={device?.targetPlatform || session?.target.platform}
       offline={offline}
       manufacturer={session?.manufacturer}
       connected={!!session || !!connection.connected}
-      connection={connection}
+      connection={external ? undefined : connection}
       connectionsPage={connectionsPage}
     >
       {children}

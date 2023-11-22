@@ -36,7 +36,6 @@ class Controller extends EventEmitter {
     if (state.auth.backendAuthenticated) {
       this.log('-- ONLINE AUTHORIZED RE-CONNECT')
       this.open()
-      ui.refreshAll()
     } else {
       this.log('1- ONLINE AUTHORIZE AND CONNECT')
       ui.set({ errorMessage: '' })

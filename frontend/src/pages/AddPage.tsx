@@ -9,7 +9,6 @@ import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { ClaimDevice } from '../components/ClaimDevice'
-import { AddQuickPlatform } from '../components/AddQuickPlatform'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
@@ -56,7 +55,6 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </List>
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
@@ -64,11 +62,12 @@ export const AddPage: React.FC = () => {
             <ClaimDevice />
           </ListItem>
         </List>
-        <List className={classnames(css.list, css.bigList)} dense disablePadding>
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
+        {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
           <ListSubheader disableGutters>Quick add Command</ListSubheader>
           <Divider />
           <AddQuickPlatform />
-        </List>
+        </List> */}
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           <Divider />

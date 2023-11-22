@@ -31,7 +31,7 @@ export function getManufacturerType(code?: number, reverseProxy?: boolean): ISes
 
 export function getManufacturerUser(code?: number, reverseProxy?: boolean): IUserRef | undefined {
   if (code === ANONYMOUS_MANUFACTURER_CODE) {
-    return reverseProxy ? { id: 'ANON', email: 'Anonymous User' } : { id: 'WARP', email: 'Service Key User' }
+    return reverseProxy ? { id: 'ANON', email: 'Anonymous' } : { id: 'WARP', email: 'Service Key' }
   }
   return undefined
 }
