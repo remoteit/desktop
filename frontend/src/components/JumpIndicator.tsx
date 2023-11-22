@@ -8,10 +8,10 @@ type Props = {
 }
 
 export function JumpIndicator({ service }: Props) {
-  if (service.host === IP_PRIVATE) return null
+  if (!service.host || service.host === IP_PRIVATE || service.host.includes('localhost')) return null
 
   return (
-    <Tooltip arrow placement="top" title="Jump service">
+    <Tooltip arrow placement="top" title={`Jump to ${service.host}`}>
       <Icon color="grayDark" name="arrow-turn-down-left" rotate={180} type="solid" size="xxs" inlineLeft />
     </Tooltip>
   )
