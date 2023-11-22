@@ -29,9 +29,9 @@ jobs:
           node-version: 18
 
       - name: Set npm version
-        run: npm install -g npm@9
+        run: npm install -g npm@10
 
-      - name: Authenticate with fontawsome NPM repo
+      - name: Authenticate with fontawesome NPM repo
         run: |
           echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
@@ -48,7 +48,7 @@ jobs:
           unzip ~/Downloads/codesigntool.zip -d ~/
           mv ~/CodeSignTool* ~/CodeSignTool/
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm install
 
       - name: Build/release Electron app
