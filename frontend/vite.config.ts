@@ -9,6 +9,15 @@ export default defineConfig({
     minify: process.env.NODE_ENV === 'production',
     emptyOutDir: true,
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+        },
+      },
+    },
   },
   plugins: [react()],
   resolve: {

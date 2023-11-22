@@ -9,7 +9,7 @@
     "compile": "tsc -b",
     "copy-common": "[ -d ../common/build ] && [ -d ./build ] && cp -r ../common/build ./build/common",
     "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
-    "pack": "npm pack && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz && cd ../electron && npm install ../backend/dist/remoteit-headless.tgz",
+    "pack": "npm pack && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz",
     "start": "node build/index.js",
     "test": "cross-env NODE_ENV=test jest",
     "test-watch": "npm run test -- --watch",
