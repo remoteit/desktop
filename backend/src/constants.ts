@@ -14,21 +14,14 @@ export const API_URL = env.API_URL || 'https://api.remote.it/apv/v27'
 
 // Airbrake error reporting
 export const AIRBRAKE_PROJECT_ID = 223457
-export const AIRBRAKE_PROJECT_KEY = env.AIRBRAKE_PROJECT_KEY || 'e1376551dbe5b1326f98edd78b6247ba'
+export const AIRBRAKE_PROJECT_KEY = 'e1376551dbe5b1326f98edd78b6247ba'
 
 // CLI
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
 
-
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 33280
 export const MANUFACTURE_ID_HEADLESS = 33536
-// connectd Package = 32768
-// remote.it CLI = 33024
-// remote.it Desktop = 33280
-// remote.it Headless Desktop = 33536
-// remote.it Mobile = 33792
-// remote.it Proxy Server = 34048
 
 // CONNECTD initiator platform tracking codes
 export const PLATFORM_CODES = {
