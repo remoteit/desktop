@@ -1,5 +1,6 @@
 import React from 'react'
 import network from '../../services/Network'
+import cloudController from '../../services/cloudController'
 import { emit } from '../../services/Controller'
 import { Switch, Route, matchPath, useParams, useRouteMatch } from 'react-router-dom'
 import { getDeviceModel, selectDevice } from '../../selectors/devices'
@@ -71,6 +72,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
   const refresh = async callback => {
     network.connect()
+    cloudController.ping()
     dispatch.ui.set({ fetching: true })
     await callback()
     await Promise.all([
