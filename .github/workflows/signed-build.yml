@@ -44,9 +44,8 @@ jobs:
         shell: bash
         if: matrix.os == 'windows-latest'
         run: |
-          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/codesigntool.zip
-          unzip ~/Downloads/codesigntool.zip -d ~/
-          mv ~/CodeSignTool* ~/CodeSignTool/
+          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/CodeSignTool.zip
+          unzip ~/Downloads/CodeSignTool.zip -d ~/CodeSignTool
 
       - name: Build and install dependencies
         run: |

@@ -22,19 +22,27 @@ export const ConnectionErrorMenu: React.FC<Props> = ({ connection }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick} icon="ellipsis-v" inline />
+      <IconButton onClick={handleClick} icon="ellipsis-v" color="alwaysWhite" inline />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         disableScrollLock
-        MenuListProps={{ sx: { bgcolor: 'error.main' } }}
+        MenuListProps={{
+          sx: {
+            bgcolor: 'error.main',
+            '.MuiMenuItem-root': {
+              color: 'alwaysWhite.main', // Set text color to white for all menu items
+            },
+          },
+        }}
         autoFocus={false}
         elevation={2}
       >
         <MenuItem
           dense
+          color="alwaysWhite.main"
           onClick={async () => {
             await dispatch.feedback.set({
               subject: `Connection Issue Report for ${connection?.name}`,

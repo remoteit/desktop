@@ -28,7 +28,7 @@ class CloudController {
   initialized: boolean = false
   socket?: ReconnectingWebSocket
   token?: string
-  pingInterval = 5 * 60 * 1000 + Math.floor(Math.random() * 5 * 60 * 1000) // 5 + random 5 minutes
+  pingInterval = 5 * 60 * 1000 + Math.floor(Math.random() * 60 * 1000) // 5 + random 60 seconds
   timer?: NodeJS.Timeout
 
   init() {
@@ -69,6 +69,7 @@ class CloudController {
 
   startPing() {
     if (this.timer) clearInterval(this.timer)
+    this.log('START PING CLOUD SOCKET', this.pingInterval)
     this.timer = setInterval(this.ping, this.pingInterval)
   }
 
@@ -208,13 +209,15 @@ class CloudController {
         this.log('ERROR', json.errors)
       }
       let event = json.data.event
+      const reverseProxy = isReverseProxy(state, event.target[0]?.application)
       return {
+        reverseProxy,
         type: event.type,
         state: event.state,
         action: event.action,
         timestamp: new Date(event.timestamp),
         isP2P: !event.proxy,
-        actor: event.actor,
+        actor: getManufacturerUser(event.manufacturer, reverseProxy) || event.actor,
         users: event.users,
         authUserId: state.auth.user?.id || '',
         platform: event.platform,
@@ -222,8 +225,8 @@ class CloudController {
         source: event.source,
         geo: event.sourceGeo,
         quantity: event.quantity,
-        reverseProxy: isReverseProxy(state, event.target[0]?.application),
         manufacturer: event.manufacturer,
+        manufacturerType: getManufacturerType(event.manufacturer, reverseProxy),
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,
         target: event.target.map(t => {
@@ -314,13 +317,13 @@ class CloudController {
           if (event.state === 'connected') {
             sessions.setSession({
               id: event.sessionId,
-              manufacturer: getManufacturerType(event.manufacturer, event.reverseProxy),
+              manufacturer: event.manufacturerType,
               reverseProxy: event.reverseProxy,
               timestamp: event.timestamp,
               source: event.source,
               platform: event.platform,
               isP2P: event.isP2P,
-              user: getManufacturerUser(event.manufacturer, event.reverseProxy) || event.actor,
+              user: event.actor,
               geo: event.geo,
               target: {
                 id: target.id,

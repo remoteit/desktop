@@ -564,6 +564,7 @@ declare global {
     geo?: IGeo
     reverseProxy: boolean
     manufacturer?: number
+    manufacturerType: ISession['manufacturer']
     metadata?: INotificationSetting
     target: {
       id: string
