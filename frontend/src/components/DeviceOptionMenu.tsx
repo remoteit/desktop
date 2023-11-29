@@ -10,6 +10,7 @@ import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
 import { InfoButton } from '../buttons/InfoButton'
+import { MobileUI } from './MobileUI'
 import { Icon } from './Icon'
 
 type Props = { device?: IDevice; service?: IService; user?: IUser }
@@ -40,19 +41,21 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         autoFocus={false}
         elevation={2}
       >
-        {device.permissions.includes('MANAGE') && (
-          <MenuItem
-            dense
-            key="restore"
-            to={`/devices/${device.id}/${service ? service.id + '/' : ''}share`}
-            component={Link}
-          >
-            <ListItemIcon>
-              <Icon name="share" size="md" />
-            </ListItemIcon>
-            <ListItemText primary="Share access" />
-          </MenuItem>
-        )}
+        <MobileUI>
+          {device.permissions.includes('MANAGE') && (
+            <MenuItem
+              dense
+              key="restore"
+              to={`/devices/${device.id}/${service ? service.id + '/' : ''}share`}
+              component={Link}
+            >
+              <ListItemIcon>
+                <Icon name="share" size="md" />
+              </ListItemIcon>
+              <ListItemText primary="Share access" />
+            </MenuItem>
+          )}
+        </MobileUI>
         {(!devicesSection || service) && (
           <ListItemLocation
             title="Device Details"

@@ -5,8 +5,9 @@ import { Typography, Collapse, ButtonBase, Box, Stack } from '@mui/material'
 import { ListItemSetting } from './ListItemSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { CopyCodeBlock } from './CopyCodeBlock'
-import { IconButton } from '../buttons/IconButton'
+import { ConfirmButton } from '../buttons/ConfirmButton'
 import { useDispatch } from 'react-redux'
+import { IconButton } from '../buttons/IconButton'
 import { ColorChip } from './ColorChip'
 import { Dispatch } from '../store'
 import { Icon } from './Icon'
@@ -46,8 +47,8 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
             <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.2, marginTop: 0.4 }}>
               {canManage
                 ? enabled
-                  ? 'Your Service Key has been generated. Use the key below to establish programmatic connections through our SDK. Keep it secure and do not share it publicly. You can delete it to create a new one.'
-                  : 'Generate a Service Key to establish an authenticated, programmatic connection to this service through our SDK.'
+                  ? 'Your Service Key has been generated. Use the key below to authorize connections through our SDK. Keep it secure and do not share it publicly. You can delete it to create a new one.'
+                  : 'Generate a Service Key to use authorize connections to this service through our SDK.'
                 : "Requires device 'Manage' permission"}
             </Typography>
           </>
@@ -57,17 +58,30 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
           setLoading(true)
           dispatch.devices.setLink({ serviceId: service.id, enabled: !service.link?.enabled })
         }}
-        confirm={!enabled && !service.link?.code}
-        confirmProps={{
-          color: 'warning',
-          action: 'Generate Key',
-          title: 'Are you sure?',
-          children: (
-            <Notice severity="warning" gutterBottom fullWidth>
-              You are generating a new Service Key. <em>Anyone with this key will be able to connect.</em>
-            </Notice>
-          ),
-        }}
+        confirm
+        confirmProps={
+          enabled
+            ? {
+                action: 'Disable',
+                title: 'Disable Service Key?',
+                children: 'Anyone with this key will no longer be able to connect.',
+              }
+            : service.link?.code
+            ? {
+                action: 'Enable',
+                title: 'Enable Service Key?',
+                children: 'Anyone with this key will be able to connect.',
+              }
+            : {
+                action: 'Generate Key',
+                title: 'Generate Service Key?',
+                children: (
+                  <Notice fullWidth>
+                    You are generating a new Service Key. <em>Anyone with this key will be able to connect.</em>
+                  </Notice>
+                ),
+              }
+        }
       />
       <Collapse in={enabled && !!service.link?.code} timeout={400}>
         <ListItemQuote>
@@ -86,17 +100,28 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                   }
                   size="xl"
                   buttonBaseSize="small"
-                  onClick={() => windowOpen('https://github.com/remoteit/warp-js')}
+                  onClick={() => windowOpen('https://github.com/remoteit/socket-link.js')}
                   inlineLeft
                 />
                 <ButtonBase
                   sx={{ marginTop: 1 }}
-                  onClick={() => windowOpen('https://www.npmjs.com/package/@remote.it/warp')}
+                  onClick={() => windowOpen('https://www.npmjs.com/package/@remote.it/socket-link')}
                 >
-                  <img src="https://badge.fury.io/js/%40remote.it%2Fwarp.svg" />
+                  <img src="https://badge.fury.io/js/%40remote.it%2Fsocket-link.svg" />
                 </ButtonBase>
               </Stack>
-              <IconButton
+              <ConfirmButton
+                confirm
+                confirmProps={{
+                  color: 'error',
+                  action: 'Delete Key',
+                  title: 'Delete Service Key?',
+                  children: (
+                    <Notice severity="error" gutterBottom fullWidth>
+                      This action cannot be undone. <em>Anyone with this key will no longer be able to connect.</em>
+                    </Notice>
+                  ),
+                }}
                 name="trash"
                 title="Delete Key"
                 onClick={() => {
