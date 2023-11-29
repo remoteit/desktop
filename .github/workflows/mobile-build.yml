@@ -7,8 +7,8 @@ defaults:
     shell: bash
 
 env:
-  CI: ''
-  SKIP_SIGNING: true
+  # CI: ''
+  # SKIP_SIGNING: true
 
 jobs:
   release:
