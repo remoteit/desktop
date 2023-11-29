@@ -459,7 +459,7 @@ export const attributes: Attribute[] = [
           : 'Peer to Peer'
         : session?.manufacturer === 'ANONYMOUS'
         ? 'Public Reverse Proxy'
-        : session?.manufacturer === 'WARP'
+        : session?.manufacturer === 'KEY'
         ? 'Service Key'
         : 'Proxy',
   }),

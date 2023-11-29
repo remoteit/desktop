@@ -3,11 +3,13 @@ import { DeviceContext } from '../services/Context'
 import { Typography } from '@mui/material'
 import { attributeName } from '@common/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
+import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'
-import { DeviceOptionMenu } from './DeviceOptionMenu'
-import { UsersTab } from './UsersTab'
+import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from './Container'
+import { UsersTab } from './UsersTab'
+import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
 import { Title } from './Title'
 
@@ -24,6 +26,13 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
+            <MobileUI hide>
+              <AddUserButton
+                to={`/devices/${device.id}/share`}
+                hide={!device.permissions.includes('MANAGE')}
+                title="Share access"
+              />
+            </MobileUI>
             <DeviceOptionMenu device={device} />
           </Typography>
           {device.attributes.description && (
