@@ -10,7 +10,7 @@ on:
       s3_path:
         description: 'S3 path (ex: test/desktop/)'     
         required: true
-        default: 'deskop/'
+        default: 'desktop/'
 defaults:
   run:
     shell: bash
