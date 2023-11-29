@@ -527,7 +527,7 @@ declare global {
     source: IConnectionSource
     user?: IUserRef
     geo?: IGeo
-    manufacturer: 'WARP' | 'ANONYMOUS' | 'UNKNOWN'
+    manufacturer: 'KEY' | 'ANONYMOUS' | 'UNKNOWN'
     target: {
       id: string
       accountId: string

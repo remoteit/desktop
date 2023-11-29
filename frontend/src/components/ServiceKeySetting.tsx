@@ -86,14 +86,14 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                   }
                   size="xl"
                   buttonBaseSize="small"
-                  onClick={() => windowOpen('https://github.com/remoteit/warp-js')}
+                  onClick={() => windowOpen('https://github.com/remoteit/socket-link.js')}
                   inlineLeft
                 />
                 <ButtonBase
                   sx={{ marginTop: 1 }}
-                  onClick={() => windowOpen('https://www.npmjs.com/package/@remote.it/warp')}
+                  onClick={() => windowOpen('https://www.npmjs.com/package/@remote.it/socket-link')}
                 >
-                  <img src="https://badge.fury.io/js/%40remote.it%2Fwarp.svg" />
+                  <img src="https://badge.fury.io/js/%40remote.it%2Fsocket-link.svg" />
                 </ButtonBase>
               </Stack>
               <IconButton

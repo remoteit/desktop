@@ -24,14 +24,14 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
 
 export function getManufacturerType(code?: number, reverseProxy?: boolean): ISession['manufacturer'] {
   if (code === ANONYMOUS_MANUFACTURER_CODE) {
-    return reverseProxy ? 'ANONYMOUS' : 'WARP'
+    return reverseProxy ? 'ANONYMOUS' : 'KEY'
   }
   return 'UNKNOWN'
 }
 
 export function getManufacturerUser(code?: number, reverseProxy?: boolean): IUserRef | undefined {
   if (code === ANONYMOUS_MANUFACTURER_CODE) {
-    return reverseProxy ? { id: 'ANON', email: 'Anonymous' } : { id: 'WARP', email: 'Service Key' }
+    return reverseProxy ? { id: 'ANON', email: 'Anonymous' } : { id: 'KEY', email: 'Service Key' }
   }
   return undefined
 }

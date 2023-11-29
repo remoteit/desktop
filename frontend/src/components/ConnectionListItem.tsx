@@ -44,8 +44,8 @@ export const ConnectionListItem: React.FC<Props> = ({
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
-  if (connection?.connectLink || manufacturer === 'ANONYMOUS' || manufacturer === 'WARP')
-    icon = <Icon color={color} name={manufacturer === 'WARP' ? 'key' : 'globe'} type="solid" size="xxs" />
+  if (connection?.connectLink || manufacturer === 'ANONYMOUS' || manufacturer === 'KEY')
+    icon = <Icon color={color} name={manufacturer === 'KEY' ? 'key' : 'globe'} type="solid" size="xxs" />
 
   return (
     <ListItemLocation
