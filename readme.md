@@ -176,7 +176,7 @@ npm run build-local
 ### Generating Assets
 
 ```shell
-npx @capacitor/assets generate --iconBackgroundColor '#0096e7' --splashBackgroundColor '#0096e7' --android --ios
+npx @capacitor/assets generate --iconBackgroundColor '#034b9d' --splashBackgroundColor '#034b9d' --android --ios
 ```
 
 For electron app icon
