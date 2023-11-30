@@ -84,7 +84,6 @@ jobs:
             xcodebuild -workspace App.xcworkspace \
             -scheme Remote.It \
             -archivePath $RUNNER_TEMP/remoteit.xcarchive \
-            -configuration Debug \
             archive
 
       - name: export ipa
