@@ -32,7 +32,7 @@ export const MFAConfigureApp: React.FC<Props> = ({
   return (
     <Box mt={3} display="flex" alignItems="end">
       <Box className={css.qrcode}>
-        <QRCode value={`otpauth://totp/AWSCognito:${email}?secret=${totpCode}&issuer=remote.it`} />
+        <QRCode value={`otpauth://totp/remoteit:${email}?secret=${totpCode}&issuer=remote.it`} />
       </Box>
       <Box ml={3}>
         <Typography variant="body1" gutterBottom>
