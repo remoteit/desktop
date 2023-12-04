@@ -50,18 +50,20 @@ jobs:
         env:
           BUILD_CERTIFICATE: ${{ secrets.APPLE_MOBILE_CERT }}
           P12_PASSWORD: ${{ secrets.APPLE_MOBILE_CERT_PASSWORD }}
-          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
-          DISTRIBUTION_PROVISION_PROFILE_BASE64: ${{ secrets.DISTRIBUTION_PROVISION_PROFILE_BASE64 }}
+          PROVISION_PROFILE_DEV_BASE64: ${{ secrets.PROVISION_PROFILE_DEV_BASE64 }}
+          PROVISION_PROFILE_DIST_BASE64: ${{ secrets.PROVISION_PROFILE_DIST_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          PP_PATH_DEV=$RUNNER_TEMP/build_pp_dev.mobileprovision
+          PP_PATH_DIST=$RUNNER_TEMP/build_pp_dist.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo -n "$PROVISION_PROFILE_DEV_BASE64" | base64 --decode -o $PP_PATH_DEV
+          echo -n "$PROVISION_PROFILE_DIST_BASE64" | base64 --decode -o $PP_PATH_DIST
 
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -74,7 +76,8 @@ jobs:
 
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH_DEV ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH_DIST ~/Library/MobileDevice/Provisioning\ Profiles
 
       - name: npm build-mobile
         run: npm run build-mobile
