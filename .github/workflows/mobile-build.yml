@@ -56,8 +56,8 @@ jobs:
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          PP_PATH_DEV=$RUNNER_TEMP/6f3f2659-b6b4-428f-be47-947e8d8f26cf.mobileprovision"
-          PP_PATH_DIST="$RUNNER_TEMP/c2e4a68a-e7e2-48f3-a101-3849682530a8.mobileprovision"
+          PP_PATH_DEV=$RUNNER_TEMP/6f3f2659-b6b4-428f-be47-947e8d8f26cf.mobileprovision
+          PP_PATH_DIST="$RUNNER_TEMP/c2e4a68a-e7e2-48f3-a101-3849682530a8.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           # import certificate and provisioning profile from secrets
