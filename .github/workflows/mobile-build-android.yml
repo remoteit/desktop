@@ -1,0 +1,101 @@
+name: Build/mobile-android
+
+on: workflow_dispatch
+
+defaults:
+  run:
+    shell: bash
+
+# env:
+  # CI: ''
+  # SKIP_SIGNING: true
+
+jobs:
+  build-mobile:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # fail-fast: false
+      matrix:
+        os: [macos-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      # Set Current Date As Env Variable
+      - name: Set current date as env variable
+        run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      # Set Repository Name As Env Variable
+      - name: Set repository name as env variable
+        run: echo "repository_name=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+  
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Set npm version
+        run: npm install -g npm@10
+
+      - name: Authenticate with fontawesome NPM repo
+        run: |
+          echo "pwd=${PWD}"
+          npm config set "@fortawesome:registry" https://npm.fontawesome.com/
+          npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install the Android supporting files
+        working-directory: ./android
+        env:
+          ANDROID_KEY_PROPERTIES: ${{ secrets.ANDROID_KEY_PROPERTIES }}
+          ANDROID_UPLOAD_KEY_JKS: ${{ secrets.ANDROID_UPLOAD_KEY_JKS }}
+        run: |
+          # create variables
+          KEY_PROPERTIES_FILE=./key.properties
+          UPLOAD_KEY_JKS_FILE=./androiduploadkey.jks
+
+          # create files
+          echo -n "$ANDROID_KEY_PROPERTIES" | base64 --decode -o $KEY_PROPERTIES_FILE
+          echo -n "$ANDROID_UPLOAD_KEY_JKS" | base64 --decode -o $UPLOAD_KEY_JKS_FILE
+
+      - name: npm build-mobile
+        run: npm run build-mobile
+
+      - name: Build Project
+        working-directory: ./android
+        run: ./gradlew build
+
+      - name: Build APK Debug
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Build APK Release
+        working-directory: ./android
+        run: ./gradlew assemble
+
+      # Create Bundle AAB Release
+      - name: Build App Bundle
+        run: ./gradlew bundleRelease
+
+      # - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
+      #     path: ${{ env.main_project_module }}/build/outputs/bundle/release/
