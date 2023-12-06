@@ -93,9 +93,11 @@ jobs:
 
       # Create Bundle AAB Release
       - name: Build App Bundle
+        working-directory: ./android
         run: ./gradlew bundleRelease
 
       # - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
+      #   working-directory: ./android
       #   uses: actions/upload-artifact@v3
       #   with:
       #     name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
