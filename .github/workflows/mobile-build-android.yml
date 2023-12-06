@@ -39,6 +39,7 @@ jobs:
           cache: 'gradle'
 
       - name: Change wrapper permissions
+        working-directory: ./android
         run: chmod +x ./gradlew
   
       - name: Install Node.js, NPM and Yarn
