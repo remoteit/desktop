@@ -44,15 +44,9 @@ jobs:
       - name: Build and install dependencies
         run: |
           npm install
-          npm run build-frontend          
+          npm run build-frontend
           npm run build-backend
-
-          echo "Backend build directory after:"
-          ls -la backand/build 2>/dev/null || echo "backend/build does not exist."
-
-          echo "Common build directory after:"
-          ls -la common/build 2>/dev/null || echo "common/build does not exist."
-
+          cd electron
           npm install ../backend/dist/remoteit-headless.tgz
 
       - name: Build/release Electron app
