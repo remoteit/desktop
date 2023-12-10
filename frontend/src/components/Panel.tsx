@@ -1,27 +1,24 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
+import { Box } from '@mui/material'
 import { Header } from './Header'
 
 type Props = { layout: ILayout; children?: React.ReactNode }
 
 export const Panel: React.FC<Props> = ({ layout, children }) => {
-  const css = useStyles({ layout })
-
+  console.log('render panel', { sidePanelWidth: layout.sidePanelWidth })
   return (
-    <div className={css.panel}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        height: '100%',
+        maxWidth: `calc(100% - ${layout.sidePanelWidth}px)`,
+        display: 'flex',
+        flexDirection: 'column',
+        contain: 'content',
+      }}
+    >
       <Header breadcrumbs={layout.singlePanel && !layout.mobile} />
       {children}
-    </div>
+    </Box>
   )
 }
-
-const useStyles = makeStyles({
-  panel: ({ layout }: Props) => ({
-    flexGrow: 1,
-    height: '100%',
-    maxWidth: `calc(100% - ${layout.sidePanelWidth}px)`,
-    display: 'flex',
-    flexDirection: 'column',
-    contain: 'content',
-  }),
-})

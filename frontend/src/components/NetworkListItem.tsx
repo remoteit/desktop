@@ -10,6 +10,7 @@ export interface NetworkListItemProps {
   serviceId: string
   session?: ISession
   network?: INetwork
+  enabled?: boolean
   connectionsPage?: boolean
   fallbackName?: string
   children?: React.ReactNode
@@ -19,6 +20,7 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
   network,
   serviceId,
   session,
+  enabled,
   fallbackName,
   connectionsPage,
   children,
@@ -42,11 +44,11 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
       pathname={pathname}
       match={match}
       name={name || fallbackName || serviceId}
-      enabled={connection.enabled || !!session}
+      enabled={enabled}
       platform={device?.targetPlatform || session?.target.platform}
       offline={offline}
       manufacturer={session?.manufacturer}
-      connected={!!session || !!connection.connected}
+      connected={!!session || !!connection.connected || connection.enabled}
       connection={external ? undefined : connection}
       connectionsPage={connectionsPage}
     >

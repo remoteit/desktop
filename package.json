@@ -17,7 +17,7 @@
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
     "electron": "cd electron && npm start",
     "mobile-android": "cross-env NODE_ENV=development npx cap run android",
-    "mobile-ios": "cross-env NODE_ENV=development npx cap run ios --target=\"7BBB57E2-D942-4D1B-9794-24258E41F79B\"",
+    "mobile-ios": "cross-env NODE_ENV=development npx cap run ios",
     "mobile-sync": "npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",

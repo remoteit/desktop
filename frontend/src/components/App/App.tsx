@@ -24,8 +24,6 @@ import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
   const hideSplashScreen = useCapacitor()
-  const { insets } = useSafeArea()
-  const dispatch = useDispatch<Dispatch>()
   const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
     installed: state.binaries.installed,
@@ -33,16 +31,20 @@ export const App: React.FC = () => {
     waitMessage: state.ui.waitMessage,
     showOrgs: !!state.accounts.membership.length,
   }))
+  const { insets } = useSafeArea()
+  const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const overlapHeader = hideSidebar && browser.isElectron && browser.isMac
+  const sidePanelWidth = hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
   const layout: ILayout = {
     insets,
     mobile,
     showOrgs,
     hideSidebar,
     singlePanel,
-    sidePanelWidth: hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0),
+    sidePanelWidth,
   }
 
   useEffect(() => {
@@ -51,9 +53,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [hideSidebar, singlePanel, showOrgs, insets, mobile])
-
-  const css = useStyles({ overlapHeader: hideSidebar && browser.isElectron && browser.isMac })
+  }, [hideSidebar, singlePanel, showOrgs, insets, mobile, sidePanelWidth])
 
   if (waitMessage)
     return (
@@ -64,8 +64,8 @@ export const App: React.FC = () => {
 
   if (!authInitialized)
     return (
-      <Page>
-        <LoadingMessage logo />
+      <Page noInsets>
+        <LoadingMessage logo invert />
       </Page>
     )
 
@@ -85,25 +85,22 @@ export const App: React.FC = () => {
 
   return (
     <Page>
-      <Box className={css.columns}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          position: 'relative',
+          display: 'flex',
+          overflow: 'hidden',
+          flexDirection: 'row',
+          alignItems: 'start',
+          justifyContent: 'start',
+          paddingTop: overlapHeader ? 30 : 0,
+        }}
+      >
         {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-        <Router />
+        <Router layout={layout} />
       </Box>
       {mobile && <BottomMenu />}
     </Page>
   )
 }
-
-// neuter
-const useStyles = makeStyles({
-  columns: ({ overlapHeader }: any) => ({
-    flexGrow: 1,
-    position: 'relative',
-    display: 'flex',
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'start',
-    justifyContent: 'start',
-    paddingTop: overlapHeader ? 30 : 0,
-  }),
-})

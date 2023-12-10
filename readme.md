@@ -142,7 +142,7 @@ Command+option+I to open with dev tools.
 ### Mobile Development
 
 ```shell
-  npm run frontend
+  npm start
   npm run mobile-ios
 ```
 
