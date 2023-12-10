@@ -5,7 +5,6 @@ import { Header } from './Header'
 type Props = { layout: ILayout; children?: React.ReactNode }
 
 export const Panel: React.FC<Props> = ({ layout, children }) => {
-  console.log('render panel', { sidePanelWidth: layout.sidePanelWidth })
   return (
     <Box
       sx={{

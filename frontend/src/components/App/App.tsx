@@ -10,7 +10,6 @@ import {
   MOBILE_WIDTH,
   ORGANIZATION_BAR_WIDTH,
 } from '../../constants'
-import { makeStyles } from '@mui/styles'
 import { useMediaQuery, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
 import { InstallationNotice } from '../InstallationNotice'

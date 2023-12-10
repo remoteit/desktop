@@ -41,7 +41,7 @@
     "@capacitor/core": "^5.5.1",
     "@capacitor/ios": "^5.5.1",
     "@capacitor/splash-screen": "^5.0.6",
-    "capacitor-plugin-safe-area": "^2.0.5"
+    "capacitor-plugin-safe-area": "^2.0.6"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

@@ -71,7 +71,7 @@ const useStyles = makeStyles(({ palette }) => ({
     bottom: 0,
     position: 'fixed',
     // for iOS mobile
-    paddingTop: insets?.top ? insets.top - spacing.sm : undefined,
+    paddingTop: insets?.top,
     paddingBottom: insets?.bottom,
     paddingLeft: insets?.left,
     paddingRight: insets?.right,
