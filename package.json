@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "build-common": "tsc -b common/tsconfig.json",
-    "build-backend": "cd backend && npm run build",
-    "build-frontend": "cd frontend && npm run build",
+    "build-backend": "npm run build -w=backend",
+    "build-frontend": "npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
