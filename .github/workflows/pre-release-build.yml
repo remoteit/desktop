@@ -56,12 +56,12 @@ jobs:
           ls -la common/build 2>/dev/null || echo "common/build does not exist."
           
           echo "Backend build directory:"
-          ls -la backand/build
+          ls -la backand/build 2>/dev/null || echo "backend/build does not exist."
           
           npm run build-backend
 
           echo "Backend build directory after:"
-          ls -la backand/build
+          ls -la backand/build 2>/dev/null || echo "backend/build does not exist."
 
           echo "Common build directory after:"
           ls -la common/build 2>/dev/null || echo "common/build does not exist."
