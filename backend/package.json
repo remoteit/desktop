@@ -60,10 +60,5 @@
   },
   "optionalDependencies": {
     "fsevents": "^2.3.3"
-  },
-  "files": [
-    "build/**/*",
-    "scripts/**/*",
-    "ssl/**/*"
-  ]
+  }
 }
