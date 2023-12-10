@@ -53,7 +53,7 @@ jobs:
           ls -la frontend/build
 
           echo "Common build directory:"
-          ls -la common/build
+          ls -la common/build 2>/dev/null || echo "common/build does not exist."
           
           echo "Backend build directory:"
           ls -la backand/build
@@ -62,6 +62,9 @@ jobs:
 
           echo "Backend build directory after:"
           ls -la backand/build
+
+          echo "Common build directory after:"
+          ls -la common/build 2>/dev/null || echo "common/build does not exist."
 
           npm install ../backend/dist/remoteit-headless.tgz
 
