@@ -44,20 +44,7 @@ jobs:
       - name: Build and install dependencies
         run: |
           npm install
-          npm run build-frontend
-          
-          echo "Current directory:"
-          pwd
-          
-          echo "Frontend build directory:"
-          ls -la frontend/build
-
-          echo "Common build directory:"
-          ls -la common/build 2>/dev/null || echo "common/build does not exist."
-          
-          echo "Backend build directory:"
-          ls -la backand/build 2>/dev/null || echo "backend/build does not exist."
-          
+          npm run build-frontend          
           npm run build-backend
 
           echo "Backend build directory after:"
