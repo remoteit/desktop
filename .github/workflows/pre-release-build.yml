@@ -45,27 +45,23 @@ jobs:
         run: |
           npm install
           npm run build-frontend
-
-          echo "Current directory before running build-backend:"
+          
+          echo "Current directory:"
           pwd
-          echo "Listing files in current directory:"
-          ls -la
+          
+          echo "Frontend build directory:"
+          ls -la frontend/build
 
+          echo "Common build directory:"
+          ls -la common/build
+          
+          echo "Backend build directory:"
+          ls -la backand/build
+          
           npm run build-backend
 
-          echo "Current directory after running build-backend:"
-          pwd
-          echo "Listing files in current directory:"
-          ls -la
-
-          cd electron
-          echo "Current directory in electron folder:"
-          pwd
-          echo "Listing files in electron directory:"
-          ls -la
-
-          echo "Listing remoteit-headless from ../backend/dist:"
-          ls -la ../backend/dist
+          echo "Backend build directory after:"
+          ls -la backand/build
 
           npm install ../backend/dist/remoteit-headless.tgz
 
