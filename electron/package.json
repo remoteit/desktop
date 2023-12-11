@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "electron-updater": "^6.1.4",
-    "remoteit-headless": "file:../backend/dist/remoteit-headless.tgz"
+    "remoteit-headless": "file:../backend"
   },
   "devDependencies": {
     "@electron/notarize": "^2.1.0",

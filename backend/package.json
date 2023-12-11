@@ -4,7 +4,7 @@
   "private": true,
   "main": "build/index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s clean compile copy-* pack",
+    "build": "cross-env NODE_ENV=production run-s clean compile copy-*",
     "clean": "rimraf build && mkdir build && rimraf dist && mkdir dist",
     "compile": "tsc -b",
     "copy-common": "[ -d ../common/build ] && [ -d ./build ] && cp -r ../common/build ./build/common",
