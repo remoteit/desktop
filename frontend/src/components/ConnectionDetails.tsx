@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
+import browser from '../services/Browser'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'

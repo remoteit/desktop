@@ -7,7 +7,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { NetworkTagEditor } from '../components/NetworkTagEditor'
 import { ListHorizontal } from '../components/ListHorizontal'
 import { ConfirmButton } from '../buttons/ConfirmButton'
-import { AddUserButton } from '../buttons/AddUserButton'
+import { ShareButton } from '../buttons/ShareButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
 import { UsersTab } from '../components/UsersTab'
@@ -54,7 +54,7 @@ export const NetworkHeaderMenu: React.FC<{
             ) : (
               network.permissions.includes('MANAGE') && (
                 <>
-                  <AddUserButton to={`/networks/${network.id}/share`} title="Share access" />
+                  <ShareButton to={`/networks/${network.id}/share`} title="Share access" />
                   <DeleteButton
                     title="Delete Network"
                     warning={

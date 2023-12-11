@@ -9,8 +9,10 @@ import { Typography } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
+import { ShareButton } from '../buttons/ShareButton'
 import { ListItemCopy } from '../components/ListItemCopy'
 import { Container } from './Container'
+import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
 import { Diagram } from './Diagram'
 import { Notice } from '../components/Notice'
@@ -57,6 +59,13 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
               )}
               {service.name || 'unknown'}
             </Title>
+            <MobileUI hide>
+              <ShareButton
+                to={`/devices/${device.id}/${service.id}/share`}
+                hide={!device.permissions.includes('MANAGE')}
+                title="Share access"
+              />
+            </MobileUI>
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (

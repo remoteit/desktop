@@ -32,6 +32,7 @@ class Environment {
   isWindows: boolean = false
   isIOS: boolean = false
   isAndroid: boolean = false
+  isApple: boolean = false
   hasBackend: boolean = false
 
   constructor() {
@@ -44,6 +45,7 @@ class Environment {
 
     this.isMac = isMac()
     this.isWindows = isWindows()
+    this.isApple = this.isIOS || this.isMac
 
     this.hasBackend = !this.isPortal && !this.isMobile
     console.log('Environment', this)
