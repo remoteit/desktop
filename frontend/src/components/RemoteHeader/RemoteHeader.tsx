@@ -9,7 +9,7 @@ import classnames from 'classnames'
 import screenfull from 'screenfull'
 import browser from '../../services/Browser'
 
-type Props = { device?: IDevice; color?: string; insets: ILayout['insets']; children: React.ReactNode }
+type Props = { device?: IDevice; color?: string; insets?: ILayout['insets']; children: React.ReactNode }
 
 export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children }) => {
   const showFrame = browser.isRemote
@@ -58,7 +58,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children 
 }
 
 type styleProps = {
-  insets: ILayout['insets']
+  insets?: ILayout['insets']
   showBorder: boolean
   color?: string
 }
@@ -71,10 +71,10 @@ const useStyles = makeStyles(({ palette }) => ({
     bottom: 0,
     position: 'fixed',
     // for iOS mobile
-    paddingTop: insets.top ? insets.top - spacing.sm : undefined,
-    paddingBottom: insets.bottom,
-    paddingLeft: insets.left,
-    paddingRight: insets.right,
+    paddingTop: insets?.top,
+    paddingBottom: insets?.bottom,
+    paddingLeft: insets?.left,
+    paddingRight: insets?.right,
   }),
   page: ({ showBorder }: styleProps) => ({
     overflow: 'hidden',

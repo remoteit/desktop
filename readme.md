@@ -125,13 +125,15 @@ Start web app
 npm start
 ```
 
-Optionally install electron
+### Electron
+
+Install electron
 
 ```shell
 npm run install-electron
 ```
 
-Start electron app
+With web app running start electron app
 
 ```shell
 npm run electron
@@ -139,11 +141,18 @@ npm run electron
 
 Command+option+I to open with dev tools.
 
-### Mobile Development
+### Mobile
+
+With web app running start mobile app
 
 ```shell
-  npm run frontend
-  npm run mobile-ios
+npm run mobile-ios
+```
+
+or
+
+```shell
+npm run mobile-android
 ```
 
 ## Testing
@@ -307,4 +316,4 @@ Check dependencies
 `npx depcheck`
 
 Check and update dependencies
-`ncu` and `ncu -u`
+`ncu -i`

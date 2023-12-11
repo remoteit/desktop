@@ -70,6 +70,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
             key={id}
             serviceId={id}
             network={network}
+            enabled={networkConnected || networkEnabled}
             session={sessions.find(s => s.target.id === id)}
             fallbackName={network.connectionNames[id]}
             connectionsPage={connectionsPage}

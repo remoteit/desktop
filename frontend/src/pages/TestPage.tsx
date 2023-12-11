@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import cloudSync from '../services/CloudSync'
 import { TEST_HEADER } from '../constants'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
@@ -89,7 +90,7 @@ export const TestPage: React.FC = () => {
                 onSave={url => {
                   emit('preferences', { ...preferences, apiGraphqlURL: url })
                   emit('binaries/install')
-                  ui.refreshAll()
+                  cloudSync.all()
                 }}
                 hideIcon
               />
