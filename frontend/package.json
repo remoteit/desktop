@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "vite --port 3000 --host 0.0.0.0 --open",
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=4096' vite build"
+    "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' vite build"
   },
   "dependencies": {
     "@airbrake/browser": "^2.1.8",
