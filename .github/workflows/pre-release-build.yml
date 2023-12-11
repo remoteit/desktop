@@ -46,6 +46,8 @@ jobs:
           npm install
           npm run build-frontend
           npm run build-backend
+          cd electron
+          npm install ../backend/dist/remoteit-headless.tgz
 
       - name: Build/release Electron app
         uses: mebays/action-electron-builder@node-16
