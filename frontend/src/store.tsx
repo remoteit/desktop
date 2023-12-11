@@ -10,6 +10,7 @@ const logger = createLogger({
 let middlewares = [logger]
 
 export const store = init({ models, plugins: [immerPlugin() as any], redux: { middlewares } })
+export const dispatch = store.dispatch
 
 // Export types
 export type extractStateFromModel<a extends RootModel> = {
