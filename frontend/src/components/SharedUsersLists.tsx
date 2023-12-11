@@ -6,7 +6,7 @@ import { ApplicationState } from '../store'
 import { SharedUsersPaginatedList } from './SharedUsersPaginatedList'
 import { selectMembersWithAccess } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
-import { AddUserButton } from '../buttons/AddUserButton'
+import { ShareButton } from '../buttons/ShareButton'
 import { IconButton } from '../buttons/IconButton'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
@@ -37,9 +37,9 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
               <Icon name="user-slash" type="light" fontSize={28} color="gray" />
             </Tooltip>
           </Box>
-          <AddUserButton to={location.pathname.replace('users', 'share')} iconInlineLeft>
+          <ShareButton to={location.pathname.replace('users', 'share')} iconInlineLeft>
             <Typography variant="body2">Share to a guest</Typography>
-          </AddUserButton>
+          </ShareButton>
           <Typography variant="caption" color="gray.main" component="div">
             or
           </Typography>
