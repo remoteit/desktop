@@ -38,9 +38,9 @@ export const ConnectionListItem: React.FC<Props> = ({
 }) => {
   const dispatch = useDispatch<Dispatch>()
   const error = !!connection?.error
-  const color = offline ? 'gray' : error ? 'error' : enabled ? 'primary' : 'grayDarkest'
-  const borderColor = error ? 'error' : enabled ? 'primary' : 'grayDark'
-  const css = useStyles({ connected, color: borderColor })
+  const color = offline ? 'gray' : error ? 'error' : connected ? 'primary' : 'grayDarkest'
+  const borderColor = error ? 'error' : connected ? 'primary' : 'grayDark'
+  const css = useStyles({ connected, color: borderColor, enabled })
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
@@ -74,8 +74,8 @@ export const ConnectionListItem: React.FC<Props> = ({
 }
 
 export const useStyles = makeStyles(({ palette }) => ({
-  connection: ({ connected, color }: any) => ({
-    borderColor: connected ? palette.primary.main : palette[color]?.main,
+  connection: ({ connected, color, enabled }: any) => ({
+    borderColor: enabled ? palette.primary.main : palette[color]?.main,
     borderBottomColor: palette[color]?.main,
     borderWidth: '0 0 1px 1px',
     borderBottomWidth: 1,

@@ -50,18 +50,17 @@ import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import browser, { getOs } from '../services/Browser'
 
-export const Router: React.FC = () => {
+export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   useMobileNavigation()
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
-  const { remoteUI, redirect, thisId, registered, os, layout } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, redirect, thisId, registered, os } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
     redirect: state.ui.redirect,
     thisId: state.backend.thisId,
     registered: !!state.backend.thisId,
     os: state.backend.environment.os || getOs(),
-    layout: state.ui.layout,
   }))
 
   useEffect(() => {

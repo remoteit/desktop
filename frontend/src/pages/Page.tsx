@@ -16,10 +16,11 @@ import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
 export interface Props {
+  noInsets?: boolean
   children: React.ReactNode
 }
 
-export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
+export function Page({ noInsets, children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
   const {
     device,
@@ -63,7 +64,11 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   return (
     <>
-      <RemoteHeader device={device} insets={layout.insets} color={label?.id ? label.color : undefined}>
+      <RemoteHeader
+        device={device}
+        insets={noInsets ? undefined : layout.insets}
+        color={label?.id ? label.color : undefined}
+      >
         <DragAppRegion />
         {children}
         {offline && (

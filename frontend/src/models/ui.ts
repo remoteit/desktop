@@ -207,23 +207,6 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
     },
-    async refreshAll() {
-      dispatch.ui.set({ fetching: true })
-      await dispatch.devices.set({ from: 0 })
-      await dispatch.accounts.fetch()
-      await dispatch.devices.fetchList()
-      await dispatch.networks.fetch()
-      await dispatch.connections.fetch()
-      await Promise.all([
-        dispatch.sessions.fetch(),
-        dispatch.user.fetch(),
-        dispatch.tags.fetch(),
-        dispatch.plans.fetch(),
-        dispatch.organization.fetch(),
-        dispatch.announcements.fetch(),
-      ])
-      dispatch.ui.set({ fetching: false })
-    },
     async setTheme(themeMode: UIState['themeMode'] | undefined, state) {
       themeMode = themeMode || state.ui.themeMode
       dispatch.ui.setPersistent({ themeMode })

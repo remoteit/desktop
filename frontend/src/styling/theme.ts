@@ -13,7 +13,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   const palette = {
     mode: isDark ? 'dark' : 'light',
     info: { main: colors.grayDark },
-    primary: { main: colors.primary },
+    primary: { main: colors.primary, dark: colors.primaryDark },
     secondary: { main: colors.secondary, contrastText: colors.white },
     error: { main: colors.danger },
     primaryLight: { main: colors.primaryLight },

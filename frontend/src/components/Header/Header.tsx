@@ -98,24 +98,28 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
           )}
           {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
         </Title>
-        <Route path={['/devices', '/devices/select']} exact>
-          <FilterButton />
-          {!mobile && <ColumnsButton />}
-        </Route>
-        {manager && (
-          <Switch>
-            <Route path="/devices" exact>
-              <IconButton to="/devices/select" icon="check-square" title="Show Select" />
+        {!(showSearch && mobile) && (
+          <>
+            <Route path={['/devices', '/devices/select']} exact>
+              <FilterButton />
+              {!mobile && <ColumnsButton />}
             </Route>
-            <Route path="/devices/select" exact>
-              <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
-            </Route>
-          </Switch>
-        )}
-        {sidebarHidden && (
-          <Route path="/devices" exact>
-            <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
-          </Route>
+            {manager && (
+              <Switch>
+                <Route path="/devices" exact>
+                  <IconButton to="/devices/select" icon="check-square" title="Show Select" />
+                </Route>
+                <Route path="/devices/select" exact>
+                  <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
+                </Route>
+              </Switch>
+            )}
+            {sidebarHidden && (
+              <Route path="/devices" exact>
+                <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
+              </Route>
+            )}
+          </>
         )}
       </div>
       <UpgradeNotice />

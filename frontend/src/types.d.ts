@@ -20,6 +20,8 @@ declare global {
     | 'lan'
     | 'endpoint'
 
+  type Methods = (() => void)[]
+
   interface IDeviceListContext {
     device?: IDevice
     connections?: IConnection[]

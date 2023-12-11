@@ -134,32 +134,34 @@ export function SignIn({
         )}
         <Box mb={1}>
           <TextField
+            required
+            fullWidth
             autoCapitalize="none"
             autoCorrect="off"
-            autoFocus={!username}
             disabled={loading}
-            fullWidth
             id="sign-in-username"
+            focused={!emailProcessed}
             label={t('global.user.email')}
             name="email"
             inputProps={{ maxLength: 254 }}
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
               setUsername(e?.currentTarget?.value.trim())
             }}
-            required
             value={username}
             variant="filled"
+            type="email"
           />
         </Box>
         <Collapse in={emailProcessed} unmountOnExit onEntered={() => passRef.current?.focus()}>
           <Box mb={1}>
             <TextField
               hidden
+              required
               fullWidth
+              focused={emailProcessed}
               inputRef={passRef}
               autoCapitalize="none"
               autoCorrect="off"
-              autoFocus={emailProcessed}
               disabled={loading}
               id="sign-in-password"
               label={t('global.user.password')}
@@ -167,7 +169,6 @@ export function SignIn({
               onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setPassword(e?.currentTarget?.value)
               }
-              required
               type="password"
               variant="filled"
             />

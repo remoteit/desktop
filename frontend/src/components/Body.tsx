@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import browser from '../services/Browser'
 import classnames from 'classnames'
-import { useMediaQuery } from '@mui/material'
 import { spacing, Color } from '../styling'
 import { makeStyles } from '@mui/styles'
 

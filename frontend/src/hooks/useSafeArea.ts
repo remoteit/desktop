@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SafeArea } from 'capacitor-plugin-safe-area'
+import { spacing } from '../styling'
 import browser from '../services/Browser'
 
 type UseSafeAreaResult = {
@@ -12,23 +13,30 @@ const useSafeArea = (): UseSafeAreaResult => {
   const [statusBarHeight, setStatusBarHeight] = useState<number>(0)
 
   useEffect(() => {
-    if (!browser.isIOS) return
+    if (!browser.isMobile) return
+
+    const adjustInsets = (insets: ILayout['insets']) => ({
+      ...insets,
+      top: insets.top - spacing.sm,
+      bottom: insets.bottom - spacing.sm,
+    })
+
+    SafeArea.addListener('safeAreaChanged', data => {
+      console.log('SAFE-AREA CHANGED', data)
+      setInsets(adjustInsets(data.insets))
+    })
 
     const fetchInsets = async () => {
       const { insets } = await SafeArea.getSafeAreaInsets()
       const { statusBarHeight } = await SafeArea.getStatusBarHeight()
-      setInsets(insets)
+      setInsets(adjustInsets(insets))
       setStatusBarHeight(statusBarHeight)
     }
 
     fetchInsets()
 
-    const eventListener = SafeArea.addListener('safeAreaChanged', data => {
-      setInsets(data.insets)
-    })
-
     return () => {
-      eventListener.remove()
+      SafeArea.removeAllListeners()
     }
   }, [])
 

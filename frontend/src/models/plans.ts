@@ -13,6 +13,7 @@ import { selectRemoteitLicense, selectOrganization, selectLicenses } from '../se
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
+import cloudSync from '../services/CloudSync'
 import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
@@ -164,7 +165,7 @@ export default createModel<RootModel>()({
       setTimeout(() => {
         // event should come from ws and cause the update, otherwise:
         dispatch.plans.set({ purchasing: undefined })
-        dispatch.ui.refreshAll()
+        cloudSync.all()
       }, 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },

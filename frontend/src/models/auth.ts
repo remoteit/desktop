@@ -1,3 +1,4 @@
+import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
@@ -220,14 +221,10 @@ export default createModel<RootModel>()({
       await dispatch.connections.init()
       await dispatch.networks.init()
       await dispatch.devices.init()
-      await dispatch.tags.fetch()
-      dispatch.user.fetch()
-      dispatch.devices.fetchList()
-      dispatch.connections.fetch()
-      dispatch.contacts.fetch()
-      dispatch.sessions.fetch()
-      dispatch.announcements.fetch()
-      dispatch.applicationTypes.fetch()
+      await cloudSync.all()
+      await dispatch.contacts.fetch()
+      await dispatch.applicationTypes.fetch()
+
       dispatch.ui.set({ fetching: false })
     },
     async signedIn() {

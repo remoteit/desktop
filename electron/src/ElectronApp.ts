@@ -183,6 +183,7 @@ export default class ElectronApp {
       ...windowState,
       minWidth: 525,
       minHeight: 325,
+      backgroundColor: '#034b9d',
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,
