@@ -22,8 +22,8 @@ import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { spacing } from '../styling'
 import { useCounts } from '../hooks/useCounts'
+import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
