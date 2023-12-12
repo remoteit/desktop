@@ -4,6 +4,10 @@ import { dispatch } from '../store'
 class CloudSync {
   initialized = false
 
+  constructor() {
+    this.all = this.all.bind(this)
+  }
+
   init() {
     if (this.initialized) return
     this.initialized = true
