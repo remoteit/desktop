@@ -39,7 +39,6 @@ export type UIState = {
   silent: string | null
   selected: IDevice['id'][]
   connected: boolean
-  network: boolean
   offline?: { severity: NoticeProps['severity']; title: string; message: NoticeProps['children'] }
   mobileNavigation: string[]
   waitMessage?: string
@@ -113,7 +112,6 @@ export const defaultState: UIState = {
   silent: null,
   selected: [],
   connected: false,
-  network: false,
   offline: undefined,
   mobileNavigation: [],
   waitMessage: undefined,

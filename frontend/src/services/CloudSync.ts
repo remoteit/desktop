@@ -1,6 +1,20 @@
+import network from './Network'
 import { dispatch } from '../store'
 
 class CloudSync {
+  initialized = false
+
+  init() {
+    if (this.initialized) return
+    this.initialized = true
+    network.on('connect', this.all)
+  }
+
+  reset() {
+    this.initialized = false
+    network.off('connect', this.all)
+  }
+
   async call(methods: Methods, parallel?: boolean) {
     dispatch.ui.set({ fetching: true })
 

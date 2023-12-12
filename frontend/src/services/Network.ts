@@ -52,7 +52,6 @@ class Network extends EventEmitter {
     this.log('DISCONNECT')
     dispatch.ui.set({
       offline: { title: 'Disconnected', message: 'Internet access is required.', severity: 'warning' },
-      network: false,
     })
     this.shouldConnect = true
     this.emit('disconnect')
@@ -68,7 +67,6 @@ class Network extends EventEmitter {
   connect = () => {
     if (this.shouldConnect && this.isActive()) {
       this.shouldConnect = false
-      dispatch.ui.set({ network: true })
       this.emit('connect')
       this.log('CONNECT')
     }

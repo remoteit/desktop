@@ -13,10 +13,9 @@ import { attributeName } from '@common/nameHelper'
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { fetching, device, networkConnected } = useSelector((state: ApplicationState) => ({
+  const { fetching, device } = useSelector((state: ApplicationState) => ({
     fetching: getDeviceModel(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching,
     device: selectDevice(state, undefined, deviceID),
-    networkConnected: state.ui.network,
   }))
 
   const connectionPage = useRouteMatch('/connections')
@@ -65,13 +64,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     await cloudSync.core()
     emit('refresh')
   }
-
-  React.useEffect(() => {
-    if (networkConnected) {
-      console.log('NETWORK CONNECTED')
-      refresh()
-    }
-  }, [networkConnected])
 
   return (
     <IconButton
