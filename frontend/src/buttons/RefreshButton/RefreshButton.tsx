@@ -13,9 +13,10 @@ import { attributeName } from '@common/nameHelper'
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { fetching, device } = useSelector((state: ApplicationState) => ({
+  const { fetching, device, networkConnected } = useSelector((state: ApplicationState) => ({
     fetching: getDeviceModel(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching,
     device: selectDevice(state, undefined, deviceID),
+    networkConnected: state.ui.network,
   }))
 
   const connectionPage = useRouteMatch('/connections')
@@ -66,11 +67,11 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   }
 
   React.useEffect(() => {
-    network.on('connect', refresh)
-    return () => {
-      network.off('connect', refresh)
+    if (networkConnected) {
+      console.log('NETWORK CONNECTED')
+      refresh()
     }
-  }, [])
+  }, [networkConnected])
 
   return (
     <IconButton

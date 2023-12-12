@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Typography, Container } from '@mui/material'
-import { NODE_ENV } from '../../../constants'
+import { MODE } from '../../../constants'
 import { Link } from '../../../components/Link'
 
 export type Props = {
@@ -15,7 +15,7 @@ export class ErrorHandler extends React.Component<Props, State> {
   state: State = { error: null }
 
   componentDidCatch(error: Error, info: any) {
-    if (NODE_ENV === 'test') throw error
+    if (MODE === 'test') throw error
     console.error('[CAUGHT ERROR]:', error)
     this.setState({ error })
   }

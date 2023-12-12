@@ -1,4 +1,4 @@
-import { store } from '../store'
+import { dispatch } from '../store'
 import { EventEmitter } from 'events'
 
 class Network extends EventEmitter {
@@ -50,8 +50,9 @@ class Network extends EventEmitter {
   offline = () => {
     if (navigator.onLine) return
     this.log('DISCONNECT')
-    store.dispatch.ui.set({
+    dispatch.ui.set({
       offline: { title: 'Disconnected', message: 'Internet access is required.', severity: 'warning' },
+      network: false,
     })
     this.shouldConnect = true
     this.emit('disconnect')
@@ -60,13 +61,14 @@ class Network extends EventEmitter {
   online = () => {
     if (!navigator.onLine) return
     this.log('NETWORK ONLINE')
-    store.dispatch.ui.set({ offline: undefined })
+    dispatch.ui.set({ offline: undefined })
     this.connect()
   }
 
   connect = () => {
     if (this.shouldConnect && this.isActive()) {
       this.shouldConnect = false
+      dispatch.ui.set({ network: true })
       this.emit('connect')
       this.log('CONNECT')
     }
