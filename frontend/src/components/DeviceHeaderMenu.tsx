@@ -6,7 +6,7 @@ import { ListItemLocation } from './ListItemLocation'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'
-import { AddUserButton } from '../buttons/AddUserButton'
+import { ShareButton } from '../buttons/ShareButton'
 import { Container } from './Container'
 import { UsersTab } from './UsersTab'
 import { MobileUI } from './MobileUI'
@@ -27,7 +27,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
             <MobileUI hide>
-              <AddUserButton
+              <ShareButton
                 to={`/devices/${device.id}/share`}
                 hide={!device.permissions.includes('MANAGE')}
                 title="Share access"

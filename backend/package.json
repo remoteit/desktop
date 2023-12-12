@@ -1,19 +1,19 @@
 {
   "name": "remoteit-headless",
-  "version": "3.24.5",
+  "version": "3.24.6",
   "private": true,
   "main": "build/index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s clean compile copy-* pack",
     "clean": "rimraf build && mkdir build && rimraf dist && mkdir dist",
-    "compile": "tsc -b && echo 'TypeScript compilation complete' && ls -la build",
-    "copy-common": "[ -d ../common/build ] && [ -d ./build ] && echo 'Copying common files...' && cp -r ../common/build ./build/common && echo 'Common files copied' && ls -la ./build/common || echo 'Common build directory not found'",
-    "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && echo 'Copying frontend files...' && cp -r ../frontend/build/* ./build && echo 'Frontend files copied' && ls -la ./build || echo 'Frontend build directory not found'",
-    "pack": "npm pack && echo 'NPM pack completed' && ls -la *.tgz && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz && echo 'Package moved to dist' && ls -la dist",
+    "compile": "tsc -b",
+    "copy-common": "[ -d ../common/build ] && [ -d ./build ] && cp -r ../common/build ./build/common",
+    "copy-frontend": "[ -d ../frontend/build ] && [ -d ./build ] && cp -r ../frontend/build/* ./build",
+    "pack": "npm pack && mv remoteit-headless-*.tgz ./dist/remoteit-headless.tgz",
     "start": "node build/index.js",
     "test": "cross-env NODE_ENV=test jest",
     "test-watch": "npm run test -- --watch",
-    "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p copy-* watch-*",
+    "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "watch-compile": "tsc --watch"
   },
   "dependencies": {
