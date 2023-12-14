@@ -19,7 +19,7 @@ export const optionalId = (_: ApplicationState, accountId?: string, id?: string)
 export const optionalDeviceId = (_: ApplicationState, accountId?: string, deviceId?: string) => deviceId
 
 export const getSessions = (state: ApplicationState) => state.sessions.all
-export const getAllConnections = (state: ApplicationState) => state.connections.all
+export const getConnections = (state: ApplicationState) => state.connections.all
 export const optionalService = (_: ApplicationState, service?: IService) => service
 
 export const getConnectionDefaults = (state: ApplicationState) => state.user.attributes?.connectionDefaults || {}

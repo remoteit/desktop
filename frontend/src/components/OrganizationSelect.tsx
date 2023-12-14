@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem } from '@mui/material'
-import { selectConnectionSessions } from '../selectors/connections'
+import { selectAllConnectionSessions } from '../selectors/connections'
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
@@ -36,7 +36,7 @@ export const OrganizationSelect: React.FC = () => {
       }
     }),
     ownOrg: getOwnOrganization(state),
-    sessions: selectConnectionSessions(state),
+    sessions: selectAllConnectionSessions(state),
     userId: state.user.id,
   }))
 

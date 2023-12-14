@@ -2,10 +2,10 @@ import { createSelector } from 'reselect'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
 import { selectActiveAccountId, getActiveUser } from './accounts'
-import { getUser, getAllConnections, getSessions, optionalService } from './state'
+import { getUser, getConnections, getSessions, optionalService } from './state'
 
 export const getConnectionsLookup = createSelector(
-  [getAllConnections, selectActiveAccountId],
+  [getConnections, selectActiveAccountId],
   (allConnections, accountId) =>
     allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (!c.deviceID || accountId !== c.accountId) return lookup
@@ -19,18 +19,15 @@ export const selectSessions = createSelector([getSessions, selectActiveAccountId
   return sessions.filter(s => s.target.accountId === accountId)
 })
 
-export const selectFetchConnections = createSelector([getAllConnections], connections => {
+export const selectEnabledConnections = createSelector([getConnections], connections => {
   return connections.filter(c => !!c.createdTime || c.enabled)
 })
 
-export const selectConnections = createSelector(
-  [getAllConnections, selectActiveAccountId],
-  (connections, accountId) => {
-    return connections.filter(c => c.accountId === accountId && (!!c.createdTime || c.enabled))
-  }
-)
+export const selectConnections = createSelector([getConnections, selectActiveAccountId], (connections, accountId) => {
+  return connections.filter(c => c.accountId === accountId && (!!c.createdTime || c.enabled))
+})
 
-export const selectAllConnectionsCount = createSelector(
+export const selectEnabledConnectionsCount = createSelector(
   [selectConnections, selectSessions],
   (connections, sessions) => {
     const enabled = connections.filter(
@@ -48,11 +45,11 @@ export const selectIdleConnections = createSelector([selectConnections], connect
   return connections.filter(connection => connection.enabled && connection.online && !connection.connected)
 })
 
-export const selectConnectionSessions = createSelector(
-  [selectConnectedConnections, selectSessions, getUser],
+export const selectAllConnectionSessions = createSelector(
+  [getConnections, getSessions, getUser],
   (connections, sessions, user) => {
     const active: ISession[] = connections
-      .filter(c => c.connected && !sessions.find(s => s.target.id === c.id))
+      .filter(c => c.online && c.connected && !sessions.find(s => s.target.id === c.id))
       .map(c => ({
         timestamp: new Date(c.startTime || 0),
         platform: 1, // FIXME this device state platform
@@ -72,15 +69,17 @@ export const selectConnectionSessions = createSelector(
   }
 )
 
-export const selectConnection = createSelector(
-  [getAllConnections, optionalService],
-  (connections, service?: IService) => {
-    let connection = connections.find(c => c.id === service?.id)
-    if (!connection?.typeID && service) return { ...newConnection(service), ...connection }
-    if (!connection) return newConnection(service)
-    return connection
-  }
+export const selectConnectionSessions = createSelector(
+  [selectAllConnectionSessions, selectActiveAccountId],
+  (sessions, accountId) => sessions.filter(s => s.target.accountId === accountId)
 )
+
+export const selectConnection = createSelector([getConnections, optionalService], (connections, service?: IService) => {
+  let connection = connections.find(c => c.id === service?.id)
+  if (!connection?.typeID && service) return { ...newConnection(service), ...connection }
+  if (!connection) return newConnection(service)
+  return connection
+})
 
 export const selectConnectionsByType = createSelector(
   [getActiveUser, selectIdleConnections],
