@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.25.0-alpha",
+  "version": "3.25.0",
   "private": true,
   "scripts": {
     "start": "vite --port 3000 --host 0.0.0.0 --open",
