@@ -97,23 +97,16 @@ export const AvatarMenu: React.FC = () => {
           title="Account"
           subtitle={user?.email}
           icon="user"
-          pathname="/account"
+          to="/account"
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        <ListItemLocation
-          dense
-          exactMatch
-          title="Settings"
-          icon="sliders-h"
-          pathname="/settings"
-          onClick={handleClose}
-        />
+        <ListItemLocation dense exactMatch title="Settings" icon="sliders-h" to="/settings" onClick={handleClose} />
         <ListItemLocation
           title="Bug Report"
           icon="spider"
           iconType="solid"
-          pathname="/feedback"
+          to="/feedback"
           onClick={async () => {
             await dispatch.feedback.set({
               subject: 'Bug Report',

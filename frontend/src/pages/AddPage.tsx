@@ -80,7 +80,7 @@ export const AddPage: React.FC = () => {
                 iconSize="xxl"
                 className={css.smallItem}
                 icon={platform.id}
-                pathname={`/add/${platform.id}`}
+                to={`/add/${platform.id}`}
                 title={platform.name}
                 subtitle={platform.subtitle}
                 disableGutters
@@ -119,7 +119,7 @@ export const AddPage: React.FC = () => {
                 iconSize="xxl"
                 className={css.smallItem}
                 icon={platform.id}
-                pathname={`/add/${platform.id}`}
+                to={`/add/${platform.id}`}
                 title={platform.name}
                 subtitle={platform.subtitle}
                 disableGutters

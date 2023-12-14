@@ -25,7 +25,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabl
       dense
       disabled={!link}
       key={member.user.id}
-      pathname={`/organization/members/${member.user.id}`}
+      to={`/organization/members/${member.user.id}`}
       icon={<Avatar email={member.user.email} size={28} />}
       title={member.user.email}
       subtitle={

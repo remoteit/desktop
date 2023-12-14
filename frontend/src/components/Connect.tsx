@@ -85,7 +85,7 @@ export const Connect: React.FC = () => {
               icon="sliders"
               title="Connection configuration"
               disabled={!!connection.connectLink}
-              pathname="advanced"
+              to="advanced"
               showDisabled
               dense
             >
@@ -125,7 +125,7 @@ export const Connect: React.FC = () => {
         <AccordionMenuItem gutters subtitle="Service" defaultExpanded>
           {device?.permissions.includes('MANAGE') && (
             <>
-              <ListItemLocation icon="sliders" title="Service configuration" pathname="edit" dense>
+              <ListItemLocation icon="sliders" title="Service configuration" to="edit" dense>
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
               <Divider variant="inset" sx={{ marginTop: 1 }} />

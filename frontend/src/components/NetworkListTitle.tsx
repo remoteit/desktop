@@ -60,7 +60,7 @@ export const NetworkListTitle: React.FC<Props> = ({
           )}
         </>
       }
-      pathname={noLink ? undefined : `/networks/${network?.id}`}
+      to={noLink ? undefined : `/networks/${network?.id}`}
       onClick={noLink ? onClick : undefined}
       title={
         <Title>
