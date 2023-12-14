@@ -45,13 +45,13 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
       }
     >
       {!!guests.length && (
-        <ListItemLocation icon="user-circle" title="Guests" pathname="users" dense>
+        <ListItemLocation icon="user-circle" title="Guests" to="users" dense>
           <Chip size="small" label={guests.length} />
           <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>
       )}
       {!!members.length && (
-        <ListItemLocation icon="users" title="Organization members" pathname="users" dense>
+        <ListItemLocation icon="users" title="Organization members" to="users" dense>
           <Chip size="small" label={members.length} />
           <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>

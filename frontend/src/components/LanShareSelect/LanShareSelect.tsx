@@ -13,7 +13,7 @@ export const LanShareSelect: React.FC<Props> = ({ connection }) => {
   const disabled = connection?.connected || connection?.public
 
   return (
-    <ListItemLocation disabled={disabled} pathname={'lan'} showDisabled dense>
+    <ListItemLocation disabled={disabled} to={'lan'} showDisabled dense>
       <ListItemIcon>
         <Icon name="network-wired" size="md" modified={shared} fixedWidth />
       </ListItemIcon>

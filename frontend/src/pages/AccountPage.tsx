@@ -36,23 +36,17 @@ export const AccountPage: React.FC = () => {
       <List>
         <ListItemLocation
           title="Profile"
-          pathname="/account/overview"
+          to="/account/overview"
           match={['/account', '/account/overview']}
           icon="user-large"
           exactMatch
           dense
         />
-        <ListItemLocation title="Security" pathname="/account/security" icon="lock" dense />
-        <ListItemLocation title="Subscription" pathname="/account/plans" icon="shopping-cart" dense />
-        <ListItemLocation
-          title="Licensing"
-          pathname="/account/licensing"
-          icon="id-badge"
-          badge={licenseIndicator}
-          dense
-        />
-        {billing && <ListItemLocation title="Billing" pathname="/account/billing" icon="credit-card-front" dense />}
-        <ListItemLocation title="Access Keys" pathname="/account/accessKey" icon="key" dense />
+        <ListItemLocation title="Security" to="/account/security" icon="lock" dense />
+        <ListItemLocation title="Subscription" to="/account/plans" icon="shopping-cart" dense />
+        <ListItemLocation title="Licensing" to="/account/licensing" icon="id-badge" badge={licenseIndicator} dense />
+        {billing && <ListItemLocation title="Billing" to="/account/billing" icon="credit-card-front" dense />}
+        <ListItemLocation title="Access Keys" to="/account/accessKey" icon="key" dense />
       </List>
     </Container>
   )

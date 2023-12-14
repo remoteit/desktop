@@ -73,7 +73,7 @@ export const OrganizationRolesPage: React.FC = () => {
                   {r.name}
                 </Box>
               }
-              pathname={`/organization/roles/${r.id}`}
+              to={`/organization/roles/${r.id}`}
               exactMatch
               disableIcon
               dense

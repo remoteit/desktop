@@ -16,7 +16,6 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { RegisterMenu } from '../RegisterMenu'
-import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
 import { Title } from '../Title'
@@ -47,7 +46,6 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
 
   return (
     <>
-      {breadcrumbs && <Breadcrumbs />}
       <div className={css.header}>
         {sidebarHidden && (layout.hideSidebar ? isRootMenu : true) && menu !== '/add' && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />

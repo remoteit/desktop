@@ -47,7 +47,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               title="Details"
               icon="info-circle"
               iconColor="grayDarker"
-              pathname={`/devices/${device.id}/details`}
+              to={`/devices/${device.id}/details`}
               match={[`/devices/${device.id}`, `/devices/${device.id}/details`]}
               exactMatch
               dense
@@ -56,7 +56,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               title="Configure"
               icon="sliders"
               iconColor="grayDarker"
-              pathname={`/devices/${device.id}/edit`}
+              to={`/devices/${device.id}/edit`}
               dense
             />
             <UsersTab instance={device} to={`/devices/${device.id}/users`} />
@@ -64,7 +64,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               title="Logs"
               icon="file-alt"
               iconColor="grayDarker"
-              pathname={`/devices/${device.id}/logs`}
+              to={`/devices/${device.id}/logs`}
               dense
             />
           </ListHorizontal>

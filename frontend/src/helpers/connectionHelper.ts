@@ -3,7 +3,7 @@ import { ANONYMOUS_MANUFACTURER_CODE } from '../constants'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '@common/constants'
 import { Application, getApplicationType } from '@common/applications'
 import { ApplicationState, store } from '../store'
-import { selectFetchConnections } from '../selectors/connections'
+import { selectEnabledConnections } from '../selectors/connections'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { selectById } from '../selectors/devices'
@@ -173,7 +173,7 @@ export function clearConnectionError(connection: IConnection) {
 
 export function getFetchConnectionIds(state: ApplicationState) {
   const thisId = state.backend.thisId
-  const serviceIds = selectFetchConnections(state).map(c => {
+  const serviceIds = selectEnabledConnections(state).map(c => {
     // @TODO see if it would be better to put the connections into the correct accountId device model
     // console.log('connection ids', c.id, c.accountId)
     return c.id

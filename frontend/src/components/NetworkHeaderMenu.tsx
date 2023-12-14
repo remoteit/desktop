@@ -80,7 +80,7 @@ export const NetworkHeaderMenu: React.FC<{
               title="Details"
               icon="circle-info"
               iconColor="grayDarker"
-              pathname={`/networks/${network.id}`}
+              to={`/networks/${network.id}`}
               exactMatch
               dense
             />
