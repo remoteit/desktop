@@ -53,6 +53,7 @@ jobs:
           PROVISION_PROFILE_DEV_BASE64: ${{ secrets.PROVISION_PROFILE_DEV_BASE64 }}
           PROVISION_PROFILE_DIST_BASE64: ${{ secrets.PROVISION_PROFILE_DIST_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+          APPLE_MOBILE_APP_PASSWORD: ${{ secrets.APPLE_MOBILE_APP_PASSWORD }}
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
