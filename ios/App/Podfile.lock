@@ -6,7 +6,7 @@ PODS:
   - CapacitorBrowser (5.1.0):
     - Capacitor
   - CapacitorCordova (5.5.1)
-  - CapacitorPluginSafeArea (2.0.5):
+  - CapacitorPluginSafeArea (2.0.6):
     - Capacitor
   - CapacitorSplashScreen (5.0.6):
     - Capacitor
@@ -38,9 +38,9 @@ SPEC CHECKSUMS:
   CapacitorApp: 024e1b1bea5f883d79f6330d309bc441c88ad04a
   CapacitorBrowser: 7a0fb6a1011abfaaf2dfedfd8248f942a8eda3d6
   CapacitorCordova: e128cc7688c070ca0bfa439898a5f609da8dbcfe
-  CapacitorPluginSafeArea: bfdd714827dbd89fb44fea286beec996e1b0c5c4
+  CapacitorPluginSafeArea: d55e4d4e70c98f611240f11dd80561438d0d70cb
   CapacitorSplashScreen: 5fa2ab5e46cf5cc530cf16a51c80c7a986579ccd
 
 PODFILE CHECKSUM: e592e77633f76f5f430a464bc5f3e091a2638eb3
 
-COCOAPODS: 1.14.1
+COCOAPODS: 1.14.3
