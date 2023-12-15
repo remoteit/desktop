@@ -36,7 +36,6 @@ jobs:
 
       - name: Authenticate with fontawesome NPM repo
         run: |
-          echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
           npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
 
@@ -87,9 +86,8 @@ jobs:
         run: npm run build-mobile
 
       - name: Clean build dir
-        working-directory: ./ios/App
         run: |
-          rm -rf "$BUILD_PATH"
+          if [ -d "directory"]; then echo rm -rf "$BUILD_PATH"; fi \
           mkdir -p "$BUILD_PATH"
 
       - name: Build archive
