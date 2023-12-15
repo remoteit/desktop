@@ -229,6 +229,12 @@ In android studio:
 
 Upload to google play console
 
+Test the build locally:
+
+```shell
+adb install -r ./android/app/build/outputs/apk/release/app-release.apk
+```
+
 ### Packaging
 
 In order to be able to build on your local machine:
