@@ -87,7 +87,7 @@ jobs:
 
       - name: Clean build dir
         run: |
-          if [ -d "directory"]; then echo rm -rf "$BUILD_PATH"; fi \
+          if [ -d "$BUILD_PATH"]; then echo rm -rf "$BUILD_PATH"; fi \
           mkdir -p "$BUILD_PATH"
 
       - name: Build archive
