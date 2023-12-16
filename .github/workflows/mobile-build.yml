@@ -59,7 +59,6 @@ jobs:
           PP_PATH_DEV=$RUNNER_TEMP/6f3f2659-b6b4-428f-be47-947e8d8f26cf.mobileprovision
           PP_PATH_DIST=$RUNNER_TEMP/c2e4a68a-e7e2-48f3-a101-3849682530a8.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          BUILD_PATH=$RUNNER_TEMP/build
 
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
@@ -86,12 +85,16 @@ jobs:
         run: npm run build-mobile
 
       - name: Clean build dir
+        env:
+          BUILD_PATH: $RUNNER_TEMP/build
         run: |
           if [ -d "$BUILD_PATH"]; then rm -rf "$BUILD_PATH"; fi
           mkdir -p "$BUILD_PATH"
 
       - name: Build archive
         working-directory: ./ios/App
+        env:
+          BUILD_PATH: $RUNNER_TEMP/build
         run: |
           xcodebuild -workspace App.xcworkspace \
           -scheme Remote.It \
@@ -101,6 +104,7 @@ jobs:
       - name: Export ipa
         working-directory: ./ios/App
         env:
+          BUILD_PATH: $RUNNER_TEMP/build
           EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
         run: |
           EXPORT_OPTS_PATH=$RUNNER_TEMP/ExportOptions.plist
@@ -109,10 +113,14 @@ jobs:
 
       - name: Validate ipa
         working-directory: ./ios/App
+        env:
+          BUILD_PATH: $RUNNER_TEMP/build
         run: |
           xcrun altool --validate-app -f $BUILD_PATH/Remote.It.ipa -t ios -p '@keychain:remoteit-mobile-desktop' --output-format xml
 
       - name: Upload ipa
         working-directory: ./ios/App
-        run: |
+        env:
+          BUILD_PATH: $RUNNER_TEMP/build
+       run: |
           xcrun altool --upload-app -f BUILD_PATH/Remote.It.ipa -t ios -p '@keychain:remoteit-mobile-desktop' --output-format xml
