@@ -115,12 +115,14 @@ jobs:
         working-directory: ./ios/App
         env:
           BUILD_PATH: $RUNNER_TEMP/build
+          KEYCHAIN_PATH: $RUNNER_TEMP/app-signing.keychain-db
         run: |
-          xcrun altool --validate-app -f $BUILD_PATH/Remote.It.ipa -t ios -p '@keychain:remoteit-mobile-desktop' --output-format xml
+          xcrun altool --validate-app -f $BUILD_PATH/Remote.It.ipa -t ios --keychain $KEYCHAIN_PATH -p '@keychain:remoteit-mobile-desktop' --output-format xml
 
       - name: Upload ipa
         working-directory: ./ios/App
         env:
           BUILD_PATH: $RUNNER_TEMP/build
+          KEYCHAIN_PATH: $RUNNER_TEMP/app-signing.keychain-db
         run: |
-          xcrun altool --upload-app -f BUILD_PATH/Remote.It.ipa -t ios -p '@keychain:remoteit-mobile-desktop' --output-format xml
+          xcrun altool --upload-app -f BUILD_PATH/Remote.It.ipa -t ios --keychain $KEYCHAIN_PATH -p '@keychain:remoteit-mobile-desktop' --output-format xml
