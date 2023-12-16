@@ -81,15 +81,15 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $RUNNER_TEMP/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
 
-      - name: npm build-mobile
-        run: npm run build-mobile
-
       - name: Clean build dir
         env:
           BUILD_PATH: $RUNNER_TEMP/build
         run: |
           if [ -d "$BUILD_PATH"]; then rm -rf "$BUILD_PATH"; fi
           mkdir -p "$BUILD_PATH"
+  
+      - name: npm build-mobile
+        run: npm run build-mobile
 
       - name: Build archive
         working-directory: ./ios/App
@@ -122,5 +122,5 @@ jobs:
         working-directory: ./ios/App
         env:
           BUILD_PATH: $RUNNER_TEMP/build
-       run: |
+        run: |
           xcrun altool --upload-app -f BUILD_PATH/Remote.It.ipa -t ios -p '@keychain:remoteit-mobile-desktop' --output-format xml
