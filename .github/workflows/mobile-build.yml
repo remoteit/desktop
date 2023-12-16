@@ -85,7 +85,7 @@ jobs:
         env:
           BUILD_PATH: $RUNNER_TEMP/build
         run: |
-          if [ -d "$BUILD_PATH"]; then rm -rf "$BUILD_PATH"; fi
+          if [ -d "$BUILD_PATH" ]; then rm -rf "$BUILD_PATH"; fi
           mkdir -p "$BUILD_PATH"
   
       - name: npm build-mobile
