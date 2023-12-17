@@ -8,8 +8,7 @@ const useMobileBack = () => {
   const customHistory = useSelector((state: ApplicationState) => state.ui.mobileNavigation)
 
   const goUp = () => {
-    console.log('GO UP', customHistory)
-    if (customHistory.length < 2) {
+    if (!customHistory.length || (customHistory.length === 1 && customHistory[0] === history.location.pathname)) {
       // Can't go up if there's no previous history
       return
     }
