@@ -115,9 +115,9 @@ jobs:
       - name: Validate ipa
         working-directory: ./ios/App
         run: |
-          xcrun altool --validate-app -f $BUILD_PATH/Remote.It.ipa -t ios --keychain "$RUNNER_TEMP/app-signing.keychain-db" -p '@keychain:remoteit-mobile-desktop' --output-format xml
+          xcrun altool --validate-app -f "$BUILD_PATH/Remote.It.ipa" -t ios --keychain "$RUNNER_TEMP/app-signing.keychain-db" -p '@keychain:remoteit-mobile-desktop' --output-format xml
 
       - name: Upload ipa
         working-directory: ./ios/App
         run: |
-          xcrun altool --upload-app -f BUILD_PATH/Remote.It.ipa -t ios --keychain "$RUNNER_TEMP/app-signing.keychain-db" -p '@keychain:remoteit-mobile-desktop' --output-format xml
+          xcrun altool --upload-app -f "$BUILD_PATH/Remote.It.ipa" -t ios --keychain "$RUNNER_TEMP/app-signing.keychain-db" -p '@keychain:remoteit-mobile-desktop' --output-format xml
