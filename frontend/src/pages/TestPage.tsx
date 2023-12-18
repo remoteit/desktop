@@ -94,7 +94,7 @@ export const TestPage: React.FC = () => {
                 }}
                 hideIcon
               />
-              <InlineTextFieldSetting
+              {/* <InlineTextFieldSetting
                 value={getRestApi()}
                 displayValue="This still needs to be hooked up"
                 label="Rest Api"
@@ -106,7 +106,7 @@ export const TestPage: React.FC = () => {
                   emit('binaries/install')
                 }}
                 hideIcon
-              />
+              /> */}
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
                 label="WebSocket URL"

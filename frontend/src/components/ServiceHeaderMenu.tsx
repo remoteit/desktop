@@ -101,9 +101,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
             </Gutters>
           ) : (
             <>
-              <Gutters top={null} bottom="lg" size="md">
-                <ServiceConnectButton />
-              </Gutters>
+              <ServiceConnectButton />
               <Gutters top="xs" bottom="md">
                 <Diagram />
               </Gutters>

@@ -39,7 +39,7 @@ export const OrganizationGuestList: React.FC = () => {
             dense
             key={guest.id}
             title={guest.email}
-            pathname={`/organization/guests/${guest.id}`}
+            to={`/organization/guests/${guest.id}`}
             icon={<Avatar email={guest.email} size={26} />}
           >
             <ListItemSecondaryAction>

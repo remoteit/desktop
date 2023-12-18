@@ -67,7 +67,7 @@ export const DevicePage: React.FC = () => {
           <List>
             <ListItemLocation
               className={css.title}
-              pathname={`/devices/${device.id}/details`}
+              to={`/devices/${device.id}/details`}
               match={[
                 `/devices/${device.id}/details`,
                 `/devices/${device.id}/edit`,
@@ -159,7 +159,7 @@ export const DevicePage: React.FC = () => {
       <List className={css.list}>
         {editable && <LicensingNotice instance={device} />}
         {editable && setupAddingService && (
-          <ListItemLocation pathname="" disableIcon disabled dense>
+          <ListItemLocation to="" disableIcon disabled dense>
             <ListItemText primary="Registering..." />
             <ListItemSecondaryAction>
               <CircularProgress color="primary" size={fontSizes.md} />
@@ -193,7 +193,7 @@ export const DevicePage: React.FC = () => {
             return (
               <ListItemLocation
                 key={s.id}
-                pathname={pathname}
+                to={pathname}
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
                 disabled={setupDeletingService === s.id}

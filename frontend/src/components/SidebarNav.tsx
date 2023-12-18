@@ -22,8 +22,8 @@ import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { spacing } from '../styling'
 import { useCounts } from '../hooks/useCounts'
+import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
@@ -42,14 +42,8 @@ export const SidebarNav: React.FC = () => {
   if (remoteUI)
     return (
       <List className={css.list}>
-        <ListItemLocation
-          title="This Device"
-          pathname="/devices"
-          match="/devices/:any?/:any?/:any?"
-          icon="laptop"
-          dense
-        />
-        <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
+        <ListItemLocation title="This Device" to="/devices" match="/devices/:any?/:any?/:any?" icon="laptop" dense />
+        <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense />
       </List>
     )
 
@@ -60,7 +54,7 @@ export const SidebarNav: React.FC = () => {
           <ListItemLocation
             title="Connections"
             icon="arrow-right-arrow-left"
-            pathname={pathname('/connections')}
+            to={pathname('/connections')}
             match="/connections"
             dense
           >
@@ -94,7 +88,7 @@ export const SidebarNav: React.FC = () => {
               )}
             </ListItemSecondaryAction>
           </ListItemLocation>
-          <ListItemLocation title="Devices" icon="router" pathname="/devices" match="/devices" dense>
+          <ListItemLocation title="Devices" icon="router" to="/devices" match="/devices" dense>
             {!!counts.devices && (
               <ListItemSecondaryAction>
                 <Tooltip title="Total Devices" placement="top" arrow>
@@ -103,13 +97,7 @@ export const SidebarNav: React.FC = () => {
               </ListItemSecondaryAction>
             )}
           </ListItemLocation>
-          <ListItemLocation
-            title="Networks"
-            icon="chart-network"
-            pathname={pathname('/networks')}
-            match="/networks"
-            dense
-          >
+          <ListItemLocation title="Networks" icon="chart-network" to={pathname('/networks')} match="/networks" dense>
             <ListItemSecondaryAction>
               {!!counts.networks && (
                 <Tooltip title="Total Networks" placement="top" arrow>
@@ -120,8 +108,8 @@ export const SidebarNav: React.FC = () => {
           </ListItemLocation>
         </>
       )}
-      <ListItemLocation title="Organization" pathname="/organization" icon="industry-alt" dense />
-      <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
+      <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
+      <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense />
       <ListItem sx={{ marginTop: 2 }}>
         <ListItemButton onClick={() => setMore(!more)}>
           <Typography variant="subtitle2" color="grayDark.main">
@@ -138,7 +126,7 @@ export const SidebarNav: React.FC = () => {
       <Box className={css.footer}>
         <ListItemLocation
           title="Notifications"
-          pathname="/announcements"
+          to="/announcements"
           icon="bell"
           badge={counts.unreadAnnouncements}
           dense
@@ -147,7 +135,7 @@ export const SidebarNav: React.FC = () => {
           <ListItemLocation
             title="Contact"
             onClick={() => dispatch.feedback.reset()}
-            pathname="/feedback"
+            to="/feedback"
             icon="envelope-open-text"
             dense
           />

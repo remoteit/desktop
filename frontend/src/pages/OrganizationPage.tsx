@@ -61,7 +61,7 @@ export const OrganizationPage: React.FC = () => {
       <List>
         <ListItemLocation
           title="Members"
-          pathname="/organization/members"
+          to="/organization/members"
           icon="users"
           match={[
             '/organization',
@@ -76,7 +76,7 @@ export const OrganizationPage: React.FC = () => {
         />
         <ListItemLocation
           title="Guests"
-          pathname="/organization/guests"
+          to="/organization/guests"
           icon="user-circle"
           disabled={!permissions?.includes('MANAGE')}
           showDisabled
@@ -85,14 +85,14 @@ export const OrganizationPage: React.FC = () => {
         <ListItemLocation
           title="Roles"
           icon="user-shield"
-          pathname="/organization/roles"
+          to="/organization/roles"
           disabled={!admin}
           showDisabled
           dense
         />
         <ListItemLocation
           title="Tags"
-          pathname="/organization/tags"
+          to="/organization/tags"
           icon="tag"
           disabled={!limits.tagging || !admin}
           showDisabled
@@ -101,7 +101,7 @@ export const OrganizationPage: React.FC = () => {
         <ListItemLocation
           title="Settings"
           icon="sliders-h"
-          pathname="/organization/settings"
+          to="/organization/settings"
           disabled={!admin}
           showDisabled
           dense

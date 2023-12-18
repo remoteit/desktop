@@ -17,7 +17,7 @@ export const ConnectionLog: React.FC<Props> = ({ connection }) => {
   const disabled: boolean = !log
 
   return (
-    <ListItemLocation disabled={disabled} pathname={location.pathname + '/log'}>
+    <ListItemLocation disabled={disabled} to={location.pathname + '/log'}>
       <ListItemIcon>
         <Icon name="stream" size="md" />
       </ListItemIcon>
