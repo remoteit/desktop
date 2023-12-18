@@ -79,7 +79,7 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           # add remoteit-mobile-desktop to keychain list
-          xcrun altool --store-password-in-keychain-item 'remoteit-mobile-desktop' -u appledeveloper -p $APPLE_MOBILE_APP_PASSWORD --keychain $KEYCHAIN_PATH
+          xcrun altool --store-password-in-keychain-item 'remoteit-mobile-desktop' -u 'appledeveloper@remote.it' -p $APPLE_MOBILE_APP_PASSWORD --keychain $KEYCHAIN_PATH
           # list the keychain items
           security list-keychain -d user -s $KEYCHAIN_PATH
 
