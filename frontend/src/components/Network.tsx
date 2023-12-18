@@ -14,14 +14,13 @@ import { Tags } from './Tags'
 
 export interface Props {
   network?: INetwork
-  connectionsPage?: boolean
   recent?: boolean
-  noLink?: boolean
+  connectionsPage?: boolean
   highlight?: boolean
   onClear?: (serviceId: string) => void
 }
 
-export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, network, connectionsPage }) => {
+export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, connectionsPage }) => {
   const dispatch = useDispatch<Dispatch>()
   const { collapsed, sessions, networkEnabled } = useSelector((state: ApplicationState) => ({
     collapsed: [...state.ui.collapsed],
@@ -46,7 +45,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
       <NetworkListTitle
         network={network}
         enabled={networkConnected || networkEnabled}
-        noLink={noLink}
+        noLink={connectionsPage}
         expanded={expanded}
         offline={recent}
         onClick={toggle}
@@ -57,7 +56,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
           onClick={toggle}
           name={expanded ? 'caret-down' : 'caret-up'}
           color={highlight ? 'primary' : 'grayDark'}
-          disabled={noLink}
+          disabled={connectionsPage}
           hideDisableFade
           buttonBaseSize="small"
           type="solid"
@@ -71,7 +70,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, noLink, n
             serviceId={id}
             network={network}
             enabled={networkConnected || networkEnabled}
-            session={sessions.find(s => s.target.id === id)}
+            session={connectionsPage ? undefined : sessions.find(s => s.target.id === id)}
             fallbackName={network.connectionNames[id]}
             connectionsPage={connectionsPage}
           >

@@ -22,7 +22,7 @@ export const UserListItem: React.FC<Props> = ({ user, remove, isConnected, membe
   const location = useLocation()
   return (
     <ListItemLocation
-      pathname={remove ? undefined : member ? `/organization/members/${user.id}` : `${location.pathname}/${user.id}`}
+      to={remove ? undefined : member ? `/organization/members/${user.id}` : `${location.pathname}/${user.id}`}
       dense
     >
       <ListItemIcon>

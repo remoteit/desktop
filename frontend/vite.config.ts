@@ -3,10 +3,10 @@ import react from '@vitejs/plugin-react'
 const path = require('path')
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'build',
-    minify: process.env.NODE_ENV === 'production',
+    minify: mode === 'production',
     emptyOutDir: true,
     sourcemap: true,
     rollupOptions: {
@@ -23,4 +23,4 @@ export default defineConfig({
   resolve: {
     alias: { '@common': path.resolve(__dirname, '../common/src') },
   },
-})
+}))

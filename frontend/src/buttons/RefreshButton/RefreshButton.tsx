@@ -65,13 +65,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     emit('refresh')
   }
 
-  React.useEffect(() => {
-    network.on('connect', refresh)
-    return () => {
-      network.off('connect', refresh)
-    }
-  }, [])
-
   return (
     <IconButton
       {...props}

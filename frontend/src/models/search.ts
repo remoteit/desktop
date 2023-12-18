@@ -32,6 +32,8 @@ export default createModel<RootModel>()({
     async fetch(name: string, state) {
       if (!state.auth.user) return
       if (!state.search.cloudSearch) return
+
+      name = name.trim()
       const isServiceId = REGEX_SERVICE_ID.test(name)
 
       dispatch.search.set({ fetching: true })

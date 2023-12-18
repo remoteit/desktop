@@ -7,7 +7,7 @@ import { selectMembersWithAccess } from '../models/organization'
 import { ApplicationState } from '../store'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { ListItemLocation } from './ListItemLocation'
-import { AddUserButton } from '../buttons/AddUserButton'
+import { ShareButton } from '../buttons/ShareButton'
 import { Icon } from './Icon'
 
 type Props = {
@@ -40,26 +40,18 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
           {!total && <Typography variant="caption">No&nbsp;users</Typography>}
           {!!connected && <Chip size="small" color="primary" label={connected} sx={{ marginLeft: 2 }} />} &nbsp;
           {!!total && !expanded && <Chip size="small" label={total} />}
-          <AddUserButton
-            to="share"
-            icon="plus"
-            size="base"
-            title="Add access"
-            buttonBaseSize="small"
-            inline
-            fixedWidth
-          />
+          <ShareButton to="share" icon="plus" size="base" title="Add access" buttonBaseSize="small" inline fixedWidth />
         </Box>
       }
     >
       {!!guests.length && (
-        <ListItemLocation icon="user-circle" title="Guests" pathname="users" dense>
+        <ListItemLocation icon="user-circle" title="Guests" to="users" dense>
           <Chip size="small" label={guests.length} />
           <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>
       )}
       {!!members.length && (
-        <ListItemLocation icon="users" title="Organization members" pathname="users" dense>
+        <ListItemLocation icon="users" title="Organization members" to="users" dense>
           <Chip size="small" label={members.length} />
           <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>

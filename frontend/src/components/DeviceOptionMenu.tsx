@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import browser from '../services/Browser'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
@@ -25,10 +26,10 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const deviceOnly = device && !service
 
   if (!device) return null
-  if (!devicesSection) return <InfoButton device={device} service={service} />
 
   return (
     <>
+      <MobileUI hide>{!devicesSection && <InfoButton device={device} service={service} />}</MobileUI>
       <IconButton onClick={handleClick}>
         <Icon name="ellipsis-v" size="md" fixedWidth />
       </IconButton>
@@ -57,13 +58,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           )}
         </MobileUI>
         {(!devicesSection || service) && (
-          <ListItemLocation
-            title="Device Details"
-            icon="router"
-            pathname={`/devices/${device.id}/details`}
-            menuItem
-            dense
-          />
+          <ListItemLocation title="Device Details" icon="router" to={`/devices/${device.id}/details`} menuItem dense />
         )}
         {service && (
           <CopyMenuItem

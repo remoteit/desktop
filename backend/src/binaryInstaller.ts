@@ -47,7 +47,7 @@ export class BinaryInstaller {
   async shouldInstall() {
     const binariesOutdated = !(await this.cliBinary.isCurrent())
     const agentStopped = !(await cli.agentRunning())
-    const agentMismatched = (await cli.agentVersion()) !== this.cliBinary.version
+    const agentMismatched = this.cliBinary.agentVersion !== this.cliBinary.version
     const cliUpdated = await this.cliUpdated()
     const desktopUpdated = await this.desktopUpdated()
 

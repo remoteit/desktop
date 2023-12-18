@@ -33,24 +33,19 @@ export const SettingsPage: React.FC = () => {
       <List>
         <ListItemLocation
           title="Application"
-          pathname="/settings/options"
+          to="/settings/options"
           icon="browser"
           match={['/settings', '/settings/options']}
           exactMatch
           dense
         />
-        {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" showDisabled dense />}
-        <ListItemLocation title="Graphs" pathname="/settings/graphs" icon="chart-column" dense />
-        <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
-        <ListItemLocation
-          title="Connection Type Defaults"
-          pathname="/settings/defaults"
-          icon="object-intersect"
-          dense
-        />
+        {feature.tagging && <ListItemLocation title="Tags" to="/settings/tags" icon="tag" showDisabled dense />}
+        <ListItemLocation title="Graphs" to="/settings/graphs" icon="chart-column" dense />
+        <ListItemLocation title="Notifications" to="/settings/notifications" icon="bell" dense />
+        <ListItemLocation title="Connection Type Defaults" to="/settings/defaults" icon="object-intersect" dense />
         <TestUI>
-          <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
-          <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />
+          <ListItemLocation title="Reports" to="/settings/reports" icon="chart-line" dense />
+          <ListItemLocation title="Test Settings" to="/settings/test" icon="vial" dense />
         </TestUI>
       </List>
     </Container>

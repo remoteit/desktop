@@ -1,5 +1,5 @@
 const env = import.meta.env
-export const NODE_ENV = env.NODE_ENV || 'development'
+export const MODE = env.MODE || 'development'
 export const CLIENT_ID = env.VITE_CLIENT_ID
 export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID
 export const COGNITO_USER_POOL_ID = env.VITE_COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
@@ -15,7 +15,7 @@ export const PROTOCOL = env.PROTOCOL || 'remoteit://'
 export const REDIRECT_URL = env.VITE_REDIRECT_URL || PROTOCOL + 'authCallback'
 export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
 export const CALLBACK_URL =
-  env.VITE_CALLBACK_URL || env.NODE_ENV === 'development'
+  env.VITE_CALLBACK_URL || env.MODE === 'development'
     ? env.VITE_DEV_CALLBACK_URL || 'https://dev-auth.internal.remote.it/v1/callback/'
     : env.VITE_PROD_CALLBACK_URL || 'https://auth.api.remote.it/v1/callback/'
 

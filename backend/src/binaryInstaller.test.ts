@@ -191,9 +191,9 @@ describe('backend/binaryInstaller', () => {
 
       expect(installSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(1)
-      expect(agentVersionSpy).toBeCalledTimes(2)
+      expect(agentVersionSpy).toBeCalledTimes(1)
       expect(eventSpy).toBeCalledWith('binary/not-installed', name)
-      expect(agentVersionSpy).toBeCalledTimes(2)
+      expect(agentVersionSpy).toBeCalledTimes(1)
     })
 
     test('should notify with different installed cli version', async () => {

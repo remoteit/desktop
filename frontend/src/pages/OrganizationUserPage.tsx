@@ -140,7 +140,7 @@ export const OrganizationUserPage: React.FC = () => {
             {accessible.map(network => (
               <ListItemLocation
                 key={network.id}
-                pathname={`/networks/${network.id}`}
+                to={`/networks/${network.id}`}
                 icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
                 title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
               />
@@ -165,7 +165,7 @@ export const OrganizationUserPage: React.FC = () => {
               return (
                 <ListItemLocation
                   key={id}
-                  pathname={`/devices/${id}/users/${user?.id || userID}`}
+                  to={`/devices/${id}/users/${user?.id || userID}`}
                   icon={
                     device ? (
                       <TargetPlatform id={device?.targetPlatform} size="md" />
@@ -199,7 +199,7 @@ export const OrganizationUserPage: React.FC = () => {
               return (
                 <ListItemLocation
                   key={id}
-                  pathname={`/networks/${id}`}
+                  to={`/networks/${id}`}
                   icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
                   title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
                 />

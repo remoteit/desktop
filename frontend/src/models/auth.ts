@@ -221,6 +221,8 @@ export default createModel<RootModel>()({
       await dispatch.connections.init()
       await dispatch.networks.init()
       await dispatch.devices.init()
+      await cloudSync.init()
+
       await cloudSync.all()
       await dispatch.contacts.fetch()
       await dispatch.applicationTypes.fetch()
@@ -260,6 +262,7 @@ export default createModel<RootModel>()({
       dispatch.tags.reset()
       dispatch.mfa.reset()
       dispatch.ui.reset()
+      cloudSync.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
       zendesk.endChat()

@@ -2,7 +2,6 @@ import React from 'react'
 import { selectConnection } from '../selectors/connections'
 import { ApplicationState } from '../store'
 import { ConnectionListItem } from './ConnectionListItem'
-import { isReverseProxy } from '../models/applicationTypes'
 import { useSelector } from 'react-redux'
 import { selectById } from '../selectors/devices'
 
@@ -11,15 +10,15 @@ export interface NetworkListItemProps {
   session?: ISession
   network?: INetwork
   enabled?: boolean
-  connectionsPage?: boolean
   fallbackName?: string
+  connectionsPage?: boolean
   children?: React.ReactNode
 }
 
 export const NetworkListItem: React.FC<NetworkListItemProps> = ({
-  network,
   serviceId,
   session,
+  network,
   enabled,
   fallbackName,
   connectionsPage,
@@ -31,17 +30,17 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
     return { service, device, connection }
   })
 
-  const external = session?.id && session.id !== connection.sessionId
+  const external = !!session?.id && session.id !== connection.sessionId
   const offline = service?.state !== 'active' && !external
   const name = external ? session.target.name : connection.name || session?.target.name
-  let pathname = `/networks/${network?.id}/${serviceId}`
-  if (connectionsPage) pathname = `/connections/${serviceId}/${session?.id || 'none'}`
-  const match = pathname
-  pathname += connection && !external ? '/connect' : '/other'
+  let to = `/networks/${network?.id}/${serviceId}`
+  if (connectionsPage) to = `/connections/${serviceId}/${session?.id || 'none'}`
+  const match = to
+  to += connection && !external ? '/connect' : '/other'
 
   return (
     <ConnectionListItem
-      pathname={pathname}
+      to={to}
       match={match}
       name={name || fallbackName || serviceId}
       enabled={enabled}

@@ -1,5 +1,5 @@
 import { IP_PRIVATE } from '@common/constants'
-import { PORTAL, NODE_ENV } from '../constants'
+import { PORTAL, MODE } from '../constants'
 import { ApplicationState, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
 import { Capacitor } from '@capacitor/core'
@@ -32,6 +32,7 @@ class Environment {
   isWindows: boolean = false
   isIOS: boolean = false
   isAndroid: boolean = false
+  isApple: boolean = false
   hasBackend: boolean = false
 
   constructor() {
@@ -44,6 +45,7 @@ class Environment {
 
     this.isMac = isMac()
     this.isWindows = isWindows()
+    this.isApple = this.isIOS || this.isMac
 
     this.hasBackend = !this.isPortal && !this.isMobile
     console.log('Environment', this)
@@ -59,7 +61,7 @@ class Environment {
   }
 
   environment() {
-    return NODE_ENV
+    return MODE
   }
 }
 

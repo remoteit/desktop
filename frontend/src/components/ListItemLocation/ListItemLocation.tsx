@@ -9,7 +9,7 @@ import { Icon } from '../Icon'
 
 export type Props = {
   key?: React.Key
-  pathname?: string
+  to?: string
   title?: React.ReactNode
   subtitle?: React.ReactNode
   icon?: React.ReactNode
@@ -32,7 +32,7 @@ export type Props = {
 }
 
 export const ListItemLocation: React.FC<Props> = ({
-  pathname,
+  to,
   title,
   subtitle,
   icon,
@@ -52,12 +52,12 @@ export const ListItemLocation: React.FC<Props> = ({
   ...props
 }) => {
   const history = useHistory()
-  const matches = useMatches({ to: pathname, match, exactMatch })
+  const matches = useMatches({ to: to, match, exactMatch })
   const css = useStyles({ disableIcon: !!disableIcon })
 
   const onClick = (event: React.MouseEvent) => {
     props.onClick?.(event)
-    if (!disabled && pathname) history.push(pathname)
+    if (!disabled && to) history.push(to)
   }
 
   const iconEl =
@@ -103,7 +103,7 @@ export const ListItemLocation: React.FC<Props> = ({
 
   return menuItem ? (
     <MenuItem {...ItemProps}>{Contents}</MenuItem>
-  ) : pathname || props.onClick ? (
+  ) : to || props.onClick ? (
     <ListItem {...ItemProps} button>
       {Contents}
     </ListItem>

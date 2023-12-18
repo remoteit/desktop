@@ -13,7 +13,7 @@ export interface Props {
   name: string
   connection?: IConnection
   connectionsPage?: boolean
-  pathname: string
+  to: string
   match?: string
   connected: boolean
   offline: boolean
@@ -27,7 +27,7 @@ export const ConnectionListItem: React.FC<Props> = ({
   name,
   connection,
   connectionsPage,
-  pathname,
+  to,
   match,
   connected,
   offline,
@@ -51,12 +51,12 @@ export const ConnectionListItem: React.FC<Props> = ({
     <ListItemLocation
       dense
       className={css.item}
-      pathname={pathname}
+      to={to}
       match={match}
       onClick={() =>
         dispatch.ui.setDefaultSelected({
           key: connectionsPage ? '/connections' : '/networks',
-          value: pathname,
+          value: to,
         })
       }
     >

@@ -76,13 +76,13 @@ export const ConnectionsPage: React.FC = () => {
             </Gutters>
           )}
           {idle.map(n => (
-            <Network noLink key={n.id} network={n} connectionsPage />
+            <Network key={n.id} network={n} connectionsPage />
           ))}
           {!!recent.serviceIds.length && (
             <>
               <br />
               <Divider variant="inset" />
-              <Network network={recent} recent noLink onClear={id => dispatch.connections.clear(id)} connectionsPage />
+              <Network network={recent} recent onClear={id => dispatch.connections.clear(id)} connectionsPage />
             </>
           )}
         </>
