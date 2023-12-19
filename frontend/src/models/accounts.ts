@@ -1,7 +1,6 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { ApplicationState } from '../store'
-import { selectActiveAccountId } from '../selectors/accounts'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'

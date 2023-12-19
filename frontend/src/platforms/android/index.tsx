@@ -1,5 +1,6 @@
 import React from 'react'
 import { platforms } from '..'
+import { SCREEN_VIEW_APP_LINK } from '../../constants'
 
 const Component = ({ darkMode, ...props }) => {
   const android = '#3DDB85'
@@ -24,6 +25,6 @@ platforms.register({
     qualifier: 'To register an Android phone or tablet',
     instructions:
       'Install the screen view app from the Google Play Store to share your screen or any other local or network services.',
-    link: 'https://play.google.com/store/apps/details?id=it.remote.screenview',
+    link: SCREEN_VIEW_APP_LINK,
   },
 })

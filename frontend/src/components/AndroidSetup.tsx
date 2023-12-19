@@ -1,5 +1,6 @@
 import React from 'react'
 import browser, { windowOpen } from '../services/Browser'
+import { SCREEN_VIEW_APP_LINK } from '../constants'
 import { safeHostname } from '@common/nameHelper'
 import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -34,8 +35,7 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
   }
 
   const handleClick = () => {
-    if (browser.isAndroid)
-      windowOpen('https://play.google.com/store/apps/details?id=it.remote.screenview', 'store', true)
+    if (browser.isAndroid) windowOpen(SCREEN_VIEW_APP_LINK, 'store', true)
     else history.push('/add/android')
     onClick?.()
   }

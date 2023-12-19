@@ -338,6 +338,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: { padding: 0 },
+        },
+      },
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
@@ -348,7 +353,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main },
+          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main, marginRight: spacing.xs },
         },
       },
       MuiListItemText: {
