@@ -27,6 +27,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
 }) => {
   const css = useStyles()
 
+  if (code === value) code = undefined
   if (!value) return null
 
   return (
