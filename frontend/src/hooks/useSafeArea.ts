@@ -18,7 +18,7 @@ const useSafeArea = (): UseSafeAreaResult => {
     const adjustInsets = (insets: ILayout['insets']) => ({
       ...insets,
       top: insets.top - spacing.sm,
-      bottom: insets.bottom - spacing.sm,
+      bottom: insets.bottom - spacing.xs,
     })
 
     SafeArea.addListener('safeAreaChanged', data => {

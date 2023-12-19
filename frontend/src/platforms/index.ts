@@ -1,6 +1,7 @@
 export interface IPlatform {
   id: string
   name: string
+  hidden?: boolean
   subtitle?: string
   component: (props: any) => React.ReactElement
   types?: INumberLookup<string>
@@ -11,6 +12,7 @@ export interface IPlatform {
     instructions?: string | React.ReactNode
     qualifier: string
     link?: string
+    altLink?: string
   }
 }
 
@@ -60,6 +62,7 @@ class Platforms {
     platform.types = platform.types || {}
     this.platforms[platform.id] = platform
     Object.keys(platform.types).forEach(type => {
+      if (platform.hidden) return
       this.lookup[type] = platform.id
       this.nameLookup[type] = platform.types?.[type]
     })
