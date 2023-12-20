@@ -506,6 +506,7 @@ export default createModel<RootModel>()({
       const result = await graphQLDeleteDevices(deviceIds)
       if (result !== 'ERROR') {
         await dispatch.ui.set({ selected: [] })
+        await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
           successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully deleted.`,
         })
