@@ -94,7 +94,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           state: { autoConnect: true },
         }}
       />
-      x
       <Redirect
         from="/launch/:serviceID"
         to={{
@@ -189,7 +188,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <DevicesPage select />
         </Panel>
       </Route>
-      <Route path={['/devices', '/devices/welcome']} exact>
+      <Route path="/devices" exact>
         {remoteUI ? (
           registered ? (
             <Redirect to={`/devices/${thisId}`} />

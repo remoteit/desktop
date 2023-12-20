@@ -40,6 +40,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     alwaysWhite: { main: colors.alwaysWhite },
     darken: { main: colors.darken },
     screen: { main: colors.screen },
+    shadow: { main: colors.shadow },
     rpi: { main: colors.rpi },
     guide: { main: colors.guide },
     test: { main: colors.test },
@@ -130,7 +131,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
           },
           containedPrimary: {
-            '&:hover': { backgroundColor: palette.primaryLight.main },
+            '&:hover': { backgroundColor: palette.primary.dark },
           },
           contained: {
             color: palette.alwaysWhite.main,
@@ -337,6 +338,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: { padding: 0 },
+        },
+      },
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
@@ -347,7 +353,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main },
+          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main, marginRight: spacing.xs },
         },
       },
       MuiListItemText: {

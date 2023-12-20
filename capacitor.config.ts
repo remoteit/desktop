@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appName: 'Remote.It',
   webDir: 'frontend/build',
-  backgroundColor: '#0096e7',
+  backgroundColor: '#034b9d',
   ios: {
     scheme: 'Remote.It',
   },
@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchAutoHide: false,
-      backgroundColor: '#0096e7',
+      backgroundColor: '#034b9d',
       androidScaleType: 'CENTER_CROP',
     },
   },

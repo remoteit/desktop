@@ -43,6 +43,7 @@ export type Color =
   | 'black'
   | 'darken'
   | 'screen'
+  | 'shadow'
   | 'rpi'
   | 'guide'
   | 'test'
@@ -75,6 +76,7 @@ export const lightColors: { [key in Color]: string } = {
   alwaysWhite: '#fff',
   darken: 'rgba(0,0,0,0.5)',
   screen: 'rgba(0,0,0,0.06)',
+  shadow: 'rgba(187,187,187,0.2)',
   rpi: '#C51A4A',
   guide: '#593098', // '#001247',
   test: '#fffcf0',
@@ -88,9 +90,9 @@ export const darkColors: { [key in Color]: string } = {
   primaryBackground: '#212a35',
   primaryDark: '#034b9d',
   secondary: '#75bd00',
-  successLight: '#a4db4c',
+  successLight: '#436807',
   success: '#75bd00',
-  successDark: '#436807',
+  successDark: '#a4db4c',
   dangerLight: '#e07562',
   danger: '#d6290a',
   warning: '#ed9912',
@@ -108,6 +110,7 @@ export const darkColors: { [key in Color]: string } = {
   alwaysWhite: '#fff',
   darken: 'rgba(255,255,255,0.3)',
   screen: 'rgba(255,255,255,0.06)',
+  shadow: 'rgba(121,124,134,0.3)',
   rpi: '#C51A4A',
   guide: '#ebe985',
   test: '#2B2926',

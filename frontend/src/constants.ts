@@ -45,6 +45,7 @@ export const GOOGLE_TAG_MANAGER_IOS_KEY = env.VITE_GOOGLE_TAG_MANAGER_IOS_KEY
 
 export const CERTIFICATE_DOMAIN = 'at.remote.it'
 export const ANONYMOUS_MANUFACTURER_CODE = 34560
+export const SCREEN_VIEW_APP_LINK = 'https://play.google.com/store/apps/details?id=it.remote.screenview'
 
 export const REGEX_LAST_PATH = /\/[^/]+$/g
 export const REGEX_FIRST_PATH = /^\/(\w+)/g
@@ -66,6 +67,7 @@ export const REGEX_CONNECTION_TRIM = /^-|-$/
 export const REGEX_SERVICE_ID = /^..(:..){7}$/
 
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
+export const MOBILE_LAUNCH_DATE = new Date('2023-12-20')
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024

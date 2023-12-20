@@ -1,6 +1,6 @@
 {
   "name": "remoteit-capacitor",
-  "version": "3.25.0",
+  "version": "3.25.1",
   "private": true,
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "workspaces": [
@@ -16,8 +16,8 @@
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
     "electron": "cd electron && npm start",
-    "mobile-android": "cross-env NODE_ENV=development npx cap run android",
-    "mobile-ios": "cross-env NODE_ENV=development npx cap run ios",
+    "android": "cross-env NODE_ENV=development npx cap run android",
+    "ios": "cross-env NODE_ENV=development npx cap run ios",
     "mobile-sync": "npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
@@ -33,13 +33,14 @@
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images"
   },
   "dependencies": {
-    "@capacitor/android": "^5.5.1",
+    "@capacitor/android": "^5.6.0",
     "@capacitor/app": "^5.0.6",
-    "@capacitor/assets": "^3.0.1",
+    "@capacitor/assets": "^3.0.4",
     "@capacitor/browser": "^5.1.0",
-    "@capacitor/cli": "^5.5.1",
-    "@capacitor/core": "^5.5.1",
-    "@capacitor/ios": "^5.5.1",
+    "@capacitor/cli": "^5.6.0",
+    "@capacitor/clipboard": "^5.0.6",
+    "@capacitor/core": "^5.6.0",
+    "@capacitor/ios": "^5.6.0",
     "@capacitor/splash-screen": "^5.0.6",
     "capacitor-plugin-safe-area": "^2.0.6"
   },
@@ -48,6 +49,6 @@
     "dotenv": "^16.3.1",
     "npm-run-all": "4.1.5",
     "onchange": "^7.1.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   }
 }

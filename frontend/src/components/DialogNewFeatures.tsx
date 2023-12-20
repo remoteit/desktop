@@ -1,66 +1,120 @@
 import React from 'react'
+import browser, { windowOpen } from '../services/Browser'
+import { MOBILE_LAUNCH_DATE, SCREEN_VIEW_APP_LINK } from '../constants'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
+import { Icon } from '../components/Icon'
 import {
   Button,
   Dialog,
+  DialogTitle,
   DialogActions,
   DialogContent,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  ListItemButton,
   Typography,
 } from '@mui/material'
 
-import { Icon } from '../components/Icon'
-import { Route, useHistory } from 'react-router-dom'
-
 export const DialogNewFeatures = () => {
-  const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
+  const { mobileWelcome, user } = useSelector((state: ApplicationState) => ({
+    mobileWelcome: state.ui.mobileWelcome,
+    user: state.user,
+  }))
+
+  // if user was created after launch don't show welcome dialog
+  if (!browser.isMobile || !mobileWelcome || !user.created || user.created > MOBILE_LAUNCH_DATE) return null
+
+  const onClose = () => dispatch.ui.setPersistent({ mobileWelcome: false })
+  const handleOpenScreenView = () => windowOpen(SCREEN_VIEW_APP_LINK, 'store', true)
 
   return (
-    <Route path="/devices/welcome">
-      <Dialog open style={{ zIndex: 2000 }} onClose={() => history.push('/devices')}>
-        <DialogContent>
-          <Typography variant="h1" gutterBottom>
-            Welcome!
-          </Typography>
-          <Typography variant="body2">
-            We're excited for you to try the fresh, more powerful experience taken from our desktop app, adapted for the
-            web.
-          </Typography>
-          <List>
+    <Dialog
+      open
+      sx={{ zIndex: 2000 }}
+      PaperProps={{
+        sx: {
+          bgcolor: 'guide.main',
+          color: 'white.main',
+          '& .MuiTypography-root.MuiListItemText-secondary, & .MuiListItemIcon-root': {
+            color: 'grayLightest.main',
+          },
+        },
+      }}
+      onClose={onClose}
+    >
+      <DialogTitle>Welcome!</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2">
+          We're excited to bring the great desktop and web Remote.It application to your mobile device.
+        </Typography>
+        <List>
+          <ListItem disableGutters>
+            <ListItemIcon>
+              <Icon name="party-horn" size="lg" type="light" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Fully Featured"
+              secondary="Full organization, network, and connection management. Along with service graphs and a universal interface."
+            />
+          </ListItem>
+          <ListItem disableGutters>
+            <ListItemIcon>
+              <Icon name="globe" size="lg" type="light" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Public URLs"
+              secondary="Create and manage persistent URLs for all your web services."
+            />
+          </ListItem>
+          {browser.isAndroid ? (
+            <ListItem disableGutters>
+              <ListItemButton onClick={handleOpenScreenView}>
+                <ListItemIcon sx={{ marginTop: -4 }}>
+                  <Icon name="wave-pulse" size="lg" type="light" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Register this device"
+                  secondary={
+                    <>
+                      You can now register this device with our new Screen View app. &nbsp;
+                      <em>If you had previously registered, you can restore the old device using it's restore code.</em>
+                      <Button
+                        onClick={handleOpenScreenView}
+                        variant="contained"
+                        size="small"
+                        color="inherit"
+                        endIcon={<Icon name="google-play" type="brands" size="xs" fixedWidth />}
+                        sx={{ color: 'guide.main', marginTop: 1 }}
+                      >
+                        Get Screen-View
+                      </Button>
+                    </>
+                  }
+                />
+              </ListItemButton>
+            </ListItem>
+          ) : (
             <ListItem disableGutters>
               <ListItemIcon>
-                <Icon name="exchange-alt" />
+                <Icon name="plug" size="lg" type="light" />
               </ListItemIcon>
               <ListItemText
-                primary="Easier connection management"
-                secondary="Manage all your recent and active connections all in one place."
+                primary="Socket-Link"
+                secondary="Create and manage all your socket-link keys for full SDK control."
               />
             </ListItem>
-            <ListItem disableGutters>
-              <ListItemIcon>
-                <Icon name="search" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Improve Search and Filter"
-                secondary="Access your devices and services faster with our improved search and filter features."
-              />
-            </ListItem>
-            <ListItem disableGutters>
-              <ListItemIcon>
-                <Icon name="smile" />
-              </ListItemIcon>
-              <ListItemText primary="Cleaner look and feel" secondary="Find things easily with our updated design." />
-            </ListItem>
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="outlined" onClick={() => history.push('/devices')} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Route>
+          )}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" size="small" onClick={onClose} sx={{ color: 'white.main', borderWidth: 0.5 }}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
