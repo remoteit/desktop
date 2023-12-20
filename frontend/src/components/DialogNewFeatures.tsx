@@ -25,8 +25,6 @@ export const DialogNewFeatures = () => {
     user: state.user,
   }))
 
-  console.log('mobileWelcome', mobileWelcome)
-
   // if user was created after launch don't show welcome dialog
   if (!browser.isMobile || !mobileWelcome || !user.created || user.created > MOBILE_LAUNCH_DATE) return null
 
