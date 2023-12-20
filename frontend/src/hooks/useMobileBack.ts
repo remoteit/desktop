@@ -1,15 +1,18 @@
+import { REGEX_FIRST_PATH } from '../constants'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ApplicationState } from '../store'
 
 const useMobileBack = () => {
   const history = useHistory()
+  const location = useLocation()
   const dispatch = useDispatch()
   const customHistory = useSelector((state: ApplicationState) => state.ui.mobileNavigation)
 
   const goUp = () => {
     if (!customHistory.length || (customHistory.length === 1 && customHistory[0] === history.location.pathname)) {
-      // Can't go up if there's no previous history
+      // If no previous history just go to root of the pathname
+      dispatch.ui.set({ mobileNavigation: location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/' })
       return
     }
 
