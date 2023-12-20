@@ -79,22 +79,28 @@ jobs:
       - name: npm build-mobile
         run: npm run build-mobile
 
+      # outputs to:
+      # ./app/build/outputs/apk/release/app-release.apk
+      # ./app/build/outputs/apk/debug/app-debug.apk
       - name: Build Project
         working-directory: ./android
         run: ./gradlew build
 
-      - name: Build APK Debug
-        working-directory: ./android
-        run: ./gradlew assembleDebug
+      # - name: Assemble APK Debug
+      #   working-directory: ./android
+      #   run: ./gradlew assembleDebug
 
-      - name: Build APK Release
-        working-directory: ./android
-        run: ./gradlew assemble
+      # - name: Build APK Release
+      #   working-directory: ./android
+      #   run: ./gradlew assemble
 
       # Create Bundle AAB Release
+      # outputs to:
+      # ./app/build/intermediates/intermediary_bundle/release/intermediary-bundle.aab
+      # ./app/build/outputs/bundle/release/app-release.aab
       - name: Build App Bundle
         working-directory: ./android
-        run: ./gradlew   bundleRelease
+        run: ./gradlew bundleRelease
 
       # # Upload Bundle AAB Release
       # - name: Upload AAB (App Bundle) Release
@@ -120,7 +126,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.remoteit
-          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          releaseFiles: ./android/app/build/outputs/bundle/release/app-release.aab
           track: internal
           status: inProgress
           inAppUpdatePriority: 0
