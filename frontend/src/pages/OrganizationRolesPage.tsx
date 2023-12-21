@@ -20,7 +20,8 @@ export const OrganizationRolesPage: React.FC = () => {
     permissions: selectPermissions(state),
   }))
 
-  if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
+  if (!permissions?.includes('ADMIN'))
+    return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (
     <Container
