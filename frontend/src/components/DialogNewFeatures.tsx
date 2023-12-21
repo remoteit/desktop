@@ -82,6 +82,7 @@ export const DialogNewFeatures = () => {
                     <>
                       You can now register this device with our new Screen View app. &nbsp;
                       <em>If you had previously registered, you can restore the old device using it's restore code.</em>
+                      <br />
                       <Button
                         onClick={handleOpenScreenView}
                         variant="contained"

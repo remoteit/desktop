@@ -93,7 +93,7 @@ export const App: React.FC = () => {
           flexDirection: 'row',
           alignItems: 'start',
           justifyContent: 'start',
-          paddingTop: overlapHeader ? 30 : 0,
+          paddingTop: overlapHeader ? 2 : 0,
         }}
       >
         {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}

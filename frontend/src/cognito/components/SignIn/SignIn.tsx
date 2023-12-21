@@ -65,6 +65,14 @@ export function SignIn({
   const passRef = React.useRef<HTMLInputElement>()
   const css = useStyles()
 
+  function scrollIntoView(event: React.FocusEvent<HTMLInputElement>) {
+    event.target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function scrollReset(event: React.FocusEvent<HTMLInputElement>) {
+    event.target.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
     setError(null)
@@ -147,6 +155,8 @@ export function SignIn({
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
               setUsername(e?.currentTarget?.value.trim())
             }}
+            onFocus={scrollIntoView}
+            onBlur={scrollReset}
             value={username}
             variant="filled"
             type="email"

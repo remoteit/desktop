@@ -1,16 +1,19 @@
 import React from 'react'
 import browser from '../../services/Browser'
-import { Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
-import { SignInForm } from '../../components/SignInForm'
 import { IP_PRIVATE } from '@common/constants'
+import { useMediaQuery, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import { SignInApp } from '../../components/SignInApp'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import { Link } from '../../components/Link'
 import { spacing } from '../../styling'
 
+const TALL_QUERY = '(min-height:700px)'
+
 export function SignInPage() {
-  const css = useStyles()
+  const tall = useMediaQuery(TALL_QUERY)
+  const css = useStyles({ tall })
   const { hostname, protocol } = window.location
   const allowSwitch =
     !browser.isElectron && !browser.isMobile && hostname !== 'localhost' && hostname !== IP_PRIVATE && hostname
@@ -18,8 +21,8 @@ export function SignInPage() {
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
 
   return (
-    <Body className={css.body} center>
-      <SignInForm />
+    <Body className={css.body} center={tall}>
+      <SignInApp />
       {allowSwitch && (
         <div className={css.link}>
           {!secure && (
@@ -46,7 +49,12 @@ export function SignInPage() {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  body: { '& > div': { maxWidth: 440 } },
+  body: {
+    paddingTop: spacing.xl,
+    paddingBottom: 300,
+    '& > div': { maxWidth: 440 },
+    [`@media ${TALL_QUERY}`]: { paddingBottom: 0, paddingTop: 0 },
+  },
   insecure: {
     margin: `${spacing.xs}px auto`,
     textAlign: 'center',

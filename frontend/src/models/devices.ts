@@ -281,6 +281,15 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
+    async removeService(id: string, state) {
+      let [_, device] = selectById(state, undefined, id)
+      device = structuredClone(device)
+      if (!device) return
+      const index = device.services.findIndex((s: IService) => s.id === id)
+      device.services.splice(index, 1)
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
+
     async setAttributes(device: IDevice) {
       graphQLSetAttributes(device.attributes, device.id)
       dispatch.accounts.setDevice({ id: device.id, device })
@@ -358,7 +367,15 @@ export default createModel<RootModel>()({
         silent: serviceId,
         redirect: `/devices/${deviceId}/details`,
       })
-      await graphQLRemoveService(serviceId)
+      const result = await graphQLRemoveService(serviceId)
+
+      if (result !== 'ERROR') {
+        await dispatch.devices.cleanupService(serviceId)
+        dispatch.ui.set({
+          successMessage: `Service was successfully removed.`,
+        })
+      }
+
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 
@@ -506,6 +523,7 @@ export default createModel<RootModel>()({
       const result = await graphQLDeleteDevices(deviceIds)
       if (result !== 'ERROR') {
         await dispatch.ui.set({ selected: [] })
+        await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
           successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully deleted.`,
         })
@@ -555,6 +573,12 @@ export default createModel<RootModel>()({
         await dispatch.accounts.removeDevice(id)
       }
       await dispatch.connections.fetch()
+    },
+
+    async cleanupService(serviceId: string) {
+      await dispatch.devices.removeService(serviceId)
+      await dispatch.connections.clear(serviceId)
+      await dispatch.networks.clearById(serviceId)
     },
 
     async setPersistent(params: ILookup<any>, state) {

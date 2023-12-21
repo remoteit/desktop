@@ -19,7 +19,6 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
-  const unConfigurable = device && !device.configurable
   const unlicensed = instance?.license === 'EVALUATION' || instance?.license === 'UNLICENSED'
 
   let name = ''
@@ -41,25 +40,18 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
           </sup>
         </Tooltip>
       )}
-      {unConfigurable && (
-        <Tooltip title="Not remote configurable" placement="top" arrow>
-          <sup>
-            <Icon name="cloud-slash" size="xxs" type="regular" fixedWidth />
-          </sup>
-        </Tooltip>
-      )}
       {device?.newDevice && (
         <sup>
           <ColorChip label="NEW" size="small" color="success" variant="contained" />
         </sup>
       )}
-      {/* {device?.shared && (
+      {device?.shared && (
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
           <sup>
             <Icon name="user-group" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
-      )} */}
+      )}
     </Title>
   )
 }
