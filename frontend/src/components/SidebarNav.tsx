@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
@@ -27,17 +28,18 @@ import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
-  const { defaultSelectedPage, remoteUI, limits, insets } = useSelector((state: ApplicationState) => ({
+  const { defaultSelectedPage, remoteUI, limits, insets, rootPaths } = useSelector((state: ApplicationState) => ({
     defaultSelectedPage: selectDefaultSelectedPage(state),
     remoteUI: isRemoteUI(state),
     limits: selectLimitsLookup(state),
     insets: state.ui.layout.insets,
+    rootPaths: !browser.isElectron && state.ui.layout.hideSidebar,
   }))
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const [more, setMore] = useState<boolean>()
   const css = useStyles({ active: counts.active, insets })
-  const pathname = path => defaultSelectedPage[path] || path
+  const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
 
   if (remoteUI)
     return (

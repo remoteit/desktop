@@ -3,10 +3,10 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { updateConnection } from '../helpers/connectionHelper'
 import { FontSize, Color } from '../styling'
-import { useClipboard } from 'use-clipboard-copy'
 import { Application } from '@common/applications'
 import { PromptModal } from '../components/PromptModal'
 import { IconButton, ButtonProps } from './IconButton'
+import useClipboard from '../hooks/useClipboard'
 
 export type CopyButtonProps = ButtonProps & {
   icon: string
@@ -44,7 +44,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
     }
 
     const copy = () => {
-      clipboard.copy()
+      clipboard.copy(value || app?.commandString || '')
       setTimeout(() => {
         onCopy?.()
       }, COPY_TIMEOUT)
@@ -68,9 +68,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
           icon={clipboard.copied ? 'check' : icon}
           title={title}
           size={size}
-        >
-          <input type="hidden" ref={clipboard.target} value={value || app?.commandString || ''} />
-        </IconButton>
+        ></IconButton>
         {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
       </>
     )

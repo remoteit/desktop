@@ -1,5 +1,6 @@
 import React from 'react'
 import { platforms } from '..'
+import { SCREEN_VIEW_APP_LINK } from '../../constants'
 
 const Component = ({ darkMode, ...props }) => {
   const android = '#3DDB85'
@@ -20,11 +21,10 @@ platforms.register({
   name: 'Android',
   component: Component,
   types: { 1213: 'Android Phone' },
-  services: [{ application: 48 }],
   installation: {
-    command: '[CODE]',
     qualifier: 'To register an Android phone or tablet',
     instructions:
-      'Download the Remote.It screen view app from the Google Play Store and enter this code to register it to your account.',
+      'Install the screen view app from the Google Play Store to share your screen or any other local or network services.',
+    link: SCREEN_VIEW_APP_LINK,
   },
 })

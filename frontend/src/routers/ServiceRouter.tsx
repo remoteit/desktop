@@ -46,7 +46,12 @@ export const ServiceRouter: React.FC<{ basename: string }> = ({ basename }) => {
               <Connect />
             </Route>
             <Route path={basename}>
-              <Redirect to={`${basename.match(REGEX_FIRST_PATH)?.[0]}/${instance.id}/${service.id}/connect`} />
+              <Redirect
+                to={{
+                  pathname: `${basename.match(REGEX_FIRST_PATH)?.[0]}/${instance.id}/${service.id}/connect`,
+                  state: { isRedirect: true },
+                }}
+              />
             </Route>
           </Switch>
         </ServiceHeaderMenu>

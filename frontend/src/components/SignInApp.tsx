@@ -1,10 +1,10 @@
 import React from 'react'
-import { CognitoUser } from '../../cognito/types'
-import { CognitoAuth } from '../../cognito/components/CognitoAuth'
+import { CognitoUser } from '../cognito/types'
+import { CognitoAuth } from '../cognito/components/CognitoAuth'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, ApplicationState } from '../store'
 
-export function SignInForm() {
+export function SignInApp() {
   const { signInError, authService } = useSelector((state: ApplicationState) => state.auth)
   const { auth } = useDispatch<Dispatch>()
 

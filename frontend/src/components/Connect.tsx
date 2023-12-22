@@ -38,12 +38,12 @@ export const Connect: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const { connection, device, service, instance } = React.useContext(DeviceContext)
-  const { session, accordion, reverseProxy, testUI } = useSelector((state: ApplicationState) => ({
+  const { session, accordion, reverseProxy, showDesktopNotice } = useSelector((state: ApplicationState) => ({
     session: state.sessions.all.find(s => s.id === sessionID),
     fetching: getDeviceModel(state).fetching,
     accordion: state.ui.accordion,
     reverseProxy: isReverseProxy(state, service?.typeID),
-    testUI: state.ui.testUI,
+    showDesktopNotice: state.ui.showDesktopNotice,
   }))
 
   const app = useApplication(service, connection)
@@ -100,25 +100,31 @@ export const Connect: React.FC = () => {
                 connection={connection}
                 permissions={instance.permissions}
                 reverseProxy={reverseProxy}
-                disabled={!reverseProxy && !testUI}
+                disabled={!reverseProxy}
               />
             ) : (
               <ServiceKeySetting connection={connection} service={service} permissions={instance.permissions} />
             )}
             <PortalUI>
-              <Notice gutterTop severity="info">
-                <strong>Want Persistent Private Endpoints?</strong>
-                <em>On demand connections with persistent endpoints, remote access, and improved launch commands.</em>
-                <Button
-                  size="small"
-                  color="primary"
-                  variant="contained"
-                  sx={{ marginTop: 1, marginBottom: 1 }}
-                  onClick={() => windowOpen('https://link.remote.it/download/desktop')}
+              {showDesktopNotice && (
+                <Notice
+                  gutterTop
+                  severity="info"
+                  onClose={() => dispatch.ui.setPersistent({ showDesktopNotice: false })}
                 >
-                  Download Desktop
-                </Button>
-              </Notice>
+                  <strong>Want Persistent Private Endpoints?</strong>
+                  <em>On demand connections with persistent endpoints, remote access, and improved launch commands.</em>
+                  <Button
+                    size="small"
+                    color="primary"
+                    variant="contained"
+                    sx={{ marginTop: 1, marginBottom: 1 }}
+                    onClick={() => windowOpen('https://link.remote.it/download/desktop')}
+                  >
+                    Download Desktop
+                  </Button>
+                </Notice>
+              )}
             </PortalUI>
           </List>
         </AccordionMenuItem>

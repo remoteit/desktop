@@ -1,73 +1,74 @@
 import { useEffect } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
 
 const getDepth = (path: string) => {
   return path.split('/').filter(Boolean).length
 }
 
-const useNavigationListener = () => {
-  const history = useHistory()
-  const location = useLocation()
-  const dispatch = useDispatch()
+const useMobileNavigation = () => {
   const customHistory = useSelector((state: ApplicationState) => state.ui.mobileNavigation)
+  const dispatch = useDispatch<Dispatch>()
+  const { pathname, state } = useLocation<{ isRedirect?: boolean }>()
 
-  useEffect(() => {
-    const currentDepth = getDepth(location.pathname)
-    const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
+  const init = () => {
+    const currentDepth = getDepth(pathname)
+    const menu = pathname.match(REGEX_FIRST_PATH)?.[0] || '/'
     const nextHistory: string[] = []
 
     if (currentDepth > 1) {
       nextHistory.push(menu)
     }
 
-    nextHistory.push(location.pathname)
+    nextHistory.push(pathname)
+    console.log('MOBILE NAVIGATION init', nextHistory, pathname)
     dispatch.ui.set({ mobileNavigation: nextHistory })
-  }, [])
+  }
 
   useEffect(() => {
-    const unListen = history.listen(nextLocation => {
-      let nextHistory = [...customHistory]
-      const menu = nextLocation.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
-      const currentDepth = getDepth(nextLocation.pathname)
-
-      if (nextLocation.pathname === menu) {
-        // if the next location is a root menu, reset the history
-        // if (menu !== nextHistory[0]) {
-        // If the menu has changed, reset the history
-        // @TODO see if we can improve this so it doesn't reset when not navigating to a root menu
-        nextHistory = [menu]
-      } else if (currentDepth === 1) {
-        // If at the root, replace the last entry
-        nextHistory = [nextLocation.pathname]
-      }
-
-      const lastDepth = nextHistory.length ? getDepth(nextHistory[nextHistory.length - 1]) : 0
-
-      if (currentDepth === lastDepth) {
-        // Replace the last entry if at the same depth
-        nextHistory[nextHistory.length - 1] = nextLocation.pathname
-      } else if (currentDepth < lastDepth) {
-        // Remove the last entry if going up
-        nextHistory.pop()
-      } else {
-        // Otherwise, push a new entry
-        nextHistory.push(nextLocation.pathname)
-      }
-
-      if (!nextHistory.length) {
-        nextHistory.push(nextLocation.pathname)
-      }
-
-      dispatch.ui.set({ mobileNavigation: nextHistory })
-    })
-
-    return () => {
-      unListen()
+    if (!customHistory.length) {
+      init()
+      return
     }
-  }, [dispatch, history, customHistory])
+
+    let nextHistory = [...customHistory]
+    const menu = pathname.match(REGEX_FIRST_PATH)?.[0] || '/'
+    const currentDepth = getDepth(pathname)
+
+    if (pathname === menu) {
+      // if the next location is a root menu, reset the history
+      // if (menu !== nextHistory[0]) {
+      // If the menu has changed, reset the history
+      // @TODO see if we can improve this so it doesn't reset when not navigating to a root menu
+      nextHistory = [menu]
+    } else if (currentDepth === 1) {
+      // If at the root, replace the last entry
+      nextHistory = [pathname]
+    }
+
+    const lastDepth = nextHistory.length ? getDepth(nextHistory[nextHistory.length - 1]) : 0
+
+    if (state?.isRedirect || currentDepth === lastDepth) {
+      // If the last navigation was a redirect, or at the same depth replace the last entry
+      nextHistory[nextHistory.length - 1] = pathname
+    } else if (currentDepth < lastDepth) {
+      // Remove the last entry if going up
+      nextHistory.pop()
+    } else {
+      // Otherwise, push a new entry
+      nextHistory.push(pathname)
+    }
+
+    if (!nextHistory.length) {
+      nextHistory.push(pathname)
+    }
+
+    if (state?.isRedirect) console.log('MOBILE NAVIGATION isRedirect')
+
+    dispatch.ui.set({ mobileNavigation: nextHistory })
+  }, [dispatch, pathname])
 }
 
-export default useNavigationListener
+export default useMobileNavigation

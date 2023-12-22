@@ -1,5 +1,5 @@
 import React from 'react'
-import { useClipboard } from 'use-clipboard-copy'
+import useClipboard from '../hooks/useClipboard'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon, IconProps } from './Icon'
 
@@ -28,7 +28,7 @@ export const CopyMenuItem: React.FC<CopyMenuItemProps> = ({
       dense
       onClick={async () => {
         await awaitCopy?.()
-        clipboard.copy()
+        clipboard.copy(value)
       }}
       disabled={disabled}
       className={className}
@@ -42,7 +42,6 @@ export const CopyMenuItem: React.FC<CopyMenuItemProps> = ({
         />
       </ListItemIcon>
       <ListItemText primary={clipboard.copied ? 'Copied!' : title} />
-      <input type="hidden" ref={clipboard.target} value={value} />
     </MenuItem>
   )
 }

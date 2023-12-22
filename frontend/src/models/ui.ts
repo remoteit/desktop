@@ -29,6 +29,8 @@ const SAVED_STATES = [
   'updateNoticeCleared',
   'deviceTimeSeries',
   'serviceTimeSeries',
+  'showDesktopNotice',
+  'mobileWelcome',
 ]
 
 export type UIState = {
@@ -95,6 +97,8 @@ export type UIState = {
   deviceTimeSeries: ITimeSeriesOptions
   serviceTimeSeries: ITimeSeriesOptions
   connectThisDevice: boolean
+  mobileWelcome: boolean
+  showDesktopNotice: boolean
 }
 
 export const defaultState: UIState = {
@@ -175,6 +179,8 @@ export const defaultState: UIState = {
   deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', length: 7 },
   serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', length: 7 },
   connectThisDevice: false,
+  mobileWelcome: true,
+  showDesktopNotice: true,
 }
 
 export default createModel<RootModel>()({
@@ -192,7 +198,7 @@ export default createModel<RootModel>()({
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `ui-${key}`)
-        if (value) {
+        if (value !== null) {
           if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
           else states[key] = value
         }
@@ -267,7 +273,7 @@ export default createModel<RootModel>()({
     async setPersistent(params: ILookup<any>, state) {
       dispatch.ui.set(params)
       Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
+        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key])
       })
     },
     async deprecated(_: void, state) {

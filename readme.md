@@ -146,13 +146,13 @@ Command+option+I to open with dev tools.
 With web app running start mobile app
 
 ```shell
-npm run mobile-ios
+npm run ios
 ```
 
 or
 
 ```shell
-npm run mobile-android
+npm run android
 ```
 
 ## Testing
@@ -228,6 +228,12 @@ In android studio:
 - select aab
 
 Upload to google play console
+
+Test the build locally:
+
+```shell
+adb install -r ./android/app/build/outputs/apk/release/app-release.apk
+```
 
 ### Packaging
 

@@ -33,7 +33,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     const validLookup = lookupResult === null || device?.services.find(s => s.id === lookupResult)
     const serviceId = validLookup ? lookupResult : device?.services?.[0]?.id
     const redirect = device?.state === 'active' && serviceId ? `${serviceId}/connect` : 'details'
-    return `/devices/${device?.id}/${redirect}`
+    return { pathname: `/devices/${device?.id}/${redirect}`, state: { isRedirect: true } }
   }
 
   if (waiting && !device) return <LoadingMessage />

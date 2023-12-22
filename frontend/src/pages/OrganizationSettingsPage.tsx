@@ -70,7 +70,8 @@ export const OrganizationSettingsPage: React.FC = () => {
     setForm({ ...form, enabled: !!organization.identityProvider })
   }, [organization])
 
-  if (!permissions?.includes('ADMIN')) return <Redirect to={'/organization'} />
+  if (!permissions?.includes('ADMIN'))
+    return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (
     <Container

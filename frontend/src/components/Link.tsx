@@ -1,4 +1,5 @@
 import React from 'react'
+import browser, { windowOpen } from '../services/Browser'
 import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom'
 import { Link as MUILink, LinkProps as MuiLinkProps } from '@mui/material'
 
@@ -12,10 +13,15 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ children, 
   if (attributes.href?.startsWith('http')) {
     attributes.target = '_blank'
     attributes.rel = 'noopener'
+    if (browser.isMobile) {
+      attributes.onClick = () => windowOpen(attributes.href, '_blank', true)
+      attributes.href = undefined
+    }
   }
 
   attributes.sx = { ...attributes.sx, cursor: 'pointer' }
   if (attributes.to) attributes.component = RouterLink
+
 
   return (
     <MUILink {...attributes} ref={ref}>

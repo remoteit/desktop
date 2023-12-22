@@ -60,7 +60,7 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: smallScreen ? 'center' : 'flex-end',
     maxWidth: 130,
     marginTop: spacing.md,
-    marginRight: spacing.xl,
+    marginRight: smallScreen ? 0 : spacing.xl,
     marginBottom: smallScreen ? spacing.lg : 0,
   }),
   box: ({ smallScreen }: any) => ({

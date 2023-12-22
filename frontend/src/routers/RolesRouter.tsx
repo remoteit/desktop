@@ -19,7 +19,12 @@ export const RolesRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <OrganizationRolePage />
           </Route>
           <Route path="/organization/roles">
-            <Redirect to={`/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`} />
+            <Redirect
+              to={{
+                pathname: `/organization/roles/${organization?.roles.find(r => !r.disabled)?.id}`,
+                state: { isRedirect: true },
+              }}
+            />
           </Route>
         </Switch>
       }

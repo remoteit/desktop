@@ -37,7 +37,7 @@ export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
   return (
     <Dialog open={showRestoreModal} onClose={onClose} maxWidth="lg">
       <DialogTitle>Restore “{attributeName(device)}”</DialogTitle>
-      <DialogContent sx={{ width: 620 }}>
+      <DialogContent sx={{ maxWidth: 620 }}>
         <Typography variant="body1" gutterBottom>
           If you lost or deleted this device you can restore it by running the <br />
           following command on the device.

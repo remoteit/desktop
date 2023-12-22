@@ -8,21 +8,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
+import { AndroidSetup } from '../components/AndroidSetup'
 import { ClaimDevice } from '../components/ClaimDevice'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const AddPage: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const { claiming, hasDemo, testUI } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
-    testUI: state.ui.testUI,
   }))
 
   return (
@@ -32,7 +31,7 @@ export const AddPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1" gutterBottom sx={{ marginRight: 4 }}>
-          <Title>What do you want to connect to?</Title>
+          <Title>What do you want to connect&nbsp;to?</Title>
         </Typography>
       }
     >
@@ -55,14 +54,15 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </List>
+        <AndroidSetup className={classnames(css.list, css.smallList)} />
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
-          <ListItem>
+          <Stack paddingTop={3}>
             <ClaimDevice />
-          </ListItem>
+          </Stack>
         </List>
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
           <ListSubheader disableGutters>Quick add Command</ListSubheader>
           <Divider />
@@ -110,8 +110,6 @@ export const AddPage: React.FC = () => {
             'mac',
           ].map(p => {
             const platform = platforms.get(p)
-            const isTestPlatform = ['android'].includes(p)
-            if (isTestPlatform && !testUI) return null
             const platformIcon = (
               <ListItemLocation
                 key={p}
@@ -125,7 +123,7 @@ export const AddPage: React.FC = () => {
                 disableGutters
               />
             )
-            return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
+            return platformIcon
           })}
         </List>
       </Stack>
@@ -135,7 +133,7 @@ export const AddPage: React.FC = () => {
 
 const useStyles = makeStyles(({ breakpoints }) => ({
   list: {
-    minWidth: 200,
+    minWidth: 175,
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
@@ -162,7 +160,7 @@ const useStyles = makeStyles(({ breakpoints }) => ({
     width: 140,
   },
   smallList: {
-    width: '100%',
+    width: '50%',
     [breakpoints.up('sm')]: { width: '33%' },
   },
   bigList: {

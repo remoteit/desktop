@@ -5,13 +5,12 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Button, Typography } from '@mui/material'
 import { IPlatform } from '../platforms'
-import { DesktopUI } from './DesktopUI'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
 export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => {
   const hostname = useSelector((state: ApplicationState) => safeHostname(state.backend.environment.hostname, []))
-  const openDownloads = () => windowOpen(platform.installation?.link)
+  const openDownloads = () => windowOpen(platform.installation?.link, '_blank', browser.isAndroid)
 
   return (
     <>
@@ -25,17 +24,22 @@ export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => 
         size="large"
         sx={{ marginTop: 3, marginBottom: 3 }}
         onClick={openDownloads}
-        endIcon={<Icon name="launch" size="md" inline />}
+        endIcon={
+          <Icon
+            name={browser.isAndroid ? 'google-play' : 'launch'}
+            type={browser.isAndroid ? 'brands' : undefined}
+            size="md"
+            inline
+          />
+        }
       >
-        {browser.hasBackend ? 'Downloads Page' : 'Download'}
+        {browser.isAndroid ? 'Install' : browser.hasBackend ? 'Downloads Page' : 'View'}
       </Button>
-      <DesktopUI>
-        {getOs() === platform.id && (
-          <Typography variant="body2" color="textSecondary">
-            or add<Link to="/devices/setup">this device ({hostname})</Link>
-          </Typography>
-        )}
-      </DesktopUI>
+      {platform.installation?.altLink && (
+        <Typography variant="body2" color="textSecondary">
+          or add<Link to={platform.installation.altLink}>this device ({hostname})</Link>
+        </Typography>
+      )}
     </>
   )
 }

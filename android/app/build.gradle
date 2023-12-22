@@ -13,10 +13,8 @@ android {
         applicationId "com.remoteit"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        // Version code is like build number
-        versionCode 205
-        // Version name is the semantic version
-        versionName "3.24.2"
+        versionCode 212
+        versionName "3.25.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
