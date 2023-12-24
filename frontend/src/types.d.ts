@@ -223,10 +223,16 @@ declare global {
   }
 
   type ILayout = {
-    insets: SafeAreaInsets['insets']
+    insets: SafeAreaInsets['insets'] & {
+      topPx: string
+      bottomPx: string
+      leftPx: string
+      rightPx: string
+    }
     mobile: boolean
     showOrgs: boolean
     hideSidebar: boolean
+    showBottomMenu: boolean
     singlePanel: boolean
     sidePanelWidth: number
   }

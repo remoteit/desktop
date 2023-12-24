@@ -80,7 +80,7 @@ export const OrganizationSelect: React.FC = () => {
           </>
         }
       >
-        <List dense className={css.list}>
+        <List dense className={css.list} disablePadding>
           <Badge
             overlap="circular"
             classes={{ badge: css.badge }}

@@ -14,6 +14,11 @@ export const Panel: React.FC<Props> = ({ layout, children }) => {
         display: 'flex',
         flexDirection: 'column',
         contain: 'content',
+        // for iOS mobile
+        paddingTop: layout.insets?.topPx,
+        paddingBottom: layout.showBottomMenu ? 0 : layout.insets?.bottomPx,
+        paddingLeft: layout.hideSidebar ? layout.insets?.leftPx : 0,
+        paddingRight: layout.insets?.rightPx,
       }}
     >
       <Header breadcrumbs={layout.singlePanel && !layout.mobile} />

@@ -67,7 +67,8 @@ const useStyles = makeStyles(({ palette }) => ({
     '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px`, padding: 0 },
     '& section:first-of-type': { marginTop: spacing.sm },
     // for iOS mobile
-    paddingTop: insets.top ? insets.top - spacing.xs : addSpace ? spacing.xl : spacing.md,
+    paddingTop: spacing.md + (insets.top ? insets.top : addSpace ? spacing.md : 0),
+    paddingBottom: insets?.bottom,
   }),
   header: {
     display: 'flex',

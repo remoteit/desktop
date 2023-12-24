@@ -47,7 +47,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   return (
     <>
       <div className={css.header}>
-        {!browser.isElectron && layout.hideSidebar && (
+        {!browser.isElectron && (layout.hideSidebar || browser.isMobile) && (
           <>
             <Route path="/add" exact>
               <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
