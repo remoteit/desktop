@@ -10,6 +10,7 @@
     "@airbrake/browser": "^2.1.8",
     "@aws-amplify/auth": "^5.6.6",
     "@capacitor/clipboard": "^5.0.6",
+    "@capacitor/status-bar": "^5.0.6",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
