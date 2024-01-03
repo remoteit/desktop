@@ -41,7 +41,7 @@ export const App: React.FC = () => {
   const overlapHeader = hideSidebar && browser.isElectron && browser.isMac
   const sidePanelWidth = hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
-  const showBottomMenu = (mobile || browser.isMobile) && isRootMenu
+  const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
 
   const layout: ILayout = {
     insets,
