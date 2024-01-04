@@ -65,10 +65,12 @@ export const OrganizationSelect: React.FC = () => {
         <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
       </Box>
       <GuideBubble
+        sidebar
         guide="organizationSelect"
         placement="right"
         startDate={new Date('2023-01-01')}
         queueAfter="addDevice"
+        enterDelay={600}
         instructions={
           <>
             <Typography variant="h3" gutterBottom>

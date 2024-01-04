@@ -16,6 +16,7 @@ type Props = {
   hide?: boolean
   enterDelay?: number
   queueAfter?: string
+  sidebar?: boolean
   sx?: BoxProps['sx']
   children?: React.ReactNode
 }
@@ -31,17 +32,20 @@ export const GuideBubble: React.FC<Props> = ({
   hide,
   enterDelay,
   queueAfter,
+  sidebar,
   sx,
   children,
 }) => {
-  const { poppedBubbles, expired } = useSelector((state: ApplicationState) => ({
+  const { poppedBubbles, expired, sidebarOpen } = useSelector((state: ApplicationState) => ({
     poppedBubbles: state.ui.poppedBubbles,
     expired: (startDate > state.user.created && !state.ui.testUI) || state.ui.expireBubbles,
+    sidebarOpen: state.ui.sidebarMenu,
   }))
   const { ui } = useDispatch<Dispatch>()
   const [waiting, setWaiting] = React.useState<boolean>(true)
   const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
-  const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued
+  const hideForSidebar = sidebarOpen && !sidebar
+  const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued && !hideForSidebar
   const css = useStyles({ highlight: highlight && open })
 
   React.useEffect(() => {

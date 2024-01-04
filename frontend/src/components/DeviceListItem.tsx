@@ -15,10 +15,11 @@ type Props = {
   select?: boolean
   selected?: boolean
   mobile?: boolean
+  onClick?: () => void
   onSelect?: (deviceId: string) => void
 }
 
-export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, mobile, onSelect }) => {
+export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, mobile, onClick, onSelect }) => {
   const { connections, device, attributes, required } = useContext(DeviceListContext)
   const connection = connections && connections.find(c => c.enabled)
   const history = useHistory()
@@ -28,7 +29,8 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   if (!device) return null
 
   const handleClick = () => {
-    if (select) onSelect && onSelect(device.id)
+    onClick?.()
+    if (select) onSelect?.(device.id)
     else if (!restore) history.push(`/devices/${device.id}`)
   }
 

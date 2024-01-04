@@ -74,9 +74,9 @@ export const ConnectAdvanced: React.FC = () => {
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
           )}
-          <PortalUI>
+          <DesktopUI hide>
             <PublicSetting connection={connection} service={service} />
-          </PortalUI>
+          </DesktopUI>
           <LaunchSelect connection={connection} service={service} />
           <DesktopUI>
             <RouteSetting connection={connection} service={service} />

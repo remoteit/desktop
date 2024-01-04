@@ -9,7 +9,6 @@ import { GuideBubble } from '../components/GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { makeStyles } from '@mui/styles'
 import { DesktopUI } from '../components/DesktopUI'
-import { PortalUI } from '../components/PortalUI'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 
@@ -25,22 +24,22 @@ export const ServiceConnectButton: React.FC = () => {
         <GuideBubble
           guide="connectButton"
           enterDelay={400}
-          placement="left"
+          hide={connection.connectLink}
           startDate={new Date('2022-09-20')}
           queueAfter={device ? 'availableServices' : 'addNetwork'}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
                 <b>
-                  <PortalUI>Starting a connection</PortalUI>
+                  <DesktopUI hide>Starting a connection</DesktopUI>
                   <DesktopUI>Connect on demand</DesktopUI>
                 </b>
               </Typography>
-              <PortalUI>
+              <DesktopUI hide>
                 <Typography variant="body2" gutterBottom>
-                  Create a connection to this service with the button to the right.
+                  Create a connection to this service with the connect button.
                 </Typography>
-              </PortalUI>
+              </DesktopUI>
               <DesktopUI>
                 <Typography variant="body2" gutterBottom>
                   Start listening on to this endpoint for network requests. On request, automatically create the
