@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import browser from '../services/Browser'
 import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID, devicesTotal } from '../models/plans'
 import { List, ListItem, Stack } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
@@ -48,7 +49,8 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
     setForm({ ...form, quantity })
   }
 
-  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise) return null
+  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
+
   if (license?.custom)
     return (
       <List>

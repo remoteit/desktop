@@ -1,9 +1,9 @@
 import React from 'react'
-import { Dispatch } from '../store'
+import { Dispatch, ApplicationState } from '../store'
 import { ListItem, Button, Tooltip, IconButton } from '@mui/material'
+import { useDispatch, useSelector } from 'react-redux'
 import { PERSONAL_PLAN_ID } from '../models/plans'
 import { LicensingTitle } from './LicensingTitle'
-import { useDispatch } from 'react-redux'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
 import { Link } from './Link'
@@ -24,7 +24,10 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
   managePath = '/account/plans',
   fullWidth,
 }) => {
+  const informed = useSelector((state: ApplicationState) => state.plans.informed)
   const { plans } = useDispatch<Dispatch>()
+
+  if (informed) return null
 
   const onClose = () => plans.set({ informed: true })
 

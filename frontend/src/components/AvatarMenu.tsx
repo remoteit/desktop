@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react'
-import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
@@ -93,27 +92,15 @@ export const AvatarMenu: React.FC = () => {
         disableScrollLock
         elevation={2}
       >
-        {browser.isPortal ? (
-          <ListItemLocation
-            dense
-            title="Account"
-            subtitle={user?.email}
-            icon="user"
-            to="/account"
-            badge={licenseIndicator}
-            onClick={handleClose}
-          />
-        ) : (
-          <ListItemLink
-            dense
-            title="Account"
-            subtitle={user?.email}
-            icon="user"
-            href="https://link.remote.it/portal/account"
-            badge={licenseIndicator}
-            onClick={handleClose}
-          />
-        )}
+        <ListItemLocation
+          dense
+          title="Account"
+          subtitle={user?.email}
+          icon="user"
+          to="/account"
+          badge={licenseIndicator}
+          onClick={handleClose}
+        />
         <ListItemLocation dense exactMatch title="Settings" icon="sliders-h" to="/settings" onClick={handleClose} />
         <ListItemLocation
           title="Bug Report"
