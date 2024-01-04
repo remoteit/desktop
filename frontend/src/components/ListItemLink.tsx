@@ -9,18 +9,23 @@ export type Props = {
   subtitle?: string
   icon?: string
   dense?: boolean
+  badge?: number
+  onClick?: () => void
   className?: string
   children?: React.ReactNode
 }
 
-export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, children, ...props }) => {
-  const onClick = () => windowOpen(href)
+export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, badge, onClick, children, ...props }) => {
+  const handleClick = () => {
+    windowOpen(href, '_blank', true)
+    onClick?.()
+  }
 
   return (
-    <ListItem {...props} button onClick={onClick}>
+    <ListItem {...props} button onClick={handleClick}>
       {icon && (
         <ListItemIcon>
-          <Icon name={icon} size="md" fixedWidth />
+          <Icon name={icon} size="md" modified={!!badge} fixedWidth />
         </ListItemIcon>
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
