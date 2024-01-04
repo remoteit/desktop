@@ -162,7 +162,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
               <GuideBubble
                 hide={!show}
                 guide="usingConnection"
-                enterDelay={600}
+                enterDelay={800}
                 placement="bottom"
                 startDate={new Date('2022-09-20')}
                 queueAfter="connectButton"

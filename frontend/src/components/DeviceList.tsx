@@ -80,7 +80,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               </DeviceListContext.Provider>
               {!index && (
                 <GuideBubble
-                  key={device.id}
+                  key="guide"
                   enterDelay={400}
                   guide="deviceList"
                   placement="bottom"

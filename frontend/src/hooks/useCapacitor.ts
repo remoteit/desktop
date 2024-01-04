@@ -1,12 +1,16 @@
+import network from '../services/Network'
 import browser, { windowClose } from '../services/Browser'
 import { PROTOCOL } from '../constants'
-import { App, URLOpenListenerEvent } from '@capacitor/app'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
+import { App, URLOpenListenerEvent, AppState } from '@capacitor/app'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { useHistory } from 'react-router-dom'
 import { useEffect } from 'react'
 
 function useCapacitor() {
   const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
     if (!browser.isMobile) return
@@ -17,10 +21,19 @@ function useCapacitor() {
   async function initialize() {
     console.log('INITIALIZING CAPACITOR')
     await App.addListener('appUrlOpen', urlOpen)
+    await App.addListener('appStateChange', handleAppStateChange)
   }
 
   function teardown() {
     App.removeAllListeners()
+  }
+
+  function handleAppStateChange(state: AppState) {
+    console.log('APP STATE CHANGE', state)
+    if (state.isActive) {
+      network.focus()
+      setTimeout(() => dispatch.ui.setTheme(undefined), 1000)
+    }
   }
 
   async function hideSplashScreen() {
