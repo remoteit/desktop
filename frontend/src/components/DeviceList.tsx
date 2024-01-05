@@ -64,23 +64,20 @@ export const DeviceList: React.FC<DeviceListProps> = ({
             dispatch.ui.set({ selected: select })
           }
           return (
-            <>
-              <DeviceListContext.Provider
-                key={device.id}
-                value={{ device, connections: connections[device.id], required, attributes }}
-              >
-                <DeviceListItem
-                  restore={restore && canRestore}
-                  select={select}
-                  selected={isSelected}
-                  onSelect={onSelect}
-                  mobile={mobile}
-                  onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
-                />
-              </DeviceListContext.Provider>
+            <DeviceListContext.Provider
+              key={device.id}
+              value={{ device, connections: connections[device.id], required, attributes }}
+            >
+              <DeviceListItem
+                restore={restore && canRestore}
+                select={select}
+                selected={isSelected}
+                onSelect={onSelect}
+                mobile={mobile}
+                onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
+              />
               {!index && (
                 <GuideBubble
-                  key="guide"
                   enterDelay={400}
                   guide="deviceList"
                   placement="bottom"
@@ -102,7 +99,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                   }
                 />
               )}
-            </>
+            </DeviceListContext.Provider>
           )
         })}
         <LoadMore />
