@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import browser from '../../services/Browser'
 import useSafeArea from '../../hooks/useSafeArea'
 import useCapacitor from '../../hooks/useCapacitor'
+import { useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   HIDE_SIDEBAR_WIDTH,
@@ -9,6 +10,7 @@ import {
   SIDEBAR_WIDTH,
   MOBILE_WIDTH,
   ORGANIZATION_BAR_WIDTH,
+  REGEX_FIRST_PATH,
 } from '../../constants'
 import { useMediaQuery, Box } from '@mui/material'
 import { ApplicationState, Dispatch } from '../../store'
@@ -22,6 +24,7 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
+  const location = useLocation()
   const hideSplashScreen = useCapacitor()
   const { authInitialized, installed, signedOut, waitMessage, showOrgs } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
@@ -37,11 +40,15 @@ export const App: React.FC = () => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const overlapHeader = hideSidebar && browser.isElectron && browser.isMac
   const sidePanelWidth = hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
+  const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
+  const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
+
   const layout: ILayout = {
     insets,
     mobile,
     showOrgs,
     hideSidebar,
+    showBottomMenu,
     singlePanel,
     sidePanelWidth,
   }
@@ -52,7 +59,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [hideSidebar, singlePanel, showOrgs, insets, mobile, sidePanelWidth])
+  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, sidePanelWidth])
 
   if (waitMessage)
     return (
@@ -63,7 +70,7 @@ export const App: React.FC = () => {
 
   if (!authInitialized)
     return (
-      <Page noInsets>
+      <Page>
         <LoadingMessage logo invert />
       </Page>
     )
@@ -93,13 +100,13 @@ export const App: React.FC = () => {
           flexDirection: 'row',
           alignItems: 'start',
           justifyContent: 'start',
-          paddingTop: overlapHeader ? 2 : 0,
+          marginTop: overlapHeader ? 2 : 0,
         }}
       >
         {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
         <Router layout={layout} />
       </Box>
-      {mobile && <BottomMenu />}
+      {showBottomMenu && <BottomMenu layout={layout} />}
     </Page>
   )
 }

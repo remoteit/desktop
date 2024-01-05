@@ -36,7 +36,7 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
           </Link>
         }
       >
-        Commercial use requires a license after your first registered device.
+        A license is required for commercial use. Personal use is free for up to 5 devices.
       </Notice>
     </Route>
   )

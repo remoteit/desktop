@@ -12,8 +12,8 @@ import { spacing } from '../../styling'
 const TALL_QUERY = '(min-height:700px)'
 
 export function SignInPage() {
-  const tall = useMediaQuery(TALL_QUERY)
-  const css = useStyles({ tall })
+  const short = browser.isAndroid || !useMediaQuery(TALL_QUERY)
+  const css = useStyles({ short })
   const { hostname, protocol } = window.location
   const allowSwitch =
     !browser.isElectron && !browser.isMobile && hostname !== 'localhost' && hostname !== IP_PRIVATE && hostname
@@ -21,7 +21,7 @@ export function SignInPage() {
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
 
   return (
-    <Body className={css.body} center={tall}>
+    <Body className={css.body} center={!short}>
       <SignInApp />
       {allowSwitch && (
         <div className={css.link}>
@@ -49,12 +49,11 @@ export function SignInPage() {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  body: {
-    paddingTop: spacing.xl,
-    paddingBottom: 300,
+  body: ({ short }: { short: boolean }) => ({
+    paddingTop: short ? '50%' : 0,
+    paddingBottom: short ? '100%' : 0,
     '& > div': { maxWidth: 440 },
-    [`@media ${TALL_QUERY}`]: { paddingBottom: 0, paddingTop: 0 },
-  },
+  }),
   insecure: {
     margin: `${spacing.xs}px auto`,
     textAlign: 'center',

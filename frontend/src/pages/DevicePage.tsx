@@ -133,27 +133,7 @@ export const DevicePage: React.FC = () => {
         <Title>Service</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
-        <GuideBubble
-          highlight
-          guide="addService"
-          enterDelay={400}
-          placement="right"
-          hide={!device || device.state === 'inactive' || !editable}
-          startDate={new Date('2022-09-20')}
-          queueAfter="usingConnection"
-          instructions={
-            <>
-              <Typography variant="h3" gutterBottom>
-                <b>Add a service (application)</b>
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                This device can be dynamically setup to host new services.
-              </Typography>
-            </>
-          }
-        >
-          <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
-        </GuideBubble>
+        <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
 
       <List className={css.list}>

@@ -33,7 +33,12 @@ export const Body: React.FC<BodyProps> = ({
   scrollbarBackground,
   children,
 }) => {
-  const css = useStyles({ scrollbarBackground, horizontalOverflow, verticalOverflow })
+  const css = useStyles({
+    horizontalOverflow,
+    verticalOverflow,
+    scrollbarWidth: browser.isMobile ? 0 : 15,
+    scrollbarBackground: scrollbarBackground || 'white',
+  })
   const [hover, setHover] = useState<boolean>(true)
   className = classnames(
     className,
@@ -48,69 +53,71 @@ export const Body: React.FC<BodyProps> = ({
   let style = maxHeight ? { maxHeight } : {}
 
   return (
-    <div
-      ref={bodyRef}
-      className={className}
-      style={style}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      {children}
-    </div>
+    <>
+      {verticalOverflow && <div className={css.verticalOverflow} />}
+      {horizontalOverflow && <div className={css.horizontalOverflow} />}
+      <div
+        ref={bodyRef}
+        className={className}
+        style={style}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        {children}
+      </div>
+    </>
   )
 }
 
+type StyleProps = {
+  verticalOverflow?: boolean
+  horizontalOverflow?: boolean
+  scrollbarWidth: number
+  scrollbarBackground: Color
+}
+
 const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  body: ({ scrollbarBackground, verticalOverflow, horizontalOverflow }: BodyProps) => {
-    const SCROLLBAR_WIDTH = browser.isMobile ? 0 : 15
-    const background = scrollbarBackground ? palette[scrollbarBackground].main : palette.white.main
-    return {
-      flexGrow: 1,
-      height: '100%',
-      overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
-      position: 'relative',
-      '-webkit-overflow-scrolling': 'touch',
-      '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
-      '&::-webkit-scrollbar:vertical': { width: SCROLLBAR_WIDTH },
-      '&::-webkit-scrollbar:horizontal': { height: SCROLLBAR_WIDTH },
-      '&::-webkit-scrollbar-corner': { background },
-      '&::-webkit-scrollbar-thumb': {
-        borderRadius: 8,
-        border: `4px solid ${background}`,
-        backgroundColor: `${background}`,
-      },
-      [breakpoints.down('sm')]: {
-        overflowX: 'hidden',
-      },
-      '& > *:first-of-type': horizontalOverflow ? { minHeight: '100.1%' } : undefined, // forces right scrollbar to appear (overflow: scroll causes extra padding)
-      '&::after': verticalOverflow
-        ? {
-            content: '""',
-            position: 'fixed',
-            height: 30,
-            zIndex: 7,
-            width: '100%',
-            right: horizontalOverflow ? SCROLLBAR_WIDTH : undefined,
-            bottom: horizontalOverflow ? SCROLLBAR_WIDTH : 0,
-            backgroundImage: `linear-gradient(transparent, ${background})`,
-            pointerEvents: 'none',
-          }
-        : undefined,
-      '&::before': horizontalOverflow
-        ? {
-            content: '""',
-            position: 'fixed',
-            width: 30,
-            top: 0,
-            bottom: SCROLLBAR_WIDTH,
-            zIndex: 7,
-            right: SCROLLBAR_WIDTH,
-            backgroundImage: `linear-gradient(90deg, transparent, ${background})`,
-            pointerEvents: 'none',
-          }
-        : undefined,
-    }
-  },
+  body: ({ scrollbarBackground, verticalOverflow, horizontalOverflow, scrollbarWidth }: StyleProps) => ({
+    flexGrow: 1,
+    height: '100%',
+    overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
+    overscrollBehaviorX: 'none',
+    position: 'relative',
+    '-webkit-overflow-scrolling': 'touch',
+    '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
+    '&::-webkit-scrollbar:vertical': { width: scrollbarWidth },
+    '&::-webkit-scrollbar:horizontal': { height: scrollbarWidth },
+    '&::-webkit-scrollbar-corner': { background: palette[scrollbarBackground].main },
+    '&::-webkit-scrollbar-thumb': {
+      borderRadius: 8,
+      border: `4px solid ${palette[scrollbarBackground].main}`,
+      backgroundColor: `${palette[scrollbarBackground].main}`,
+    },
+    [breakpoints.down('sm')]: {
+      overflowX: 'hidden',
+    },
+    '& > *:first-of-type': horizontalOverflow ? { minHeight: '100.1%' } : undefined, // forces right scrollbar to appear (overflow: scroll causes extra padding)
+  }),
+  verticalOverflow: ({ horizontalOverflow, scrollbarWidth, scrollbarBackground }: StyleProps) => ({
+    position: 'absolute',
+    height: 30,
+    zIndex: 7,
+    width: '100%',
+    right: horizontalOverflow ? scrollbarWidth : undefined,
+    bottom: horizontalOverflow ? scrollbarWidth : 0,
+    backgroundImage: `linear-gradient(transparent, ${palette[scrollbarBackground].main})`,
+    pointerEvents: 'none',
+  }),
+  horizontalOverflow: ({ scrollbarWidth, scrollbarBackground }: StyleProps) => ({
+    position: 'absolute',
+    width: 30,
+    top: 0,
+    bottom: scrollbarWidth,
+    zIndex: 7,
+    right: scrollbarWidth,
+    backgroundImage: `linear-gradient(90deg, transparent, ${palette[scrollbarBackground].main})`,
+    pointerEvents: 'none',
+  }),
   showScroll: {
     '&::-webkit-scrollbar-thumb': {
       backgroundColor: `${palette.grayLight.main} !important`,

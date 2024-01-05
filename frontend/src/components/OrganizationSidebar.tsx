@@ -1,5 +1,6 @@
 import React from 'react'
 import browser from '../services/Browser'
+import classnames from 'classnames'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { ORGANIZATION_BAR_WIDTH } from '../constants'
@@ -14,7 +15,7 @@ export const OrganizationSidebar: React.FC<Props> = ({ hide, insets, children })
   return hide ? (
     <>{children}</>
   ) : (
-    <Box className={css.container}>
+    <Box className={classnames(css.container, 'sidebar')}>
       <Box className={css.organizationBar}>
         <OrganizationSelect />
       </Box>
@@ -35,7 +36,7 @@ const useStyles = makeStyles(({ palette }) => ({
     height: '100%',
     contain: 'layout',
     // for iOS mobile
-    paddingLeft: insets.left ? insets.left - spacing.sm : undefined,
+    paddingLeft: insets.left ? insets.left : undefined,
   }),
   organizationBar: ({ insets, addSpace }: StyleProps) => ({
     display: 'flex',
@@ -49,7 +50,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     overflow: 'hidden',
     // for iOS mobile
-    paddingTop: insets.top ? insets.top - spacing.xs : addSpace ? spacing.xl : spacing.md,
-    paddingBottom: insets.bottom ? insets.bottom - spacing.md : undefined,
+    paddingTop: spacing.md + (insets.top ? insets.top : addSpace ? spacing.md : 0),
+    paddingBottom: insets?.bottom,
   }),
 }))

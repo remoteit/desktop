@@ -1,5 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { emit } from '../services/Controller'
+import { StatusBar, Style } from '@capacitor/status-bar'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
@@ -111,7 +112,8 @@ export const defaultState: UIState = {
     hideSidebar: false,
     singlePanel: false,
     sidePanelWidth: SIDEBAR_WIDTH,
-    insets: { top: 0, left: 0, bottom: 0, right: 0 },
+    showBottomMenu: false,
+    insets: { top: 0, left: 0, bottom: 0, right: 0, topPx: '', bottomPx: '', leftPx: '', rightPx: '' },
   },
   silent: null,
   selected: [],
@@ -215,8 +217,10 @@ export default createModel<RootModel>()({
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, state) {
       themeMode = themeMode || state.ui.themeMode
+      const themeDark = isDarkMode(themeMode)
       dispatch.ui.setPersistent({ themeMode })
-      dispatch.ui.set({ themeDark: isDarkMode(themeMode) })
+      dispatch.ui.set({ themeDark })
+      if (browser.isAndroid) StatusBar.setStyle({ style: themeDark ? Style.Dark : Style.Light })
     },
     async resizeColumn(params: { id: string; width: number }, state) {
       const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }

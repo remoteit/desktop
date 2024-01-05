@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from './ServiceContextualMenu'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
-import { List, Typography, useMediaQuery } from '@mui/material'
+import { Box, List, Typography, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
@@ -63,50 +63,47 @@ export const DeviceList: React.FC<DeviceListProps> = ({
             }
             dispatch.ui.set({ selected: select })
           }
-          const row = (
-            <DeviceListContext.Provider
-              key={device.id}
-              value={{ device, connections: connections[device.id], required, attributes }}
-            >
-              <DeviceListItem
-                restore={restore && canRestore}
-                select={select}
-                selected={isSelected}
-                onSelect={onSelect}
-                mobile={mobile}
-              />
-            </DeviceListContext.Provider>
-          )
-
-          if (!index)
-            return (
-              <GuideBubble
+          return (
+            <>
+              <DeviceListContext.Provider
                 key={device.id}
-                enterDelay={400}
-                guide="deviceList"
-                placement="bottom"
-                startDate={new Date('2022-09-20')}
-                queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
-                instructions={
-                  <>
-                    <Typography variant="h3" gutterBottom>
-                      <b>Access a device</b>
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      A device can host it's own applications (services), or it can host another service on it's local
-                      network.
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      Select a device to connect to a service, or configure it.
-                    </Typography>
-                  </>
-                }
+                value={{ device, connections: connections[device.id], required, attributes }}
               >
-                {row}
-              </GuideBubble>
-            )
-
-          return row
+                <DeviceListItem
+                  restore={restore && canRestore}
+                  select={select}
+                  selected={isSelected}
+                  onSelect={onSelect}
+                  mobile={mobile}
+                  onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
+                />
+              </DeviceListContext.Provider>
+              {!index && (
+                <GuideBubble
+                  key="guide"
+                  enterDelay={400}
+                  guide="deviceList"
+                  placement="bottom"
+                  startDate={new Date('2022-09-20')}
+                  queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
+                  instructions={
+                    <>
+                      <Typography variant="h3" gutterBottom>
+                        <b>Access a device</b>
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        A device can host it's own applications (services), or it can host another service on it's local
+                        network.
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        Select a device to connect to a service, or configure it.
+                      </Typography>
+                    </>
+                  }
+                />
+              )}
+            </>
+          )
         })}
         <LoadMore />
       </List>

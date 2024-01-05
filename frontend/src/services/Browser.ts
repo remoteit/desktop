@@ -34,6 +34,7 @@ class Environment {
   isAndroid: boolean = false
   isApple: boolean = false
   hasBackend: boolean = false
+  hasBilling: boolean = false
 
   constructor() {
     this.isElectron = isElectron()
@@ -48,6 +49,8 @@ class Environment {
     this.isApple = this.isIOS || this.isMac
 
     this.hasBackend = !this.isPortal && !this.isMobile
+    this.hasBilling = this.isPortal
+
     console.log('Environment', this)
     console.log('Build Environment', this.environment())
   }

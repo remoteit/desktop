@@ -52,7 +52,7 @@ export const ListItemLocation: React.FC<Props> = ({
   ...props
 }) => {
   const history = useHistory()
-  const matches = useMatches({ to: to, match, exactMatch })
+  const matches = useMatches({ to, match, exactMatch })
   const css = useStyles({ disableIcon: !!disableIcon })
 
   const onClick = (event: React.MouseEvent) => {

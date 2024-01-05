@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react'
-import browser from '../services/Browser'
 import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
@@ -12,7 +11,6 @@ import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
 import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
-import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
@@ -164,8 +162,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
               <GuideBubble
                 hide={!show}
                 guide="usingConnection"
-                enterDelay={600}
-                placement="left"
+                enterDelay={800}
+                placement="bottom"
                 startDate={new Date('2022-09-20')}
                 queueAfter="connectButton"
                 instructions={
@@ -173,11 +171,11 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
                     <Typography variant="h3" gutterBottom>
                       <b>Using a connection</b>
                     </Typography>
-                    <PortalUI>
+                    <DesktopUI hide>
                       <Typography variant="body2" gutterBottom>
                         A connection was created to this service.
                       </Typography>
-                    </PortalUI>
+                    </DesktopUI>
                     <DesktopUI>
                       <Typography variant="body2" gutterBottom>
                         A fixed endpoint has been generated.

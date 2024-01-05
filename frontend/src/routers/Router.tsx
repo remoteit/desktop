@@ -5,6 +5,7 @@ import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
+import { RedirectOffsite } from '../components/RedirectOffsite'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -332,7 +333,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
 
               <Route path="/account/plans">
-                <PlansPage />
+                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
+                  <PlansPage />
+                </RedirectOffsite>
               </Route>
 
               <Route path="/account/licensing">
@@ -340,7 +343,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
 
               <Route path="/account/billing">
-                <BillingPage />
+                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
+                  <BillingPage />
+                </RedirectOffsite>
               </Route>
 
               <Route path="/account/accessKey">
