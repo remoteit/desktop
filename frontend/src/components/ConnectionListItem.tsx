@@ -85,6 +85,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     width: '1.4em',
     marginTop: '-2.7em',
     marginRight: '-1.4em',
+    pointerEvents: 'none',
   }),
   hover: {
     position: 'absolute',
