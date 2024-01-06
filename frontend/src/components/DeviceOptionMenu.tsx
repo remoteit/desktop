@@ -37,7 +37,8 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         disableScrollLock
         autoFocus={false}
         elevation={2}

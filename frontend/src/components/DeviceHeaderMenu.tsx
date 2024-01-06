@@ -3,7 +3,6 @@ import { DeviceContext } from '../services/Context'
 import { Typography } from '@mui/material'
 import { attributeName } from '@common/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
-import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'
 import { ShareButton } from '../buttons/ShareButton'
@@ -33,7 +32,6 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
                 title="Share access"
               />
             </MobileUI>
-            <DeviceOptionMenu device={device} />
           </Typography>
           {device.attributes.description && (
             <Gutters top={null}>
