@@ -12,13 +12,10 @@ import { Logo } from '../components/Logo'
 import { Icon } from '../components/Icon'
 
 export const AccountPage: React.FC = () => {
-  const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { billing, licenseIndicator } = useSelector((state: ApplicationState) => ({
     billing: !!selectRemoteitLicense(state, state.user.id)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
-    preferences: state.backend.preferences,
   }))
-
-  if (!preferences) return null
 
   const externalBilling = browser.hasBilling ? null : (
     <Icon name="launch" size="sm" color="grayDark" inlineLeft fixedWidth />

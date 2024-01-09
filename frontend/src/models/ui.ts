@@ -13,6 +13,7 @@ import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
+  'apis',
   'guides',
   'panelWidth',
   'poppedBubbles',
@@ -38,6 +39,12 @@ export type UIState = {
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
   testUI?: 'ON' | 'HIGHLIGHT'
+  apis: {
+    switchApi?: IPreferences['switchApi']
+    apiGraphqlURL?: IPreferences['apiGraphqlURL']
+    webSocketURL?: IPreferences['webSocketURL']
+    apiURL?: IPreferences['apiURL']
+  }
   layout: ILayout
   silent: string | null
   selected: IDevice['id'][]
@@ -106,6 +113,7 @@ export const defaultState: UIState = {
   themeMode: 'system',
   themeDark: isDarkMode(),
   testUI: undefined,
+  apis: {},
   layout: {
     mobile: false,
     showOrgs: false,

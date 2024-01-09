@@ -5,7 +5,7 @@ import { store } from '../store'
 export function getGraphQLApi(): string | undefined {
   if (!store) return GRAPHQL_API
 
-  const { apiGraphqlURL, switchApi } = store.getState().backend.preferences
+  const { apiGraphqlURL, switchApi } = store.getState().ui.apis
   const { overrides } = store.getState().backend.environment
   const defaultURL =
     version.includes('alpha') || version.includes('beta')
@@ -17,7 +17,7 @@ export function getGraphQLApi(): string | undefined {
 export function getRestApi(): string | undefined {
   try {
     if (!store) return API_URL
-    const { apiURL, switchApi } = store.getState().backend.preferences
+    const { apiURL, switchApi } = store.getState().ui.apis
     return apiURL && switchApi ? apiURL : API_URL
   } catch {
     return API_URL
@@ -27,7 +27,7 @@ export function getRestApi(): string | undefined {
 export function getWebSocketURL(): string | undefined {
   if (!store) return WEBSOCKET_URL
 
-  const { webSocketURL, switchApi } = store.getState().backend.preferences
+  const { webSocketURL, switchApi } = store.getState().ui.apis
   const defaultURL = version.includes('alpha') || version.includes('beta') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
   return webSocketURL && switchApi ? webSocketURL : defaultURL
 }
