@@ -9,17 +9,15 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
 import { InlineSetting } from './InlineSetting'
-import { selectLimits } from '../selectors/organizations'
 import { Confirm } from './Confirm'
 import { Icon } from './Icon'
 
 export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { accountId, plans, purchasing, limits } = useSelector((state: ApplicationState) => ({
+  const { accountId, plans, purchasing } = useSelector((state: ApplicationState) => ({
     accountId: selectActiveAccountId(state),
     plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: !!state.plans.purchasing,
-    limits: selectLimits(state, state.user.id),
   }))
 
   useEffect(() => {
@@ -41,7 +39,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   const selectedPlan = plans.find(plan => plan.id === license?.plan?.id)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
   const enterprise = !!license && !license.plan.billing
-  const deviceLimit = limits.find(l => l.name === 'iot-devices' && l.license?.id === license?.id)?.value
+  const usersScale = selectedPlan?.limits?.find(l => l.name === 'org-users')?.scale
   const totals = deviceUserTotal(form.quantity, selectedPlan)
 
   const setQuantity = (value: string | number) => {
@@ -50,7 +48,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
     setForm({ ...form, quantity })
   }
 
-  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
+  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling || !usersScale) return null
 
   if (license?.custom)
     return (
@@ -72,9 +70,9 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
         value={form.quantity}
         displayValue={
           <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
-            {form.quantity}
+            {totals?.users}
             <Icon name="user" size="xxs" type="solid" color="gray" />
-            {deviceLimit}
+            {totals?.devices}
             <Icon name="unknown" size="sm" platformIcon />
           </Stack>
         }

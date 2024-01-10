@@ -166,6 +166,7 @@ export const Plans: React.FC = () => {
             }
             const result = plan.prices?.find(p => p.id === form.priceId)
             const priceId = result?.id || (plan.prices && plan.prices[0].id)
+            const isDowngrade = plan.prices && plan.prices[0].amount < (license?.subscription?.price?.amount || 0)
             return (
               <PlanCard
                 key={plan.id}
@@ -181,8 +182,8 @@ export const Plans: React.FC = () => {
                 onSelect={() =>
                   setForm({
                     ...form,
-                    confirm: !selected,
-                    checkout: selected,
+                    confirm: isDowngrade,
+                    checkout: !isDowngrade,
                     planId: plan.id,
                     priceId,
                   })
@@ -193,7 +194,7 @@ export const Plans: React.FC = () => {
           })}
         </Gutters>
       )}
-      <Gutters size="md" className={css.plans}>
+      <Gutters size="lg" className={css.plans}>
         <PlanCard
           wide
           name="Personal"
@@ -211,7 +212,7 @@ export const Plans: React.FC = () => {
           features={PlanDetails[PERSONAL_PLAN_ID].features}
         />
       </Gutters>
-      <Gutters size="md" className={css.plans}>
+      <Gutters size="lg" className={css.plans}>
         <PlanCard
           wide
           name="Enterprise"
@@ -243,13 +244,14 @@ export const Plans: React.FC = () => {
         open={!!form.confirm}
         onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
         onDeny={() => setForm({ ...form, confirm: false })}
-        title="Change Plans?"
-        action="Change Plan"
+        title="Downgrade Plan?"
+        action="Downgrade"
         color="warning"
         maxWidth="xs"
       >
         <Notice severity="warning" fullWidth>
-          Plan changes will take effect immediately.
+          This plan will downgrade your service.
+          <em>You will lose access to some features and may lose access to some devices.</em>
         </Notice>
       </Confirm>
     </>
