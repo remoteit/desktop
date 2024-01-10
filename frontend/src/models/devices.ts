@@ -211,7 +211,10 @@ export default createModel<RootModel>()({
 
       if (result) {
         result.thisDevice = result.thisDevice || thisDevice
-        if (newDevice) result.newDevice = true
+        if (newDevice) {
+          result.newDevice = true
+          dispatch.devices.incrementTotal(accountId)
+        }
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
         console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
@@ -579,6 +582,13 @@ export default createModel<RootModel>()({
       await dispatch.devices.removeService(serviceId)
       await dispatch.connections.clear(serviceId)
       await dispatch.networks.clearById(serviceId)
+    },
+
+    async incrementTotal(accountId: string, state) {
+      accountId = accountId || selectActiveAccountId(state)
+      const total = getDeviceModel(state, accountId).total + 1
+      console.log('INCREMENT TOTAL', { total, accountId })
+      dispatch.devices.set({ total, accountId })
     },
 
     async setPersistent(params: ILookup<any>, state) {
