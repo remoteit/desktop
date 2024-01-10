@@ -40,7 +40,7 @@ const PlanDetails = {
     description: 'Basic commercial use plan',
     note: 'when billed annually',
     features: [
-      '5 Devices + 3 users per license',
+      '3 Devices & 1 user per license',
       'Commercial usage',
       'Organization Management (basic roles)',
       'Basic device tagging',
@@ -54,7 +54,7 @@ const PlanDetails = {
     description: 'Simplifies network management',
     note: 'when billed annually',
     features: [
-      '5 Devices + 10 users per license',
+      '10 Devices & 1 user per license',
       'Organization Management including custom roles',
       'Virtual networks with custom roles, enhanced device tagging',
       'SSO with SAML or select identity providers',
