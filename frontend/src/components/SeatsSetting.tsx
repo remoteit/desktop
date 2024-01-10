@@ -11,6 +11,7 @@ import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
 import { InlineSetting } from './InlineSetting'
 import { Confirm } from './Confirm'
+import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ context }) => {
@@ -39,7 +40,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   const [confirm, setConfirm] = useState<boolean>(false)
   const enterprise = !!license && !license.plan.billing
   const price = plan?.prices?.find(price => price.id === form.priceId)
-  const hide = context === 'user' && !plan?.limits?.find(l => l.name === 'org-users')?.scale
+  const displayOnly = context === 'user' && !plan?.limits?.find(l => l.name === 'org-users')?.scale
   const totals = deviceUserTotal(form.quantity, plan)
 
   const setQuantity = (value: string | number) => {
@@ -48,7 +49,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
     setForm({ ...form, quantity })
   }
 
-  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling || hide) return null
+  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   if (license?.custom)
     return (
@@ -59,6 +60,17 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
       </List>
     )
 
+  const display = (
+    <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
+      {totals.users}
+      <Icon name="user" size="xxs" type="solid" color="gray" />
+      {totals.devices}
+      <Icon name="unknown" size="sm" platformIcon />
+    </Stack>
+  )
+
+  if (displayOnly) return <Gutters>{display}</Gutters>
+
   return (
     <List>
       <InlineSetting
@@ -68,14 +80,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
         label="Licensing"
         warning="This will change your billing."
         value={form.quantity}
-        displayValue={
-          <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
-            {totals.users}
-            <Icon name="user" size="xxs" type="solid" color="gray" />
-            {totals.devices}
-            <Icon name="unknown" size="sm" platformIcon />
-          </Stack>
-        }
+        displayValue={display}
         resetValue={getDefaults().quantity}
         onResetClick={() => setForm(getDefaults())}
         onSubmit={async () => {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-import { getFreeLicenses } from '../models/plans'
+import { getFreeUsers } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { selectOrganization } from '../selectors/organizations'
@@ -14,12 +14,12 @@ import { Title } from '../components/Title'
 import { useHistory } from 'react-router-dom'
 
 export const OrganizationAddPage = () => {
-  const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => {
+  const { contacts, organization, freeUsers } = useSelector((state: ApplicationState) => {
     const organization = selectOrganization(state)
     return {
       organization,
       contacts: state.contacts.all.filter(c => !organization.members.find(s => s.user.id === c.id)) || [],
-      freeLicenses: getFreeLicenses(state),
+      freeUsers: getFreeUsers(state),
     }
   })
 
@@ -30,7 +30,7 @@ export const OrganizationAddPage = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  const license = freeLicenses ? 'LICENSED' : 'UNLICENSED'
+  const license = freeUsers ? 'LICENSED' : 'UNLICENSED'
 
   const exit = () => history.push(location.pathname.replace('/share', ''))
   const add = () => {
@@ -72,7 +72,7 @@ export const OrganizationAddPage = () => {
               fullWidth
             />
           </Box>
-          {!freeLicenses && (
+          {!freeUsers && (
             <Notice severity="warning" fullWidth>
               Purchase additional licenses to grant this user full access.
               <br />

@@ -9,7 +9,7 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { selectRemoteitLicense, selectOrganization, selectLicenses } from '../selectors/organizations'
+import { selectRemoteitLicense, selectOrganization, selectLicenses, selectPlan } from '../selectors/organizations'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
@@ -233,11 +233,13 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getFreeLicenses(state: ApplicationState) {
+export function getFreeUsers(state: ApplicationState) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
+  const plan = selectPlan(state)
+  const totals = deviceUserTotal(purchased, plan)
   const used = selectOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 1)
-  return Math.max(purchased - used, 0)
+  return Math.max(totals.users - used, 0)
 }
 
 function isEnterprise(state: ApplicationState) {

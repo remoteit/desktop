@@ -4,7 +4,7 @@ import { REGEX_LAST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { selectOrganization, selectRemoteitLicense } from '../selectors/organizations'
-import { getFreeLicenses } from '../models/plans'
+import { getFreeUsers } from '../models/plans'
 import { selectAccessibleNetworks } from '../models/networks'
 import { selectNetworks } from '../selectors/networks'
 import { ApplicationState, Dispatch } from '../store'
@@ -30,8 +30,8 @@ export const OrganizationUserPage: React.FC = () => {
   const { userID = '' } = useParams<{ userID: string }>()
   const [removing, setRemoving] = useState<boolean>(false)
   const [fetched, setFetched] = useState<boolean>(false)
-  const { devices, member, accessible, networks, freeLicenses, organization, guest, guestsLoaded, license } =
-    useSelector((state: ApplicationState) => {
+  const { devices, member, accessible, networks, freeUsers, organization, guest, guestsLoaded, license } = useSelector(
+    (state: ApplicationState) => {
       const organization = selectOrganization(state)
       const guest = organization.guests.find(g => g.id === userID)
       const member = organization.members.find(m => m.user.id === userID)
@@ -39,14 +39,15 @@ export const OrganizationUserPage: React.FC = () => {
         guest,
         member,
         organization,
-        freeLicenses: getFreeLicenses(state),
+        freeUsers: getFreeUsers(state),
         license: selectRemoteitLicense(state),
         devices: getAllDevices(state).filter(device => guest?.deviceIds.includes(device.id)),
         accessible: selectAccessibleNetworks(state, organization, member),
         networks: selectNetworks(state),
         guestsLoaded: organization.guestsLoaded,
       }
-    })
+    }
+  )
 
   const enterprise = !!license && !license.plan.billing
   const user = guest || member?.user
@@ -119,11 +120,7 @@ export const OrganizationUserPage: React.FC = () => {
                   onSelect={(roleId: string) => dispatch.organization.setMembers([{ ...member, roleId }])}
                 />
                 {!enterprise && (
-                  <LicenseSelect
-                    size="medium"
-                    member={member}
-                    disabled={!freeLicenses && member.license !== 'LICENSED'}
-                  />
+                  <LicenseSelect size="medium" member={member} disabled={!freeUsers && member.license !== 'LICENSED'} />
                 )}
               </Box>
               <Box display="flex" marginTop={1}>
