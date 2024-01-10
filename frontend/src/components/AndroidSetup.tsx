@@ -2,7 +2,7 @@ import React from 'react'
 import browser, { windowOpen } from '../services/Browser'
 import { SCREEN_VIEW_APP_LINK } from '../constants'
 import { safeHostname } from '@common/nameHelper'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { List, ListItem, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'
@@ -62,7 +62,7 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
             </>
           }
         >
-          <ListItem button disableGutters onClick={handleClick} component={Link} disabled={disabled}>
+          <ListItem button disableGutters onClick={handleClick} disabled={disabled}>
             <ListItemIcon>
               <Icon name="android" fixedWidth platformIcon size="xxl" />
             </ListItemIcon>

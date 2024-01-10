@@ -219,6 +219,8 @@ export default createModel<RootModel>()({
             name
             value
             actual
+            base
+            scale
             license {
               id
             }

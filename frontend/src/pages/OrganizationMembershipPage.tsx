@@ -14,11 +14,13 @@ import {
 import { useSelector, useDispatch } from 'react-redux'
 import { selectRemoteitLicense } from '../selectors/organizations'
 import { getOwnOrganization } from '../models/organization'
+import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
 import { spacing } from '../styling'
+import { Notice } from '../components/Notice'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
@@ -81,9 +83,21 @@ export const OrganizationMembershipPage: React.FC = () => {
                 <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                   <LicenseChip license={m.license} />
                 </Box>
-                <IconButton
+                <ConfirmButton
+                  confirm
                   icon="sign-out"
                   title="Leave Account"
+                  confirmProps={{
+                    color: 'error',
+                    action: 'Leave Organization',
+                    title: 'Are you sure?',
+                    children: (
+                      <Notice severity="error" gutterBottom fullWidth>
+                        This action cannot be undone.
+                        <em>You would need to contact the Organization owner to be re-added.</em>
+                      </Notice>
+                    ),
+                  }}
                   onClick={() => accounts.leaveMembership(m.account.id)}
                 />
               </ListItemSecondaryAction>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { windowOpen } from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
@@ -85,7 +86,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
           icon="launch"
           color="primary"
           variant="contained"
-          onClick={() => (window.location.href = link)}
+          onClick={() => windowOpen(link, '_blank', true)}
           className={css.button}
         />
       )}

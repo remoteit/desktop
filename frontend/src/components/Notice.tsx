@@ -96,6 +96,7 @@ const useStyles = makeStyles(({ palette }) => ({
     },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
+    '& .MuiButton-root': { marginTop: 5 },
   }),
   message: {
     flexGrow: 1,

@@ -21,7 +21,7 @@ export const Panel: React.FC<Props> = ({ layout, children }) => {
         paddingRight: layout.insets?.rightPx,
       }}
     >
-      <Header breadcrumbs={layout.singlePanel && !layout.mobile} />
+      <Header />
       {children}
     </Box>
   )

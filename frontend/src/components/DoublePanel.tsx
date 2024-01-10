@@ -11,7 +11,7 @@ type Props = {
   layout: ILayout
 }
 
-const MIN_WIDTH = 300
+const MIN_WIDTH = 250
 const PADDING = 9
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => {

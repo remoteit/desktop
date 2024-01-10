@@ -13,8 +13,7 @@ type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 
 export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
   const showFrame = browser.isRemote
-  const showBorder = !browser.isMac && !showFrame
-  const css = useStyles({ showBorder, color })
+  const css = useStyles({ color })
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
 
@@ -58,7 +57,6 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
 }
 
 type styleProps = {
-  showBorder: boolean
   color?: string
 }
 
@@ -70,15 +68,14 @@ const useStyles = makeStyles(({ palette }) => ({
     bottom: 0,
     position: 'fixed',
   },
-  page: ({ showBorder }: styleProps) => ({
+  page: {
     overflow: 'hidden',
     display: 'flex',
     flexFlow: 'column',
     backgroundColor: palette.white.main,
     margin: 'auto',
-    borderTop: showBorder ? `1px solid ${palette.grayLighter.main}` : undefined,
     contain: 'layout',
-  }),
+  },
   inset: {
     top: spacing.xl,
     left: spacing.sm,

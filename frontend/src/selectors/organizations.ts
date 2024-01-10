@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
-import { getOrganizations, getTestLimits, getLimitsOverride, getPlansTests } from './state'
+import { getOrganizations, getPlans, getTestLimits, getLimitsOverride, getPlansTests } from './state'
 import { selectActiveAccountId, isUserAccount, getActiveUser } from './accounts'
 import { selectMembership } from './accounts'
 import { defaultState } from '../models/organization'
@@ -21,6 +21,10 @@ export const selectOrganizationName = createSelector(
   (organization): string => organization.name || 'Unknown'
 )
 
+export const selectRemoteitPlans = createSelector([getPlans], plans => {
+  return plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID)
+})
+
 export const selectLicenses = createSelector([getPlansTests, selectOrganization], (tests, organization) => {
   if (tests.license) return tests.licenses
   else return organization.licenses
@@ -30,6 +34,10 @@ export const selectRemoteitLicense = createSelector(
   [selectLicenses],
   (licenses): ILicense | null => licenses.find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 )
+
+export const selectPlan = createSelector([selectRemoteitPlans, selectRemoteitLicense], (plans, license) => {
+  return plans.find(plan => plan.id === license?.plan?.id) || plans[0]
+})
 
 export const selectLimits = createSelector(
   [selectOrganization, getTestLimits],
