@@ -152,12 +152,12 @@ const useStyles = makeStyles(({ palette }) => ({
       lineHeight: 2.6,
     },
   },
-  plan: ({ wide, selected }: StyleProps) => ({
+  plan: {
     padding: spacing.md,
-    paddingTop: wide && !selected ? spacing.xl : spacing.xxl,
+    paddingTop: spacing.xl,
     textAlign: 'center',
     '& h1': { textTransform: 'capitalize' },
-  }),
+  },
   price: {
     padding: spacing.md,
     textAlign: 'center',

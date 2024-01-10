@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { PERSONAL_PLAN_ID, devicesTotal } from '../models/plans'
+import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -24,6 +24,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   const purchasing = useSelector((state: ApplicationState) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
+  const totals = deviceUserTotal(form.quantity, selectedPlan)
 
   const setQuantity = (value: string | number) => {
     let quantity = Math.ceil(Math.max(Math.min(+value, 9999), 0))
@@ -107,16 +108,25 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
-          <Typography variant="h3">User Licenses</Typography>
+          <Typography variant="h3">Licenses</Typography>
           <ListItemSecondaryAction>
             <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
+          </ListItemSecondaryAction>
+        </ListItem>
+        <ListItem>
+          <Typography variant="h3">Users</Typography>
+          <ListItemSecondaryAction>
+            <Typography variant="h3" display="flex" alignItems="center" color="grayDarker.main">
+              {totals?.users}
+              <Icon name="user" size="base" type="solid" color="gray" fixedWidth inline />
+            </Typography>
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem>
           <Typography variant="h3">Devices</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3" display="flex" color="grayDarker.main">
-              {devicesTotal(form.quantity, selectedPlan?.id)}
+              {totals?.devices}
               <Icon name="unknown" size="lg" platformIcon inline />
             </Typography>
           </ListItemSecondaryAction>

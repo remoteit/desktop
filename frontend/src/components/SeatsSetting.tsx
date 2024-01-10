@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import browser from '../services/Browser'
-import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID, devicesTotal } from '../models/plans'
+import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID, deviceUserTotal } from '../models/plans'
 import { List, ListItem, Stack } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -42,6 +42,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
   const enterprise = !!license && !license.plan.billing
   const deviceLimit = limits.find(l => l.name === 'iot-devices' && l.license?.id === license?.id)?.value
+  const totals = deviceUserTotal(form.quantity, selectedPlan)
 
   const setQuantity = (value: string | number) => {
     let quantity = Math.max(Math.min(+value, 9999), 0)
@@ -66,7 +67,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
         hideIcon
         disabled={purchasing}
         loading={purchasing}
-        label="Licenses"
+        label="Licensing"
         warning="This will change your billing."
         value={form.quantity}
         displayValue={
@@ -92,9 +93,11 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
             &nbsp; &nbsp; &nbsp;
             {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
             &nbsp;/&nbsp;
-            {selectedPrice?.interval?.toLowerCase()} &nbsp;
+            {selectedPrice?.interval?.toLowerCase()} &nbsp; &nbsp;
+            <Icon name="user" size="sm" type="solid" color="gray" fixedWidth inlineLeft inline />
+            {totals?.users} users
             <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
-            {devicesTotal(form.quantity, selectedPlan?.id)} devices
+            {totals?.devices} devices
           </>
         )}
       </InlineSetting>

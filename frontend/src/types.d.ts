@@ -81,8 +81,10 @@ declare global {
   }
   type ILimit = {
     name: string
+    base: number
     value: any
     actual: any
+    scale: number
     license: { id: string } | null
   }
 
@@ -133,6 +135,7 @@ declare global {
       description: string
     }
     prices?: IPrice[]
+    limits?: Omit<ILimit, 'base' | 'actual' | 'license'>[]
   }
 
   type IPrice = {
