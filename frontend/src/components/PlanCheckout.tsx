@@ -117,7 +117,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           <Typography variant="h3">Users</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3" display="flex" alignItems="center" color="grayDarker.main">
-              {totals?.users}
+              {totals.users}
               <Icon name="user" size="base" type="solid" color="gray" fixedWidth inline />
             </Typography>
           </ListItemSecondaryAction>
@@ -126,7 +126,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           <Typography variant="h3">Devices</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3" display="flex" color="grayDarker.main">
-              {totals?.devices}
+              {totals.devices}
               <Icon name="unknown" size="lg" platformIcon inline />
             </Typography>
           </ListItemSecondaryAction>

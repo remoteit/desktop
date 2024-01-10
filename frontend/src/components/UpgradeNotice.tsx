@@ -3,24 +3,31 @@ import { Route, Link } from 'react-router-dom'
 import { Notice } from './Notice'
 import { Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { selectPlan, selectRemoteitLicense } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { deviceUserTotal } from '../models/plans'
 import { getOwnDevices } from '../selectors/devices'
-import { selectRemoteitLicense } from '../selectors/organizations'
-import { PERSONAL_PLAN_ID } from '../models/plans'
+import { Pre } from './Pre'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
 export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
-  const { license, ownDevices, visible } = useSelector((state: ApplicationState) => ({
+  const { plan, license, ownDevices, visible } = useSelector((state: ApplicationState) => ({
+    plan: selectPlan(state),
     license: selectRemoteitLicense(state),
     ownDevices: getOwnDevices(state).filter(d => d.owner.id === state.user.id),
     visible: !state.ui.updateNoticeCleared || state.ui.updateNoticeCleared < Date.now() - oneWeek,
   }))
+  const totals = deviceUserTotal(license?.quantity || 1, plan)
+  const overLimit = ownDevices.length > totals.devices
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
-  if (!visible || !license || license.plan.id !== PERSONAL_PLAN_ID || !ownDevices.length) return null
+  if (!visible || !plan || !overLimit) return null
+
+  let message = 'A license is required for commercial use. Personal use is free for up to 5 devices.'
+  if (overLimit) message = `You have ${ownDevices.length} devices, but your plan only allows ${totals.devices}.`
 
   return (
     <Route path={['/devices', '/connections', '/networks']}>
@@ -31,12 +38,12 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
         button={
           <Link to="/account/plans">
             <Button variant="contained" color="warning" size="small">
-              Subscribe
+              Upgrade
             </Button>
           </Link>
         }
       >
-        A license is required for commercial use. Personal use is free for up to 5 devices.
+        {message}
       </Notice>
     </Route>
   )

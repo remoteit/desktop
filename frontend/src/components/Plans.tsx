@@ -8,9 +8,8 @@ import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectRemoteitLicense, selectLimits } from '../selectors/organizations'
+import { selectPlan, selectRemoteitPlans, selectRemoteitLicense } from '../selectors/organizations'
 import {
-  REMOTEIT_PRODUCT_ID,
   PERSONAL_PLAN_ID,
   PROFESSIONAL_PLAN_ID,
   BUSINESS_PLAN_ID,
@@ -96,14 +95,14 @@ export const Plans: React.FC = () => {
   const css = useStyles({ small })
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const { initialized, accountId, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
+  const { initialized, accountId, plan, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
     initialized: state.organization.initialized,
     accountId: state.user.id,
-    plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
+    plan: selectPlan(state),
+    plans: selectRemoteitPlans(state),
     purchasing: state.plans.purchasing,
     license: selectRemoteitLicense(state, state.user.id),
   }))
-  const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
   function getDefaults(): IPurchase {
     const price = plan.prices?.find(p => p.id === license?.subscription?.price?.id) || plan.prices?.[0]
     return {
@@ -162,7 +161,7 @@ export const Plans: React.FC = () => {
                 currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
                 ` / ${license?.subscription?.price.interval?.toLowerCase()}`
               caption = `${license.quantity} license${(license.quantity || 0) > 1 ? 's' : ''}`
-              note = `${totals?.users} users + ${totals?.devices} devices`
+              note = `${totals.users} users + ${totals.devices} devices`
             }
             const result = plan.prices?.find(p => p.id === form.priceId)
             const priceId = result?.id || (plan.prices && plan.prices[0].id)
