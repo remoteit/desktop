@@ -346,7 +346,7 @@ export function humanizeDays(value?: string) {
 }
 
 export function deviceUserTotal(quantity: number, plan?: IPlan) {
-  const defaults = { devices: 5, users: 1 }
+  const defaults = { devices: null, users: null }
   if (!plan) return defaults
   const users = plan.limits?.find(l => l.name === 'org-users')
   const devices = plan.limits?.find(l => l.name === 'iot-devices')

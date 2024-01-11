@@ -12,7 +12,7 @@ import { Pre } from './Pre'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
-export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
+export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () => {
   const { plan, license, ownDevices, visible } = useSelector((state: ApplicationState) => ({
     plan: selectPlan(state),
     license: selectRemoteitLicense(state),
@@ -30,7 +30,7 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
   if (overLimit) message = `You have ${ownDevices.length} devices, but your plan only allows ${totals.devices}.`
 
   return (
-    <Route path={['/devices', '/connections', '/networks']}>
+    <Route path="/devices">
       <Notice
         className={css.notice}
         severity="warning"

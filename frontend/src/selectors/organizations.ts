@@ -36,7 +36,7 @@ export const selectRemoteitLicense = createSelector(
 )
 
 export const selectPlan = createSelector([selectRemoteitPlans, selectRemoteitLicense], (plans, license) => {
-  return plans.find(plan => plan.id === license?.plan?.id) || plans[0]
+  return plans.find(plan => plan.id === license?.plan?.id)
 })
 
 export const selectLimits = createSelector(

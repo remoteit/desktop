@@ -49,7 +49,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
     setForm({ ...form, quantity })
   }
 
-  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
+  if (!plan || license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   if (license?.custom)
     return (
