@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { updateConnection } from '../helpers/connectionHelper'
-import { FontSize, Color } from '../styling'
+import { Sizes, Color } from '../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../components/PromptModal'
 import { IconButton, ButtonProps } from './IconButton'
@@ -14,7 +14,7 @@ export type CopyButtonProps = ButtonProps & {
   title?: string
   value?: string | number
   color?: Color
-  size?: FontSize
+  size?: Sizes
   type?: IconType
   onMouseEnter?: () => void
   onMouseLeave?: () => void

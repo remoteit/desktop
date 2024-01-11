@@ -16,6 +16,12 @@ input {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
+}
+
 code,
 pre {
   font-family: 'Roboto Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;

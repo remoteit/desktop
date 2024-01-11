@@ -1,13 +1,13 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { spacing, Spacing } from '../styling'
+import { spacing, Sizes } from '../styling'
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
-  inset?: Spacing | 'icon' | null
-  size?: Spacing | null
-  bottom?: Spacing | null
-  top?: Spacing | null
+  inset?: Sizes | 'icon' | null
+  size?: Sizes | null
+  bottom?: Sizes | null
+  top?: Sizes | null
   center?: boolean
   className?: string
   children?: React.ReactNode

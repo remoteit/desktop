@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Badge } from '@mui/material'
 import { PlatformIcon } from './PlatformIcon'
-import { fontSizes, spacing, Color, FontSize } from '../styling'
+import { fontSizes, spacing, Color, Sizes } from '../styling'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { library, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
@@ -24,7 +24,7 @@ export interface IconProps {
   fixedWidth?: boolean
   fontSize?: number
   onClick?: (event: React.MouseEvent) => void
-  size?: FontSize
+  size?: Sizes
   rotate?: number
   spin?: boolean
   scale?: number
@@ -130,11 +130,11 @@ const useStyles = makeStyles(({ palette }) => ({
   icon: ({ color, inline, inlineLeft, size, fontSize, scale }: IconProps) => {
     const styles: any = { objectFit: 'contain' }
     if (color) styles.color = palette[color] ? palette[color].main : color
-    if (inline) styles.marginLeft = size ? fontSizes[size] / 1.5 : spacing.md
-    if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 1.5 : spacing.md
+    if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
+    if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) styles.fontSize = styles.height = fontSizes[size]
     if (fontSize) styles.fontSize = styles.height = fontSize
-    if (styles.fontSize) styles.maxWidth = styles.fontSize + spacing.sm
+    if (styles.fontSize) styles.maxWidth = `calc(${styles.fontSize} + ${fontSizes.sm})`
     if (scale) styles.height *= scale
     return styles
   },

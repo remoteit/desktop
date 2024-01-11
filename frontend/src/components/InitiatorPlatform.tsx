@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip } from '@mui/material'
-import { Color, FontSize } from '../styling'
+import { Color, Sizes } from '../styling'
 import { Icon } from './Icon'
 
 export const INITIATOR_PLATFORMS = [
@@ -96,7 +96,7 @@ export const InitiatorPlatform: React.FC<
   }
 > = ({ id, connected, user, thisDevice, className }) => {
   let color: Color | undefined = connected ? 'primary' : undefined
-  const size: FontSize = 'md'
+  const size: Sizes = 'md'
   const [name, type] = initiatorPlatformIcon({ id, user, thisDevice })
 
   return connected && id ? (

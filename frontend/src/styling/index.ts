@@ -1,18 +1,33 @@
-export type FontSize = 'bug' | 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
+export type Sizes = 'bug' | 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
 
-export const fontSizes: { [key in FontSize]: number } = {
-  bug: 7,
-  xxxs: 8,
-  xxs: 10,
-  xs: 11,
-  sm: 12,
-  base: 14,
-  md: 16,
-  lg: 19,
-  xl: 24,
-  xxl: 36,
-  xxxl: 48,
-  max: 64,
+export const fontSizes: { [key in Sizes]: string } = {
+  bug: '0.4375rem', // 7px
+  xxxs: '0.5rem', // 8px
+  xxs: '0.625rem', // 10px
+  xs: '0.6875rem', // 11px
+  sm: '0.75rem', // 12px
+  base: '0.875rem', // 14px
+  md: '1rem', // 16px
+  lg: '1.1875rem', // 19px
+  xl: '1.5rem', // 24px
+  xxl: '2.25rem', // 36px
+  xxxl: '3rem', // 48px
+  max: '4rem', // 64px
+}
+
+export const spacing: { [key in Sizes]: number } = {
+  bug: 1, // 7px
+  xxxs: 2, // 8px
+  xxs: 3, // 10px
+  xs: 6, // 11px
+  sm: 12, // 12px
+  base: 14, // 14px
+  md: 18, // 16px
+  lg: 24, // 19px
+  xl: 36, // 24px
+  xxl: 48, // 36px
+  xxxl: 64, // 48px
+  max: 96, // 64px
 }
 
 export type Color =
@@ -114,18 +129,6 @@ export const darkColors: { [key in Color]: string } = {
   rpi: '#C51A4A',
   guide: '#ebe985',
   test: '#2B2926',
-}
-
-export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
-
-export const spacing: { [key in Spacing]: number } = {
-  xxs: 3,
-  xs: 6,
-  sm: 12,
-  md: 18,
-  lg: 24,
-  xl: 36,
-  xxl: 48,
 }
 
 export const radius: number = 8

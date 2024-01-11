@@ -568,7 +568,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginBottom: spacing.sm,
           },
           h5: {
-            fontSize: fontSizes.sm * 0.75, // inputLabel shrink
+            fontSize: fontSizes.xxs, //'0.5625rem', // inputLabel shrink (12px * 0.75 || 9px)
             letterSpacing: 0.5,
             fontWeight: 500,
             textTransform: 'uppercase',
