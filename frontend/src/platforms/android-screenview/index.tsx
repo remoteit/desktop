@@ -1,8 +1,8 @@
 import React from 'react'
 import { platforms } from '..'
 
-const Component = ({ darkMode, ...props }) => {
-  const color = '#1699D6'
+const Component = ({ darkMode, currentColor, ...props }) => {
+  const color = currentColor ? 'currentColor' : '#1699D6'
   return (
     <svg viewBox="0 0 207 154" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path

@@ -7,6 +7,7 @@ type Props = {
   name?: string
   platform?: number
   className?: string
+  currentColor?: boolean
 }
 
 export const PlatformIcon: React.FC<Props> = ({ name, platform, ...originalProps }) => {

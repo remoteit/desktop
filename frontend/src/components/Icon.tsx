@@ -71,7 +71,9 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 
     // Platform icons
     if (props.platform || platformIcon)
-      return <PlatformIcon {...props} className={classnames(props.className, css.icon)} name={name} />
+      return (
+        <PlatformIcon {...props} className={classnames(props.className, css.icon)} name={name} currentColor={!!color} />
+      )
 
     // No icon
     if (!name) return null
@@ -132,9 +134,14 @@ const useStyles = makeStyles(({ palette }) => ({
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
-    if (size) styles.fontSize = styles.height = fontSizes[size]
-    if (fontSize) styles.fontSize = styles.height = fontSize
-    if (styles.fontSize) styles.maxWidth = `calc(${styles.fontSize} + ${fontSizes.sm})`
+    if (size) {
+      styles.fontSize = styles.height = fontSizes[size]
+      styles.maxWidth = `calc(${fontSizes[size]} + ${fontSizes.sm})`
+    }
+    if (fontSize) {
+      styles.fontSize = styles.height = fontSize
+      styles.maxWidth = fontSize + spacing.sm
+    }
     if (scale) styles.height *= scale
     return styles
   },

@@ -21,7 +21,10 @@ platforms.register({
   name: 'Android',
   component: Component,
   types: { 1213: 'Android Phone' },
+  services: [{ application: 48 }],
   installation: {
+    download: true,
+    command: '[CODE]',
     qualifier: 'To register an Android phone or tablet',
     instructions:
       'Install the screen view app from the Google Play Store to share your screen or any other local or network services.',

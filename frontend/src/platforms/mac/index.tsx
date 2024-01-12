@@ -21,6 +21,6 @@ platforms.register({
     instructions: 'Install the Desktop or CLI on the Mac to you want to enable remote access to.',
     qualifier: 'Macintosh installation',
     link: 'https://link.remote.it/download/desktop',
-    altLink: browser.isMac ? '/devices/setup' : undefined,
+    altLink: browser.isMac && browser.isElectron ? '/devices/setup' : undefined,
   },
 })

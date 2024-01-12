@@ -6,8 +6,10 @@ export interface IPlatform {
   component: (props: any) => React.ReactElement
   types?: INumberLookup<string>
   services?: IServiceRegistration[]
+  hasScreenView?: boolean
   installation?: {
     label?: string
+    download?: boolean
     command?: boolean | string
     instructions?: string | React.ReactNode
     qualifier: string
@@ -60,6 +62,7 @@ class Platforms {
 
   register(platform: IPlatform) {
     platform.types = platform.types || {}
+    platform.hasScreenView = platform.services?.some(s => s.application === 48)
     this.platforms[platform.id] = platform
     Object.keys(platform.types).forEach(type => {
       if (platform.hidden) return

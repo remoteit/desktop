@@ -3,7 +3,17 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
-import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
+import {
+  Stack,
+  List,
+  ListItem,
+  ListSubheader,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Tooltip,
+  Divider,
+} from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -95,10 +105,10 @@ export const AddPage: React.FC = () => {
             'raspberrypi',
             'linux',
             'docker',
+            'android',
             'nas',
             'openwrt',
             'firewalla',
-            'android',
             'tinkerboard',
             'ubiquiti',
             'nvidia',
@@ -110,7 +120,18 @@ export const AddPage: React.FC = () => {
             'mac',
           ].map(p => {
             const platform = platforms.get(p)
-            const platformIcon = (
+            const platformIcon = platform.hasScreenView ? (
+              <>
+                &nbsp;&nbsp;
+                <Tooltip title="Remote.It ScreenView Enabled" placement="top" arrow>
+                  <span>
+                    <Icon name="android-screenview" color="black" size="sm" platformIcon />
+                  </span>
+                </Tooltip>
+              </>
+            ) : null
+
+            return (
               <ListItemLocation
                 key={p}
                 iconPlatform
@@ -118,12 +139,16 @@ export const AddPage: React.FC = () => {
                 className={css.smallItem}
                 icon={platform.id}
                 to={`/add/${platform.id}`}
-                title={platform.name}
+                title={
+                  <>
+                    {platform.name}
+                    {platformIcon}
+                  </>
+                }
                 subtitle={platform.subtitle}
                 disableGutters
               />
             )
-            return platformIcon
           })}
         </List>
       </Stack>
