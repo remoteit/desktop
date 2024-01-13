@@ -30,32 +30,30 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
-    <>
-      <Gutters size="md" bottom={null}>
-        <ListItemBack title="Service configuration" />
-        <ServiceForm
-          service={service}
-          thisDevice={thisDevice}
-          editable={!!device?.configurable || thisDevice}
-          disabled={!device?.permissions.includes('MANAGE')}
-          onCancel={exit}
-          onSubmit={async form => {
-            dispatch.ui.set({ setupServiceBusy: form.id })
-            if (device?.permissions.includes('MANAGE')) {
-              const updatedService = structuredClone(service)
-              updatedService.attributes = { ...service.attributes, ...form.attributes }
-              await dispatch.devices.setServiceAttributes(updatedService)
-              if (device.configurable) {
-                await dispatch.devices.cloudUpdateService({ form, deviceId: device.id })
-              } else {
-                await dispatch.devices.rename({ id: service.id, name: form.name })
-                await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
-              }
+    <Gutters size="md" bottom={null}>
+      <ListItemBack title="Service configuration" />
+      <ServiceForm
+        service={service}
+        thisDevice={thisDevice}
+        editable={!!device?.configurable || thisDevice}
+        disabled={!device?.permissions.includes('MANAGE')}
+        onCancel={exit}
+        onSubmit={async form => {
+          dispatch.ui.set({ setupServiceBusy: form.id })
+          if (device?.permissions.includes('MANAGE')) {
+            const updatedService = structuredClone(service)
+            updatedService.attributes = { ...service.attributes, ...form.attributes }
+            await dispatch.devices.setServiceAttributes(updatedService)
+            if (device.configurable) {
+              await dispatch.devices.cloudUpdateService({ form, deviceId: device.id })
+            } else {
+              await dispatch.devices.rename({ id: service.id, name: form.name })
+              await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
             }
-            dispatch.ui.set({ setupServiceBusy: undefined })
-          }}
-        />
-      </Gutters>
-    </>
+          }
+          dispatch.ui.set({ setupServiceBusy: undefined })
+        }}
+      />
+    </Gutters>
   )
 }

@@ -196,6 +196,35 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiTabs: {
+        styleOverrides: {
+          root: {
+            minHeight: 0,
+          },
+          scrollButtons: {
+            color: palette.grayDark.main,
+            '&.Mui-disabled': { opacity: 0.2 },
+          },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            borderRadius: radius,
+            minWidth: 0,
+            minHeight: 0,
+            textTransform: 'initial',
+            fontSize: fontSizes.xs,
+            padding: `${spacing.xs}px ${spacing.sm}px`,
+            color: palette.gray.main,
+            '&:hover': { backgroundColor: palette.grayLighter.main },
+            '&.Mui-selected': {
+              backgroundColor: palette.primaryHighlight.main,
+              fontWeight: 500,
+            },
+          },
+        },
+      },
       MuiSnackbarContent: {
         styleOverrides: {
           root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },

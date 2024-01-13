@@ -6,12 +6,12 @@ import { getConnectionsLookup } from '../../selectors/connections'
 import { masterAttributes, restoreAttributes } from '../../components/Attributes'
 import { getVisibleDevices, getDeviceModel, selectMasterAttributes } from '../../selectors/devices'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
-import { DeviceActionsBar } from '../../components/DeviceActionsBar'
 import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { DevicesHeader } from '../../components/DevicesHeader'
+import { DevicesDrawers } from '../../components/DevicesDrawers'
 import { DeviceListMemo } from '../../components/DeviceList'
+import { DevicesHeader } from '../../components/DevicesHeader'
 
 type Props = { restore?: boolean; select?: boolean }
 
@@ -44,13 +44,13 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   }, [initialized])
 
   return (
-    <DevicesHeader>
-      {(fetching || shouldRedirect) && !devices.length ? (
-        <LoadingMessage message="Loading..." spinner={false} />
-      ) : !devices.length ? (
-        <DeviceListEmpty />
-      ) : (
-        <DeviceActionsBar selected={selected} select={select} devices={devices}>
+    <DevicesDrawers>
+      <DevicesHeader selected={selected} select={select} devices={devices}>
+        {(fetching || shouldRedirect) && !devices.length ? (
+          <LoadingMessage message="Loading..." spinner={false} />
+        ) : !devices.length ? (
+          <DeviceListEmpty />
+        ) : (
           <DeviceListMemo
             devices={devices}
             connections={connections}
@@ -62,9 +62,9 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
             select={select}
             selected={selected}
           />
-        </DeviceActionsBar>
-      )}
+        )}
+      </DevicesHeader>
       <DialogNewFeatures />
-    </DevicesHeader>
+    </DevicesDrawers>
   )
 }

@@ -31,7 +31,7 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 
-const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
+const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'applicationType', 'sortServiceOption']
 
 type IDeviceState = {
   all: IDevice[]
@@ -46,9 +46,10 @@ type IDeviceState = {
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
-  tag: ITagFilter | undefined
+  tag?: ITagFilter
   owner: 'all' | 'me' | 'others'
-  platform: number[] | undefined
+  platform?: number[]
+  applicationType?: number
   size: number
   from: number
   eventsUrl: string
@@ -72,6 +73,7 @@ export const defaultState: IDeviceState = {
   tag: undefined,
   owner: 'all',
   platform: undefined,
+  applicationType: undefined,
   size: 50,
   from: 0,
   eventsUrl: '',
@@ -122,6 +124,7 @@ export default createModel<RootModel>()({
         sort: deviceModel.sort,
         platform: deviceModel.platform,
         timeSeries: state.ui.deviceTimeSeries,
+        applicationType: deviceModel.applicationType,
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
       }
@@ -144,7 +147,10 @@ export default createModel<RootModel>()({
 
     async fetchIfEmpty(_: void, state) {
       const deviceModel = getDeviceModel(state)
-      if (!deviceModel.initialized) await dispatch.devices.fetchList()
+      if (!deviceModel.initialized) {
+        await dispatch.devices.fetchList()
+        await dispatch.applicationTypes.fetch()
+      }
     },
 
     async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
@@ -428,6 +434,7 @@ export default createModel<RootModel>()({
         if (device?.id) {
           // fixme should fetch single and in memory sort
           await dispatch.devices.fetchList() // fetch all so that the sorting is correct
+          await dispatch.applicationTypes.fetch()
           dispatch.ui.set({
             redirect: redirect ? `/devices/${device.id}` : undefined,
             successMessage: `'${device.name}' was successfully registered!`,

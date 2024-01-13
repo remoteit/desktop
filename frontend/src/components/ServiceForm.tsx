@@ -327,7 +327,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           />
         </List>
       </AccordionMenuItem>
-      <Gutters size={adding ? undefined : null} top="lg">
+      <Gutters size="xxs" top="lg">
         <Button
           type="submit"
           variant="contained"

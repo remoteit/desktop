@@ -38,6 +38,7 @@ class CloudSync {
       dispatch.tags.fetch,
       dispatch.plans.fetch,
       dispatch.announcements.fetch,
+      dispatch.applicationTypes.fetch,
     ])
   }
 

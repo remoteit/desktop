@@ -24,6 +24,7 @@ export const getConnections = (state: ApplicationState) => state.connections.all
 export const optionalService = (_: ApplicationState, service?: IService) => service
 
 export const getConnectionDefaults = (state: ApplicationState) => state.user.attributes?.connectionDefaults || {}
+export const getApplicationTypes = (state: ApplicationState) => state.applicationTypes
 export const getApplicationParams = (_: ApplicationState, service?: IService, connection?: IConnection) => ({
   service,
   connection,

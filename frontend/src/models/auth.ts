@@ -221,11 +221,11 @@ export default createModel<RootModel>()({
       await dispatch.connections.init()
       await dispatch.networks.init()
       await dispatch.devices.init()
+      await dispatch.applicationTypes.init()
       await cloudSync.init()
 
       await cloudSync.all()
       await dispatch.contacts.fetch()
-      await dispatch.applicationTypes.fetch()
 
       dispatch.ui.set({ fetching: false })
     },

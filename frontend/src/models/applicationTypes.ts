@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { ApplicationState } from '../store'
 import { RootModel } from '.'
 
@@ -12,26 +13,46 @@ const state: IApplicationTypeState = {
   all: [],
 }
 
+const APPLICATION_TYPES_QUERY = `
+  applicationTypes {
+    name
+    id
+    port
+    proxy
+    scheme
+    protocol
+    description
+  }
+`
+
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetch() {
+    async init() {
       const result = await graphQLBasicRequest(
-        ` query ApplicationTypes {
-            applicationTypes {
-              name
-              id
-              port
-              proxy
-              scheme
-              protocol
-              description
-            }
+        ` query ApplicationTypesAll {
+            ${APPLICATION_TYPES_QUERY}
           }`
       )
       if (result === 'ERROR') return
       const all = result?.data?.data?.applicationTypes
       dispatch.applicationTypes.set({ all })
+    },
+    async fetch(_: void, state) {
+      const accountId = selectActiveAccountId(state)
+      const result = await graphQLBasicRequest(
+        ` query ApplicationTypes($accountId: String) {
+            login {
+              account(id: $accountId) {
+                ${APPLICATION_TYPES_QUERY}
+              }
+            }
+          }`,
+        { accountId }
+      )
+      if (result === 'ERROR') return
+      const applicationTypes = result?.data?.data?.login?.account?.applicationTypes
+      dispatch.applicationTypes.set({ [accountId]: applicationTypes })
     },
   }),
   reducers: {

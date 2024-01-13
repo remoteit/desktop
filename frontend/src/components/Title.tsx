@@ -1,20 +1,18 @@
 import React from 'react'
-import { Box } from '@mui/material'
+import { Box, BoxProps } from '@mui/material'
 import { spacing } from '../styling'
 
-interface TitleProps {
+interface TitleProps extends BoxProps {
   inline?: boolean
   enabled?: boolean
   offline?: boolean
-  className?: string
-  children?: React.ReactNode
 }
 
-export function Title({ children, inline, enabled, offline, className }: TitleProps) {
+export function Title({ children, inline, enabled, offline, ...props }: TitleProps) {
   return (
     <Box
+      {...props}
       component="span"
-      className={className}
       sx={{
         display: 'block',
         flexGrow: 1,
@@ -29,6 +27,7 @@ export function Title({ children, inline, enabled, offline, className }: TitlePr
           marginRight: `${spacing.xxs}px`,
           color: enabled ? 'primary.main' : 'grayDark.main',
         },
+        ...props.sx,
       }}
     >
       {children}

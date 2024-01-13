@@ -660,6 +660,7 @@ declare global {
     owner?: boolean
     sort?: string
     name?: string
+    applicationType?: number
     platform?: number[]
     timeSeries?: ITimeSeriesOptions
   }

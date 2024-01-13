@@ -32,6 +32,7 @@ export interface IconProps {
   inline?: boolean
   inlineLeft?: boolean
   modified?: boolean
+  currentColor?: boolean
 }
 
 export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
@@ -71,9 +72,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 
     // Platform icons
     if (props.platform || platformIcon)
-      return (
-        <PlatformIcon {...props} className={classnames(props.className, css.icon)} name={name} currentColor={!!color} />
-      )
+      return <PlatformIcon {...props} className={classnames(props.className, css.icon)} name={name} />
 
     // No icon
     if (!name) return null

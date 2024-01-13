@@ -45,6 +45,8 @@ export const FeedbackPage: React.FC<{}> = () => {
           value={subject}
           onChange={e => setSubject(e.target.value)}
         />
+      </Gutters>
+      <Gutters>
         <TextField
           multiline
           fullWidth

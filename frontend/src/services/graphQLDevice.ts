@@ -157,13 +157,13 @@ const SERVICE_TIME_SERIES_PARAMS =
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   const selectedColumns = store.getState().ui.columns
   return await graphQLRequest(
-    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $platform: [Int!]${
+    ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: Int, $platform: [Int!]${
       selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
     }) {
         login {
           id
           account(id: $accountId) {
-            devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
+            devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform) {
               total
               items {
                 ${deviceQueryColumns(selectedColumns)}
@@ -179,6 +179,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       state: params.state,
       sort: params.sort,
       owner: params.owner,
+      application: params.applicationType,
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
