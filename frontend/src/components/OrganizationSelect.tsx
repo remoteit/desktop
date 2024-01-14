@@ -21,7 +21,7 @@ export const OrganizationSelect: React.FC = () => {
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
+  let { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
     defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => {
@@ -41,8 +41,14 @@ export const OrganizationSelect: React.FC = () => {
   }))
 
   const ownOrgId = ownOrg?.id
+  let menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
+
+  if (menu === '/account') {
+    activeOrg = ownOrg
+    menu = '/devices'
+  }
+
   const onSelect = async (id: string) => {
-    const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
     id = id || userId
     await logs.reset()
     await accounts.setActive(id.toString())
