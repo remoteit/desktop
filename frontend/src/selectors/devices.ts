@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 import { ApplicationState } from '../store'
 import { selectActiveAccountId } from './accounts'
 import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
-import { masterAttributes, deviceAttributes, DeviceAttribute } from '../components/Attributes'
+import { masterAttributes, deviceAttributes, DeviceAttribute, serviceAttributes } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 
@@ -62,8 +62,14 @@ export const selectById = createSelector([getDevices, getAllDevices, optionalId]
   return result[0] || result[1] ? result : findById(allDevices, id)
 })
 
-export const selectMasterAttributes = createSelector([selectLimitsLookup, getColumns], (limitsLookup, columns) =>
+export const selectDeviceListAttributes = createSelector([selectLimitsLookup, getColumns], (limitsLookup, columns) =>
   masterAttributes.concat(deviceAttributes).filter(a => a.show(limitsLookup) && columns.includes(a.id) && !a.required)
+)
+
+export const selectServiceListAttributes = createSelector([selectLimitsLookup, getColumns], (limitsLookup, columns) =>
+  masterAttributes
+    .concat(serviceAttributes)
+    .filter(a => a.show(limitsLookup) /* && columns.includes(a.id) && !a.required */)
 )
 
 export const selectDevice = createSelector(

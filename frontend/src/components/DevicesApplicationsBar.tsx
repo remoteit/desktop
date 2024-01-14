@@ -44,7 +44,7 @@ const MasterTab = (props: TabProps) => (
     <Divider
       orientation="vertical"
       sx={{
-        height: '1.5em',
+        height: '1.3em',
         alignSelf: 'center',
         bgcolor: 'grayLight.main',
         marginRight: 1.5,

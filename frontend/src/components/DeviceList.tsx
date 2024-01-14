@@ -2,14 +2,16 @@
 import React from 'react'
 import browser from '../services/Browser'
 import classnames from 'classnames'
+import { selectDeviceListAttributes } from '../selectors/devices'
+import { masterAttributes, restoreAttributes } from './Attributes'
 import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { ServiceContextualMenu } from './ServiceContextualMenu'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
-import { Box, List, Typography, useMediaQuery } from '@mui/material'
+import { List, Typography, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
@@ -19,8 +21,6 @@ import { spacing, fontSizes } from '../styling'
 
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
-  attributes: Attribute[]
-  required: Attribute
   columnWidths: ILookup<number>
   fetching?: boolean
   devices?: IDevice[]
@@ -32,17 +32,20 @@ export interface DeviceListProps {
 export const DeviceList: React.FC<DeviceListProps> = ({
   devices = [],
   connections = {},
-  attributes,
   columnWidths,
   fetching,
-  required,
   restore,
   select,
   selected = [],
 }) => {
+  const { attributes, required } = useSelector((state: ApplicationState) => ({
+    attributes: restore ? restoreAttributes : selectDeviceListAttributes(state),
+    required: masterAttributes.find(a => a.required) || masterAttributes[0],
+  }))
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ attributes, required, columnWidths, mobile })
+
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
@@ -108,8 +111,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     </>
   )
 }
-
-export const DeviceListMemo = React.memo(DeviceList /* , createMemoDebugger('DeviceList') */)
 
 type StyleProps = {
   attributes: Attribute[]
