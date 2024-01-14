@@ -3,7 +3,7 @@ import { Notice, NoticeProps } from './Notice'
 import { Link } from './Link'
 
 export const NoticeCustomPlan: React.FC<NoticeProps> = props => (
-  <Notice severity="warning" {...props}>
+  <Notice severity="info" {...props}>
     Your plan has a custom license
     <em>
       Please contact

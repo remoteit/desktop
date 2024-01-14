@@ -3,31 +3,27 @@ import { Route, Link } from 'react-router-dom'
 import { Notice } from './Notice'
 import { Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { selectPlan, selectRemoteitLicense } from '../selectors/organizations'
+import { selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { deviceUserTotal } from '../models/plans'
-import { getOwnDevices } from '../selectors/devices'
 import { Pre } from './Pre'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
 export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () => {
-  const { plan, license, ownDevices, visible } = useSelector((state: ApplicationState) => ({
-    plan: selectPlan(state),
-    license: selectRemoteitLicense(state),
-    ownDevices: getOwnDevices(state).filter(d => d.owner.id === state.user.id),
+  const { limits, visible } = useSelector((state: ApplicationState) => ({
+    limits: selectLimits(state),
     visible: !state.ui.updateNoticeCleared || state.ui.updateNoticeCleared < Date.now() - oneWeek,
   }))
-  const totals = deviceUserTotal(license?.quantity || 1, plan)
-  const overLimit = ownDevices.length > totals.devices
+  const limit = limits.find(l => l.name === 'iot-devices')
+  const overLimit = limit && limit.actual > limit.value
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
-  if (!visible || !plan || !overLimit) return null
+  if (!visible || !limit || !overLimit) return null
 
   let message = 'A license is required for commercial use. Personal use is free for up to 5 devices.'
-  if (overLimit) message = `You have ${ownDevices.length} devices, but your plan only allows ${totals.devices}.`
+  if (overLimit) message = `You have ${limit.actual} devices, but your plan only allows ${limit.value}.`
 
   return (
     <Route path="/devices">

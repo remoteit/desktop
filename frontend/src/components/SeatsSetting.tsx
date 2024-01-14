@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import browser from '../services/Browser'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
-import { List, ListItem, Stack } from '@mui/material'
+import { Box, List, ListItem, Stack } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectRemoteitLicense, selectPlan } from '../selectors/organizations'
+import { selectRemoteitLicense, selectPlan, selectLimits } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
@@ -16,8 +16,9 @@ import { Icon } from './Icon'
 
 export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ context }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { accountId, license, plan, purchasing } = useSelector((state: ApplicationState) => ({
+  const { accountId, license, limits, plan, purchasing } = useSelector((state: ApplicationState) => ({
     accountId: selectActiveAccountId(state),
+    limits: selectLimits(state),
     license: selectRemoteitLicense(state) || null,
     plan: selectPlan(state),
     purchasing: !!state.plans.purchasing,
@@ -51,23 +52,24 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
 
   if (!plan || license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
-  if (license?.custom)
-    return (
-      <List>
-        <ListItem>
-          <NoticeCustomPlan />
-        </ListItem>
-      </List>
-    )
-
   const display = (
     <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
-      {totals.users}
+      {limits.find(l => l.name === 'org-users')?.value}
       <Icon name="user" size="xxs" type="solid" color="gray" />
-      {totals.devices}
+      {limits.find(l => l.name === 'iot-devices')?.value}
       <Icon name="unknown" size="sm" platformIcon />
     </Stack>
   )
+
+  if (license?.custom)
+    return (
+      <>
+        <Gutters>{display}</Gutters>
+        <Gutters size="sm">
+          <NoticeCustomPlan />
+        </Gutters>
+      </>
+    )
 
   if (displayOnly) return <Gutters>{display}</Gutters>
 
@@ -90,19 +92,21 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
         onCancel={() => setForm(getDefaults())}
         onShowEdit={() => setForm(getDefaults())}
       >
-        <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
-        {price?.amount && (
-          <>
-            &nbsp; &nbsp; &nbsp;
-            {currencyFormatter(price?.currency, (price?.amount || 0) * form.quantity)}
-            &nbsp;/&nbsp;
-            {price?.interval?.toLowerCase()} &nbsp; &nbsp;
-            <Icon name="user" size="sm" type="solid" color="gray" fixedWidth inlineLeft inline />
-            {totals.users} users
-            <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
-            {totals.devices} devices
-          </>
-        )}
+        <Stack flexDirection="row" flexWrap="wrap" alignItems="center">
+          <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
+          &nbsp; &nbsp; &nbsp;
+          {price?.amount && (
+            <Stack flexDirection="row" alignItems="center" minWidth={300} marginY={1}>
+              {currencyFormatter(price?.currency, (price?.amount || 0) * form.quantity)}
+              &nbsp;/&nbsp;
+              {price?.interval?.toLowerCase()} &nbsp; &nbsp;
+              <Icon name="user" size="sm" type="solid" color="gray" fixedWidth inlineLeft inline />
+              {totals.users} users
+              <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
+              {totals.devices} devices
+            </Stack>
+          )}
+        </Stack>
       </InlineSetting>
       {confirm && (
         <Confirm
