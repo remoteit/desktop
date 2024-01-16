@@ -60,7 +60,7 @@ export function SignIn({
   const [password, setPassword] = React.useState<string>('')
   const [error, setError] = React.useState<Error | null>(externalError)
   const [loading, setLoading] = React.useState<boolean>(false)
-  const [emailProcessed, setEmailProcessed] = React.useState<boolean>(false)
+  const [emailProcessed, setEmailProcessed] = React.useState<boolean>(rememberMe.emailProcessed)
   const [remember, setRemember] = React.useState<boolean>(rememberMe.checked)
   const passRef = React.useRef<HTMLInputElement>()
   const css = useStyles()
@@ -80,7 +80,7 @@ export function SignIn({
     if (!username || (!password && emailProcessed)) return alert('Please enter a username and password')
 
     setLoading(true)
-    rememberMe.set(remember ? username : '')
+    if (remember) rememberMe.set({ username, emailProcessed })
 
     if (emailProcessed) {
       try {
@@ -201,7 +201,10 @@ export function SignIn({
                   control={
                     <Checkbox
                       checked={remember}
-                      onChange={() => setRemember(!remember)}
+                      onChange={() => {
+                        setRemember(!remember)
+                        rememberMe.toggle({ username, emailProcessed })
+                      }}
                       checkedIcon={<Icon name="check-square" size="md" type="solid" />}
                       icon={<Icon name="square" size="md" type="light" color="grayDark" />}
                       color="primary"
