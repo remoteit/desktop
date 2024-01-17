@@ -9,7 +9,7 @@ type Props = { device?: IDevice; editable?: boolean; link: string }
 export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) => {
   const history = useHistory()
 
-  if (!device || device.state === 'inactive' || !editable) return null
+  if (!device || !editable) return null
 
   return (
     <GuideBubble
