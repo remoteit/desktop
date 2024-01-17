@@ -123,11 +123,6 @@ const defaultAccountState: IOrganizationAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init() {
-      await dispatch.organization.fetch()
-      dispatch.organization.set({ initialized: true })
-    },
-
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
       const accountQueries = ids.map(
@@ -236,7 +231,7 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const accounts = await dispatch.organization.parse({ result, ids })
-      if (accounts) await dispatch.organization.set({ accounts })
+      if (accounts) await dispatch.organization.set({ accounts, initialized: true })
       else await dispatch.organization.clearActive()
     },
 

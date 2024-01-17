@@ -6,7 +6,7 @@ import { selectNetworks } from '../selectors/networks'
 import { selectConnection } from '../selectors/connections'
 import { selectActiveAccountId, getActiveUser } from '../selectors/accounts'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
-import { selectById } from '../selectors/devices'
+import { selectById, selectDeviceColumns } from '../selectors/devices'
 import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
@@ -94,20 +94,19 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init(_: void, state) {
       dispatch.networks.set({ default: defaultNetwork(state) })
-      await dispatch.networks.fetch()
-      dispatch.networks.set({ initialized: true })
     },
 
     async fetch(_: void, state) {
       const accountId = selectActiveAccountId(state)
+      const columns = selectDeviceColumns(state)
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId, state.ui.deviceTimeSeries)
+      const response = await graphQLPreloadNetworks(accountId, columns, state.ui.deviceTimeSeries)
 
       if (response === 'ERROR') return
 
       const networks = await dispatch.networks.parse({ response, accountId })
       await dispatch.networks.setNetworks({ networks, accountId })
-      dispatch.networks.set({ loading: false })
+      dispatch.networks.set({ loading: false, initialized: true })
     },
 
     async fetchSingle({ network, redirect }: { network: INetwork; redirect?: string }, state) {

@@ -44,9 +44,7 @@ class CloudSync {
 
   async all() {
     await dispatch.devices.set({ from: 0 })
-
     await this.call([dispatch.devices.fetchList, dispatch.connections.fetch])
-
     await this.core()
   }
 }
