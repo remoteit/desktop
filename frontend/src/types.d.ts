@@ -24,6 +24,7 @@ declare global {
 
   interface IDeviceListContext {
     device?: IDevice
+    service?: IService
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]

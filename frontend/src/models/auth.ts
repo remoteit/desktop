@@ -210,20 +210,17 @@ export default createModel<RootModel>()({
         return
       }
 
-      window.clarity?.('set', 'user', state.auth.user?.email || 'unknown')
       zendesk.initChat(state.auth.user)
+      cloudController.init()
       cloudSync.init()
-      dispatch.ui.set({ fetching: true })
       dispatch.backend.init()
       dispatch.plans.init()
       dispatch.contacts.fetch()
       dispatch.applicationTypes.init()
-      await cloudController.init()
       await dispatch.accounts.init()
       await dispatch.connections.init()
       await dispatch.networks.init()
       await cloudSync.all()
-      dispatch.ui.set({ fetching: false })
     },
     async signedIn() {
       if (!browser.hasBackend) dispatch.auth.dataReady()

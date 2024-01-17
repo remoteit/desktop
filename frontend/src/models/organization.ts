@@ -231,6 +231,7 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const accounts = await dispatch.organization.parse({ result, ids })
+      console.log('ORGANIZATION FETCH', accounts)
       if (accounts) await dispatch.organization.set({ accounts, initialized: true })
       else await dispatch.organization.clearActive()
     },

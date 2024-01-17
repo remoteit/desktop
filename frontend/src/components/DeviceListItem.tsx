@@ -20,7 +20,7 @@ type Props = {
 }
 
 export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, mobile, onClick, onSelect }) => {
-  const { connections, device, attributes, required } = useContext(DeviceListContext)
+  const { connections, device, service, attributes, required } = useContext(DeviceListContext)
   const connection = connections && connections.find(c => c.enabled)
   const history = useHistory()
   const offline = device?.state === 'inactive'
@@ -31,7 +31,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   const handleClick = () => {
     onClick?.()
     if (select) onSelect?.(device.id)
-    else if (!restore) history.push(`/devices/${device.id}`)
+    else if (!restore) history.push(`/devices/${device.id}${service ? `/${service.id}/connect` : ''}`)
   }
 
   return (
@@ -56,7 +56,13 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
               </>
             )}
           </ListItemIcon>
-          <AttributeValueMemo device={device} attribute={required} connection={connection} connections={connections} />
+          <AttributeValueMemo
+            device={device}
+            service={service}
+            attribute={required}
+            connection={connection}
+            connections={connections}
+          />
         </Box>
       </Box>
       {!mobile &&
@@ -64,6 +70,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
           <Box key={attribute.id}>
             <AttributeValueMemo
               device={device}
+              service={service}
               attribute={attribute}
               connection={connection}
               connections={connections}

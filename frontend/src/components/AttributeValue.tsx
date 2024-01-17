@@ -5,11 +5,12 @@ import { Box } from '@mui/material'
 
 export const AttributeValue: React.FC<{
   device?: IDevice
+  service?: IService
   attribute?: Attribute
   connection?: IConnection
   connections?: IConnection[]
-}> = ({ device, attribute, connection, connections }) => {
-  const value = attribute?.value({ device, instance: device, connection, connections }) || ''
+}> = ({ device, service, attribute, connection, connections }) => {
+  const value = attribute?.value({ device, instance: device, service, connection, connections }) || ''
   return (
     <Box
       className={`attribute attribute-${attribute?.id}`}

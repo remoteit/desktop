@@ -139,7 +139,17 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'status', 'timeSeries', 'tags', 'services'],
+  columns: [
+    'deviceName',
+    'status',
+    'deviceTimeSeries',
+    'tags',
+    'services',
+    'serviceName',
+    'serviceTimeSeries',
+    'serviceHost',
+    'servicePort',
+  ],
   columnWidths: { tags: 120 },
   collapsed: ['recent'],
   limitsOverride: {},
@@ -197,12 +207,12 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init() {
+      console.log('UI INIT')
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()
-      console.log('UI INIT')
     },
     async restoreState(_: void, state) {
       let states: ILookup<any> = {}

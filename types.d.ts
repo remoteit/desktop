@@ -656,13 +656,15 @@ declare global {
     size: number
     from: number
     accountId: string
+    columns: string[]
     state?: string
     owner?: boolean
     sort?: string
     name?: string
     applicationType?: number
     platform?: number[]
-    timeSeries?: ITimeSeriesOptions
+    deviceTimeSeries?: ITimeSeriesOptions
+    serviceTimeSeries?: ITimeSeriesOptions
   }
 
   interface IAppValidation {

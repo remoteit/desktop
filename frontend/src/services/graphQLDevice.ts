@@ -1,3 +1,4 @@
+import { selectDeviceColumns } from '../selectors/devices'
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
 import { getTimeZone } from '../helpers/dateHelper'
@@ -101,6 +102,11 @@ const DeviceSelectLookup: ILookup<string> = {
     ${SERVICE_PRELOAD}
   }`,
 
+  serviceName: `
+  services {
+    ${SERVICE_SELECT}
+  }`,
+
   endpoint: `
   endpoint {
     externalAddress
@@ -133,7 +139,7 @@ const DeviceSelectLookup: ILookup<string> = {
     desktopNotifications
   }`,
 
-  timeSeries: `
+  deviceTimeSeries: `
   timeSeries(type: $deviceTSType, resolution: $deviceTSResolution, length: $deviceTSLength, timezone: "${getTimeZone()}") {
     type
     resolution
@@ -155,10 +161,11 @@ const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
-  const selectedColumns = store.getState().ui.columns
+  console.log('GRAPHQL FETCH DEVICE LIST', params)
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: Int, $platform: [Int!]${
-      selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
+      (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
+      (params.columns.includes('serviceName') ? SERVICE_TIME_SERIES_PARAMS : '')
     }) {
         login {
           id
@@ -166,7 +173,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform) {
               total
               items {
-                ${deviceQueryColumns(selectedColumns)}
+                ${deviceQueryColumns(params.columns)}
               }
             }
           }
@@ -183,28 +190,34 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
-      deviceTSLength: params.timeSeries?.length,
-      deviceTSType: params.timeSeries?.type,
-      deviceTSResolution: params.timeSeries?.resolution,
+      deviceTSLength: params.deviceTimeSeries?.length,
+      deviceTSType: params.deviceTimeSeries?.type,
+      deviceTSResolution: params.deviceTimeSeries?.resolution,
+      serviceTSLength: params.serviceTimeSeries?.length,
+      serviceTSType: params.serviceTimeSeries?.type,
+      serviceTSResolution: params.serviceTimeSeries?.resolution,
     }
   )
 }
 
-export async function graphQLPreloadDevices(params: {
+export async function graphQLPreloadDevices({
+  columns,
+  ...params
+}: {
   accountId: string
   ids: string[]
+  columns: string[]
   timeSeries?: ITimeSeriesOptions
 }) {
-  const selectedColumns = store.getState().ui.columns
   return await graphQLRequest(
     ` query DevicePreload($ids: [String!]!, $accountId: String${
-      selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
+      columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
     }) {
         login {
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns(selectedColumns)}
+              ${deviceQueryColumns(columns)}
             }
           }
         }
@@ -218,10 +231,9 @@ export async function graphQLPreloadDevices(params: {
   )
 }
 
-export async function graphQLPreloadNetworks(accountId: string, timeSeries?: ITimeSeriesOptions) {
-  const selectedColumns = store.getState().ui.columns
+export async function graphQLPreloadNetworks(accountId: string, columns: string[], timeSeries?: ITimeSeriesOptions) {
   return await graphQLBasicRequest(
-    ` query Networks($accountId: String${selectedColumns.includes('timeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''}) {
+    ` query Networks($accountId: String${columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''}) {
       login {
         account(id: $accountId) {
           networks {
@@ -237,7 +249,7 @@ export async function graphQLPreloadNetworks(accountId: string, timeSeries?: ITi
               service {
                 ${SERVICE_PRELOAD}
                 device {
-                  ${deviceQueryColumns(selectedColumns, ['services'])}
+                  ${deviceQueryColumns(columns, ['services'])}
                 }          
               }
               name
@@ -273,7 +285,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
         login {
           id
           device(id: $ids)  {
-            ${deviceQueryColumns(store.getState().ui.columns, ['tags', 'timeSeries'])}
+            ${deviceQueryColumns(selectDeviceColumns(store.getState()), ['tags', 'deviceTimeSeries'])}
           }
         }
       }`,

@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 import { ApplicationState } from '../store'
 import { selectActiveAccountId } from './accounts'
 import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
-import { masterAttributes, deviceAttributes, DeviceAttribute, serviceAttributes } from '../components/Attributes'
+import { deviceAttributes, DeviceAttribute, deviceAttributesAll, serviceAttributesAll } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 
@@ -62,21 +62,44 @@ export const selectById = createSelector([getDevices, getAllDevices, optionalId]
   return result[0] || result[1] ? result : findById(allDevices, id)
 })
 
-export const selectDeviceListAttributes = createSelector([selectLimitsLookup, getColumns], (limitsLookup, columns) =>
-  masterAttributes.concat(deviceAttributes).filter(a => a.show(limitsLookup) && columns.includes(a.id) && !a.required)
+export const selectAllDeviceAttributes = createSelector([selectLimitsLookup], limitsLookup =>
+  deviceAttributesAll.filter(a => a.show(limitsLookup))
 )
 
-export const selectServiceListAttributes = createSelector([selectLimitsLookup, getColumns], (limitsLookup, columns) =>
-  masterAttributes
-    .concat(serviceAttributes)
-    .filter(a => a.show(limitsLookup) /* && columns.includes(a.id) && !a.required */)
+export const selectDeviceAttributes = createSelector(
+  [selectAllDeviceAttributes, getColumns],
+  (allDeviceAttributes, columns) => allDeviceAttributes.filter(a => columns.includes(a.id))
+)
+
+export const selectDeviceColumns = createSelector([selectDeviceAttributes], deviceAttributes =>
+  deviceAttributes.map(a => a.id)
+)
+
+export const selectAllActiveAttributes = createSelector(
+  [selectLimitsLookup, getDeviceModel],
+  (limitsLookup, deviceModel) =>
+    (deviceModel.applicationType ? serviceAttributesAll : deviceAttributesAll).filter(a => a.show(limitsLookup))
+  // {
+  //   const x = (deviceModel.applicationType ? serviceAttributesAll : deviceAttributesAll).filter(a =>
+  //     a.show(limitsLookup)
+  //   )
+  //   console.log('selectAllActiveAttributes', deviceModel, x)
+  //   return x
+  // }
+)
+
+export const selectActiveAttributes = createSelector(
+  [selectAllActiveAttributes, getColumns],
+  (allActiveAttributes, columns) => allActiveAttributes.filter(a => columns.includes(a.id))
+)
+
+export const selectActiveColumns = createSelector([selectActiveAttributes], activeAttributes =>
+  activeAttributes.map(a => a.id)
 )
 
 export const selectDevice = createSelector(
   [getAllDevices, getDevices, optionalDeviceId],
-  (allDevices, devices, deviceId) => {
-    return devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
-  }
+  (allDevices, devices, deviceId) => devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
 )
 
 export const selectDeviceDetailAttributes = createSelector([getDeviceModel], deviceModel =>

@@ -2,12 +2,10 @@
 import React from 'react'
 import browser from '../services/Browser'
 import classnames from 'classnames'
-import { selectDeviceListAttributes } from '../selectors/devices'
-import { masterAttributes, restoreAttributes } from './Attributes'
 import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
-import { Dispatch, ApplicationState } from '../store'
-import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from './ServiceContextualMenu'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
@@ -20,6 +18,8 @@ import { LoadMore } from './LoadMore'
 import { spacing, fontSizes } from '../styling'
 
 export interface DeviceListProps {
+  attributes: Attribute[]
+  required: Attribute
   connections: { [deviceID: string]: IConnection[] }
   columnWidths: ILookup<number>
   fetching?: boolean
@@ -30,6 +30,8 @@ export interface DeviceListProps {
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
+  attributes,
+  required,
   devices = [],
   connections = {},
   columnWidths,
@@ -38,10 +40,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   select,
   selected = [],
 }) => {
-  const { attributes, required } = useSelector((state: ApplicationState) => ({
-    attributes: restore ? restoreAttributes : selectDeviceListAttributes(state),
-    required: masterAttributes.find(a => a.required) || masterAttributes[0],
-  }))
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ attributes, required, columnWidths, mobile })
