@@ -4,10 +4,12 @@ import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { ListItemText, Chip, Typography } from '@mui/material'
+import { ListItemText, Stack, Chip, Typography } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { ServiceGraphColumn } from './ServiceGraphColumn'
 import { DeviceGraphColumn } from './DeviceGraphColumn'
+import { ConnectAttribute } from './ConnectAttribute'
+import { ServiceLinkIcon } from './ServiceLinkIcon'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ReactiveTags } from './ReactiveTags'
 import { DeviceName } from './DeviceName'
@@ -97,8 +99,6 @@ const ATTRIBUTES = [
   { label: 'Status E', id: 'statusE' },
 ]
 
-// @TODO  display more service / device attributes  and more of the geo data
-
 export const attributes: Attribute[] = [
   new RestoreAttribute({
     id: 'restore',
@@ -106,42 +106,53 @@ export const attributes: Attribute[] = [
     value: ({ device }) => device && <RestoreButton device={device} />,
     required: true,
   }),
-  new DeviceAttribute({
+  new Attribute({
     id: 'deviceName',
     label: 'Name',
     defaultWidth: 400,
     required: true,
     details: false,
-    value: ({ device, connection }) => (
-      <ListItemText
-        primary={<DeviceName device={device} connection={connection} />}
-        secondary={device?.thisDevice ? 'This system' : undefined}
-      />
-    ),
+    value: ({ device, service, connection, mobile }) =>
+      mobile && service ? (
+        <Typography variant="body1">
+          <DeviceName service={service} connection={connection}>
+            <Typography variant="caption" color="inherit" sx={{ opacity: 0.6 }}>
+              <DeviceName device={device} connection={connection} />
+            </Typography>
+          </DeviceName>
+        </Typography>
+      ) : (
+        <ListItemText
+          primary={<DeviceName device={device} connection={connection} />}
+          secondary={device?.thisDevice ? 'This system' : undefined}
+        />
+      ),
+  }),
+  new ServiceAttribute({
+    id: 'serviceConnect',
+    label: 'Connect',
+    query: 'serviceName',
+    defaultWidth: 160,
+    value: ({ device, service, connection }) => <ConnectAttribute {...{ device, service, connection }} />,
   }),
   new ServiceAttribute({
     id: 'serviceName',
     label: 'Service Name',
-    defaultWidth: 400,
+    defaultWidth: 300,
     required: true,
     details: false,
-    value: ({ device, service, connection }) => (
-      <Title>
-        <Typography variant="caption" sx={{ opacity: 0.6 }}>
-          {<DeviceName device={device} connection={connection} />}
-        </Typography>
-        <DeviceName service={service} connection={connection} />
-      </Title>
+    value: ({ service, connection }) => (
+      <ListItemText primary={<DeviceName service={service} connection={connection} />} sx={{ marginRight: 1 }} />
     ),
   }),
-  new Attribute({
+  new DeviceAttribute({
     id: 'status',
     label: 'Status',
     query: 'deviceName',
     defaultWidth: 100,
     value: ({ device, connections }) => <StatusChip device={device} connections={connections} />,
   }),
-  new Attribute({
+  new DeviceAttribute({
     id: 'deviceTimeSeries',
     query: 'deviceTimeSeries',
     label: <DeviceGraphColumn />,
@@ -155,7 +166,22 @@ export const attributes: Attribute[] = [
       </Link>
     ),
   }),
-  new Attribute({
+  new ServiceAttribute({
+    id: 'serviceTimeSeries',
+    query: 'serviceTimeSeries',
+    label: <ServiceGraphColumn />,
+    details: false,
+    value: ({ device, service }) => (
+      <Link
+        to={`/devices/${device?.id}/${service?.id}/connect`}
+        onClick={event => event.stopPropagation()}
+        sx={{ position: 'relative', zIndex: 3 }}
+      >
+        <TimeSeries timeSeries={service?.timeSeries} online={device?.state === 'active'} />
+      </Link>
+    ),
+  }),
+  new DeviceAttribute({
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
@@ -352,19 +378,9 @@ export const attributes: Attribute[] = [
     column: false,
   }),
   new ServiceAttribute({
-    id: 'serviceTimeSeries',
-    query: 'serviceTimeSeries',
-    label: <ServiceGraphColumn />,
-    details: false,
-    value: ({ device, service }) => (
-      <Link
-        to={`/devices/${device?.id}/${service?.id}/connect`}
-        onClick={event => event.stopPropagation()}
-        sx={{ position: 'relative', zIndex: 3 }}
-      >
-        <TimeSeries timeSeries={service?.timeSeries} online={device?.state === 'active'} />
-      </Link>
-    ),
+    id: 'serviceLink',
+    label: 'Service Key',
+    value: ({ service }) => <LicenseChip license={service?.license} />,
   }),
   new ServiceAttribute({
     id: 'license',
@@ -394,16 +410,16 @@ export const attributes: Attribute[] = [
     value: ({ service }) => <Timestamp date={service?.createdAt} />,
   }),
   new ServiceAttribute({
-    id: 'servicePort',
-    label: 'Service Port',
-    defaultWidth: 130,
-    value: ({ service }) => service?.port,
-  }),
-  new ServiceAttribute({
     id: 'serviceHost',
     label: 'Service Host',
     defaultWidth: 130,
     value: ({ service }) => service?.host || IP_PRIVATE,
+  }),
+  new ServiceAttribute({
+    id: 'servicePort',
+    label: 'Service Port',
+    defaultWidth: 130,
+    value: ({ service }) => service?.port,
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',

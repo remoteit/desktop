@@ -28,6 +28,7 @@ declare global {
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
+    setEvents?: React.Dispatch<React.SetStateAction<boolean>>
   }
 
   interface IDeviceContext {
@@ -208,13 +209,14 @@ declare global {
   }
 
   type IDataOptions = {
-    application?: Application
+    mobile?: boolean
     device?: IDevice
     instance?: IInstance
     service?: IService
-    connection?: IConnection
     session?: ISession
+    connection?: IConnection
     connections?: IConnection[]
+    application?: Application
   }
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }

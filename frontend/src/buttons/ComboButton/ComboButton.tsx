@@ -2,48 +2,44 @@ import React from 'react'
 import browser, { windowOpen } from '../../services/Browser'
 import { PROTOCOL } from '../../constants'
 import { makeStyles } from '@mui/styles'
-import { ConnectButton } from '../ConnectButton'
+import { ConnectButton, ConnectButtonProps } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'
 import { Notice } from '../../components/Notice'
 
-type Props = {
+type Props = ConnectButtonProps & {
   className?: string
-  connection?: IConnection
-  service?: IService
-  permissions?: IPermission[]
-  size?: 'icon' | 'medium' | 'small' | 'large'
   fullWidth?: boolean
   disabled?: boolean
-  onClick?: () => void
+  children?: React.ReactNode
 }
 
-export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
+export const ComboButton: React.FC<Props> = ({ className, children, ...props }) => {
   const css = useStyles(props.fullWidth)()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
       {props.service?.attributes.route === 'p2p' && !browser.hasBackend ? (
         <div>
-          <Notice fullWidth severity="info" gutterBottom>
-            {props.size === 'small' ? (
-              'Peer to peer only'
-            ) : (
+          {props.size !== 'chip' && (
+            <Notice fullWidth severity="info" gutterBottom>
               <>
                 You cannot make a proxy connection to this service, it is set to peer to peer only.
                 {browser.hasBackend && <i> Please try again in a few minutes.</i>}
               </>
-            )}
-          </Notice>
+            </Notice>
+          )}
           {browser.isPortal && (
             <DynamicButton
               {...props}
+              color="primary"
               title="Launch Desktop"
               onClick={() => windowOpen(`${PROTOCOL}connect/${props.service?.id || props.connection?.id}`)}
             />
           )}
         </div>
       ) : (
-        <ConnectButton iconType="solid" {...props} />
+        <ConnectButton {...props} />
       )}
+      {children}
     </div>
   )
 }

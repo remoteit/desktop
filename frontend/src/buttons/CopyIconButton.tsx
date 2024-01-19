@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { IconButton, ButtonProps } from './IconButton'
 import { updateConnection } from '../helpers/connectionHelper'
 import { Sizes, Color } from '../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../components/PromptModal'
-import { IconButton, ButtonProps } from './IconButton'
 import useClipboard from '../hooks/useClipboard'
 
 export type CopyButtonProps = ButtonProps & {
@@ -38,8 +38,9 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
       }
     }, [autoCopy])
 
-    const check = () => {
+    const check = (event?: React.MouseEvent) => {
       onClick?.()
+      event?.stopPropagation()
       app?.prompt ? setOpen(true) : copy()
     }
 

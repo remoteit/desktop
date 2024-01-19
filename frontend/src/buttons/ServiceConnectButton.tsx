@@ -60,6 +60,7 @@ export const ServiceConnectButton: React.FC = () => {
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
               size="large"
+              iconType="solid"
               service={service}
               connection={connection}
               permissions={instance?.permissions}

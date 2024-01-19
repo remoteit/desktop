@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import classnames from 'classnames'
 import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
-import { List, useMediaQuery } from '@mui/material'
+import { List, Divider, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { LoadMore } from './LoadMore'
@@ -32,6 +32,8 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   columnWidths,
   fetching,
 }) => {
+  const previousName = useRef<string>('')
+  const [events, setEvents] = useState<boolean>(true)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const css = useStyles({ attributes, required, columnWidths, mobile })
 
@@ -43,19 +45,28 @@ export const ServiceList: React.FC<DeviceListProps> = ({
     return services
   }, [] as [IService, IDevice][])
 
+  // Reset previous name when the list changes
+  previousName.current = ''
+
   return (
     <List className={classnames(css.list, css.grid)} disablePadding>
       <DeviceListContext.Provider value={{ device: devices[0], service: devices[0].services[0] }}>
         <DeviceListHeader {...{ devices, required, attributes, fetching, columnWidths, mobile }} />
       </DeviceListContext.Provider>
-      {rows?.map(([service, device]) => (
-        <DeviceListContext.Provider
-          key={service.id}
-          value={{ device, service, connections: connections[device.id], required, attributes }}
-        >
-          <DeviceListItem mobile={mobile} />
-        </DeviceListContext.Provider>
-      ))}
+      {rows?.map(([service, device]) => {
+        const duplicateName = device.name === previousName.current
+        const divider = !duplicateName && !!previousName.current
+        previousName.current = device.name
+        return (
+          <DeviceListContext.Provider
+            key={service.id}
+            value={{ device, service, connections: connections[device.id], required, attributes, setEvents }}
+          >
+            {divider && <Divider variant="inset" />}
+            <DeviceListItem {...{ mobile, duplicateName, events }} />
+          </DeviceListContext.Provider>
+        )
+      })}
       <LoadMore />
     </List>
   )
@@ -90,7 +101,6 @@ const useStyles = makeStyles(({ palette }) => ({
       minHeight: 42,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
-      '&:hover': { backgroundColor: palette.primaryHighlight.main },
     },
     '& > * > .MuiBox-root, & > * > * > .MuiBox-root': {
       display: 'flex',

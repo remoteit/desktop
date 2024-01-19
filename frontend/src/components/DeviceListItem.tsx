@@ -3,11 +3,9 @@ import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { DeviceListContext } from '../services/Context'
 import { AttributeValueMemo } from './AttributeValue'
-import { useMediaQuery, Box, ListItemIcon, ListItem } from '@mui/material'
+import { Box, ListItemIcon, ListItem } from '@mui/material'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
-import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { radius, spacing } from '../styling'
-import { TestUI } from './TestUI'
 import { Icon } from './Icon'
 
 type Props = {
@@ -15,16 +13,28 @@ type Props = {
   select?: boolean
   selected?: boolean
   mobile?: boolean
+  duplicateName?: boolean
+  events?: boolean
   onClick?: () => void
   onSelect?: (deviceId: string) => void
 }
 
-export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, mobile, onClick, onSelect }) => {
+export const DeviceListItem: React.FC<Props> = ({
+  restore,
+  select,
+  selected = false,
+  mobile,
+  duplicateName,
+  events,
+  onClick,
+  onSelect,
+}) => {
   const { connections, device, service, attributes, required } = useContext(DeviceListContext)
-  const connection = connections && connections.find(c => c.enabled)
+  const connection =
+    connections && (service ? connections.find(c => c.id === service.id) : connections.find(c => c.enabled))
   const history = useHistory()
   const offline = device?.state === 'inactive'
-  const css = useStyles({ offline })
+  const css = useStyles({ offline, events })
 
   if (!device) return null
 
@@ -37,44 +47,27 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   return (
     <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
       <Box className={css.sticky}>
-        <Box>
-          <ListItemIcon>
-            {select ? (
-              selected ? (
-                <Icon name="check-square" size="md" type="solid" color="primary" />
+        {duplicateName && !mobile ? null : (
+          <Box>
+            <ListItemIcon>
+              {select ? (
+                selected ? (
+                  <Icon name="check-square" size="md" type="solid" color="primary" />
+                ) : (
+                  <Icon name="square" size="md" />
+                )
               ) : (
-                <Icon name="square" size="md" />
-              )
-            ) : (
-              <>
-                <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
-                {/* <TestUI>
-                <Box className={css.connect}>
-                  <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
-                </Box>
-              </TestUI> */}
-              </>
-            )}
-          </ListItemIcon>
-          <AttributeValueMemo
-            device={device}
-            service={service}
-            attribute={required}
-            connection={connection}
-            connections={connections}
-          />
-        </Box>
+                <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
+              )}
+            </ListItemIcon>
+            <AttributeValueMemo {...{ mobile, device, service, connection, connections }} attribute={required} />
+          </Box>
+        )}
       </Box>
       {!mobile &&
         attributes?.map(attribute => (
           <Box key={attribute.id}>
-            <AttributeValueMemo
-              device={device}
-              service={service}
-              attribute={attribute}
-              connection={connection}
-              connections={connections}
-            />
+            <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
           </Box>
         ))}
     </ListItem>
@@ -83,24 +76,28 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
 
 type StyleProps = {
   offline: boolean
+  events?: boolean
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  row: ({ offline }: StyleProps) => ({
-    '&:hover > div:first-of-type': {
-      backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
+  row: ({ offline, events }: StyleProps) => ({
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    '&:hover': {
+      backgroundColor: events ? palette.primaryHighlight.main : palette.white.main,
     },
-    '&.Mui-selected > div:first-of-type': {
-      backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
+    '&:hover > div:first-of-type, &.Mui-selected > div:first-of-type': {
+      backgroundImage: events ? `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)` : undefined,
     },
     '&.Mui-selected:hover > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryLighter.main} 95%, transparent)`,
     },
-    '& > div:first-of-type > *': { opacity: offline ? 0.5 : 1, width: '100%' },
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
+    '& > div:first-of-type > div': {
+      opacity: offline ? 0.5 : 1,
+      width: '100%',
+    },
   }),
-  sticky: {
+  sticky: ({ events }: StyleProps) => ({
     position: 'sticky',
     left: 0,
     zIndex: 4,
@@ -108,20 +105,9 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'start !important',
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
-    backgroundImage: `linear-gradient(90deg, ${palette.white.main} 95%, transparent)`,
+    backgroundImage: events ? `linear-gradient(90deg, ${palette.white.main} 95%, transparent)` : undefined,
     overflow: 'visible',
     paddingLeft: spacing.md,
     height: '100%',
-  },
-  connect: {
-    top: 0,
-    display: 'flex',
-    alignItems: 'center',
-    position: 'absolute',
-    width: 62,
-    height: '100%',
-    '& .MuiIconButton-root': {
-      backgroundImage: `radial-gradient(${palette.white.main} 15%, transparent 85%)`,
-    },
-  },
+  }),
 }))

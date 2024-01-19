@@ -75,17 +75,8 @@ export const selectDeviceColumns = createSelector([selectDeviceAttributes], devi
   deviceAttributes.map(a => a.id)
 )
 
-export const selectAllActiveAttributes = createSelector(
-  [selectLimitsLookup, getDeviceModel],
-  (limitsLookup, deviceModel) =>
-    (deviceModel.applicationType ? serviceAttributesAll : deviceAttributesAll).filter(a => a.show(limitsLookup))
-  // {
-  //   const x = (deviceModel.applicationType ? serviceAttributesAll : deviceAttributesAll).filter(a =>
-  //     a.show(limitsLookup)
-  //   )
-  //   console.log('selectAllActiveAttributes', deviceModel, x)
-  //   return x
-  // }
+export const selectAllActiveAttributes = createSelector([selectLimitsLookup, getDeviceModel], (limitsLookup, deviceModel) =>
+  (deviceModel.applicationType ? serviceAttributesAll : deviceAttributesAll).filter(a => a.show(limitsLookup))
 )
 
 export const selectActiveAttributes = createSelector(

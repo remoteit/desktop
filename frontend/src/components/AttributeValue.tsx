@@ -3,14 +3,8 @@ import { Attribute } from './Attributes'
 import { spacing } from '../styling'
 import { Box } from '@mui/material'
 
-export const AttributeValue: React.FC<{
-  device?: IDevice
-  service?: IService
-  attribute?: Attribute
-  connection?: IConnection
-  connections?: IConnection[]
-}> = ({ device, service, attribute, connection, connections }) => {
-  const value = attribute?.value({ device, instance: device, service, connection, connections }) || ''
+export const AttributeValue: React.FC<IDataOptions & { attribute?: Attribute }> = ({ attribute, ...options }) => {
+  const value = attribute?.value({ instance: options.device, ...options }) || ''
   return (
     <Box
       className={`attribute attribute-${attribute?.id}`}

@@ -3,6 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
+import { ColorChip } from '../components/ColorChip'
 import { Color } from '../styling'
 
 export type DynamicButtonProps = {
@@ -10,7 +11,7 @@ export type DynamicButtonProps = {
   iconType?: IconProps['type']
   title?: string
   color?: Color
-  size?: 'icon' | 'medium' | 'small' | 'large'
+  size?: 'icon' | 'chip' | 'medium' | 'small' | 'large'
   iconSize?: IconProps['size']
   disabled?: boolean
   loading?: boolean
@@ -37,7 +38,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     fullWidth,
   }: DynamicButtonProps = props
 
-  if (loading && size === 'small') {
+  if (icon && loading && size === 'small') {
     icon = 'spinner-third'
     iconType = 'solid'
   }
@@ -54,13 +55,32 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     />
   ) : null
 
+  if (size === 'chip') {
+    return (
+      <ColorChip
+        size="small"
+        label={title}
+        color={color}
+        variant={variant}
+        onClick={event => {
+          event.stopPropagation()
+          onClick(event as unknown as React.MouseEvent<HTMLButtonElement>)
+        }}
+        // Prevent events from reaching the parent for the service list
+        onMouseDown={event => event.stopPropagation()}
+        disabled={disabled}
+        className={className}
+      />
+    )
+  }
+
   if (size === 'small') {
     return (
       <Button
+        size={size}
         variant={variant}
         onClick={onClick}
         disabled={disabled}
-        size={size}
         className={classnames(className, css.button)}
         fullWidth={fullWidth}
       >

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
-import { IconButton, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { updateConnection, launchDisabled } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { IconButton, ButtonProps } from '../../buttons/IconButton'
 import { Color, Sizes } from '../../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../../components/PromptModal'
@@ -19,6 +20,7 @@ type Props = {
   app?: Application
   device?: IDevice
   connection?: IConnection
+  iconButtonProps?: ButtonProps
   onMouseEnter?: () => void
   onMouseLeave?: () => void
   onLaunch?: () => void
@@ -29,6 +31,7 @@ export const LaunchButton: React.FC<Props> = ({
   onLaunch,
   onMouseEnter,
   onMouseLeave,
+  iconButtonProps,
   connection,
   device,
   app,
@@ -86,7 +89,13 @@ export const LaunchButton: React.FC<Props> = ({
           <ListItemText primary={app.contextTitle} />
         </MenuItem>
       ) : (
-        <IconButton onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onClick={clickHandler} disabled={disabled}>
+        <IconButton
+          {...iconButtonProps}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onClick={clickHandler}
+          disabled={disabled}
+        >
           {LaunchIcon}
         </IconButton>
       )}

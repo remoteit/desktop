@@ -26,6 +26,7 @@ export default createModel<RootModel>()({
     async init(_: void, globalState) {
       let activeId = getLocalStorage(globalState, ACCOUNT_KEY)
       if (activeId) dispatch.accounts.setActive(activeId)
+      await dispatch.accounts.fetch()
     },
     async fetch() {
       const result = await graphQLBasicRequest(

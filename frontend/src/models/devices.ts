@@ -120,8 +120,6 @@ export default createModel<RootModel>()({
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, owner, filter, append, searched } = deviceModel
 
-      console.log('GRAPHQL FETCH DEVICE COLUMNS', deviceModel.applicationType, columns)
-
       const options: gqlOptions = {
         accountId,
         name: query,
@@ -281,7 +279,11 @@ export default createModel<RootModel>()({
       try {
         const gqlResponse = await graphQLFetchDeviceList(options)
         const [gqlDevices, total, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLDeviceAdaptor({ gqlDevices, accountId: options.accountId })
+        const devices = graphQLDeviceAdaptor({
+          gqlDevices,
+          accountId: options.accountId,
+          loaded: !!options.applicationType,
+        })
         return { devices, total, error }
       } catch (error) {
         await apiError(error)
