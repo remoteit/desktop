@@ -15,6 +15,7 @@ export const FilterButton: React.FC = () => {
   const icon = open ? 'times' : 'filter'
   return (
     <Tooltip
+      placement="left"
       title={open ? 'Hide Filters' : 'Show Filters'}
       sx={{
         borderWidth: 1,

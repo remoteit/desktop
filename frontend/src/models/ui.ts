@@ -147,10 +147,11 @@ export const defaultState: UIState = {
     'services',
     'serviceName',
     'serviceState',
-    'serviceConnect',
+    'serviceStatus',
+    'serviceAction',
     'serviceTimeSeries',
   ],
-  columnWidths: { tags: 120 },
+  columnWidths: {},
   collapsed: ['recent'],
   limitsOverride: {},
   serviceContextMenu: undefined,
@@ -224,6 +225,7 @@ export default createModel<RootModel>()({
         }
       })
       console.log('RESTORE UI STATE', states)
+      states = migrateColumnStates(states)
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
     },
@@ -336,4 +338,13 @@ export function selectPriorityGuide(state: ApplicationState, guide: string, star
   }
   if (state.user.created < startDate) active = false
   return { ...result, active }
+}
+
+function migrateColumnStates(states: ILookup<any>): ILookup<any> {
+  if (!states.columns || states.columns.includes('serviceName')) return states
+  console.log('MIGRATE COLUMN STATES')
+  return {
+    ...states,
+    columns: [...states.columns, 'serviceName', 'serviceStatus', 'serviceState', 'serviceAction', 'serviceTimeSeries'],
+  }
 }

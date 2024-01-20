@@ -129,8 +129,17 @@ export const attributes: Attribute[] = [
       ),
   }),
   new ServiceAttribute({
-    id: 'serviceConnect',
-    label: 'Connect',
+    id: 'serviceStatus',
+    label: 'Status',
+    query: 'serviceName',
+    defaultWidth: 100,
+    value: ({ service, connection }) => (
+      <StatusChip service={service} connections={connection ? [connection] : undefined} />
+    ),
+  }),
+  new ServiceAttribute({
+    id: 'serviceAction',
+    label: 'Action',
     query: 'serviceName',
     defaultWidth: 160,
     value: ({ device, service, connection }) => <ConnectAttribute {...{ device, service, connection }} />,
@@ -167,7 +176,7 @@ export const attributes: Attribute[] = [
       <Link
         to={`/devices/${device?.id}/details`}
         onClick={event => event.stopPropagation()}
-        sx={{ position: 'relative', zIndex: 3 }}
+        sx={{ position: 'relative', zIndex: 3, paddingTop: 1 }}
       >
         <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />
       </Link>
@@ -182,7 +191,7 @@ export const attributes: Attribute[] = [
       <Link
         to={`/devices/${device?.id}/${service?.id}/connect`}
         onClick={event => event.stopPropagation()}
-        sx={{ position: 'relative', zIndex: 3 }}
+        sx={{ position: 'relative', zIndex: 3, paddingTop: 1 }}
       >
         <TimeSeries timeSeries={service?.timeSeries} online={device?.state === 'active'} />
       </Link>

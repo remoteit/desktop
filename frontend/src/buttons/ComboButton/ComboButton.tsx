@@ -10,13 +10,14 @@ type Props = ConnectButtonProps & {
   className?: string
   fullWidth?: boolean
   disabled?: boolean
+  containerProps?: React.HTMLAttributes<HTMLDivElement>
   children?: React.ReactNode
 }
 
-export const ComboButton: React.FC<Props> = ({ className, children, ...props }) => {
+export const ComboButton: React.FC<Props> = ({ className, containerProps, children, ...props }) => {
   const css = useStyles(props.fullWidth)()
   return (
-    <div className={css.buttons + (className ? ' ' + className : '')}>
+    <div className={css.buttons + (className ? ' ' + className : '')} {...containerProps}>
       {props.service?.attributes.route === 'p2p' && !browser.hasBackend ? (
         <div>
           {props.size !== 'chip' && (

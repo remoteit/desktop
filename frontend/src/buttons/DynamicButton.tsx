@@ -17,7 +17,7 @@ export type DynamicButtonProps = {
   loading?: boolean
   variant?: 'text' | 'outlined' | 'contained'
   className?: string
-  onClick: React.MouseEventHandler<HTMLButtonElement>
+  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLDivElement>
   fullWidth?: boolean
 }
 
@@ -61,12 +61,7 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
         size="small"
         label={title}
         variant={variant}
-        onClick={event => {
-          event.stopPropagation()
-          onClick(event as unknown as React.MouseEvent<HTMLButtonElement>)
-        }}
-        // Prevent events from reaching the parent for the service list
-        onMouseDown={event => event.stopPropagation()}
+        onClick={onClick}
         className={css.button}
         disabled={disabled}
       />

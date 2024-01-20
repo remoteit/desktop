@@ -31,7 +31,7 @@ export const Header: React.FC = () => {
       searched: deviceModel.searched, // debug make true
       canNavigate: state.backend.canNavigate,
       permissions: selectPermissions(state),
-      serviceList: !!deviceModel.applicationType,
+      serviceList: !!deviceModel.applicationTypes?.length,
       layout: state.ui.layout,
     }
   })

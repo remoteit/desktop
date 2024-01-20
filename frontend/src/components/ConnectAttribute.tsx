@@ -20,7 +20,13 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
       connection.connectLink)
 
   return (
-    <Stack flexDirection="row" position="relative" zIndex={3}>
+    <Stack
+      flexDirection="row"
+      position="relative"
+      zIndex={3}
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+    >
       <ComboButton
         size="chip"
         service={service}

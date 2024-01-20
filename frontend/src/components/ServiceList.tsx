@@ -13,7 +13,7 @@ import { LoadMore } from './LoadMore'
 export interface DeviceListProps {
   attributes: Attribute[]
   required: Attribute
-  applicationType?: number
+  applicationTypes?: number[]
   connections: { [deviceID: string]: IConnection[] }
   columnWidths: ILookup<number>
   fetching?: boolean
@@ -26,7 +26,7 @@ export interface DeviceListProps {
 export const ServiceList: React.FC<DeviceListProps> = ({
   attributes,
   required,
-  applicationType,
+  applicationTypes,
   devices = [],
   connections = {},
   columnWidths,
@@ -37,9 +37,10 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   const css = useStyles({ attributes, required, columnWidths, mobile })
 
   const rows = devices.reduce((services, device) => {
+    const hasFilter = applicationTypes?.length
     device.services.forEach(s => {
-      if (applicationType === undefined) services.push([s, device])
-      else if (s.typeID === applicationType) services.push([s, device])
+      if (!hasFilter) services.push([s, device])
+      else if (applicationTypes.includes(s.typeID)) services.push([s, device])
     })
     return services
   }, [] as [IService, IDevice][])
@@ -78,6 +79,9 @@ type StyleProps = {
   mobile?: boolean
 }
 
+const ROW_HEIGHT = 42
+const SHRINK = 8
+
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, required, columnWidths, mobile }: StyleProps) => ({
     minWidth: '100%',
@@ -97,14 +101,14 @@ const useStyles = makeStyles(({ palette }) => ({
       },
     },
     '& .MuiListItem-root': {
-      minHeight: 42,
+      minHeight: ROW_HEIGHT - SHRINK,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
     },
     '& > * > .MuiBox-root, & > * > * > .MuiBox-root': {
       display: 'flex',
       alignItems: 'center',
-      minHeight: 36,
+      minHeight: ROW_HEIGHT - 6 - SHRINK,
     },
     '& .attribute': {
       display: 'block',
@@ -112,6 +116,10 @@ const useStyles = makeStyles(({ palette }) => ({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
+    },
+    '& .MuiDivider-root': {
+      marginTop: SHRINK / 2 - 1,
+      marginBottom: SHRINK / 2 - 1,
     },
   },
 }))

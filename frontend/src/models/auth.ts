@@ -99,16 +99,15 @@ export default createModel<RootModel>()({
       const response = await graphQLLogin()
       if (response === 'ERROR') return
 
-      const data = response?.data?.data?.login
-      const user = { ...data, authHash: data.authhash }
+      const user = response?.data?.data?.login
 
       auth.set({ user, signInError: undefined })
       setLocalStorage(state, USER_KEY, user)
-      if (data.authhash && data.yoicsId) {
-        Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
+      if (user.authhash && user.yoicsId) {
+        Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
         auth.signedIn()
       } else {
-        console.warn('Login failed!', data)
+        console.warn('Login failed!', response)
         dispatch.ui.set({ errorMessage: 'Login failed.' })
       }
     },

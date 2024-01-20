@@ -30,7 +30,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
     initialized,
     permissions,
     columnWidths,
-    applicationType,
+    applicationTypes,
   } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     const all = selectActiveAttributes(state)
@@ -45,7 +45,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
       columnWidths: state.ui.columnWidths,
       devices: getVisibleDevices(state),
       connections: getConnectionsLookup(state),
-      applicationType: deviceModel.applicationType,
+      applicationTypes: deviceModel.applicationTypes,
     }
   })
 
@@ -65,8 +65,8 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           <LoadingMessage message={'Loading... ' + fetching + ' ' + shouldRedirect} spinner={false} />
         ) : !devices.length ? (
           <DeviceListEmpty />
-        ) : applicationType ? (
-          <ServiceList {...{ applicationType, attributes, required, devices, connections, columnWidths, fetching }} />
+        ) : applicationTypes?.length ? (
+          <ServiceList {...{ applicationTypes, attributes, required, devices, connections, columnWidths, fetching }} />
         ) : (
           <DeviceList
             {...{ attributes, required, devices, connections, columnWidths, fetching, restore, select, selected }}

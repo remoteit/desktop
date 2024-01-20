@@ -547,6 +547,10 @@ declare global {
     description: string
   }
 
+  type IApplicationTypeGroup = Omit<IApplicationType, 'id'> & {
+    ids: number[]
+  }
+
   type ISmartApplication = 'URL' | undefined
 
   interface ICloudEvent {
@@ -661,7 +665,7 @@ declare global {
     owner?: boolean
     sort?: string
     name?: string
-    applicationType?: number
+    applicationTypes?: number[]
     platform?: number[]
     deviceTimeSeries?: ITimeSeriesOptions
     serviceTimeSeries?: ITimeSeriesOptions

@@ -75,8 +75,12 @@ export const selectDeviceColumns = createSelector([selectDeviceAttributes], devi
   deviceAttributes.map(a => a.id)
 )
 
-export const selectAllActiveAttributes = createSelector([selectLimitsLookup, getDeviceModel], (limitsLookup, deviceModel) =>
-  (deviceModel.applicationType ? serviceAttributesAll : deviceAttributesAll).filter(a => a.show(limitsLookup))
+export const selectAllActiveAttributes = createSelector(
+  [selectLimitsLookup, getDeviceModel],
+  (limitsLookup, deviceModel) =>
+    (deviceModel.applicationTypes?.length ? serviceAttributesAll : deviceAttributesAll).filter(a =>
+      a.show(limitsLookup)
+    )
 )
 
 export const selectActiveAttributes = createSelector(
@@ -107,18 +111,3 @@ export const selectDeviceDetailAttributes = createSelector([getDeviceModel], dev
       )
     )
 )
-
-// export const selectDeviceListItemAttributes = createSelector([getDeviceModel], deviceModel =>
-//   deviceAttributes
-//     .filter(d => d.list)
-//     .concat(
-//       deviceModel.customAttributes.map(
-//         id =>
-//           new DeviceAttribute({
-//             id: `attribute-${id}`,
-//             label: id,
-//             value: ({ device }) => (device?.attributes[id] ? Attribute(device.attributes[id]) : undefined),
-//           })
-//       )
-//     )
-// )

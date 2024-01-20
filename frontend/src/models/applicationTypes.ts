@@ -7,23 +7,26 @@ import { RootModel } from '.'
 
 type IApplicationTypeState = {
   all: IApplicationType[]
+  groups: Pick<IApplicationTypeGroup, 'ids' | 'name'>[]
+  account: ILookup<IApplicationType[]>
 }
 
 const state: IApplicationTypeState = {
   all: [],
+  groups: [{ name: 'HTTP(S)', ids: [7, 8] }],
+  account: {},
 }
 
 const APPLICATION_TYPES_QUERY = `
   applicationTypes {
-    name
+    name 
     id
     port
     proxy
     scheme
     protocol
     description
-  }
-`
+  }`
 
 export default createModel<RootModel>()({
   state,
@@ -51,12 +54,12 @@ export default createModel<RootModel>()({
         { accountId }
       )
       if (result === 'ERROR') return
-      const applicationTypes = result?.data?.data?.login?.account?.applicationTypes
-      dispatch.applicationTypes.set({ [accountId]: applicationTypes })
+      const applicationTypes: IApplicationType[] = result?.data?.data?.login?.account?.applicationTypes
+      dispatch.applicationTypes.set({ account: { ...state.applicationTypes.account, [accountId]: applicationTypes } })
     },
   }),
   reducers: {
-    set(state: IApplicationTypeState, params: ILookup<IApplicationType[]>) {
+    set(state: IApplicationTypeState, params: Partial<IApplicationTypeState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

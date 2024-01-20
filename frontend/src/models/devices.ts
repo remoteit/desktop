@@ -31,7 +31,7 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 
-const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'applicationType', 'sortServiceOption']
+const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'applicationTypes', 'sortServiceOption']
 
 type IDeviceState = {
   all: IDevice[]
@@ -49,7 +49,7 @@ type IDeviceState = {
   tag?: ITagFilter
   owner: 'all' | 'me' | 'others'
   platform?: number[]
-  applicationType?: number
+  applicationTypes?: number[]
   size: number
   from: number
   eventsUrl: string
@@ -73,7 +73,7 @@ export const defaultState: IDeviceState = {
   tag: undefined,
   owner: 'all',
   platform: undefined,
-  applicationType: undefined,
+  applicationTypes: undefined,
   size: 50,
   from: 0,
   eventsUrl: '',
@@ -131,7 +131,7 @@ export default createModel<RootModel>()({
         platform: deviceModel.platform,
         deviceTimeSeries: state.ui.deviceTimeSeries,
         serviceTimeSeries: state.ui.serviceTimeSeries,
-        applicationType: deviceModel.applicationType,
+        applicationTypes: deviceModel.applicationTypes,
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
       }
@@ -282,7 +282,7 @@ export default createModel<RootModel>()({
         const devices = graphQLDeviceAdaptor({
           gqlDevices,
           accountId: options.accountId,
-          loaded: !!options.applicationType,
+          loaded: !!options.applicationTypes?.length,
         })
         return { devices, total, error }
       } catch (error) {
@@ -648,10 +648,8 @@ export default createModel<RootModel>()({
       state = { ...defaultAccountState }
       return state
     },
-    rootSet(state: IDeviceAccountState, params: ILookup<any>) {
-      Object.keys(params).forEach(key => {
-        state[key] = params[key]
-      })
+    rootSet(state: IDeviceAccountState, params: IDeviceAccountState) {
+      Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },
