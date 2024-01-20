@@ -9,7 +9,7 @@ import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { ServiceGraphColumn } from './ServiceGraphColumn'
 import { DeviceGraphColumn } from './DeviceGraphColumn'
 import { ConnectAttribute } from './ConnectAttribute'
-import { ServiceLinkIcon } from './ServiceLinkIcon'
+import { ServiceMiniState } from './ServiceMiniState'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ReactiveTags } from './ReactiveTags'
 import { DeviceName } from './DeviceName'
@@ -144,6 +144,13 @@ export const attributes: Attribute[] = [
     value: ({ service, connection }) => (
       <ListItemText primary={<DeviceName service={service} connection={connection} />} sx={{ marginRight: 1 }} />
     ),
+  }),
+  new ServiceAttribute({
+    id: 'serviceState',
+    label: 'Type',
+    defaultWidth: 110,
+    details: false,
+    value: ({ service, connection }) => <ServiceMiniState service={service} connection={connection} />,
   }),
   new DeviceAttribute({
     id: 'status',

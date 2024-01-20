@@ -7,7 +7,6 @@ export const DeviceListContext = createContext<IDeviceListContext>({
   connections: [],
   attributes: [],
   required: {} as Attribute,
-  setEvents: () => {},
 })
 
 export const DeviceContext = createContext<IDeviceContext>({

@@ -54,7 +54,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
         }}
         confirm={!connection.connectLink}
         confirmProps={{
-          color: connection.password ? undefined : 'error',
+          color: connection.password ? undefined : 'warning',
           action: 'Make Public',
           title: 'Are you sure?',
           children: (
@@ -64,7 +64,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
                   This endpoint has password protection.
                 </Notice>
               ) : (
-                <Notice severity="error" gutterBottom fullWidth>
+                <Notice severity="warning" gutterBottom fullWidth>
                   This endpoint has no password protection.
                 </Notice>
               )}

@@ -14,7 +14,6 @@ type Props = {
   selected?: boolean
   mobile?: boolean
   duplicateName?: boolean
-  events?: boolean
   onClick?: () => void
   onSelect?: (deviceId: string) => void
 }
@@ -25,7 +24,6 @@ export const DeviceListItem: React.FC<Props> = ({
   selected = false,
   mobile,
   duplicateName,
-  events,
   onClick,
   onSelect,
 }) => {
@@ -34,7 +32,7 @@ export const DeviceListItem: React.FC<Props> = ({
     connections && (service ? connections.find(c => c.id === service.id) : connections.find(c => c.enabled))
   const history = useHistory()
   const offline = device?.state === 'inactive'
-  const css = useStyles({ offline, events })
+  const css = useStyles({ offline })
 
   if (!device) return null
 
@@ -76,18 +74,17 @@ export const DeviceListItem: React.FC<Props> = ({
 
 type StyleProps = {
   offline: boolean
-  events?: boolean
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  row: ({ offline, events }: StyleProps) => ({
+  row: ({ offline }: StyleProps) => ({
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
     '&:hover': {
-      backgroundColor: events ? palette.primaryHighlight.main : palette.white.main,
+      backgroundColor: palette.primaryHighlight.main,
     },
     '&:hover > div:first-of-type, &.Mui-selected > div:first-of-type': {
-      backgroundImage: events ? `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)` : undefined,
+      backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
     },
     '&.Mui-selected:hover > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryLighter.main} 95%, transparent)`,
@@ -97,7 +94,7 @@ const useStyles = makeStyles(({ palette }) => ({
       width: '100%',
     },
   }),
-  sticky: ({ events }: StyleProps) => ({
+  sticky: {
     position: 'sticky',
     left: 0,
     zIndex: 4,
@@ -105,9 +102,9 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'start !important',
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
-    backgroundImage: events ? `linear-gradient(90deg, ${palette.white.main} 95%, transparent)` : undefined,
+    backgroundImage: `linear-gradient(90deg, ${palette.white.main} 95%, transparent)`,
     overflow: 'visible',
     paddingLeft: spacing.md,
     height: '100%',
-  }),
+  },
 }))

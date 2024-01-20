@@ -53,7 +53,9 @@ export const LaunchButton: React.FC<Props> = ({
 
   if (!app) return null
 
-  const clickHandler = async () => {
+  const clickHandler = async (event?: React.MouseEvent) => {
+    event?.stopPropagation()
+
     if (device && !device.loaded) {
       await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })
       dispatch.ui.set({ autoLaunch: true })

@@ -141,7 +141,7 @@ const useStyles = makeStyles(({ palette }) => ({
       styles.fontSize = styles.height = fontSize
       styles.maxWidth = fontSize + spacing.sm
     }
-    if (scale) styles.height *= scale
+    if (scale) styles.height = `calc(${styles.height} * ${scale})`
     return styles
   },
 }))

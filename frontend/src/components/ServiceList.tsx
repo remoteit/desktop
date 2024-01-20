@@ -1,14 +1,14 @@
-import React, { useState, useRef } from 'react'
+import React, { useRef } from 'react'
 import classnames from 'classnames'
+import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
+import { List, Divider, useMediaQuery } from '@mui/material'
+import { spacing, fontSizes } from '../styling'
 import { DeviceListContext } from '../services/Context'
 import { DeviceListHeader } from './DeviceListHeader'
-import { makeStyles } from '@mui/styles'
-import { List, Divider, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { LoadMore } from './LoadMore'
-import { spacing, fontSizes } from '../styling'
 
 export interface DeviceListProps {
   attributes: Attribute[]
@@ -33,7 +33,6 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   fetching,
 }) => {
   const previousName = useRef<string>('')
-  const [events, setEvents] = useState<boolean>(true)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const css = useStyles({ attributes, required, columnWidths, mobile })
 
@@ -60,10 +59,10 @@ export const ServiceList: React.FC<DeviceListProps> = ({
         return (
           <DeviceListContext.Provider
             key={service.id}
-            value={{ device, service, connections: connections[device.id], required, attributes, setEvents }}
+            value={{ device, service, connections: connections[device.id], required, attributes }}
           >
             {divider && <Divider variant="inset" />}
-            <DeviceListItem {...{ mobile, duplicateName, events }} />
+            <DeviceListItem {...{ mobile, duplicateName }} />
           </DeviceListContext.Provider>
         )
       })}

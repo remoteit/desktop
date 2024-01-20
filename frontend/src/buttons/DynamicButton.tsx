@@ -60,7 +60,6 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
       <ColorChip
         size="small"
         label={title}
-        color={color}
         variant={variant}
         onClick={event => {
           event.stopPropagation()
@@ -68,8 +67,8 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
         }}
         // Prevent events from reaching the parent for the service list
         onMouseDown={event => event.stopPropagation()}
+        className={css.button}
         disabled={disabled}
-        className={className}
       />
     )
   }
@@ -130,7 +129,7 @@ const useStyles = makeStyles(({ palette }) => ({
     }
 
     return {
-      '&.MuiButton-root': {
+      '&, &.MuiButton-root': {
         backgroundColor: background,
         color: foreground,
         minWidth: 0,

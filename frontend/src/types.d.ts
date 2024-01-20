@@ -28,7 +28,6 @@ declare global {
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
-    setEvents?: React.Dispatch<React.SetStateAction<boolean>>
   }
 
   interface IDeviceContext {

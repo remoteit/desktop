@@ -55,11 +55,6 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
           </sup>
         </Tooltip>
       )}
-      {service && (
-        <sup>
-          <ServiceLinkIcon service={service} type="solid" size="xxxs" />
-        </sup>
-      )}
     </Title>
   )
 }

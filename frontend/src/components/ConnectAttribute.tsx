@@ -1,5 +1,4 @@
-import React, { useContext } from 'react'
-import { DeviceListContext } from '../services/Context'
+import React from 'react'
 import { useApplication } from '../hooks/useApplication'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { ComboButton } from '../buttons/ComboButton'
@@ -8,11 +7,11 @@ import { makeStyles } from '@mui/styles'
 import { Stack } from '@mui/material'
 
 export const ConnectAttribute = ({ device, service, connection }: IDataOptions) => {
-  const { setEvents } = useContext(DeviceListContext)
   const app = useApplication(service, connection)
   const css = useStyles()
   const buttons =
     connection &&
+    connection.online &&
     (connection.enabled ||
       connection.connecting ||
       connection.starting ||
@@ -21,13 +20,7 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
       connection.connectLink)
 
   return (
-    <Stack
-      flexDirection="row"
-      position="relative"
-      zIndex={3}
-      onMouseEnter={() => setEvents?.(false)}
-      onMouseLeave={() => setEvents?.(true)}
-    >
+    <Stack flexDirection="row" position="relative" zIndex={3}>
       <ComboButton
         size="chip"
         service={service}
