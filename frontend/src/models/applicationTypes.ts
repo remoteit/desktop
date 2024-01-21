@@ -13,7 +13,7 @@ type IApplicationTypeState = {
 
 const state: IApplicationTypeState = {
   all: [],
-  groups: [{ name: 'HTTP(S)', ids: [7, 8] }],
+  groups: [{ name: 'HTTP/S', ids: [7, 8] }],
   account: {},
 }
 

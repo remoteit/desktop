@@ -56,13 +56,13 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
     if (shouldRedirect && !devices.length) {
       history.push('/add')
     }
-  }, [initialized])
+  }, [initialized, history])
 
   return (
     <DevicesDrawers>
       <DevicesHeader selected={selected} select={select} devices={devices}>
         {(fetching || shouldRedirect) && !devices.length ? (
-          <LoadingMessage message={'Loading... ' + fetching + ' ' + shouldRedirect} spinner={false} />
+          <LoadingMessage message="Loading..." spinner={false} />
         ) : !devices.length ? (
           <DeviceListEmpty />
         ) : applicationTypes?.length ? (

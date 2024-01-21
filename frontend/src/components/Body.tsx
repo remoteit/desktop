@@ -143,6 +143,6 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    padding: `${spacing.md}px ${spacing.md}px 60px`,
+    padding: `${spacing.md}px ${spacing.md}px ${spacing.xl}px`,
   },
 }))
