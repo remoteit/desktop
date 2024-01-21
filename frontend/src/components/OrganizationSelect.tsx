@@ -178,6 +178,8 @@ const useStyles = makeStyles(({ palette }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: palette.grayLighter.main,
+    boxShadow: `0 0 10px 10px ${palette.grayLighter.main}`,
     '& > *': {
       display: 'flex',
       justifyContent: 'center',
@@ -187,7 +189,7 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   },
   buttonContainer: {
-    width: 38,
+    width: 42,
   },
   button: {
     borderRadius: '50%',
@@ -211,7 +213,7 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   },
   home: {
-    width: 38,
+    width: 42,
     height: 38,
     borderRadius: '50%',
     display: 'flex',
