@@ -2,21 +2,30 @@ import React from 'react'
 import isEqual from 'lodash/isEqual'
 import { defaultState } from '../models/devices'
 import { selectApplicationTypesGrouped } from '../selectors/applications'
-import { Divider, Tabs, Tab, TabProps } from '@mui/material'
+import { Divider, Tabs, Tab, TabProps, Tooltip } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../selectors/devices'
+import { Icon } from './Icon'
+
+const SCREEN_VIEW_ID = 48
 
 export const DevicesApplicationsBar: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { allTypes, activeTypes } = useSelector((state: ApplicationState) => ({
-    allTypes: selectApplicationTypesGrouped(state),
+    allTypes: [...selectApplicationTypesGrouped(state)],
     activeTypes: getDeviceModel(state).applicationTypes,
   }))
 
   if (!allTypes.length) return null
 
-  const selection = allTypes.findIndex(t => isEqual(activeTypes, t.ids))
+  const hasScreenView = allTypes.findIndex(t => t.ids.includes(SCREEN_VIEW_ID))
+
+  if (hasScreenView > -1) {
+    allTypes.unshift(allTypes.splice(hasScreenView, 1)[0])
+  }
+
+  let selection = allTypes.findIndex(t => isEqual(activeTypes, t.ids))
 
   const update = async (applicationTypes?: number[]) => {
     await dispatch.devices.setPersistent({ applicationTypes, from: defaultState.from })
@@ -31,9 +40,18 @@ export const DevicesApplicationsBar: React.FC = () => {
       sx={{ marginX: 3, marginY: 1 }}
     >
       <MasterTab label="All Services" onClick={() => update(undefined)} />
-      {allTypes.map(app => (
-        <Tab key={app.ids.toString()} label={app.name} onClick={() => update(app.ids)} />
-      ))}
+      {allTypes.map(app => {
+        return app.ids.includes(SCREEN_VIEW_ID) ? (
+          <Tooltip title="Screen View" placement="top" arrow>
+            <Tab
+              label={<Icon name="android-screenview" size="sm" platformIcon currentColor />}
+              onClick={() => update([SCREEN_VIEW_ID])}
+            />
+          </Tooltip>
+        ) : (
+          <Tab key={app.ids.toString()} label={app.name} onClick={() => update(app.ids)} />
+        )
+      })}
     </Tabs>
   )
 }

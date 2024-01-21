@@ -93,6 +93,9 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   }),
   list: {
+    '& .MuiListItem-root:nth-child(2)': {
+      marginTop: SHRINK / 2,
+    },
     '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'inline-grid',
       alignItems: 'start',
