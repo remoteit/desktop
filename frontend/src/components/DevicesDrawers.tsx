@@ -6,7 +6,7 @@ import { Container } from './Container'
 export const DevicesDrawers: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <Container
-      sidebar={
+      drawer={
         <>
           <FilterDrawer />
           <ColumnsDrawer />

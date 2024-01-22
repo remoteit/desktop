@@ -44,6 +44,7 @@ class Platforms {
     'openwrt',
     'raspberrypi',
     'remoteit',
+    'screenview',
     'this',
     'tinkerboard',
     'ubiquiti',

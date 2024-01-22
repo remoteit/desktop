@@ -7,7 +7,7 @@ import { Body, BodyProps } from '../Body'
 
 type Props = {
   header?: React.ReactNode
-  sidebar?: React.ReactNode
+  drawer?: React.ReactNode
   footer?: React.ReactNode
   integrated?: boolean
   bodyProps?: BodyProps
@@ -20,7 +20,7 @@ type Props = {
 
 export const Container: React.FC<Props> = ({
   header,
-  sidebar,
+  drawer,
   footer,
   integrated,
   bodyProps,
@@ -39,7 +39,7 @@ export const Container: React.FC<Props> = ({
           {integrated || !!backgroundColor || <Divider variant="inset" />}
         </div>
       )}
-      {sidebar && <div className={css.sidebar}>{sidebar}</div>}
+      {drawer && <div className={css.drawer}>{drawer}</div>}
       <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
         {children}
       </Body>
@@ -75,7 +75,7 @@ const useStyles = makeStyles(({ palette }) => ({
       minHeight: 50,
     },
   }),
-  sidebar: {
+  drawer: {
     display: 'flex',
     flexFlow: 'row',
     flexGrow: 1,
@@ -83,6 +83,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'absolute',
     height: '100%',
     backgroundColor: palette.white.main,
+    boxShadow: `0 12px 5px ${palette.shadow.main}`,
     right: 0,
     zIndex: 12,
   },

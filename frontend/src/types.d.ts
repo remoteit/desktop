@@ -270,6 +270,7 @@ declare module '@mui/material/styles' {
     alwaysWhite: ColorType
     darken: ColorType
     screen: ColorType
+    shadow: ColorType
     rpi: ColorType
     guide: ColorType
     test: ColorType
@@ -300,6 +301,7 @@ declare module '@mui/material/styles' {
     alwaysWhite?: ColorPartial
     darken?: ColorPartial
     screen?: ColorPartial
+    shadow?: ColorPartial
     rpi?: ColorPartial
     guide?: ColorPartial
     test?: ColorPartial

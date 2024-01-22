@@ -133,6 +133,7 @@ export const attributes: Attribute[] = [
     label: 'Status',
     query: 'serviceName',
     defaultWidth: 100,
+    details: false,
     value: ({ service, connection }) => (
       <StatusChip service={service} connections={connection ? [connection] : undefined} />
     ),
@@ -141,6 +142,7 @@ export const attributes: Attribute[] = [
     id: 'serviceAction',
     label: 'Action',
     query: 'serviceName',
+    details: false,
     defaultWidth: 160,
     value: ({ device, service, connection }) => <ConnectAttribute {...{ device, service, connection }} />,
   }),
@@ -396,7 +398,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceLink',
     label: 'Service Key',
-    value: ({ service }) => <LicenseChip license={service?.license} />,
+    value: ({ service }) => (service?.link?.url.startsWith('http') ? service?.link.code : null),
   }),
   new ServiceAttribute({
     id: 'license',

@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
 import {
+  Box,
   Stack,
   List,
   ListItem,
@@ -17,6 +18,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
+import { ScreenViewSetup } from '../components/ScreenViewSetup'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { AndroidSetup } from '../components/AndroidSetup'
 import { ClaimDevice } from '../components/ClaimDevice'
@@ -66,12 +68,13 @@ export const AddPage: React.FC = () => {
         </List>
         <AndroidSetup className={classnames(css.list, css.smallList)} />
         <DeviceSetupItem className={classnames(css.list, css.smallList)} />
+        <ScreenViewSetup className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
           <Divider />
-          <Stack paddingTop={3}>
+          <ListItem sx={{ paddingTop: 3 }} disablePadding>
             <ClaimDevice />
-          </Stack>
+          </ListItem>
         </List>
         {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
           <ListSubheader disableGutters>Quick add Command</ListSubheader>
@@ -169,12 +172,14 @@ const useStyles = makeStyles(({ breakpoints }) => ({
     '& .MuiListItem-root': {
       display: 'block',
       minWidth: 140,
-      minHeight: 85,
+      minHeight: 100,
+      margin: 1,
+    },
+    '& .MuiListItem-root.MuiListItem-padding': {
       paddingLeft: spacing.md,
       paddingTop: spacing.lg,
       paddingBottom: spacing.sm,
       paddingRight: spacing.md,
-      margin: 1,
     },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
@@ -187,6 +192,7 @@ const useStyles = makeStyles(({ breakpoints }) => ({
   smallList: {
     width: '50%',
     [breakpoints.up('sm')]: { width: '33%' },
+    [breakpoints.up('md')]: { width: '25%' },
   },
   bigList: {
     width: '100%',

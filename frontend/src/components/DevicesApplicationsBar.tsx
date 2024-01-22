@@ -2,7 +2,7 @@ import React from 'react'
 import isEqual from 'lodash/isEqual'
 import { defaultState } from '../models/devices'
 import { selectApplicationTypesGrouped } from '../selectors/applications'
-import { Divider, Tabs, Tab, TabProps, Tooltip } from '@mui/material'
+import { Stack, Divider, Tabs, Tab, TabProps } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../selectors/devices'
@@ -42,12 +42,16 @@ export const DevicesApplicationsBar: React.FC = () => {
       <MasterTab label="All Services" onClick={() => update(undefined)} />
       {allTypes.map(app => {
         return app.ids.includes(SCREEN_VIEW_ID) ? (
-          <Tooltip title="Screen View" placement="top" arrow>
-            <Tab
-              label={<Icon name="android-screenview" size="sm" platformIcon currentColor />}
-              onClick={() => update([SCREEN_VIEW_ID])}
-            />
-          </Tooltip>
+          <Tab
+            key={app.ids.toString()}
+            label={
+              <Stack flexDirection="row" alignItems="center">
+                <Icon name="android-screenview" size="sm" platformIcon currentColor />
+                &nbsp; ScreenView
+              </Stack>
+            }
+            onClick={() => update([SCREEN_VIEW_ID])}
+          />
         ) : (
           <Tab key={app.ids.toString()} label={app.name} onClick={() => update(app.ids)} />
         )
