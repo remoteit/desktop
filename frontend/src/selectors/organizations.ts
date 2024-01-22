@@ -52,7 +52,6 @@ export const selectLimitsLookup = createSelector(
     baseLimits.forEach(l => {
       result[l.name] = limitsOverride[l.name] === undefined || !isUserAccount ? l.value : limitsOverride[l.name]
     })
-
     return result
   }
 )

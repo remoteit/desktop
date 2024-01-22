@@ -24,6 +24,7 @@ declare global {
 
   interface IDeviceListContext {
     device?: IDevice
+    service?: IService
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
@@ -207,13 +208,14 @@ declare global {
   }
 
   type IDataOptions = {
-    application?: Application
+    mobile?: boolean
     device?: IDevice
     instance?: IInstance
     service?: IService
-    connection?: IConnection
     session?: ISession
+    connection?: IConnection
     connections?: IConnection[]
+    application?: Application
   }
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
@@ -268,6 +270,7 @@ declare module '@mui/material/styles' {
     alwaysWhite: ColorType
     darken: ColorType
     screen: ColorType
+    shadow: ColorType
     rpi: ColorType
     guide: ColorType
     test: ColorType
@@ -298,6 +301,7 @@ declare module '@mui/material/styles' {
     alwaysWhite?: ColorPartial
     darken?: ColorPartial
     screen?: ColorPartial
+    shadow?: ColorPartial
     rpi?: ColorPartial
     guide?: ColorPartial
     test?: ColorPartial

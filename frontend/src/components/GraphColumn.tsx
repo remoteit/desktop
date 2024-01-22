@@ -1,17 +1,14 @@
-import React, { useContext } from 'react'
-import { DeviceListContext } from '../services/Context'
+import React from 'react'
 import { humanizeResolutionLookup, TimeSeriesTypeLookup } from '../helpers/dateHelper'
 import { IconButton } from '../buttons/IconButton'
-import { spacing } from '../styling'
 import { Box } from '@mui/material'
 import humanize from 'humanize-duration'
 
-export const GraphColumn: React.FC = () => {
-  const { device } = useContext(DeviceListContext)
-  if (!device?.timeSeries) return <>Graph</>
+export const GraphColumn: React.FC<{ title: string; timeSeries?: ITimeSeries }> = ({ title, timeSeries }) => {
+  if (!timeSeries) return <>{title}</>
   return (
     <>
-      {TimeSeriesTypeLookup[device.timeSeries.type]}
+      {TimeSeriesTypeLookup[timeSeries.type]}
       <Box
         className="hoverHide"
         sx={{
@@ -25,10 +22,10 @@ export const GraphColumn: React.FC = () => {
         <IconButton
           title={
             'Last ' +
-            humanize(device.timeSeries.end.getTime() - device.timeSeries.start.getTime(), {
+            humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
               largest: 1,
               round: true,
-              units: [humanizeResolutionLookup[device.timeSeries.resolution || 'DAY']],
+              units: [humanizeResolutionLookup[timeSeries.resolution || 'DAY']],
             })
           }
           name="sliders"

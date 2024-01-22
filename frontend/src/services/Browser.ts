@@ -32,6 +32,7 @@ class Environment {
   isWindows: boolean = false
   isIOS: boolean = false
   isAndroid: boolean = false
+  isAndroidBrowser: boolean = false
   isApple: boolean = false
   hasBackend: boolean = false
   hasBilling: boolean = false
@@ -43,6 +44,7 @@ class Environment {
     this.isRemote = isRemote()
     this.isIOS = Capacitor.getPlatform() === 'ios'
     this.isAndroid = Capacitor.getPlatform() === 'android'
+    this.isAndroidBrowser = isAndroidBrowser()
 
     this.isMac = isMac()
     this.isWindows = isWindows()
@@ -102,6 +104,10 @@ function isMac() {
 
 function isWindows() {
   return navigator.userAgent.toLowerCase().includes('win')
+}
+
+function isAndroidBrowser() {
+  return navigator.userAgent.toLowerCase().includes('android')
 }
 
 export function getOs(): Ios {

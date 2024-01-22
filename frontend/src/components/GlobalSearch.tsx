@@ -178,7 +178,13 @@ const useStyles = makeStyles(({ palette }) => ({
     width: '100%',
     zIndex: 1,
   },
-  input: { WebkitAppRegion: 'no-drag' },
+  input: {
+    WebkitAppRegion: 'no-drag',
+    '& .MuiInputBase-root .MuiInputBase-input.MuiAutocomplete-input': {
+      padding: `${spacing.sm}px`,
+      fontSize: fontSizes.base,
+    },
+  },
   button: { marginBottom: -spacing.sm },
   enabled: { color: palette.primary.main },
   subhead: {

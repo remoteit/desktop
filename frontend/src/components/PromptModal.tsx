@@ -34,6 +34,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <form
         onSubmit={event => {
+          event.preventDefault()
           let foundError = false
           Object.keys(tokens).forEach(key => {
             if (!tokens[key]) {
@@ -41,7 +42,6 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
               foundError = true
             }
           })
-          event.preventDefault()
           if (!foundError) onSubmit(tokens)
         }}
       >

@@ -99,16 +99,15 @@ export default createModel<RootModel>()({
       const response = await graphQLLogin()
       if (response === 'ERROR') return
 
-      const data = response?.data?.data?.login
-      const user = { ...data, authHash: data.authhash }
+      const user = response?.data?.data?.login
 
       auth.set({ user, signInError: undefined })
       setLocalStorage(state, USER_KEY, user)
-      if (data.authhash && data.yoicsId) {
-        Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
+      if (user.authhash && user.yoicsId) {
+        Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
         auth.signedIn()
       } else {
-        console.warn('Login failed!', data)
+        console.warn('Login failed!', response)
         dispatch.ui.set({ errorMessage: 'Login failed.' })
       }
     },
@@ -210,24 +209,17 @@ export default createModel<RootModel>()({
         return
       }
 
-      window.clarity?.('set', 'user', state.auth.user?.email || 'unknown')
       zendesk.initChat(state.auth.user)
-      dispatch.ui.set({ fetching: true })
+      cloudController.init()
+      cloudSync.init()
       dispatch.backend.init()
       dispatch.plans.init()
-      await cloudController.init()
+      dispatch.contacts.fetch()
+      dispatch.applicationTypes.init()
       await dispatch.accounts.init()
-      await dispatch.organization.init()
       await dispatch.connections.init()
       await dispatch.networks.init()
-      await dispatch.devices.init()
-      await cloudSync.init()
-
       await cloudSync.all()
-      await dispatch.contacts.fetch()
-      await dispatch.applicationTypes.fetch()
-
-      dispatch.ui.set({ fetching: false })
     },
     async signedIn() {
       if (!browser.hasBackend) dispatch.auth.dataReady()

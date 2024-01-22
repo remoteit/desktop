@@ -1,12 +1,12 @@
 import React from 'react'
 import { platforms } from '../../platforms'
 import { Tooltip, Box } from '@mui/material'
-import { FontSize } from '../../styling'
+import { Sizes } from '../../styling'
 import { Icon } from '../Icon'
 
 export const TargetPlatform: React.FC<{
   id?: number
-  size?: FontSize
+  size?: Sizes
   tooltip?: boolean
   label?: boolean
   inlineLeft?: boolean

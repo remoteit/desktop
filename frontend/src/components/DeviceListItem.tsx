@@ -3,11 +3,9 @@ import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { DeviceListContext } from '../services/Context'
 import { AttributeValueMemo } from './AttributeValue'
-import { useMediaQuery, Box, ListItemIcon, ListItem } from '@mui/material'
+import { Box, ListItemIcon, ListItem } from '@mui/material'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
-import { DeviceConnectMenu } from './DeviceConnectMenu'
 import { radius, spacing } from '../styling'
-import { TestUI } from './TestUI'
 import { Icon } from './Icon'
 
 type Props = {
@@ -15,13 +13,23 @@ type Props = {
   select?: boolean
   selected?: boolean
   mobile?: boolean
+  duplicateName?: boolean
   onClick?: () => void
   onSelect?: (deviceId: string) => void
 }
 
-export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = false, mobile, onClick, onSelect }) => {
-  const { connections, device, attributes, required } = useContext(DeviceListContext)
-  const connection = connections && connections.find(c => c.enabled)
+export const DeviceListItem: React.FC<Props> = ({
+  restore,
+  select,
+  selected = false,
+  mobile,
+  duplicateName,
+  onClick,
+  onSelect,
+}) => {
+  const { connections, device, service, attributes, required } = useContext(DeviceListContext)
+  const connection =
+    connections && (service ? connections.find(c => c.id === service.id) : connections.find(c => c.enabled))
   const history = useHistory()
   const offline = device?.state === 'inactive'
   const css = useStyles({ offline })
@@ -31,43 +39,33 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected = fa
   const handleClick = () => {
     onClick?.()
     if (select) onSelect?.(device.id)
-    else if (!restore) history.push(`/devices/${device.id}`)
+    else if (!restore) history.push(`/devices/${device.id}${service ? `/${service.id}/connect` : ''}`)
   }
 
   return (
     <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
       <Box className={css.sticky}>
-        <Box>
-          <ListItemIcon>
-            {select ? (
-              selected ? (
-                <Icon name="check-square" size="md" type="solid" color="primary" />
+        {duplicateName && !mobile ? null : (
+          <Box>
+            <ListItemIcon>
+              {select ? (
+                selected ? (
+                  <Icon name="check-square" size="md" type="solid" color="primary" />
+                ) : (
+                  <Icon name="square" size="md" />
+                )
               ) : (
-                <Icon name="square" size="md" />
-              )
-            ) : (
-              <>
-                <ConnectionStateIcon /* className="hoverHide" */ device={device} connection={connection} />
-                {/* <TestUI>
-                <Box className={css.connect}>
-                  <DeviceConnectMenu size="icon" iconSize="md" disabled={offline || device.thisDevice} />
-                </Box>
-              </TestUI> */}
-              </>
-            )}
-          </ListItemIcon>
-          <AttributeValueMemo device={device} attribute={required} connection={connection} connections={connections} />
-        </Box>
+                <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
+              )}
+            </ListItemIcon>
+            <AttributeValueMemo {...{ mobile, device, service, connection, connections }} attribute={required} />
+          </Box>
+        )}
       </Box>
       {!mobile &&
         attributes?.map(attribute => (
           <Box key={attribute.id}>
-            <AttributeValueMemo
-              device={device}
-              attribute={attribute}
-              connection={connection}
-              connections={connections}
-            />
+            <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
           </Box>
         ))}
     </ListItem>
@@ -80,18 +78,21 @@ type StyleProps = {
 
 const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: StyleProps) => ({
-    '&:hover > div:first-of-type': {
-      backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    '&:hover': {
+      backgroundColor: palette.primaryHighlight.main,
     },
-    '&.Mui-selected > div:first-of-type': {
+    '&:hover > div:first-of-type, &.Mui-selected > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryHighlight.main} 95%, transparent)`,
     },
     '&.Mui-selected:hover > div:first-of-type': {
       backgroundImage: `linear-gradient(90deg, ${palette.primaryLighter.main} 95%, transparent)`,
     },
-    '& > div:first-of-type > *': { opacity: offline ? 0.5 : 1, width: '100%' },
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
+    '& > div:first-of-type > div': {
+      opacity: offline ? 0.5 : 1,
+      width: '100%',
+    },
   }),
   sticky: {
     position: 'sticky',
@@ -105,16 +106,5 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'visible',
     paddingLeft: spacing.md,
     height: '100%',
-  },
-  connect: {
-    top: 0,
-    display: 'flex',
-    alignItems: 'center',
-    position: 'absolute',
-    width: 62,
-    height: '100%',
-    '& .MuiIconButton-root': {
-      backgroundImage: `radial-gradient(${palette.white.main} 15%, transparent 85%)`,
-    },
   },
 }))

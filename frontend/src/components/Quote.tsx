@@ -1,11 +1,11 @@
 import React from 'react'
 import classnames from 'classnames'
-import { spacing, Spacing } from '../styling'
+import { spacing, Sizes } from '../styling'
 import { makeStyles } from '@mui/styles'
 import { Box } from '@mui/material'
 
 type Props = {
-  margin?: Spacing | null
+  margin?: Sizes | null
   indent?: 'listItem' | 'checkbox'
   noInset?: boolean
   className?: string

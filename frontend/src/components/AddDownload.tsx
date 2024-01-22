@@ -22,7 +22,7 @@ export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => 
         color="primary"
         variant="contained"
         size="large"
-        sx={{ marginTop: 3, marginBottom: 3 }}
+        sx={{ marginTop: 3, marginBottom: 3, maxWidth: '400px' }}
         onClick={openDownloads}
         endIcon={
           <Icon

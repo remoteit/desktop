@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { useHistory } from 'react-router-dom'
 import { useMatches } from '../../hooks/useMatches'
 import { MenuItem, ListItem, ListItemIcon, ListItemText, Badge } from '@mui/material'
-import { Color, FontSize, spacing } from '../../styling'
+import { Color, Sizes, spacing } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Icon } from '../Icon'
 
@@ -15,7 +15,7 @@ export type Props = {
   icon?: React.ReactNode
   iconColor?: Color
   iconType?: IconType
-  iconSize?: FontSize
+  iconSize?: Sizes
   iconPlatform?: boolean
   disabled?: boolean
   showDisabled?: boolean

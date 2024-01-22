@@ -196,6 +196,35 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiTabs: {
+        styleOverrides: {
+          root: {
+            minHeight: 0,
+          },
+          scrollButtons: {
+            color: palette.grayDark.main,
+            '&.Mui-disabled': { opacity: 0.2 },
+          },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            borderRadius: radius,
+            minWidth: 0,
+            minHeight: 0,
+            textTransform: 'initial',
+            fontSize: fontSizes.xs,
+            padding: `${spacing.xs}px ${spacing.sm}px`,
+            color: palette.gray.main,
+            '&:hover': { backgroundColor: palette.grayLighter.main },
+            '&.Mui-selected': {
+              backgroundColor: palette.primaryHighlight.main,
+              fontWeight: 500,
+            },
+          },
+        },
+      },
       MuiSnackbarContent: {
         styleOverrides: {
           root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },
@@ -568,7 +597,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginBottom: spacing.sm,
           },
           h5: {
-            fontSize: fontSizes.sm * 0.75, // inputLabel shrink
+            fontSize: fontSizes.xxs, //'0.5625rem', // inputLabel shrink (12px * 0.75 || 9px)
             letterSpacing: 0.5,
             fontWeight: 500,
             textTransform: 'uppercase',

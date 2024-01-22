@@ -21,7 +21,7 @@ export const OrganizationSelect: React.FC = () => {
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
+  let { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
     activeOrg: selectOrganization(state),
     defaultSelection: state.ui.defaultSelection,
     options: state.accounts.membership.map(m => {
@@ -41,8 +41,14 @@ export const OrganizationSelect: React.FC = () => {
   }))
 
   const ownOrgId = ownOrg?.id
+  let menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
+
+  if (menu === '/account') {
+    activeOrg = ownOrg
+    menu = '/devices'
+  }
+
   const onSelect = async (id: string) => {
-    const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
     id = id || userId
     await logs.reset()
     await accounts.setActive(id.toString())
@@ -172,6 +178,8 @@ const useStyles = makeStyles(({ palette }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: palette.grayLighter.main,
+    boxShadow: `0 0 10px 10px ${palette.grayLighter.main}`,
     '& > *': {
       display: 'flex',
       justifyContent: 'center',
@@ -181,7 +189,7 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   },
   buttonContainer: {
-    width: 38,
+    width: 42,
   },
   button: {
     borderRadius: '50%',
@@ -205,7 +213,7 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   },
   home: {
-    width: 38,
+    width: 42,
     height: 38,
     borderRadius: '50%',
     display: 'flex',

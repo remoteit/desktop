@@ -1,14 +1,14 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, Chip, IconButton } from '@mui/material'
-import { spacing, FontSize } from '../styling'
+import { spacing, Sizes } from '../styling'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from '../components/Icon'
 
 type Props = {
   tag?: ITag
   dot?: boolean
-  size?: FontSize
+  size?: Sizes
   hideLabels?: boolean
   onClick?: () => void
   onDelete?: () => void

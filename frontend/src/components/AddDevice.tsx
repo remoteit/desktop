@@ -106,8 +106,12 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
         ) : (
           <>
             This page will automatically update when complete.
-            {platform.installation?.link && (
-              <Link href={platform.installation?.link}>Troubleshooting & instructions.</Link>
+            {platform.installation?.link && <Link href={platform.installation?.link}>Instructions.</Link>}
+            {platform.installation?.altLink && (
+              <>
+                In production <u>do not clone devices</u>, please follow these
+                <Link href={platform.installation.altLink}>oem instructions.</Link>
+              </>
             )}
           </>
         )}

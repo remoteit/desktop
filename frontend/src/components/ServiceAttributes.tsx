@@ -1,5 +1,5 @@
 import React from 'react'
-import { getAttributes } from './Attributes'
+import { serviceAttributes } from './Attributes'
 import { DataDisplay } from './DataDisplay'
 import { Gutters } from './Gutters'
 
@@ -7,27 +7,9 @@ export const ServiceAttributes: React.FC<{
   device?: IDevice
   service?: IService
   disablePadding?: boolean
-}> = props => {
-  let attributes = [
-    'license',
-    'owner',
-    'serviceTimeSeries',
-    'serviceLastReported',
-    'serviceCreated',
-    'servicePort',
-    'serviceHost',
-    'serviceProtocol',
-    'serviceType',
-    'serviceDockerName',
-    'serviceDockerId',
-    'serviceDockerImage',
-    'presenceAddress',
-    'serviceId',
-    'id',
-  ]
-  return (
-    <Gutters>
-      <DataDisplay {...props} attributes={getAttributes(attributes)} />
-    </Gutters>
-  )
-}
+}> = props => (
+  <Gutters>
+    <DataDisplay {...props} attributes={serviceAttributes.filter(a => a.details)} />
+  </Gutters>
+)
+

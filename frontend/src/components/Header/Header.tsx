@@ -24,13 +24,14 @@ import { Pre } from '../Pre'
 
 export const Header: React.FC = () => {
   const mobileGoBack = useMobileBack()
-  const { searched, canNavigate, permissions, layout } = useSelector((state: ApplicationState) => {
+  const { searched, canNavigate, permissions, layout, serviceList } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     return {
       selected: state.ui.selected,
       searched: deviceModel.searched, // debug make true
       canNavigate: state.backend.canNavigate,
       permissions: selectPermissions(state),
+      serviceList: !!deviceModel.applicationTypes?.length,
       layout: state.ui.layout,
     }
   })
@@ -103,7 +104,7 @@ export const Header: React.FC = () => {
               <FilterButton />
               {!mobile && <ColumnsButton />}
             </Route>
-            {manager && (
+            {manager && !serviceList && (
               <Switch>
                 <Route path="/devices" exact>
                   <IconButton to="/devices/select" icon="check-square" title="Show Select" />

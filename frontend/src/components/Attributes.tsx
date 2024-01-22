@@ -1,15 +1,17 @@
 import React from 'react'
 import { IP_PRIVATE } from '@common/constants'
-import { PROTOCOL } from '../constants'
 import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { ListItemText, Chip, Typography } from '@mui/material'
+import { ListItemText, Stack, Chip, Typography } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
+import { ServiceGraphColumn } from './ServiceGraphColumn'
+import { DeviceGraphColumn } from './DeviceGraphColumn'
+import { ConnectAttribute } from './ConnectAttribute'
+import { ServiceMiniState } from './ServiceMiniState'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { ReactiveTags } from './ReactiveTags'
-import { GraphColumn } from './GraphColumn'
 import { DeviceName } from './DeviceName'
 import { LicenseChip } from './LicenseChip'
 import { AvatarList } from './AvatarList'
@@ -22,6 +24,7 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
+import { Title } from './Title'
 import { Link } from './Link'
 
 export class Attribute {
@@ -33,7 +36,7 @@ export class Attribute {
   column: boolean = true
   defaultWidth: number = 150
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
-  feature?: string
+  feature?: string // key to plan limit name - used for tagging visibility
   multiline?: boolean
   details?: boolean = true // show on device details page
   query?: string // key to device query - fall back to id
@@ -96,8 +99,6 @@ const ATTRIBUTES = [
   { label: 'Status E', id: 'statusE' },
 ]
 
-// @TODO  display more service / device attributes  and more of the geo data
-
 export const attributes: Attribute[] = [
   new RestoreAttribute({
     id: 'restore',
@@ -108,37 +109,97 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'deviceName',
     label: 'Name',
-    value: ({ device, connection }) => (
-      <ListItemText
-        primary={<DeviceName device={device} connection={connection} />}
-        secondary={device?.thisDevice ? 'This system' : undefined}
-      />
-    ),
     defaultWidth: 400,
     required: true,
+    details: false,
+    value: ({ device, service, connection, mobile }) =>
+      mobile && service ? (
+        <Typography variant="body1">
+          <DeviceName service={service} connection={connection}>
+            <Typography variant="caption" color="inherit" sx={{ opacity: 0.6 }}>
+              <DeviceName device={device} connection={connection} />
+            </Typography>
+          </DeviceName>
+        </Typography>
+      ) : (
+        <ListItemText
+          primary={<DeviceName device={device} connection={connection} />}
+          secondary={device?.thisDevice ? 'This system' : undefined}
+        />
+      ),
   }),
-  new Attribute({
+  new ServiceAttribute({
+    id: 'serviceStatus',
+    label: 'Status',
+    query: 'serviceName',
+    defaultWidth: 100,
+    details: false,
+    value: ({ service, connection }) => (
+      <StatusChip service={service} connections={connection ? [connection] : undefined} />
+    ),
+  }),
+  new ServiceAttribute({
+    id: 'serviceAction',
+    label: 'Action',
+    query: 'serviceName',
+    details: false,
+    defaultWidth: 160,
+    value: ({ device, service, connection }) => <ConnectAttribute {...{ device, service, connection }} />,
+  }),
+  new ServiceAttribute({
+    id: 'serviceName',
+    label: 'Service Name',
+    defaultWidth: 300,
+    required: true,
+    details: false,
+    value: ({ service, connection }) => (
+      <ListItemText primary={<DeviceName service={service} connection={connection} />} sx={{ marginRight: 1 }} />
+    ),
+  }),
+  new ServiceAttribute({
+    id: 'serviceState',
+    label: 'Type',
+    defaultWidth: 110,
+    details: false,
+    value: ({ service, connection }) => <ServiceMiniState service={service} connection={connection} />,
+  }),
+  new DeviceAttribute({
     id: 'status',
     label: 'Status',
     query: 'deviceName',
     defaultWidth: 100,
     value: ({ device, connections }) => <StatusChip device={device} connections={connections} />,
   }),
-  new Attribute({
-    id: 'timeSeries',
-    query: 'timeSeries',
-    label: <GraphColumn />,
+  new DeviceAttribute({
+    id: 'deviceTimeSeries',
+    query: 'deviceTimeSeries',
+    label: <DeviceGraphColumn />,
     value: ({ device }) => (
       <Link
         to={`/devices/${device?.id}/details`}
         onClick={event => event.stopPropagation()}
-        sx={{ position: 'relative', zIndex: 3 }}
+        sx={{ position: 'relative', zIndex: 3, paddingTop: 1 }}
       >
         <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />
       </Link>
     ),
   }),
-  new Attribute({
+  new ServiceAttribute({
+    id: 'serviceTimeSeries',
+    query: 'serviceTimeSeries',
+    label: <ServiceGraphColumn />,
+    details: false,
+    value: ({ device, service }) => (
+      <Link
+        to={`/devices/${device?.id}/${service?.id}/connect`}
+        onClick={event => event.stopPropagation()}
+        sx={{ position: 'relative', zIndex: 3, paddingTop: 1 }}
+      >
+        <TimeSeries timeSeries={service?.timeSeries} online={device?.state === 'active'} />
+      </Link>
+    ),
+  }),
+  new DeviceAttribute({
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
@@ -152,7 +213,7 @@ export const attributes: Attribute[] = [
     defaultWidth: 120,
     value: ({ device }) => <QualityDetails device={device} small />,
   }),
-  new Attribute({
+  new DeviceAttribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
@@ -335,24 +396,48 @@ export const attributes: Attribute[] = [
     column: false,
   }),
   new ServiceAttribute({
-    id: 'connectLink',
-    label: 'Connect Link',
-    value: ({ service }) => `${PROTOCOL}connect/${service?.id}`,
+    id: 'serviceLink',
+    label: 'Service Key',
+    value: ({ service }) => (service?.link?.url.startsWith('http') ? service?.link.code : null),
   }),
   new ServiceAttribute({
-    id: 'serviceName',
-    label: 'Service Name',
-    value: ({ service }) => service?.name,
+    id: 'license',
+    label: 'License',
+    value: ({ service }) => <LicenseChip license={service?.license} />,
   }),
   new ServiceAttribute({
-    id: 'servicePort',
-    label: 'Service Port',
-    value: ({ service }) => service?.port,
+    id: 'serviceAccess',
+    label: 'Users',
+    defaultWidth: 200,
+    details: false,
+    value: ({ device, service }) => <AvatarList users={device?.shared ? [device.owner] : service?.access} size={22} />,
+  }),
+  new ServiceAttribute({
+    id: 'serviceLastReported',
+    label: 'Last Reported',
+    defaultWidth: 230,
+    value: ({ service }) =>
+      service?.state !== 'active' && service?.lastReported ? (
+        <Duration startDate={service.lastReported} ago />
+      ) : undefined,
+  }),
+  new ServiceAttribute({
+    id: 'serviceCreated',
+    label: 'Service Created',
+    defaultWidth: 175,
+    value: ({ service }) => <Timestamp date={service?.createdAt} />,
   }),
   new ServiceAttribute({
     id: 'serviceHost',
     label: 'Service Host',
+    defaultWidth: 130,
     value: ({ service }) => service?.host || IP_PRIVATE,
+  }),
+  new ServiceAttribute({
+    id: 'servicePort',
+    label: 'Service Port',
+    defaultWidth: 130,
+    value: ({ service }) => service?.port,
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',
@@ -360,10 +445,9 @@ export const attributes: Attribute[] = [
     value: ({ service }) => service?.protocol,
   }),
   new ServiceAttribute({
-    id: 'serviceAccess',
-    label: 'Users',
-    defaultWidth: 200,
-    value: ({ device, service }) => <AvatarList users={device?.shared ? [device.owner] : service?.access} size={22} />,
+    id: 'serviceType',
+    label: 'Service Type',
+    value: ({ service }) => service?.type,
   }),
   new ServiceAttribute({
     id: 'serviceDockerId',
@@ -381,22 +465,9 @@ export const attributes: Attribute[] = [
     value: ({ service }) => service?.attributes.docker?.image,
   }),
   new ServiceAttribute({
-    id: 'serviceLastReported',
-    label: 'Last Reported',
-    defaultWidth: 230,
-    value: ({ service }) =>
-      service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
-  }),
-  new ServiceAttribute({
-    id: 'serviceCreated',
-    label: 'Service Created',
-    defaultWidth: 175,
-    value: ({ service }) => <Timestamp date={service?.createdAt} />,
-  }),
-  new ServiceAttribute({
-    id: 'serviceType',
-    label: 'Service Type',
-    value: ({ service }) => service?.type,
+    id: 'presenceAddress',
+    label: 'Presence',
+    value: ({ service }) => service?.presenceAddress,
   }),
   new ServiceAttribute({
     id: 'serviceId',
@@ -404,14 +475,10 @@ export const attributes: Attribute[] = [
     value: ({ service }) => service?.id,
   }),
   new ServiceAttribute({
-    id: 'presenceAddress',
-    label: 'Presence',
-    value: ({ service }) => service?.presenceAddress,
-  }),
-  new ServiceAttribute({
-    id: 'license',
-    label: 'License',
-    value: ({ service }) => <LicenseChip license={service?.license} />,
+    id: 'serviceDeviceId',
+    label: 'Device ID',
+    defaultWidth: 180,
+    value: ({ device }) => device?.id,
   }),
   new ConnectionAttribute({
     id: 'duration',
@@ -503,9 +570,11 @@ export const attributes: Attribute[] = [
 const attributeLookup = toLookup<Attribute>(attributes, 'id')
 
 export const masterAttributes = attributes.filter(a => a.type === 'MASTER')
-export const deviceAttributes = attributes.filter(a => a.type === 'DEVICE' || a.type === 'INSTANCE')
+export const deviceAttributes = attributes.filter(a => ['DEVICE', 'INSTANCE'].includes(a.type))
+export const deviceAttributesAll = attributes.filter(a => ['DEVICE', 'INSTANCE', 'MASTER'].includes(a.type))
 export const networkAttributes = attributes.filter(a => a.type === 'INSTANCE')
 export const serviceAttributes = attributes.filter(a => a.type === 'SERVICE')
+export const serviceAttributesAll = attributes.filter(a => ['SERVICE', 'MASTER'].includes(a.type))
 export const restoreAttributes = attributes.filter(a => a.type === 'RESTORE')
 export const connectionAttributes = attributes.filter(a => a.type === 'CONNECTION')
 
@@ -515,8 +584,4 @@ export function getAttribute(id: string): Attribute {
 
 export function getAttributes(ids: string[]): Attribute[] {
   return ids.map(id => getAttribute(id))
-}
-
-export function getColumns(feature?: ILookup<boolean>) {
-  return masterAttributes.concat(deviceAttributes).filter(a => a.column && a.show(feature))
 }

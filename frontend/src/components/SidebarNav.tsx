@@ -114,7 +114,7 @@ export const SidebarNav: React.FC = () => {
       <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense />
       <ListItem sx={{ marginTop: 2 }}>
         <ListItemButton onClick={() => setMore(!more)}>
-          <Typography variant="subtitle2" color="grayDark.main">
+          <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
             More
             <ExpandIcon open={more} color="grayDark" />
           </Typography>

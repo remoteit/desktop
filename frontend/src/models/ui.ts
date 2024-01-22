@@ -139,8 +139,19 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'status', 'timeSeries', 'tags', 'services'],
-  columnWidths: { tags: 120 },
+  columns: [
+    'deviceName',
+    'status',
+    'deviceTimeSeries',
+    'tags',
+    'services',
+    'serviceName',
+    'serviceState',
+    'serviceStatus',
+    'serviceAction',
+    'serviceTimeSeries',
+  ],
+  columnWidths: {},
   collapsed: ['recent'],
   limitsOverride: {},
   serviceContextMenu: undefined,
@@ -197,12 +208,12 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init() {
+      console.log('UI INIT')
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()
-      console.log('UI INIT')
     },
     async restoreState(_: void, state) {
       let states: ILookup<any> = {}
@@ -214,6 +225,7 @@ export default createModel<RootModel>()({
         }
       })
       console.log('RESTORE UI STATE', states)
+      states = migrateColumnStates(states)
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
     },
@@ -232,7 +244,7 @@ export default createModel<RootModel>()({
     },
     async resizeColumn(params: { id: string; width: number }, state) {
       const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }
-      console.log('SET COLUMN WIDTHS', { columnWidths })
+      console.log('SET COLUMN WIDTHS', columnWidths)
       dispatch.ui.setPersistent({ columnWidths })
     },
     async guide({ guide, ...props }: ILookup<any>, state) {
@@ -326,4 +338,13 @@ export function selectPriorityGuide(state: ApplicationState, guide: string, star
   }
   if (state.user.created < startDate) active = false
   return { ...result, active }
+}
+
+function migrateColumnStates(states: ILookup<any>): ILookup<any> {
+  if (!states.columns || states.columns.includes('serviceName')) return states
+  console.log('MIGRATE COLUMN STATES')
+  return {
+    ...states,
+    columns: [...states.columns, 'serviceName', 'serviceStatus', 'serviceState', 'serviceAction', 'serviceTimeSeries'],
+  }
 }

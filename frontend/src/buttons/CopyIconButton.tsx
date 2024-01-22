@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { IconButton, ButtonProps } from './IconButton'
 import { updateConnection } from '../helpers/connectionHelper'
-import { FontSize, Color } from '../styling'
+import { Sizes, Color } from '../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../components/PromptModal'
-import { IconButton, ButtonProps } from './IconButton'
 import useClipboard from '../hooks/useClipboard'
 
 export type CopyButtonProps = ButtonProps & {
@@ -14,7 +14,7 @@ export type CopyButtonProps = ButtonProps & {
   title?: string
   value?: string | number
   color?: Color
-  size?: FontSize
+  size?: Sizes
   type?: IconType
   onMouseEnter?: () => void
   onMouseLeave?: () => void
@@ -56,6 +56,8 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
       setOpen(false)
     }
 
+    const onClose = () => setOpen(false)
+
     title = clipboard.copied ? 'Copied!' : title
 
     return (
@@ -68,8 +70,8 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
           icon={clipboard.copied ? 'check' : icon}
           title={title}
           size={size}
-        ></IconButton>
-        {app && <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />}
+        />
+        {app && <PromptModal app={app} open={open} onClose={onClose} onSubmit={onSubmit} />}
       </>
     )
   }

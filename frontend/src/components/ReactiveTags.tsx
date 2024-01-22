@@ -6,7 +6,9 @@ import { Tags, TagProps } from './Tags'
 const AVERAGE_TAG_WIDTH = 85
 
 export const ReactiveTags: React.FC<TagProps> = props => {
-  const max = useSelector((state: ApplicationState) => Math.floor(state.ui.columnWidths.tags / AVERAGE_TAG_WIDTH))
+  const max = useSelector((state: ApplicationState) =>
+    Math.floor((state.ui.columnWidths?.tags || 120) / AVERAGE_TAG_WIDTH)
+  )
 
   return <Tags {...props} max={max} small />
 }

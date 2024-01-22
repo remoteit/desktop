@@ -36,6 +36,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const state = connectionState(service, connection)
 
   let clickHandler = (event?: React.MouseEvent<HTMLButtonElement>, forceStop?: boolean) => {
+    event?.stopPropagation()
+    event?.preventDefault()
+
     if (preventDefault) {
       event && onClick?.(event)
       return

@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from './ServiceContextualMenu'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
-import { Box, List, Typography, useMediaQuery } from '@mui/material'
+import { List, Typography, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
@@ -18,9 +18,9 @@ import { LoadMore } from './LoadMore'
 import { spacing, fontSizes } from '../styling'
 
 export interface DeviceListProps {
-  connections: { [deviceID: string]: IConnection[] }
   attributes: Attribute[]
   required: Attribute
+  connections: { [deviceID: string]: IConnection[] }
   columnWidths: ILookup<number>
   fetching?: boolean
   devices?: IDevice[]
@@ -30,12 +30,12 @@ export interface DeviceListProps {
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
+  attributes,
+  required,
   devices = [],
   connections = {},
-  attributes,
   columnWidths,
   fetching,
-  required,
   restore,
   select,
   selected = [],
@@ -43,6 +43,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ attributes, required, columnWidths, mobile })
+
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
@@ -108,8 +109,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     </>
   )
 }
-
-export const DeviceListMemo = React.memo(DeviceList /* , createMemoDebugger('DeviceList') */)
 
 type StyleProps = {
   attributes: Attribute[]
