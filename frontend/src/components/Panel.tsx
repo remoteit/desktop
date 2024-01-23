@@ -2,9 +2,9 @@ import React from 'react'
 import { Box } from '@mui/material'
 import { Header } from './Header'
 
-type Props = { layout: ILayout; children?: React.ReactNode }
+type Props = { layout: ILayout; header?: boolean; children?: React.ReactNode }
 
-export const Panel: React.FC<Props> = ({ layout, children }) => {
+export const Panel: React.FC<Props> = ({ layout, header = true, children }) => {
   return (
     <Box
       sx={{
@@ -21,7 +21,7 @@ export const Panel: React.FC<Props> = ({ layout, children }) => {
         paddingRight: layout.insets?.rightPx,
       }}
     >
-      <Header />
+      {header && <Header />}
       {children}
     </Box>
   )

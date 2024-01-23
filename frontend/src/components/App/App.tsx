@@ -78,7 +78,7 @@ export const App: React.FC = () => {
   if (signedOut)
     return (
       <Page>
-        <SignInPage />
+        <SignInPage layout={layout} />
       </Page>
     )
 
