@@ -282,7 +282,7 @@ export default createModel<RootModel>()({
         const devices = graphQLDeviceAdaptor({
           gqlDevices,
           accountId: options.accountId,
-          loaded: !!options.applicationTypes?.length,
+          serviceLoaded: !!options.applicationTypes?.length,
         })
         return { devices, total, error }
       } catch (error) {

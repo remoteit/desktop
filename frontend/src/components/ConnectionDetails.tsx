@@ -259,7 +259,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
                           app={app}
                           size="lg"
                           color="alwaysWhite"
-                          device={device}
                           connection={connection}
                           onMouseEnter={() => setHover('launch')}
                           onMouseLeave={() => setHover(undefined)}

@@ -3,12 +3,10 @@ import { useApplication } from '../hooks/useApplication'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
-import { makeStyles } from '@mui/styles'
 import { Stack } from '@mui/material'
 
 export const ConnectAttribute = ({ device, service, connection }: IDataOptions) => {
   const app = useApplication(service, connection)
-  const css = useStyles()
   const buttons =
     connection &&
     connection.online &&
@@ -27,14 +25,7 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
       onClick={e => e.stopPropagation()}
       onMouseDown={e => e.stopPropagation()}
     >
-      <ComboButton
-        size="chip"
-        service={service}
-        className={css.connect}
-        connection={connection}
-        permissions={device?.permissions}
-        fullWidth
-      >
+      <ComboButton size="chip" service={service} connection={connection} permissions={device?.permissions} fullWidth>
         {buttons && (
           <>
             <CopyIconButton
@@ -48,7 +39,6 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
             />
             <LaunchButton
               app={app}
-              device={device}
               connection={connection}
               size="sm"
               type="regular"
@@ -64,7 +54,3 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
     </Stack>
   )
 }
-
-const useStyles = makeStyles({
-  connect: { minWidth: 120 },
-})

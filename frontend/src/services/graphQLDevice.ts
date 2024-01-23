@@ -404,11 +404,13 @@ export function graphQLDeviceAdaptor({
   accountId,
   hidden,
   loaded,
+  serviceLoaded,
 }: {
   gqlDevices: any[]
   accountId: string
   hidden?: boolean
   loaded?: boolean
+  serviceLoaded?: boolean
 }): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
@@ -440,7 +442,7 @@ export function graphQLDeviceAdaptor({
       permissions: d.permissions || [],
       attributes: processDeviceAttributes(d, customAttributes),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
-      services: graphQLServiceAdaptor(d),
+      services: graphQLServiceAdaptor(d, loaded || serviceLoaded),
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
       timeSeries: processTimeSeries(d),
@@ -460,13 +462,14 @@ export function graphQLDeviceAdaptor({
   return data
 }
 
-export function graphQLServiceAdaptor(device: any): IService[] {
+export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[] {
   return (
     device.services?.map(
       (s: any): IService => ({
         id: s.id,
         type: s.title,
         state: s.state,
+        loaded: !!loaded,
         enabled: s.enabled,
         typeID: s.application,
         deviceID: device.id,

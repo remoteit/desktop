@@ -133,6 +133,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   setUrlField(nextForm)
                 }}
               />
+              {appType.description && (
+                <ListItem className={css.field} disableGutters>
+                  <Typography variant="caption">{appType.description}</Typography>
+                </ListItem>
+              )}
               {thisDevice && (
                 <ListItem>
                   <Notice
