@@ -342,7 +342,7 @@ declare global {
     contactedAt: Date
     createdAt: Date
     enabled?: boolean
-    loaded: boolean
+    loaded?: boolean
     state: IDevice['state']
     type: string
     deviceID: string
