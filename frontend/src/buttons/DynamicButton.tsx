@@ -61,9 +61,8 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
         size="small"
         label={title}
         variant={variant}
-        onClick={onClick}
+        onClick={disabled ? undefined : onClick}
         className={css.button}
-        disabled={disabled}
       />
     )
   }
@@ -128,7 +127,7 @@ const useStyles = makeStyles(({ palette }) => ({
         backgroundColor: background,
         color: foreground,
         minWidth: 0,
-        '&:hover': { backgroundColor: hover },
+        '&:hover': { backgroundColor: props.disabled ? background : hover },
       },
     }
   },
