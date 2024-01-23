@@ -39,7 +39,6 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
             />
             <LaunchButton
               app={app}
-              device={device}
               connection={connection}
               size="sm"
               type="regular"

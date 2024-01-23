@@ -3,18 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
-import {
-  Box,
-  Stack,
-  List,
-  ListItem,
-  ListSubheader,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Tooltip,
-  Divider,
-} from '@mui/material'
+import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Tooltip } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -50,7 +39,6 @@ export const AddPage: React.FC = () => {
       <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" paddingX={{ xs: 1, sm: 4 }}>
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
-          <Divider />
           <ListItem
             button
             disableGutters
@@ -71,19 +59,16 @@ export const AddPage: React.FC = () => {
         <ScreenViewSetup className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
-          <Divider />
           <ListItem sx={{ paddingTop: 3 }} disablePadding>
             <ClaimDevice />
           </ListItem>
         </List>
         {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
           <ListSubheader disableGutters>Quick add Command</ListSubheader>
-          <Divider />
           <AddQuickPlatform />
         </List> */}
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
-          <Divider />
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
@@ -103,7 +88,6 @@ export const AddPage: React.FC = () => {
         </List>
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
-          <Divider />
           {[
             'raspberrypi',
             'linux',
@@ -159,7 +143,7 @@ export const AddPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ breakpoints }) => ({
+const useStyles = makeStyles(({ palette, breakpoints }) => ({
   list: {
     minWidth: 175,
     display: 'flex',
@@ -183,8 +167,7 @@ const useStyles = makeStyles(({ breakpoints }) => ({
     },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
-    '& .MuiListSubheader-root': { width: '100%' },
-    '& .MuiDivider-root': { width: '100%' },
+    '& .MuiListSubheader-root': { width: '100%', borderBottom: `1px solid ${palette.grayLight.main}` },
   },
   smallItem: {
     width: 140,
