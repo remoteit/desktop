@@ -167,6 +167,7 @@ export const attributes: Attribute[] = [
     id: 'status',
     label: 'Status',
     query: 'deviceName',
+    details: false,
     defaultWidth: 100,
     value: ({ device, connections }) => <StatusChip device={device} connections={connections} />,
   }),
@@ -174,6 +175,7 @@ export const attributes: Attribute[] = [
     id: 'deviceTimeSeries',
     query: 'deviceTimeSeries',
     label: <DeviceGraphColumn />,
+    details: false,
     value: ({ device }) => (
       <Link
         to={`/devices/${device?.id}/details`}
@@ -203,6 +205,7 @@ export const attributes: Attribute[] = [
     id: 'tags',
     label: 'Tags',
     defaultWidth: 120,
+    details: false,
     value: ({ instance }) => <ReactiveTags tags={instance?.tags || []} />,
     feature: 'tagging',
   }),
@@ -216,6 +219,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'services',
     label: 'Services',
+    details: false,
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
     defaultWidth: 300,
   }),
