@@ -19,7 +19,7 @@ export type ConfirmProps = {
   maxWidth?: DialogProps['maxWidth']
   color?: ButtonProps['color']
   children?: React.ReactNode
-  onConfirm: (e: React.MouseEvent) => void
+  onConfirm: (e: React.MouseEvent<HTMLButtonElement>) => void
   onDeny?: () => void
 }
 

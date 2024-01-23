@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from 'react'
-import { Button, ButtonProps } from '@mui/material'
+import { IconButton, ButtonProps } from './IconButton'
 import { Confirm, ConfirmProps } from '../components/Confirm'
 
 type Props = ButtonProps & {
@@ -7,22 +7,22 @@ type Props = ButtonProps & {
   confirmProps?: Omit<ConfirmProps, 'open' | 'onConfirm' | 'onDeny'>
 }
 
-export const ConfirmButton = forwardRef<HTMLButtonElement, Props>(({ onClick, confirm, confirmProps, ...props }, ref) => {
+export const ConfirmIconButton = forwardRef<HTMLButtonElement, Props>(({ onClick, confirm, confirmProps, ...props }, ref) => {
   const [open, setOpen] = useState<boolean>(false)
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (e: React.MouseEvent) => {
     if (confirm) setOpen(true)
     else onClick?.(e)
   }
 
-  const handleConfirm = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleConfirm = (e: React.MouseEvent) => {
     onClick?.(e)
     setOpen(false)
   }
 
   return (
     <>
-      <Button ref={ref} {...props} onClick={handleClick} />
+      <IconButton ref={ref} {...props} onClick={handleClick} />
       {confirm && onClick && (
         <Confirm {...confirmProps} open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)}>
           {confirmProps?.children}

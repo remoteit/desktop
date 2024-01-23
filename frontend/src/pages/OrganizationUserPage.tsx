@@ -14,7 +14,7 @@ import { TargetPlatform } from '../components/TargetPlatform'
 import { ShareDetails } from '../components/ShareDetails'
 import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { LinearProgress } from '../components/LinearProgress'
-import { ConfirmButton } from '../buttons/ConfirmButton'
+import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { LicenseSelect } from '../components/LicenseSelect'
 import { RoleSelect } from '../components/RoleSelect'
 import { Container } from '../components/Container'
@@ -79,7 +79,7 @@ export const OrganizationUserPage: React.FC = () => {
               {user?.email}
             </Title>
             {member && (
-              <ConfirmButton
+              <ConfirmIconButton
                 confirm
                 confirmProps={{
                   children: (
