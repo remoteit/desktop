@@ -44,7 +44,7 @@ class Environment {
     this.isRemote = isRemote()
     this.isIOS = Capacitor.getPlatform() === 'ios'
     this.isAndroid = Capacitor.getPlatform() === 'android'
-    this.isAndroidBrowser = isAndroidBrowser()
+    this.isAndroidBrowser = isAndroidWeb()
 
     this.isMac = isMac()
     this.isWindows = isWindows()
@@ -106,13 +106,23 @@ function isWindows() {
   return navigator.userAgent.toLowerCase().includes('win')
 }
 
-function isAndroidBrowser() {
+function isAndroidWeb() {
   return navigator.userAgent.toLowerCase().includes('android')
+}
+
+function isIOSWeb(): boolean {
+  const userAgent = window.navigator.userAgent.toLowerCase()
+  return (
+    /iphone|ipad|ipod/.test(userAgent) ||
+    !!(navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /macintel/.test(userAgent))
+  )
 }
 
 export function getOs(): Ios {
   if (isMac()) return 'mac'
   if (isWindows()) return 'windows'
+  if (isAndroidWeb()) return 'android'
+  if (isIOSWeb()) return 'ios'
   return 'linux'
 }
 

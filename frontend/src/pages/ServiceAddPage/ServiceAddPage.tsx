@@ -53,6 +53,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
           <ServiceForm
             adding
             thisDevice={!!device?.thisDevice}
+            targetPlatform={device?.targetPlatform}
             editable={device?.configurable || !!device?.thisDevice}
             disabled={!device?.permissions.includes('MANAGE')}
             onSubmit={async form => {

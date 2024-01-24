@@ -3,6 +3,9 @@ import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
+export const APPLICATION_PLATFORM_FILTER = {
+  48: [1213], // ScreenView allowed on Android
+}
 
 export class Application {
   title: string = ''
@@ -32,7 +35,9 @@ export class Application {
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
-    const { os, portal } = adaptor?.getState().environment
+    const environment = adaptor?.getState().environment
+    const portal = environment?.portal
+    const os = environment?.os
     options.windows = os === 'windows'
     options.portal = portal
     Object.assign(this, options)
@@ -236,9 +241,12 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 
 export function getApplicationType(typeId?: number) {
   const { environment, preferences } = adaptor?.getState() || {}
-  const { portal, os } = environment
   const { sshConfig } = preferences || {}
+  const portal = environment?.portal
+  const os = environment?.os
   const windows = os === 'windows'
+  const mac = os === 'mac'
+  const ios = os === 'ios'
 
   switch (typeId) {
     case 1:
@@ -255,7 +263,9 @@ export function getApplicationType(typeId?: number) {
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows
           ? '"[path]" -Username "[username]" [host]:[port]'
-          : 'open -a "[app]" --args -Username [username] [host]:[port]',
+          : mac
+          ? 'open -a "[app]" --args -Username [username] [host]:[port]'
+          : 'vnc://[host]:[port]',
       })
     case 28:
       return new Application({
@@ -266,7 +276,11 @@ export function getApplicationType(typeId?: number) {
           ? 'ssh_config [User]'
           : windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
-          : 'ssh -l [username] [host] -p [port]',
+          : ios
+          ? 'termius://[user]@[host]:[port]'
+          : mac
+          ? 'ssh -l [username] [host] -p [port]'
+          : 'ssh://[user]@[host]:[port]',
         displayTemplate: sshConfig && (windows ? 'start cmd /k ssh [host]' : 'ssh [host]'),
         helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
         sshConfig,
@@ -279,7 +293,9 @@ export function getApplicationType(typeId?: number) {
         appLaunchTemplate: 'rdp://full%20address=s:[host]:[port]&username=s:[username]',
         appCommandTemplate: windows
           ? 'mstsc /v: [host]:[port]'
-          : 'open -a "[app]" "rdp://full%20address=s:[host]:[port]&username=s:[username]"',
+          : mac
+          ? 'open -a "[app]" "rdp://full%20address=s:[host]:[port]&username=s:[username]"'
+          : 'rdp://full%20address=s:[host]:[port]&audiomode=i:2&disable%20themes=i:1',
       })
     case 8:
     case 10:
@@ -319,7 +335,7 @@ export function getApplicationType(typeId?: number) {
       })
     case 48:
       return new Application({
-        title: 'Screen View',
+        title: 'ScreenView',
         appLaunchType: 'URL',
         autoLaunch: true,
       })

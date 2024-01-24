@@ -1,31 +1,35 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
 import { Chip, Menu, MenuItem } from '@mui/material'
-import { KEY_APPS } from '@common/applications'
+import { KEY_APPS, APPLICATION_PLATFORM_FILTER as APF } from '@common/applications'
 import { spacing } from '../styling'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 type Props = {
+  applicationTypes: IApplicationType[]
+  targetPlatform?: IDevice['targetPlatform']
   selected?: IApplicationType['id']
   disabled?: boolean
   onSelect: (selected: IApplicationType) => void
 }
 
-export const ServiceFormApplications: React.FC<Props> = ({ selected, disabled, onSelect }) => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const { allApplications } = useSelector((state: ApplicationState) => ({
-    allApplications: state.applicationTypes.all,
-  }))
+export const ServiceFormApplications: React.FC<Props> = ({
+  applicationTypes,
+  targetPlatform,
+  selected,
+  disabled,
+  onSelect,
+}) => {
   const css = useStyles()
-  const keyApplications = allApplications.filter(a => KEY_APPS.includes(a.id))
-  const otherApplications = allApplications.filter(a => !keyApplications.find(k => k.id === a.id))
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const allowedApplications = applicationTypes.filter(a => !APF[a.id] || APF[a.id]?.includes(targetPlatform))
+  const keyApplications = allowedApplications.filter(a => KEY_APPS.includes(a.id))
+  const otherApplications = allowedApplications.filter(a => !keyApplications.find(k => k.id === a.id))
   const otherSelected = otherApplications.find(a => a.id === selected)
 
   return (
-    <Gutters top={null} className={css.item}>
+    <Gutters top={null} bottom={null} className={css.item}>
       {keyApplications.map(
         t =>
           t.scheme && (
