@@ -21,7 +21,8 @@ export function replaceHost(url?: string, localhost?: boolean) {
     return url.replace(new RegExp(IP_PRIVATE, 'g'), 'localhost')
   }
   if (url.includes(IP_OPEN)) {
-    const { privateIP } = adaptor?.getState().environment
+    const environment = adaptor?.getState().environment
+    const privateIP = environment?.privateIP || IP_PRIVATE
     return url.replace(IP_OPEN, privateIP)
   }
   return url
@@ -71,6 +72,8 @@ export function osName(os?: Ios) {
     windows: 'Windows PC',
     linux: 'Linux system',
     rpi: 'Raspberry Pi',
+    android: 'Android',
+    ios: 'iPhone or iPad',
   }
   return os ? name[os] : 'system'
 }

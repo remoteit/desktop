@@ -97,6 +97,7 @@ declare global {
   type IEnvironment = {
     os?: Ios
     portal: boolean
+    privateIP: string
   }
 
   type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
