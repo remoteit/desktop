@@ -227,8 +227,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiSnackbarContent: {
         styleOverrides: {
-          root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },
-          action: { '& .MuiIconButton-root': { marginRight: -spacing.sm } },
+          root: {
+            borderRadius: radius,
+            flexWrap: 'nowrap',
+            padding: 0,
+            '& .MuiSnackbarContent-message': { padding: 0 },
+          },
         },
       },
       MuiCardHeader: {

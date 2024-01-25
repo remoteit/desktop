@@ -2,7 +2,7 @@ import React from 'react'
 import { Icon } from './Icon'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, fontSizes } from '../styling'
-import { alpha, Paper, Box } from '@mui/material'
+import { alpha, darken, Paper, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import classnames from 'classnames'
 
@@ -62,7 +62,15 @@ export const Notice: React.FC<NoticeProps> = ({
         <span>{children}</span>
       </Box>
       {button}
-      {onClose && <IconButton name="times" onClick={onClose} color={solid ? 'alwaysWhite' : undefined} title="Close" />}
+      {onClose && (
+        <IconButton
+          name="times"
+          type="solid"
+          onClick={onClose}
+          color={solid ? 'alwaysWhite' : undefined}
+          title="Close"
+        />
+      )}
     </Paper>
   )
 }
@@ -72,10 +80,10 @@ const useStyles = makeStyles(({ palette }) => ({
   error: { color: palette.error.main, backgroundColor: alpha(palette.error.main, 0.1) },
   warning: { color: palette.warning.main, backgroundColor: alpha(palette.warning.main, 0.1) },
   success: { color: palette.success.main, backgroundColor: alpha(palette.success.main, 0.1) },
-  infoSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
-  errorSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.error.main },
-  warningSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.warning.main },
-  successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
+  infoSolid: { color: palette.alwaysWhite.main, backgroundColor: darken(palette.primary.main, 0.2) },
+  errorSolid: { color: palette.alwaysWhite.main, backgroundColor: darken(palette.error.main, 0.2) },
+  warningSolid: { color: palette.alwaysWhite.main, backgroundColor: darken(palette.warning.main, 0.2) },
+  successSolid: { color: palette.alwaysWhite.main, backgroundColor: darken(palette.success.main, 0.2) },
   notice: ({ fullWidth, gutterBottom, gutterTop }: NoticeProps) => ({
     flexGrow: 1,
     alignItems: 'flex-start',
@@ -83,7 +91,7 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: fullWidth ? 0 : spacing.md,
     marginBottom: gutterBottom ? spacing.md : 0,
     marginTop: gutterTop ? spacing.md : 0,
-    padding: `${spacing.sm}px ${spacing.md}px`,
+    padding: `${spacing.xs}px ${spacing.md}px`,
     display: 'flex',
     position: 'relative',
     fontWeight: 500,
@@ -106,5 +114,6 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    wordBreak: 'break-word',
   },
 }))

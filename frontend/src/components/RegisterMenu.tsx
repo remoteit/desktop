@@ -18,6 +18,8 @@ export const RegisterMenu: React.FC<Props> = ({ buttonSize, sidebar, ...props })
   const unauthorized = !permissions?.includes('MANAGE')
   const disabled = unauthorized || location.pathname === '/add'
 
+  if (unauthorized) return null
+
   return (
     <GuideBubble
       sidebar={sidebar}
