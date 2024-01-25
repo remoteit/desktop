@@ -154,7 +154,7 @@ export async function removeLocalStorage(state: ApplicationState, key: string) {
 }
 
 export async function windowOpen(url?: string, windowName?: string, external?: boolean) {
-  console.log('WINDOW OPEN', url, windowName, external)
+  console.log('WINDOW OPEN', { url, windowName, external })
   if (!url) return
 
   if (browser.isMobile) {

@@ -102,7 +102,7 @@ const DeviceSelectLookup: ILookup<string> = {
     ${SERVICE_PRELOAD}
   }`,
 
-  serviceName: `
+  serviceView: `
   services {
     ${SERVICE_SELECT}
   }`,
@@ -165,7 +165,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
-      (params.columns.includes('serviceName') ? SERVICE_TIME_SERIES_PARAMS : '')
+      (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
     }) {
         login {
           id
@@ -202,6 +202,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
 
 export async function graphQLPreloadDevices({
   columns,
+  timeSeries,
   ...params
 }: {
   accountId: string
@@ -224,9 +225,9 @@ export async function graphQLPreloadDevices({
       }`,
     {
       ...params,
-      deviceTSLength: params.timeSeries?.length,
-      deviceTSType: params.timeSeries?.type,
-      deviceTSResolution: params.timeSeries?.resolution,
+      deviceTSLength: timeSeries?.length,
+      deviceTSType: timeSeries?.type,
+      deviceTSResolution: timeSeries?.resolution,
     }
   )
 }

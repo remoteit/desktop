@@ -130,8 +130,8 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceStatus',
+    query: 'serviceView',
     label: 'Status',
-    query: 'serviceName',
     defaultWidth: 100,
     details: false,
     value: ({ service, connection }) => (
@@ -140,14 +140,15 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceAction',
+    query: 'serviceView',
     label: 'Action',
-    query: 'serviceName',
     details: false,
     defaultWidth: 160,
     value: ({ device, service, connection }) => <ConnectAttribute {...{ device, service, connection }} />,
   }),
   new ServiceAttribute({
     id: 'serviceName',
+    query: 'serviceView',
     label: 'Service Name',
     defaultWidth: 300,
     required: true,
@@ -158,6 +159,7 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceState',
+    query: 'serviceView',
     label: 'Type',
     defaultWidth: 110,
     details: false,
@@ -188,9 +190,9 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceTimeSeries',
-    query: 'serviceTimeSeries',
-    label: <ServiceGraphColumn />,
+    query: 'serviceView',
     details: false,
+    label: <ServiceGraphColumn />,
     value: ({ device, service }) => (
       <Link
         to={`/devices/${device?.id}/${service?.id}/connect`}

@@ -61,7 +61,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
               </ButtonBase>
             </Gutters>
           )}
-          <Typography variant="h1" gutterBottom={!service?.attributes.description}>
+          <Typography variant="h1" gutterBottom={!layout.mobile && !!service?.attributes.description}>
             <Title>{service.name || 'unknown'}</Title>
             <MobileUI hide>
               <ShareButton
