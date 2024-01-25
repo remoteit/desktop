@@ -245,6 +245,7 @@ export function getApplicationType(typeId?: number) {
   const portal = environment?.portal
   const os = environment?.os
   const windows = os === 'windows'
+  const android = os === 'android'
   const mac = os === 'mac'
   const ios = os === 'ios'
 
@@ -258,7 +259,7 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
-        appLaunchType: 'COMMAND',
+        appLaunchType: ios || android ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows
@@ -270,32 +271,26 @@ export function getApplicationType(typeId?: number) {
     case 28:
       return new Application({
         title: 'SSH',
-        appLaunchType: portal ? 'URL' : 'COMMAND',
+        autoLaunch: ios || android,
+        appLaunchType: portal || ios || android ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: sshConfig
           ? 'ssh_config [User]'
           : windows
           ? 'start cmd /k ssh [username]@[host] -p [port]'
-          : ios
-          ? 'termius://[user]@[host]:[port]'
-          : mac
-          ? 'ssh -l [username] [host] -p [port]'
-          : 'ssh://[user]@[host]:[port]',
+          : 'ssh -l [username] [host] -p [port]',
         displayTemplate: sshConfig && (windows ? 'start cmd /k ssh [host]' : 'ssh [host]'),
         helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
         sshConfig,
       })
     case 5:
+      const rdpCommand = 'rdp://full%20address=s:[host]:[port]&username=s:[username]'
       return new Application({
         title: 'RDP',
-        appLaunchType: 'COMMAND',
+        appLaunchType: ios || android ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'Microsoft Remote Desktop' },
-        appLaunchTemplate: 'rdp://full%20address=s:[host]:[port]&username=s:[username]',
-        appCommandTemplate: windows
-          ? 'mstsc /v: [host]:[port]'
-          : mac
-          ? 'open -a "[app]" "rdp://full%20address=s:[host]:[port]&username=s:[username]"'
-          : 'rdp://full%20address=s:[host]:[port]&audiomode=i:2&disable%20themes=i:1',
+        appLaunchTemplate: rdpCommand,
+        appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : mac ? `open -a "[app]" "${rdpCommand}"` : rdpCommand,
       })
     case 8:
     case 10:
