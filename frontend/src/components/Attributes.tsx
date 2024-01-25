@@ -4,7 +4,7 @@ import { TargetPlatform } from './TargetPlatform'
 import { QualityDetails } from './QualityDetails'
 import { ServiceIndicators } from './ServiceIndicators'
 import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { ListItemText, Stack, Chip, Typography } from '@mui/material'
+import { ListItemText, Chip, Typography } from '@mui/material'
 import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { ServiceGraphColumn } from './ServiceGraphColumn'
 import { DeviceGraphColumn } from './DeviceGraphColumn'
@@ -24,8 +24,8 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
-import { Title } from './Title'
 import { Link } from './Link'
+import { Icon } from './Icon'
 
 export class Attribute {
   id: string = ''
@@ -33,12 +33,12 @@ export class Attribute {
   help?: string
   required: boolean = false
   align?: 'left' | 'right' | 'center'
-  column: boolean = true
   defaultWidth: number = 150
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
   feature?: string // key to plan limit name - used for tagging visibility
   multiline?: boolean
-  details?: boolean = true // show on device details page
+  details: boolean = true // show on device details page
+  column: boolean = true // show as device list column
   query?: string // key to device query - fall back to id
   value: (options: IDataOptions) => any = () => {}
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
@@ -260,6 +260,24 @@ export const attributes: Attribute[] = [
     label: 'Role',
     defaultWidth: 210,
     value: ({ device }) => <DeviceRole device={device} />,
+  }),
+  new DeviceAttribute({
+    id: 'configurable',
+    label: 'Configurable',
+    query: 'attributes',
+    help: 'Can be remotely configured',
+    value: ({ device }) =>
+      device?.configurable ? (
+        <>
+          <Icon name="badge-check" color="success" type="solid" />
+          &nbsp; Yes
+        </>
+      ) : (
+        <>
+          <Icon name="ban" color="danger" type="solid" />
+          &nbsp; No
+        </>
+      ),
   }),
   new InstanceAttribute({
     id: 'owner',
