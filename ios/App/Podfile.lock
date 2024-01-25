@@ -3,6 +3,8 @@ PODS:
     - CapacitorCordova
   - CapacitorApp (5.0.6):
     - Capacitor
+  - CapacitorAppLauncher (5.0.6):
+    - Capacitor
   - CapacitorBrowser (5.1.0):
     - Capacitor
   - CapacitorClipboard (5.0.6):
@@ -18,6 +20,7 @@ PODS:
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorAppLauncher (from `../../node_modules/@capacitor/app-launcher`)"
   - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
@@ -30,6 +33,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
     :path: "../../node_modules/@capacitor/app"
+  CapacitorAppLauncher:
+    :path: "../../node_modules/@capacitor/app-launcher"
   CapacitorBrowser:
     :path: "../../node_modules/@capacitor/browser"
   CapacitorClipboard:
@@ -46,6 +51,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Capacitor: ebfc16cdb8116d04c101686b080342872da42d43
   CapacitorApp: 963d90cb449803d58efc33bb515c81151e69159d
+  CapacitorAppLauncher: 5a9f06c13c6b4f5d65b550a07128ef04f3a216b3
   CapacitorBrowser: 31371ef981e378cb592be8cc203a9a4cbf43c486
   CapacitorClipboard: 77edf49827ea21da2a9c05c690a4a6a4d07199c4
   CapacitorCordova: 931b48fcdbc9bc985fc2f16cec9f77c794a27729
@@ -53,6 +59,6 @@ SPEC CHECKSUMS:
   CapacitorSplashScreen: f3c7de5468a52893e90f49d033772984270241b4
   CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
 
-PODFILE CHECKSUM: 321e0de296ea3df26eb32c9e916e534b1fc01829
+PODFILE CHECKSUM: a6f2000103465e61657345d6151fc295113ca0ad
 
 COCOAPODS: 1.14.1
