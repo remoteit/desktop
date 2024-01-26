@@ -6,7 +6,7 @@ import { Dispatch } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { NetworkTagEditor } from '../components/NetworkTagEditor'
 import { ListHorizontal } from '../components/ListHorizontal'
-import { ConfirmButton } from '../buttons/ConfirmButton'
+import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { ShareButton } from '../buttons/ShareButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
@@ -31,7 +31,7 @@ export const NetworkHeaderMenu: React.FC<{
           <Typography variant="h1">
             <Title>{network.name || 'Unknown Network'}</Title>
             {network.shared ? (
-              <ConfirmButton
+              <ConfirmIconButton
                 confirm
                 title="Leave network"
                 icon="arrow-right-from-bracket"

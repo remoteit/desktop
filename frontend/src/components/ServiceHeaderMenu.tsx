@@ -3,9 +3,10 @@ import { DeviceContext } from '../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { attributeName } from '@common/nameHelper'
+import { useHistory } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
-import { Typography } from '@mui/material'
+import { Typography, ButtonBase } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
@@ -30,6 +31,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
   const { connectThisDevice, layout } = useSelector((state: ApplicationState) => state.ui)
   const { device, service, instance, user } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
 
   useEffect(() => {
     dispatch.ui.set({ connectThisDevice: false })
@@ -49,16 +51,18 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
       header={
         <>
           <OutOfBand />
-          <Typography variant="h1" gutterBottom={!service?.attributes.description}>
-            <Title>
-              {layout.mobile && (
-                <Typography variant="caption" component="div" sx={{ marginTop: 1, marginBottom: 1.5 }}>
+          {layout.mobile && (
+            <Gutters bottom={null}>
+              <ButtonBase onClick={() => history.push(`/devices/${device.id}`)}>
+                <Typography variant="caption" onClick={() => history.push(`/devices/${device.id}`)}>
                   <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
                   {deviceName}
                 </Typography>
-              )}
-              {service.name || 'unknown'}
-            </Title>
+              </ButtonBase>
+            </Gutters>
+          )}
+          <Typography variant="h1" gutterBottom={!layout.mobile && !!service?.attributes.description}>
+            <Title>{service.name || 'unknown'}</Title>
             <MobileUI hide>
               <ShareButton
                 to={`/devices/${device.id}/${service.id}/share`}
@@ -69,11 +73,13 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
             <DeviceOptionMenu device={device} service={service} />
           </Typography>
           {service.attributes.description && (
-            <Gutters top="sm">
-              <Typography variant="body2" color="textSecondary">
-                {service.attributes.description}
-              </Typography>
-            </Gutters>
+            <MobileUI hide>
+              <Gutters top="xs" bottom="xs">
+                <Typography variant="body2" color="textSecondary">
+                  {service.attributes.description}
+                </Typography>
+              </Gutters>
+            </MobileUI>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
           {displayThisDevice ? (
@@ -111,6 +117,15 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
       }
       footer={footer}
     >
+      {service.attributes.description && (
+        <MobileUI>
+          <Gutters bottom={null}>
+            <Typography variant="body2" color="textSecondary">
+              {service.attributes.description}
+            </Typography>
+          </Gutters>
+        </MobileUI>
+      )}
       {children}
     </Container>
   )

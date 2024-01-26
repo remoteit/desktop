@@ -4,12 +4,17 @@ import { IP_PRIVATE } from '@common/constants'
 import { Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { SignInApp } from '../../components/SignInApp'
+import { Panel } from '../../components/Panel'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import { Link } from '../../components/Link'
 import { spacing } from '../../styling'
 
-export function SignInPage() {
+type Props = {
+  layout: ILayout
+}
+
+export function SignInPage({ layout }: Props) {
   const short = browser.isAndroid || browser.isAndroidBrowser
   const css = useStyles({ short })
   const { hostname, protocol } = window.location
@@ -19,26 +24,28 @@ export function SignInPage() {
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
 
   return (
-    <Body className={css.body} center={!short}>
-      <SignInApp />
-      {allowSwitch && !secure && (
-        <div className={css.insecure}>
-          <Typography variant="body2" align="center">
-            On an insecure network?
-            <Link href={switchUrl}>
-              <Icon name="lock" type="solid" size="xs" inlineLeft inline />
-              Use secure session
-            </Link>
-          </Typography>
-          <Typography variant="caption">
-            You will be prompted by your browser with a security message regarding the remoteitpi.local certificate.
-            This is normal for local connections.
-            <br /> Your data is still encrypted.
-            <Link href="https://link.remote.it/documentation-desktop/https-connections">Learn more</Link>
-          </Typography>
-        </div>
-      )}
-    </Body>
+    <Panel layout={layout} header={false}>
+      <Body className={css.body} center={!short}>
+        <SignInApp />
+        {allowSwitch && !secure && (
+          <div className={css.insecure}>
+            <Typography variant="body2" align="center">
+              On an insecure network?
+              <Link href={switchUrl}>
+                <Icon name="lock" type="solid" size="xs" inlineLeft inline />
+                Use secure session
+              </Link>
+            </Typography>
+            <Typography variant="caption">
+              You will be prompted by your browser with a security message regarding the remoteitpi.local certificate.
+              This is normal for local connections.
+              <br /> Your data is still encrypted.
+              <Link href="https://link.remote.it/documentation-desktop/https-connections">Learn more</Link>
+            </Typography>
+          </div>
+        )}
+      </Body>
+    </Panel>
   )
 }
 

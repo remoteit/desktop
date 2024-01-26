@@ -1,7 +1,8 @@
 import { IP_PRIVATE } from '@common/constants'
-import { PORTAL, MODE } from '../constants'
+import { PORTAL, MODE, REGEX_SCHEME } from '../constants'
 import { ApplicationState, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
+import { AppLauncher } from '@capacitor/app-launcher'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
 
@@ -19,7 +20,7 @@ function startLog() {
   Set window.stateLogging = true to enable redux state logging
 
   `,
-    'font-family:monospace'
+    'font-family:monospace;color:#0096e7'
   )
 }
 
@@ -44,7 +45,7 @@ class Environment {
     this.isRemote = isRemote()
     this.isIOS = Capacitor.getPlatform() === 'ios'
     this.isAndroid = Capacitor.getPlatform() === 'android'
-    this.isAndroidBrowser = isAndroidBrowser()
+    this.isAndroidBrowser = isAndroidWeb()
 
     this.isMac = isMac()
     this.isWindows = isWindows()
@@ -106,11 +107,21 @@ function isWindows() {
   return navigator.userAgent.toLowerCase().includes('win')
 }
 
-function isAndroidBrowser() {
+function isAndroidWeb() {
   return navigator.userAgent.toLowerCase().includes('android')
 }
 
+function isIOSWeb(): boolean {
+  const userAgent = window.navigator.userAgent.toLowerCase()
+  return (
+    /iphone|ipad|ipod/.test(userAgent) ||
+    !!(navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /macintel/.test(userAgent))
+  )
+}
+
 export function getOs(): Ios {
+  if (isAndroidWeb()) return 'android'
+  if (isIOSWeb()) return 'ios'
   if (isMac()) return 'mac'
   if (isWindows()) return 'windows'
   return 'linux'
@@ -143,18 +154,25 @@ export async function removeLocalStorage(state: ApplicationState, key: string) {
 }
 
 export async function windowOpen(url?: string, windowName?: string, external?: boolean) {
-  console.log('WINDOW OPEN', url, windowName)
+  console.log('WINDOW OPEN', { url, windowName, external })
   if (!url) return
 
-  if (!external && browser.isMobile) {
-    await Browser.open({ url, windowName })
+  if (browser.isMobile) {
+    try {
+      external ? await AppLauncher.openUrl({ url }) : await Browser.open({ url, windowName })
+    } catch (error) {
+      console.error('URL error:', error, { url, windowName, external })
+      const scheme = url.match(REGEX_SCHEME)?.[0]
+      store.dispatch.ui.set({ errorMessage: `We couldn't find an application to handle ${scheme}` })
+    }
     return
   }
 
   try {
     window.open(url, windowName)
-  } catch {
-    store.dispatch.ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
+  } catch (error) {
+    console.error('window.open error:', error)
+    store.dispatch.ui.set({ errorMessage: `${error.message}: ${url}, ${windowName}` })
   }
 }
 
@@ -163,7 +181,7 @@ export async function windowClose() {
     try {
       await Browser.close()
     } catch (e) {
-      console.warn('NO BROWSER WINDOW OPEN', e)
+      console.error('NO BROWSER WINDOW OPEN', e)
     }
   }
 }

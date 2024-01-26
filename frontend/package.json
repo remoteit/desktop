@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.26.2",
+  "version": "3.26.3",
   "private": true,
   "scripts": {
     "start": "vite --port 3000 --host 0.0.0.0 --open",
@@ -9,6 +9,7 @@
   "dependencies": {
     "@airbrake/browser": "^2.1.8",
     "@aws-amplify/auth": "^5.6.6",
+    "@capacitor/app-launcher": "^5.0.6",
     "@capacitor/clipboard": "^5.0.6",
     "@capacitor/status-bar": "^5.0.6",
     "@emotion/react": "^11.11.1",

@@ -200,6 +200,25 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             minHeight: 0,
+            position: 'relative',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              width: spacing.lg,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 7,
+              pointerEvents: 'none',
+              backgroundImage: `linear-gradient(90deg, transparent, ${palette.white.main})`,
+            },
+          },
+          flexContainer: {
+            // Adding space to end of tabs to allow for fade
+            '&::after': {
+              content: '""',
+              minWidth: spacing.md,
+            },
           },
           scrollButtons: {
             color: palette.grayDark.main,
@@ -227,8 +246,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiSnackbarContent: {
         styleOverrides: {
-          root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },
-          action: { '& .MuiIconButton-root': { marginRight: -spacing.sm } },
+          root: {
+            borderRadius: radius,
+            flexWrap: 'nowrap',
+            padding: 0,
+            '& .MuiSnackbarContent-message': { padding: 0 },
+          },
         },
       },
       MuiCardHeader: {
@@ -661,6 +684,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           tooltip: {
             '& .MuiDivider-root': { margin: `${spacing.xxs}px 0`, borderColor: palette.alwaysWhite.main, opacity: 0.3 },
           },
+        },
+        defaultProps: {
+          enterTouchDelay: 200,
         },
       },
       MuiTableCell: {

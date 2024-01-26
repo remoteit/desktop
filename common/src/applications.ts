@@ -3,6 +3,9 @@ import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
+export const APPLICATION_PLATFORM_FILTER = {
+  48: [1213], // ScreenView allowed on Android
+}
 
 export class Application {
   title: string = ''
@@ -32,7 +35,9 @@ export class Application {
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
-    const { os, portal } = adaptor?.getState().environment
+    const environment = adaptor?.getState().environment
+    const portal = environment?.portal
+    const os = environment?.os
     options.windows = os === 'windows'
     options.portal = portal
     Object.assign(this, options)
@@ -236,9 +241,13 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 
 export function getApplicationType(typeId?: number) {
   const { environment, preferences } = adaptor?.getState() || {}
-  const { portal, os } = environment
   const { sshConfig } = preferences || {}
+  const portal = environment?.portal
+  const os = environment?.os
   const windows = os === 'windows'
+  const android = os === 'android'
+  const mac = os === 'mac'
+  const ios = os === 'ios'
 
   switch (typeId) {
     case 1:
@@ -250,17 +259,20 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
-        appLaunchType: 'COMMAND',
+        appLaunchType: ios || android ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows
           ? '"[path]" -Username "[username]" [host]:[port]'
-          : 'open -a "[app]" --args -Username [username] [host]:[port]',
+          : mac
+          ? 'open -a "[app]" --args -Username [username] [host]:[port]'
+          : 'vnc://[host]:[port]',
       })
     case 28:
       return new Application({
         title: 'SSH',
-        appLaunchType: portal ? 'URL' : 'COMMAND',
+        autoLaunch: ios || android,
+        appLaunchType: portal || ios || android ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: sshConfig
           ? 'ssh_config [User]'
@@ -272,14 +284,13 @@ export function getApplicationType(typeId?: number) {
         sshConfig,
       })
     case 5:
+      const rdpCommand = 'rdp://full%20address=s:[host]:[port]&username=s:[username]'
       return new Application({
         title: 'RDP',
-        appLaunchType: 'COMMAND',
+        appLaunchType: ios || android ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'Microsoft Remote Desktop' },
-        appLaunchTemplate: 'rdp://full%20address=s:[host]:[port]&username=s:[username]',
-        appCommandTemplate: windows
-          ? 'mstsc /v: [host]:[port]'
-          : 'open -a "[app]" "rdp://full%20address=s:[host]:[port]&username=s:[username]"',
+        appLaunchTemplate: rdpCommand,
+        appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : mac ? `open -a "[app]" "${rdpCommand}"` : rdpCommand,
       })
     case 8:
     case 10:
@@ -319,7 +330,7 @@ export function getApplicationType(typeId?: number) {
       })
     case 48:
       return new Application({
-        title: 'Screen View',
+        title: 'ScreenView',
         appLaunchType: 'URL',
         autoLaunch: true,
       })

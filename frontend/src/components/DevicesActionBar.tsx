@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
-import { ConfirmButton } from '../buttons/ConfirmButton'
+import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { useHistory } from 'react-router-dom'
 import { selectTags } from '../selectors/tags'
@@ -76,7 +76,7 @@ export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devic
             <Divider orientation="vertical" color="white" />
           </>
         )}
-        <ConfirmButton
+        <ConfirmIconButton
           icon="trash"
           title="Delete selected"
           color="alwaysWhite"

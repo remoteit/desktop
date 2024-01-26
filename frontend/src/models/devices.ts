@@ -162,12 +162,10 @@ export default createModel<RootModel>()({
 
     async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
       const accountId = selectActiveAccountId(state)
-      const columns = selectActiveColumns(state, accountId)
-
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
         ids,
-        columns,
+        columns: ['deviceName'],
         timeSeries: state.ui.deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)

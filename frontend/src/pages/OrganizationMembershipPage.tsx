@@ -14,7 +14,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux'
 import { selectRemoteitLicense } from '../selectors/organizations'
 import { getOwnOrganization } from '../models/organization'
-import { ConfirmButton } from '../buttons/ConfirmButton'
+import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { LicenseChip } from '../components/LicenseChip'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -83,7 +83,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                 <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                   <LicenseChip license={m.license} />
                 </Box>
-                <ConfirmButton
+                <ConfirmIconButton
                   confirm
                   icon="sign-out"
                   title="Leave Account"

@@ -94,9 +94,15 @@ declare global {
     | 'reachablePort'
     | 'canNavigate'
 
+  type IEnvironment = {
+    os?: Ios
+    portal: boolean
+    privateIP: string
+  }
+
   type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
 
-  type Ios = 'mac' | 'windows' | 'linux' | 'rpi'
+  type Ios = 'mac' | 'windows' | 'linux' | 'rpi' | 'android' | 'ios'
 
   interface CommonAdaptorInterface {
     getState: () => { environment: IEnvironment; preferences: IPreferences }

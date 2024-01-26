@@ -65,6 +65,7 @@ export const REGEX_TAG_SAFE = /[\s]/g
 export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]+/g
 export const REGEX_CONNECTION_TRIM = /^-|-$/
 export const REGEX_SERVICE_ID = /^..(:..){7}$/
+export const REGEX_SCHEME = /^(.*?):\/\//
 
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const MOBILE_LAUNCH_DATE = new Date('2023-12-20')
