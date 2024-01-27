@@ -4,7 +4,7 @@ import { Typography } from '@mui/material'
 import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { GuideBubble } from './GuideBubble'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { selectPermissions } from '../selectors/organizations'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { spacing } from '../styling'
@@ -14,7 +14,7 @@ type Props = ButtonProps & { buttonSize?: number; sidebar?: boolean }
 export const RegisterMenu: React.FC<Props> = ({ buttonSize, sidebar, ...props }) => {
   const location = useLocation()
   const css = useStyles({ buttonSize })
-  const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
+  const permissions = useSelector((state: State) => selectPermissions(state))
   const unauthorized = !permissions?.includes('MANAGE')
   const disabled = unauthorized || location.pathname === '/add'
 

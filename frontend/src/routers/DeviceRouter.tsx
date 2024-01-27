@@ -1,10 +1,10 @@
 import React from 'react'
+import { State } from '../store'
 import { ScanPage } from '../pages/ScanPage'
 import { DeviceContext } from '../services/Context'
 import { ServiceRouter } from './ServiceRouter'
 import { Switch, Route, Redirect } from 'react-router-dom'
-import { ApplicationState } from '../store'
-import { getDeviceModel } from '../selectors/devices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
@@ -19,14 +19,9 @@ import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { device } = React.useContext(DeviceContext)
-
-  const { defaultServiceLookup, waiting } = useSelector((state: ApplicationState) => {
-    const { fetching, initialized } = getDeviceModel(state)
-    return {
-      waiting: fetching || !initialized,
-      defaultServiceLookup: state.ui.defaultService,
-    }
-  })
+  const { fetching, initialized } = useSelector(selectDeviceModelAttributes)
+  const defaultServiceLookup = useSelector((state: State) => state.ui.defaultService)
+  const waiting = fetching || !initialized
 
   const defaultService = () => {
     const lookupResult = defaultServiceLookup[device?.id || '']

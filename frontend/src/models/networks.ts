@@ -1,10 +1,10 @@
 import browser from '../services/Browser'
 import structuredClone from '@ungap/structured-clone'
+import { State } from '../store'
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
-import { selectNetworks } from '../selectors/networks'
 import { selectConnection } from '../selectors/connections'
 import { selectActiveAccountId, getActiveUser } from '../selectors/accounts'
+import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById, selectDeviceColumns } from '../selectors/devices'
 import {
@@ -333,7 +333,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function defaultNetwork(state?: ApplicationState): INetwork {
+export function defaultNetwork(state?: State): INetwork {
   if (state) {
     const owner = getActiveUser(state)
     const accountId = selectActiveAccountId(state)
@@ -343,30 +343,22 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
   return DEFAULT_NETWORK
 }
 
-export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
+export function selectNetwork(state: State, networkId?: string): INetwork {
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
 }
 
-export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
-  return selectNetworks(state).filter(network => network.serviceIds.includes(serviceId))
-}
-
-export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): INetwork[] {
+export function selectNetworkByTag(state: State, tags: ITagFilter): INetwork[] {
   const networks = selectNetworks(state).filter(n => canViewByTags(tags, n.tags))
   return networks
 }
 
-export function selectAccessibleNetworks(
-  state: ApplicationState,
-  organization: IOrganizationState,
-  member?: IOrganizationMember
-) {
+export function selectAccessibleNetworks(state: State, organization: IOrganizationState, member?: IOrganizationMember) {
   if (!member) return []
   const networks = selectNetworks(state)
   return networks.filter(n => canMemberView(organization.roles, member, n))
 }
 
-export function selectSharedNetwork(state: ApplicationState, serviceId?: string): INetwork | undefined {
+export function selectSharedNetwork(state: State, serviceId?: string): INetwork | undefined {
   if (!serviceId) return
   const networks = selectNetworkByService(state, serviceId)
   if (!networks.length) return

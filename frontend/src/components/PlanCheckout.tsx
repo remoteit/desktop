@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { QuantitySelector } from './QuantitySelector'
@@ -21,7 +21,7 @@ type Props = {
 export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
-  const purchasing = useSelector((state: ApplicationState) => state.plans.purchasing === form.planId)
+  const purchasing = useSelector((state: State) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
   const totals = deviceUserTotal(form.quantity, selectedPlan)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
@@ -11,7 +11,7 @@ import { Tags } from './Tags'
 type Props = { button?: string; tags: string[]; onChange: (tags: string[]) => void }
 
 export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange }) => {
-  const { allTags, accountId, canEdit } = useSelector((state: ApplicationState) => ({
+  const { allTags, accountId, canEdit } = useSelector((state: State) => ({
     accountId: selectActiveAccountId(state),
     allTags: selectTags(state),
     canEdit: canEditTags(state),

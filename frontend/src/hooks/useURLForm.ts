@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { REGEX_URL_PATHNAME } from '../constants'
 import { getApplicationType } from '@common/applications'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 
 type ReturnProps = [urlField: string, setUrlField: (value?: string | IService) => void, error?: string]
@@ -11,7 +11,7 @@ export function useURLForm(
   setForm: React.Dispatch<React.SetStateAction<IService | undefined>>,
   enabled: boolean
 ): ReturnProps {
-  const applicationTypes = useSelector((state: ApplicationState) => state.applicationTypes.all)
+  const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const [urlError, setUrlError] = useState<string>()
   const [field, setField] = useState<string>('')
 

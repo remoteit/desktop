@@ -2,11 +2,11 @@ import React from 'react'
 import Controller from '../services/Controller'
 import { ORGANIZATION_BAR_WIDTH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
 import { Snackbar, IconButton, Dialog, Button } from '@mui/material'
+import { State, Dispatch } from '../store'
 import { spacing } from '../styling'
 import { makeStyles } from '@mui/styles'
-import { getOwnDevices } from '../selectors/devices'
+import { selectDevice } from '../selectors/devices'
 import { DragAppRegion } from '../components/DragAppRegion'
 import { ConnectionNotice } from '../components/ConnectionNotice'
 import { GlobalConfirm } from '../components/GlobalConfirm'
@@ -21,30 +21,16 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  const {
-    device,
-    connected,
-    successMessage,
-    noticeMessage,
-    errorMessage,
-    offline,
-    backendAuthenticated,
-    layout,
-    label,
-  } = useSelector((state: ApplicationState) => {
-    const device = getOwnDevices(state).find(d => d.thisDevice)
-    return {
-      device,
-      connected: state.ui.connected,
-      successMessage: state.ui.successMessage,
-      noticeMessage: state.ui.noticeMessage,
-      errorMessage: state.ui.errorMessage,
-      offline: state.ui.offline,
-      backendAuthenticated: state.auth.backendAuthenticated,
-      layout: state.ui.layout,
-      label: state.labels.find(l => l.id === device?.attributes.color),
-    }
-  })
+  
+  const device = useSelector(selectDevice)
+  const connected = useSelector((state: State) => state.ui.connected)
+  const successMessage = useSelector((state: State) => state.ui.successMessage)
+  const noticeMessage = useSelector((state: State) => state.ui.noticeMessage)
+  const errorMessage = useSelector((state: State) => state.ui.errorMessage)
+  const offline = useSelector((state: State) => state.ui.offline)
+  const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
+  const layout = useSelector((state: State) => state.ui.layout)
+  const label = useSelector((state: State) => state.labels).find(l => l.id === device?.attributes.color)
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })

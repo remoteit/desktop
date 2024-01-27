@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Redirect } from 'react-router-dom'
 import { REGEX_DOMAIN_SAFE } from '../constants'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import {
   TextField,
   Typography,
@@ -14,17 +14,16 @@ import {
   ListItemText,
   ListItemSecondaryAction,
 } from '@mui/material'
-import { selectMembership } from '../selectors/accounts'
 import { selectPermissions, selectOrganization, selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { SelectSetting } from '../components/SelectSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
+import { ListItemCopy } from '../components/ListItemCopy'
 import { FormDisplay } from '../components/FormDisplay'
 import { FileUpload } from '../components/FileUpload'
 import { Container } from '../components/Container'
 import { ColorChip } from '../components/ColorChip'
-import { ListItemCopy } from '../components/ListItemCopy'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
@@ -32,9 +31,8 @@ import { Link } from '../components/Link'
 
 export const OrganizationSettingsPage: React.FC = () => {
   const { updating, domain, defaultDomain, isOrgOwner, organization, limits, permissions } = useSelector(
-    (state: ApplicationState) => {
-      const membership = selectMembership(state)
-      const organization = selectOrganization(state, membership.account.id)
+    (state: State) => {
+      const organization = selectOrganization(state)
       return {
         organization,
         isOrgOwner: organization.id === state.auth.user?.id,

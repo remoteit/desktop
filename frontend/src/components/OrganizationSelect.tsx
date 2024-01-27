@@ -3,11 +3,11 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem } from '@mui/material'
+import { getOwnOrganization, defaultState } from '../models/organization'
 import { selectAllConnectionSessions } from '../selectors/connections'
-import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
 import { IconButton } from '../buttons/IconButton'
@@ -21,24 +21,26 @@ export const OrganizationSelect: React.FC = () => {
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  let { options, activeOrg, ownOrg, userId, defaultSelection, sessions } = useSelector((state: ApplicationState) => ({
-    activeOrg: selectOrganization(state),
-    defaultSelection: state.ui.defaultSelection,
-    options: state.accounts.membership.map(m => {
-      const org = selectOrganization(state, m.account.id)
-      return {
-        id: m.account.id,
-        email: m.account.email,
-        name: org.name,
-        roleId: m.roleId,
-        roleName: m.roleName,
-        disabled: !org.id,
-      }
-    }),
-    ownOrg: getOwnOrganization(state),
-    sessions: selectAllConnectionSessions(state),
-    userId: state.user.id,
-  }))
+
+  let activeOrg = useSelector(selectOrganization)
+  const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
+  const memberships = useSelector((state: State) => state.accounts.membership)
+  const organizations = useSelector((state: State) => state.organization.accounts)
+  const options = memberships.map(m => {
+    const org = organizations[m.account.id] || defaultState
+    return {
+      id: m.account.id,
+      email: m.account.email,
+      name: org.name,
+      roleId: m.roleId,
+      roleName: m.roleName,
+      disabled: !org.id,
+    }
+  })
+
+  const ownOrg = useSelector(getOwnOrganization)
+  const sessions = useSelector(selectAllConnectionSessions)
+  const userId = useSelector((state: State) => state.user.id)
 
   const ownOrgId = ownOrg?.id
   let menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''

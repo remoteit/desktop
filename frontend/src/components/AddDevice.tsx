@@ -3,7 +3,7 @@ import { windowOpen } from '../services/Browser'
 import { platforms, IPlatform } from '../platforms'
 import { List, Box, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { selectPermissions, selectOrganization } from '../selectors/organizations'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
@@ -20,7 +20,7 @@ type Props = {
 
 export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, minimal }) => {
   const { organization, registrationCommand, registrationCode, permissions, fetching, user } = useSelector(
-    (state: ApplicationState) => ({
+    (state: State) => ({
       organization: selectOrganization(state),
       registrationCommand: state.ui.registrationCommand,
       registrationCode: state.ui.registrationCode,

@@ -8,12 +8,12 @@ import {
 } from '../models/plans'
 import { useSelector } from 'react-redux'
 import { selectRemoteitLicense } from '../selectors/organizations'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ColorChip, Props as ChipProps } from './ColorChip'
 import { useHistory } from 'react-router-dom'
 
 export const PlanActionChip: React.FC<ChipProps> = ({ ...props }) => {
-  const license = useSelector((state: ApplicationState) => selectRemoteitLicense(state))
+  const license = useSelector((state: State) => selectRemoteitLicense(state))
   const history = useHistory()
 
   props.label ||= ''

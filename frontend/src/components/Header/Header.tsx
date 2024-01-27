@@ -3,13 +3,14 @@ import React, { useState, useRef } from 'react'
 import useMobileBack from '../../hooks/useMobileBack'
 import browser from '../../services/Browser'
 import { emit } from '../../services/Controller'
+import { State } from '../../store'
+import { Dispatch } from '../../store'
 import { makeStyles } from '@mui/styles'
 import { useMediaQuery } from '@mui/material'
+import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
-import { ApplicationState, Dispatch } from '../../store'
 import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { getDeviceModel } from '../../selectors/devices'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -23,18 +24,13 @@ import { Title } from '../Title'
 import { Pre } from '../Pre'
 
 export const Header: React.FC = () => {
+  const { searched, applicationTypes } = useSelector(selectDeviceModelAttributes)
+  const permissions = useSelector(selectPermissions)
+  const canNavigate = useSelector((state: State) => state.backend.canNavigate)
+  const layout = useSelector((state: State) => state.ui.layout)
+  const serviceList = !!applicationTypes?.length
+
   const mobileGoBack = useMobileBack()
-  const { searched, canNavigate, permissions, layout, serviceList } = useSelector((state: ApplicationState) => {
-    const deviceModel = getDeviceModel(state)
-    return {
-      selected: state.ui.selected,
-      searched: deviceModel.searched, // debug make true
-      canNavigate: state.backend.canNavigate,
-      permissions: selectPermissions(state),
-      serviceList: !!deviceModel.applicationTypes?.length,
-      layout: state.ui.layout,
-    }
-  })
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)

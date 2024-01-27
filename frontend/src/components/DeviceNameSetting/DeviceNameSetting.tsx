@@ -1,21 +1,19 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../../services/Context'
+import { State, Dispatch } from '../../store'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, attributeName } from '@common/nameHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { getDevices } from '../../selectors/devices'
 
 export const DeviceNameSetting: React.FC = () => {
-  const dispatch = useDispatch<Dispatch>()
   const { device } = useContext(DeviceContext)
-  const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
-    hostname: state.backend.environment.hostname,
-    nameBlacklist: getDevices(state)
-      .filter((device: IDevice) => !device.shared)
-      .map((d: IDevice) => d.name.toLowerCase()),
-  }))
+  const dispatch = useDispatch<Dispatch>()
+  const hostname = useSelector((state: State) => state.backend.environment.hostname)
+  const nameBlacklist = useSelector(getDevices)
+    .filter((device: IDevice) => !device.shared)
+    .map((d: IDevice) => d.name.toLowerCase())
 
   if (!device) return null
 

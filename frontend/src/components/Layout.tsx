@@ -1,7 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectTheme } from '../selectors/ui'
-import { ApplicationState } from '../store'
 import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles'
 
 declare module '@mui/styles/defaultTheme' {
@@ -13,7 +12,8 @@ export interface Props {
 }
 
 export const Layout = ({ children }: Props) => {
-  const theme = useSelector((state: ApplicationState) => selectTheme(state))
+  const theme = useSelector(selectTheme)
+
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>{children}</ThemeProvider>

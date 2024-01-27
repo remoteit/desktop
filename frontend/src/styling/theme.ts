@@ -1,6 +1,6 @@
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions } from '@mui/material/styles'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ArrowIcon } from '../components/ArrowIcon'
 
 declare module '@mui/styles' {
@@ -711,7 +711,7 @@ export function getTheme(isDark: boolean) {
   return theme
 }
 
-export function isDarkMode(themeMode?: ApplicationState['ui']['themeMode']) {
+export function isDarkMode(themeMode?: State['ui']['themeMode']) {
   let darkMode = window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
   if (themeMode === 'dark') darkMode = true
   if (themeMode === 'light') darkMode = false

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { List, Button, Collapse, Divider } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { useApplication } from '../hooks/useApplication'
@@ -38,13 +38,10 @@ export const Connect: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
   const { connection, device, service, instance } = React.useContext(DeviceContext)
-  const { session, accordion, reverseProxy, showDesktopNotice } = useSelector((state: ApplicationState) => ({
-    session: state.sessions.all.find(s => s.id === sessionID),
-    fetching: getDeviceModel(state).fetching,
-    accordion: state.ui.accordion,
-    reverseProxy: isReverseProxy(state, service?.typeID),
-    showDesktopNotice: state.ui.showDesktopNotice,
-  }))
+  const session = useSelector((state: State) => state.sessions.all.find(s => s.id === sessionID))
+  const accordion = useSelector((state: State) => state.ui.accordion)
+  const reverseProxy = useSelector((state: State) => isReverseProxy(state, service?.typeID))
+  const showDesktopNotice = useSelector((state: State) => state.ui.showDesktopNotice)
 
   const app = useApplication(service, connection)
 

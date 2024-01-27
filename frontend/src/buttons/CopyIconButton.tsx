@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton, ButtonProps } from './IconButton'
 import { updateConnection } from '../helpers/connectionHelper'
@@ -28,7 +28,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
   ({ icon, app, value, title, size = 'lg', onClick, onCopy, ...props }, ref) => {
     const [open, setOpen] = useState<boolean>(false)
     const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
-    const autoCopy = useSelector((state: ApplicationState) => state.ui.autoCopy)
+    const autoCopy = useSelector((state: State) => state.ui.autoCopy)
     const { ui } = useDispatch<Dispatch>()
 
     useEffect(() => {

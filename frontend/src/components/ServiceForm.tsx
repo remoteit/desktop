@@ -7,9 +7,9 @@ import { makeStyles } from '@mui/styles'
 import { useURLForm } from '../hooks/useURLForm'
 import { AddFromNetwork } from './AddFromNetwork'
 import { useApplication } from '../hooks/useApplication'
+import { State, Dispatch } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { Typography, TextField, List, ListItem, Button } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { ServiceFormApplications } from './ServiceFormApplications'
 import { serviceNameValidation } from '@common/nameHelper'
@@ -49,11 +49,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   onCancel,
 }) => {
   const { ui } = useDispatch<Dispatch>()
-  const { applicationTypes, saving, setupAdded } = useSelector((state: ApplicationState) => ({
-    applicationTypes: state.applicationTypes.all,
-    saving: !!(state.ui.setupAddingService || (service?.id && state.ui.setupServiceBusy === service.id)),
-    setupAdded: state.ui.setupAdded,
-  }))
+  const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
+  const saving = useSelector(
+    (state: State) => !!(state.ui.setupAddingService || (service?.id && state.ui.setupServiceBusy === service.id))
+  )
+  const setupAdded = useSelector((state: State) => state.ui.setupAdded)
 
   const initForm = () => {
     setError(undefined)

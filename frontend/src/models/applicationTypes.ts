@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { RootModel } from '.'
 
 type IApplicationTypeState = {
@@ -75,7 +75,7 @@ export function getType(all: IApplicationType[], port?: number) {
   return type ? type.id : DEFAULT_SERVICE.typeID
 }
 
-export function isReverseProxy(state: ApplicationState, typeId?: number) {
+export function isReverseProxy(state: State, typeId?: number) {
   if (!typeId) return false
   const applicationType = findType(state.applicationTypes.all, typeId)
   return applicationType?.proxy

@@ -2,7 +2,7 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { getFreeUsers } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { Typography, Button, Box } from '@mui/material'
 import { ContactSelector } from '../components/ContactSelector'
@@ -14,7 +14,7 @@ import { Title } from '../components/Title'
 import { useHistory } from 'react-router-dom'
 
 export const OrganizationAddPage = () => {
-  const { contacts, organization, freeUsers } = useSelector((state: ApplicationState) => {
+  const { contacts, organization, freeUsers } = useSelector((state: State) => {
     const organization = selectOrganization(state)
     return {
       organization,

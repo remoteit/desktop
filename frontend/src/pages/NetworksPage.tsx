@@ -2,9 +2,9 @@ import React from 'react'
 import { Typography, Divider } from '@mui/material'
 import { selectNetworks } from '../selectors/networks'
 import { selectPermissions } from '../selectors/organizations'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { getDeviceModel } from '../selectors/devices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { LinearProgress } from '../components/LinearProgress'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { GuideBubble } from '../components/GuideBubble'
@@ -17,19 +17,13 @@ import { Icon } from '../components/Icon'
 
 export const NetworksPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { initialized, networks, shared, permissions, loading } = useSelector((state: ApplicationState) => {
-    const networks = [...selectNetworks(state)].sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
-    const deviceModel = getDeviceModel(state)
-    return {
-      initialized: state.networks.initialized,
-      networks: networks.filter(n => !n.shared),
-      shared: networks.filter(n => n.shared),
-      permissions: selectPermissions(state),
-      loading: deviceModel.fetching,
-    }
-  })
-
-  const empty = !networks?.length && !shared?.length
+  const all = [...useSelector(selectNetworks)].sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
+  const initialized = useSelector((state: State) => state.networks.initialized)
+  const permissions = useSelector((state: State) => selectPermissions(state))
+  const loading = useSelector(selectDeviceModelAttributes).fetching
+  const networks = all.filter(n => !n.shared)
+  const shared = all.filter(n => n.shared)
+  const empty = !all?.length
 
   return (
     <Container

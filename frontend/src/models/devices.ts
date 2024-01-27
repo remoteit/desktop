@@ -26,7 +26,7 @@ import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { getAllDevices, selectDevice, getDeviceModel, selectById, selectActiveColumns } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { store, ApplicationState } from '../store'
+import { store, State } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
@@ -670,22 +670,11 @@ export function mergeDevice(target: IDevice, source: IDevice) {
   }
 }
 
-export function selectIsFiltered(state: ApplicationState) {
-  const devices = getDeviceModel(state)
-  return (
-    devices.sort !== defaultState.sort ||
-    devices.filter !== defaultState.filter ||
-    devices.owner !== defaultState.owner ||
-    devices.platform !== defaultState.platform ||
-    devices.tag !== defaultState.tag
-  )
-}
-
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {
   const inactive = instance?.state !== 'active' && !connection?.connected
   return inactive
 }
 
-export function eachDevice(state: ApplicationState, callback: (device: IDevice) => void) {
+export function eachDevice(state: State, callback: (device: IDevice) => void) {
   getAllDevices(state).forEach(device => callback(device))
 }

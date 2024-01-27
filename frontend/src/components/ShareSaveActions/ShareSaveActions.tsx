@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from '@mui/material'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { useSelector } from 'react-redux'
 import { Gutters } from '../Gutters'
 
@@ -13,7 +13,7 @@ export function ShareSaveActions({
   onSave: () => void
   disabled: boolean
 }): JSX.Element {
-  const { sharing: saving } = useSelector((state: ApplicationState) => state.shares)
+  const { sharing: saving } = useSelector((state: State) => state.shares)
   return (
     <Gutters>
       <Button color="primary" onClick={onSave} disabled={disabled || saving} variant="contained">

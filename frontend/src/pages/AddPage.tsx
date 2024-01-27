@@ -5,7 +5,7 @@ import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
 import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Tooltip } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ScreenViewSetup } from '../components/ScreenViewSetup'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
@@ -20,7 +20,7 @@ import { Icon } from '../components/Icon'
 export const AddPage: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo } = useSelector((state: State) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
   }))

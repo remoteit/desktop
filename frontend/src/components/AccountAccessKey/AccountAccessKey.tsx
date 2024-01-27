@@ -3,7 +3,7 @@ import { Button, List, ListItem, ListItemText, ListItemSecondaryAction, Typograp
 import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { ListItemSetting } from '../ListItemSetting'
 import { CodeBlock } from '../CodeBlock'
 import { Timestamp } from '../Timestamp'
@@ -13,7 +13,7 @@ import { Icon } from '../Icon'
 
 export const AccountAccessKey: React.FC = () => {
   const [showDialog, setShowDialog] = useState(false)
-  const { accessKeys, secretKey, key, updating } = useSelector((state: ApplicationState) => state.keys)
+  const { accessKeys, secretKey, key, updating } = useSelector((state: State) => state.keys)
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {

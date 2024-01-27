@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { Link } from './Link'
 import { IconButton } from '../buttons/IconButton'
@@ -12,7 +12,7 @@ type Props = {
 
 export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { scanEnabled } = useSelector((state: ApplicationState) => state.ui)
+  const { scanEnabled } = useSelector((state: State) => state.ui)
   const history = useHistory()
 
   if (!allowScanning || !scanEnabled) return null

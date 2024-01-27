@@ -1,13 +1,13 @@
 import React from 'react'
+import { Dispatch } from '../store'
 import { platforms } from '../platforms'
-import { getDeviceModel } from '../selectors/devices'
 import { defaultState } from '../models/devices'
-import { ApplicationState, Dispatch } from '../store'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { useSelector, useDispatch } from 'react-redux'
+import { selectLimitsLookup } from '../selectors/organizations'
 import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
 import { AccordionMenu } from './AccordionMenu'
-import { selectLimitsLookup } from '../selectors/organizations'
 import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
@@ -35,13 +35,11 @@ const ownerFilters = [
 let platformFilter = [{ value: -1, name: 'All' }]
 
 export const FilterDrawer: React.FC = () => {
-  const getColor = useLabel()
   const { devices } = useDispatch<Dispatch>()
-  const { state, tags, feature } = useSelector((state: ApplicationState) => ({
-    state: getDeviceModel(state),
-    tags: selectTags(state).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
-    feature: selectLimitsLookup(state),
-  }))
+  const getColor = useLabel()
+  const feature = useSelector(selectLimitsLookup)
+  const state = useSelector(selectDeviceModelAttributes)
+  const tags = useSelector(selectTags).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) }))
 
   const update = values => {
     values = { ...values, from: defaultState.from }

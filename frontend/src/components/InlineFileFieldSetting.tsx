@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
@@ -31,7 +31,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   onSave,
   className,
 }) => {
-  const { filePath } = useSelector((state: ApplicationState) => state.backend)
+  const { filePath } = useSelector((state: State) => state.backend)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ filled: variant === 'filled' })
 

@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { Typography } from '@mui/material'
 import { attributeName } from '@common/nameHelper'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { getAllDevices, findById } from '../../selectors/devices'
 import { selectNetworks } from '../../selectors/networks'
 import { spacing, fontSizes } from '../../styling'
@@ -25,7 +25,7 @@ const pageNameMap: { [path: string]: string } = {
 export const Breadcrumbs: React.FC = () => {
   const css = useStyles()
   const location = useLocation()
-  const { devices, networks } = useSelector((state: ApplicationState) => ({
+  const { devices, networks } = useSelector((state: State) => ({
     devices: getAllDevices(state),
     networks: selectNetworks(state),
   }))

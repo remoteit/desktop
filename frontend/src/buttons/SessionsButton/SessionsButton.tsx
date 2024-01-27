@@ -4,7 +4,7 @@ import { useLocation, useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Typography } from '@mui/material'
 import { selectSessionsByService } from '../../models/sessions'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { SessionsTooltip } from '../../components/SessionsTooltip'
 import { spacing } from '../../styling'
 import { Icon } from '../../components/Icon'
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const SessionsButton: React.FC<Props> = ({ service }) => {
-  const sessions = useSelector((state: ApplicationState) => selectSessionsByService(state, service?.id))
+  const sessions = useSelector((state: State) => selectSessionsByService(state, service?.id))
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()

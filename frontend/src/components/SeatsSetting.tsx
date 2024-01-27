@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import browser from '../services/Browser'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
-import { Box, List, ListItem, Stack } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
+import { List, Stack } from '@mui/material'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { selectRemoteitLicense, selectPlan, selectLimits } from '../selectors/organizations'
@@ -16,13 +16,11 @@ import { Icon } from './Icon'
 
 export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ context }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { accountId, license, limits, plan, purchasing } = useSelector((state: ApplicationState) => ({
-    accountId: selectActiveAccountId(state),
-    limits: selectLimits(state),
-    license: selectRemoteitLicense(state) || null,
-    plan: selectPlan(state),
-    purchasing: !!state.plans.purchasing,
-  }))
+  const accountId = useSelector(selectActiveAccountId)
+  const limits = useSelector(selectLimits)
+  const license = useSelector(selectRemoteitLicense) || null
+  const plan = useSelector(selectPlan)
+  const purchasing = useSelector((state: State) => !!state.plans.purchasing)
 
   useEffect(() => {
     setForm(getDefaults())

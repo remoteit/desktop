@@ -4,7 +4,7 @@ import { Notice } from '../Notice'
 import { MFAPhoneForm } from './MFAPhoneForm'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 
 type Props = {
   cancelEditPhone: () => void
@@ -28,7 +28,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
   setCancelShowVerificationCode,
 }) => {
   const { mfa } = useDispatch<Dispatch>()
-  const { showPhone, showVerificationCode, AWSPhone } = useSelector((state: ApplicationState) => ({
+  const { showPhone, showVerificationCode, AWSPhone } = useSelector((state: State) => ({
     showPhone: state.mfa.showPhone,
     showVerificationCode: state.mfa.showVerificationCode,
     AWSPhone: state.auth.AWSUser.phone_number || '',

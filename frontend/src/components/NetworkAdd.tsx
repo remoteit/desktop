@@ -3,7 +3,7 @@ import { MAX_NAME_LENGTH } from '@common/constants'
 import { useHistory } from 'react-router-dom'
 import { TextField, Button } from '@mui/material'
 import { selectNetwork } from '../models/networks'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
@@ -15,7 +15,7 @@ export const NetworkAdd: React.FC = () => {
   const [name, setName] = useState<string>('')
   const [adding, setAdding] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const network = useSelector((state: ApplicationState) => selectNetwork(state))
+  const network = useSelector((state: State) => selectNetwork(state))
 
   const reset = async () => {
     await sleep(1000)

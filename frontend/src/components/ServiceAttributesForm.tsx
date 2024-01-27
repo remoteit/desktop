@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
 import { validPort } from '../helpers/connectionHelper'
@@ -32,7 +32,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   globalDefaults,
   onChange,
 }) => {
-  const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
+  const { routingLock, routingMessage } = useSelector((state: State) => state.ui)
   const app = useApplication(undefined, connection)
   const css = useStyles()
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Icon } from '../Icon'
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { useSelector } from 'react-redux'
 import { CopyCodeBlock } from '../CopyCodeBlock'
 import { IconButton } from '../../buttons/IconButton'
@@ -15,7 +15,7 @@ type Props = {
 }
 
 export function CreateAccessKey({ open, onClose, newKey = 'Creating...', secretKey }: Props) {
-  const user = useSelector((state: ApplicationState) => state.auth.user)
+  const user = useSelector((state: State) => state.auth.user)
   const [showAccessKey, setShowAccessKey] = useState(false)
   const handleShowAccessKey = () => setShowAccessKey(!showAccessKey)
 

@@ -1,4 +1,4 @@
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { DateTime, Duration } from 'luxon'
 import { selectLimit } from '../models/plans'
 import { Unit } from 'humanize-duration'

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
 
 const getDepth = (path: string) => {
@@ -9,7 +9,7 @@ const getDepth = (path: string) => {
 }
 
 const useMobileNavigation = () => {
-  const customHistory = useSelector((state: ApplicationState) => state.ui.mobileNavigation)
+  const customHistory = useSelector((state: State) => state.ui.mobileNavigation)
   const dispatch = useDispatch<Dispatch>()
   const { pathname, state } = useLocation<{ isRedirect?: boolean }>()
 

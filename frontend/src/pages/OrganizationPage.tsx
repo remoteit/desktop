@@ -1,9 +1,10 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { List, Typography, Box } from '@mui/material'
 import { Redirect, useParams } from 'react-router-dom'
+import { selectLicenseIndicator } from '../models/plans'
 import {
   selectRemoteitLicense,
   selectPermissions,
@@ -19,13 +20,12 @@ import { Title } from '../components/Title'
 
 export const OrganizationPage: React.FC = () => {
   const { userID = '', deviceID = '' } = useParams<{ userID: string; deviceID: string }>()
-  const { initialized, permissions, limits, organization, license } = useSelector((state: ApplicationState) => ({
-    organization: selectOrganization(state),
-    initialized: state.organization.initialized,
-    permissions: selectPermissions(state),
-    limits: selectLimitsLookup(state),
-    license: selectRemoteitLicense(state),
-  }))
+  const initialized = useSelector((state: State) => state.organization.initialized)
+  const organization = useSelector(selectOrganization)
+  const permissions = useSelector(selectPermissions)
+  const limits = useSelector(selectLimitsLookup)
+  const license = useSelector(selectRemoteitLicense)
+  const licenseIndicator = useSelector(selectLicenseIndicator)
 
   if (initialized && !organization.id)
     return <Redirect to={{ pathname: '/organization/empty', state: { isRedirect: true } }} />
@@ -96,6 +96,15 @@ export const OrganizationPage: React.FC = () => {
           to="/organization/tags"
           icon="tag"
           disabled={!limits.tagging || !admin}
+          showDisabled
+          dense
+        />
+        <ListItemLocation
+          title="License"
+          to="/organization/licensing"
+          icon="id-badge"
+          disabled={!license}
+          badge={licenseIndicator}
           showDisabled
           dense
         />

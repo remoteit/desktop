@@ -1,16 +1,13 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { Tooltip, IconButton } from '@mui/material'
-import { selectIsFiltered } from '../../models/devices'
+import { selectIsFiltered } from '../../selectors/devices'
 import { Icon } from '../../components/Icon'
 
 export const FilterButton: React.FC = () => {
-  const { open, modified } = useSelector((state: ApplicationState) => ({
-    open: state.ui.drawerMenu === 'FILTER',
-    modified: selectIsFiltered(state),
-  }))
+  const modified = useSelector(selectIsFiltered)
+  const open = useSelector((state: State) => state.ui.drawerMenu === 'FILTER')
   const { ui } = useDispatch<Dispatch>()
   const icon = open ? 'times' : 'filter'
   return (

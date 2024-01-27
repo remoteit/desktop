@@ -60,6 +60,12 @@ export function removeObject<T>(array: T[], callback: (item: T) => boolean): [T 
   return [undefined, array]
 }
 
+export function removeObjectAttribute<T, K extends keyof T>(obj: T, key: K): Omit<T, K> {
+  const { [key]: _, ...rest } = obj
+  return rest
+}
+
+
 export function createMemoDebugger(componentName) {
   return (prevProps, nextProps) => {
     Object.keys(prevProps).forEach(key => {

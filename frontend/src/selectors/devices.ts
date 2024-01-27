@@ -1,12 +1,14 @@
+import { State } from '../store'
+import { defaultState } from '../models/devices'
 import { createSelector } from 'reselect'
-import { ApplicationState } from '../store'
 import { selectActiveAccountId } from './accounts'
-import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
+import { removeObject, removeObjectAttribute } from '../helpers/utilHelper'
+import { getUserId, getDevicesState, getColumns, optionalId, optionalSecondParam, optionalThirdParam } from './state'
 import { deviceAttributes, DeviceAttribute, deviceAttributesAll, serviceAttributesAll } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 
-export function getDeviceModelFn(devices: ApplicationState['devices'], activeAccountId: string, accountId?: string) {
+export function getDeviceModelFn(devices: State['devices'], activeAccountId: string, accountId?: string) {
   return devices[accountId || activeAccountId] || devices.default
 }
 
@@ -26,7 +28,7 @@ export function findById(devices: IDevice[], id?: string) {
   return [service, device] as [IService | undefined, IDevice | undefined]
 }
 
-export function selectAllByIds(state: ApplicationState, ids?: string[]) {
+export function selectAllByIds(state: State, ids?: string[]) {
   return (
     ids?.reduce((result: [IService, IDevice | undefined][], serviceId: string) => {
       const [service, device] = selectById(state, undefined, serviceId)
@@ -42,12 +44,12 @@ export const getDeviceModel = createSelector([getDevicesState, selectActiveAccou
 
 export const getDevices = createSelector(
   [getDevicesState, selectActiveAccountId],
-  (devices, activeAccountId) => getDeviceModelFn(devices, activeAccountId).all || []
+  (devices, activeAccountId): IDevice[] => getDeviceModelFn(devices, activeAccountId).all || []
 )
 
-export const getVisibleDevices = createSelector([getDevices], devices => devices.filter((d: IDevice) => !d.hidden))
+export const selectVisibleDevices = createSelector([getDevices], devices => devices.filter((d: IDevice) => !d.hidden))
 
-export const getOwnDevices = createSelector(
+export const selectOwnDevices = createSelector(
   [getDevicesState, getUserId],
   (devices, userId) => getDeviceModelFn(devices, userId).all || []
 )
@@ -55,6 +57,10 @@ export const getOwnDevices = createSelector(
 export const getAllDevices = createSelector(
   [getDevicesState],
   devices => Object.keys(devices).reduce((all: IDevice[], accountId) => all.concat(devices[accountId].all), []) || []
+)
+
+export const selectDeviceModelAttributes = createSelector([getDeviceModel], deviceModel =>
+  removeObjectAttribute(deviceModel, 'all')
 )
 
 export const selectById = createSelector([getDevices, getAllDevices, optionalId], (devices, allDevices, id) => {
@@ -93,7 +99,7 @@ export const selectActiveColumns = createSelector([selectActiveAttributes], acti
 )
 
 export const selectDevice = createSelector(
-  [getAllDevices, getDevices, optionalDeviceId],
+  [getAllDevices, getDevices, optionalSecondParam],
   (allDevices, devices, deviceId) => devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
 )
 
@@ -110,4 +116,35 @@ export const selectDeviceDetailAttributes = createSelector([getDeviceModel], dev
           })
       )
     )
+)
+
+// selectService params (accountId, deviceId, serviceId)
+export const selectDeviceService = createSelector(
+  [selectDevice, getDevices, getAllDevices, optionalThirdParam],
+  (device, devices, allDevices, serviceId): [IService | undefined, IDevice | undefined] => {
+    let service: IService | undefined
+
+    if (device) {
+      if (serviceId) service = device.services.find(s => s.id === serviceId)
+    } else if (serviceId) {
+      const result = findById(devices, serviceId)
+      return result[0] || result[1] ? result : findById(allDevices, serviceId)
+    }
+    return [service, device]
+  }
+)
+
+export const selectDeviceListAttributes = createSelector([selectActiveAttributes], activeAttributes => {
+  const [required, attributes] = removeObject(activeAttributes, a => a.required === true)
+  return { attributes, required: required || activeAttributes[0] }
+})
+
+export const selectIsFiltered = createSelector(
+  [getDeviceModel],
+  deviceModel =>
+    deviceModel.sort !== defaultState.sort ||
+    deviceModel.filter !== defaultState.filter ||
+    deviceModel.owner !== defaultState.owner ||
+    deviceModel.platform !== defaultState.platform ||
+    deviceModel.tag !== defaultState.tag
 )

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Container } from '../components/Container'
 import { selectLimit, humanizeDays } from '../models/plans'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { TimeSeriesSelect } from '../components/TimeSeriesSelect'
 import { PlanActionChip } from '../components/PlanActionChip'
@@ -22,7 +22,7 @@ const defaultServiceTimeSeries: ITimeSeriesOptions = {
 
 export const GraphsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { timeSeries, logLimit } = useSelector((state: ApplicationState) => ({
+  const { timeSeries, logLimit } = useSelector((state: State) => ({
     timeSeries: state.ui,
     logLimit: selectLimit('log-limit', state) || 'P1W',
   }))

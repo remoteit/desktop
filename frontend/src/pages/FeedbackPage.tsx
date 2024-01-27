@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { Button, Typography, TextField } from '@mui/material'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { fullVersion } from '../helpers/versionHelper'
@@ -11,7 +11,7 @@ import { Gutters } from '../components/Gutters'
 import { Link } from '../components/Link'
 
 export const FeedbackPage: React.FC<{}> = () => {
-  const presets = useSelector((state: ApplicationState) => state.feedback)
+  const presets = useSelector((state: State) => state.feedback)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const [subject, setSubject] = useState(presets.subject)

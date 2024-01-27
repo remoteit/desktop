@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
@@ -200,7 +200,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function accountFromDevice(state: ApplicationState, ownerId: string, access: string[]) {
+export function accountFromDevice(state: State, ownerId: string, access: string[]) {
   const userId = state.auth.user?.id || state.user.id
   const orgIds = state.accounts.membership.map(m => m.account.id)
   orgIds.push(userId) // add current user to accounts
@@ -216,7 +216,7 @@ export function accountFromDevice(state: ApplicationState, ownerId: string, acce
   return userId
 }
 
-export function getAccountIds(state: ApplicationState) {
+export function getAccountIds(state: State) {
   let ids = state.accounts.membership.map(m => m.account.id)
   state.auth.user && ids.unshift(state.auth.user.id)
   return ids

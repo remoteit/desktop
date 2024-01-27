@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
-import { getOwnDevices } from '../selectors/devices'
+import { State } from '../store'
+import { selectOwnDevices } from '../selectors/devices'
 import { Typography } from '@mui/material'
 import { OutOfBand } from '../components/OutOfBand'
 import { Container } from '../components/Container'
@@ -10,9 +10,9 @@ import { Scan } from '../components/Scan'
 import { emit } from '../services/Controller'
 
 export const ScanPage: React.FC = () => {
-  const { interfaces, services, scanData, privateIP } = useSelector((state: ApplicationState) => ({
+  const { interfaces, services, scanData, privateIP } = useSelector((state: State) => ({
     interfaces: state.backend.interfaces,
-    services: getOwnDevices(state).find(d => d.thisDevice)?.services || [],
+    services: selectOwnDevices(state).find(d => d.thisDevice)?.services || [],
     scanData: state.backend.scanData,
     privateIP: state.backend.environment.privateIP,
   }))

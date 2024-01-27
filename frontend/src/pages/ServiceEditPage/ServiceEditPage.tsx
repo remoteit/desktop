@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { REGEX_LAST_PATH } from '../../constants'
 import { ListItemBack } from '../../components/ListItemBack'
@@ -10,7 +10,7 @@ import { Gutters } from '../../components/Gutters'
 type Props = { device?: IDevice }
 
 export const ServiceEditPage: React.FC<Props> = ({ device }) => {
-  const { thisId } = useSelector((state: ApplicationState) => state.backend)
+  const { thisId } = useSelector((state: State) => state.backend)
   const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const service = device?.services.find(s => s.id === serviceID)

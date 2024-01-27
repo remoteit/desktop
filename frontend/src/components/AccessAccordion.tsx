@@ -1,10 +1,10 @@
 import React, { useContext } from 'react'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { DeviceContext } from '../services/Context'
+import { selectSessionUsers } from '../selectors/sessions'
 import { Chip, Box, Typography } from '@mui/material'
-import { selectSessionUsers } from '../models/sessions'
-import { selectMembersWithAccess } from '../models/organization'
-import { ApplicationState } from '../store'
+import { selectMembersWithAccess } from '../selectors/organizations'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { ListItemLocation } from './ListItemLocation'
 import { ShareButton } from '../buttons/ShareButton'
@@ -17,10 +17,10 @@ type Props = {
 
 export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
   const { service, instance } = useContext(DeviceContext)
-  const { connected, access } = useSelector((state: ApplicationState) => ({
-    connected: selectSessionUsers(state, service ? service.id : instance?.id).length,
-    access: instance?.permissions.includes('MANAGE') ? selectMembersWithAccess(state, instance).map(m => m.user) : [],
-  }))
+  const connected = useSelector((state: State) =>
+    selectSessionUsers(state, undefined, service ? service.id : instance?.id)
+  ).length
+  const access = useSelector((state: State) => selectMembersWithAccess(state, undefined, instance)).map(m => m.user)
   const guests = (service ? service.access : instance?.access) || []
   const members = access.filter(user => !guests.find(_u => _u.email === user.email))
   const total = guests.length + members.length

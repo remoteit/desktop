@@ -2,14 +2,14 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { selectOrganization } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Drawer } from '@mui/material'
 import { Sidebar } from './Sidebar'
 
 export const SidebarMenu: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { activeOrgId, open, layout } = useSelector((state: ApplicationState) => ({
+  const { activeOrgId, open, layout } = useSelector((state: State) => ({
     activeOrgId: selectOrganization(state).id,
     open: state.ui.sidebarMenu,
     layout: state.ui.layout,

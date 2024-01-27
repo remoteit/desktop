@@ -3,7 +3,7 @@ import { DeviceContext } from '../services/Context'
 import { NoConnectionPage } from './NoConnectionPage'
 import { Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { selectOrganizationName } from '../selectors/organizations'
 import { networkAttributes } from '../components/Attributes'
 import { NetworkHeaderMenu } from '../components/NetworkHeaderMenu'
@@ -16,7 +16,7 @@ import { Notice } from '../components/Notice'
 export const NetworkPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { network } = React.useContext(DeviceContext)
-  const { orgName, email } = useSelector((state: ApplicationState) => ({
+  const { orgName, email } = useSelector((state: State) => ({
     orgName: selectOrganizationName(state, network?.owner.id),
     email: state.user.email,
   }))

@@ -18,4 +18,4 @@ export type extractStateFromModel<a extends RootModel> = {
 }
 export type Store = typeof store
 export type Dispatch = typeof store.dispatch
-export type ApplicationState = RematchRootState<typeof models>
+export type State = RematchRootState<typeof models>

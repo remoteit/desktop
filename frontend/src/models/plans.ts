@@ -1,7 +1,7 @@
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Duration } from 'luxon'
 import {
   graphQLSubscribe,
@@ -10,6 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import { selectRemoteitLicense, selectOrganization, selectLicenses, selectPlan } from '../selectors/organizations'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
@@ -233,7 +234,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getFreeUsers(state: ApplicationState) {
+export function getFreeUsers(state: State) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
   const plan = selectPlan(state)
@@ -242,25 +243,25 @@ export function getFreeUsers(state: ApplicationState) {
   return Math.max(totals.users - used, 0)
 }
 
-function isEnterprise(state: ApplicationState) {
+function isEnterprise(state: State) {
   return selectLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
 }
 
-export function isPersonal(state: ApplicationState) {
+export function isPersonal(state: State) {
   const license = selectRemoteitLicense(state)
   return license?.plan.id === PERSONAL_PLAN_ID
 }
 
-export function selectLimits(state: ApplicationState, accountId?: string) {
+export function selectLimits(state: State, accountId?: string) {
   if (state.plans.tests.limit) return state.plans.tests.limits
   else return selectOrganization(state, accountId).limits
 }
 
-export function selectLimit(name: string, state: ApplicationState) {
+export function selectLimit(name: string, state: State) {
   return selectLimits(state).find(limit => limit.name === name)?.value || 'P1D'
 }
 
-export function getInformed(state: ApplicationState) {
+export function getInformed(state: State) {
   return state.plans.tests.limit ? false : state.plans.informed
 }
 
@@ -276,10 +277,7 @@ export function lookupLicenseProductId(instance?: IInstance) {
   return lookup.productId
 }
 
-export function selectFullLicense(
-  state: ApplicationState,
-  { productId, license }: { productId?: string; license?: ILicense }
-) {
+export function selectFullLicense(state: State, { productId, license }: { productId?: string; license?: ILicense }) {
   license = license || selectLicenses(state).find(l => l.plan.product.id === productId)
   const limits = selectLimits(state)
   const informed = getInformed(state)
@@ -309,11 +307,11 @@ export function selectFullLicense(
   }
 }
 
-export function selectOwnLicenses(state: ApplicationState) {
+export function selectOwnLicenses(state: State) {
   return getLicenses(state, state.auth.user?.id)
 }
 
-export function getLicenses(state: ApplicationState, accountId?: string): { licenses: ILicense[]; limits: ILimit[] } {
+export function getLicenses(state: State, accountId?: string): { licenses: ILicense[]; limits: ILimit[] } {
   return {
     licenses: selectLicenses(state, accountId).map(license => ({
       ...license,
@@ -324,11 +322,12 @@ export function getLicenses(state: ApplicationState, accountId?: string): { lice
   }
 }
 
-export function selectLicenseIndicator(state: ApplicationState) {
+export function selectLicenseIndicator(state: State) {
+  const accountId = selectActiveAccountId(state)
   const informed = getInformed(state)
   if (informed) return 0
   let indicators = 0
-  const { licenses } = getLicenses(state)
+  const { licenses } = getLicenses(state, accountId)
   for (var license of licenses) {
     const { noticeType } = selectFullLicense(state, { license })
     if (noticeType && noticeType !== 'ACTIVE') indicators++

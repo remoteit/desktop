@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Typography } from '@mui/material'
-import { selectAnnouncements } from '../models/announcements'
+import { selectAnnouncements } from '../selectors/announcements'
 import { AnnouncementCard } from '../components/AnnouncementCard'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 
 export const AnnouncementsPage = () => {
-  const announcements = useSelector((state: ApplicationState) => selectAnnouncements(state))
+  const announcements = useSelector((state: State) => selectAnnouncements(state))
   const [scrollPosition, setScrollPosition] = useState<number>(0)
   const bodyRef = useRef<HTMLDivElement>(null)
 

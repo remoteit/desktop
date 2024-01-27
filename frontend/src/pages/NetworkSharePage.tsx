@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../components/ContactSelector'
 import { selectOrganization } from '../selectors/organizations'
@@ -13,7 +13,7 @@ import { Title } from '../components/Title'
 
 export const NetworkSharePage = () => {
   const { networkID = '' } = useParams<{ networkID: string }>()
-  const { network, contacts } = useSelector((state: ApplicationState) => {
+  const { network, contacts } = useSelector((state: State) => {
     const organization = selectOrganization(state)
     return {
       network: selectNetwork(state, networkID),

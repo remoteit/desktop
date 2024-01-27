@@ -2,14 +2,14 @@ import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
 import { makeStyles } from '@mui/styles'
-import { getDeviceModel } from '../selectors/devices'
 import { AddFromNetwork } from '../components/AddFromNetwork'
+import { Dispatch, State } from '../store'
 import { DeviceTagEditor } from '../components/DeviceTagEditor'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
@@ -34,14 +34,11 @@ export const DevicePage: React.FC = () => {
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
-  const { setupAddingService, setupDeletingService, sortService, connectThisDevice } = useSelector(
-    (state: ApplicationState) => ({
-      setupAddingService: state.ui.setupAddingService,
-      setupDeletingService: state.ui.setupDeletingService,
-      sortService: getDeviceModel(state).sortServiceOption,
-      connectThisDevice: state.ui.connectThisDevice,
-    })
-  )
+
+  const sortService = useSelector(selectDeviceModelAttributes).sortServiceOption
+  const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
+  const setupDeletingService = useSelector((state: State) => state.ui.setupDeletingService)
+  const connectThisDevice = useSelector((state: State) => state.ui.connectThisDevice)
 
   if (!device)
     return (

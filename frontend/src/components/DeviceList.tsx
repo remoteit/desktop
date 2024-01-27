@@ -6,7 +6,6 @@ import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { ServiceContextualMenu } from './ServiceContextualMenu'
 import { DeviceListHeader } from './DeviceListHeader'
 import { makeStyles } from '@mui/styles'
 import { List, Typography, useMediaQuery } from '@mui/material'
@@ -45,68 +44,65 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const css = useStyles({ attributes, required, columnWidths, mobile })
 
   return (
-    <>
-      <List className={classnames(css.list, css.grid)} disablePadding>
-        <DeviceListContext.Provider value={{ device: devices[0] }}>
-          <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths, mobile }} />
-        </DeviceListContext.Provider>
-        {devices?.map((device, index) => {
-          const canRestore = isOffline(device) && !device.shared
-          const isSelected = selected?.includes(device.id)
-          if (restore && !canRestore) return null
-          const onSelect = deviceId => {
-            const select = [...selected]
-            if (isSelected) {
-              const index = select.indexOf(deviceId)
-              select.splice(index, 1)
-            } else {
-              select.push(deviceId)
-            }
-            dispatch.ui.set({ selected: select })
+    <List className={classnames(css.list, css.grid)} disablePadding>
+      <DeviceListContext.Provider value={{ device: devices[0] }}>
+        <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths, mobile }} />
+      </DeviceListContext.Provider>
+      {devices?.map((device, index) => {
+        const canRestore = isOffline(device) && !device.shared
+        const isSelected = selected?.includes(device.id)
+        if (restore && !canRestore) return null
+        const onSelect = deviceId => {
+          const select = [...selected]
+          if (isSelected) {
+            const index = select.indexOf(deviceId)
+            select.splice(index, 1)
+          } else {
+            select.push(deviceId)
           }
-          return (
-            <DeviceListContext.Provider
-              key={device.id}
-              value={{ device, connections: connections[device.id], required, attributes }}
-            >
-              <DeviceListItem
-                restore={restore && canRestore}
-                select={select}
-                selected={isSelected}
-                onSelect={onSelect}
-                mobile={mobile}
-                onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
+          dispatch.ui.set({ selected: select })
+        }
+        return (
+          <DeviceListContext.Provider
+            key={device.id}
+            value={{ device, connections: connections[device.id], required, attributes }}
+          >
+            <DeviceListItem
+              restore={restore && canRestore}
+              select={select}
+              selected={isSelected}
+              onSelect={onSelect}
+              mobile={mobile}
+              onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
+            />
+            {!index && (
+              <GuideBubble
+                enterDelay={400}
+                guide="deviceList"
+                placement="bottom"
+                startDate={new Date('2022-09-20')}
+                queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
+                instructions={
+                  <>
+                    <Typography variant="h3" gutterBottom>
+                      <b>Access a device</b>
+                    </Typography>
+                    <Typography variant="body2" gutterBottom>
+                      A device can host it's own applications (services), or it can host another service on it's local
+                      network.
+                    </Typography>
+                    <Typography variant="body2" gutterBottom>
+                      Select a device to connect to a service, or configure it.
+                    </Typography>
+                  </>
+                }
               />
-              {!index && (
-                <GuideBubble
-                  enterDelay={400}
-                  guide="deviceList"
-                  placement="bottom"
-                  startDate={new Date('2022-09-20')}
-                  queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
-                  instructions={
-                    <>
-                      <Typography variant="h3" gutterBottom>
-                        <b>Access a device</b>
-                      </Typography>
-                      <Typography variant="body2" gutterBottom>
-                        A device can host it's own applications (services), or it can host another service on it's local
-                        network.
-                      </Typography>
-                      <Typography variant="body2" gutterBottom>
-                        Select a device to connect to a service, or configure it.
-                      </Typography>
-                    </>
-                  }
-                />
-              )}
-            </DeviceListContext.Provider>
-          )
-        })}
-        <LoadMore />
-      </List>
-      <ServiceContextualMenu />
-    </>
+            )}
+          </DeviceListContext.Provider>
+        )
+      })}
+      <LoadMore />
+    </List>
   )
 }
 

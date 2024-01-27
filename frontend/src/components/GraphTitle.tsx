@@ -1,6 +1,6 @@
 import React from 'react'
 import { TimeSeriesTypeLookup } from '../helpers/dateHelper'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 
 type Props = {
@@ -8,6 +8,6 @@ type Props = {
 }
 
 export const GraphTitle: React.FC<Props> = ({ variant = 'device' }) => {
-  const timeSeries = useSelector((state: ApplicationState) => state.ui[`${variant}TimeSeries`])
+  const timeSeries = useSelector((state: State) => state.ui[`${variant}TimeSeries`])
   return <>{TimeSeriesTypeLookup[timeSeries.type]}</>
 }

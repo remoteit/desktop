@@ -1,10 +1,9 @@
+import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { setConnection, getManufacturerType, getManufacturerUser } from '../helpers/connectionHelper'
 import { graphQLDisconnect } from '../services/graphQLMutation'
 import { accountFromDevice } from './accounts'
-import { selectConnections } from '../selectors/connections'
-import { ApplicationState } from '../store'
 import { isReverseProxy } from './applicationTypes'
 import { AxiosResponse } from 'axios'
 import { combinedName } from '@common/nameHelper'
@@ -172,24 +171,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectSessionsByService(state: ApplicationState, id?: string) {
+export function selectSessionsByService(state: State, id?: string) {
   const sessions = state.sessions.all.filter(s => s.target.id === id)
   return sessions
-}
-
-export function selectSessionUsers(state: ApplicationState, id?: string) {
-  let ids: string[] = []
-  const activeSessionIds = selectConnections(state).map(c => c.sessionId)
-  return state.sessions.all.reduce((users: IUserRef[], session) => {
-    if (
-      session.user &&
-      !ids.includes(session.user.id) &&
-      !activeSessionIds.includes(session.id) &&
-      (session.target.id === id || session.target.deviceId === id)
-    ) {
-      ids.push(session.user.id)
-      users.push(session.user)
-    }
-    return users
-  }, [])
 }

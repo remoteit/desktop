@@ -16,7 +16,7 @@ import {
   graphQLMergeTag,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { findTagIndex } from '../helpers/utilHelper'
 import { getNextLabel } from './labels'
 import { RootModel } from '.'
@@ -238,7 +238,7 @@ function removeTag<T extends IInstance>(original: T, tag: ITag): T {
   return copy
 }
 
-export function canEditTags(state: ApplicationState, accountId?: string) {
+export function canEditTags(state: State, accountId?: string) {
   const permissions = selectPermissions(state, accountId)
   return !!permissions?.includes('ADMIN')
 }

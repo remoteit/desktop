@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { Tooltip, Select, MenuItem } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
@@ -8,7 +8,7 @@ import { spacing } from '../../styling'
 export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
   const [tooltip, setTooltip] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
-  const { labels } = useSelector((state: ApplicationState) => state)
+  const { labels } = useSelector((state: State) => state)
   const label = labels.find(l => l.id === device.attributes.color) || labels[0]
   const css = useStyles()
 

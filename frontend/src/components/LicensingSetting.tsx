@@ -1,11 +1,10 @@
 import React from 'react'
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText, Typography, Box } from '@mui/material'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
 import { Timestamp } from './Timestamp'
-import { Link } from './Link'
 
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
   if (!licenses.length) return null
@@ -13,57 +12,51 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
   return (
     <>
       {licenses.map((license, index) => (
-        <React.Fragment key={index}>
-          <List>
-            <LicensingNotice license={license} />
-            <ListItem key={license.id} dense>
-              <ListItemIcon>
-                <LicensingIcon license={license} />
-              </ListItemIcon>
-              <ListItemText
-                primary={`${license.plan.product.description} ${license.plan.description} plan`}
-                secondary={
-                  !license.id
-                    ? 'Not subscribed'
-                    : license.expiration && (
-                        <>
-                          Renews <Timestamp date={license.expiration} variant="long" />
-                        </>
-                      )
-                }
-              />
-              <ListItemSecondaryAction>
-                {license.managePath && (
-                  <Link to={license.managePath}>
-                    <Button color="primary" size="small">
-                      {license.id ? 'Manage' : 'Free Trial'}
-                    </Button>
-                  </Link>
+        <List key={index}>
+          <LicensingNotice license={license} />
+          <ListItem key={license.id} dense>
+            <ListItemIcon>
+              <LicensingIcon license={license} />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
+                  {license.plan.product.description}
+                  &nbsp;{license.plan.description} plan
+                </Typography>
+              }
+              secondary={
+                !license.id
+                  ? 'Not subscribed'
+                  : license.expiration && (
+                      <>
+                        Renews <Timestamp date={license.expiration} variant="long" />
+                      </>
+                    )
+              }
+            />
+          </ListItem>
+          {!!(license.id || license.limits?.length) && (
+            <ListItem>
+              <ListItemIcon />
+              <Box width="100%">
+                {license.limits && (
+                  <Box marginBottom={3} marginTop={1}>
+                    {license.limits?.map(limit => (
+                      <LimitSetting key={limit.name} limit={limit} />
+                    ))}
+                  </Box>
                 )}
-              </ListItemSecondaryAction>
+                <ListItemCopy label="License Key" value={license.id} showBackground />
+              </Box>
             </ListItem>
-            {!!(license.id || license.limits?.length) && (
-              <ListItem>
-                <ListItemIcon />
-                <Box width="100%">
-                  {license.limits && (
-                    <Box marginBottom={3} marginTop={1}>
-                      {license.limits?.map(limit => (
-                        <LimitSetting key={limit.name} limit={limit} />
-                      ))}
-                    </Box>
-                  )}
-                  <ListItemCopy label="License Key" value={license.id} showBackground />
-                </Box>
-              </ListItem>
-            )}
-          </List>
-        </React.Fragment>
+          )}
+        </List>
       ))}
       <List>
         {limits.map(limit => (
           <ListItem key={limit.name}>
-            <ListItemIcon></ListItemIcon>
+            <ListItemIcon />
             <LimitSetting limit={limit} />
           </ListItem>
         ))}

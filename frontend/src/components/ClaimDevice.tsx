@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { TextField } from '@mui/material'
@@ -16,7 +16,7 @@ export function ClaimDevice() {
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, organization, user } = useSelector((state: ApplicationState) => ({
+  const { claiming, organization, user } = useSelector((state: State) => ({
     claiming: state.ui.claiming,
     organization: selectOrganization(state),
     user: state.user,

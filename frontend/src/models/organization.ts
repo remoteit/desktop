@@ -13,7 +13,7 @@ import { graphQLBasicRequest } from '../services/graphQL'
 import { getAccountIds } from './accounts'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { selectOrganization } from '../selectors/organizations'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
@@ -496,14 +496,9 @@ export function parseLicense(data): ILicense | null {
   }
 }
 
-export function getOwnOrganization(state: ApplicationState) {
+export function getOwnOrganization(state: State) {
   const id = state.auth.user?.id || ''
   return selectOrganization(state, id)
-}
-
-export function selectMembersWithAccess(state: ApplicationState, instance?: IInstance) {
-  const organization = selectOrganization(state)
-  return organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
 }
 
 export function canMemberView(roles: IOrganizationRole[], member: IOrganizationMember, instance?: IInstance) {

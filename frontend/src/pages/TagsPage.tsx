@@ -10,7 +10,7 @@ import { findTagIndex } from '../helpers/utilHelper'
 import { Typography, List } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { REGEX_TAG_SAFE } from '../constants'
 import { useLocation } from 'react-router-dom'
@@ -23,7 +23,7 @@ export const TagsPage: React.FC = () => {
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
-  const { accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: ApplicationState) => {
+  const { accountId, deleting, updating, creating, canEdit, tags } = useSelector((state: State) => {
     const userAccount = location.pathname.includes('/settings')
     const accountId = userAccount ? state.user.id : selectActiveAccountId(state)
     return {

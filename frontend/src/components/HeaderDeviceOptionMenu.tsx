@@ -1,6 +1,6 @@
 import React from 'react'
+import { State } from '../store'
 import { REGEX_SERVICE_ID } from '../constants'
-import { ApplicationState } from '../store'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { selectDevice } from '../selectors/devices'
 import { useSelector } from 'react-redux'
@@ -11,11 +11,8 @@ export function HeaderDeviceOptionMenu() {
 
   if (!serviceID || !REGEX_SERVICE_ID.test(serviceID)) serviceID = undefined
 
-  const { device, singlePanel } = useSelector((state: ApplicationState) => ({
-    device: selectDevice(state, undefined, deviceID),
-    singlePanel: state.ui.layout.singlePanel,
-  }))
-
+  const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
+  const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
   const hide = !device || (singlePanel && serviceID)
 
   return hide ? null : <DeviceOptionMenu device={device} />

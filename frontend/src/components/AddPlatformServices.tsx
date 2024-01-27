@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Stack, StackProps } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { canEditTags } from '../models/tags'
@@ -11,7 +11,7 @@ const TEMP_DATE = new Date()
 type Props = StackProps & { button?: string; types: number[]; onChange: (tags: number[]) => void }
 
 export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange, ...props }) => {
-  const { allTypes, canEdit } = useSelector((state: ApplicationState) => ({
+  const { allTypes, canEdit } = useSelector((state: State) => ({
     accountId: selectActiveAccountId(state),
     allTypes: state.applicationTypes.all,
     canEdit: canEditTags(state),

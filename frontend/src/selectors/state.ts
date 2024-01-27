@@ -1,39 +1,43 @@
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { getLocalStorage } from '../services/Browser'
 import { NOTICE_VERSION_ID } from '../models/backend'
 
-export const getUser = (state: ApplicationState) => state.user
-export const getUserId = (state: ApplicationState) => state.auth.user?.id || ''
-export const getMemberships = (state: ApplicationState) => state.accounts.membership
-export const optionalAccountId = (_: ApplicationState, accountId?: string) => accountId
-export const getActiveId = (state: ApplicationState) => state.accounts.activeId
-export const getPlans = (state: ApplicationState) => state.plans.plans
-export const getPlansTests = (state: ApplicationState) => state.plans.tests
-export const getLimitsOverride = (state: ApplicationState) => state.ui.limitsOverride
-export const getOrganizations = (state: ApplicationState) => state.organization.accounts
-export const getTestLimits = (state: ApplicationState) =>
-  state.plans.tests.limit ? state.plans.tests.limits : undefined
+export const optionalParam = (_: State, first?: any) => first
+export const optionalSecondParam = (_: State, first?: string, second?: any) => second
+export const optionalThirdParam = (_: State, first?: string, second?: any, third?: any) => third
 
-export const getDevicesState = (state: ApplicationState) => state.devices
-export const getColumns = (state: ApplicationState) => state.ui.columns
-export const optionalId = (_: ApplicationState, accountId?: string, id?: string) => id
-export const optionalDeviceId = (_: ApplicationState, accountId?: string, deviceId?: string) => deviceId
+export const getUser = (state: State) => state.user
+export const getUserId = (state: State) => state.auth.user?.id || ''
+export const getMemberships = (state: State) => state.accounts.membership
+export const optionalAccountId = (_: State, accountId?: string) => accountId
+export const getActiveId = (state: State) => state.accounts.activeId
+export const getPlans = (state: State) => state.plans.plans
+export const getPlansTests = (state: State) => state.plans.tests
+export const getLimitsOverride = (state: State) => state.ui.limitsOverride
+export const getOrganizations = (state: State) => state.organization.accounts
+export const getTestLimits = (state: State) => (state.plans.tests.limit ? state.plans.tests.limits : undefined)
 
-export const getSessions = (state: ApplicationState) => state.sessions.all
-export const getConnections = (state: ApplicationState) => state.connections.all
-export const optionalService = (_: ApplicationState, service?: IService) => service
+export const getDevicesState = (state: State) => state.devices
+export const getColumns = (state: State) => state.ui.columns
+export const optionalId = (_: State, accountId?: string, id?: string) => id
+export const optionalDeviceId = (_: State, accountId?: string, deviceId?: string) => deviceId
 
-export const getConnectionDefaults = (state: ApplicationState) => state.user.attributes?.connectionDefaults || {}
-export const getApplicationTypes = (state: ApplicationState) => state.applicationTypes
-export const getApplicationParams = (_: ApplicationState, service?: IService, connection?: IConnection) => ({
+export const getSessions = (state: State) => state.sessions.all
+export const getConnections = (state: State) => state.connections.all
+export const optionalService = (_: State, service?: IService) => service
+
+export const getConnectionDefaults = (state: State) => state.user.attributes?.connectionDefaults || {}
+export const getApplicationTypes = (state: State) => state.applicationTypes
+export const getApplicationParams = (_: State, service?: IService, connection?: IConnection) => ({
   service,
   connection,
 })
 
-export const getAllNetworks = (state: ApplicationState) => state.networks.all
-export const getTags = (state: ApplicationState) => state.tags.all
-export const getDefaultSelected = (state: ApplicationState) => state.ui.defaultSelection
-export const getThemeDark = (state: ApplicationState) => state.ui.themeDark
-export const getUpdateStatus = (state: ApplicationState) => state.backend.updateStatus
-export const getPreferences = (state: ApplicationState) => state.backend.preferences
-export const getNotifiedVersion = (state: ApplicationState) => getLocalStorage(state, NOTICE_VERSION_ID)
+export const getAllNetworks = (state: State) => state.networks.all
+export const getTags = (state: State) => state.tags.all
+export const getDefaultSelected = (state: State) => state.ui.defaultSelection
+export const getThemeDark = (state: State) => state.ui.themeDark
+export const getUpdateStatus = (state: State) => state.backend.updateStatus
+export const getPreferences = (state: State) => state.backend.preferences
+export const getAnnouncements = (state: State) => state.announcements.all
+export const getNotifiedVersion = (state: State) => getLocalStorage(state, NOTICE_VERSION_ID)

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
+import { State, Dispatch } from '../store'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
 import { ListItemLocation } from './ListItemLocation'
@@ -30,16 +30,12 @@ export const AvatarMenu: React.FC = () => {
   const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const { user, remoteUI, testUI, backendAuthenticated, licenseIndicator, activeUser } = useSelector(
-    (state: ApplicationState) => ({
-      user: state.auth.user,
-      remoteUI: isRemoteUI(state),
-      testUI: ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''),
-      backendAuthenticated: state.auth.backendAuthenticated,
-      licenseIndicator: selectLicenseIndicator(state),
-      activeUser: getActiveUser(state),
-    })
-  )
+  const user = useSelector((state: State) => state.auth.user)
+  const remoteUI = useSelector(isRemoteUI)
+  const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
+  const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
+  const licenseIndicator = useSelector(selectLicenseIndicator)
+  const activeUser = useSelector(getActiveUser)
 
   const css = useStyles()
   const handleOpen = () => {
@@ -101,7 +97,6 @@ export const AvatarMenu: React.FC = () => {
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        <ListItemLocation dense exactMatch title="Settings" icon="sliders-h" to="/settings" onClick={handleClose} />
         <ListItemLocation
           title="Bug Report"
           icon="spider"

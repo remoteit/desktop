@@ -1,8 +1,8 @@
 import React from 'react'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
-import { selectSessionUsers } from '../models/sessions'
-import { selectMembersWithAccess } from '../models/organization'
+import { selectSessionUsers } from '../selectors/sessions'
+import { selectMembersWithAccess } from '../selectors/organizations'
 import { ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { GuideBubble } from './GuideBubble'
@@ -19,10 +19,10 @@ type Props = {
 
 export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, size = 'large' }) => {
   const css = useStyles()
-  const { connected, access } = useSelector((state: ApplicationState) => ({
-    connected: selectSessionUsers(state, service ? service.id : instance?.id).length,
-    access: instance?.permissions.includes('MANAGE') ? selectMembersWithAccess(state, instance).map(m => m.user) : [],
-  }))
+  const connected = useSelector((state: State) =>
+    selectSessionUsers(state, undefined, service ? service.id : instance?.id)
+  ).length
+  const access = useSelector((state: State) => selectMembersWithAccess(state, undefined, instance)).map(m => m.user)
   const users = (service ? service.access : instance?.access) || []
   const usersLinked = access.filter(user => !users.find(_u => _u.email === user.email))
   const total = users.length + usersLinked.length

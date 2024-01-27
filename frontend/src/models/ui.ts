@@ -6,7 +6,7 @@ import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 
@@ -328,7 +328,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectPriorityGuide(state: ApplicationState, guide: string, startDate: Date): IGuide {
+export function selectPriorityGuide(state: State, guide: string, startDate: Date): IGuide {
   const all = state.ui.guides
   const result = all[guide] || {}
   let active = result.active

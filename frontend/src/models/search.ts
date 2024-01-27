@@ -1,8 +1,6 @@
-import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { getDeviceModel } from '../selectors/devices'
 import { REGEX_SERVICE_ID } from '../constants'
-import { ApplicationState } from '../store'
 import { removeDeviceName } from '@common/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -157,8 +155,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectAllSearch(state: ApplicationState): ISearch[] {
-  const search = structuredClone(state.search.search)
+export function sortSearch(search: ISearch[]): ISearch[] {
   const sorted = search.sort((a, b) => {
     if (a.nodeName.toLowerCase() > b.nodeName.toLowerCase()) return 1
     if (a.nodeName.toLowerCase() < b.nodeName.toLowerCase()) return -1

@@ -4,7 +4,7 @@ import { safeHostname } from '@common/nameHelper'
 import { getDeviceModel } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import {
   List,
   ListItem,
@@ -27,7 +27,7 @@ type Props = { className?: string; onClick?: () => void }
 
 export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   const history = useHistory()
-  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: State) => ({
     registered: !!state.backend.thisId,
     hostname: safeHostname(state.backend.environment.hostname, []),
     ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),

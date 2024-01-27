@@ -4,7 +4,7 @@ import { Timestamp } from './Timestamp'
 import { makeStyles } from '@mui/styles'
 import { Table, TableHead, TableBody, TableRow, TableCell, Tooltip, Typography } from '@mui/material'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { LoadingMessage } from './LoadingMessage'
 import { spacing } from '../styling'
@@ -15,7 +15,7 @@ import { Icon } from './Icon'
 export const Invoices: React.FC = () => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
-  const { invoices, loading } = useSelector((state: ApplicationState) => state.billing)
+  const { invoices, loading } = useSelector((state: State) => state.billing)
 
   React.useEffect(() => {
     dispatch.billing.fetch()

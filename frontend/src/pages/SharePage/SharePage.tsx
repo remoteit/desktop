@@ -2,7 +2,7 @@ import React, { useEffect, useContext } from 'react'
 import { makeStyles } from '@mui/styles'
 import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
@@ -20,7 +20,7 @@ export const SharePage: React.FC = () => {
   const { device, service } = useContext(DeviceContext)
   const { userID = '' } = useParams<{ userID?: string }>()
   const { shares, organization } = useDispatch<Dispatch>()
-  const { contacts, guests, deleting, users } = useSelector((state: ApplicationState) => {
+  const { contacts, guests, deleting, users } = useSelector((state: State) => {
     return {
       device,
       contacts: state.contacts.all,

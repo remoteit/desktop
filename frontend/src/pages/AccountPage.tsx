@@ -1,9 +1,8 @@
 import React from 'react'
 import browser from '../services/Browser'
 import { List, Typography, Tooltip, ButtonBase } from '@mui/material'
-import { selectLicenseIndicator } from '../models/plans'
 import { selectRemoteitLicense } from '../selectors/organizations'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
 import { windowOpen } from '../services/Browser'
@@ -12,10 +11,7 @@ import { Logo } from '../components/Logo'
 import { Icon } from '../components/Icon'
 
 export const AccountPage: React.FC = () => {
-  const { billing, licenseIndicator } = useSelector((state: ApplicationState) => ({
-    billing: !!selectRemoteitLicense(state, state.user.id)?.plan?.billing,
-    licenseIndicator: selectLicenseIndicator(state),
-  }))
+  const billing = useSelector((state: State) => !!selectRemoteitLicense(state, state.user.id)?.plan?.billing)
 
   const externalBilling = browser.hasBilling ? null : (
     <Icon name="launch" size="sm" color="grayDark" inlineLeft fixedWidth />
@@ -54,7 +50,6 @@ export const AccountPage: React.FC = () => {
             {externalBilling}
           </ListItemLocation>
         )}
-        <ListItemLocation title="Licensing" to="/account/licensing" icon="id-badge" badge={licenseIndicator} dense />
         <ListItemLocation title="Access Keys" to="/account/accessKey" icon="key" dense />
       </List>
     </Container>

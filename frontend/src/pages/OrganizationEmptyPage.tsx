@@ -2,7 +2,7 @@ import React from 'react'
 import { Redirect } from 'react-router-dom'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { TextField, Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -11,7 +11,7 @@ import { Gutters } from '../components/Gutters'
 import { Body } from '../components/Body'
 
 export const OrganizationEmptyPage: React.FC = () => {
-  const { username, hasOrganization } = useSelector((state: ApplicationState) => ({
+  const { username, hasOrganization } = useSelector((state: State) => ({
     username: (state.auth.user?.email || '').split('@')[0],
     hasOrganization: selectOrganization(state)?.id && state.organization.initialized,
   }))

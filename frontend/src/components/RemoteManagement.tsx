@@ -1,11 +1,11 @@
 import React from 'react'
+import { State } from '../store'
 import { IP_PRIVATE } from '@common/constants'
 import { makeStyles } from '@mui/styles'
 import { Typography, List, ListItem, ListItemText, Box } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
-import { ApplicationState } from '../store'
 import { attributeName } from '@common/nameHelper'
-import { getOwnDevices } from '../selectors/devices'
+import { selectOwnDevices } from '../selectors/devices'
 import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { RemoteOnLan } from '../assets/RemoteOnLan'
@@ -17,17 +17,11 @@ type NetworkType = { primary: string; secondary?: string }
 export const RemoteManagement: React.FC = () => {
   const { hostname } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
-
-  const { name, remoteUI } = useSelector((state: ApplicationState) => {
-    const device = getOwnDevices(state).find(d => d.thisDevice)
-    return {
-      label: state.labels.find(l => l.id === device?.attributes.color),
-      name: attributeName(device),
-      remoteUI: isRemoteUI(state),
-    }
-  })
-
+  const device = useSelector(selectOwnDevices).find(d => d.thisDevice)
+  const remoteUI = useSelector((state: State) => isRemoteUI(state))
+  const name = attributeName(device)
   const css = useStyles()
+
   if (!browser.isRemote) return null
 
   let Graphic = RemoteOnLan

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Typography, CircularProgress, Divider } from '@mui/material'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { getDevices } from '../../selectors/devices'
@@ -13,7 +13,7 @@ import { spacing } from '../../styling'
 type Props = { os?: Ios }
 
 export const SetupWaiting: React.FC<Props> = ({ os }) => {
-  const { errorMessage, device } = useSelector((state: ApplicationState) => ({
+  const { errorMessage, device } = useSelector((state: State) => ({
     errorMessage: state.ui.errorMessage,
     device: getDevices(state).find(d => d.thisDevice),
   }))

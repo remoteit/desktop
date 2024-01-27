@@ -1,12 +1,8 @@
 import structuredClone from '@ungap/structured-clone'
 import { getDevices } from '../selectors/devices'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 
-export function eachSelectedDevice(
-  state: ApplicationState,
-  selected: IDevice['id'][],
-  callback: (device: IDevice) => void
-) {
+export function eachSelectedDevice(state: State, selected: IDevice['id'][], callback: (device: IDevice) => void) {
   getDevices(state).forEach(device => {
     if (selected.includes(device.id)) callback(structuredClone(device))
   })

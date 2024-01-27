@@ -1,5 +1,5 @@
 import React from 'react'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import {
   Typography,
   Divider,
@@ -28,7 +28,7 @@ import { Body } from '../components/Body'
 const AVATAR_SIZE = 32
 
 export const OrganizationMembershipPage: React.FC = () => {
-  const { memberships, organization, license, email } = useSelector((state: ApplicationState) => ({
+  const { memberships, organization, license, email } = useSelector((state: State) => ({
     memberships: state.accounts.membership,
     organization: getOwnOrganization(state),
     license: selectRemoteitLicense(state, state.user.id),
