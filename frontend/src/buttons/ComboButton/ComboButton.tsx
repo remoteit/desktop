@@ -1,10 +1,10 @@
 import React from 'react'
 import browser, { windowOpen } from '../../services/Browser'
 import { PROTOCOL } from '../../constants'
-import { makeStyles } from '@mui/styles'
 import { ConnectButton, ConnectButtonProps } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'
 import { Notice } from '../../components/Notice'
+import { Box } from '@mui/material'
 
 type Props = ConnectButtonProps & {
   className?: string
@@ -14,10 +14,17 @@ type Props = ConnectButtonProps & {
   children?: React.ReactNode
 }
 
-export const ComboButton: React.FC<Props> = ({ className, containerProps, children, ...props }) => {
-  const css = useStyles(props.fullWidth)()
+export const ComboButton: React.FC<Props> = ({ className, containerProps, fullWidth, children, ...props }) => {
   return (
-    <div className={css.buttons + (className ? ' ' + className : '')} {...containerProps}>
+    <Box
+      className={className}
+      sx={{
+        width: fullWidth ? 'inherit' : undefined,
+        position: 'relative',
+        flexGrow: 1,
+      }}
+      {...containerProps}
+    >
       {props.service?.attributes.route === 'p2p' && !browser.hasBackend ? (
         <div>
           {props.size !== 'chip' && (
@@ -41,15 +48,6 @@ export const ComboButton: React.FC<Props> = ({ className, containerProps, childr
         <ConnectButton {...props} />
       )}
       {children}
-    </div>
+    </Box>
   )
 }
-
-const useStyles = fullWidth =>
-  makeStyles({
-    buttons: {
-      width: fullWidth ? 'inherit' : 121,
-      position: 'relative',
-      flexGrow: 1,
-    },
-  })

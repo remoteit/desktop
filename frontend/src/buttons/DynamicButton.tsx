@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
+import { fontSizes, spacing, radius } from '../styling'
 import { ColorChip } from '../components/ColorChip'
 import { Color } from '../styling'
 
@@ -17,11 +18,11 @@ export type DynamicButtonProps = {
   loading?: boolean
   variant?: 'text' | 'outlined' | 'contained'
   className?: string
-  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLDivElement>
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
   fullWidth?: boolean
 }
 
-export const DynamicButton: React.FC<DynamicButtonProps> = props => {
+export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((props, ref) => {
   const css = useStyles(props)
   let {
     title,
@@ -43,6 +44,22 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     iconType = 'solid'
   }
 
+  if (size === 'chip') {
+    return (
+      <Button
+        ref={ref}
+        size="small"
+        variant={variant}
+        onClick={onClick}
+        disabled={disabled}
+        className={classnames(className, css.button)}
+        fullWidth={fullWidth}
+      >
+        {title}
+      </Button>
+    )
+  }
+
   const IconComponent = icon ? (
     <Icon
       name={icon}
@@ -55,21 +72,10 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     />
   ) : null
 
-  if (size === 'chip') {
-    return (
-      <ColorChip
-        size="small"
-        label={title}
-        variant={variant}
-        onClick={disabled ? undefined : onClick}
-        className={css.button}
-      />
-    )
-  }
-
-  if (size === 'small') {
+  if (size === 'small' || size === 'medium' || size === 'large') {
     return (
       <Button
+        ref={ref}
         size={size}
         variant={variant}
         onClick={onClick}
@@ -83,38 +89,23 @@ export const DynamicButton: React.FC<DynamicButtonProps> = props => {
     )
   }
 
-  if (size === 'medium' || size === 'large') {
-    return (
-      <Button
-        variant={variant}
-        onClick={onClick}
-        disabled={disabled}
-        size={size}
-        className={css.button}
-        fullWidth={fullWidth}
-      >
-        {IconComponent}
-        {title}
-      </Button>
-    )
-  }
-
   return (
     <Tooltip title={title} className={className} placement="top" enterDelay={400} arrow>
       <span>
-        <IconButton disabled={disabled} onClick={onClick} size="small">
+        <IconButton ref={ref} disabled={disabled} onClick={onClick} size="small">
           {IconComponent}
         </IconButton>
       </span>
     </Tooltip>
   )
-}
+})
 
 const useStyles = makeStyles(({ palette }) => ({
   button: (props: DynamicButtonProps) => {
     let background = props.disabled ? palette.grayLight.main : props.color ? palette[props.color].main : undefined
     let hover = background ? darken(background, 0.25) : undefined
     let foreground = palette.alwaysWhite.main
+    let style: any = {}
 
     if (props.variant === 'text' && background) {
       foreground = background
@@ -122,12 +113,21 @@ const useStyles = makeStyles(({ palette }) => ({
       hover = alpha(foreground, 0.2)
     }
 
+    if (props.size === 'chip') {
+      style.textTransform = 'none'
+      style.height = 20
+      style.fontWeight = 500
+      style.letterSpacing = 0.3
+      style.padding = `0px ${spacing.sm}px`
+    }
+
     return {
-      '&, &.MuiButton-root': {
+      '&.MuiButton-root': {
+        '&:hover': { backgroundColor: props.disabled ? background : hover },
         backgroundColor: background,
         color: foreground,
         minWidth: 0,
-        '&:hover': { backgroundColor: props.disabled ? background : hover },
+        ...style,
       },
     }
   },
