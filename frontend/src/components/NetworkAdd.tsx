@@ -7,7 +7,7 @@ import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 
 export const NetworkAdd: React.FC = () => {
   const history = useHistory()

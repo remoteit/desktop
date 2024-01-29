@@ -132,7 +132,6 @@ export function agent() {
   return result?.length ? result[0] : ''
 }
 
-// this is a function to save information per user session in local storage
 export function getLocalStorage(state: State, key: string) {
   const currentSession = state.auth.user?.id
   const value = currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null

@@ -2,7 +2,7 @@ import { insertScript } from './Browser'
 import { ZENDESK_KEY } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { store } from '../store'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 
 declare const window: Window & {
   zE?: any

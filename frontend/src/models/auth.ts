@@ -20,7 +20,7 @@ import { CognitoUser } from '../cognito/types'
 import { AuthService, ConfigInterface } from '../cognito/auth'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
 

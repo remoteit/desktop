@@ -24,11 +24,11 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   
   const device = useSelector(selectDevice)
   const connected = useSelector((state: State) => state.ui.connected)
+  const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
   const successMessage = useSelector((state: State) => state.ui.successMessage)
   const noticeMessage = useSelector((state: State) => state.ui.noticeMessage)
   const errorMessage = useSelector((state: State) => state.ui.errorMessage)
   const offline = useSelector((state: State) => state.ui.offline)
-  const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
   const layout = useSelector((state: State) => state.ui.layout)
   const label = useSelector((state: State) => state.labels).find(l => l.id === device?.attributes.color)
 

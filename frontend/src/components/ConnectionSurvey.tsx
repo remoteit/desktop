@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { setConnection } from '../helpers/connectionHelper'

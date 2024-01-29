@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Chip, ChipProps, alpha, darken } from '@mui/material'
 import { Color, spacing } from '../styling'
@@ -10,10 +10,10 @@ export type Props = Omit<ChipProps, 'variant' | 'color'> & {
   inline?: boolean
 }
 
-export const ColorChip: React.FC<Props> = ({ variant, color, ...props }) => {
+export const ColorChip = forwardRef<HTMLDivElement, Props>(({ variant, color, ...props }, ref) => {
   const css = useStyles({ variant, color, ...props })
-  return <Chip {...props} className={classnames(css.color, props.className)} />
-}
+  return <Chip {...props} ref={ref} className={classnames(css.color, props.className)} />
+})
 
 const useStyles = makeStyles(({ palette }) => ({
   color: ({ variant, color, inline }: Props) => {
