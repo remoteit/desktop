@@ -9,11 +9,9 @@ import { Sidebar } from './Sidebar'
 export const SidebarMenu: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const { activeOrgId, open, layout } = useSelector((state: State) => ({
-    activeOrgId: selectOrganization(state).id,
-    open: state.ui.sidebarMenu,
-    layout: state.ui.layout,
-  }))
+  const activeOrgId = useSelector((state: State) => selectOrganization(state).id)
+  const open = useSelector((state: State) => state.ui.sidebarMenu)
+  const layout = useSelector((state: State) => state.ui.layout)
 
   React.useEffect(() => {
     if (open) dispatch.ui.set({ sidebarMenu: false })

@@ -28,6 +28,10 @@ class CloudSync {
     await dispatch.ui.set({ fetching: false })
   }
 
+  async cancel() {
+    await dispatch.ui.set({ fetching: false })
+  }
+
   async core() {
     await this.call(
       [
