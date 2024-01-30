@@ -34,7 +34,7 @@ export const OrganizationSelectList: React.FC = () => {
   const onSelect = async (id: string) => {
     if (id) {
       await logs.reset()
-      await accounts.setActive(id.toString())
+      await accounts.set({ activeId: id.toString() })
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()

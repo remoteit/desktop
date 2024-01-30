@@ -15,6 +15,9 @@ export function getSortOptions(key: string) {
   const option = optionSortServices[key]
   return option || {}
 }
+
+export type SortServiceType = 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+
 export interface IOptionServiceSort {
   ATOZ: ISortService
   ZTOA: ISortService
@@ -66,8 +69,8 @@ export const SortServices: React.FC = () => {
     setAnchorEl(null)
   }
 
-  const servicesSort = async (option?: string) => {
-    devices.setPersistent({ sortServiceOption: option })
+  const servicesSort = async (option?: SortServiceType) => {
+    devices.set({ sortServiceOption: option })
     handleClose()
   }
 
@@ -80,7 +83,7 @@ export const SortServices: React.FC = () => {
       </IconButton>
       <Menu anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
         {Object.keys(optionSortServices).map(key => (
-          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key)} dense>
+          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key as SortServiceType)} dense>
             {optionSortServices[key].name}
           </MenuItem>
         ))}

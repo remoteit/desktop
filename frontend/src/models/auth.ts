@@ -14,6 +14,7 @@ import {
   API_URL,
   DEVELOPER_KEY,
 } from '../constants'
+import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { CognitoUser } from '../cognito/types'
@@ -212,12 +213,16 @@ export default createModel<RootModel>()({
       zendesk.initChat(state.auth.user)
       cloudController.init()
       cloudSync.init()
+
+      // Temp migration of state
+      await dispatch.connections.migrate()
+      await dispatch.ui.migrate()
+
       dispatch.backend.init()
-      dispatch.plans.init()
       dispatch.contacts.fetch()
       dispatch.applicationTypes.init()
-      await dispatch.accounts.init()
-      await dispatch.connections.init()
+
+      await dispatch.accounts.fetch()
       await dispatch.networks.init()
       await cloudSync.all()
     },
@@ -255,13 +260,14 @@ export default createModel<RootModel>()({
       dispatch.mfa.reset()
       dispatch.ui.reset()
       cloudSync.reset()
-      dispatch.accounts.setActive('')
+      dispatch.accounts.set({ activeId: undefined })
       window.location.hash = ''
       zendesk.endChat()
       emit('user/sign-out-complete')
       dispatch.auth.set({ authenticated: false })
       cloudController.close()
       Controller.close()
+      persistor.purge()
     },
     async globalSignOut() {
       const Authorization = await getToken()

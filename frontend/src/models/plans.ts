@@ -72,11 +72,6 @@ const defaultState: IPlans = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init() {
-      await dispatch.plans.fetch()
-      dispatch.plans.set({ initialized: true })
-    },
-
     async restore(_: void, state) {
       const license = selectRemoteitLicense(state)
       const last = license?.subscription?.card?.last
@@ -121,6 +116,7 @@ export default createModel<RootModel>()({
       await dispatch.plans.set({
         plans: data.plans,
         updating: undefined,
+        initialized: true,
       })
     },
 

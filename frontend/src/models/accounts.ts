@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { State } from '../store'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { getLocalStorage, removeLocalStorage } from '../services/Browser'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
@@ -23,11 +23,16 @@ const accountsState: IAccountsState = {
 export default createModel<RootModel>()({
   state: accountsState,
   effects: dispatch => ({
-    async init(_: void, globalState) {
-      let activeId = getLocalStorage(globalState, ACCOUNT_KEY)
-      if (activeId) dispatch.accounts.setActive(activeId)
+    async migrate(_: void, state) {
+      let activeId = getLocalStorage(state, ACCOUNT_KEY)
+      if (activeId) {
+        dispatch.accounts.set({ activeId: activeId })
+        removeLocalStorage(state, ACCOUNT_KEY)
+        console.log('MIGRATE ACTIVE ACCOUNT', activeId)
+      }
       await dispatch.accounts.fetch()
     },
+
     async fetch() {
       const result = await graphQLBasicRequest(
         ` query Accounts {
@@ -69,12 +74,12 @@ export default createModel<RootModel>()({
         })),
       })
       if (!membership.find(m => m.organization.account.id === state.accounts.activeId)) {
-        dispatch.accounts.setActive('')
+        dispatch.accounts.set({ activeId: undefined })
       }
     },
     async select(accountId: string) {
       await dispatch.logs.reset()
-      await dispatch.accounts.setActive(accountId)
+      await dispatch.accounts.set({ activeId: accountId })
       dispatch.devices.fetchIfEmpty()
       dispatch.tags.fetchIfEmpty()
     },
@@ -182,10 +187,6 @@ export default createModel<RootModel>()({
           await dispatch.devices.set({ total: state.devices[accountId].total - 1, accountId })
         }
       }
-    },
-    async setActive(id: string, globalState) {
-      setLocalStorage(globalState, ACCOUNT_KEY, id)
-      dispatch.accounts.set({ activeId: id })
     },
   }),
   reducers: {

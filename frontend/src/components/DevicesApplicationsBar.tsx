@@ -26,7 +26,7 @@ export const DevicesApplicationsBar: React.FC = () => {
   let selection = allTypes.findIndex(t => isEqual(applicationTypes, t.ids))
 
   const update = async (updated?: number[]) => {
-    await dispatch.devices.setPersistent({ applicationTypes: updated, from: defaultState.from })
+    await dispatch.devices.set({ applicationTypes: updated, from: defaultState.from })
     await dispatch.devices.fetchList()
   }
 

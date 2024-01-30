@@ -23,7 +23,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { getLocalStorage, removeLocalStorage } from '../services/Browser'
 import { getAllDevices, selectDevice, getDeviceModel, selectById, selectActiveColumns } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { store, State } from '../store'
@@ -92,16 +92,19 @@ const defaultAccountState: IDeviceAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init(_: void, state) {
+    async migrate(_: void, state) {
       const accountId = selectActiveAccountId(state)
       console.log('INIT DEVICES', accountId)
       let states = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `device-${accountId}-${key}`)
-        if (value) states[key] = value
+        if (value) {
+          states[key] = value
+          removeLocalStorage(state, `device-${accountId}-${key}`)
+          console.log('MIGRATE DEVICE STATE', key, value)
+        }
       })
       await dispatch.devices.set({ ...states, accountId })
-      console.log('set devices', states)
     },
 
     async fetchList(_: void, state) {
@@ -109,8 +112,8 @@ export default createModel<RootModel>()({
       let deviceModel = getDeviceModel(state, accountId)
 
       if (!deviceModel.initialized) {
-        await dispatch.devices.init()
-        // Update the state object after initialization
+        await dispatch.devices.migrate()
+        // Update the state object after
         state = store.getState()
         deviceModel = getDeviceModel(state, accountId)
       }
@@ -450,7 +453,7 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'aws', step: 2 })
 
       const result = await graphQLClaimDevice(code, accountId)
-      await dispatch.accounts.setActive(accountId)
+      await dispatch.accounts.set({ activeId: accountId })
 
       if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice
@@ -619,14 +622,6 @@ export default createModel<RootModel>()({
       const total = getDeviceModel(state, accountId).total + 1
       console.log('INCREMENT TOTAL', { total, accountId })
       await dispatch.devices.set({ total, accountId })
-    },
-
-    async setPersistent(params: ILookup<any>, state) {
-      const accountId = params.accountId || selectActiveAccountId(state)
-      Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${accountId}-${key}`, params[key] || '')
-      })
-      await dispatch.devices.set(params)
     },
 
     async set(params: Partial<IDeviceState>, state) {

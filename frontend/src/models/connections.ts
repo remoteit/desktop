@@ -2,7 +2,7 @@ import structuredClone from '@ungap/structured-clone'
 import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
-import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
+import browser, { getLocalStorage, removeLocalStorage } from '../services/Browser'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
 import {
@@ -56,10 +56,11 @@ const defaultState: IConnectionsState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_: void, state) {
+    async migrate(_: void, state) {
       let connections = getLocalStorage(state, 'connections')
       if (connections) await dispatch.connections.setAll(dedupe<IConnection>(connections, 'id'))
-      console.log('INIT CONNECTIONS', connections)
+      console.log('MIGRATE CONNECTIONS', connections)
+      removeLocalStorage(state, 'connections')
     },
 
     async fetch(_: void, state) {
@@ -470,7 +471,6 @@ export default createModel<RootModel>()({
 
     async setAll(all: IConnection[], state) {
       all.sort((a, b) => nameSort(a.name || '', b.name || ''))
-      setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },
   }),
