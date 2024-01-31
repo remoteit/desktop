@@ -22,7 +22,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
   const history = useHistory()
 
   useEffect(() => {
-    dispatch.applicationTypes.fetch()
+    dispatch.applicationTypes.fetchAll()
   }, [])
 
   const maxReached = device && device.services.length >= setupServicesLimit

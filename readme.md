@@ -143,13 +143,19 @@ Command+option+I to open with dev tools.
 
 ### Mobile
 
-With web app running start mobile app
+To use the live reloading you will have to set your development app's network IP Address in an environment variable in your profile:
+
+```shell
+export CAPACITOR_DESKTOP_LIVE_RELOAD="http://192.168.0.154:3000/"
+```
+
+Then you can run the web app and mobile app at the same time. Start mobile app.
 
 ```shell
 npm run ios
 ```
 
-or
+and for Android you need you will need a key.properties file in the android directory. Please get it from another developer. Then start the android app.
 
 ```shell
 npm run android

@@ -1,11 +1,14 @@
 import { dispatch } from '../store'
 import { EventEmitter } from 'events'
+import { setLocalStorage, getLocalStorage } from './Browser'
+
+const SAVE_KEY = 'lastActive'
 
 class Network extends EventEmitter {
   // connect, disconnect, change events are emitted
 
   tickDuration = 60 * 1000 // 1 minute
-  sleepDuration = 30 * this.tickDuration // 30 minutes
+  sleepDuration = 2 * this.tickDuration // 15 minutes
   then = Date.now()
   interval?: NodeJS.Timeout
   shouldConnect: boolean = false
@@ -16,6 +19,7 @@ class Network extends EventEmitter {
     window.addEventListener('online', this.online)
     window.addEventListener('offline', this.offline)
     window.addEventListener('focus', this.focus)
+    window.addEventListener('beforeunload', this.save)
   }
 
   log(...args) {
@@ -23,8 +27,9 @@ class Network extends EventEmitter {
   }
 
   monitorSleep() {
-    this.then = Date.now()
+    this.then = getLocalStorage(null, SAVE_KEY) || Date.now()
     this.interval = setInterval(this.tick, this.tickDuration)
+    if (Date.now() - this.then > this.sleepDuration) this.log('SHOULD AWAKE')
   }
 
   isActive() {
@@ -47,6 +52,10 @@ class Network extends EventEmitter {
     this.connect()
   }
 
+  save = () => {
+    setLocalStorage(null, SAVE_KEY, this.then)
+  }
+
   offline = () => {
     if (navigator.onLine) return
     this.log('DISCONNECT')
@@ -67,8 +76,8 @@ class Network extends EventEmitter {
   connect = () => {
     if (this.shouldConnect && this.isActive()) {
       this.shouldConnect = false
-      this.emit('connect')
       this.log('CONNECT')
+      this.emit('connect')
     }
   }
 

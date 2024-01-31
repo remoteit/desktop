@@ -19,7 +19,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   const history = useHistory()
 
   useEffect(() => {
-    dispatch.applicationTypes.fetch()
+    dispatch.applicationTypes.fetchAll()
   }, [])
 
   if (!service) {

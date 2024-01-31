@@ -17,9 +17,9 @@ import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 
 export const SharePage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const { device, service } = useContext(DeviceContext)
   const { userID = '' } = useParams<{ userID?: string }>()
-  const { shares, organization } = useDispatch<Dispatch>()
   const { contacts, guests, deleting, users } = useSelector((state: State) => {
     return {
       device,
@@ -37,26 +37,27 @@ export const SharePage: React.FC = () => {
   useEffect(() => {
     ;(async () => {
       if (!service || !device) return
-      if (!guest && userID) await organization.fetch()
-      await shares.fetch({ email, serviceId: service.id, device })
+      if (!guest && userID) await dispatch.organization.fetch()
+      await dispatch.shares.fetch({ email, serviceId: service.id, device })
+      await dispatch.contacts.fetch()
     })()
 
     // set defaults
     if (device?.loaded) {
       const access = getAccess(device, email)
       console.log('ACCESS', access)
-      shares.setSelectedServices(access.services.map(s => s.id))
-      shares.setScript(access.scripting)
+      dispatch.shares.setSelectedServices(access.services.map(s => s.id))
+      dispatch.shares.setScript(access.scripting)
     }
   }, [device?.loaded])
 
   const handleUnshare = async () => {
-    if (device) await shares.delete({ deviceId: device.id, email })
+    if (device) await dispatch.shares.delete({ deviceId: device.id, email })
     history.goBack()
   }
 
   const handleChange = (emails: string[]) => {
-    shares.selectContacts(emails)
+    dispatch.shares.selectContacts(emails)
   }
 
   return (

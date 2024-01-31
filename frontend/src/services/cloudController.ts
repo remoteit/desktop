@@ -29,6 +29,7 @@ class CloudController {
   socket?: ReconnectingWebSocket
   token?: string
   pingInterval = 5 * 60 * 1000 + Math.floor(Math.random() * 60 * 1000) // 5 + random 60 seconds
+  pongReceived: number = Date.now()
   timer?: NodeJS.Timeout
 
   init() {
@@ -39,17 +40,16 @@ class CloudController {
     this.connect()
     network.on('connect', this.reconnect)
     network.on('disconnect', this.close)
-    this.startPing()
     this.initialized = true
   }
 
   log(...args) {
-    console.log(`%c${args[0]}`, 'color:blue;font-weight:bold', ...args.slice(1))
+    console.log(`%cCLOUD SOCKET ${args[0]}`, 'color:cyan;font-weight:bold', ...args.slice(1))
   }
 
   connect() {
     if (this.socket instanceof ReconnectingWebSocket) {
-      this.log('CLOUD SOCKET ALREADY CONNECTED')
+      this.log('ALREADY CONNECTED')
       return
     }
 
@@ -57,7 +57,7 @@ class CloudController {
 
     if (!navigator.onLine || !url) return
 
-    this.log('CONNECT CLOUD SOCKET', url, this.socket)
+    this.log('CONNECT', url, this.socket)
     if (url) {
       this.socket = new ReconnectingWebSocket(url, [], {})
       this.socket.addEventListener('open', this.onOpen)
@@ -69,42 +69,47 @@ class CloudController {
 
   startPing() {
     if (this.timer) clearInterval(this.timer)
-    this.log('START PING CLOUD SOCKET', this.pingInterval)
+    this.log('START PING', this.pingInterval)
     this.timer = setInterval(this.ping, this.pingInterval)
   }
 
   ping = () => {
-    this.log('PING CLOUD SOCKET')
+    const timeSincePong = Date.now() - this.pongReceived
+    if (timeSincePong > this.pingInterval * 2) {
+      this.log('NO PONG RECEIVED')
+      this.reconnect()
+      return
+    }
+    this.log('PING')
     this.socket?.send('ping')
   }
 
   reconnect = () => {
     if (store.getState().auth.authenticated) {
-      this.log('RECONNECT CLOUD SOCKET')
+      this.log('RECONNECT')
       this.close()
-      delete this.socket
       this.connect()
-      // re-sync device
-      store.dispatch.sessions.fetch()
     }
   }
 
   close = () => {
-    this.log('CLOSE CLOUD SOCKET')
+    this.log('CLOSE')
     this.socket?.removeEventListener('open', this.onOpen)
     this.socket?.removeEventListener('message', this.onMessage)
     this.socket?.removeEventListener('close', this.onClose)
     this.socket?.removeEventListener('error', this.onError)
     this.socket?.close()
+    delete this.socket
   }
 
-  onClose = event => this.log('CLOSED CLOUD SOCKET', event)
+  onClose = event => this.log('CLOSED', event)
 
-  onError = error => this.log('ERROR CLOUD SOCKET', error)
+  onError = error => this.log('ERROR', error)
 
   onOpen = event => {
-    this.log('OPENED CLOUD SOCKET', event)
+    this.log('OPENED', event)
     this.authenticate()
+    this.startPing()
   }
 
   authenticate = async () => {
@@ -182,15 +187,19 @@ class CloudController {
   }
 
   onMessage = response => {
-    this.log('CLOUD SOCKET MESSAGE\n', response.data)
-    if (response.data === 'pong') return
+    this.log('MESSAGE\n', response.data)
+
+    if (response.data === 'pong') {
+      this.pongReceived = Date.now()
+      return
+    }
+
     let event = this.parse(response)
-    this.log('EVENT', event)
     if (!event) return
+
+    this.log('EVENT', event)
     event = this.update(event)
     notify(event)
-    this.startPing()
-    emit('heartbeat')
   }
 
   errors(data) {
@@ -301,6 +310,7 @@ class CloudController {
 
       case 'DEVICE_CONNECT':
         // connected | disconnected
+        emit('heartbeat') // sync with backend
         event.target.forEach(target => {
           // Local connection state
           if (target.connection) {

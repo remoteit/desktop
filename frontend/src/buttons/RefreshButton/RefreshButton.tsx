@@ -4,7 +4,7 @@ import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
 import { emit } from '../../services/Controller'
 import { useParams, useRouteMatch } from 'react-router-dom'
-import { getDeviceModel, selectDevice } from '../../selectors/devices'
+import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
 import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
@@ -15,7 +15,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const { deviceID } = useParams<{ deviceID?: string }>()
   const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
   const fetching = useSelector(
-    (state: State) => getDeviceModel(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching
+    (state: State) =>
+      selectDeviceModelAttributes(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching
   )
   const connectionPage = useRouteMatch('/connections')
   const networkPage = useRouteMatch('/networks')

@@ -1,6 +1,7 @@
 import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
+import network from '../services/Network'
 import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
 import {
   CLIENT_ID,
@@ -206,29 +207,26 @@ export default createModel<RootModel>()({
     },
     async dataReady(_: void, state) {
       if (state.backend.initialized) {
-        console.warn('DATA ALREADY INITIALIZED')
+        console.warn('DATA ALREADY READY')
         return
       }
-
-      zendesk.initChat(state.auth.user)
-      cloudController.init()
-      cloudSync.init()
-
       // Temp migration of state
       await dispatch.connections.migrate()
-      await dispatch.ui.migrate()
 
       dispatch.backend.init()
+      dispatch.applicationTypes.fetchAll()
       dispatch.contacts.fetch()
-      dispatch.applicationTypes.init()
-
       await dispatch.accounts.fetch()
       await dispatch.networks.init()
       await cloudSync.all()
     },
-    async signedIn() {
-      if (!browser.hasBackend) dispatch.auth.dataReady()
+    async signedIn(_: void, state) {
       dispatch.ui.init()
+      zendesk.initChat(state.auth.user)
+      cloudController.init()
+      cloudSync.init()
+      network.tick()
+      if (!browser.hasBackend) dispatch.auth.dataReady()
     },
     async signOut(_: void, state) {
       if (state.auth.backendAuthenticated) emit('user/sign-out')

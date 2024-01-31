@@ -31,16 +31,6 @@ const APPLICATION_TYPES_QUERY = `
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async init() {
-      const result = await graphQLBasicRequest(
-        ` query ApplicationTypesAll {
-            ${APPLICATION_TYPES_QUERY}
-          }`
-      )
-      if (result === 'ERROR') return
-      const all = result?.data?.data?.applicationTypes
-      dispatch.applicationTypes.set({ all })
-    },
     async fetch(_: void, state) {
       const accountId = selectActiveAccountId(state)
       const result = await graphQLBasicRequest(
@@ -56,6 +46,16 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const applicationTypes: IApplicationType[] = result?.data?.data?.login?.account?.applicationTypes
       dispatch.applicationTypes.set({ account: { ...state.applicationTypes.account, [accountId]: applicationTypes } })
+    },
+    async fetchAll() {
+      const result = await graphQLBasicRequest(
+        ` query ApplicationTypesAll {
+            ${APPLICATION_TYPES_QUERY}
+          }`
+      )
+      if (result === 'ERROR') return
+      const all = result?.data?.data?.applicationTypes
+      dispatch.applicationTypes.set({ all })
     },
   }),
   reducers: {

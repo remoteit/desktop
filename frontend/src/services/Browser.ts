@@ -132,8 +132,8 @@ export function agent() {
   return result?.length ? result[0] : ''
 }
 
-export function getLocalStorage(state: State, key: string) {
-  const currentSession = state.auth.user?.id
+export function getLocalStorage(state: State | null, key: string) {
+  const currentSession = state?.auth.user?.id || 'app'
   const value = currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
   try {
     return value && JSON.parse(value)
@@ -142,8 +142,8 @@ export function getLocalStorage(state: State, key: string) {
   }
 }
 
-export async function setLocalStorage(state: State, key: string, value: any) {
-  const currentSession = await state.auth.user?.id
+export async function setLocalStorage(state: State | null, key: string, value: any) {
+  const currentSession = (await state?.auth.user?.id) || 'app'
   currentSession && window.localStorage.setItem(currentSession + ':' + key, JSON.stringify(value))
 }
 

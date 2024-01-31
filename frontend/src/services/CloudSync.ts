@@ -4,8 +4,8 @@ import { dispatch } from '../store'
 class CloudSync {
   initialized = false
 
-  constructor() {
-    this.all = this.all.bind(this)
+  log(...args) {
+    console.log(`%c${args[0]}`, 'color:magenta;font-weight:bold', ...args.slice(1))
   }
 
   init() {
@@ -49,7 +49,8 @@ class CloudSync {
     )
   }
 
-  async all() {
+  all = async () => {
+    console.log('CLOUD SYNC ALL')
     await this.core()
     await dispatch.devices.set({ from: 0 })
     await this.call([dispatch.devices.fetchList, dispatch.connections.fetch])
