@@ -14,12 +14,12 @@ type Props = ConnectButtonProps & {
   children?: React.ReactNode
 }
 
-export const ComboButton: React.FC<Props> = ({ className, containerProps, fullWidth, children, ...props }) => {
+export const ComboButton: React.FC<Props> = ({ className, containerProps, children, ...props }) => {
   return (
     <Box
       className={className}
       sx={{
-        width: fullWidth ? 'inherit' : undefined,
+        width: props.fullWidth ? 'inherit' : undefined,
         position: 'relative',
         flexGrow: 1,
       }}

@@ -61,7 +61,6 @@ export const Connect: React.FC = () => {
           app={app}
           connection={connection}
           session={session}
-          device={device}
           show={connection.enabled || !!connection.connectLink}
         >
           <ConnectionData connection={connection} service={service} session={session} />

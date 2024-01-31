@@ -19,18 +19,17 @@ type Props = {
   showTitle?: string
   show?: boolean
   app: Application
-  device?: IDevice
   connection?: IConnection
   session?: ISession
   children?: React.ReactNode
 }
 
-export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, device, connection, session, children }) => {
+export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, connection, session, children }) => {
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copyLaunch' | undefined>()
+  const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copy' | undefined>()
   const [copied, setCopied] = useState<string | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const css = useStyles()
@@ -78,7 +77,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
         className={css.h3}
         onClick={() => {
           buttonRef.current?.click()
-          setCopied('Copied!')
+          setCopied('Copied')
         }}
       >
         {secureIcon}
@@ -126,7 +125,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
   )
 
   const launchDisplay = (
-    <div ref={launchRef} className={hover === 'launch' || hover === 'copyLaunch' ? css.show : css.hide}>
+    <div ref={launchRef} className={hover === 'launch' || hover === 'copy' ? css.show : css.hide}>
       <Typography variant="h5" color="alwaysWhite.main">
         {app.contextTitle}
       </Typography>
@@ -192,11 +191,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
                 <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
                   <span>
                     <Typography variant="h5" color="alwaysWhite.main">
-                      Copy {hover === 'launch' ? '' : hover === 'copyLaunch' ? app.contextTitle : hover}
+                      Copy {hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover}
                     </Typography>
                     <CopyIconButton
                       ref={buttonRef}
                       color="alwaysWhite"
+                      colorCopied="guide"
                       icon="clone"
                       value={endpoint}
                       onMouseEnter={() => setHover('endpoint')}
@@ -209,13 +209,15 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
                           <>
                             <CopyIconButton
                               color="alwaysWhite"
-                              icon="i-cursor"
+                              colorCopied="guide"
+                              icon="host"
                               value={connection.host}
                               onMouseEnter={() => setHover('host')}
                               onMouseLeave={() => setHover(undefined)}
                             />
                             <CopyIconButton
                               color="alwaysWhite"
+                              colorCopied="guide"
                               icon="port"
                               value={connection.port}
                               onMouseEnter={() => setHover('port')}
@@ -225,10 +227,11 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
                         )}
                         <CopyIconButton
                           color="alwaysWhite"
-                          icon={app.launchType !== 'COMMAND' ? 'link' : 'terminal'}
+                          colorCopied="guide"
+                          icon={app.launchType !== 'COMMAND' ? 'link-horizontal' : 'terminal'}
                           app={app}
                           value={app.displayString}
-                          onMouseEnter={() => setHover('copyLaunch')}
+                          onMouseEnter={() => setHover('copy')}
                           onMouseLeave={() => setHover(undefined)}
                         />
                       </>
@@ -241,10 +244,11 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, devic
                       </Typography>
                       <CopyIconButton
                         color="alwaysWhite"
+                        colorCopied="guide"
                         icon="share"
                         value={app.string}
                         onClick={() => navigator.share?.({ url: app.string })}
-                        onMouseEnter={() => setHover('copyLaunch')}
+                        onMouseEnter={() => setHover('launch')}
                         onMouseLeave={() => setHover(undefined)}
                       />
                     </span>

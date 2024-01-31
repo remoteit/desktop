@@ -35,12 +35,7 @@ export const ConnectAdvanced: React.FC = () => {
 
   return (
     <Gutters size="md" top={null} bottom={null}>
-      <ConnectionDetails
-        connection={connection}
-        device={device}
-        app={app}
-        show={connection.enabled || connection.connectLink}
-      />
+      <ConnectionDetails connection={connection} app={app} show={connection.enabled || connection.connectLink} />
       <Box display="flex" marginTop={2}>
         <ListItemBack title="Connection configuration" />
         <IconButton

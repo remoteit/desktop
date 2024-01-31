@@ -14,6 +14,7 @@ export type CopyButtonProps = ButtonProps & {
   title?: string
   value?: string | number
   color?: Color
+  colorCopied?: Color
   size?: Sizes
   type?: IconType
   onMouseEnter?: () => void
@@ -22,10 +23,10 @@ export type CopyButtonProps = ButtonProps & {
   onCopy?: () => void
 }
 
-const COPY_TIMEOUT = 1600
+const COPY_TIMEOUT = 800
 
 export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  ({ icon, app, value, title, size = 'lg', onClick, onCopy, ...props }, ref) => {
+  ({ icon, app, value, title, size = 'lg', colorCopied = 'success', onClick, onCopy, ...props }, ref) => {
     const [open, setOpen] = useState<boolean>(false)
     const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
     const autoCopy = useSelector((state: State) => state.ui.autoCopy)
@@ -66,7 +67,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
           {...props}
           ref={ref}
           onClick={check}
-          color={clipboard.copied ? 'success' : props.color}
+          color={clipboard.copied ? colorCopied : props.color}
           icon={clipboard.copied ? 'check' : icon}
           title={title}
           size={size}

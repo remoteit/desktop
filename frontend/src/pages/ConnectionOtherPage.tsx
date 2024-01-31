@@ -71,7 +71,6 @@ export const ConnectionOtherPage: React.FC = () => {
           app={app}
           connection={connection}
           session={session}
-          device={device}
           showTitle={session?.user ? session.user.email : undefined}
           show
         >

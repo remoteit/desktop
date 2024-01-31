@@ -3,8 +3,7 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
-import { fontSizes, spacing, radius } from '../styling'
-import { ColorChip } from '../components/ColorChip'
+import { spacing } from '../styling'
 import { Color } from '../styling'
 
 export type DynamicButtonProps = {
