@@ -1,6 +1,4 @@
-import { State } from '../store'
 import { DateTime, Duration } from 'luxon'
-import { selectLimit } from '../models/plans'
 import { Unit } from 'humanize-duration'
 
 export function isToday(dateToCheck: Date): boolean {
@@ -32,19 +30,6 @@ export const getTimeZone = () => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
-// export function limitTimeSeries(state: ApplicationState, timeSeries: ITimeSeriesOptions): ITimeSeriesOptions {
-//   const defaultDuration = getMaxDuration(timeSeries.resolution)
-//   const logLimit = selectLimit('log-limit', state)
-//   const logLimitDuration = Duration.fromISO(logLimit)
-//   const shortestDuration = defaultDuration.valueOf() < logLimitDuration.valueOf() ? defaultDuration : logLimitDuration
-//   const start = DateTime.local().minus(shortestDuration).toJSDate()
-//   return { ...timeSeries, start }
-// }
-
-// export const getDuration = (unit: ITimeSeriesResolution) => {
-//   return Duration.fromObject({ [TimeSeriesResolutionLookup[unit]]: 1 })
-// }
-
 export const getStart = (resolution: ITimeSeriesResolution) => {
   return DateTime.local().minus(getMaxDuration(resolution)).toJSDate()
 }
@@ -53,8 +38,30 @@ export const getMaxDuration = (unit: ITimeSeriesResolution) => {
   return Duration.fromObject({ [resolutionMaxLookup[unit]]: 1 })
 }
 
+export const findLongestLength = (limitDuration: Duration, resolution: string) => {
+  const lengths: number[] = []
+  TimeSeriesLengths[resolution].forEach(length => {
+    if (limitDuration.valueOf() >= Duration.fromObject({ [resolution]: length }).valueOf()) {
+      lengths.push(length)
+    }
+  })
+  return lengths[lengths.length - 1]
+}
+
 export const connectionTypes = ['USAGE', 'CONNECT_DURATION', 'CONNECT', 'DISCONNECT']
 export const secondResolutions = ['SECOND', 'MINUTE', 'HOUR']
+
+export const defaultDeviceTimeSeries: ITimeSeriesOptions = {
+  type: 'ONLINE_DURATION',
+  resolution: 'DAY',
+  length: 7,
+}
+
+export const defaultServiceTimeSeries: ITimeSeriesOptions = {
+  type: 'CONNECT_DURATION',
+  resolution: 'DAY',
+  length: 7,
+}
 
 export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
   SECOND: 's',

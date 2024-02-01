@@ -24,6 +24,7 @@ import {
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { getLocalStorage, removeLocalStorage } from '../services/Browser'
+import { selectTimeSeries } from '../selectors/ui'
 import {
   getAllDevices,
   getDeviceModel,
@@ -129,18 +130,19 @@ export default createModel<RootModel>()({
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, owner, filter, append, searched } = deviceModel
+      const { deviceTimeSeries, serviceTimeSeries } = selectTimeSeries(state)
 
       const options: gqlOptions = {
         accountId,
         name: query,
         columns,
+        deviceTimeSeries,
+        serviceTimeSeries,
         size: deviceModel.size,
         from: deviceModel.from,
         tag: deviceModel.tag,
         sort: deviceModel.sort,
         platform: deviceModel.platform,
-        deviceTimeSeries: state.ui.deviceTimeSeries,
-        serviceTimeSeries: state.ui.serviceTimeSeries,
         applicationTypes: deviceModel.applicationTypes,
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
@@ -176,7 +178,7 @@ export default createModel<RootModel>()({
         accountId,
         ids,
         columns: ['deviceName'],
-        timeSeries: state.ui.deviceTimeSeries,
+        timeSeries: selectTimeSeries(state).deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
@@ -216,14 +218,10 @@ export default createModel<RootModel>()({
       let errors: Error[] | undefined
 
       dispatch.devices.set({ fetching: true, accountId })
+      const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
       try {
-        const gqlResponse = await graphQLFetchFullDevice(
-          id,
-          accountId,
-          state.ui.serviceTimeSeries,
-          state.ui.deviceTimeSeries
-        )
+        const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
         errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
         if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]

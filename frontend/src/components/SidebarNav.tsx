@@ -131,7 +131,6 @@ export const SidebarNav: React.FC = () => {
           badge={counts.unreadAnnouncements}
           dense
         />
-        <ListItemLocation title="Settings" icon="sliders-h" to="/settings" dense />
         {limits.support > 10 ? (
           <ListItemLocation
             title="Contact"
@@ -143,6 +142,7 @@ export const SidebarNav: React.FC = () => {
         ) : (
           <ListItemLink title="Support Forum" href="https://link.remote.it/forum" icon="comments" dense />
         )}
+        <ListItemLocation title="Settings" icon="sliders-h" to="/settings" dense />
       </Box>
     </List>
   )

@@ -17,18 +17,16 @@ import { ColorChip } from '../components/ColorChip'
 import { Title } from '../components/Title'
 
 export const OptionsPage: React.FC = () => {
-  const { os, installing, cliVersion, preferences, thisDevice, notOwner, themeMode, remoteUI } = useSelector(
-    (state: State) => ({
-      os: state.backend.environment.os,
-      installing: state.binaries.installing,
-      cliVersion: state.binaries.installedVersion || '(loading...)',
-      preferences: state.backend.preferences,
-      thisDevice: selectOwnDevices(state).find(d => d.thisDevice),
-      notOwner: !!state.backend.thisId && !selectOwnDevices(state).find(d => d.thisDevice),
-      themeMode: state.ui.themeMode,
-      remoteUI: isRemoteUI(state),
-    })
+  const os = useSelector((state: State) => state.backend.environment.os)
+  const installing = useSelector((state: State) => state.binaries.installing)
+  const cliVersion = useSelector((state: State) => state.binaries.installedVersion || '(loading...)')
+  const preferences = useSelector((state: State) => state.backend.preferences)
+  const thisDevice = useSelector((state: State) => selectOwnDevices(state).find(d => d.thisDevice))
+  const notOwner = useSelector(
+    (state: State) => !!state.backend.thisId && !selectOwnDevices(state).find(d => d.thisDevice)
   )
+  const themeMode = useSelector((state: State) => state.ui.themeMode)
+  const remoteUI = useSelector((state: State) => isRemoteUI(state))
 
   const { binaries, ui } = useDispatch<Dispatch>()
 

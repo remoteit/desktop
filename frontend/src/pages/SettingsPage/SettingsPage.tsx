@@ -11,10 +11,8 @@ import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 
 export const SettingsPage: React.FC = () => {
-  const { preferences, feature } = useSelector((state: State) => ({
-    preferences: state.backend,
-    feature: selectLimitsLookup(state),
-  }))
+  const preferences = useSelector((state: State) => state.backend)
+  const feature = useSelector((state: State) => selectLimitsLookup(state))
 
   if (!preferences) return null
 

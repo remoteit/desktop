@@ -2,6 +2,7 @@ import browser from '../services/Browser'
 import structuredClone from '@ungap/structured-clone'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
+import { selectTimeSeries } from '../selectors/ui'
 import { selectConnection } from '../selectors/connections'
 import { selectActiveAccountId, getActiveUser } from '../selectors/accounts'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
@@ -99,8 +100,10 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = selectActiveAccountId(state)
       const columns = selectDeviceColumns(state)
+      const { deviceTimeSeries } = selectTimeSeries(state)
+
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId, columns, state.ui.deviceTimeSeries)
+      const response = await graphQLPreloadNetworks(accountId, columns, deviceTimeSeries)
 
       if (response === 'ERROR') return
 
@@ -113,13 +116,10 @@ export default createModel<RootModel>()({
       if (!network || !network.cloud) return
 
       const accountId = selectActiveAccountId(state)
+      const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
+
       dispatch.devices.set({ fetching: true, accountId })
-      const gqlResponse = await graphQLFetchNetworkServices(
-        network.id,
-        accountId,
-        state.ui.serviceTimeSeries,
-        state.ui.deviceTimeSeries
-      )
+      const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId, serviceTimeSeries, deviceTimeSeries)
 
       if (gqlResponse === 'ERROR') {
         if (redirect) dispatch.ui.set({ redirect })

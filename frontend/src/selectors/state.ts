@@ -37,6 +37,8 @@ export const getAllNetworks = (state: State) => state.networks.all
 export const getTags = (state: State) => state.tags.all
 export const getDefaultSelected = (state: State) => state.ui.defaultSelection
 export const getThemeDark = (state: State) => state.ui.themeDark
+export const getDeviceTimeSeries = (state: State) => state.ui.deviceTimeSeries
+export const getServiceTimeSeries = (state: State) => state.ui.serviceTimeSeries
 export const getUpdateStatus = (state: State) => state.backend.updateStatus
 export const getPreferences = (state: State) => state.backend.preferences
 export const getAnnouncements = (state: State) => state.announcements.all

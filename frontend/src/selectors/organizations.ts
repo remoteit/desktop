@@ -57,6 +57,11 @@ export const selectLimits = createSelector(
   (organization, testLimits) => testLimits || organization.limits
 )
 
+export const selectLimit = createSelector(
+  [selectLimits, optionalSecondParam],
+  (limits, limitName) => limits.find(limit => limit.name === limitName)?.value || 'P1D'
+)
+
 export const selectLimitsLookup = createSelector(
   [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {

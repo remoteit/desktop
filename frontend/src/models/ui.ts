@@ -102,8 +102,8 @@ export type UIState = {
   autoCopy: boolean
   updateNoticeCleared?: number
   showRestoreModal: boolean
-  deviceTimeSeries: ITimeSeriesOptions
-  serviceTimeSeries: ITimeSeriesOptions
+  deviceTimeSeries?: ITimeSeriesOptions
+  serviceTimeSeries?: ITimeSeriesOptions
   connectThisDevice: boolean
   mobileWelcome: boolean
   showDesktopNotice: boolean
@@ -197,8 +197,8 @@ export const defaultState: UIState = {
   autoCopy: false,
   updateNoticeCleared: undefined,
   showRestoreModal: false,
-  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', length: 7 },
-  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', length: 7 },
+  deviceTimeSeries: undefined,
+  serviceTimeSeries: undefined,
   connectThisDevice: false,
   mobileWelcome: true,
   showDesktopNotice: true,

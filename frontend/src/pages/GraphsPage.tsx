@@ -1,7 +1,9 @@
 import React from 'react'
 import { Container } from '../components/Container'
-import { selectLimit, humanizeDays } from '../models/plans'
+import { humanizeDays } from '../models/plans'
 import { Dispatch, State } from '../store'
+import { selectLimit } from '../selectors/organizations'
+import { selectTimeSeries, selectTimeSeriesDefaults } from '../selectors/ui'
 import { useDispatch, useSelector } from 'react-redux'
 import { TimeSeriesSelect } from '../components/TimeSeriesSelect'
 import { PlanActionChip } from '../components/PlanActionChip'
@@ -9,23 +11,11 @@ import { Typography } from '@mui/material'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
-const defaultDeviceTimeSeries: ITimeSeriesOptions = {
-  type: 'ONLINE_DURATION',
-  resolution: 'DAY',
-  length: 7,
-}
-const defaultServiceTimeSeries: ITimeSeriesOptions = {
-  type: 'CONNECT_DURATION',
-  resolution: 'DAY',
-  length: 7,
-}
-
 export const GraphsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { timeSeries, logLimit } = useSelector((state: State) => ({
-    timeSeries: state.ui,
-    logLimit: selectLimit('log-limit', state) || 'P1W',
-  }))
+  const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
+  const timeSeriesDefaults = useSelector((state: State) => selectTimeSeriesDefaults(state))
+  const { deviceTimeSeries, serviceTimeSeries } = useSelector((state: State) => selectTimeSeries(state))
 
   return (
     <Container
@@ -41,9 +31,9 @@ export const GraphsPage: React.FC = () => {
       </Notice>
       <Typography variant="subtitle1">Device list and details</Typography>
       <TimeSeriesSelect
-        timeSeriesOptions={timeSeries.deviceTimeSeries}
+        timeSeriesOptions={deviceTimeSeries}
         logLimit={logLimit}
-        defaults={defaultDeviceTimeSeries}
+        defaults={timeSeriesDefaults.deviceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ deviceTimeSeries: value })
           await dispatch.devices.fetchList()
@@ -51,9 +41,9 @@ export const GraphsPage: React.FC = () => {
       />
       <Typography variant="subtitle1">Service details</Typography>
       <TimeSeriesSelect
-        timeSeriesOptions={timeSeries.serviceTimeSeries}
+        timeSeriesOptions={serviceTimeSeries}
         logLimit={logLimit}
-        defaults={defaultServiceTimeSeries}
+        defaults={timeSeriesDefaults.serviceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ serviceTimeSeries: value })
           await dispatch.devices.clearLoaded()

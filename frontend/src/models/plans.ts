@@ -9,7 +9,13 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { selectRemoteitLicense, selectOrganization, selectLicenses, selectPlan } from '../selectors/organizations'
+import {
+  selectRemoteitLicense,
+  selectOrganization,
+  selectLimits,
+  selectLicenses,
+  selectPlan,
+} from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getDevices } from '../selectors/devices'
@@ -246,15 +252,6 @@ function isEnterprise(state: State) {
 export function isPersonal(state: State) {
   const license = selectRemoteitLicense(state)
   return license?.plan.id === PERSONAL_PLAN_ID
-}
-
-export function selectLimits(state: State, accountId?: string) {
-  if (state.plans.tests.limit) return state.plans.tests.limits
-  else return selectOrganization(state, accountId).limits
-}
-
-export function selectLimit(name: string, state: State) {
-  return selectLimits(state).find(limit => limit.name === name)?.value || 'P1D'
 }
 
 export function getInformed(state: State) {
