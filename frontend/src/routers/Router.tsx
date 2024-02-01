@@ -5,6 +5,7 @@ import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
+import { RedirectOffsite } from '../components/RedirectOffsite'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
@@ -67,7 +68,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
     const initialRoute = window.localStorage.getItem('initialRoute')
     if (initialRoute) {
       if (initialRoute !== location.pathname) history.push(initialRoute)
-      console.log('UI REDIRECT', initialRoute)
+      console.log('UI REDIRECT INIT', initialRoute)
       window.localStorage.removeItem('initialRoute')
     }
   }, [])
@@ -91,29 +92,28 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         from="/connect/:serviceID"
         to={{
           pathname: '/connections/:serviceID',
-          state: { autoConnect: true },
+          state: { autoConnect: true, isRedirect: true },
         }}
       />
-      x
       <Redirect
         from="/launch/:serviceID"
         to={{
           pathname: '/connections/:serviceID',
-          state: { autoLaunch: true },
+          state: { autoLaunch: true, isRedirect: true },
         }}
       />
       <Redirect
         from="/copy/:serviceID"
         to={{
           pathname: '/connections/:serviceID',
-          state: { autoCopy: true },
+          state: { autoCopy: true, isRedirect: true },
         }}
       />
       <Redirect
         from="/feedback/:deviceID/:serviceID"
         to={{
           pathname: '/devices/:deviceID/:serviceID',
-          state: { autoFeedback: true },
+          state: { autoFeedback: true, isRedirect: true },
         }}
       />
       <Route path="/claim/:claimID">
@@ -160,13 +160,13 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
-          <Redirect to={`/devices/${thisId}`} />
+          <Redirect to={{ pathname: `/devices/${thisId}`, state: { isRedirect: true } }} />
         ) : browser.hasBackend ? (
           <Panel layout={layout}>
             <SetupDevice os={os} />
           </Panel>
         ) : (
-          <Redirect to={`/add/${os}`} />
+          <Redirect to={{ pathname: `/add/${os}`, state: { isRedirect: true } }} />
         )}
       </Route>
       <Route path="/devices/membership">
@@ -189,10 +189,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <DevicesPage select />
         </Panel>
       </Route>
-      <Route path={['/devices', '/devices/welcome']} exact>
+      <Route path="/devices" exact>
         {remoteUI ? (
           registered ? (
-            <Redirect to={`/devices/${thisId}`} />
+            <Redirect to={{ pathname: `/devices/${thisId}`, state: { isRedirect: true } }} />
           ) : (
             <Panel layout={layout}>
               <SetupDevice os={os} />
@@ -333,7 +333,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
 
               <Route path="/account/plans">
-                <PlansPage />
+                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
+                  <PlansPage />
+                </RedirectOffsite>
               </Route>
 
               <Route path="/account/licensing">
@@ -341,7 +343,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
 
               <Route path="/account/billing">
-                <BillingPage />
+                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
+                  <BillingPage />
+                </RedirectOffsite>
               </Route>
 
               <Route path="/account/accessKey">
@@ -358,7 +362,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         />
       </Route>
       {/* Not found */}
-      <Redirect from="*" to="/devices" exact />
+      <Redirect from="*" to={{ pathname: '/devices', state: { isRedirect: true } }} exact />
     </Switch>
   )
 }

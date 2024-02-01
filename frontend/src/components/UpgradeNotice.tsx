@@ -3,27 +3,30 @@ import { Route, Link } from 'react-router-dom'
 import { Notice } from './Notice'
 import { Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { getOwnDevices } from '../selectors/devices'
-import { selectRemoteitLicense } from '../selectors/organizations'
-import { PERSONAL_PLAN_ID } from '../models/plans'
+import { Pre } from './Pre'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
-export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
-  const { license, ownDevices, visible } = useSelector((state: ApplicationState) => ({
-    license: selectRemoteitLicense(state),
-    ownDevices: getOwnDevices(state).filter(d => d.owner.id === state.user.id),
+export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () => {
+  const { limits, visible } = useSelector((state: ApplicationState) => ({
+    limits: selectLimits(state),
     visible: !state.ui.updateNoticeCleared || state.ui.updateNoticeCleared < Date.now() - oneWeek,
   }))
+  const limit = limits.find(l => l.name === 'iot-devices')
+  const overLimit = limit && limit.actual > limit.value
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
-  if (!visible || !license || license.plan.id !== PERSONAL_PLAN_ID || !ownDevices.length) return null
+  if (!visible || !limit || !overLimit) return null
+
+  let message = 'A license is required for commercial use. Personal use is free for up to 5 devices.'
+  if (overLimit) message = `You have ${limit.actual} devices, but your plan only allows ${limit.value}.`
 
   return (
-    <Route path={['/devices', '/connections', '/networks']}>
+    <Route path="/devices">
       <Notice
         className={css.notice}
         severity="warning"
@@ -31,12 +34,12 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
         button={
           <Link to="/account/plans">
             <Button variant="contained" color="warning" size="small">
-              Subscribe
+              Upgrade
             </Button>
           </Link>
         }
       >
-        Commercial use requires a license after your first registered device.
+        {message}
       </Notice>
     </Route>
   )

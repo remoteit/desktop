@@ -36,23 +36,6 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   return await axios.request(request)
 }
 
-// We should replace the code duplication following this pattern with this code.
-// export async function graphQLRequestWithErrorHandling(query: String, variables: ILookup<any> = {}, parse : any = undefined) {
-//   try {
-//     const result = await graphQLRequest(
-//       query,
-//       variables
-//     )
-//     const errors = graphQLGetErrors(result)
-//     if(parse) {
-//       await parse(result)
-//     }
-//     return errors ? 'ERROR' : result
-//   } catch (error) {
-//     await apiError(error)
-//   }
-// }
-
 export function graphQLGetErrors(
   response: AxiosResponse | 'ERROR' | void,
   silent?: boolean,

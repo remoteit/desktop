@@ -16,11 +16,10 @@ import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
 export interface Props {
-  noInsets?: boolean
   children: React.ReactNode
 }
 
-export function Page({ noInsets, children }: Props & React.HTMLProps<HTMLDivElement>) {
+export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
   const {
     device,
@@ -64,11 +63,7 @@ export function Page({ noInsets, children }: Props & React.HTMLProps<HTMLDivElem
 
   return (
     <>
-      <RemoteHeader
-        device={device}
-        insets={noInsets ? undefined : layout.insets}
-        color={label?.id ? label.color : undefined}
-      >
+      <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
         <DragAppRegion />
         {children}
         {offline && (
@@ -113,51 +108,36 @@ export function Page({ noInsets, children }: Props & React.HTMLProps<HTMLDivElem
         key={errorMessage || 'error'}
         open={snackbar === 'error'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        message={
-          <>
-            <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
-            {errorMessage}
-          </>
-        }
-        action={
-          <IconButton onClick={clearErrorMessage} size="large">
-            <Icon name="times" size="md" color="white" fixedWidth />
-          </IconButton>
-        }
         onClose={clearErrorMessage}
+        message={
+          <Notice severity="error" solid fullWidth>
+            {errorMessage}
+          </Notice>
+        }
       />
       <Snackbar
         className={css.snackbar}
         key={noticeMessage || 'notice'}
         open={snackbar === 'notice'}
-        message={
-          <>
-            <Icon name="info-circle" size="md" color="primary" type="regular" fixedWidth inlineLeft />
-            {noticeMessage}
-          </>
-        }
         onClose={() => ui.set({ noticeMessage: '' })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        autoHideDuration={20000}
+        message={
+          <Notice severity="info" solid fullWidth>
+            {noticeMessage}
+          </Notice>
+        }
       />
       <Snackbar
         className={css.snackbar}
         key={successMessage || 'success'}
         open={snackbar === 'success'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        autoHideDuration={20000}
-        message={
-          <>
-            <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />
-            {successMessage}
-          </>
-        }
-        action={
-          <IconButton onClick={clearSuccessMessage} size="large">
-            <Icon name="times" size="md" color="white" fixedWidth />
-          </IconButton>
-        }
         onClose={clearSuccessMessage}
+        message={
+          <Notice severity="success" solid fullWidth>
+            {successMessage}
+          </Notice>
+        }
       />
     </>
   )

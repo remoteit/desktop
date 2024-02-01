@@ -3,6 +3,7 @@ import { Attribute } from '../components/Attributes'
 
 export const DeviceListContext = createContext<IDeviceListContext>({
   device: {} as IDevice,
+  service: {} as IService,
   connections: [],
   attributes: [],
   required: {} as Attribute,

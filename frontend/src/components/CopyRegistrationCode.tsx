@@ -15,7 +15,10 @@ export function CopyRegistrationCode(props: CopyCodeBlockProps) {
 
   return (
     <>
-      <CopyCodeBlock {...props} onClick={organization.id === user.id ? undefined : () => setOpen(true)} />
+      <CopyCodeBlock
+        {...props}
+        onClick={organization.id && organization.id !== user.id ? () => setOpen(true) : undefined}
+      />
       <Confirm title={`Registering to ${organization.name}`} action="Ok" open={open} onConfirm={() => setOpen(false)}>
         This registration code will register to an organization instead of your personal account.
       </Confirm>

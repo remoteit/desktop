@@ -79,5 +79,6 @@ platforms.register({
     command: true,
     qualifier: 'For any Raspberry Pi or Linux based system',
     link: 'https://link.remote.it/support/streamline-install',
+    altLink: 'https://link.remote.it/docs/oem-overview',
   },
 })

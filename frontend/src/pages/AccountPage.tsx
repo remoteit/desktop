@@ -1,4 +1,5 @@
 import React from 'react'
+import browser from '../services/Browser'
 import { List, Typography, Tooltip, ButtonBase } from '@mui/material'
 import { selectLicenseIndicator } from '../models/plans'
 import { selectRemoteitLicense } from '../selectors/organizations'
@@ -8,15 +9,17 @@ import { useSelector } from 'react-redux'
 import { windowOpen } from '../services/Browser'
 import { Container } from '../components/Container'
 import { Logo } from '../components/Logo'
+import { Icon } from '../components/Icon'
 
 export const AccountPage: React.FC = () => {
-  const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { billing, licenseIndicator } = useSelector((state: ApplicationState) => ({
     billing: !!selectRemoteitLicense(state, state.user.id)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
-    preferences: state.backend.preferences,
   }))
 
-  if (!preferences) return null
+  const externalBilling = browser.hasBilling ? null : (
+    <Icon name="launch" size="sm" color="grayDark" inlineLeft fixedWidth />
+  )
 
   return (
     <Container
@@ -43,9 +46,15 @@ export const AccountPage: React.FC = () => {
           dense
         />
         <ListItemLocation title="Security" to="/account/security" icon="lock" dense />
-        <ListItemLocation title="Subscription" to="/account/plans" icon="shopping-cart" dense />
+        <ListItemLocation title="Subscription" to="/account/plans" icon="shopping-cart" dense>
+          {externalBilling}
+        </ListItemLocation>
+        {billing && (
+          <ListItemLocation title="Billing" to="/account/billing" icon="credit-card-front" dense>
+            {externalBilling}
+          </ListItemLocation>
+        )}
         <ListItemLocation title="Licensing" to="/account/licensing" icon="id-badge" badge={licenseIndicator} dense />
-        {billing && <ListItemLocation title="Billing" to="/account/billing" icon="credit-card-front" dense />}
         <ListItemLocation title="Access Keys" to="/account/accessKey" icon="key" dense />
       </List>
     </Container>

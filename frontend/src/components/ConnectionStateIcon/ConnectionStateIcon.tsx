@@ -5,14 +5,14 @@ import { Tooltip } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { IconButton, Badge } from '@mui/material'
-import { spacing, FontSize } from '../../styling'
+import { spacing, Sizes } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
   service?: IService
   device?: IDevice
   mini?: boolean
-  size?: FontSize
+  size?: Sizes
 }
 
 export function ConnectionStateIcon({

@@ -2,7 +2,7 @@ import React from 'react'
 import { Application } from '@common/applications'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { newConnection, setConnection, isSecureReverseProxy } from '../../helpers/connectionHelper'
-import { ConfirmButton } from '../../buttons/ConfirmButton'
+import { ConfirmIconButton } from '../../buttons/ConfirmIconButton'
 import { Tooltip } from '@mui/material'
 import { Icon } from '../Icon'
 
@@ -31,7 +31,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
       hideIcon={secureReverseProxy === null}
       actionIcon={
         secureReverseProxy === null ? undefined : (
-          <ConfirmButton
+          <ConfirmIconButton
             type="solid"
             confirm={secureReverseProxy}
             confirmProps={{

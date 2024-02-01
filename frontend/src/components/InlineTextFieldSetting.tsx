@@ -64,7 +64,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
     Field = Input
   }
 
-  multiline = multiline === undefined ? value?.toString().length > 30 : multiline
+  multiline = multiline === undefined ? value?.toString().length > 50 : multiline
 
   return (
     <InlineSetting

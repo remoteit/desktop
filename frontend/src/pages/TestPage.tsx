@@ -16,15 +16,23 @@ import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
-  const { plans, ui } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
   const [testHeader, setTestHeader] = useState<string>(window.localStorage.getItem(TEST_HEADER) || '')
-  const { tests, informed, testUI, preferences, limits, limitsOverride } = useSelector((state: ApplicationState) => ({
-    ...state.plans,
-    testUI: state.ui.testUI,
-    preferences: state.backend.preferences,
-    limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
-    limits: selectLimits(state, state.auth.user?.id),
-  }))
+  const { tests, informed, apis, testUI, preferences, limits, limitsOverride } = useSelector(
+    (state: ApplicationState) => ({
+      ...state.plans,
+      apis: state.ui.apis,
+      testUI: state.ui.testUI,
+      preferences: state.backend.preferences,
+      limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
+      limits: selectLimits(state, state.auth.user?.id),
+    })
+  )
+
+  async function setPreference(key: string, value: string | number | boolean) {
+    await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
+    emit('preferences', { preferences: { ...preferences, [key]: value } })
+  }
 
   return (
     <Container
@@ -40,14 +48,14 @@ export const TestPage: React.FC = () => {
           hideIcon
           label="Hide test UI backgrounds"
           toggle={testUI === 'ON'}
-          onClick={() => ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
+          onClick={() => dispatch.ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
         />
         <ListItemSetting
           hideIcon
           label="Disable Test UI"
           subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
           onClick={() => {
-            ui.setPersistent({ testUI: undefined })
+            dispatch.ui.setPersistent({ testUI: undefined })
             emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
           }}
         />
@@ -73,10 +81,10 @@ export const TestPage: React.FC = () => {
           hideIcon
           label="Override default APIs"
           onClick={() => {
-            emit('preferences', { ...preferences, switchApi: !preferences.switchApi })
+            setPreference('switchApi', !apis.switchApi)
             emit('binaries/install')
           }}
-          toggle={!!preferences.switchApi}
+          toggle={!!apis.switchApi}
         />
         <ListItem>
           <Quote margin={null} indent="listItem" noInset>
@@ -84,11 +92,11 @@ export const TestPage: React.FC = () => {
               <InlineTextFieldSetting
                 value={getGraphQLApi()}
                 label="Switch GraphQL APIs"
-                disabled={!preferences.switchApi}
+                disabled={!apis.switchApi}
                 resetValue={getGraphQLApi()}
                 maxLength={200}
                 onSave={url => {
-                  emit('preferences', { ...preferences, apiGraphqlURL: url })
+                  setPreference('apiGraphqlURL', url)
                   emit('binaries/install')
                   cloudSync.all()
                 }}
@@ -98,11 +106,11 @@ export const TestPage: React.FC = () => {
                 value={getRestApi()}
                 displayValue="This still needs to be hooked up"
                 label="Rest Api"
-                disabled={true || !preferences.switchApi}
+                disabled={true || !apis.switchApi}
                 resetValue={getRestApi()}
                 maxLength={200}
                 onSave={url => {
-                  emit('preferences', { ...preferences, apiURL: url })
+                  setPreference('apiURL', url)
                   emit('binaries/install')
                 }}
                 hideIcon
@@ -110,11 +118,11 @@ export const TestPage: React.FC = () => {
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
                 label="WebSocket URL"
-                disabled={!preferences.switchApi}
+                disabled={!apis.switchApi}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
                 onSave={url => {
-                  emit('preferences', { ...preferences, webSocketURL: url })
+                  setPreference('webSocketURL', url)
                   emit('binaries/install')
                 }}
                 hideIcon
@@ -134,7 +142,9 @@ export const TestPage: React.FC = () => {
                 label={`${l.name} (default ${l.value ? 'enabled' : 'disabled'})`}
                 toggle={limitsOverride[l.name]}
                 onClick={() =>
-                  ui.setPersistent({ limitsOverride: { ...limitsOverride, [l.name]: !limitsOverride[l.name] } })
+                  dispatch.ui.setPersistent({
+                    limitsOverride: { ...limitsOverride, [l.name]: !limitsOverride[l.name] },
+                  })
                 }
               />
             )
@@ -144,7 +154,7 @@ export const TestPage: React.FC = () => {
           hideIcon
           button="Reset"
           label="Reset feature overrides"
-          onButtonClick={() => ui.setPersistent({ limitsOverride: {} })}
+          onButtonClick={() => dispatch.ui.setPersistent({ limitsOverride: {} })}
         />
       </List>
       <Typography variant="subtitle1">Licensing Options</Typography>
@@ -153,19 +163,19 @@ export const TestPage: React.FC = () => {
           hideIcon
           label="Override licenses and limits"
           toggle={tests.limit}
-          onClick={() => plans.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
+          onClick={() => dispatch.plans.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
         />
         <ListItemSetting
           hideIcon
           label="Set service licenses"
           subLabel="Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY"
-          onClick={() => plans.testServiceLicensing()}
+          onClick={() => dispatch.plans.testServiceLicensing()}
         />
         <ListItemSetting
           hideIcon
           label="License message cleared"
           toggle={informed}
-          onClick={() => plans.set({ informed: !informed })}
+          onClick={() => dispatch.plans.set({ informed: !informed })}
         />
       </List>
     </Container>

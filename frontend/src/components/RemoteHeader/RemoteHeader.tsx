@@ -9,12 +9,11 @@ import classnames from 'classnames'
 import screenfull from 'screenfull'
 import browser from '../../services/Browser'
 
-type Props = { device?: IDevice; color?: string; insets?: ILayout['insets']; children: React.ReactNode }
+type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 
-export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children }) => {
+export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
   const showFrame = browser.isRemote
-  const showBorder = !browser.isMac && !showFrame
-  const css = useStyles({ showBorder, insets, color })
+  const css = useStyles({ color })
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
 
@@ -58,33 +57,25 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, insets, children 
 }
 
 type styleProps = {
-  insets?: ILayout['insets']
-  showBorder: boolean
   color?: string
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  full: ({ insets }: styleProps) => ({
+  full: {
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     position: 'fixed',
-    // for iOS mobile
-    paddingTop: insets?.top,
-    paddingBottom: insets?.bottom,
-    paddingLeft: insets?.left,
-    paddingRight: insets?.right,
-  }),
-  page: ({ showBorder }: styleProps) => ({
+  },
+  page: {
     overflow: 'hidden',
     display: 'flex',
     flexFlow: 'column',
     backgroundColor: palette.white.main,
     margin: 'auto',
-    borderTop: showBorder ? `1px solid ${palette.grayLighter.main}` : undefined,
     contain: 'layout',
-  }),
+  },
   inset: {
     top: spacing.xl,
     left: spacing.sm,

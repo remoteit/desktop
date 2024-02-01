@@ -20,7 +20,7 @@ export const OrganizationEmptyPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
-  if (hasOrganization) return <Redirect to="/organization" />
+  if (hasOrganization) return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (
     <Body center>

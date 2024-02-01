@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID, devicesTotal } from '../models/plans'
-import { List, ListItem, Stack } from '@mui/material'
+import browser from '../services/Browser'
+import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
+import { Box, List, ListItem, Stack } from '@mui/material'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
+import { selectRemoteitLicense, selectPlan, selectLimits } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
 import { InlineSetting } from './InlineSetting'
-import { selectLimits } from '../selectors/organizations'
 import { Confirm } from './Confirm'
+import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
-export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }) => {
+export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ context }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { accountId, plans, purchasing, limits } = useSelector((state: ApplicationState) => ({
+  const { accountId, license, limits, plan, purchasing } = useSelector((state: ApplicationState) => ({
     accountId: selectActiveAccountId(state),
-    plans: state.plans.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
+    limits: selectLimits(state),
+    license: selectRemoteitLicense(state) || null,
+    plan: selectPlan(state),
     purchasing: !!state.plans.purchasing,
-    limits: selectLimits(state, state.user.id),
   }))
 
   useEffect(() => {
@@ -26,7 +29,6 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   }, [license])
 
   const getDefaults = () => {
-    const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
     const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
     return {
       accountId,
@@ -37,10 +39,10 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
 
   const [form, setForm] = useState<IPurchase>(getDefaults())
   const [confirm, setConfirm] = useState<boolean>(false)
-  const selectedPlan = plans.find(plan => plan.id === license?.plan?.id)
-  const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
   const enterprise = !!license && !license.plan.billing
-  const deviceLimit = limits.find(l => l.name === 'iot-devices' && l.license?.id === license?.id)?.value
+  const price = plan?.prices?.find(price => price.id === form.priceId)
+  const displayOnly = context === 'user' && !plan?.limits?.find(l => l.name === 'org-users')?.scale
+  const totals = deviceUserTotal(form.quantity, plan)
 
   const setQuantity = (value: string | number) => {
     let quantity = Math.max(Math.min(+value, 9999), 0)
@@ -48,15 +50,28 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
     setForm({ ...form, quantity })
   }
 
-  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise) return null
+  if (!plan || license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
+
+  const display = (
+    <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
+      {limits.find(l => l.name === 'org-users')?.value}
+      <Icon name="user" size="xxs" type="solid" color="gray" />
+      {limits.find(l => l.name === 'iot-devices')?.value}
+      <Icon name="unknown" size="sm" platformIcon />
+    </Stack>
+  )
+
   if (license?.custom)
     return (
-      <List>
-        <ListItem>
+      <>
+        <Gutters>{display}</Gutters>
+        <Gutters size="sm">
           <NoticeCustomPlan />
-        </ListItem>
-      </List>
+        </Gutters>
+      </>
     )
+
+  if (displayOnly) return <Gutters>{display}</Gutters>
 
   return (
     <List>
@@ -64,17 +79,10 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
         hideIcon
         disabled={purchasing}
         loading={purchasing}
-        label="Licenses"
+        label="Licensing"
         warning="This will change your billing."
         value={form.quantity}
-        displayValue={
-          <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
-            {form.quantity}
-            <Icon name="user" size="xxs" type="solid" color="gray" />
-            {deviceLimit}
-            <Icon name="unknown" size="sm" platformIcon />
-          </Stack>
-        }
+        displayValue={display}
         resetValue={getDefaults().quantity}
         onResetClick={() => setForm(getDefaults())}
         onSubmit={async () => {
@@ -84,17 +92,21 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
         onCancel={() => setForm(getDefaults())}
         onShowEdit={() => setForm(getDefaults())}
       >
-        <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
-        {selectedPrice?.amount && (
-          <>
-            &nbsp; &nbsp; &nbsp;
-            {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
-            &nbsp;/&nbsp;
-            {selectedPrice?.interval?.toLowerCase()} &nbsp;
-            <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
-            {devicesTotal(form.quantity, selectedPlan?.id)} devices
-          </>
-        )}
+        <Stack flexDirection="row" flexWrap="wrap" alignItems="center">
+          <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
+          &nbsp; &nbsp; &nbsp;
+          {price?.amount && (
+            <Stack flexDirection="row" alignItems="center" minWidth={300} marginY={1}>
+              {currencyFormatter(price?.currency, (price?.amount || 0) * form.quantity)}
+              &nbsp;/&nbsp;
+              {price?.interval?.toLowerCase()} &nbsp; &nbsp;
+              <Icon name="user" size="sm" type="solid" color="gray" fixedWidth inlineLeft inline />
+              {totals.users} users
+              <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
+              {totals.devices} devices
+            </Stack>
+          )}
+        </Stack>
       </InlineSetting>
       {confirm && (
         <Confirm
@@ -111,9 +123,9 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
         >
           Please confirm that you want to change your billing to &nbsp;
           <b>
-            {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
+            {currencyFormatter(price?.currency, (price?.amount || 0) * form.quantity)}
             &nbsp;/&nbsp;
-            {selectedPrice?.interval?.toLowerCase()}
+            {price?.interval?.toLowerCase()}
           </b>
           &nbsp; for {form.quantity} user license{form.quantity > 1 ? 's' : ''}.
         </Confirm>

@@ -1,4 +1,5 @@
 import React from 'react'
+import browser from '../../services/Browser'
 import { platforms } from '..'
 import logo from './windows.svg'
 
@@ -15,5 +16,6 @@ platforms.register({
     qualifier: 'Windows installation',
     instructions: 'Install the Desktop or CLI on the Windows system to you want to enable remote access to.',
     link: 'https://link.remote.it/download/desktop',
+    altLink: browser.isWindows ? '/devices/setup' : undefined,
   },
 })

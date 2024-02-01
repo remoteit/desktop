@@ -55,7 +55,7 @@ const defaultState: IBackendState = {
     error: false,
   },
   environment: {
-    os: getOs(),
+    os: 'linux',
     osVersion: '',
     arch: '',
     manufacturerDetails: undefined,
@@ -81,7 +81,7 @@ export default createModel<RootModel>()({
     async init(_: void, state) {
       dispatch.backend.set({
         initialized: true,
-        environment: { ...state.backend.environment, portal: browser.isPortal },
+        environment: { ...state.backend.environment, os: getOs(), portal: browser.isPortal },
       })
     },
     async environment(_: void, state) {

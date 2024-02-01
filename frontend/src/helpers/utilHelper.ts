@@ -47,6 +47,19 @@ export function containsIpAddress(url: URL): boolean {
   return REGEX_VALID_IP.test(url.hostname)
 }
 
+// Remove an object from an array by object value and return it without modifying the original array
+export function removeObject<T>(array: T[], callback: (item: T) => boolean): [T | undefined, T[]] {
+  const index = array.findIndex(callback)
+
+  if (index !== -1) {
+    const newArray = [...array]
+    const [removedElement] = newArray.splice(index, 1)
+    return [removedElement, newArray]
+  }
+
+  return [undefined, array]
+}
+
 export function createMemoDebugger(componentName) {
   return (prevProps, nextProps) => {
     Object.keys(prevProps).forEach(key => {

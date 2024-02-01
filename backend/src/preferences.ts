@@ -10,7 +10,7 @@ export class Preferences {
     cliVersion: '',
     cliConfigVersion: undefined,
     autoUpdate: false,
-    openAtLogin: true,
+    openAtLogin: !environment.isDev,
     remoteUIOverride: false,
     disableLocalNetwork: !environment.isHeadless,
     disableDeepLinks: false,

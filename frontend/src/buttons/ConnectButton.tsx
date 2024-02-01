@@ -14,7 +14,7 @@ export type ConnectButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> &
   permissions?: IPermission[]
   preventDefault?: boolean
   all?: boolean
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onClick?: (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => void
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
@@ -35,7 +35,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
 
-  let clickHandler = (event?: React.MouseEvent<HTMLButtonElement>, forceStop?: boolean) => {
+  let clickHandler = (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
+    event?.stopPropagation()
+    event?.preventDefault()
+
     if (preventDefault) {
       event && onClick?.(event)
       return

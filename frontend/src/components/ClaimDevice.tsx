@@ -3,8 +3,9 @@ import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
-import { TextField } from '@mui/material'
 import { ConfirmButton } from '../buttons/ConfirmButton'
+import { TextField } from '@mui/material'
+import { Icon } from '../components/Icon'
 import { spacing } from '../styling'
 
 const CLAIM_CODE_LENGTH = 8
@@ -57,26 +58,33 @@ export function ClaimDevice() {
         onChange={handleChange}
         InputProps={{
           endAdornment: (
-            <ConfirmButton
-              ref={buttonRef}
-              title="Claim"
-              icon="check"
+            <Icon
+              name={claiming ? 'spinner-third' : 'check'}
               size="base"
               type="solid"
-              confirm={organization.id !== user.id}
               color={claiming || !valid ? 'grayDark' : 'success'}
-              loading={claiming}
-              disabled={claiming || !valid}
-              onClick={() => devices.claimDevice({ code, redirect: true })}
-              confirmProps={{
-                title: `Claiming for ${organization.name}`,
-                action: 'Ok',
-                children: 'You are claiming this device for an organization instead of yourself.',
-              }}
+              spin={!!claiming}
+              fixedWidth
             />
           ),
         }}
       />
+      <ConfirmButton
+        ref={buttonRef}
+        size="small"
+        variant="contained"
+        confirm={organization.id !== user.id}
+        color="primary"
+        disabled={claiming || !valid}
+        onClick={() => devices.claimDevice({ code, redirect: true })}
+        confirmProps={{
+          title: `Claiming for ${organization.name}`,
+          action: 'Ok',
+          children: 'You are claiming this device for an organization instead of yourself.',
+        }}
+      >
+        {claiming ? 'Claiming' : 'Claim'}
+      </ConfirmButton>
     </form>
   )
 }
@@ -85,7 +93,8 @@ const useStyles = makeStyles({
   form: {
     width: 160,
     display: 'flex',
-    '& .MuiIconButton-root': { marginRight: spacing.xs },
+    marginBottom: spacing.xs,
+    '& svg': { marginRight: spacing.md },
     '& .MuiFilledInput-root': { fontSize: 14 },
   },
 })

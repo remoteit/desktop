@@ -1,6 +1,6 @@
 {
   "name": "remoteit-headless",
-  "version": "3.25.0",
+  "version": "3.26.3",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "lodash.isequal": "^4.5.0",
     "module-alias": "^2.2.3",
     "netmask": "^2.0.2",
-    "network": "^0.6.1",
+    "network": "^0.7.0",
     "plist": "^3.1.0",
     "rimraf": "^3.0.2",
     "semver": "^7.5.4",

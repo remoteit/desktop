@@ -11,7 +11,7 @@ type Props = {
   layout: ILayout
 }
 
-const MIN_WIDTH = 300
+const MIN_WIDTH = 250
 const PADDING = 9
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => {
@@ -22,8 +22,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
   const [width, setWidth] = useState<number>(panelWidth)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
   const [grab, setGrab] = useState<boolean>(false)
-
-  const css = useStyles()
+  const css = useStyles({ layout })
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
@@ -75,7 +74,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
 
   return (
     <>
-      <div className={css.panel} style={{ minWidth: width, width }} ref={primaryRef}>
+      <div className={classnames(css.panel, css.primary)} style={{ minWidth: width, width }} ref={primaryRef}>
         <Header />
         {primary}
       </div>
@@ -94,18 +93,31 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
   )
 }
 
+type StyleProps = {
+  layout: ILayout
+}
+
 const useStyles = makeStyles(({ palette }) => ({
-  panel: {
+  panel: ({ layout }: StyleProps) => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
     contain: 'content',
-  },
-  secondary: {
+    // for iOS mobile
+    paddingTop: layout.insets?.topPx,
+    paddingBottom: layout.showBottomMenu ? 0 : layout.insets?.bottomPx,
+  }),
+  primary: ({ layout }: StyleProps) => ({
+    // for iOS mobile
+    paddingLeft: layout.hideSidebar ? layout.insets?.leftPx : 0,
+  }),
+  secondary: ({ layout }: StyleProps) => ({
     flexGrow: 1,
     flexShrink: 10,
     paddingTop: spacing.md,
-  },
+    // for iOS mobile
+    paddingRight: layout.insets?.rightPx,
+  }),
   anchor: {
     position: 'relative',
     height: '100%',

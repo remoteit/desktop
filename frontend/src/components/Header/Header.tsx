@@ -10,6 +10,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { getDeviceModel } from '../../selectors/devices'
+import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -21,15 +22,16 @@ import { spacing } from '../../styling'
 import { Title } from '../Title'
 import { Pre } from '../Pre'
 
-export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
+export const Header: React.FC = () => {
   const mobileGoBack = useMobileBack()
-  const { searched, canNavigate, permissions, layout } = useSelector((state: ApplicationState) => {
+  const { searched, canNavigate, permissions, layout, serviceList } = useSelector((state: ApplicationState) => {
     const deviceModel = getDeviceModel(state)
     return {
       selected: state.ui.selected,
       searched: deviceModel.searched, // debug make true
       canNavigate: state.backend.canNavigate,
       permissions: selectPermissions(state),
+      serviceList: !!deviceModel.applicationTypes?.length,
       layout: state.ui.layout,
     }
   })
@@ -39,18 +41,26 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const manager = permissions?.includes('MANAGE')
   const css = useStyles()
+  const manager = permissions?.includes('MANAGE')
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
   const isRootMenu = menu === location.pathname
 
   return (
     <>
       <div className={css.header}>
-        {sidebarHidden && (layout.hideSidebar ? isRootMenu : true) && menu !== '/add' && (
+        {(layout.hideSidebar || browser.isMobile) && (
+          <>
+            <Route path="/add" exact>
+              <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+            </Route>
+            {!isRootMenu && <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />}
+          </>
+        )}
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
-        {!(showSearch || searched) && browser.isElectron && (
+        {!(showSearch || searched) && browser.isElectron && !layout.hideSidebar && (
           <>
             <IconButton
               title="Back"
@@ -70,14 +80,6 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
               size="md"
               color={canNavigate.canGoForward ? 'grayDarker' : 'grayLight'}
             />
-          </>
-        )}
-        {!browser.isElectron && layout.hideSidebar && (
-          <>
-            <Route path="/add" exact>
-              <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
-            </Route>
-            {!isRootMenu && <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />}
           </>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
@@ -102,7 +104,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
               <FilterButton />
               {!mobile && <ColumnsButton />}
             </Route>
-            {manager && (
+            {manager && !serviceList && (
               <Switch>
                 <Route path="/devices" exact>
                   <IconButton to="/devices/select" icon="check-square" title="Show Select" />
@@ -117,6 +119,9 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
                 <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
               </Route>
             )}
+            <Route path="/devices/:deviceID/:serviceID?">
+              <HeaderDeviceOptionMenu />
+            </Route>
           </>
         )}
       </div>

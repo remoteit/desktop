@@ -1,5 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { emit } from '../services/Controller'
+import { StatusBar, Style } from '@capacitor/status-bar'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
@@ -12,6 +13,7 @@ import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_STATES = [
+  'apis',
   'guides',
   'panelWidth',
   'poppedBubbles',
@@ -29,12 +31,20 @@ const SAVED_STATES = [
   'updateNoticeCleared',
   'deviceTimeSeries',
   'serviceTimeSeries',
+  'showDesktopNotice',
+  'mobileWelcome',
 ]
 
 export type UIState = {
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
   testUI?: 'ON' | 'HIGHLIGHT'
+  apis: {
+    switchApi?: IPreferences['switchApi']
+    apiGraphqlURL?: IPreferences['apiGraphqlURL']
+    webSocketURL?: IPreferences['webSocketURL']
+    apiURL?: IPreferences['apiURL']
+  }
   layout: ILayout
   silent: string | null
   selected: IDevice['id'][]
@@ -95,19 +105,23 @@ export type UIState = {
   deviceTimeSeries: ITimeSeriesOptions
   serviceTimeSeries: ITimeSeriesOptions
   connectThisDevice: boolean
+  mobileWelcome: boolean
+  showDesktopNotice: boolean
 }
 
 export const defaultState: UIState = {
   themeMode: 'system',
   themeDark: isDarkMode(),
   testUI: undefined,
+  apis: {},
   layout: {
     mobile: false,
     showOrgs: false,
     hideSidebar: false,
     singlePanel: false,
     sidePanelWidth: SIDEBAR_WIDTH,
-    insets: { top: 0, left: 0, bottom: 0, right: 0 },
+    showBottomMenu: false,
+    insets: { top: 0, left: 0, bottom: 0, right: 0, topPx: '', bottomPx: '', leftPx: '', rightPx: '' },
   },
   silent: null,
   selected: [],
@@ -125,8 +139,19 @@ export const defaultState: UIState = {
   sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
-  columns: ['deviceName', 'status', 'timeSeries', 'tags', 'services'],
-  columnWidths: { tags: 120 },
+  columns: [
+    'deviceName',
+    'status',
+    'deviceTimeSeries',
+    'tags',
+    'services',
+    'serviceName',
+    'serviceState',
+    'serviceStatus',
+    'serviceAction',
+    'serviceTimeSeries',
+  ],
+  columnWidths: {},
   collapsed: ['recent'],
   limitsOverride: {},
   serviceContextMenu: undefined,
@@ -175,29 +200,32 @@ export const defaultState: UIState = {
   deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', length: 7 },
   serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', length: 7 },
   connectThisDevice: false,
+  mobileWelcome: true,
+  showDesktopNotice: true,
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init() {
+      console.log('UI INIT')
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()
-      console.log('UI INIT')
     },
     async restoreState(_: void, state) {
       let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `ui-${key}`)
-        if (value) {
+        if (value !== null) {
           if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
           else states[key] = value
         }
       })
       console.log('RESTORE UI STATE', states)
+      states = migrateColumnStates(states)
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
     },
@@ -209,12 +237,14 @@ export default createModel<RootModel>()({
     },
     async setTheme(themeMode: UIState['themeMode'] | undefined, state) {
       themeMode = themeMode || state.ui.themeMode
+      const themeDark = isDarkMode(themeMode)
       dispatch.ui.setPersistent({ themeMode })
-      dispatch.ui.set({ themeDark: isDarkMode(themeMode) })
+      dispatch.ui.set({ themeDark })
+      if (browser.isAndroid) StatusBar.setStyle({ style: themeDark ? Style.Dark : Style.Light })
     },
     async resizeColumn(params: { id: string; width: number }, state) {
       const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }
-      console.log('SET COLUMN WIDTHS', { columnWidths })
+      console.log('SET COLUMN WIDTHS', columnWidths)
       dispatch.ui.setPersistent({ columnWidths })
     },
     async guide({ guide, ...props }: ILookup<any>, state) {
@@ -267,7 +297,7 @@ export default createModel<RootModel>()({
     async setPersistent(params: ILookup<any>, state) {
       dispatch.ui.set(params)
       Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
+        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key])
       })
     },
     async deprecated(_: void, state) {
@@ -308,4 +338,13 @@ export function selectPriorityGuide(state: ApplicationState, guide: string, star
   }
   if (state.user.created < startDate) active = false
   return { ...result, active }
+}
+
+function migrateColumnStates(states: ILookup<any>): ILookup<any> {
+  if (!states.columns || states.columns.includes('serviceName')) return states
+  console.log('MIGRATE COLUMN STATES')
+  return {
+    ...states,
+    columns: [...states.columns, 'serviceName', 'serviceStatus', 'serviceState', 'serviceAction', 'serviceTimeSeries'],
+  }
 }

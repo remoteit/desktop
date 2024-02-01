@@ -4,7 +4,7 @@ import {
   PROFESSIONAL_PLAN_ID,
   BUSINESS_PLAN_ID,
   ENTERPRISE_PLAN_ID,
-  SATELLITE_PLAN_ID,
+  FLEET_PLAN_ID,
 } from '../models/plans'
 import { useSelector } from 'react-redux'
 import { selectRemoteitLicense } from '../selectors/organizations'
@@ -28,10 +28,10 @@ export const PlanActionChip: React.FC<ChipProps> = ({ ...props }) => {
       props.label = 'Upgrade'
       break
     case BUSINESS_PLAN_ID:
+    case FLEET_PLAN_ID:
       props.label = 'Update'
       break
     case ENTERPRISE_PLAN_ID:
-    case SATELLITE_PLAN_ID:
     default:
       return null
   }

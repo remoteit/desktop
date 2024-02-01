@@ -12,10 +12,24 @@ export const FilterButton: React.FC = () => {
     modified: selectIsFiltered(state),
   }))
   const { ui } = useDispatch<Dispatch>()
-  const css = useStyles({ open })
   const icon = open ? 'times' : 'filter'
   return (
-    <Tooltip title={open ? 'Hide Filters' : 'Show Filters'} className={css.button} arrow>
+    <Tooltip
+      placement="left"
+      title={open ? 'Hide Filters' : 'Show Filters'}
+      sx={{
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: open ? 'grayLighter.main' : 'white.main',
+        borderBottomWidth: 0,
+        paddingBottom: 2,
+        marginTop: 0.5,
+        bgcolor: open ? 'white.main' : undefined,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+      }}
+      arrow
+    >
       <IconButton
         onClick={event => {
           event.stopPropagation()
@@ -28,16 +42,3 @@ export const FilterButton: React.FC = () => {
     </Tooltip>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  button: ({ open }: { open: boolean }) => ({
-    borderTop: `1px solid ${open ? palette.grayLighter.main : palette.white.main}`,
-    borderRight: `1px solid ${open ? palette.grayLighter.main : palette.white.main}`,
-    borderLeft: `1px solid ${open ? palette.grayLighter.main : palette.white.main}`,
-    paddingBottom: 16,
-    marginTop: 4,
-    background: open ? palette.white.main : undefined,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  }),
-}))

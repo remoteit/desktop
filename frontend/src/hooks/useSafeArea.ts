@@ -8,17 +8,23 @@ type UseSafeAreaResult = {
   statusBarHeight: number
 }
 
+const defaultInsets = { top: 0, left: 0, bottom: 0, right: 0, topPx: '', bottomPx: '', leftPx: '', rightPx: '' }
+
 const useSafeArea = (): UseSafeAreaResult => {
-  const [insets, setInsets] = useState<ILayout['insets']>({ top: 0, left: 0, bottom: 0, right: 0 })
+  const [insets, setInsets] = useState<ILayout['insets']>(defaultInsets)
   const [statusBarHeight, setStatusBarHeight] = useState<number>(0)
 
   useEffect(() => {
     if (!browser.isMobile) return
 
-    const adjustInsets = (insets: ILayout['insets']) => ({
+    const adjustInsets = (insets: Omit<ILayout['insets'], 'topPx' | 'bottomPx' | 'leftPx' | 'rightPx'>) => ({
       ...insets,
       top: insets.top - spacing.sm,
-      bottom: insets.bottom - spacing.sm,
+      bottom: insets.bottom - spacing.xs,
+      topPx: insets.top - spacing.sm + 'px',
+      bottomPx: insets.bottom - spacing.xs + 'px',
+      leftPx: insets.left + 'px',
+      rightPx: insets.right + 'px',
     })
 
     SafeArea.addListener('safeAreaChanged', data => {

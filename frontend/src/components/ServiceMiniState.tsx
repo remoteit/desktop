@@ -2,8 +2,8 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Box, alpha, useTheme } from '@mui/material'
 import { spacing, fontSizes, Color, radius } from '../styling'
+import { ServiceLinkIcon } from './ServiceLinkIcon'
 import { getLicenseChip } from './LicenseChip'
-import { Icon } from './Icon'
 import classnames from 'classnames'
 
 interface Props {
@@ -19,7 +19,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
 
   let color: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
-  let icon: React.ReactNode = null
 
   if (state !== 'inactive' && connection) {
     if (connection.connecting || connection.stopping) state = 'transition'
@@ -57,15 +56,11 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
     onClick && onClick({ el: event.currentTarget, serviceID: service.id })
   }
 
-  if (service.link?.enabled) {
-    icon = <Icon name={service.link.url.startsWith('http') ? 'globe' : 'key'} type="solid" size="xxxs" inline />
-  }
-
   return (
     <Box
       component="span"
       className={classnames(onClick && css.clickable, css.indicator, className)}
-      onMouseDown={onMouseDown}
+      onMouseDown={onClick && onMouseDown}
     >
       <Box
         component="span"
@@ -76,15 +71,13 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
         }}
       >
         {service.type}
-        {icon}
+        <ServiceLinkIcon service={service} type="solid" size="xxxs" inline />
       </Box>
     </Box>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  button: { padding: '8px 0' },
-  icon: { padding: '0 0 8px' },
   indicator: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -99,10 +92,6 @@ const useStyles = makeStyles(({ palette }) => ({
       marginRight: 1,
       '& svg': { marginRight: 2 },
     },
-  },
-  background: {
-    display: 'flex',
-    alignItems: 'center',
   },
   clickable: {
     cursor: 'pointer',

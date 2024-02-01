@@ -5,6 +5,7 @@ import { ColorChip } from './ColorChip'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '@common/nameHelper'
 import { REGEX_FIRST_PATH } from '../constants'
+import { ServiceLinkIcon } from './ServiceLinkIcon'
 import { Tooltip } from '@mui/material'
 
 type Props = {
@@ -13,13 +14,13 @@ type Props = {
   device?: IDevice
   shared?: boolean
   inline?: boolean
+  children?: React.ReactNode
 }
 
-export const DeviceName: React.FC<Props> = ({ connection, service, device, inline }) => {
+export const DeviceName: React.FC<Props> = ({ connection, service, device, inline, children }) => {
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
-  const unConfigurable = device && !device.configurable
   const unlicensed = instance?.license === 'EVALUATION' || instance?.license === 'UNLICENSED'
 
   let name = ''
@@ -33,6 +34,7 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
 
   return (
     <Title inline={inline} offline={service?.state === 'inactive'}>
+      {children}
       {name || 'No device found'}
       {unlicensed && (
         <Tooltip title="Unlicensed" placement="top" arrow>
@@ -41,25 +43,18 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
           </sup>
         </Tooltip>
       )}
-      {unConfigurable && (
-        <Tooltip title="Not remote configurable" placement="top" arrow>
-          <sup>
-            <Icon name="cloud-slash" size="xxs" type="regular" fixedWidth />
-          </sup>
-        </Tooltip>
-      )}
       {device?.newDevice && (
         <sup>
           <ColorChip label="NEW" size="small" color="success" variant="contained" />
         </sup>
       )}
-      {/* {device?.shared && (
+      {device?.shared && (
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
           <sup>
             <Icon name="user-group" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
-      )} */}
+      )}
     </Title>
   )
 }

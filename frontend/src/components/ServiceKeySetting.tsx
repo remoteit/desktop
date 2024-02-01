@@ -5,7 +5,7 @@ import { Typography, Collapse, ButtonBase, Box, Stack } from '@mui/material'
 import { ListItemSetting } from './ListItemSetting'
 import { ListItemQuote } from './ListItemQuote'
 import { CopyCodeBlock } from './CopyCodeBlock'
-import { ConfirmButton } from '../buttons/ConfirmButton'
+import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { ColorChip } from './ColorChip'
@@ -110,7 +110,7 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                   <img src="https://badge.fury.io/js/%40remote.it%2Fsocket-link.svg" />
                 </ButtonBase>
               </Stack>
-              <ConfirmButton
+              <ConfirmIconButton
                 confirm
                 confirmProps={{
                   color: 'error',

@@ -1,15 +1,20 @@
 import React from 'react'
-import { ColumnsDrawer } from './ColumnsDrawer'
-import { FilterDrawer } from './FilterDrawer'
 import { Container } from './Container'
+import { DevicesActionBar } from './DevicesActionBar'
+import { DevicesApplicationsBar } from './DevicesApplicationsBar'
 
-export const DevicesHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[]; children?: React.ReactNode }
+
+export const DevicesHeader: React.FC<Props> = ({ select, selected = [], devices, children }) => {
   return (
     <Container
-      sidebar={
+      integrated
+      gutterBottom
+      bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
+      header={
         <>
-          <FilterDrawer />
-          <ColumnsDrawer />
+          <DevicesActionBar select={select} selected={selected} devices={devices} />
+          <DevicesApplicationsBar />
         </>
       }
     >

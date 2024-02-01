@@ -18,9 +18,9 @@ import { LoadMore } from './LoadMore'
 import { spacing, fontSizes } from '../styling'
 
 export interface DeviceListProps {
-  connections: { [deviceID: string]: IConnection[] }
   attributes: Attribute[]
   required: Attribute
+  connections: { [deviceID: string]: IConnection[] }
   columnWidths: ILookup<number>
   fetching?: boolean
   devices?: IDevice[]
@@ -30,12 +30,12 @@ export interface DeviceListProps {
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
+  attributes,
+  required,
   devices = [],
   connections = {},
-  attributes,
   columnWidths,
   fetching,
-  required,
   restore,
   select,
   selected = [],
@@ -43,6 +43,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ attributes, required, columnWidths, mobile })
+
   return (
     <>
       <List className={classnames(css.list, css.grid)} disablePadding>
@@ -63,7 +64,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
             }
             dispatch.ui.set({ selected: select })
           }
-          const row = (
+          return (
             <DeviceListContext.Provider
               key={device.id}
               value={{ device, connections: connections[device.id], required, attributes }}
@@ -74,39 +75,33 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 selected={isSelected}
                 onSelect={onSelect}
                 mobile={mobile}
+                onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
               />
+              {!index && (
+                <GuideBubble
+                  enterDelay={400}
+                  guide="deviceList"
+                  placement="bottom"
+                  startDate={new Date('2022-09-20')}
+                  queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
+                  instructions={
+                    <>
+                      <Typography variant="h3" gutterBottom>
+                        <b>Access a device</b>
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        A device can host it's own applications (services), or it can host another service on it's local
+                        network.
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        Select a device to connect to a service, or configure it.
+                      </Typography>
+                    </>
+                  }
+                />
+              )}
             </DeviceListContext.Provider>
           )
-
-          if (!index)
-            return (
-              <GuideBubble
-                key={device.id}
-                enterDelay={400}
-                guide="deviceList"
-                placement="bottom"
-                startDate={new Date('2022-09-20')}
-                queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
-                instructions={
-                  <>
-                    <Typography variant="h3" gutterBottom>
-                      <b>Access a device</b>
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      A device can host it's own applications (services), or it can host another service on it's local
-                      network.
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      Select a device to connect to a service, or configure it.
-                    </Typography>
-                  </>
-                }
-              >
-                {row}
-              </GuideBubble>
-            )
-
-          return row
         })}
         <LoadMore />
       </List>
@@ -114,8 +109,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     </>
   )
 }
-
-export const DeviceListMemo = React.memo(DeviceList /* , createMemoDebugger('DeviceList') */)
 
 type StyleProps = {
   attributes: Attribute[]

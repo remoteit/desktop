@@ -9,7 +9,7 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { selectRemoteitLicense, selectOrganization, selectLicenses } from '../selectors/organizations'
+import { selectRemoteitLicense, selectOrganization, selectLicenses, selectPlan } from '../selectors/organizations'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
@@ -26,7 +26,7 @@ export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
-export const SATELLITE_PLAN_ID = '949bc12d-e340-11ed-9dd4-06cb97c82db3'
+export const FLEET_PLAN_ID = 'ce579369-9deb-11ee-9f81-0a5b07a7ad3f'
 export const ENTERPRISE_PLAN_ID = 'b44f92a6-a7b9-11eb-b094-02a962787033'
 
 export const LicenseLookup: ILicenseLookup[] = [
@@ -41,11 +41,6 @@ export const LicenseLookup: ILicenseLookup[] = [
     managePath: '/account/plans',
   },
 ]
-
-const DEVICES_LOOKUP = {
-  [PROFESSIONAL_PLAN_ID]: { base: 5, perUser: 3 },
-  [BUSINESS_PLAN_ID]: { base: 5, perUser: 10 },
-}
 
 const defaultLicense = LicenseLookup[0]
 
@@ -106,6 +101,11 @@ export default createModel<RootModel>()({
                 amount
                 currency
                 interval
+              }
+              limits {
+                name
+                value
+                scale
               }
             }          
           }`
@@ -233,11 +233,13 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getFreeLicenses(state: ApplicationState) {
+export function getFreeUsers(state: ApplicationState) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
+  const plan = selectPlan(state)
+  const totals = deviceUserTotal(purchased, plan)
   const used = selectOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 1)
-  return Math.max(purchased - used, 0)
+  return Math.max(totals.users - used, 0)
 }
 
 function isEnterprise(state: ApplicationState) {
@@ -343,8 +345,11 @@ export function humanizeDays(value?: string) {
   return humanize(milliseconds, { round: true, largest: 1 })
 }
 
-export function devicesTotal(quantity: number, id?: string) {
-  if (!id) return 0
-  const plan = DEVICES_LOOKUP[id] || { base: 5, perUser: 0 }
-  return plan.base + quantity * plan.perUser
+export function deviceUserTotal(quantity: number, plan?: IPlan) {
+  const defaults = { devices: null, users: null }
+  if (!plan) return defaults
+  const users = plan.limits?.find(l => l.name === 'org-users')
+  const devices = plan.limits?.find(l => l.name === 'iot-devices')
+  if (!users || !devices) return defaults
+  return { devices: devices.value + quantity * devices.scale, users: users.value + quantity * users.scale }
 }

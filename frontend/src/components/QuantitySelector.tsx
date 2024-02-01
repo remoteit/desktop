@@ -59,6 +59,8 @@ export const useStyles = makeStyles(({ palette }) => ({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
     '& > .MuiButton-root': { height: 30, borderRadius: 0 },
     '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
     '& > .MuiButton-root:first-of-type': { borderTopLeftRadius: spacing.md, borderBottomLeftRadius: spacing.md },

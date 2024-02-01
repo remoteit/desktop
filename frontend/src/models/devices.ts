@@ -24,14 +24,14 @@ import {
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, selectById } from '../selectors/devices'
+import { getAllDevices, selectDevice, getDeviceModel, selectById, selectActiveColumns } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { ApplicationState } from '../store'
+import { store, ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 
-const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
+const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'applicationTypes', 'sortServiceOption']
 
 type IDeviceState = {
   all: IDevice[]
@@ -46,9 +46,10 @@ type IDeviceState = {
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
-  tag: ITagFilter | undefined
+  tag?: ITagFilter
   owner: 'all' | 'me' | 'others'
-  platform: number[] | undefined
+  platform?: number[]
+  applicationTypes?: number[]
   size: number
   from: number
   eventsUrl: string
@@ -72,6 +73,7 @@ export const defaultState: IDeviceState = {
   tag: undefined,
   owner: 'all',
   platform: undefined,
+  applicationTypes: undefined,
   size: 50,
   from: 0,
   eventsUrl: '',
@@ -92,23 +94,28 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      let states = { accountId }
+      console.log('INIT DEVICES', accountId)
+      let states = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `device-${accountId}-${key}`)
         if (value) states[key] = value
       })
-      console.log('RESTORE DEVICE STATES', states)
       await dispatch.devices.set({ ...states, accountId })
+      console.log('set devices', states)
     },
 
     async fetchList(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      const deviceModel = getDeviceModel(state, accountId)
-      const initialize = !deviceModel.initialized
+      let deviceModel = getDeviceModel(state, accountId)
 
-      if (initialize) await dispatch.devices.init()
-      if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
+      if (!deviceModel.initialized) {
+        await dispatch.devices.init()
+        // Update the state object after initialization
+        state = store.getState()
+        deviceModel = getDeviceModel(state, accountId)
+      }
 
+      const columns = selectActiveColumns(state, accountId)
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, owner, filter, append, searched } = deviceModel
@@ -116,12 +123,15 @@ export default createModel<RootModel>()({
       const options: gqlOptions = {
         accountId,
         name: query,
+        columns,
         size: deviceModel.size,
         from: deviceModel.from,
         tag: deviceModel.tag,
         sort: deviceModel.sort,
         platform: deviceModel.platform,
-        timeSeries: state.ui.deviceTimeSeries,
+        deviceTimeSeries: state.ui.deviceTimeSeries,
+        serviceTimeSeries: state.ui.serviceTimeSeries,
+        applicationTypes: deviceModel.applicationTypes,
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
       }
@@ -144,15 +154,18 @@ export default createModel<RootModel>()({
 
     async fetchIfEmpty(_: void, state) {
       const deviceModel = getDeviceModel(state)
-      if (!deviceModel.initialized) await dispatch.devices.fetchList()
+      if (!deviceModel.initialized) {
+        await dispatch.devices.fetchList()
+        await dispatch.applicationTypes.fetch()
+      }
     },
 
     async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
       const accountId = selectActiveAccountId(state)
-
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
         ids,
+        columns: ['deviceName'],
         timeSeries: state.ui.deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)
@@ -211,7 +224,10 @@ export default createModel<RootModel>()({
 
       if (result) {
         result.thisDevice = result.thisDevice || thisDevice
-        if (newDevice) result.newDevice = true
+        if (newDevice) {
+          result.newDevice = true
+          dispatch.devices.incrementTotal(accountId)
+        }
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
         console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
@@ -235,6 +251,7 @@ export default createModel<RootModel>()({
         size: 0,
         from: 0,
         owner: true,
+        columns: [],
         accountId: selectActiveAccountId(state),
         tag: params.tag?.values.length ? params.tag : undefined,
       }
@@ -260,7 +277,11 @@ export default createModel<RootModel>()({
       try {
         const gqlResponse = await graphQLFetchDeviceList(options)
         const [gqlDevices, total, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLDeviceAdaptor({ gqlDevices, accountId: options.accountId })
+        const devices = graphQLDeviceAdaptor({
+          gqlDevices,
+          accountId: options.accountId,
+          serviceLoaded: !!options.applicationTypes?.length,
+        })
         return { devices, total, error }
       } catch (error) {
         await apiError(error)
@@ -272,12 +293,30 @@ export default createModel<RootModel>()({
       await graphQLRename(id, name)
     },
 
+    async addService({ deviceId, service }: { deviceId: string; service: IService }, state) {
+      let device = await selectDevice(state, undefined, deviceId)
+      device = structuredClone(device)
+      if (!device) return
+      device.services.push({ ...service, deviceID: deviceId })
+      dispatch.accounts.setDevice({ id: deviceId, device })
+    },
+
     async updateService({ id, set }: { id: string; set: Partial<IService> }, state) {
       let [_, device] = selectById(state, undefined, id)
       device = structuredClone(device)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === id)
+      if (index === -1) return
       for (const key in set) device.services[index][key] = set[key]
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
+
+    async removeService(id: string, state) {
+      let [_, device] = selectById(state, undefined, id)
+      device = structuredClone(device)
+      if (!device) return
+      const index = device.services.findIndex((s: IService) => s.id === id)
+      device.services.splice(index, 1)
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
@@ -318,8 +357,10 @@ export default createModel<RootModel>()({
       })
       if (result !== 'ERROR') {
         const id = result?.data?.data?.addService?.id
+        console.log('CLOUD ADD SERVICE', { id, form })
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
+          dispatch.devices.addService({ deviceId, service: { ...form, id } })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
       }
@@ -358,7 +399,15 @@ export default createModel<RootModel>()({
         silent: serviceId,
         redirect: `/devices/${deviceId}/details`,
       })
-      await graphQLRemoveService(serviceId)
+      const result = await graphQLRemoveService(serviceId)
+
+      if (result !== 'ERROR') {
+        await dispatch.devices.cleanupService(serviceId)
+        dispatch.ui.set({
+          successMessage: `Service was successfully removed.`,
+        })
+      }
+
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: undefined })
     },
 
@@ -408,6 +457,7 @@ export default createModel<RootModel>()({
         if (device?.id) {
           // fixme should fetch single and in memory sort
           await dispatch.devices.fetchList() // fetch all so that the sorting is correct
+          await dispatch.applicationTypes.fetch()
           dispatch.ui.set({
             redirect: redirect ? `/devices/${device.id}` : undefined,
             successMessage: `'${device.name}' was successfully registered!`,
@@ -506,6 +556,7 @@ export default createModel<RootModel>()({
       const result = await graphQLDeleteDevices(deviceIds)
       if (result !== 'ERROR') {
         await dispatch.ui.set({ selected: [] })
+        await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
           successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully deleted.`,
         })
@@ -557,12 +608,25 @@ export default createModel<RootModel>()({
       await dispatch.connections.fetch()
     },
 
+    async cleanupService(serviceId: string) {
+      await dispatch.devices.removeService(serviceId)
+      await dispatch.connections.clear(serviceId)
+      await dispatch.networks.clearById(serviceId)
+    },
+
+    async incrementTotal(accountId: string, state) {
+      accountId = accountId || selectActiveAccountId(state)
+      const total = getDeviceModel(state, accountId).total + 1
+      console.log('INCREMENT TOTAL', { total, accountId })
+      await dispatch.devices.set({ total, accountId })
+    },
+
     async setPersistent(params: ILookup<any>, state) {
       const accountId = params.accountId || selectActiveAccountId(state)
       Object.keys(params).forEach(key => {
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${accountId}-${key}`, params[key] || '')
       })
-      dispatch.devices.set(params)
+      await dispatch.devices.set(params)
     },
 
     async set(params: Partial<IDeviceState>, state) {
@@ -573,7 +637,7 @@ export default createModel<RootModel>()({
         deviceState[key] = params[key]
       })
 
-      dispatch.devices.rootSet({ [accountId]: deviceState })
+      await dispatch.devices.rootSet({ [accountId]: deviceState })
     },
   }),
 
@@ -582,10 +646,8 @@ export default createModel<RootModel>()({
       state = { ...defaultAccountState }
       return state
     },
-    rootSet(state: IDeviceAccountState, params: ILookup<any>) {
-      Object.keys(params).forEach(key => {
-        state[key] = params[key]
-      })
+    rootSet(state: IDeviceAccountState, params: IDeviceAccountState) {
+      Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },

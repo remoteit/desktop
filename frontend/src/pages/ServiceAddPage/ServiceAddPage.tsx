@@ -30,8 +30,8 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
   return (
     <Container
       gutterBottom
-      bodyProps={{ gutterTop: true }}
-      integrated
+      bodyProps={{ verticalOverflow: true }}
+      backgroundColor="grayLighter"
       header={
         <>
           <Typography variant="h1">
@@ -49,19 +49,22 @@ export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
           Desktop currently supports a maximum of {setupServicesLimit} services.
         </Typography>
       ) : (
-        <ServiceForm
-          adding
-          thisDevice={!!device?.thisDevice}
-          editable={device?.configurable || !!device?.thisDevice}
-          disabled={!device?.permissions.includes('MANAGE')}
-          onSubmit={async form => {
-            dispatch.ui.set({ setupAddingService: true })
-            device?.configurable && (await dispatch.devices.cloudAddService({ form, deviceId: device?.id }))
-            dispatch.ui.set({ setupAddingService: false })
-          }}
-          onChange={form => setForward(isRelay(form))}
-          onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
-        />
+        <Gutters size="md" bottom={null}>
+          <ServiceForm
+            adding
+            thisDevice={!!device?.thisDevice}
+            targetPlatform={device?.targetPlatform}
+            editable={device?.configurable || !!device?.thisDevice}
+            disabled={!device?.permissions.includes('MANAGE')}
+            onSubmit={async form => {
+              dispatch.ui.set({ setupAddingService: true })
+              device?.configurable && (await dispatch.devices.cloudAddService({ form, deviceId: device?.id }))
+              dispatch.ui.set({ setupAddingService: false })
+            }}
+            onChange={form => setForward(isRelay(form))}
+            onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
+          />
+        </Gutters>
       )}
     </Container>
   )

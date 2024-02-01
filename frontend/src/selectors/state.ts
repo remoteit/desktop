@@ -7,6 +7,7 @@ export const getUserId = (state: ApplicationState) => state.auth.user?.id || ''
 export const getMemberships = (state: ApplicationState) => state.accounts.membership
 export const optionalAccountId = (_: ApplicationState, accountId?: string) => accountId
 export const getActiveId = (state: ApplicationState) => state.accounts.activeId
+export const getPlans = (state: ApplicationState) => state.plans.plans
 export const getPlansTests = (state: ApplicationState) => state.plans.tests
 export const getLimitsOverride = (state: ApplicationState) => state.ui.limitsOverride
 export const getOrganizations = (state: ApplicationState) => state.organization.accounts
@@ -23,6 +24,7 @@ export const getConnections = (state: ApplicationState) => state.connections.all
 export const optionalService = (_: ApplicationState, service?: IService) => service
 
 export const getConnectionDefaults = (state: ApplicationState) => state.user.attributes?.connectionDefaults || {}
+export const getApplicationTypes = (state: ApplicationState) => state.applicationTypes
 export const getApplicationParams = (_: ApplicationState, service?: IService, connection?: IConnection) => ({
   service,
   connection,

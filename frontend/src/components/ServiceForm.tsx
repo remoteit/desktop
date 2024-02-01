@@ -27,6 +27,7 @@ import { Pre } from './Pre'
 
 export type ServiceFormProps = {
   service?: IService
+  targetPlatform?: IDevice['targetPlatform']
   thisDevice: boolean
   editable: boolean
   disabled?: boolean
@@ -38,6 +39,7 @@ export type ServiceFormProps = {
 
 export const ServiceForm: React.FC<ServiceFormProps> = ({
   service,
+  targetPlatform,
   thisDevice,
   editable,
   disabled,
@@ -115,6 +117,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           {editable && (
             <>
               <ServiceFormApplications
+                applicationTypes={applicationTypes}
+                targetPlatform={targetPlatform}
                 selected={form.typeID}
                 disabled={!editable}
                 onSelect={type => {
@@ -133,6 +137,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   setUrlField(nextForm)
                 }}
               />
+              {appType.description && (
+                <ListItem className={css.field}>
+                  <Typography variant="caption" component="div" sx={{ margin: 1 }}>
+                    {appType.description}
+                  </Typography>
+                </ListItem>
+              )}
               {thisDevice && (
                 <ListItem>
                   <Notice
@@ -327,7 +338,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           />
         </List>
       </AccordionMenuItem>
-      <Gutters size={adding ? undefined : null} top="lg">
+      <Gutters size="xxs" top="lg">
         <Button
           type="submit"
           variant="contained"
@@ -352,7 +363,7 @@ export const useStyles = makeStyles(({ breakpoints }) => ({
       width: '50%',
       maxWidth: 400,
     },
-    '& > .MuiTypography-root': {
+    '& > span.MuiTypography-root': {
       width: `calc(50% - ${spacing.lg}px)`,
       marginLeft: spacing.lg,
     },
@@ -361,7 +372,7 @@ export const useStyles = makeStyles(({ breakpoints }) => ({
     field: {
       flexDirection: 'column',
       '& > *': { width: '100%' },
-      '& > .MuiTypography-root': { margin: spacing.xs, width: '100%', marginBottom: spacing.md },
+      '& > span.MuiTypography-root': { margin: spacing.xs, width: '100%', marginBottom: spacing.md },
     },
   },
 }))

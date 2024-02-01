@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { useMediaQuery, Box, Divider, Theme } from '@mui/material'
+import { useMediaQuery, Typography, Box, Divider, Theme } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
@@ -42,10 +42,26 @@ export const AddPlatformPage: React.FC = () => {
           )}
         </Box>
         <Box className={css.box}>
-          {platformObj.installation?.command ? (
+          {platformObj.installation?.command && !platformObj.installation?.download ? (
             <AddDevice platform={platformObj} tags={platformTags} types={applicationTypes} redirect={redirect} />
           ) : (
-            <AddDownload platform={platformObj} />
+            <>
+              <AddDownload platform={platformObj} />
+              {platformObj.hasScreenView && (
+                <>
+                  <Typography variant="body2" color="textSecondary" paddingBottom={1}>
+                    Or use this registration code to manually claim the ScreenView app.
+                  </Typography>
+                  <AddDevice
+                    platform={platformObj}
+                    tags={platformTags}
+                    types={applicationTypes}
+                    redirect={redirect}
+                    minimal
+                  />
+                </>
+              )}
+            </>
           )}
         </Box>
       </Box>
@@ -60,7 +76,7 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: smallScreen ? 'center' : 'flex-end',
     maxWidth: 130,
     marginTop: spacing.md,
-    marginRight: spacing.xl,
+    marginRight: smallScreen ? 0 : spacing.xl,
     marginBottom: smallScreen ? spacing.lg : 0,
   }),
   box: ({ smallScreen }: any) => ({

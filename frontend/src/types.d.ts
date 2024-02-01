@@ -24,6 +24,7 @@ declare global {
 
   interface IDeviceListContext {
     device?: IDevice
+    service?: IService
     connections?: IConnection[]
     required?: Attribute
     attributes?: Attribute[]
@@ -81,8 +82,10 @@ declare global {
   }
   type ILimit = {
     name: string
+    base: number
     value: any
     actual: any
+    scale: number
     license: { id: string } | null
   }
 
@@ -133,6 +136,7 @@ declare global {
       description: string
     }
     prices?: IPrice[]
+    limits?: Omit<ILimit, 'base' | 'actual' | 'license'>[]
   }
 
   type IPrice = {
@@ -204,13 +208,14 @@ declare global {
   }
 
   type IDataOptions = {
-    application?: Application
+    mobile?: boolean
     device?: IDevice
     instance?: IInstance
     service?: IService
-    connection?: IConnection
     session?: ISession
+    connection?: IConnection
     connections?: IConnection[]
+    application?: Application
   }
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
@@ -223,10 +228,16 @@ declare global {
   }
 
   type ILayout = {
-    insets: SafeAreaInsets['insets']
+    insets: SafeAreaInsets['insets'] & {
+      topPx: string
+      bottomPx: string
+      leftPx: string
+      rightPx: string
+    }
     mobile: boolean
     showOrgs: boolean
     hideSidebar: boolean
+    showBottomMenu: boolean
     singlePanel: boolean
     sidePanelWidth: number
   }
@@ -259,6 +270,7 @@ declare module '@mui/material/styles' {
     alwaysWhite: ColorType
     darken: ColorType
     screen: ColorType
+    shadow: ColorType
     rpi: ColorType
     guide: ColorType
     test: ColorType
@@ -289,6 +301,7 @@ declare module '@mui/material/styles' {
     alwaysWhite?: ColorPartial
     darken?: ColorPartial
     screen?: ColorPartial
+    shadow?: ColorPartial
     rpi?: ColorPartial
     guide?: ColorPartial
     test?: ColorPartial

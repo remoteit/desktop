@@ -1,19 +1,18 @@
 import React from 'react'
-import { ApplicationState, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
 import { ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@mui/material'
-import { getColumns } from './Attributes'
-import { selectLimitsLookup } from '../selectors/organizations'
+import { selectAllActiveAttributes } from '../selectors/devices'
 import { defaultState } from '../models/ui'
 import { spacing } from '../styling'
 import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
-  const { selected, feature } = useSelector((state: ApplicationState) => ({
+  const { selected, attributes } = useSelector((state: ApplicationState) => ({
     selected: [...state.ui.columns],
-    feature: selectLimitsLookup(state),
+    attributes: selectAllActiveAttributes(state),
   }))
   const { ui, devices } = useDispatch<Dispatch>()
   const css = useStyles()
@@ -26,8 +25,6 @@ export const ColumnsDrawer: React.FC = () => {
     selected.splice(index, 1)
     ui.setPersistent({ columns: [...selected] })
   }
-
-  const attributes = getColumns(feature)
 
   const onReset = () => {
     ui.setPersistent({

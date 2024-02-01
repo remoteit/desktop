@@ -78,7 +78,6 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   }
 
   if (connection.error) {
-    console.log('DIAGRAM ERROR', connection.error)
     errorTypes = ['initiator', 'agent']
     if (connection.error.code === CLI_REACHABLE_ERROR_CODE) {
       errorTypes = ['relay', 'target']

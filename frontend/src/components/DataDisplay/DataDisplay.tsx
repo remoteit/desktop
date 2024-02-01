@@ -26,8 +26,10 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
               <span className={css.label}>
                 {attribute.label}:
                 {attribute.help && (
-                  <Tooltip title={attribute.help}>
-                    <Icon name="question-circle" size="sm" inline />
+                  <Tooltip title={attribute.help} placement="top" arrow>
+                    <sup>
+                      <Icon name="question-circle" size="xs" />
+                    </sup>
                   </Tooltip>
                 )}
               </span>

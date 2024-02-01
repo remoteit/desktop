@@ -62,7 +62,15 @@ export const Notice: React.FC<NoticeProps> = ({
         <span>{children}</span>
       </Box>
       {button}
-      {onClose && <IconButton name="times" onClick={onClose} color={solid ? 'alwaysWhite' : undefined} title="Close" />}
+      {onClose && (
+        <IconButton
+          name="times"
+          type="solid"
+          onClick={onClose}
+          color={solid ? 'alwaysWhite' : undefined}
+          title="Close"
+        />
+      )}
     </Paper>
   )
 }
@@ -83,7 +91,7 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: fullWidth ? 0 : spacing.md,
     marginBottom: gutterBottom ? spacing.md : 0,
     marginTop: gutterTop ? spacing.md : 0,
-    padding: `${spacing.sm}px ${spacing.md}px`,
+    padding: `${spacing.xs}px ${spacing.md}px`,
     display: 'flex',
     position: 'relative',
     fontWeight: 500,
@@ -96,6 +104,7 @@ const useStyles = makeStyles(({ palette }) => ({
     },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
+    '& .MuiButton-root': { marginTop: 5 },
   }),
   message: {
     flexGrow: 1,
@@ -105,5 +114,6 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    wordBreak: 'break-word',
   },
 }))

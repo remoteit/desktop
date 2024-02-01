@@ -45,7 +45,7 @@ export const OrganizationMembersPage: React.FC = () => {
           </Typography>
           {organization?.id && (
             <>
-              <SeatsSetting license={license} />
+              <SeatsSetting context="user" />
               <Gutters bottom={null}>
                 <Typography variant="body2" color="textSecondary">
                   Members will automatically have devices shared to them. &nbsp;

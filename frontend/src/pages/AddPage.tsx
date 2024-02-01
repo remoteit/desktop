@@ -3,26 +3,26 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
-import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
+import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Tooltip } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
+import { ScreenViewSetup } from '../components/ScreenViewSetup'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
+import { AndroidSetup } from '../components/AndroidSetup'
 import { ClaimDevice } from '../components/ClaimDevice'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const AddPage: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const { claiming, hasDemo, testUI } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
-    testUI: state.ui.testUI,
   }))
 
   return (
@@ -32,14 +32,13 @@ export const AddPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1" gutterBottom sx={{ marginRight: 4 }}>
-          <Title>What do you want to connect to?</Title>
+          <Title>What do you want to connect&nbsp;to?</Title>
         </Typography>
       }
     >
       <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" paddingX={{ xs: 1, sm: 4 }}>
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
-          <Divider />
           <ListItem
             button
             disableGutters
@@ -55,22 +54,21 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItem>
         </List>
+        <AndroidSetup className={classnames(css.list, css.smallList)} />
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
+        <ScreenViewSetup className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Claim a device</ListSubheader>
-          <Divider />
-          <ListItem>
+          <ListItem sx={{ paddingTop: 3 }} disablePadding>
             <ClaimDevice />
           </ListItem>
         </List>
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
           <ListSubheader disableGutters>Quick add Command</ListSubheader>
-          <Divider />
           <AddQuickPlatform />
         </List> */}
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
-          <Divider />
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
@@ -90,15 +88,14 @@ export const AddPage: React.FC = () => {
         </List>
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
-          <Divider />
           {[
             'raspberrypi',
             'linux',
             'docker',
+            'android',
             'nas',
             'openwrt',
             'firewalla',
-            'android',
             'tinkerboard',
             'ubiquiti',
             'nvidia',
@@ -110,9 +107,18 @@ export const AddPage: React.FC = () => {
             'mac',
           ].map(p => {
             const platform = platforms.get(p)
-            const isTestPlatform = ['android'].includes(p)
-            if (isTestPlatform && !testUI) return null
-            const platformIcon = (
+            const platformIcon = platform.hasScreenView ? (
+              <>
+                &nbsp;&nbsp;
+                <Tooltip title="Remote.It ScreenView Enabled" placement="top" arrow>
+                  <span>
+                    <Icon name="android-screenview" size="sm" platformIcon currentColor />
+                  </span>
+                </Tooltip>
+              </>
+            ) : null
+
+            return (
               <ListItemLocation
                 key={p}
                 iconPlatform
@@ -120,12 +126,16 @@ export const AddPage: React.FC = () => {
                 className={css.smallItem}
                 icon={platform.id}
                 to={`/add/${platform.id}`}
-                title={platform.name}
+                title={
+                  <>
+                    {platform.name}
+                    {platformIcon}
+                  </>
+                }
                 subtitle={platform.subtitle}
                 disableGutters
               />
             )
-            return isTestPlatform ? <TestUI key={p}>{platformIcon}</TestUI> : platformIcon
           })}
         </List>
       </Stack>
@@ -133,9 +143,9 @@ export const AddPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ breakpoints }) => ({
+const useStyles = makeStyles(({ palette, breakpoints }) => ({
   list: {
-    minWidth: 200,
+    minWidth: 175,
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
@@ -146,24 +156,26 @@ const useStyles = makeStyles(({ breakpoints }) => ({
     '& .MuiListItem-root': {
       display: 'block',
       minWidth: 140,
-      minHeight: 85,
+      minHeight: 100,
+      margin: 1,
+    },
+    '& .MuiListItem-root.MuiListItem-padding': {
       paddingLeft: spacing.md,
       paddingTop: spacing.lg,
       paddingBottom: spacing.sm,
       paddingRight: spacing.md,
-      margin: 1,
     },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
-    '& .MuiListSubheader-root': { width: '100%' },
-    '& .MuiDivider-root': { width: '100%' },
+    '& .MuiListSubheader-root': { width: '100%', borderBottom: `1px solid ${palette.grayLight.main}` },
   },
   smallItem: {
     width: 140,
   },
   smallList: {
-    width: '100%',
+    width: '50%',
     [breakpoints.up('sm')]: { width: '33%' },
+    [breakpoints.up('md')]: { width: '25%' },
   },
   bigList: {
     width: '100%',

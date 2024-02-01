@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 import { ApplicationState } from '../store'
 import { selectActiveAccountId } from './accounts'
 import { getUserId, getDevicesState, getColumns, optionalId, optionalDeviceId } from './state'
-import { masterAttributes, deviceAttributes, DeviceAttribute } from '../components/Attributes'
+import { deviceAttributes, DeviceAttribute, deviceAttributesAll, serviceAttributesAll } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 
@@ -62,15 +62,39 @@ export const selectById = createSelector([getDevices, getAllDevices, optionalId]
   return result[0] || result[1] ? result : findById(allDevices, id)
 })
 
-export const selectMasterAttributes = createSelector([selectLimitsLookup, getColumns], (limitsLookup, columns) =>
-  masterAttributes.concat(deviceAttributes).filter(a => a.show(limitsLookup) && columns.includes(a.id) && !a.required)
+export const selectAllDeviceAttributes = createSelector([selectLimitsLookup], limitsLookup =>
+  deviceAttributesAll.filter(a => a.show(limitsLookup))
+)
+
+export const selectDeviceAttributes = createSelector(
+  [selectAllDeviceAttributes, getColumns],
+  (allDeviceAttributes, columns) => allDeviceAttributes.filter(a => columns.includes(a.id))
+)
+
+export const selectDeviceColumns = createSelector([selectDeviceAttributes], deviceAttributes =>
+  deviceAttributes.map(a => a.id)
+)
+
+export const selectAllActiveAttributes = createSelector(
+  [selectLimitsLookup, getDeviceModel],
+  (limitsLookup, deviceModel) =>
+    (deviceModel.applicationTypes?.length ? serviceAttributesAll : deviceAttributesAll).filter(a =>
+      a.show(limitsLookup)
+    )
+)
+
+export const selectActiveAttributes = createSelector(
+  [selectAllActiveAttributes, getColumns],
+  (allActiveAttributes, columns) => allActiveAttributes.filter(a => columns.includes(a.id))
+)
+
+export const selectActiveColumns = createSelector([selectActiveAttributes], activeAttributes =>
+  activeAttributes.map(a => a.id)
 )
 
 export const selectDevice = createSelector(
   [getAllDevices, getDevices, optionalDeviceId],
-  (allDevices, devices, deviceId) => {
-    return devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
-  }
+  (allDevices, devices, deviceId) => devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
 )
 
 export const selectDeviceDetailAttributes = createSelector([getDeviceModel], deviceModel =>
@@ -87,18 +111,3 @@ export const selectDeviceDetailAttributes = createSelector([getDeviceModel], dev
       )
     )
 )
-
-// export const selectDeviceListItemAttributes = createSelector([getDeviceModel], deviceModel =>
-//   deviceAttributes
-//     .filter(d => d.list)
-//     .concat(
-//       deviceModel.customAttributes.map(
-//         id =>
-//           new DeviceAttribute({
-//             id: `attribute-${id}`,
-//             label: id,
-//             value: ({ device }) => (device?.attributes[id] ? Attribute(device.attributes[id]) : undefined),
-//           })
-//       )
-//     )
-// )

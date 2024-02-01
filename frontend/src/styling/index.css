@@ -2,6 +2,18 @@ html {
   box-sizing: border-box;
 }
 
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html {
+      font-size: 1rem;
+    }
+  }
+}
+
 *,
 *:before,
 *:after {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { windowOpen } from '../services/Browser'
 import { platforms, IPlatform } from '../platforms'
 import { List, Box, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -33,6 +34,12 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
   const codeOnly = platform.installation?.command === '[CODE]'
   let accountId = organization.id || user.id
 
+  function getRedirect(location: string, code: string) {
+    const url = new URL(decodeURIComponent(location))
+    url.searchParams.set('code', code)
+    return url.toString()
+  }
+
   useEffect(() => {
     if (fetching) return
     ;(async () => {
@@ -47,10 +54,9 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
 
       if (!redirect || redirected) return
       try {
-        const url = new URL(decodeURIComponent(redirect))
-        url.searchParams.set('code', code)
-        window.location.href = url.toString()
-        console.log('REDIRECT TO:', url.toString())
+        const url = getRedirect(redirect, code)
+        console.log('REDIRECT TO:', url)
+        windowOpen(url, '_blank', true)
         setRedirected(true)
       } catch (error) {
         console.warn('Failed to redirect to:', error)
@@ -77,7 +83,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
           fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
         }
         code={registrationCode}
-        link={redirect && registrationCode ? `${decodeURIComponent(redirect)}&code=${registrationCode}` : undefined}
+        link={redirect && registrationCode ? getRedirect(redirect, registrationCode) : undefined}
         label={platform.installation?.label}
         sx={{ textAlign: 'left' }}
       />
@@ -100,8 +106,12 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
         ) : (
           <>
             This page will automatically update when complete.
-            {platform.installation?.link && (
-              <Link href={platform.installation?.link}>Troubleshooting & instructions.</Link>
+            {platform.installation?.link && <Link href={platform.installation?.link}>Instructions.</Link>}
+            {platform.installation?.altLink && (
+              <>
+                In production <u>do not clone devices</u>, please follow these
+                <Link href={platform.installation.altLink}>oem instructions.</Link>
+              </>
             )}
           </>
         )}

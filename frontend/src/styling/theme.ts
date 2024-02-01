@@ -40,6 +40,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     alwaysWhite: { main: colors.alwaysWhite },
     darken: { main: colors.darken },
     screen: { main: colors.screen },
+    shadow: { main: colors.shadow },
     rpi: { main: colors.rpi },
     guide: { main: colors.guide },
     test: { main: colors.test },
@@ -130,7 +131,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
           },
           containedPrimary: {
-            '&:hover': { backgroundColor: palette.primaryLight.main },
+            '&:hover': { backgroundColor: palette.primary.dark },
           },
           contained: {
             color: palette.alwaysWhite.main,
@@ -195,10 +196,62 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiTabs: {
+        styleOverrides: {
+          root: {
+            minHeight: 0,
+            position: 'relative',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              width: spacing.lg,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 7,
+              pointerEvents: 'none',
+              backgroundImage: `linear-gradient(90deg, transparent, ${palette.white.main})`,
+            },
+          },
+          flexContainer: {
+            // Adding space to end of tabs to allow for fade
+            '&::after': {
+              content: '""',
+              minWidth: spacing.md,
+            },
+          },
+          scrollButtons: {
+            color: palette.grayDark.main,
+            '&.Mui-disabled': { opacity: 0.2 },
+          },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            borderRadius: radius,
+            minWidth: 0,
+            minHeight: 0,
+            textTransform: 'initial',
+            fontSize: fontSizes.xs,
+            padding: `${spacing.xs}px ${spacing.sm}px`,
+            color: palette.gray.main,
+            '&:hover': { backgroundColor: palette.grayLighter.main },
+            '&.Mui-selected': {
+              backgroundColor: palette.primaryHighlight.main,
+              fontWeight: 500,
+            },
+          },
+        },
+      },
       MuiSnackbarContent: {
         styleOverrides: {
-          root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },
-          action: { '& .MuiIconButton-root': { marginRight: -spacing.sm } },
+          root: {
+            borderRadius: radius,
+            flexWrap: 'nowrap',
+            padding: 0,
+            '& .MuiSnackbarContent-message': { padding: 0 },
+          },
         },
       },
       MuiCardHeader: {
@@ -337,6 +390,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
         },
       },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: { padding: 0 },
+        },
+      },
       MuiListItemSecondaryAction: {
         styleOverrides: {
           root: {
@@ -347,7 +405,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main },
+          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main, marginRight: spacing.xs },
         },
       },
       MuiListItemText: {
@@ -562,7 +620,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             marginBottom: spacing.sm,
           },
           h5: {
-            fontSize: fontSizes.sm * 0.75, // inputLabel shrink
+            fontSize: fontSizes.xxs, //'0.5625rem', // inputLabel shrink (12px * 0.75 || 9px)
             letterSpacing: 0.5,
             fontWeight: 500,
             textTransform: 'uppercase',
@@ -626,6 +684,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           tooltip: {
             '& .MuiDivider-root': { margin: `${spacing.xxs}px 0`, borderColor: palette.alwaysWhite.main, opacity: 0.3 },
           },
+        },
+        defaultProps: {
+          enterTouchDelay: 200,
         },
       },
       MuiTableCell: {

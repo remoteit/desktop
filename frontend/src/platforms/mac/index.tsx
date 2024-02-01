@@ -1,4 +1,5 @@
 import React from 'react'
+import browser from '../../services/Browser'
 import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
@@ -17,8 +18,9 @@ platforms.register({
   component: Component,
   types: { 256: 'Mac' },
   installation: {
-    instructions: 'Install the Desktop or CLI on the Mac to you want to enable remote access to.',
     qualifier: 'Macintosh installation',
+    instructions: 'Install the Desktop or CLI on the Mac to you want to enable remote access to.',
     link: 'https://link.remote.it/download/desktop',
+    altLink: browser.isMac && browser.isElectron ? '/devices/setup' : undefined,
   },
 })

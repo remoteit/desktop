@@ -1,7 +1,8 @@
 import React from 'react'
+import { windowOpen } from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
-import { spacing, fontSizes } from '../styling'
+import { spacing, fontSizes, Sizes } from '../styling'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 
@@ -27,6 +28,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
 }) => {
   const css = useStyles()
 
+  if (code === value) code = undefined
   if (!value) return null
 
   return (
@@ -84,7 +86,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
           icon="launch"
           color="primary"
           variant="contained"
-          onClick={() => (window.location.href = link)}
+          onClick={() => windowOpen(link, '_blank', true)}
           className={css.button}
         />
       )}

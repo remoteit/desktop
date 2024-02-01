@@ -94,9 +94,15 @@ declare global {
     | 'reachablePort'
     | 'canNavigate'
 
+  type IEnvironment = {
+    os?: Ios
+    portal: boolean
+    privateIP: string
+  }
+
   type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
 
-  type Ios = 'mac' | 'windows' | 'linux' | 'rpi'
+  type Ios = 'mac' | 'windows' | 'linux' | 'rpi' | 'android' | 'ios'
 
   interface CommonAdaptorInterface {
     getState: () => { environment: IEnvironment; preferences: IPreferences }
@@ -342,6 +348,7 @@ declare global {
     contactedAt: Date
     createdAt: Date
     enabled?: boolean
+    loaded?: boolean
     state: IDevice['state']
     type: string
     deviceID: string
@@ -547,6 +554,10 @@ declare global {
     description: string
   }
 
+  type IApplicationTypeGroup = Omit<IApplicationType, 'id'> & {
+    ids: number[]
+  }
+
   type ISmartApplication = 'URL' | undefined
 
   interface ICloudEvent {
@@ -656,12 +667,15 @@ declare global {
     size: number
     from: number
     accountId: string
+    columns: string[]
     state?: string
     owner?: boolean
     sort?: string
     name?: string
+    applicationTypes?: number[]
     platform?: number[]
-    timeSeries?: ITimeSeriesOptions
+    deviceTimeSeries?: ITimeSeriesOptions
+    serviceTimeSeries?: ITimeSeriesOptions
   }
 
   interface IAppValidation {
