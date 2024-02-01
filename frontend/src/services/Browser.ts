@@ -142,13 +142,13 @@ export function getLocalStorage(state: State | null, key: string) {
   }
 }
 
-export async function setLocalStorage(state: State | null, key: string, value: any) {
-  const currentSession = (await state?.auth.user?.id) || 'app'
+export function setLocalStorage(state: State | null, key: string, value: any) {
+  const currentSession = state?.auth.user?.id || 'app'
   currentSession && window.localStorage.setItem(currentSession + ':' + key, JSON.stringify(value))
 }
 
-export async function removeLocalStorage(state: State, key: string) {
-  const currentSession = await state.auth.user?.id
+export function removeLocalStorage(state: State | null, key: string) {
+  const currentSession = state?.auth.user?.id || 'app'
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 

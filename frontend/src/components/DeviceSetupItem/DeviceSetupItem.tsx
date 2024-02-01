@@ -1,7 +1,7 @@
 import React from 'react'
 import browser, { getOs } from '../../services/Browser'
 import { safeHostname } from '@common/nameHelper'
-import { getDeviceModel } from '../../selectors/devices'
+import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { State } from '../../store'
@@ -34,7 +34,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
     restoring: state.ui.restoring,
     canRestore:
       !state.backend.thisId &&
-      (getDeviceModel(state).total > getDeviceModel(state).size ||
+      (selectDeviceModelAttributes(state).total > selectDeviceModelAttributes(state).size ||
         !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
   }))
 

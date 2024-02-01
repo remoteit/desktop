@@ -1,5 +1,5 @@
 import React from 'react'
-import { getDeviceModel } from '../../selectors/devices'
+import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { TextField, IconButton, Tooltip, Typography } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -8,7 +8,9 @@ import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 export const SearchField: React.FC = () => {
-  const { total, results, query, searched, fetching, filter } = useSelector((state: State) => getDeviceModel(state))
+  const { total, results, query, searched, fetching, filter } = useSelector((state: State) =>
+    selectDeviceModelAttributes(state)
+  )
   const { devices } = useDispatch<Dispatch>()
 
   // not compatible with DESK-648

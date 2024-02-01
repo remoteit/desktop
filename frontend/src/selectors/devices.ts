@@ -82,9 +82,9 @@ export const selectDeviceColumns = createSelector([selectDeviceAttributes], devi
 )
 
 export const selectAllActiveAttributes = createSelector(
-  [selectLimitsLookup, getDeviceModel],
-  (limitsLookup, deviceModel) =>
-    (deviceModel.applicationTypes?.length ? serviceAttributesAll : deviceAttributesAll).filter(a =>
+  [selectLimitsLookup, selectDeviceModelAttributes],
+  (limitsLookup, deviceModelAttributes) =>
+    (deviceModelAttributes.applicationTypes?.length ? serviceAttributesAll : deviceAttributesAll).filter(a =>
       a.show(limitsLookup)
     )
 )
@@ -103,11 +103,11 @@ export const selectDevice = createSelector(
   (allDevices, devices, deviceId) => devices.find(d => d.id === deviceId) || allDevices.find(d => d.id === deviceId)
 )
 
-export const selectDeviceDetailAttributes = createSelector([getDeviceModel], deviceModel =>
+export const selectDeviceDetailAttributes = createSelector([selectDeviceModelAttributes], deviceModelAttributes =>
   deviceAttributes
     .filter(d => d.details)
     .concat(
-      deviceModel.customAttributes.map(
+      deviceModelAttributes.customAttributes.map(
         id =>
           new DeviceAttribute({
             id: `attribute-${id}`,
@@ -140,11 +140,11 @@ export const selectDeviceListAttributes = createSelector([selectActiveAttributes
 })
 
 export const selectIsFiltered = createSelector(
-  [getDeviceModel],
-  deviceModel =>
-    deviceModel.sort !== defaultState.sort ||
-    deviceModel.filter !== defaultState.filter ||
-    deviceModel.owner !== defaultState.owner ||
-    deviceModel.platform !== defaultState.platform ||
-    deviceModel.tag !== defaultState.tag
+  [selectDeviceModelAttributes],
+  deviceModelAttributes =>
+    deviceModelAttributes.sort !== defaultState.sort ||
+    deviceModelAttributes.filter !== defaultState.filter ||
+    deviceModelAttributes.owner !== defaultState.owner ||
+    deviceModelAttributes.platform !== defaultState.platform ||
+    deviceModelAttributes.tag !== defaultState.tag
 )

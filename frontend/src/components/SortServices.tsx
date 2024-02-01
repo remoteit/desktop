@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { getDeviceModel } from '../selectors/devices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
@@ -53,7 +53,7 @@ const optionSortServices: IOptionServiceSort = {
 export const SortServices: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { devices } = useDispatch<Dispatch>()
-  const sortService = useSelector((state: State) => getDeviceModel(state).sortServiceOption)
+  const sortService = useSelector((state: State) => selectDeviceModelAttributes(state).sortServiceOption)
   const option = getSortOptions(sortService)
   const open = Boolean(anchorEl)
 

@@ -24,7 +24,14 @@ import {
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { getLocalStorage, removeLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, selectById, selectActiveColumns } from '../selectors/devices'
+import {
+  getAllDevices,
+  getDeviceModel,
+  selectDevice,
+  selectById,
+  selectActiveColumns,
+  selectDeviceModelAttributes,
+} from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { store, State } from '../store'
 import { AxiosResponse } from 'axios'
@@ -109,13 +116,13 @@ export default createModel<RootModel>()({
 
     async fetchList(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      let deviceModel = getDeviceModel(state, accountId)
+      let deviceModel = selectDeviceModelAttributes(state, accountId)
 
       if (!deviceModel.initialized) {
         await dispatch.devices.migrate()
         // Update the state object after
         state = store.getState()
-        deviceModel = getDeviceModel(state, accountId)
+        deviceModel = selectDeviceModelAttributes(state, accountId)
       }
 
       const columns = selectActiveColumns(state, accountId)
@@ -156,7 +163,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchIfEmpty(_: void, state) {
-      const deviceModel = getDeviceModel(state)
+      const deviceModel = selectDeviceModelAttributes(state)
       if (!deviceModel.initialized) {
         await dispatch.devices.fetchList()
         await dispatch.applicationTypes.fetch()
@@ -584,7 +591,7 @@ export default createModel<RootModel>()({
     },
 
     async customAttributes(customAttributes: Set<string>, state) {
-      const unique = new Set([...customAttributes, ...getDeviceModel(state).customAttributes])
+      const unique = new Set([...customAttributes, ...selectDeviceModelAttributes(state).customAttributes])
       dispatch.devices.set({ customAttributes: [...Array.from(unique)].sort() })
     },
 
@@ -619,7 +626,7 @@ export default createModel<RootModel>()({
 
     async incrementTotal(accountId: string, state) {
       accountId = accountId || selectActiveAccountId(state)
-      const total = getDeviceModel(state, accountId).total + 1
+      const total = selectDeviceModelAttributes(state, accountId).total + 1
       console.log('INCREMENT TOTAL', { total, accountId })
       await dispatch.devices.set({ total, accountId })
     },

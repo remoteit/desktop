@@ -3,6 +3,7 @@ import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
 import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
   CLIENT_ID,
   MOBILE_CLIENT_ID,
@@ -205,11 +206,17 @@ export default createModel<RootModel>()({
       await dispatch.auth.set({ signInError })
       await dispatch.auth.signedOut()
     },
-    async dataReady(_: void, state) {
+    async appReady(_: void, state) {
       if (state.backend.initialized) {
-        console.warn('DATA ALREADY READY')
+        console.warn('BACKEND ALREADY INITIALIZED')
         return
       }
+
+      if (selectDeviceModelAttributes(state).initialized) {
+        console.warn('DEVICE ALREADY INITIALIZED')
+        return
+      }
+
       // Temp migration of state
       await dispatch.connections.migrate()
 
@@ -226,7 +233,7 @@ export default createModel<RootModel>()({
       cloudController.init()
       cloudSync.init()
       network.tick()
-      if (!browser.hasBackend) dispatch.auth.dataReady()
+      if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
       if (state.auth.backendAuthenticated) emit('user/sign-out')

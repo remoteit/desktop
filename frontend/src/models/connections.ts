@@ -1,10 +1,10 @@
 import structuredClone from '@ungap/structured-clone'
-import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
+import { parse as urlParse } from 'url'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
-import browser, { getLocalStorage, removeLocalStorage } from '../services/Browser'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
+import browser, { getLocalStorage, removeLocalStorage } from '../services/Browser'
 import {
   cleanOrphanConnections,
   getFetchConnectionIds,
@@ -25,7 +25,6 @@ import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectConnection } from '../selectors/connections'
-import { selectNetwork } from './networks'
 import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'

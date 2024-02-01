@@ -1,9 +1,9 @@
 import { createModel } from '@rematch/core'
-import { getDeviceModel } from '../selectors/devices'
 import { REGEX_SERVICE_ID } from '../constants'
 import { removeDeviceName } from '@common/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { RootModel } from '.'
 
 type ISearchState = ILookup<any> & {
@@ -22,7 +22,7 @@ export default createModel<RootModel>()({
   state: { ...searchState },
   effects: dispatch => ({
     async updateSearch(_: void, state) {
-      const { total, size } = getDeviceModel(state)
+      const { total, size } = selectDeviceModelAttributes(state)
       const { membership: member } = state.accounts
 
       dispatch.search.set({ cloudSearch: total > size || !!member.length })
