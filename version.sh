@@ -1,11 +1,15 @@
 #!/bin/sh
 
+error() {
+  echo "[Error]: $1" >&2
+  exit 1
+}
+
 increment_version_number() {
   echo $(( $1 + 1 ))
 }
 
 sanitize_version_string() {
-  # This will match the first occurrence of a semantic versioning pattern and discard suffixes
   echo "$1" | sed -E 's/^([0-9]+(\.[0-9]+)*).*/\1/'
 }
 
@@ -13,43 +17,36 @@ update_ios_version() {
   pbxprojFile="ios/App/App.xcodeproj/project.pbxproj"
   sanitizedVersion=$(sanitize_version_string "$1")
 
-  # Update the marketing version
-  sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $sanitizedVersion;/" "$pbxprojFile"
+  sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $sanitizedVersion;/" "$pbxprojFile" || error "Failed to update iOS marketing version"
+  echo "iOS MARKETING_VERSION updated to $sanitizedVersion"
 
-  # Increment the build number
-  buildNumber=$(grep -m1 -E 'CURRENT_PROJECT_VERSION = [0-9]+;' "$pbxprojFile" | awk -F ' = ' '{print $2}' | tr -d ';')
+  buildNumber=$(grep -m1 -E 'CURRENT_PROJECT_VERSION = [0-9]+;' "$pbxprojFile" | awk -F ' = ' '{print $2}' | tr -d ';') || error "Failed to read iOS build number"
   newBuildNumber=$((buildNumber + 1))
-  sed -i '' "s/CURRENT_PROJECT_VERSION = $buildNumber;/CURRENT_PROJECT_VERSION = $newBuildNumber;/" "$pbxprojFile"
+  sed -i '' "s/CURRENT_PROJECT_VERSION = $buildNumber;/CURRENT_PROJECT_VERSION = $newBuildNumber;/" "$pbxprojFile" || error "Failed to update iOS build number"
+  echo "iOS CURRENT_PROJECT_VERSION updated to $newBuildNumber"
 }
 
 update_android_version() {
   gradleFile="android/app/build.gradle"
   sanitizedVersion=$(sanitize_version_string "$1")
+
+  sed -i "" "s/versionName \".*\"/versionName \"$sanitizedVersion\"/" $gradleFile || error "Failed to update Android versionName"
+  echo "Android versionName updated to $sanitizedVersion"
   
-  # Update the versionName
-  sed -i "" "s/versionName \".*\"/versionName \"$sanitizedVersion\"/" $gradleFile
-  
-  # Increment the versionCode
-  versionCode=$(grep versionCode $gradleFile | awk '{print $2}')
+  versionCode=$(grep versionCode $gradleFile | awk '{print $2}') || error "Failed to read Android versionCode"
   newVersionCode=$(increment_version_number $versionCode)
-  sed -i "" "s/versionCode .*/versionCode $newVersionCode/" $gradleFile
+  sed -i "" "s/versionCode .*/versionCode $newVersionCode/" $gradleFile || error "Failed to update Android versionCode"
+  echo "Android versionCode updated to $newVersionCode"
 }
 
-set -x
-
-# Update the electron version
+# Start script execution
 cd electron
-npm version $1 --no-git-tag-version
+npm version $1 --no-git-tag-version || error "Failed to update Electron version"
 cd ../
+echo "Updated Electron version to $1"
 
-# Update the iOS version
 update_ios_version $1
-
-# Update the Android version
 update_android_version $1
 
-# Install dependencies and add the changes
-npm install --legacy-peer-deps
+npm install --legacy-peer-deps || error "Failed to install dependencies"
 git add --all
-
-set +x
