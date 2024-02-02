@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 
 export const GlobalTrigger: React.FC<IGlobalTooltip> = ({ title, color, children }) => {
   const { ui } = useDispatch<Dispatch>()

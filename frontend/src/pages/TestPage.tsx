@@ -1,14 +1,13 @@
 import React, { useState } from 'react'
 import cloudSync from '../services/CloudSync'
 import { TEST_HEADER } from '../constants'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
-import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
+import { getGraphQLApi, getWebSocketURL } from '../helpers/apiHelper'
+import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { selectLimitsLookup } from '../selectors/organizations'
 import { ListItemSetting } from '../components/ListItemSetting'
-import { selectLimits } from '../models/plans'
 import { Container } from '../components/Container'
 import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
@@ -18,16 +17,14 @@ import { emit } from '../services/Controller'
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const [testHeader, setTestHeader] = useState<string>(window.localStorage.getItem(TEST_HEADER) || '')
-  const { tests, informed, apis, testUI, preferences, limits, limitsOverride } = useSelector(
-    (state: ApplicationState) => ({
-      ...state.plans,
-      apis: state.ui.apis,
-      testUI: state.ui.testUI,
-      preferences: state.backend.preferences,
-      limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
-      limits: selectLimits(state, state.auth.user?.id),
-    })
-  )
+  const { tests, informed, apis, testUI, preferences, limits, limitsOverride } = useSelector((state: State) => ({
+    ...state.plans,
+    apis: state.ui.apis,
+    testUI: state.ui.testUI,
+    preferences: state.backend.preferences,
+    limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
+    limits: selectLimits(state, state.auth.user?.id),
+  }))
 
   async function setPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })

@@ -1,12 +1,12 @@
 import React from 'react'
-import { ApplicationState } from '../store'
-import { selectSessionUsers } from '../models/sessions'
+import { State } from '../store'
+import { selectSessionUsers } from '../selectors/sessions'
 import { SharedUsersLists } from '../components/SharedUsersLists'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { useSelector } from 'react-redux'
 
 export const DeviceUsersPage: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const connected = useSelector((state: ApplicationState) => selectSessionUsers(state, device?.id))
+  const connected = useSelector((state: State) => selectSessionUsers(state, undefined, device?.id))
   const users = device?.access
 
   return (

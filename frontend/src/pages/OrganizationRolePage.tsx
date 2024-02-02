@@ -16,7 +16,7 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { PermissionsList } from '../components/PermissionsList'
@@ -37,7 +37,7 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
-  const { accountId, disabled, roles, tags } = useSelector((state: ApplicationState) => ({
+  const { accountId, disabled, roles, tags } = useSelector((state: State) => ({
     accountId: selectActiveAccountId(state),
     disabled: state.organization.updating,
     roles: selectOrganization(state).roles,

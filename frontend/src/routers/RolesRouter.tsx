@@ -1,6 +1,6 @@
 import React from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { OrganizationRolesPage } from '../pages/OrganizationRolesPage'
 import { OrganizationRolePage } from '../pages/OrganizationRolePage'
@@ -8,7 +8,7 @@ import { DynamicPanel } from '../components/DynamicPanel'
 import { useSelector } from 'react-redux'
 
 export const RolesRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  const organization = useSelector((state: ApplicationState) => selectOrganization(state))
+  const organization = useSelector((state: State) => selectOrganization(state))
 
   return (
     <DynamicPanel

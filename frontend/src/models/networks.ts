@@ -1,10 +1,11 @@
 import browser from '../services/Browser'
 import structuredClone from '@ungap/structured-clone'
+import { State } from '../store'
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
-import { selectNetworks } from '../selectors/networks'
+import { selectTimeSeries } from '../selectors/ui'
 import { selectConnection } from '../selectors/connections'
 import { selectActiveAccountId, getActiveUser } from '../selectors/accounts'
+import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById, selectDeviceColumns } from '../selectors/devices'
 import {
@@ -99,8 +100,10 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = selectActiveAccountId(state)
       const columns = selectDeviceColumns(state)
+      const { deviceTimeSeries } = selectTimeSeries(state)
+
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId, columns, state.ui.deviceTimeSeries)
+      const response = await graphQLPreloadNetworks(accountId, columns, deviceTimeSeries)
 
       if (response === 'ERROR') return
 
@@ -113,13 +116,10 @@ export default createModel<RootModel>()({
       if (!network || !network.cloud) return
 
       const accountId = selectActiveAccountId(state)
+      const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
+
       dispatch.devices.set({ fetching: true, accountId })
-      const gqlResponse = await graphQLFetchNetworkServices(
-        network.id,
-        accountId,
-        state.ui.serviceTimeSeries,
-        state.ui.deviceTimeSeries
-      )
+      const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId, serviceTimeSeries, deviceTimeSeries)
 
       if (gqlResponse === 'ERROR') {
         if (redirect) dispatch.ui.set({ redirect })
@@ -333,7 +333,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function defaultNetwork(state?: ApplicationState): INetwork {
+export function defaultNetwork(state?: State): INetwork {
   if (state) {
     const owner = getActiveUser(state)
     const accountId = selectActiveAccountId(state)
@@ -343,30 +343,22 @@ export function defaultNetwork(state?: ApplicationState): INetwork {
   return DEFAULT_NETWORK
 }
 
-export function selectNetwork(state: ApplicationState, networkId?: string): INetwork {
+export function selectNetwork(state: State, networkId?: string): INetwork {
   return selectNetworks(state).find(n => n.id === networkId) || defaultNetwork(state)
 }
 
-export function selectNetworkByService(state: ApplicationState, serviceId: string = DEFAULT_ID): INetwork[] {
-  return selectNetworks(state).filter(network => network.serviceIds.includes(serviceId))
-}
-
-export function selectNetworkByTag(state: ApplicationState, tags: ITagFilter): INetwork[] {
+export function selectNetworkByTag(state: State, tags: ITagFilter): INetwork[] {
   const networks = selectNetworks(state).filter(n => canViewByTags(tags, n.tags))
   return networks
 }
 
-export function selectAccessibleNetworks(
-  state: ApplicationState,
-  organization: IOrganizationState,
-  member?: IOrganizationMember
-) {
+export function selectAccessibleNetworks(state: State, organization: IOrganizationState, member?: IOrganizationMember) {
   if (!member) return []
   const networks = selectNetworks(state)
   return networks.filter(n => canMemberView(organization.roles, member, n))
 }
 
-export function selectSharedNetwork(state: ApplicationState, serviceId?: string): INetwork | undefined {
+export function selectSharedNetwork(state: State, serviceId?: string): INetwork | undefined {
   if (!serviceId) return
   const networks = selectNetworkByService(state, serviceId)
   if (!networks.length) return

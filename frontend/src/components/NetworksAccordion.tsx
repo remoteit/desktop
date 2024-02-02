@@ -1,13 +1,12 @@
 import React from 'react'
-import { Chip, Box, Tooltip } from '@mui/material'
 import { NetworksJoined } from './NetworksJoined'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
-import { selectNetworkByService } from '../models/networks'
-import { selectNetworks } from '../selectors/networks'
-import { NetworksAddMenu } from './NetworkAddMenu'
+import { selectNetworks, selectNetworkByService } from '../selectors/networks'
+import { Chip, Box, Tooltip } from '@mui/material'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { State, Dispatch } from '../store'
+import { NetworksAddMenu } from './NetworkAddMenu'
 import { Icon } from './Icon'
 
 type Props = {
@@ -20,11 +19,9 @@ type Props = {
 
 export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service, connection, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { ownerId, allNetworks, joinedNetworks } = useSelector((state: ApplicationState) => ({
-    ownerId: selectActiveAccountId(state),
-    allNetworks: selectNetworks(state),
-    joinedNetworks: selectNetworkByService(state, connection.id),
-  }))
+  const ownerId = useSelector(selectActiveAccountId)
+  const allNetworks = useSelector(selectNetworks)
+  const joinedNetworks = useSelector((state: State) => selectNetworkByService(state, connection.id))
   const accessibleNetworks = allNetworks.filter(n => n.owner.id === ownerId)
 
   return (

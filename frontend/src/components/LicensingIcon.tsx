@@ -18,5 +18,5 @@ export const LicensingIcon: React.FC<{ license: ILicense }> = ({ license }) => {
 
   if (!name) return null
 
-  return <Icon {...{ name, type }} size="md" />
+  return <Icon {...{ name, type }} size="lg" />
 }

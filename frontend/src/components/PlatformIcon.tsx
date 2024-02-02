@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { platforms } from '../platforms'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const PlatformIcon: React.FC<Props> = ({ name, platform, ...originalProps }) => {
-  const props = { ...originalProps, darkMode: useSelector((state: ApplicationState) => state.ui.themeDark) }
+  const props = { ...originalProps, darkMode: useSelector((state: State) => state.ui.themeDark) }
   const Component = platform !== undefined ? platforms.componentByType(platform) : platforms.component(name)
   return <Component {...props} />
 }

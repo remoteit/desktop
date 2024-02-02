@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { makeStyles } from '@mui/styles'
 import { Box, Button, Typography, Chip, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,7 +11,7 @@ import { Gutters } from '../Gutters'
 
 export const MFAPreference: React.FC = () => {
   const { AWSPhone, AWSUser, mfaMethod, verificationCode, showMFASelection, showSMSConfig, backupCode } = useSelector(
-    (state: ApplicationState) => ({
+    (state: State) => ({
       AWSPhone: state.auth.AWSUser.phone_number || '',
       AWSUser: state.auth.AWSUser,
       mfaMethod: state.mfa.mfaMethod,

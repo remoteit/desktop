@@ -1,10 +1,10 @@
 import React from 'react'
 import browser, { getOs } from '../../services/Browser'
 import { safeHostname } from '@common/nameHelper'
-import { getDeviceModel } from '../../selectors/devices'
+import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import {
   List,
   ListItem,
@@ -27,14 +27,14 @@ type Props = { className?: string; onClick?: () => void }
 
 export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   const history = useHistory()
-  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: State) => ({
     registered: !!state.backend.thisId,
     hostname: safeHostname(state.backend.environment.hostname, []),
     ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),
     restoring: state.ui.restoring,
     canRestore:
       !state.backend.thisId &&
-      (getDeviceModel(state).total > getDeviceModel(state).size ||
+      (selectDeviceModelAttributes(state).total > selectDeviceModelAttributes(state).size ||
         !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
   }))
 

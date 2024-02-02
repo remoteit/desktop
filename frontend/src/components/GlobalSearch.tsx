@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
 import debounce from 'lodash.debounce'
 import classnames from 'classnames'
-import { getDeviceModel } from '../selectors/devices'
-import { selectAllSearch } from '../models/search'
+import { selectDeviceModelAttributes } from '../selectors/devices'
+import { sortSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { TextField, Typography, ListItem, ListSubheader, Autocomplete, createFilterOptions } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { TargetPlatform } from './TargetPlatform'
@@ -17,19 +17,20 @@ import { Icon } from './Icon'
 type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => void }
 
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
-  const { userEmail, enabledIds, fetching, queryDefault, data } = useSelector((state: ApplicationState) => ({
-    userEmail: state.auth.user?.email,
-    enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
-    fetching: state.search.fetching,
-    queryDefault: getDeviceModel(state).query,
-    data: selectAllSearch(state),
-  }))
+  const search = useSelector((state: State) => state.search.search)
+  const userEmail = useSelector((state: State) => state.user.email)
+  const fetching = useSelector((state: State) => state.search.fetching)
+  const queryDefault = useSelector(selectDeviceModelAttributes).query
+  const enabledIds = useSelector((state: State) => state.connections.all)
+    .filter(c => c.enabled)
+    .map(c => c.id)
+  const data = sortSearch([...search])
   const css = useStyles()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [query, setQuery] = useState<string>(queryDefault)
 
-  const fetch = React.useMemo(
+  const fetch = useMemo(
     () =>
       debounce(
         value => {

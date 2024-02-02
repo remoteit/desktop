@@ -12,7 +12,7 @@ export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstanc
     <InlineTextFieldSetting
       required
       modified={connection.name !== resetValue}
-      icon="i-cursor"
+      icon="host"
       value={connection.name}
       label="Subdomain"
       resetValue={resetValue}

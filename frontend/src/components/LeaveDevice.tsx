@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { DeleteButton } from '../buttons/DeleteButton'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 
 export const LeaveDevice: React.FC<Props> = ({ device, menuItem, hide }) => {
   const { devices } = useDispatch<Dispatch>()
-  const { destroying } = useSelector((state: ApplicationState) => state.ui)
+  const { destroying } = useSelector((state: State) => state.ui)
 
   if (!device || hide || !device.shared) return null
 

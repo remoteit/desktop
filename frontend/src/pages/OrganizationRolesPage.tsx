@@ -2,7 +2,7 @@ import React from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { List, ListItemSecondaryAction, Typography, Chip, Box, Button } from '@mui/material'
 import { selectPermissions, selectLimitsLookup, selectOrganization } from '../selectors/organizations'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
@@ -14,7 +14,7 @@ import { Icon } from '../components/Icon'
 
 export const OrganizationRolesPage: React.FC = () => {
   const history = useHistory()
-  const { name, roles, members, limits, permissions } = useSelector((state: ApplicationState) => ({
+  const { name, roles, members, limits, permissions } = useSelector((state: State) => ({
     ...selectOrganization(state),
     limits: selectLimitsLookup(state),
     permissions: selectPermissions(state),

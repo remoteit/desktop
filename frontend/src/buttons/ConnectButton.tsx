@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import browser from '../services/Browser'
 import { Stack } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { connectionState, newConnection, launchDisabled } from '../helpers/connectionHelper'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 import { getLicenseChip } from '../components/LicenseChip'
@@ -29,7 +29,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   ...props
 }) => {
   const instanceId = service?.id || connection?.id || ''
-  const { autoConnect } = useSelector((state: ApplicationState) => state.ui)
+  const { autoConnect } = useSelector((state: State) => state.ui)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const chip = getLicenseChip(service?.license)

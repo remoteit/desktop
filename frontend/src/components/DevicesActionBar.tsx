@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -19,14 +19,12 @@ import { spacing, radius } from '../styling'
 type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] }
 
 export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devices }) => {
-  const { accountId, feature, tags, adding, removing, destroying } = useSelector((state: ApplicationState) => ({
-    accountId: selectActiveAccountId(state),
-    feature: selectLimitsLookup(state),
-    tags: selectTags(state),
-    adding: state.tags.adding,
-    removing: state.tags.removing,
-    destroying: state.ui.destroying,
-  }))
+  const accountId = useSelector(selectActiveAccountId)
+  const feature = useSelector(selectLimitsLookup)
+  const tags = useSelector(selectTags)
+  const adding = useSelector((state: State) => state.tags.adding)
+  const removing = useSelector((state: State) => state.tags.removing)
+  const destroying = useSelector((state: State) => state.ui.destroying)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()

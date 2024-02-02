@@ -1,6 +1,6 @@
 import React from 'react'
 import { LANGUAGES } from '../constants'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'
 import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon } from '@mui/material'
@@ -17,7 +17,7 @@ import { Link } from '../components/Link'
 import { spacing } from '../styling'
 
 export const ProfilePage: React.FC = () => {
-  const { paidPlan, user, deleteAccount } = useSelector((state: ApplicationState) => ({
+  const { paidPlan, user, deleteAccount } = useSelector((state: State) => ({
     user: state.user,
     paidPlan: !isPersonal(state),
     deleteAccount: state.ui.deleteAccount,

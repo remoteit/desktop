@@ -5,16 +5,16 @@ import { Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Pre } from './Pre'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
 export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () => {
-  const { limits, visible } = useSelector((state: ApplicationState) => ({
-    limits: selectLimits(state),
-    visible: !state.ui.updateNoticeCleared || state.ui.updateNoticeCleared < Date.now() - oneWeek,
-  }))
+  const limits = useSelector((state: State) => selectLimits(state))
+  const visible = useSelector(
+    (state: State) => !state.ui.updateNoticeCleared || state.ui.updateNoticeCleared < Date.now() - oneWeek
+  )
   const limit = limits.find(l => l.name === 'iot-devices')
   const overLimit = limit && limit.actual > limit.value
   const dispatch = useDispatch<Dispatch>()

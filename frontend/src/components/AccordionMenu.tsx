@@ -1,5 +1,5 @@
 import React from 'react'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { Divider } from '@mui/material'
@@ -15,7 +15,7 @@ type IAccordionMenu = {
 type Props = { menus: IAccordionMenu[] }
 
 export const AccordionMenu: React.FC<Props> = ({ menus }) => {
-  const { drawerAccordion } = useSelector((state: ApplicationState) => state.ui)
+  const { drawerAccordion } = useSelector((state: State) => state.ui)
   const { ui } = useDispatch<Dispatch>()
 
   return (

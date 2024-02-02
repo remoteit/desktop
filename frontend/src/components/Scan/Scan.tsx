@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
 import { makeStyles } from '@mui/styles'
 import { Button, TextField, MenuItem } from '@mui/material'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, fontSizes } from '../../styling'
 import { ScanNetwork } from '../ScanNetwork'
@@ -21,7 +21,7 @@ type Props = {
 export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
-  const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: ApplicationState) => state.ui)
+  const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: State) => state.ui)
 
   const selected = useMemo(() => data[scanInterface] || {}, [data, scanInterface])
 

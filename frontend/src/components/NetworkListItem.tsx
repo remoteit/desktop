@@ -1,6 +1,6 @@
 import React from 'react'
 import { selectConnection } from '../selectors/connections'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { ConnectionListItem } from './ConnectionListItem'
 import { useSelector } from 'react-redux'
 import { selectById } from '../selectors/devices'
@@ -24,12 +24,8 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
   connectionsPage,
   children,
 }) => {
-  const { service, device, connection } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, undefined, serviceId)
-    const connection = selectConnection(state, service)
-    return { service, device, connection }
-  })
-
+  const [service, device] = useSelector((state: State) => selectById(state, undefined, serviceId))
+  const connection = useSelector((state: State) => selectConnection(state, service))
   const external = !!session?.id && session.id !== connection.sessionId
   const offline = service?.state !== 'active' && !external
   const name = external ? session.target.name : connection.name || session?.target.name

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 
@@ -25,7 +25,7 @@ const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?
 
 export const GlobalConfirm: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const confirm = useSelector((state: ApplicationState) => state.ui.confirm)
+  const confirm = useSelector((state: State) => state.ui.confirm)
   const [open, setOpen] = React.useState<boolean>(false)
   const dialog = GLOBAL_DIALOGS[confirm?.id || '']
 

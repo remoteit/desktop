@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react'
 import { DeviceContext } from '../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { attributeName } from '@common/nameHelper'
 import { useHistory } from 'react-router-dom'
 import { Title } from './Title'
@@ -28,7 +28,7 @@ type Props = {
 }
 
 export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, children }) => {
-  const { connectThisDevice, layout } = useSelector((state: ApplicationState) => state.ui)
+  const { connectThisDevice, layout } = useSelector((state: State) => state.ui)
   const { device, service, instance, user } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()

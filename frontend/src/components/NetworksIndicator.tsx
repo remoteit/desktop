@@ -1,7 +1,7 @@
 import React from 'react'
-import { Typography, Divider, Tooltip } from '@mui/material'
-import { selectNetworkByService } from '../models/networks'
-import { ApplicationState } from '../store'
+import { Divider, Tooltip } from '@mui/material'
+import { selectNetworkByService } from '../selectors/networks'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { Icon } from './Icon'
 
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const NetworksIndicator: React.FC<Props> = ({ instance, service }) => {
-  const joinedNetworks = useSelector((state: ApplicationState) => selectNetworkByService(state, service.id))
+  const joinedNetworks = useSelector((state: State) => selectNetworkByService(state, service.id))
 
   if (!joinedNetworks.length || !instance?.permissions.includes('MANAGE') || instance.shared) return null
 

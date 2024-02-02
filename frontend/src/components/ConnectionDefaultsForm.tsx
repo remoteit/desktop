@@ -3,7 +3,7 @@ import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
 import { List, Button } from '@mui/material'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { serviceNameValidation } from '@common/nameHelper'
 import { ServiceAttributesForm } from './ServiceAttributesForm'
@@ -19,7 +19,7 @@ export type ServiceFormProps = {
 }
 
 export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, disabled, onSubmit, onCancel }) => {
-  const { applicationTypes, saving, setupAdded } = useSelector((state: ApplicationState) => ({
+  const { applicationTypes, saving, setupAdded } = useSelector((state: State) => ({
     applicationTypes: state.applicationTypes.all,
     saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,

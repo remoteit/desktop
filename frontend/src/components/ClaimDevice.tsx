@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { TextField } from '@mui/material'
@@ -16,7 +16,7 @@ export function ClaimDevice() {
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, organization, user } = useSelector((state: ApplicationState) => ({
+  const { claiming, organization, user } = useSelector((state: State) => ({
     claiming: state.ui.claiming,
     organization: selectOrganization(state),
     user: state.user,
@@ -44,13 +44,13 @@ export function ClaimDevice() {
 
   return (
     <form
+      className={css.form}
       onSubmit={e => {
         e.preventDefault()
         buttonRef.current?.click()
       }}
     >
       <TextField
-        className={css.form}
         label="Claim Code"
         value={code}
         variant="filled"
@@ -71,8 +71,9 @@ export function ClaimDevice() {
       />
       <ConfirmButton
         ref={buttonRef}
-        size="small"
+        size="chip"
         variant="contained"
+        title={claiming ? 'Claiming' : 'Claim'}
         confirm={organization.id !== user.id}
         color="primary"
         disabled={claiming || !valid}
@@ -82,9 +83,7 @@ export function ClaimDevice() {
           action: 'Ok',
           children: 'You are claiming this device for an organization instead of yourself.',
         }}
-      >
-        {claiming ? 'Claiming' : 'Claim'}
-      </ConfirmButton>
+      />
     </form>
   )
 }
@@ -92,9 +91,19 @@ export function ClaimDevice() {
 const useStyles = makeStyles({
   form: {
     width: 160,
-    display: 'flex',
-    marginBottom: spacing.xs,
-    '& svg': { marginRight: spacing.md },
-    '& .MuiFilledInput-root': { fontSize: 14 },
+    textAlign: 'right',
+    '& .MuiTextField-root': {
+      width: 160,
+      display: 'flex',
+      marginBottom: spacing.xs,
+      justifyContent: 'flex-end',
+      '& svg': { marginRight: spacing.md },
+      '& .MuiFilledInput-root': {
+        fontSize: 14,
+      },
+    },
+    '& .MuiButton-root': {
+      marginRight: spacing.xxs,
+    },
   },
 })

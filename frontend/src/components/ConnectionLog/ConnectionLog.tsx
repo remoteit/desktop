@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ListItemIcon, ListItemText, ListItemSecondaryAction, Typography } from '@mui/material'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { ListItemLocation } from '../ListItemLocation'
 import { useLocation } from 'react-router-dom'
 import { Icon } from '../Icon'
@@ -13,7 +13,7 @@ type Props = {
 export const ConnectionLog: React.FC<Props> = ({ connection }) => {
   const location = useLocation()
   const id = connection ? connection.id : ''
-  const log = useSelector((state: ApplicationState) => state.logs[id])
+  const log = useSelector((state: State) => state.logs[id])
   const disabled: boolean = !log
 
   return (

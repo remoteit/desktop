@@ -1,13 +1,13 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Checkbox } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = { select?: boolean; devices: IDevice[] }
 
 export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) => {
-  const { selected } = useSelector((state: ApplicationState) => state.ui)
+  const { selected } = useSelector((state: State) => state.ui)
   const dispatch = useDispatch<Dispatch>()
   const indeterminate = selected.length > 0 && selected.length < devices.length
 

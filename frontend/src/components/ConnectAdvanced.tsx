@@ -1,5 +1,5 @@
 import React from 'react'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { List, ListItem, ListItemIcon, ListItemText, Box } from '@mui/material'
 import { PublicSetting } from './PublicSetting'
@@ -27,7 +27,7 @@ import { Icon } from './Icon'
 
 export const ConnectAdvanced: React.FC = () => {
   const { connection, service, instance, device } = React.useContext(DeviceContext)
-  const accordion = useSelector((state: ApplicationState) => state.ui.accordion)
+  const accordion = useSelector((state: State) => state.ui.accordion)
   const dispatch = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
 
@@ -35,12 +35,7 @@ export const ConnectAdvanced: React.FC = () => {
 
   return (
     <Gutters size="md" top={null} bottom={null}>
-      <ConnectionDetails
-        connection={connection}
-        device={device}
-        app={app}
-        show={connection.enabled || connection.connectLink}
-      />
+      <ConnectionDetails connection={connection} app={app} show={connection.enabled || connection.connectLink} />
       <Box display="flex" marginTop={2}>
         <ListItemBack title="Connection configuration" />
         <IconButton

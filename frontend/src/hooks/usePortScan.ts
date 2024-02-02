@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../constants'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { emit } from '../services/Controller'
 
@@ -10,7 +10,7 @@ type Props = {
 }
 
 export function usePortScan(): [typeof portReachable, (props: Props) => void] {
-  const portReachable = useSelector((state: ApplicationState) => state.backend.reachablePort)
+  const portReachable = useSelector((state: State) => state.backend.reachablePort)
   const [lastScan, setLastScan] = useState<Props>({})
   const { backend } = useDispatch<Dispatch>()
 

@@ -4,12 +4,12 @@ import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import isURL from 'validator/lib/isURL'
 
 export const NotificationMode: React.FC = () => {
   const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
-    (state: ApplicationState) => state.user.notificationSettings
+    (state: State) => state.user.notificationSettings
   )
   const dispatch = useDispatch<Dispatch>()
   const { updateNotificationSettings } = dispatch.user

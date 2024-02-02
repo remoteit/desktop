@@ -3,7 +3,7 @@ import { DEFAULT_SERVICE, REGEX_NAME_SAFE } from '@common/constants'
 import { List, Chip, Typography } from '@mui/material'
 import { getType, findType } from '../../models/applicationTypes'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { LoadingMessage } from '../LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
@@ -20,7 +20,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const [state, setState] = useState<boolean[]>([])
-  const { applicationTypes, timestamp, loading, scanTimestamp, scanData } = useSelector((state: ApplicationState) => {
+  const { applicationTypes, timestamp, loading, scanTimestamp, scanData } = useSelector((state: State) => {
     const { localhost } = state.backend.scanData
     const applicationTypes = state.applicationTypes.all
     return {

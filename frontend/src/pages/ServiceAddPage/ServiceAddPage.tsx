@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
 import { REGEX_LAST_PATH } from '../../constants'
 import { ServiceForm } from '../../components/ServiceForm'
@@ -15,14 +15,14 @@ import { Title } from '../../components/Title'
 type Props = { device?: IDevice; form?: boolean }
 
 export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
-  const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
+  const { setupServicesLimit } = useSelector((state: State) => state.ui)
   const [forward, setForward] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
-    dispatch.applicationTypes.fetch()
+    dispatch.applicationTypes.fetchAll()
   }, [])
 
   const maxReached = device && device.services.length >= setupServicesLimit

@@ -68,7 +68,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   switch (template) {
     case 'text':
       return (
-        <Typography variant="caption" component="div">
+        <Typography variant="body2" className={css.box}>
           {message}
         </Typography>
       )
@@ -77,9 +77,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       if (value > 100) value = (100 / value) * 100
       return (
         <Box className={css.box}>
-          <Typography variant="caption" display="block">
-            {message}
-          </Typography>
+          <Typography variant="caption">{message}</Typography>
           <LinearProgress
             classes={{
               root: css.root,

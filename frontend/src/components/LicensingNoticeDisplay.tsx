@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { ListItem, Button, Tooltip, IconButton } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { PERSONAL_PLAN_ID } from '../models/plans'
@@ -24,7 +24,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
   managePath = '/account/plans',
   fullWidth,
 }) => {
-  const informed = useSelector((state: ApplicationState) => state.plans.informed)
+  const informed = useSelector((state: State) => state.plans.informed)
   const { plans } = useDispatch<Dispatch>()
 
   if (informed) return null

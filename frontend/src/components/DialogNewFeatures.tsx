@@ -2,7 +2,7 @@ import React from 'react'
 import browser, { windowOpen } from '../services/Browser'
 import { MOBILE_LAUNCH_DATE, SCREEN_VIEW_APP_LINK } from '../constants'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { Icon } from '../components/Icon'
 import {
   Button,
@@ -20,10 +20,8 @@ import {
 
 export const DialogNewFeatures = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { mobileWelcome, user } = useSelector((state: ApplicationState) => ({
-    mobileWelcome: state.ui.mobileWelcome,
-    user: state.user,
-  }))
+  const mobileWelcome = useSelector((state: State) => state.ui.mobileWelcome)
+  const user = useSelector((state: State) => state.user)
 
   // if user was created after launch don't show welcome dialog
   if (!browser.isMobile || !mobileWelcome || !user.created || user.created > MOBILE_LAUNCH_DATE) return null

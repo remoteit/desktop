@@ -2,7 +2,7 @@ import React from 'react'
 import { Tooltip } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { isReverseProxy } from '../models/applicationTypes'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { DEFAULT_CONNECTION } from '@common/constants'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
@@ -12,7 +12,7 @@ export const HeaderOverrideSetting: React.FC<{ service: IService; connection?: I
   service,
   connection,
 }) => {
-  const reverseProxy = useSelector((state: ApplicationState) => isReverseProxy(state, service.typeID))
+  const reverseProxy = useSelector((state: State) => isReverseProxy(state, service.typeID))
   if (!reverseProxy) return null
   if (!connection) connection = newConnection(service)
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout

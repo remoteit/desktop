@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { List } from '@mui/material'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 
@@ -21,9 +21,7 @@ export function ServiceCheckboxes({
   selectedServices: string[]
 }): JSX.Element {
   const { shares } = useDispatch<Dispatch>()
-  const indeterminateServices = useSelector(
-    (state: ApplicationState) => state.shares.currentDevice?.indeterminate || []
-  )
+  const indeterminateServices = useSelector((state: State) => state.shares.currentDevice?.indeterminate || [])
 
   const allIndeterminate = !!selectedServices.length && services.length !== selectedServices.length
   const selectAllChecked = !!selectedServices.length && services.length === selectedServices.length

@@ -1,7 +1,9 @@
 import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
+import network from '../services/Network'
 import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
   CLIENT_ID,
   MOBILE_CLIENT_ID,
@@ -14,13 +16,14 @@ import {
   API_URL,
   DEVELOPER_KEY,
 } from '../constants'
+import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { CognitoUser } from '../cognito/types'
 import { AuthService, ConfigInterface } from '../cognito/auth'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
 
@@ -203,27 +206,34 @@ export default createModel<RootModel>()({
       await dispatch.auth.set({ signInError })
       await dispatch.auth.signedOut()
     },
-    async dataReady(_: void, state) {
+    async appReady(_: void, state) {
       if (state.backend.initialized) {
-        console.warn('DATA ALREADY INITIALIZED')
+        console.warn('BACKEND ALREADY INITIALIZED')
         return
       }
 
-      zendesk.initChat(state.auth.user)
-      cloudController.init()
-      cloudSync.init()
+      if (selectDeviceModelAttributes(state).initialized) {
+        console.warn('DEVICE ALREADY INITIALIZED')
+        return
+      }
+
+      // Temp migration of state
+      await dispatch.connections.migrate()
+
       dispatch.backend.init()
-      dispatch.plans.init()
+      dispatch.applicationTypes.fetchAll()
       dispatch.contacts.fetch()
-      dispatch.applicationTypes.init()
-      await dispatch.accounts.init()
-      await dispatch.connections.init()
+      await dispatch.accounts.fetch()
       await dispatch.networks.init()
       await cloudSync.all()
     },
-    async signedIn() {
-      if (!browser.hasBackend) dispatch.auth.dataReady()
+    async signedIn(_: void, state) {
       dispatch.ui.init()
+      zendesk.initChat(state.auth.user)
+      cloudController.init()
+      cloudSync.init()
+      network.tick()
+      if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
       if (state.auth.backendAuthenticated) emit('user/sign-out')
@@ -255,13 +265,14 @@ export default createModel<RootModel>()({
       dispatch.mfa.reset()
       dispatch.ui.reset()
       cloudSync.reset()
-      dispatch.accounts.setActive('')
+      dispatch.accounts.set({ activeId: undefined })
       window.location.hash = ''
       zendesk.endChat()
       emit('user/sign-out-complete')
       dispatch.auth.set({ authenticated: false })
       cloudController.close()
       Controller.close()
+      persistor.purge()
     },
     async globalSignOut() {
       const Authorization = await getToken()

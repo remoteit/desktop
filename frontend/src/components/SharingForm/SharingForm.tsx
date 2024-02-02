@@ -5,7 +5,7 @@ import { ServiceCheckboxes } from './ServiceCheckboxes'
 import { ShareSaveActions } from '../ShareSaveActions'
 import { TargetPlatform } from '../TargetPlatform'
 import { useHistory } from 'react-router-dom'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Gutters } from '../Gutters'
 
@@ -21,7 +21,7 @@ export interface SharingAccess {
 }
 
 export function SharingForm({ device, user }: { device: IDevice; user?: IUser }): JSX.Element {
-  const { script, scriptIndeterminate, users, selectedServices, saving } = useSelector((state: ApplicationState) => ({
+  const { script, scriptIndeterminate, users, selectedServices, saving } = useSelector((state: State) => ({
     ...state.shares.currentDevice,
     script: !!state.shares.currentDevice?.script,
     selectedServices: state.shares.currentDevice?.selectedServices || [],

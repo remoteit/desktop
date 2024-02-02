@@ -3,13 +3,13 @@ import browser from '../services/Browser'
 import { emit } from '../services/Controller'
 import { List, Typography } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { SettingsDisableNetworkItem } from '../components/SettingsDisableNetworkItem'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { ListItemSelect } from '../components/ListItemSelect'
 import { UpdateSetting } from '../components/UpdateSetting'
-import { getOwnDevices } from '../selectors/devices'
+import { selectOwnDevices } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
@@ -17,18 +17,16 @@ import { ColorChip } from '../components/ColorChip'
 import { Title } from '../components/Title'
 
 export const OptionsPage: React.FC = () => {
-  const { os, installing, cliVersion, preferences, thisDevice, notOwner, themeMode, remoteUI } = useSelector(
-    (state: ApplicationState) => ({
-      os: state.backend.environment.os,
-      installing: state.binaries.installing,
-      cliVersion: state.binaries.installedVersion || '(loading...)',
-      preferences: state.backend.preferences,
-      thisDevice: getOwnDevices(state).find(d => d.thisDevice),
-      notOwner: !!state.backend.thisId && !getOwnDevices(state).find(d => d.thisDevice),
-      themeMode: state.ui.themeMode,
-      remoteUI: isRemoteUI(state),
-    })
+  const os = useSelector((state: State) => state.backend.environment.os)
+  const installing = useSelector((state: State) => state.binaries.installing)
+  const cliVersion = useSelector((state: State) => state.binaries.installedVersion || '(loading...)')
+  const preferences = useSelector((state: State) => state.backend.preferences)
+  const thisDevice = useSelector((state: State) => selectOwnDevices(state).find(d => d.thisDevice))
+  const notOwner = useSelector(
+    (state: State) => !!state.backend.thisId && !selectOwnDevices(state).find(d => d.thisDevice)
   )
+  const themeMode = useSelector((state: State) => state.ui.themeMode)
+  const remoteUI = useSelector((state: State) => isRemoteUI(state))
 
   const { binaries, ui } = useDispatch<Dispatch>()
 
@@ -52,7 +50,7 @@ export const OptionsPage: React.FC = () => {
             { label: 'Light', value: 'light' },
             { label: 'Dark', value: 'dark' },
           ]}
-          onChange={e => ui.setTheme(e.target.value as ApplicationState['ui']['themeMode'])}
+          onChange={e => ui.setTheme(e.target.value as State['ui']['themeMode'])}
         />
         {browser.isRemote && (
           <ListItemSetting

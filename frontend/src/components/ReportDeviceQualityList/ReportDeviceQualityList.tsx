@@ -8,7 +8,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import TableSortLabel from '@mui/material/TableSortLabel'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import Paper from '@mui/material/Paper'
 import { IAnalyticsDevice } from '../../models/analytics'
 import { Color } from '../../styling'
@@ -136,7 +136,7 @@ export const ReportDeviceQualityList: React.FC = () => {
   const classes = useStyles()
   const [order, setOrder] = React.useState<Order>('asc')
   const [orderBy, setOrderBy] = React.useState<keyof IAnalyticsDevice>('qualitySort')
-  const { devices } = useSelector((state: ApplicationState) => state.analytics)
+  const { devices } = useSelector((state: State) => state.analytics)
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof IAnalyticsDevice) => {
     const isAsc = orderBy === property && order === 'asc'

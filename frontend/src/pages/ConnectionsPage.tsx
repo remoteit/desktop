@@ -1,11 +1,11 @@
 import React from 'react'
+import { State, Dispatch } from '../store'
 import { Typography, Divider } from '@mui/material'
 import { defaultNetwork, recentNetwork } from '../models/networks'
 import { selectConnectionsByType, selectConnections, selectConnectionSessions } from '../selectors/connections'
-import { ApplicationState, Dispatch } from '../store'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { initiatorPlatformIcon } from '../components/InitiatorPlatform'
-import { getDeviceModel } from '../selectors/devices'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SessionsList } from '../components/SessionsList'
 import { StickyTitle } from '../components/StickyTitle'
@@ -17,45 +17,36 @@ import { Icon } from '../components/Icon'
 
 export const ConnectionsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { active, recent, idle, initialized, loading } = useSelector((state: ApplicationState) => {
-    const allConnections = selectConnections(state)
-    const sessions = selectConnectionSessions(state)
-    const deviceModel = getDeviceModel(state)
-    let active: ILookup<INetwork> = {}
+  const allConnections = useSelector(selectConnections)
+  const sessions = useSelector(selectConnectionSessions)
+  const initialized = useSelector((state: State) => state.connections.initialized)
+  const loading = useSelector(selectDeviceModelAttributes).fetching
+  const idle = useSelector(selectConnectionsByType)
 
-    sessions.forEach(s => {
-      const id = s.user?.id || 'default'
-      if (!active[id]) {
-        const [icon, iconType] = initiatorPlatformIcon({ id: s.platform })
-        active[id] = {
-          ...defaultNetwork(),
-          id: 'other',
-          name: s.user?.email || 'Unknown',
-          icon,
-          iconType,
-          sessions: [],
-        }
+  let active: ILookup<INetwork> = {}
+
+  sessions.forEach(s => {
+    const id = s.user?.id || 'default'
+    if (!active[id]) {
+      const [icon, iconType] = initiatorPlatformIcon({ id: s.platform })
+      active[id] = {
+        ...defaultNetwork(),
+        id: 'other',
+        name: s.user?.email || 'Unknown',
+        icon,
+        iconType,
+        sessions: [],
       }
-      active[id].sessions?.push(s)
-    })
-
-    if (active) {
-      const otherKeys = Object.keys(active)
-      if (!otherKeys.length || !active[otherKeys[0]]?.sessions?.length) active = {}
     }
-
-    return {
-      active,
-      recent: {
-        ...recentNetwork,
-        serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id),
-      },
-      idle: selectConnectionsByType(state),
-      initialized: state.connections.initialized,
-      loading: deviceModel.fetching,
-    }
+    active[id].sessions?.push(s)
   })
 
+  if (active) {
+    const otherKeys = Object.keys(active)
+    if (!otherKeys.length || !active[otherKeys[0]]?.sessions?.length) active = {}
+  }
+
+  const recent = { ...recentNetwork, serviceIds: allConnections.filter(c => !c.enabled).map(c => c.id) }
   const empty = !idle?.length
 
   return (

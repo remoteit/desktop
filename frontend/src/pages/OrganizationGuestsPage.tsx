@@ -1,5 +1,5 @@
 import React from 'react'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
 import { selectPermissions } from '../selectors/organizations'
@@ -10,7 +10,7 @@ import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 
 export const OrganizationGuestsPage: React.FC = () => {
-  const { permissions } = useSelector((state: ApplicationState) => ({
+  const { permissions } = useSelector((state: State) => ({
     permissions: selectPermissions(state),
   }))
 

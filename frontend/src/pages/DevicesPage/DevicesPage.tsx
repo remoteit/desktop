@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { selectActiveAttributes, getVisibleDevices, getDeviceModel } from '../../selectors/devices'
+import { State } from '../../store'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { removeObject } from '../../helpers/utilHelper'
-import { restoreAttributes } from '../../components/Attributes'
+import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { getConnectionsLookup } from '../../selectors/connections'
+import { restoreAttributes } from '../../components/Attributes'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
-import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesDrawers } from '../../components/DevicesDrawers'
@@ -20,34 +19,14 @@ type Props = { restore?: boolean; select?: boolean }
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const history = useHistory()
   const [initLoad, setInitLoad] = useState<boolean>(false)
-  const {
-    selected,
-    devices,
-    connections,
-    attributes,
-    required,
-    fetching,
-    initialized,
-    permissions,
-    columnWidths,
-    applicationTypes,
-  } = useSelector((state: ApplicationState) => {
-    const deviceModel = getDeviceModel(state)
-    const all = selectActiveAttributes(state)
-    const [required, rest] = removeObject(all, a => a.required === true)
-    return {
-      attributes: restore ? restoreAttributes : rest,
-      required: required || all[0],
-      selected: state.ui.selected,
-      fetching: deviceModel.fetching || state.ui.fetching,
-      initialized: deviceModel.initialized,
-      permissions: selectPermissions(state),
-      columnWidths: state.ui.columnWidths,
-      devices: getVisibleDevices(state),
-      connections: getConnectionsLookup(state),
-      applicationTypes: deviceModel.applicationTypes,
-    }
-  })
+  const { attributes, required } = useSelector(selectDeviceListAttributes)
+  const { fetching: fetch, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
+  const devices = useSelector(selectVisibleDevices)
+  const permissions = useSelector(selectPermissions)
+  const connections = useSelector(getConnectionsLookup)
+  const columnWidths = useSelector((state: State) => state.ui.columnWidths)
+  const selected = useSelector((state: State) => state.ui.selected)
+  const fetching = useSelector((state: State) => state.ui.fetching) || fetch
 
   const shouldRedirect = initLoad && permissions?.includes('MANAGE')
 
@@ -65,11 +44,12 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           <LoadingMessage message="Loading..." spinner={false} />
         ) : !devices.length ? (
           <DeviceListEmpty />
-        ) : applicationTypes?.length ? (
-          <ServiceList {...{ applicationTypes, attributes, required, devices, connections, columnWidths, fetching }} />
+        ) : !restore && applicationTypes?.length ? (
+          <ServiceList {...{ attributes, applicationTypes, required, devices, connections, columnWidths, fetching }} />
         ) : (
           <DeviceList
-            {...{ attributes, required, devices, connections, columnWidths, fetching, restore, select, selected }}
+            attributes={restore ? restoreAttributes : attributes}
+            {...{ required, devices, connections, columnWidths, fetching, restore, select, selected }}
           />
         )}
       </DevicesHeader>

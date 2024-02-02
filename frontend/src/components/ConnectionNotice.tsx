@@ -2,15 +2,13 @@ import React from 'react'
 import browser from '../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Snackbar, Button } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { Icon } from './Icon'
 
 export const ConnectionNotice: React.FC<{ className: string }> = ({ className }) => {
-  const { queueCount, queueEnabling, queueFinished, queueConnection } = useSelector(
-    (state: ApplicationState) => state.connections
-  )
+  const { queueCount, queueEnabling, queueFinished, queueConnection } = useSelector((state: State) => state.connections)
   const { connections } = useDispatch<Dispatch>()
   const history = useHistory()
 

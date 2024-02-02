@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
 import { isToday } from '../../helpers/dateHelper'
 import { DateTime } from 'luxon'
+import { limitDays } from '../../models/plans'
+import { selectLimit } from '../../selectors/organizations'
+import { Dispatch, State } from '../../store'
 import { selectActiveAccountId } from '../../selectors/accounts'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
 import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
-import { selectLimit, limitDays } from '../../models/plans'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
 
@@ -15,13 +16,9 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const dispatch = useDispatch<Dispatch>()
   const { fetch, set } = dispatch.logs
 
-  const { events, deviceId, logLimit, activeAccount, minDate, selectedDate } = useSelector(
-    (state: ApplicationState) => ({
-      logLimit: selectLimit('log-limit', state) || 'P1W',
-      activeAccount: selectActiveAccountId(state),
-      ...state.logs,
-    })
-  )
+  const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
+  const activeAccount = useSelector(selectActiveAccountId)
+  const { events, deviceId, minDate, selectedDate } = useSelector((state: State) => state.logs)
 
   let allowed = limitDays(logLimit)
 

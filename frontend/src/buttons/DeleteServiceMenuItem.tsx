@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Confirm } from '../components/Confirm'
 import { Icon } from '../components/Icon'
@@ -13,10 +13,8 @@ type Props = {
 export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
   const [open, setOpen] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
-  const { deleting, setupBusy } = useSelector((state: ApplicationState) => ({
-    setupBusy: state.ui.setupBusy,
-    deleting: service && state.ui.setupDeletingService === service.id,
-  }))
+  const setupBusy = useSelector((state: State) => state.ui.setupBusy)
+  const deleting = useSelector((state: State) => service && state.ui.setupDeletingService === service.id)
 
   let disabled = deleting || setupBusy
 

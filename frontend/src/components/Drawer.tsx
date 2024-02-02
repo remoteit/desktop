@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { ClickAwayListener, Box } from '@mui/material'
 import { radius } from '../styling'
 import { Body } from './Body'
@@ -9,7 +9,7 @@ import { Body } from './Body'
 const WIDTH = 275
 
 export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({ menu, children }) => {
-  const open = useSelector((state: ApplicationState) => state.ui.drawerMenu === menu)
+  const open = useSelector((state: State) => state.ui.drawerMenu === menu)
   const { ui } = useDispatch<Dispatch>()
   const width = open ? WIDTH : 0
   const css = useStyles()

@@ -1,10 +1,10 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 
 export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
-  const { testUI } = useSelector((state: ApplicationState) => state.ui)
+  const { testUI } = useSelector((state: State) => state.ui)
   const css = useStyles()
 
   if (!testUI) return null

@@ -3,13 +3,14 @@ import React from 'react'
 import Controller from './services/Controller'
 import browser from './services/Browser'
 import { App } from './components/App'
+import { store, persistor } from './store'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { PersistGate } from 'redux-persist/integration/react'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline } from '@mui/material'
 import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { Layout } from './components/Layout'
-import { store } from './store'
 import heartbeat from './services/Heartbeat'
 import analytics from './services/analytics'
 import './initializeCommon'
@@ -23,12 +24,14 @@ const root = createRoot(document.getElementById('root')!)
 root.render(
   <ErrorBoundary store={store}>
     <Provider store={store}>
-      <Layout>
-        <CssBaseline />
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </Layout>
+      <PersistGate persistor={persistor}>
+        <Layout>
+          <CssBaseline />
+          <HashRouter>
+            <App />
+          </HashRouter>
+        </Layout>
+      </PersistGate>
     </Provider>
   </ErrorBoundary>
 )

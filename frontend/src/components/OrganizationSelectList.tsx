@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { ListItem, ListSubheader, ListItemIcon, ListItemText, Chip } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
@@ -13,7 +13,7 @@ const AVATAR_SIZE = 28
 export const OrganizationSelectList: React.FC = () => {
   const history = useHistory()
   const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
-  const { options, activeOrg, ownOrg, user } = useSelector((state: ApplicationState) => ({
+  const { options, activeOrg, ownOrg, user } = useSelector((state: State) => ({
     activeOrg: selectOrganization(state),
     options: state.accounts.membership.map(m => {
       const org = selectOrganization(state, m.account.id)
@@ -34,7 +34,7 @@ export const OrganizationSelectList: React.FC = () => {
   const onSelect = async (id: string) => {
     if (id) {
       await logs.reset()
-      await accounts.setActive(id.toString())
+      await accounts.set({ activeId: id.toString() })
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()

@@ -5,7 +5,7 @@ import { ClearButton } from '../buttons/ClearButton'
 import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { selectConnectionSessions, selectConnections } from '../selectors/connections'
 import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
@@ -22,11 +22,11 @@ export interface Props {
 
 export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, connectionsPage }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { collapsed, sessions, networkEnabled } = useSelector((state: ApplicationState) => ({
-    collapsed: [...state.ui.collapsed],
-    sessions: selectConnectionSessions(state),
-    networkEnabled: selectConnections(state).some(c => c.enabled && network?.serviceIds.includes(c.id)),
-  }))
+  const collapsed = useSelector((state: State) => state.ui.collapsed)
+  const sessions = useSelector((state: State) => selectConnectionSessions(state))
+  const networkEnabled = useSelector((state: State) =>
+    selectConnections(state).some(c => c.enabled && network?.serviceIds.includes(c.id))
+  )
   const css = useStyles({ highlight })
 
   if (!network?.id) return null
@@ -35,9 +35,10 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
   const expanded = !collapsed.includes(network.id)
   const toggle = (event: React.MouseEvent) => {
     event.stopPropagation()
-    if (expanded) collapsed.push(network.id)
-    else collapsed.splice(collapsed.indexOf(network.id), 1)
-    dispatch.ui.set({ collapsed })
+    const updated = [...collapsed]
+    if (expanded) updated.push(network.id)
+    else updated.splice(updated.indexOf(network.id), 1)
+    dispatch.ui.set({ collapsed: updated })
   }
 
   return (

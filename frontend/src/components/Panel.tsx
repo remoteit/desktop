@@ -10,10 +10,11 @@ export const Panel: React.FC<Props> = ({ layout, header = true, children }) => {
       sx={{
         flexGrow: 1,
         height: '100%',
-        maxWidth: `calc(100% - ${layout.sidePanelWidth}px)`,
+        width: `calc(100% - ${layout.sidePanelWidth}px)`,
         display: 'flex',
         flexDirection: 'column',
         contain: 'content',
+        margin: 'auto',
         // for iOS mobile
         paddingTop: layout.insets?.topPx,
         paddingBottom: layout.showBottomMenu ? 0 : layout.insets?.bottomPx,

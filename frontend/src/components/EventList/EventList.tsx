@@ -1,11 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
+import { selectLimit } from '../../selectors/organizations'
+import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
 import { List, Box, Button, Typography } from '@mui/material'
 import { fontSizes, spacing } from '../../styling'
-import { selectLimit, humanizeDays } from '../../models/plans'
+import { humanizeDays } from '../../models/plans'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
 import { Pre } from '../Pre'
@@ -17,11 +18,9 @@ export interface LogListProps {
 export const EventList: React.FC<LogListProps> = ({ device }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
-  const { events, planUpgrade, fetching, fetchingMore, user, logLimit } = useSelector((state: ApplicationState) => ({
-    ...state.logs,
-    user: state.user,
-    logLimit: selectLimit('log-limit', state) || 'P1W',
-  }))
+  const user = useSelector((state: State) => state.user)
+  const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
+  const { events, planUpgrade, fetching, fetchingMore } = useSelector((state: State) => state.logs)
 
   const fetchMore = async () => {
     await dispatch.logs.set({ deviceId: device?.id, after: events?.last })

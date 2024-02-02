@@ -1,6 +1,6 @@
 import { IP_PRIVATE } from '@common/constants'
 import { PORTAL, MODE, REGEX_SCHEME } from '../constants'
-import { ApplicationState, store } from '../store'
+import { State, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
 import { AppLauncher } from '@capacitor/app-launcher'
 import { Capacitor } from '@capacitor/core'
@@ -132,9 +132,8 @@ export function agent() {
   return result?.length ? result[0] : ''
 }
 
-// this is a function to save information per user session in local storage
-export function getLocalStorage(state: ApplicationState, key: string) {
-  const currentSession = state.auth.user?.id
+export function getLocalStorage(state: State | null, key: string) {
+  const currentSession = state?.auth.user?.id || 'app'
   const value = currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
   try {
     return value && JSON.parse(value)
@@ -143,13 +142,13 @@ export function getLocalStorage(state: ApplicationState, key: string) {
   }
 }
 
-export async function setLocalStorage(state: ApplicationState, key: string, value: any) {
-  const currentSession = await state.auth.user?.id
+export function setLocalStorage(state: State | null, key: string, value: any) {
+  const currentSession = state?.auth.user?.id || 'app'
   currentSession && window.localStorage.setItem(currentSession + ':' + key, JSON.stringify(value))
 }
 
-export async function removeLocalStorage(state: ApplicationState, key: string) {
-  const currentSession = await state.auth.user?.id
+export function removeLocalStorage(state: State | null, key: string) {
+  const currentSession = state?.auth.user?.id || 'app'
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 

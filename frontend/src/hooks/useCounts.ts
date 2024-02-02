@@ -1,22 +1,17 @@
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { selectNetworks } from '../selectors/networks'
-import { getDeviceModel } from '../selectors/devices'
-import { ApplicationState } from '../store'
-import { selectAnnouncements } from '../models/announcements'
-import { selectEnabledConnectionsCount } from '../selectors/connections'
+import { selectAnnouncements } from '../selectors/announcements'
 import { selectConnectionSessions } from '../selectors/connections'
+import { selectDeviceModelAttributes } from '../selectors/devices'
+import { selectEnabledConnectionsCount } from '../selectors/connections'
 
 export function useCounts() {
-  const { unreadAnnouncements, connections, networks, active, devices, memberships } = useSelector(
-    (state: ApplicationState) => ({
-      unreadAnnouncements: selectAnnouncements(state, true).length,
-      connections: selectEnabledConnectionsCount(state),
-      networks: selectNetworks(state).length,
-      active: selectConnectionSessions(state).length,
-      devices: getDeviceModel(state).total,
-      memberships: state.accounts.membership.length,
-    })
-  )
-
+  const unreadAnnouncements = useSelector((state: State) => selectAnnouncements(state, true).length)
+  const connections = useSelector(selectEnabledConnectionsCount)
+  const networks = useSelector(selectNetworks).length
+  const active = useSelector(selectConnectionSessions).length
+  const devices = useSelector(selectDeviceModelAttributes).total
+  const memberships = useSelector((state: State) => state.accounts.membership.length)
   return { unreadAnnouncements, connections, networks, active, devices, memberships }
 }

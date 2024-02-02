@@ -184,7 +184,7 @@ class Controller {
     this.pool.init()
     sshConfig.init()
     this.refresh()
-    this.io.emit('dataReady')
+    this.io.emit('appReady')
     Logger.info('DATA READY')
   }
 

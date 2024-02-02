@@ -1,6 +1,6 @@
 import React from 'react'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { selectMembership, selectActiveAccountId } from '../selectors/accounts'
 import { Chip } from '@mui/material'
@@ -8,14 +8,9 @@ import { Chip } from '@mui/material'
 type Props = { device?: IDevice }
 
 export const DeviceRole: React.FC<Props> = ({ device }) => {
-  const { membership, roles } = useSelector((state: ApplicationState) => {
-    const accountId = device?.accountId || selectActiveAccountId(state)
-
-    return {
-      membership: selectMembership(state, accountId),
-      roles: selectOrganization(state, accountId).roles,
-    }
-  })
+  const accountId = useSelector((state: State) => selectActiveAccountId(state, device?.accountId))
+  const membership = useSelector((state: State) => selectMembership(state, accountId))
+  const roles = useSelector((state: State) => selectOrganization(state, accountId).roles)
 
   let roleId = membership.roleId
   if (roleId === 'OWNER' && device?.owner.id !== membership.account.id) roleId = 'GUEST'

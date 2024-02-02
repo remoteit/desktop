@@ -1,14 +1,14 @@
 import React from 'react'
-import { getDeviceModel } from '../../selectors/devices'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
+import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { Box, Button } from '@mui/material'
 import { spacing } from '../../styling'
 
 export const LoadMore: React.FC = () => {
-  const { from, size, total, results, searched, fetching } = useSelector((state: ApplicationState) =>
-    getDeviceModel(state)
+  const { from, size, total, results, searched, fetching } = useSelector((state: State) =>
+    selectDeviceModelAttributes(state)
   )
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()

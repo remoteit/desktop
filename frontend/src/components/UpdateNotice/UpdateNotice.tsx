@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { Snackbar, Button, IconButton } from '@mui/material'
 import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
@@ -9,7 +9,7 @@ import { Icon } from '../Icon'
 import browser from '../../services/Browser'
 
 export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
-  const updateReady = useSelector((state: ApplicationState) => selectUpdateNotice(state))
+  const updateReady = useSelector((state: State) => selectUpdateNotice(state))
   const [confirm, setConfirm] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(!!updateReady)
   const dispatch = useDispatch<Dispatch>()

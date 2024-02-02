@@ -1,21 +1,19 @@
 import React from 'react'
 import isEqual from 'lodash/isEqual'
+import { Dispatch } from '../store'
 import { defaultState } from '../models/devices'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectApplicationTypesGrouped } from '../selectors/applications'
 import { Stack, Divider, Tabs, Tab, TabProps } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
-import { getDeviceModel } from '../selectors/devices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { Icon } from './Icon'
 
 const SCREEN_VIEW_ID = 48
 
 export const DevicesApplicationsBar: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { allTypes, activeTypes } = useSelector((state: ApplicationState) => ({
-    allTypes: [...selectApplicationTypesGrouped(state)],
-    activeTypes: getDeviceModel(state).applicationTypes,
-  }))
+  const allTypes = [...useSelector(selectApplicationTypesGrouped)]
+  const { applicationTypes } = useSelector(selectDeviceModelAttributes)
 
   if (!allTypes.length) return null
 
@@ -25,10 +23,10 @@ export const DevicesApplicationsBar: React.FC = () => {
     allTypes.unshift(allTypes.splice(hasScreenView, 1)[0])
   }
 
-  let selection = allTypes.findIndex(t => isEqual(activeTypes, t.ids))
+  let selection = allTypes.findIndex(t => isEqual(applicationTypes, t.ids))
 
-  const update = async (applicationTypes?: number[]) => {
-    await dispatch.devices.setPersistent({ applicationTypes, from: defaultState.from })
+  const update = async (updated?: number[]) => {
+    await dispatch.devices.set({ applicationTypes: updated, from: defaultState.from })
     await dispatch.devices.fetchList()
   }
 

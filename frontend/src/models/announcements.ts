@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLReadNotice } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
@@ -83,10 +83,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
-  return state.announcements.all.filter(a => !unread || !a.read)
-}
 
 const TEST_DATA: any = [
   {

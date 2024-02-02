@@ -2,7 +2,7 @@ import 'react-phone-input-2/lib/material.css'
 import PhoneInput from 'react-phone-input-2'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { Typography, Button, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Notice } from '../Notice'
@@ -14,7 +14,7 @@ export interface Props {
 
 export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   const css = useStyles()
-  const { AWSPhone, AWSUser, mfaMethod } = useSelector((state: ApplicationState) => ({
+  const { AWSPhone, AWSUser, mfaMethod } = useSelector((state: State) => ({
     AWSPhone: state.auth.AWSUser.phone_number || '',
     AWSUser: state.auth.AWSUser,
     mfaMethod: state.mfa.mfaMethod,

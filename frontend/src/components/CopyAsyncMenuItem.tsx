@@ -1,6 +1,6 @@
 import React from 'react'
 import { CopyMenuItem, CopyMenuItemProps } from './CopyMenuItem'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 
 type Props = CopyMenuItemProps & {
   request: () => Promise<string>

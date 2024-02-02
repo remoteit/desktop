@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../../components/ContactSelector'
 import { useHistory } from 'react-router-dom'
@@ -12,7 +12,7 @@ import { Notice } from '../../components/Notice'
 type Props = { device?: IDevice }
 
 export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
-  const { contacts = [], transferring } = useSelector((state: ApplicationState) => ({
+  const { contacts = [], transferring } = useSelector((state: State) => ({
     contacts: state.contacts.all,
     transferring: state.ui.transferring,
   }))

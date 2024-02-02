@@ -17,7 +17,7 @@ import {
   ENTERPRISE_PLAN_ID,
   deviceUserTotal,
 } from '../models/plans'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
 import { useMediaQuery } from '@mui/material'
@@ -95,7 +95,7 @@ export const Plans: React.FC = () => {
   const css = useStyles({ small })
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const { initialized, accountId, plan, plans, license, purchasing } = useSelector((state: ApplicationState) => ({
+  const { initialized, accountId, plan, plans, license, purchasing } = useSelector((state: State) => ({
     initialized: state.organization.initialized,
     accountId: state.user.id,
     plan: selectPlan(state),

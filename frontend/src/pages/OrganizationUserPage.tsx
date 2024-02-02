@@ -7,7 +7,7 @@ import { selectOrganization, selectRemoteitLicense } from '../selectors/organiza
 import { getFreeUsers } from '../models/plans'
 import { selectAccessibleNetworks } from '../models/networks'
 import { selectNetworks } from '../selectors/networks'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Typography, List, Box, Divider } from '@mui/material'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { TargetPlatform } from '../components/TargetPlatform'
@@ -31,7 +31,7 @@ export const OrganizationUserPage: React.FC = () => {
   const [removing, setRemoving] = useState<boolean>(false)
   const [fetched, setFetched] = useState<boolean>(false)
   const { devices, member, accessible, networks, freeUsers, organization, guest, guestsLoaded, license } = useSelector(
-    (state: ApplicationState) => {
+    (state: State) => {
       const organization = selectOrganization(state)
       const guest = organization.guests.find(g => g.id === userID)
       const member = organization.members.find(m => m.user.id === userID)

@@ -259,7 +259,7 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
-        appLaunchType: ios || android ? 'URL' : 'COMMAND',
+        appLaunchType: ios || android || mac ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
         appCommandTemplate: windows

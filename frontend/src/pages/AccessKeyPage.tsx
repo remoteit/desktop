@@ -1,5 +1,5 @@
 import React from 'react'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
@@ -9,7 +9,7 @@ import { AccountAccessKey } from '../components/AccountAccessKey'
 import { Gutters } from '../components/Gutters'
 
 export const AccessKeyPage: React.FC = () => {
-  const { apiKey } = useSelector((state: ApplicationState) => ({
+  const { apiKey } = useSelector((state: State) => ({
     apiKey: state.keys?.apiKey,
   }))
 

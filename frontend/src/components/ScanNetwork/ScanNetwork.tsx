@@ -18,7 +18,7 @@ import { REGEX_LAST_PATH } from '../../constants'
 import { IP_PRIVATE, REGEX_NAME_SAFE } from '@common/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { spacing, fontSizes } from '../../styling'
 
 type Props = {
@@ -45,7 +45,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const [open, setOpen] = useState<number[]>([])
-  const { applicationTypes, setupServicesLimit } = useSelector((state: ApplicationState) => ({
+  const { applicationTypes, setupServicesLimit } = useSelector((state: State) => ({
     applicationTypes: state.applicationTypes.all,
     setupServicesLimit: state.ui.setupServicesLimit,
   }))

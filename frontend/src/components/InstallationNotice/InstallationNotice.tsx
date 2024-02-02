@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import { Button, Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
@@ -11,7 +11,7 @@ import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 
 export const InstallationNotice: React.FC = () => {
-  const { connected, error, installing } = useSelector((state: ApplicationState) => ({
+  const { connected, error, installing } = useSelector((state: State) => ({
     error: state.binaries.error,
     installing: state.binaries.installing,
     connected: state.ui.connected,

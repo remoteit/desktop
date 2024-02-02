@@ -2,7 +2,7 @@ import React from 'react'
 import { emit } from '../../services/Controller'
 import { Button } from '@mui/material'
 import { fullVersion, version as currentVersion } from '../../helpers/versionHelper'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../ListItemSetting'
 import { DesktopUI } from '../DesktopUI'
@@ -12,7 +12,7 @@ import { TestUI } from '../TestUI'
 
 export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = ({ preferences, os }) => {
   const { version, nextCheck, checking, downloaded, downloading, error } = useSelector(
-    (state: ApplicationState) => state.backend.updateStatus
+    (state: State) => state.backend.updateStatus
   )
   const dispatch = useDispatch<Dispatch>()
   const updateAvailable = downloaded && version !== currentVersion

@@ -23,10 +23,18 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { getAllDevices, selectDevice, getDeviceModel, selectById, selectActiveColumns } from '../selectors/devices'
+import { getLocalStorage, removeLocalStorage } from '../services/Browser'
+import { selectTimeSeries } from '../selectors/ui'
+import {
+  getAllDevices,
+  getDeviceModel,
+  selectDevice,
+  selectById,
+  selectActiveColumns,
+  selectDeviceModelAttributes,
+} from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { store, ApplicationState } from '../store'
+import { store, State } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
@@ -92,45 +100,49 @@ const defaultAccountState: IDeviceAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async init(_: void, state) {
+    async migrate(_: void, state) {
       const accountId = selectActiveAccountId(state)
       console.log('INIT DEVICES', accountId)
       let states = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(state, `device-${accountId}-${key}`)
-        if (value) states[key] = value
+        if (value) {
+          states[key] = value
+          removeLocalStorage(state, `device-${accountId}-${key}`)
+          console.log('MIGRATE DEVICE STATE', key, value)
+        }
       })
       await dispatch.devices.set({ ...states, accountId })
-      console.log('set devices', states)
     },
 
     async fetchList(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      let deviceModel = getDeviceModel(state, accountId)
+      let deviceModel = selectDeviceModelAttributes(state, accountId)
 
       if (!deviceModel.initialized) {
-        await dispatch.devices.init()
-        // Update the state object after initialization
+        await dispatch.devices.migrate()
+        // Update the state object after
         state = store.getState()
-        deviceModel = getDeviceModel(state, accountId)
+        deviceModel = selectDeviceModelAttributes(state, accountId)
       }
 
       const columns = selectActiveColumns(state, accountId)
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, owner, filter, append, searched } = deviceModel
+      const { deviceTimeSeries, serviceTimeSeries } = selectTimeSeries(state)
 
       const options: gqlOptions = {
         accountId,
         name: query,
         columns,
+        deviceTimeSeries,
+        serviceTimeSeries,
         size: deviceModel.size,
         from: deviceModel.from,
         tag: deviceModel.tag,
         sort: deviceModel.sort,
         platform: deviceModel.platform,
-        deviceTimeSeries: state.ui.deviceTimeSeries,
-        serviceTimeSeries: state.ui.serviceTimeSeries,
         applicationTypes: deviceModel.applicationTypes,
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
@@ -153,7 +165,7 @@ export default createModel<RootModel>()({
     },
 
     async fetchIfEmpty(_: void, state) {
-      const deviceModel = getDeviceModel(state)
+      const deviceModel = selectDeviceModelAttributes(state)
       if (!deviceModel.initialized) {
         await dispatch.devices.fetchList()
         await dispatch.applicationTypes.fetch()
@@ -166,7 +178,7 @@ export default createModel<RootModel>()({
         accountId,
         ids,
         columns: ['deviceName'],
-        timeSeries: state.ui.deviceTimeSeries,
+        timeSeries: selectTimeSeries(state).deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
@@ -206,14 +218,10 @@ export default createModel<RootModel>()({
       let errors: Error[] | undefined
 
       dispatch.devices.set({ fetching: true, accountId })
+      const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
       try {
-        const gqlResponse = await graphQLFetchFullDevice(
-          id,
-          accountId,
-          state.ui.serviceTimeSeries,
-          state.ui.deviceTimeSeries
-        )
+        const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
         errors = graphQLGetErrors(gqlResponse)
         const gqlData = gqlResponse?.data?.data?.login || {}
         if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
@@ -450,7 +458,7 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'aws', step: 2 })
 
       const result = await graphQLClaimDevice(code, accountId)
-      await dispatch.accounts.setActive(accountId)
+      await dispatch.accounts.set({ activeId: accountId })
 
       if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice
@@ -581,7 +589,7 @@ export default createModel<RootModel>()({
     },
 
     async customAttributes(customAttributes: Set<string>, state) {
-      const unique = new Set([...customAttributes, ...getDeviceModel(state).customAttributes])
+      const unique = new Set([...customAttributes, ...selectDeviceModelAttributes(state).customAttributes])
       dispatch.devices.set({ customAttributes: [...Array.from(unique)].sort() })
     },
 
@@ -616,17 +624,9 @@ export default createModel<RootModel>()({
 
     async incrementTotal(accountId: string, state) {
       accountId = accountId || selectActiveAccountId(state)
-      const total = getDeviceModel(state, accountId).total + 1
+      const total = selectDeviceModelAttributes(state, accountId).total + 1
       console.log('INCREMENT TOTAL', { total, accountId })
       await dispatch.devices.set({ total, accountId })
-    },
-
-    async setPersistent(params: ILookup<any>, state) {
-      const accountId = params.accountId || selectActiveAccountId(state)
-      Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${accountId}-${key}`, params[key] || '')
-      })
-      await dispatch.devices.set(params)
     },
 
     async set(params: Partial<IDeviceState>, state) {
@@ -670,22 +670,11 @@ export function mergeDevice(target: IDevice, source: IDevice) {
   }
 }
 
-export function selectIsFiltered(state: ApplicationState) {
-  const devices = getDeviceModel(state)
-  return (
-    devices.sort !== defaultState.sort ||
-    devices.filter !== defaultState.filter ||
-    devices.owner !== defaultState.owner ||
-    devices.platform !== defaultState.platform ||
-    devices.tag !== defaultState.tag
-  )
-}
-
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {
   const inactive = instance?.state !== 'active' && !connection?.connected
   return inactive
 }
 
-export function eachDevice(state: ApplicationState, callback: (device: IDevice) => void) {
+export function eachDevice(state: State, callback: (device: IDevice) => void) {
   getAllDevices(state).forEach(device => callback(device))
 }

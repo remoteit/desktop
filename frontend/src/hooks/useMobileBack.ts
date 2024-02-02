@@ -1,12 +1,12 @@
 import { REGEX_FIRST_PATH } from '../constants'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 
 const useMobileBack = () => {
   const history = useHistory()
   const location = useLocation()
-  const customHistory = useSelector((state: ApplicationState) => state.ui.mobileNavigation)
+  const customHistory = useSelector((state: State) => state.ui.mobileNavigation)
 
   const goUp = () => {
     const newHistory = [...customHistory]

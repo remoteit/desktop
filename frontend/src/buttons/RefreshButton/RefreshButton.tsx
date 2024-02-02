@@ -4,8 +4,8 @@ import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
 import { emit } from '../../services/Controller'
 import { useParams, useRouteMatch } from 'react-router-dom'
-import { getDeviceModel, selectDevice } from '../../selectors/devices'
-import { Dispatch, ApplicationState } from '../../store'
+import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
+import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
 import { attributeName } from '@common/nameHelper'
@@ -13,11 +13,11 @@ import { attributeName } from '@common/nameHelper'
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { fetching, device } = useSelector((state: ApplicationState) => ({
-    fetching: getDeviceModel(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching,
-    device: selectDevice(state, undefined, deviceID),
-  }))
-
+  const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
+  const fetching = useSelector(
+    (state: State) =>
+      selectDeviceModelAttributes(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching
+  )
   const connectionPage = useRouteMatch('/connections')
   const networkPage = useRouteMatch('/networks')
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
@@ -58,6 +58,10 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   }
 
   const refresh = async () => {
+    if (fetching) {
+      await cloudSync.cancel()
+      return
+    }
     network.connect()
     cloudController.ping()
     await cloudSync.call(methods)
@@ -71,8 +75,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       fixedWidth
       icon="sync"
       placement="bottom"
+      color={fetching ? 'gray' : undefined}
       title={title}
-      disabled={fetching}
       spin={fetching}
       onClick={refresh}
     />

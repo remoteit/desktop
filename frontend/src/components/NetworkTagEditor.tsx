@@ -2,7 +2,7 @@ import React from 'react'
 import { Box } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -12,7 +12,7 @@ import { Tags } from './Tags'
 type Props = { network?: INetwork; button?: string }
 
 export const NetworkTagEditor: React.FC<Props> = ({ network, button }) => {
-  const { tags, accountId, canEdit } = useSelector((state: ApplicationState) => {
+  const { tags, accountId, canEdit } = useSelector((state: State) => {
     const accountId = selectActiveAccountId(state)
     return {
       accountId,

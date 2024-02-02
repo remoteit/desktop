@@ -2,7 +2,7 @@ import React from 'react'
 import { emit } from '../services/Controller'
 import { Tooltip } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, State } from '../store'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Typography } from '@mui/material'
 import { Notice } from './Notice'
@@ -16,12 +16,10 @@ type Props = {
 
 export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick }) => {
   const { devices, ui } = useDispatch<Dispatch>()
-  const { destroying, userId, setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({
-    userId: state.auth.user?.id,
-    destroying: state.ui.destroying,
-    setupBusy: state.ui.setupBusy,
-    setupDeletingDevice: state.ui.setupDeletingDevice,
-  }))
+  const userId = useSelector((state: State) => state.auth.user?.id)
+  const destroying = useSelector((state: State) => state.ui.destroying)
+  const setupBusy = useSelector((state: State) => state.ui.setupBusy)
+  const setupDeletingDevice = useSelector((state: State) => state.ui.setupDeletingDevice)
 
   let disabled: boolean = false
   let icon: string = 'trash'

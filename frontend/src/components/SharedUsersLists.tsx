@@ -1,10 +1,10 @@
 import React from 'react'
+import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { Typography, Box, Paper, Tooltip } from '@mui/material'
-import { ApplicationState } from '../store'
 import { SharedUsersPaginatedList } from './SharedUsersPaginatedList'
-import { selectMembersWithAccess } from '../models/organization'
+import { selectMembersWithAccess } from '../selectors/organizations'
 import { selectOrganization } from '../selectors/organizations'
 import { ShareButton } from '../buttons/ShareButton'
 import { IconButton } from '../buttons/IconButton'
@@ -21,10 +21,8 @@ interface Props {
 export const SharedUsersLists: React.FC<Props> = ({ device, network, connected = [], users = [] }) => {
   const instance = device || network
   const location = useLocation()
-  const { members, hasOrganization } = useSelector((state: ApplicationState) => ({
-    members: selectMembersWithAccess(state, instance).map(m => m.user),
-    hasOrganization: !!selectOrganization(state).id,
-  }))
+  const members = useSelector((state: State) => selectMembersWithAccess(state, undefined, instance)).map(m => m.user)
+  const hasOrganization = useSelector((state: State) => !!selectOrganization(state).id)
   const disconnected = users.filter(user => !connected.find(_u => _u.email === user.email))
   const manager = !!instance?.permissions.includes('MANAGE')
 

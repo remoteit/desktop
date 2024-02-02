@@ -1,13 +1,13 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@mui/styles'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { ListItemSetting } from '../ListItemSetting'
 import { emit } from '../../services/Controller'
 
 export const SettingsDisableNetworkItem: React.FC = () => {
   const css = useStyles()
-  const { preferences } = useSelector((state: ApplicationState) => state.backend)
+  const { preferences } = useSelector((state: State) => state.backend)
   const [toggleChange, setToggleChange] = React.useState(false)
   const subLabelText = toggleChange ? (
     <span className={css.span}>Please restart for changes to take effect.</span>

@@ -1,11 +1,10 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { getDeviceModel } from '../../selectors/devices'
+import { selectDeviceModelAttributes, selectIsFiltered } from '../../selectors/devices'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { DEMO_DEVICE_CLAIM_CODE } from '../../constants'
 import { Typography, Button, Box } from '@mui/material'
-import { selectIsFiltered } from '../../models/devices'
 import { isUserAccount } from '../../selectors/accounts'
 import { GuideStep } from '../GuideStep'
 import { spacing } from '../../styling'
@@ -16,11 +15,13 @@ import { Body } from '../Body'
 export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const { noResults, userAccount, claiming } = useSelector((state: ApplicationState) => ({
-    noResults: (getDeviceModel(state).searched || selectIsFiltered(state)) && !getDeviceModel(state).results,
-    userAccount: isUserAccount(state),
-    claiming: state.ui.claiming,
-  }))
+  const noResults = useSelector(
+    (state: State) =>
+      (selectDeviceModelAttributes(state).searched || selectIsFiltered(state)) &&
+      !selectDeviceModelAttributes(state).results
+  )
+  const userAccount = useSelector((state: State) => isUserAccount(state))
+  const claiming = useSelector((state: State) => state.ui.claiming)
 
   return (
     <Body center>

@@ -2,14 +2,14 @@ import React from 'react'
 import browser, { windowOpen, getOs } from '../services/Browser'
 import { safeHostname } from '@common/nameHelper'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Button, Typography } from '@mui/material'
 import { IPlatform } from '../platforms'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
 export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => {
-  const hostname = useSelector((state: ApplicationState) => safeHostname(state.backend.environment.hostname, []))
+  const hostname = useSelector((state: State) => safeHostname(state.backend.environment.hostname, []))
   const openDownloads = () => windowOpen(platform.installation?.link, '_blank', browser.isAndroid)
 
   return (

@@ -5,7 +5,7 @@ import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import {
   Box,
   Badge,
@@ -28,13 +28,11 @@ import { spacing } from '../styling'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
-  const { defaultSelectedPage, remoteUI, limits, insets, rootPaths } = useSelector((state: ApplicationState) => ({
-    defaultSelectedPage: selectDefaultSelectedPage(state),
-    remoteUI: isRemoteUI(state),
-    limits: selectLimitsLookup(state),
-    insets: state.ui.layout.insets,
-    rootPaths: !browser.isElectron && state.ui.layout.hideSidebar,
-  }))
+  const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
+  const remoteUI = useSelector(isRemoteUI)
+  const limits = useSelector(selectLimitsLookup)
+  const insets = useSelector((state: State) => state.ui.layout.insets)
+  const rootPaths = useSelector((state: State) => !browser.isElectron && state.ui.layout.hideSidebar)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const [more, setMore] = useState<boolean>()
@@ -111,7 +109,7 @@ export const SidebarNav: React.FC = () => {
         </>
       )}
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
-      <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense />
+      <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense exactMatch />
       <ListItem sx={{ marginTop: 2 }}>
         <ListItemButton onClick={() => setMore(!more)}>
           <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
@@ -144,6 +142,7 @@ export const SidebarNav: React.FC = () => {
         ) : (
           <ListItemLink title="Support Forum" href="https://link.remote.it/forum" icon="comments" dense />
         )}
+        <ListItemLocation title="Settings" icon="sliders-h" to="/settings" dense />
       </Box>
     </List>
   )

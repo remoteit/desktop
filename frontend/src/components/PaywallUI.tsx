@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip, TooltipProps, Box } from '@mui/material'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -21,7 +21,7 @@ export const PaywallUI: React.FC<Props> = ({
   children,
   ...props
 }) => {
-  const limits = useSelector((state: ApplicationState) => selectLimitsLookup(state))
+  const limits = useSelector((state: State) => selectLimitsLookup(state))
   const history = useHistory()
 
   if (limits[limitName]) return <>{children}</>

@@ -141,9 +141,9 @@ function getEventHandlers() {
       auth.backendAuthenticated()
     },
 
-    dataReady: () => {
+    appReady: () => {
       controller.log('event: DATA READY')
-      auth.dataReady()
+      auth.appReady()
     },
 
     disconnect: () => {

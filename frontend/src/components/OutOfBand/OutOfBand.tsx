@@ -1,17 +1,15 @@
 import React from 'react'
 import { Link } from '../Link'
+import { State } from '../../store'
 import { Tooltip } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
 import { spacing, fontSizes } from '../../styling'
 
 export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   const css = useStyles()
-  const { available, active } = useSelector((state: ApplicationState) => ({
-    available: state.backend.environment.oobAvailable,
-    active: state.backend.interfaces.length > 1,
-  }))
+  const available = useSelector((state: State) => state.backend.environment.oobAvailable)
+  const active = useSelector((state: State) => state.backend.interfaces.length > 1)
 
   if (!available) return null
 

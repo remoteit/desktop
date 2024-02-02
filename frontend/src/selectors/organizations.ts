@@ -1,9 +1,16 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
-import { getOrganizations, getPlans, getTestLimits, getLimitsOverride, getPlansTests } from './state'
+import {
+  getOrganizations,
+  getPlans,
+  getTestLimits,
+  getLimitsOverride,
+  getPlansTests,
+  optionalSecondParam,
+} from './state'
 import { selectActiveAccountId, isUserAccount, getActiveUser } from './accounts'
+import { defaultState, canMemberView } from '../models/organization'
 import { selectMembership } from './accounts'
-import { defaultState } from '../models/organization'
 
 export const selectOrganization = createSelector(
   [selectActiveAccountId, getOrganizations, selectMembership],
@@ -19,6 +26,12 @@ export const selectOrganization = createSelector(
 export const selectOrganizationName = createSelector(
   [selectOrganization],
   (organization): string => organization.name || 'Unknown'
+)
+
+export const selectMembersWithAccess = createSelector(
+  [selectOrganization, optionalSecondParam],
+  (organization, instance?: IInstance) =>
+    organization.members.filter(m => canMemberView(organization.roles, m, instance)) || []
 )
 
 export const selectRemoteitPlans = createSelector([getPlans], plans => {
@@ -42,6 +55,11 @@ export const selectPlan = createSelector([selectRemoteitPlans, selectRemoteitLic
 export const selectLimits = createSelector(
   [selectOrganization, getTestLimits],
   (organization, testLimits) => testLimits || organization.limits
+)
+
+export const selectLimit = createSelector(
+  [selectLimits, optionalSecondParam],
+  (limits, limitName) => limits.find(limit => limit.name === limitName)?.value || 'P1D'
 )
 
 export const selectLimitsLookup = createSelector(

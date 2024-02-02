@@ -1,6 +1,17 @@
+import { Duration } from 'luxon'
 import { createSelector } from 'reselect'
-import { getDefaultSelected, getThemeDark, getUpdateStatus, getNotifiedVersion, getPreferences } from './state'
+import { findLongestLength, defaultDeviceTimeSeries, defaultServiceTimeSeries } from '../helpers/dateHelper'
+import {
+  getDefaultSelected,
+  getThemeDark,
+  getUpdateStatus,
+  getNotifiedVersion,
+  getPreferences,
+  getDeviceTimeSeries,
+  getServiceTimeSeries,
+} from './state'
 import { selectActiveAccountId } from './accounts'
+import { selectLimit } from './organizations'
 import { getTheme } from '../styling/theme'
 import { version } from '../helpers/versionHelper'
 
@@ -16,6 +27,30 @@ export const selectUpdateNotice = createSelector(
   (updateStatus, preferences, notifiedVersion) => {
     if (preferences.autoUpdate && updateStatus.downloaded && updateStatus.version !== version) {
       if (!notifiedVersion || notifiedVersion !== updateStatus.version) return updateStatus.version
+    }
+  }
+)
+
+export const selectTimeSeriesDefaults = createSelector(
+  [state => selectLimit(state, undefined, 'log-limit')],
+  logLimit => ({
+    deviceTimeSeries: {
+      ...defaultDeviceTimeSeries,
+      length: findLongestLength(Duration.fromISO(logLimit), defaultDeviceTimeSeries.resolution),
+    },
+    serviceTimeSeries: {
+      ...defaultServiceTimeSeries,
+      length: findLongestLength(Duration.fromISO(logLimit), defaultServiceTimeSeries.resolution),
+    },
+  })
+)
+
+export const selectTimeSeries = createSelector(
+  [selectTimeSeriesDefaults, getDeviceTimeSeries, getServiceTimeSeries],
+  (timeSeriesDefaults, deviceTimeSeries, serviceTimeSeries) => {
+    return {
+      deviceTimeSeries: deviceTimeSeries || timeSeriesDefaults.deviceTimeSeries,
+      serviceTimeSeries: serviceTimeSeries || timeSeriesDefaults.serviceTimeSeries,
     }
   }
 )

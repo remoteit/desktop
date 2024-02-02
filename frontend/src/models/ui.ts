@@ -6,13 +6,13 @@ import { isDarkMode } from '../styling/theme'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
 
-const SAVED_STATES = [
+const SAVED_ACROSS_LOGOUT = [
   'apis',
   'guides',
   'panelWidth',
@@ -102,8 +102,8 @@ export type UIState = {
   autoCopy: boolean
   updateNoticeCleared?: number
   showRestoreModal: boolean
-  deviceTimeSeries: ITimeSeriesOptions
-  serviceTimeSeries: ITimeSeriesOptions
+  deviceTimeSeries?: ITimeSeriesOptions
+  serviceTimeSeries?: ITimeSeriesOptions
   connectThisDevice: boolean
   mobileWelcome: boolean
   showDesktopNotice: boolean
@@ -197,8 +197,8 @@ export const defaultState: UIState = {
   autoCopy: false,
   updateNoticeCleared: undefined,
   showRestoreModal: false,
-  deviceTimeSeries: { type: 'ONLINE_DURATION', resolution: 'DAY', length: 7 },
-  serviceTimeSeries: { type: 'CONNECT_DURATION', resolution: 'DAY', length: 7 },
+  deviceTimeSeries: undefined,
+  serviceTimeSeries: undefined,
   connectThisDevice: false,
   mobileWelcome: true,
   showDesktopNotice: true,
@@ -217,7 +217,7 @@ export default createModel<RootModel>()({
     },
     async restoreState(_: void, state) {
       let states: ILookup<any> = {}
-      SAVED_STATES.forEach(key => {
+      SAVED_ACROSS_LOGOUT.forEach(key => {
         const value = getLocalStorage(state, `ui-${key}`)
         if (value !== null) {
           if (typeof value === 'object' && !Array.isArray(value)) states[key] = { ...state.ui[key], ...value }
@@ -297,7 +297,7 @@ export default createModel<RootModel>()({
     async setPersistent(params: ILookup<any>, state) {
       dispatch.ui.set(params)
       Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key])
+        if (SAVED_ACROSS_LOGOUT.includes(key)) setLocalStorage(state, `ui-${key}`, params[key])
       })
     },
     async deprecated(_: void, state) {
@@ -328,7 +328,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function selectPriorityGuide(state: ApplicationState, guide: string, startDate: Date): IGuide {
+export function selectPriorityGuide(state: State, guide: string, startDate: Date): IGuide {
   const all = state.ui.guides
   const result = all[guide] || {}
   let active = result.active

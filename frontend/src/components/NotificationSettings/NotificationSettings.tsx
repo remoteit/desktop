@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import {
   Chip,
   List,
@@ -19,10 +19,8 @@ import { Icon } from '../Icon'
 export const NotificationSettings: React.FC = () => {
   const { device } = useContext(DeviceContext)
   const { devices } = useDispatch<Dispatch>()
-  const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
-    globalNotificationEmail: state.user.notificationSettings?.emailNotifications,
-    globalNotificationSystem: state.user.notificationSettings?.desktopNotifications,
-  }))
+  const globalNotificationEmail = useSelector((state: State) => state.user.notificationSettings?.emailNotifications)
+  const globalNotificationSystem = useSelector((state: State) => state.user.notificationSettings?.desktopNotifications)
   const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(
     device?.notificationSettings?.emailNotifications
   )

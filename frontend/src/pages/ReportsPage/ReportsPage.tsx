@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
+import { Dispatch, State } from '../../store'
 import { Typography, Box } from '@mui/material'
 import { spacing } from '../../styling'
 import { makeStyles } from '@mui/styles'
@@ -25,7 +25,7 @@ export const ReportsPage: React.FC = () => {
     startDate,
     deviceTimeseries,
     connectionTimeseries,
-  } = useSelector((state: ApplicationState) => {
+  } = useSelector((state: State) => {
     return {
       fetching: state.analytics.fetching,
       startDate: state.analytics.startDate,

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
-import { getDeviceModel } from '../selectors/devices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
 
 export interface ISortService {
@@ -15,6 +15,9 @@ export function getSortOptions(key: string) {
   const option = optionSortServices[key]
   return option || {}
 }
+
+export type SortServiceType = 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+
 export interface IOptionServiceSort {
   ATOZ: ISortService
   ZTOA: ISortService
@@ -50,7 +53,7 @@ const optionSortServices: IOptionServiceSort = {
 export const SortServices: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { devices } = useDispatch<Dispatch>()
-  const sortService = useSelector((state: ApplicationState) => getDeviceModel(state).sortServiceOption)
+  const sortService = useSelector((state: State) => selectDeviceModelAttributes(state).sortServiceOption)
   const option = getSortOptions(sortService)
   const open = Boolean(anchorEl)
 
@@ -66,8 +69,8 @@ export const SortServices: React.FC = () => {
     setAnchorEl(null)
   }
 
-  const servicesSort = async (option?: string) => {
-    devices.setPersistent({ sortServiceOption: option })
+  const servicesSort = async (option?: SortServiceType) => {
+    devices.set({ sortServiceOption: option })
     handleClose()
   }
 
@@ -80,7 +83,7 @@ export const SortServices: React.FC = () => {
       </IconButton>
       <Menu anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
         {Object.keys(optionSortServices).map(key => (
-          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key)} dense>
+          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key as SortServiceType)} dense>
             {optionSortServices[key].name}
           </MenuItem>
         ))}

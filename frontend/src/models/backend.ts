@@ -3,7 +3,7 @@ import { createModel } from '@rematch/core'
 import { selectDevice } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
-import sleep from '../services/sleep'
+import sleep from '../helpers/sleep'
 
 export const NOTICE_VERSION_ID = 'notice-version'
 

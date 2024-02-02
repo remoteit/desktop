@@ -8,7 +8,7 @@ import { NetworkRouter } from './NetworkRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
@@ -21,7 +21,6 @@ import { AddPlatformPage } from '../pages/AddPlatformPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
-import { LicensingPage } from '../pages/LicensingPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
@@ -30,6 +29,7 @@ import { OrganizationUserPage } from '../pages/OrganizationUserPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
+import { OrganizationLicensingPage } from '../pages/OrganizationLicensingPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
 import { DynamicPanel } from '../components/DynamicPanel'
@@ -56,13 +56,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
-  const { remoteUI, redirect, thisId, registered, os } = useSelector((state: ApplicationState) => ({
-    remoteUI: isRemoteUI(state),
-    redirect: state.ui.redirect,
-    thisId: state.backend.thisId,
-    registered: !!state.backend.thisId,
-    os: state.backend.environment.os || getOs(),
-  }))
+
+  const remoteUI = useSelector(isRemoteUI)
+  const redirect = useSelector((state: State) => state.ui.redirect)
+  const thisId = useSelector((state: State) => state.backend.thisId)
+  const registered = useSelector((state: State) => !!state.backend.thisId)
+  const os = useSelector((state: State) => state.backend.environment.os) || getOs()
 
   useEffect(() => {
     const initialRoute = window.localStorage.getItem('initialRoute')
@@ -297,6 +296,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <OrganizationSettingsPage />
               </Route>
 
+              <Route path="/organization/licensing">
+                <OrganizationLicensingPage />
+              </Route>
+
               <Route path="/organization/tags">
                 <TagsPage />
               </Route>
@@ -336,10 +339,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
                   <PlansPage />
                 </RedirectOffsite>
-              </Route>
-
-              <Route path="/account/licensing">
-                <LicensingPage />
               </Route>
 
               <Route path="/account/billing">

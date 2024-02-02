@@ -11,7 +11,7 @@ import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { ListItemBack } from '../../components/ListItemBack'
 import { Gutters } from '../../components/Gutters'
 import { spacing } from '../../styling'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
@@ -22,7 +22,7 @@ type Selections = { value: string | Function; name: string; note: string; id: nu
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
-  const { service, lanIp, connection } = useSelector((state: ApplicationState) => {
+  const { service, lanIp, connection } = useSelector((state: State) => {
     const [service] = selectById(state, undefined, serviceID)
     return {
       service,

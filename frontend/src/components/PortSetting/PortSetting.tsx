@@ -2,11 +2,11 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { setConnection } from '../../helpers/connectionHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { ApplicationState } from '../../store'
+import { State } from '../../store'
 import { REGEX_PORT_SAFE } from '../../constants'
 
 export const PortSetting: React.FC<{ service: IService; connection: IConnection }> = ({ service, connection }) => {
-  const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
+  const freePort = useSelector((state: State) => state.backend.freePort)
 
   if (!service) return null
 

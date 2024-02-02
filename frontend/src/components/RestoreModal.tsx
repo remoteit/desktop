@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { attributeName } from '@common/nameHelper'
@@ -10,7 +10,7 @@ type Props = Omit<DialogProps, 'open'> & {
 }
 
 export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
-  const { showRestoreModal } = useSelector((state: ApplicationState) => state.ui)
+  const { showRestoreModal } = useSelector((state: State) => state.ui)
   const [loading, setLoading] = useState<boolean>(false)
   const [result, setResult] = useState<{ restoreCommand?: string; restoreCode?: string }>({})
   const dispatch = useDispatch<Dispatch>()

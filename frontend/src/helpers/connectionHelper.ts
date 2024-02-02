@@ -2,7 +2,7 @@ import { emit } from '../services/Controller'
 import { ANONYMOUS_MANUFACTURER_CODE } from '../constants'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '@common/constants'
 import { Application, getApplicationType } from '@common/applications'
-import { ApplicationState, store } from '../store'
+import { State, store } from '../store'
 import { selectEnabledConnections } from '../selectors/connections'
 import { getActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
@@ -51,7 +51,7 @@ export function isFileToken(token: string) {
   return token === 'path' || token === 'app' || token.toLowerCase().includes('file')
 }
 
-export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {
+export function findLocalConnection(state: State, id: string, sessionId: string | undefined) {
   return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
@@ -117,7 +117,7 @@ export function routeTypeToSettings(route: IRouteType) {
   }
 }
 
-export function usedPorts(state: ApplicationState) {
+export function usedPorts(state: State) {
   return state.connections.all.map(c => c.port)
 }
 
@@ -171,7 +171,7 @@ export function clearConnectionError(connection: IConnection) {
   setConnection({ ...connection, error: undefined })
 }
 
-export function getFetchConnectionIds(state: ApplicationState) {
+export function getFetchConnectionIds(state: State) {
   const thisId = state.backend.thisId
   const serviceIds = selectEnabledConnections(state).map(c => {
     // @TODO see if it would be better to put the connections into the correct accountId device model
@@ -191,7 +191,7 @@ export function getConnectionSessionIds() {
   return all.map(c => c.sessionId)
 }
 
-export function getConnectionLookup(state: ApplicationState) {
+export function getConnectionLookup(state: State) {
   const { all } = state.connections
   return all.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c

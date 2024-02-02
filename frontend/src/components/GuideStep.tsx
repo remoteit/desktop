@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button, alpha } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { selectPriorityGuide } from '../models/ui'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, radius, fontSizes } from '../styling'
@@ -45,7 +45,7 @@ export const GuideStep: React.FC<Props> = ({
   children,
 }) => {
   const { ui } = useDispatch<Dispatch>()
-  const state = useSelector((state: ApplicationState) => selectPriorityGuide(state, guide, startDate))
+  const state = useSelector((state: State) => selectPriorityGuide(state, guide, startDate))
   const open: boolean = !!(!hide && (state.step === step || !!show) && state.active)
   const css = useStyles({ highlight: highlight && open })
   const start = () => ui.guide({ guide, step, active: true, done: false })

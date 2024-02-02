@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@mui/material'
 import { selectAllActiveAttributes } from '../selectors/devices'
 import { defaultState } from '../models/ui'
@@ -10,10 +10,8 @@ import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
-  const { selected, attributes } = useSelector((state: ApplicationState) => ({
-    selected: [...state.ui.columns],
-    attributes: selectAllActiveAttributes(state),
-  }))
+  const attributes = useSelector(selectAllActiveAttributes)
+  const selected = useSelector((state: State) => state.ui.columns)
   const { ui, devices } = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -22,8 +20,9 @@ export const ColumnsDrawer: React.FC = () => {
     devices.fetchList()
   }
   const remove = index => {
-    selected.splice(index, 1)
-    ui.setPersistent({ columns: [...selected] })
+    const columns = [...selected]
+    columns.splice(index, 1)
+    ui.setPersistent({ columns })
   }
 
   const onReset = () => {

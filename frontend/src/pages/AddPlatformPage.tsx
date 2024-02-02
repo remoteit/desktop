@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { useMediaQuery, Typography, Box, Divider, Theme } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
@@ -18,7 +18,7 @@ export const AddPlatformPage: React.FC = () => {
   let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
-  const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
+  const permissions = useSelector((state: State) => selectPermissions(state))
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
   const smallScreen = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))

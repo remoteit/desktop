@@ -4,7 +4,7 @@ import { getAllDevices } from '../selectors/devices'
 import { newConnection } from '../helpers/connectionHelper'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 import { List, MenuItem, TextField, Typography, Button } from '@mui/material'
 import { ServiceAttributesForm } from '../components/ServiceAttributesForm'
@@ -28,7 +28,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
   }
 
   const dispatch = useDispatch<Dispatch>()
-  const { connectionDefaults, applicationTypes, connections, devices } = useSelector((state: ApplicationState) => ({
+  const { connectionDefaults, applicationTypes, connections, devices } = useSelector((state: State) => ({
     connectionDefaults: state.user.attributes?.connectionDefaults,
     applicationTypes: state.applicationTypes.all,
     connections: state.connections.all,
@@ -90,7 +90,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Connection Type Defaults</Title>
+            <Title>Connection Defaults</Title>
           </Typography>
           <Gutters bottom="lg" top={null}>
             <Typography variant="caption">Defaults can be overridden by service specific default settings.</Typography>

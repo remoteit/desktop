@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Tooltip, Select, MenuItem } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
@@ -8,7 +8,7 @@ import { Icon } from './Icon'
 
 export const ColorSelect: React.FC<{ tag: ITag; onSelect: (color: number) => void }> = ({ tag, onSelect }) => {
   const [tooltip, setTooltip] = useState<boolean>(false)
-  const labels = useSelector((state: ApplicationState) => state.labels.filter(l => !l.hidden))
+  const labels = useSelector((state: State) => state.labels).filter(l => !l.hidden)
   const selected = labels.find(l => l.id === tag.color) || labels[0]
   const css = useStyles()
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { updateConnection, launchDisabled } from '../../helpers/connectionHelper'
-import { ApplicationState, Dispatch } from '../../store'
+import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton, ButtonProps } from '../../buttons/IconButton'
 import { Color, Sizes } from '../../styling'
@@ -40,7 +40,7 @@ export const LaunchButton: React.FC<Props> = ({
   const ready = connection?.connectLink || connection?.ready
   const loading = !ready || connection?.starting || (app?.service && !app.service.loaded)
   const disabled = launchDisabled(connection) || loading
-  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch && connection?.autoLaunch)
+  const autoLaunch = useSelector((state: State) => state.ui.autoLaunch && connection?.autoLaunch)
 
   useEffect(() => {
     if (autoLaunch && !launchDisabled(connection) && ready) {

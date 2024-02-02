@@ -1,10 +1,10 @@
 import structuredClone from '@ungap/structured-clone'
-import { parse as urlParse } from 'url'
 import { createModel } from '@rematch/core'
+import { parse as urlParse } from 'url'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
-import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
+import browser, { getLocalStorage, removeLocalStorage } from '../services/Browser'
 import {
   cleanOrphanConnections,
   getFetchConnectionIds,
@@ -25,7 +25,6 @@ import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectConnection } from '../selectors/connections'
-import { selectNetwork } from './networks'
 import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
@@ -56,10 +55,11 @@ const defaultState: IConnectionsState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async init(_: void, state) {
+    async migrate(_: void, state) {
       let connections = getLocalStorage(state, 'connections')
       if (connections) await dispatch.connections.setAll(dedupe<IConnection>(connections, 'id'))
-      console.log('INIT CONNECTIONS', connections)
+      console.log('MIGRATE CONNECTIONS', connections)
+      removeLocalStorage(state, 'connections')
     },
 
     async fetch(_: void, state) {
@@ -470,7 +470,6 @@ export default createModel<RootModel>()({
 
     async setAll(all: IConnection[], state) {
       all.sort((a, b) => nameSort(a.name || '', b.name || ''))
-      setLocalStorage(state, 'connections', all)
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },
   }),

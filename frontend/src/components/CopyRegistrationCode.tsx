@@ -1,12 +1,12 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { CopyCodeBlock, CopyCodeBlockProps } from './CopyCodeBlock'
 import { Confirm } from './Confirm'
 
 export function CopyRegistrationCode(props: CopyCodeBlockProps) {
-  const { organization, user } = useSelector((state: ApplicationState) => ({
+  const { organization, user } = useSelector((state: State) => ({
     organization: selectOrganization(state),
     user: state.user,
   }))

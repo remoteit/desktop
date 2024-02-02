@@ -6,7 +6,7 @@ import { newConnection } from '../helpers/connectionHelper'
 import { useApplication } from '../hooks/useApplication'
 import { ConnectionDetails } from '../components/ConnectionDetails'
 import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { State, Dispatch } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
 import { ConnectionData } from '../components/ConnectionData'
 import { DynamicButton } from '../buttons/DynamicButton'
@@ -19,7 +19,7 @@ export const ConnectionOtherPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const [stopping, setStopping] = useState<string>()
   const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
-  const { service, device, connection, session } = useSelector((state: ApplicationState) => {
+  const { service, device, connection, session } = useSelector((state: State) => {
     const [service, device] = selectById(state, undefined, serviceID)
     return {
       service,
@@ -71,7 +71,6 @@ export const ConnectionOtherPage: React.FC = () => {
           app={app}
           connection={connection}
           session={session}
-          device={device}
           showTitle={session?.user ? session.user.email : undefined}
           show
         >

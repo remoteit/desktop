@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
+import { State } from '../store'
 import { Stack, ListItemIcon, Box } from '@mui/material'
 import { AddPlatformServices } from './AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
@@ -12,7 +12,7 @@ export const AddQuickPlatform: React.FC = () => {
   const platform = 'linux'
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
-  const permissions = useSelector((state: ApplicationState) => selectPermissions(state))
+  const permissions = useSelector((state: State) => selectPermissions(state))
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
 
   useEffect(() => {
