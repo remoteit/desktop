@@ -19,5 +19,5 @@
     "target": "es2017",
     "useUnknownInCatchVariables": false
   },
-  "exclude": ["android", "ios", "frontend/dist", "*/*.js", "*/*/*.js", "build", "dist"]
+  "exclude": ["android", "ios", "*/*.js", "*/*/*.js", "*/build", "*/dist"]
 }
