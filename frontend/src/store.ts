@@ -40,7 +40,7 @@ export const store = init<RootModel>({
 })
 
 export const { dispatch } = store
-export const persistor = getPersistor() // Get and export the persistor
+export const persistor = getPersistor()
 
 export type Store = typeof store
 export type Dispatch = RematchDispatch<RootModel>
