@@ -144,11 +144,11 @@ export default createModel<RootModel>()({
   }),
 
   reducers: {
-    reset(state) {
+    reset(state: ISearchState) {
       state = { ...searchState }
       return state
     },
-    set(state, params: Partial<ISearchState>) {
+    set(state: ISearchState, params: Partial<ISearchState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

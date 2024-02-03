@@ -11,7 +11,7 @@ type IApplicationTypeState = {
   account: ILookup<IApplicationType[]>
 }
 
-const state: IApplicationTypeState = {
+const defaultState: IApplicationTypeState = {
   all: [],
   groups: [{ name: 'HTTP/S', ids: [7, 8] }],
   account: {},
@@ -29,7 +29,7 @@ const APPLICATION_TYPES_QUERY = `
   }`
 
 export default createModel<RootModel>()({
-  state,
+  state: { ...defaultState },
   effects: dispatch => ({
     async fetch(_: void, state) {
       const accountId = selectActiveAccountId(state)
@@ -59,6 +59,10 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    reset(state: IApplicationTypeState) {
+      state = { ...defaultState }
+      return state
+    },
     set(state: IApplicationTypeState, params: Partial<IApplicationTypeState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
