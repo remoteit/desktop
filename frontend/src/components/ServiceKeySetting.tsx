@@ -122,6 +122,7 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                     </Notice>
                   ),
                 }}
+                disabled={disabled}
                 name="trash"
                 title="Delete Key"
                 onClick={() => {
