@@ -2,7 +2,7 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
-import browser, { setLocalStorage, removeLocalStorage } from '../services/Browser'
+import browser from '../services/Browser'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
   CLIENT_ID,
@@ -26,9 +26,6 @@ import { RootModel } from '.'
 import sleep from '../helpers/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
-
-const USER_KEY = 'user'
-const HOSTED_UI_KEY = 'amplify-signin-with-hostedUI'
 
 export interface AWSUser {
   authProvider: string
@@ -84,7 +81,7 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
     async init(_: void, state) {
-      let { user } = state.auth
+      const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
         console.log('AUTH SERVICE CONFIG', authServiceConfig())
@@ -105,7 +102,6 @@ export default createModel<RootModel>()({
       const user = response?.data?.data?.login
 
       auth.set({ user, signInError: undefined })
-      setLocalStorage(state, USER_KEY, user)
       if (user.authhash && user.yoicsId) {
         Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
         auth.signedIn()
@@ -169,9 +165,6 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
       if (cognitoUser?.username) {
-        if (cognitoUser?.authProvider === 'Google') {
-          setLocalStorage(state, HOSTED_UI_KEY, 'true')
-        }
         await dispatch.auth.set({ authenticated: true })
         await dispatch.auth.fetchUser()
         await dispatch.mfa.getAWSUser()
@@ -215,6 +208,8 @@ export default createModel<RootModel>()({
       if (selectDeviceModelAttributes(state).initialized) {
         console.warn('DEVICE ALREADY INITIALIZED')
         return
+      } else {
+        console.log('INITIALIZE STATE')
       }
 
       // Temp migration of state
@@ -243,36 +238,37 @@ export default createModel<RootModel>()({
      * Gets called when the backend signs the user out
      */
     async signedOut(_: void, state) {
+      await persistor.purge()
+      // purge has to happen before signOut because signOut can trigger a reload
       await state.auth.authService?.signOut()
-      removeLocalStorage(state, HOSTED_UI_KEY)
-      removeLocalStorage(state, USER_KEY)
-      dispatch.auth.set({ user: undefined })
-      dispatch.user.reset()
-      dispatch.organization.reset()
-      dispatch.networks.reset()
-      dispatch.accounts.reset()
-      dispatch.connections.reset()
-      dispatch.devices.reset()
-      dispatch.sessions.reset()
-      dispatch.logs.reset()
-      dispatch.search.reset()
-      dispatch.announcements.reset()
-      dispatch.plans.reset()
-      dispatch.contacts.reset()
-      dispatch.billing.reset()
-      dispatch.backend.reset()
-      dispatch.tags.reset()
-      dispatch.mfa.reset()
-      dispatch.ui.reset()
+      await dispatch.auth.set({ user: undefined })
+      await dispatch.user.reset()
+      await dispatch.organization.reset()
+      await dispatch.networks.reset()
+      await dispatch.accounts.reset()
+      await dispatch.connections.reset()
+      await dispatch.devices.reset()
+      await dispatch.sessions.reset()
+      await dispatch.logs.reset()
+      await dispatch.search.reset()
+      await dispatch.announcements.reset()
+      await dispatch.applicationTypes.reset()
+      await dispatch.plans.reset()
+      await dispatch.contacts.reset()
+      await dispatch.billing.reset()
+      await dispatch.backend.reset()
+      await dispatch.tags.reset()
+      await dispatch.mfa.reset()
+      await dispatch.ui.reset()
+
       cloudSync.reset()
       dispatch.accounts.set({ activeId: undefined })
+      dispatch.auth.set({ authenticated: false })
       window.location.hash = ''
       zendesk.endChat()
       emit('user/sign-out-complete')
-      dispatch.auth.set({ authenticated: false })
       cloudController.close()
       Controller.close()
-      persistor.purge()
     },
     async globalSignOut() {
       const Authorization = await getToken()
