@@ -27,6 +27,7 @@ export const RegisterMenu: React.FC<Props> = ({ buttonSize, sidebar, ...props })
       placement="bottom"
       startDate={new Date('2022-09-20')}
       enterDelay={400}
+      hide={disabled}
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
