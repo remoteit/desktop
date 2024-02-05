@@ -17,18 +17,16 @@ import { emit } from '../services/Controller'
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const [testHeader, setTestHeader] = useState<string>(window.localStorage.getItem(TEST_HEADER) || '')
-  const { tests, informed, apis, testUI, preferences, limits, limitsOverride } = useSelector((state: State) => ({
-    ...state.plans,
-    apis: state.ui.apis,
-    testUI: state.ui.testUI,
-    preferences: state.backend.preferences,
-    limitsOverride: selectLimitsLookup(state, state.auth.user?.id),
-    limits: selectLimits(state, state.auth.user?.id),
-  }))
+  const { tests, informed } = useSelector((state: State) => state.plans)
+  const apis = useSelector((state: State) => state.ui.apis)
+  const testUI = useSelector((state: State) => state.ui.testUI)
+  const preferences = useSelector((state: State) => state.backend.preferences)
+  const limitsOverride = useSelector((state: State) => selectLimitsLookup(state, state.user.id))
+  const limits = useSelector((state: State) => selectLimits(state, state.user.id))
 
-  async function setPreference(key: string, value: string | number | boolean) {
+  async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
-    emit('preferences', { preferences: { ...preferences, [key]: value } })
+    emit('preferences', { ...preferences, [key]: value })
   }
 
   return (
@@ -43,12 +41,6 @@ export const TestPage: React.FC = () => {
       <List>
         <ListItemSetting
           hideIcon
-          label="Hide test UI backgrounds"
-          toggle={testUI === 'ON'}
-          onClick={() => dispatch.ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
-        />
-        <ListItemSetting
-          hideIcon
           label="Disable Test UI"
           subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
           onClick={() => {
@@ -56,7 +48,12 @@ export const TestPage: React.FC = () => {
             emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
           }}
         />
-
+        <ListItemSetting
+          hideIcon
+          label="Hide test UI backgrounds"
+          toggle={testUI === 'ON'}
+          onClick={() => dispatch.ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
+        />
         <PortalUI>
           <InlineTextFieldSetting
             value={testHeader}
@@ -78,7 +75,7 @@ export const TestPage: React.FC = () => {
           hideIcon
           label="Override default APIs"
           onClick={() => {
-            setPreference('switchApi', !apis.switchApi)
+            setAPIPreference('switchApi', !apis.switchApi)
             emit('binaries/install')
           }}
           toggle={!!apis.switchApi}
@@ -93,25 +90,12 @@ export const TestPage: React.FC = () => {
                 resetValue={getGraphQLApi()}
                 maxLength={200}
                 onSave={url => {
-                  setPreference('apiGraphqlURL', url)
+                  setAPIPreference('apiGraphqlURL', url)
                   emit('binaries/install')
                   cloudSync.all()
                 }}
                 hideIcon
               />
-              {/* <InlineTextFieldSetting
-                value={getRestApi()}
-                displayValue="This still needs to be hooked up"
-                label="Rest Api"
-                disabled={true || !apis.switchApi}
-                resetValue={getRestApi()}
-                maxLength={200}
-                onSave={url => {
-                  setPreference('apiURL', url)
-                  emit('binaries/install')
-                }}
-                hideIcon
-              /> */}
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
                 label="WebSocket URL"
@@ -119,7 +103,7 @@ export const TestPage: React.FC = () => {
                 resetValue={getWebSocketURL()}
                 maxLength={200}
                 onSave={url => {
-                  setPreference('webSocketURL', url)
+                  setAPIPreference('webSocketURL', url)
                   emit('binaries/install')
                 }}
                 hideIcon

@@ -55,6 +55,8 @@ export class Preferences {
     Logger.info('SET PREFERENCES', { preferences })
     this.file.write(preferences)
     this.data = preferences
+    // @ts-ignore - remove circular reference
+    delete this.data.preferences
     EventBus.emit(this.EVENTS.update, preferences)
   }
 }
