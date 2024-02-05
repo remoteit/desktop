@@ -138,9 +138,9 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 }}
               />
               {appType.description && (
-                <ListItem className={css.field}>
+                <ListItem sx={{ paddingRight: 3, paddingLeft: 2 }}>
                   <Typography variant="caption" component="div" sx={{ margin: 1 }}>
-                    {appType.description}
+                    <b>{appType.description}</b> - {application.use}
                   </Typography>
                 </ListItem>
               )}
