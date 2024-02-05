@@ -3,15 +3,13 @@ import { useParams } from 'react-router-dom'
 import { selectById } from '../selectors/devices'
 import { Typography } from '@mui/material'
 import { newConnection } from '../helpers/connectionHelper'
-import { useApplication } from '../hooks/useApplication'
-import { ConnectionDetails } from '../components/ConnectionDetails'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
-import { ConnectionData } from '../components/ConnectionData'
 import { DynamicButton } from '../buttons/DynamicButton'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
+import { Connect } from '../components/Connect'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
@@ -28,8 +26,6 @@ export const ConnectionOtherPage: React.FC = () => {
       session: state.sessions.all.find(s => s.id === sessionID),
     }
   })
-
-  const app = useApplication(service, connection)
 
   if (!session) return <NoConnectionPage />
 
@@ -66,17 +62,7 @@ export const ConnectionOtherPage: React.FC = () => {
         </>
       }
     >
-      <Gutters top={null} size="md" bottom={null}>
-        <ConnectionDetails
-          app={app}
-          connection={connection}
-          session={session}
-          showTitle={session?.user ? session.user.email : undefined}
-          show
-        >
-          <ConnectionData service={service} session={session} />
-        </ConnectionDetails>
-      </Gutters>
+      <Connect variant="session" />
     </Container>
   )
 }
