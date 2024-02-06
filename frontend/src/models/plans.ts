@@ -197,8 +197,7 @@ export default createModel<RootModel>()({
     },
 
     async updated() {
-      await dispatch.plans.fetch()
-      await dispatch.organization.fetch()
+      await cloudSync.call([dispatch.plans.fetch, dispatch.organization.fetch, dispatch.devices.fetchList], true)
       dispatch.plans.set({ purchasing: undefined, updating: undefined })
       dispatch.ui.set({ successMessage: 'Subscription updated.' })
     },
