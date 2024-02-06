@@ -58,7 +58,17 @@ export const Notice: React.FC<NoticeProps> = ({
   return (
     <Paper elevation={0} className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}>
       {icon}
-      <Box className={css.message}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          marginY: 1.3,
+          marginRight: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          wordBreak: 'break-word',
+        }}
+      >
         <span>{children}</span>
       </Box>
       {button}
@@ -106,14 +116,4 @@ const useStyles = makeStyles(({ palette }) => ({
     '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
     '& .MuiButton-root': { marginTop: 5 },
   }),
-  message: {
-    flexGrow: 1,
-    marginTop: spacing.xxs,
-    marginRight: spacing.xs,
-    minHeight: 34,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    wordBreak: 'break-word',
-  },
 }))

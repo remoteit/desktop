@@ -218,8 +218,6 @@ declare global {
     application?: Application
   }
 
-  type IContextMenu = { el?: HTMLElement; serviceID?: string }
-
   type IGlobalTooltip = {
     el?: HTMLElement
     title: React.ReactElement | string
