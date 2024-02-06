@@ -310,8 +310,6 @@ export function getApplicationType(typeId?: number) {
       })
     case 7:
     case 30:
-    case 37:
-    case 38:
     case 42:
       return new Application({
         title: 'Browser',
@@ -331,15 +329,21 @@ export function getApplicationType(typeId?: number) {
         appLaunchTemplate: 'smb://[host]:[port]',
         appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
       })
-    case 38:
-      return new Application({
-        title: 'Nextcloud',
-        use: 'Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment.',
-      })
     case 37:
       return new Application({
         title: 'NxWitness',
         use: 'Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks.',
+        appLaunchType: 'URL',
+        urlForm: true,
+        autoLaunch: true,
+      })
+    case 38:
+      return new Application({
+        title: 'Nextcloud',
+        use: 'Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment.',
+        appLaunchType: 'URL',
+        urlForm: true,
+        autoLaunch: true,
       })
     case 39:
       return new Application({
