@@ -66,7 +66,6 @@ export type UIState = {
   columnWidths: ILookup<number>
   collapsed: string[]
   limitsOverride: ILookup<boolean>
-  serviceContextMenu?: IContextMenu
   globalTooltip?: IGlobalTooltip
   defaultService: ILookup<string | null>
   defaultSelection: ILookup<ILookup<string | undefined>>
@@ -154,7 +153,6 @@ export const defaultState: UIState = {
   columnWidths: {},
   collapsed: ['recent'],
   limitsOverride: {},
-  serviceContextMenu: undefined,
   globalTooltip: undefined,
   defaultService: {},
   defaultSelection: {},

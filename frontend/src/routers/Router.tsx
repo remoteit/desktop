@@ -34,7 +34,6 @@ import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
-import { ReportsPage } from '../pages/ReportsPage'
 import { BillingPage } from '../pages/BillingPage'
 import { PlansPage } from '../pages/PlansPage'
 import { SharePage } from '../pages/SharePage'
@@ -246,10 +245,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/settings/tags">
                 <TagsPage />
-              </Route>
-
-              <Route path="/settings/reports">
-                <ReportsPage />
               </Route>
 
               <Route path="/settings/test">

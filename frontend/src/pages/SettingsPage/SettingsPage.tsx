@@ -42,7 +42,6 @@ export const SettingsPage: React.FC = () => {
         <ListItemLocation title="Notifications" to="/settings/notifications" icon="bell" dense />
         <ListItemLocation title="Connection Defaults" to="/settings/defaults" icon="object-intersect" dense />
         <TestUI>
-          <ListItemLocation title="Reports" to="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" to="/settings/test" icon="vial" dense />
         </TestUI>
       </List>

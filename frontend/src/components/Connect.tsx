@@ -27,7 +27,7 @@ import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { Pre } from './Pre'
 
-export const Connect: React.FC = () => {
+export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ variant = 'connection' }) => {
   const location = useLocation<{
     autoConnect?: boolean
     autoLaunch?: boolean
@@ -60,69 +60,78 @@ export const Connect: React.FC = () => {
           app={app}
           connection={connection}
           session={session}
-          show={connection.enabled || !!connection.connectLink}
+          showTitle={variant === 'session' ? session?.user?.email : undefined}
+          show={connection.enabled || !!connection.connectLink || variant === 'session'}
         >
-          <ConnectionData connection={connection} service={service} session={session} />
+          <ConnectionData
+            connection={variant === 'connection' ? connection : undefined}
+            service={service}
+            session={session}
+          />
         </ConnectionDetails>
       </Gutters>
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
-        <AccordionMenuItem
-          gutters
-          subtitle="Connection"
-          expanded={accordion.config}
-          onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
-          action={<ConnectionMenu connection={connection} service={service} />}
-        >
-          <List disablePadding>
-            <ListItemLocation
-              icon="sliders"
-              title="Connection configuration"
-              disabled={!!connection.connectLink}
-              to="advanced"
-              showDisabled
-              dense
-            >
-              <Icon name="angle-right" inlineLeft fixedWidth />
-            </ListItemLocation>
-            <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 1 }} />
-            <Collapse in={!connection.connectLink && app.canLaunch}>
-              <AutoLaunchToggle connection={connection} service={service} />
-            </Collapse>
-            {reverseProxy ? (
-              <ConnectLinkSetting
-                connection={connection}
-                permissions={instance.permissions}
-                reverseProxy={reverseProxy}
-                disabled={!reverseProxy}
-              />
-            ) : (
-              <ServiceKeySetting connection={connection} service={service} permissions={instance.permissions} />
-            )}
-            <PortalUI>
-              {showDesktopNotice && (
-                <Notice
-                  gutterTop
-                  severity="info"
-                  onClose={() => dispatch.ui.setPersistent({ showDesktopNotice: false })}
-                >
-                  <strong>Want Persistent Private Endpoints?</strong>
-                  <em>On demand connections with persistent endpoints, remote access, and improved launch commands.</em>
-                  <Button
-                    size="small"
-                    color="primary"
-                    variant="contained"
-                    sx={{ marginTop: 1, marginBottom: 1 }}
-                    onClick={() => windowOpen('https://link.remote.it/download/desktop')}
-                  >
-                    Download Desktop
-                  </Button>
-                </Notice>
+        {variant === 'connection' && (
+          <AccordionMenuItem
+            gutters
+            subtitle="Connection"
+            expanded={accordion.config}
+            onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
+            action={<ConnectionMenu connection={connection} service={service} />}
+          >
+            <List disablePadding>
+              <ListItemLocation
+                icon="sliders"
+                title="Connection configuration"
+                disabled={!!connection.connectLink}
+                to="advanced"
+                showDisabled
+                dense
+              >
+                <Icon name="angle-right" inlineLeft fixedWidth />
+              </ListItemLocation>
+              <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 1 }} />
+              <Collapse in={!connection.connectLink && app.canLaunch}>
+                <AutoLaunchToggle connection={connection} service={service} />
+              </Collapse>
+              {reverseProxy ? (
+                <ConnectLinkSetting
+                  connection={connection}
+                  permissions={instance.permissions}
+                  reverseProxy={reverseProxy}
+                  disabled={!reverseProxy}
+                />
+              ) : (
+                <ServiceKeySetting connection={connection} service={service} permissions={instance.permissions} />
               )}
-            </PortalUI>
-          </List>
-        </AccordionMenuItem>
+              <PortalUI>
+                {showDesktopNotice && (
+                  <Notice
+                    gutterTop
+                    severity="info"
+                    onClose={() => dispatch.ui.setPersistent({ showDesktopNotice: false })}
+                  >
+                    <strong>Want Persistent Private Endpoints?</strong>
+                    <em>
+                      On demand connections with persistent endpoints, remote access, and improved launch commands.
+                    </em>
+                    <Button
+                      size="small"
+                      color="primary"
+                      variant="contained"
+                      sx={{ marginTop: 1, marginBottom: 1 }}
+                      onClick={() => windowOpen('https://link.remote.it/download/desktop')}
+                    >
+                      Download Desktop
+                    </Button>
+                  </Notice>
+                )}
+              </PortalUI>
+            </List>
+          </AccordionMenuItem>
+        )}
         <AccordionMenuItem gutters subtitle="Service" defaultExpanded>
           {device?.permissions.includes('MANAGE') && (
             <>

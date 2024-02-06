@@ -5,10 +5,12 @@ export const DEVICE_TYPE = 35
 export const KEY_APPS = [8, 7, 28, 4, 5, 34]
 export const APPLICATION_PLATFORM_FILTER = {
   48: [1213], // ScreenView allowed on Android
+  42: [0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185], // Admin Panel allowed on
 }
 
 export class Application {
   title: string = ''
+  use: string = ''
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   urlForm: boolean = false
@@ -254,11 +256,13 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'TCP',
         appLaunchType: 'URL',
+        use: 'Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication.',
       })
     case 4:
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
+        use: 'Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely.',
         appLaunchType: ios || android || mac ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
         appLaunchTemplate: 'vnc://[username]@[host]:[port]',
@@ -271,6 +275,7 @@ export function getApplicationType(typeId?: number) {
     case 28:
       return new Application({
         title: 'SSH',
+        use: 'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.',
         autoLaunch: ios || android,
         appLaunchType: portal || ios || android ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
@@ -287,6 +292,7 @@ export function getApplicationType(typeId?: number) {
       const rdpCommand = 'rdp://full%20address=s:[host]:[port]&username=s:[username]'
       return new Application({
         title: 'RDP',
+        use: 'For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely.',
         appLaunchType: ios || android ? 'URL' : 'COMMAND',
         defaultTokenData: { app: windows ? undefined : 'Microsoft Remote Desktop' },
         appLaunchTemplate: rdpCommand,
@@ -297,17 +303,17 @@ export function getApplicationType(typeId?: number) {
     case 33:
       return new Application({
         title: 'Secure Browser',
+        use: 'Essential for any web application handling sensitive data, or any content requiring secure communication over the internet.',
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
       })
     case 7:
     case 30:
-    case 37:
-    case 38:
     case 42:
       return new Application({
         title: 'Browser',
+        use: 'Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern.',
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
@@ -315,6 +321,7 @@ export function getApplicationType(typeId?: number) {
     case 34:
       return new Application({
         title: 'Samba',
+        use: 'Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol.',
         launchIcon: 'folder',
         commandIcon: 'clipboard',
         localhost: true,
@@ -322,17 +329,80 @@ export function getApplicationType(typeId?: number) {
         appLaunchTemplate: 'smb://[host]:[port]',
         appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
       })
+    case 37:
+      return new Application({
+        title: 'NxWitness',
+        use: 'Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks.',
+        appLaunchType: 'URL',
+        urlForm: true,
+        autoLaunch: true,
+      })
+    case 38:
+      return new Application({
+        title: 'Nextcloud',
+        use: 'Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment.',
+        appLaunchType: 'URL',
+        urlForm: true,
+        autoLaunch: true,
+      })
+    case 39:
+      return new Application({
+        title: 'OpenVPN',
+        use: 'Choose for secure VPN access to networks, allowing for remote work or access to network resources with encryption.',
+      })
+    case 41:
+      return new Application({
+        title: 'Minecraft',
+        use: 'Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world.',
+      })
+    case 43:
+      return new Application({
+        title: 'Terraria',
+        use: 'Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world.',
+      })
+    case 44:
+      return new Application({
+        title: 'Redis',
+        use: 'Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging.',
+      })
+    case 45:
+      return new Application({
+        title: 'MySQL',
+        use: 'Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely.',
+      })
+    case 46:
+      return new Application({
+        title: 'PostgreSQL',
+        use: 'Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely.',
+      })
     case 47:
       return new Application({
         title: 'Docker API',
+        use: 'Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely.',
         appLaunchType: 'COMMAND',
         appCommandTemplate: windows ? 'start cmd /k docker -H [host]:[port] ps' : 'docker -H [host]:[port] ps',
       })
     case 48:
       return new Application({
         title: 'ScreenView',
+        use: 'Use for remote screen viewing or control via Remote.It’s Android ScreenView app. Facilitates support, collaboration and remote access.',
         appLaunchType: 'URL',
         autoLaunch: true,
+      })
+    case 32769:
+      return new Application({
+        title: 'UDP',
+        use: 'Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting.',
+      })
+    case 32770:
+      return new Application({
+        title: 'WireGuard',
+        use: 'Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management.',
+      })
+    case 32771:
+      return new Application({
+        title: 'Minecraft Bedrock',
+        use: 'Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together.',
       })
     default:
       return new Application({})

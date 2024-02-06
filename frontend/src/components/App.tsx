@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
-import browser from '../../services/Browser'
-import useSafeArea from '../../hooks/useSafeArea'
-import useCapacitor from '../../hooks/useCapacitor'
+import browser from '../services/Browser'
+import useSafeArea from '../hooks/useSafeArea'
+import useCapacitor from '../hooks/useCapacitor'
+import { persistor } from '../store'
 import { useLocation } from 'react-router-dom'
+import { PersistGate } from 'redux-persist/integration/react'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   HIDE_SIDEBAR_WIDTH,
@@ -11,17 +13,17 @@ import {
   MOBILE_WIDTH,
   ORGANIZATION_BAR_WIDTH,
   REGEX_FIRST_PATH,
-} from '../../constants'
+} from '../constants'
 import { useMediaQuery, Box } from '@mui/material'
-import { State, Dispatch } from '../../store'
-import { InstallationNotice } from '../InstallationNotice'
-import { LoadingMessage } from '../LoadingMessage'
-import { SignInPage } from '../../pages/SignInPage'
-import { SidebarMenu } from '../SidebarMenu'
-import { BottomMenu } from '../BottomMenu'
-import { Sidebar } from '../Sidebar'
-import { Router } from '../../routers/Router'
-import { Page } from '../../pages/Page'
+import { State, Dispatch } from '../store'
+import { InstallationNotice } from './InstallationNotice'
+import { LoadingMessage } from './LoadingMessage'
+import { SignInPage } from '../pages/SignInPage'
+import { SidebarMenu } from './SidebarMenu'
+import { BottomMenu } from './BottomMenu'
+import { Sidebar } from './Sidebar'
+import { Router } from '../routers/Router'
+import { Page } from '../pages/Page'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
@@ -89,22 +91,24 @@ export const App: React.FC = () => {
 
   return (
     <Page>
-      <Box
-        sx={{
-          flexGrow: 1,
-          position: 'relative',
-          display: 'flex',
-          overflow: 'hidden',
-          flexDirection: 'row',
-          alignItems: 'start',
-          justifyContent: 'start',
-          marginTop: overlapHeader ? 2 : 0,
-        }}
-      >
-        {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-        <Router layout={layout} />
-      </Box>
-      {showBottomMenu && <BottomMenu layout={layout} />}
+      <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            position: 'relative',
+            display: 'flex',
+            overflow: 'hidden',
+            flexDirection: 'row',
+            alignItems: 'start',
+            justifyContent: 'start',
+            marginTop: overlapHeader ? 2 : 0,
+          }}
+        >
+          {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+          <Router layout={layout} />
+        </Box>
+        {showBottomMenu && <BottomMenu layout={layout} />}
+      </PersistGate>
     </Page>
   )
 }

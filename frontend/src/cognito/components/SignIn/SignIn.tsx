@@ -126,8 +126,22 @@ export function SignIn({
   return (
     <AuthLayout fullWidth={fullWidth} showLogo={showLogo}>
       <Box mt={4} textAlign="center">
-        <GoogleSignInButton fullWidth onClick={onGoogleSignIn} />
-        <AppleSignInButton fullWidth onClick={onAppleSignIn} />
+        <GoogleSignInButton
+          fullWidth
+          onClick={() => {
+            setLoading(true)
+            onGoogleSignIn()
+          }}
+          disabled={loading}
+        />
+        <AppleSignInButton
+          fullWidth
+          onClick={() => {
+            setLoading(true)
+            onAppleSignIn()
+          }}
+          disabled={loading}
+        />
       </Box>
       <Box className={css.or} mb={3} mt={3}>
         <Divider />
