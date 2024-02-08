@@ -272,6 +272,18 @@ export default createModel<RootModel>()({
       return count
     },
 
+    async expire(_: void, state) {
+      const rootState = structuredClone(state.devices)
+
+      for (const accountId in rootState) {
+        if (accountId === 'default') continue
+        rootState[accountId].initialized = false
+        console.log('EXPIRE DEVICES', accountId)
+      }
+
+      await dispatch.devices.rootSet(rootState)
+    },
+
     async clearLoaded(_: void, state) {
       const accountId = selectActiveAccountId(state)
       const all = [...getDeviceModel(state, accountId).all]

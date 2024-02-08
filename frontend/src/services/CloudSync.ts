@@ -11,7 +11,10 @@ class CloudSync {
   init() {
     if (this.initialized) return
     this.initialized = true
-    network.on('connect', this.all)
+    network.on('connect', async () => {
+      await dispatch.devices.expire()
+      this.all()
+    })
   }
 
   reset() {

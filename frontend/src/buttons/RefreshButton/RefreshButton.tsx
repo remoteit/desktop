@@ -64,6 +64,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     }
     network.connect()
     cloudController.ping()
+    await dispatch.devices.expire()
     await cloudSync.call(methods)
     await cloudSync.core()
     emit('refresh')
@@ -75,7 +76,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       fixedWidth
       icon="sync"
       placement="bottom"
-      color={fetching ? 'gray' : undefined}
+      color={fetching ? 'gray' : props.color}
       title={title}
       spin={fetching}
       onClick={refresh}
