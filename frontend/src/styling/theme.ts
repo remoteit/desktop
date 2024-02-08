@@ -9,6 +9,7 @@ declare module '@mui/styles' {
 
 export const jssTheme = (isDark: boolean): ThemeOptions => {
   const colors = isDark ? darkColors : lightColors
+  const LIST_ITEM_ICON_WIDTH = 56
 
   const palette = {
     mode: isDark ? 'dark' : 'light',
@@ -142,7 +143,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },
           sizeLarge: {
             fontSize: fontSizes.sm,
-            padding: `${spacing.sm}px ${spacing.xl}px`,
+            padding: `${spacing.sm}px ${spacing.lg}px`,
+            borderRadius: spacing.xxl,
           },
           sizeSmall: {
             borderRadius: spacing.md,
@@ -236,10 +238,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.xs,
             padding: `${spacing.xs}px ${spacing.sm}px`,
             color: palette.gray.main,
-            '&:hover': { backgroundColor: palette.grayLighter.main },
+            '&:hover': { backgroundColor: palette.grayLighter.main, color: palette.grayDarkest.main },
             '&.Mui-selected': {
               backgroundColor: palette.primaryHighlight.main,
               fontWeight: 500,
+              '&:hover': { color: palette.primary.main },
             },
           },
         },
@@ -251,6 +254,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             flexWrap: 'nowrap',
             padding: 0,
             '& .MuiSnackbarContent-message': { padding: 0 },
+          },
+          message: {
+            width: '100%',
           },
         },
       },
@@ -405,7 +411,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main, marginRight: spacing.xs },
+          root: { justifyContent: 'center', minWidth: LIST_ITEM_ICON_WIDTH, color: palette.grayDark.main },
         },
       },
       MuiListItemText: {
@@ -431,11 +437,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               paddingLeft: spacing.xs,
               whiteSpace: 'nowrap',
               '& .MuiListItemText-root': { paddingRight: spacing.md },
-              '& .MuiListItemIcon-root': { minWidth: 50 },
+              '& .MuiListItemIcon-root': { minWidth: LIST_ITEM_ICON_WIDTH },
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
             '& > .MuiList-padding': { padding: 0 },
-            '& .MuiListItemIcon-root': { minWidth: 50 },
+            '& .MuiListItemIcon-root': { minWidth: LIST_ITEM_ICON_WIDTH },
             '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
             '& .MuiDivider-root': {
               marginTop: 10,

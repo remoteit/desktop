@@ -420,14 +420,15 @@ export const attributes: Attribute[] = [
     column: false,
   }),
   new ServiceAttribute({
-    id: 'serviceLink',
-    label: 'Service Key',
-    value: ({ service }) => (service?.link?.url.startsWith('http') ? service?.link.code : null),
-  }),
-  new ServiceAttribute({
     id: 'license',
     label: 'License',
     value: ({ service }) => <LicenseChip license={service?.license} />,
+  }),
+  new ServiceAttribute({
+    id: 'serviceLink',
+    label: 'Service Key',
+    details: false,
+    value: ({ service }) => (service?.link?.url && !service.link.url.startsWith('http') ? service.link.code : null),
   }),
   new ServiceAttribute({
     id: 'serviceAccess',
