@@ -16,11 +16,9 @@ export function ClaimDevice() {
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, organization, user } = useSelector((state: State) => ({
-    claiming: state.ui.claiming,
-    organization: selectOrganization(state),
-    user: state.user,
-  }))
+  const organization = useSelector((state: State) => selectOrganization(state))
+  const claiming = useSelector((state: State) => state.ui.claiming)
+  const user = useSelector((state: State) => state.user)
 
   useEffect(() => {
     if (!claiming) handleClose()

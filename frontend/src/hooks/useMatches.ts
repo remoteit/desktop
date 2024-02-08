@@ -11,7 +11,7 @@ export function useMatches({ to, match, exactMatch }: MatchesProps): boolean {
 
   if (!match) match = to
   if (typeof match === 'string') match = [match]
-  const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
+  const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.startsWith(s)))
 
   return !!matches
 }

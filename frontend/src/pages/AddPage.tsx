@@ -20,10 +20,8 @@ import { Icon } from '../components/Icon'
 export const AddPage: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const { claiming, hasDemo } = useSelector((state: State) => ({
-    claiming: state.ui.claiming,
-    hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
-  }))
+  const claiming = useSelector((state: State) => state.ui.claiming)
+  const hasDemo = useSelector((state: State) => selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined)
 
   return (
     <Container

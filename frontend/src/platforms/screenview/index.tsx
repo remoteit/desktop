@@ -33,6 +33,6 @@ platforms.register({
         educators, and businesses.
       </>
     ),
-    link: SCREEN_VIEW_APP_LINK,
+    link: 'https://link.remote.it/app/screenview',
   },
 })

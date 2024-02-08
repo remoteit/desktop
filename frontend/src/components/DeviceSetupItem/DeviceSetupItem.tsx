@@ -27,16 +27,18 @@ type Props = { className?: string; onClick?: () => void }
 
 export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   const history = useHistory()
-  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: State) => ({
-    registered: !!state.backend.thisId,
-    hostname: safeHostname(state.backend.environment.hostname, []),
-    ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),
-    restoring: state.ui.restoring,
-    canRestore:
+  const registered = useSelector((state: State) => !!state.backend.thisId)
+  const hostname = useSelector((state: State) => safeHostname(state.backend.environment.hostname, []))
+  const ownDevice = useSelector((state: State) =>
+    getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id)
+  )
+  const restoring = useSelector((state: State) => state.ui.restoring)
+  const canRestore = useSelector(
+    (state: State) =>
       !state.backend.thisId &&
       (selectDeviceModelAttributes(state).total > selectDeviceModelAttributes(state).size ||
-        !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
-  }))
+        !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared))
+  )
 
   if (restoring)
     return (

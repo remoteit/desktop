@@ -1,8 +1,10 @@
 import React from 'react'
+import { State } from '../store'
+import { useSelector } from 'react-redux'
 import { Typography, Box, Button, TextField, List } from '@mui/material'
+import { ListItemCheckbox } from '../components/ListItemCheckbox'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
-import { ListItemCheckbox } from '../components/ListItemCheckbox'
 import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
@@ -32,6 +34,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
   paidPlan = false,
   deleteAccount,
 }) => {
+  const connections = useSelector((state: State) => state.connections.all).slice(0, 5)
   const [confirm, setConfirm] = React.useState<boolean>(false)
   const [contact, setContact] = React.useState<boolean>(false)
   const [reasons, setReasons] = React.useState<string[]>([])
@@ -57,6 +60,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
           day: 'numeric',
           year: 'numeric',
         }),
+        lastConnections: connections,
       },
       snackbar: 'Your account delete request has been sent.',
     })

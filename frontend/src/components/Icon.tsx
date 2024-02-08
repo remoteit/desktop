@@ -56,7 +56,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     ref
   ) => {
     if (name === 'share') {
-      name = 'arrow-turn-right'
+      // name = 'arrow-turn-right'
     }
     if (name === 'port') {
       name = 'neuter'

@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react'
-import classnames from 'classnames'
 import useResizeObserver from 'use-resize-observer'
 import { makeStyles } from '@mui/styles'
 import { replaceHost } from '@common/nameHelper'
@@ -139,7 +138,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   return (
     <Collapse in={show}>
       <Paper className={css.paper} elevation={0}>
-        <Box className={classnames(css.address, disabled && css.disabled)}>
+        <Box className={css.address} sx={{ bgcolor: disabled ? 'gray.main' : undefined }}>
           {!!showTitle ? (
             <Gutters size="md">
               <Typography variant="h5" color="alwaysWhite.main">
@@ -326,9 +325,6 @@ const useStyles = makeStyles(({ palette }) => ({
   paper: {
     marginTop: spacing.md,
     overflow: 'hidden',
-  },
-  disabled: {
-    backgroundColor: palette.gray.main,
   },
   buttons: {
     display: 'flex',

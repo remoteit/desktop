@@ -109,7 +109,7 @@ export const SidebarNav: React.FC = () => {
         </>
       )}
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
-      <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense exactMatch />
+      <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItem sx={{ marginTop: 2 }}>
         <ListItemButton onClick={() => setMore(!more)}>
           <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
@@ -142,7 +142,7 @@ export const SidebarNav: React.FC = () => {
         ) : (
           <ListItemLink title="Support Forum" href="https://link.remote.it/forum" icon="comments" dense />
         )}
-        <ListItemLocation title="Settings" icon="sliders-h" to="/settings" dense />
+        <ListItemLocation title="Settings" icon="sliders-h" to="/settings" match="/settings" dense />
       </Box>
     </List>
   )
