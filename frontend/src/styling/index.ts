@@ -118,7 +118,7 @@ export const darkColors: { [key in Color]: string } = {
   grayLight: '#35363A', //'#54565b',
   gray: '#797c86',
   grayDark: '#97979b',
-  grayDarker: '#b1b1b4',
+  grayDarker: '#bebec2',
   grayDarkest: '#d8d8da',
   black: '#fff',
   white: '#202124',

@@ -59,7 +59,7 @@ export const OrganizationRolesPage: React.FC = () => {
       )}
       <Typography variant="subtitle1">
         <Title>Role</Title>
-        {limits.roles && <IconButton icon="plus" to={'/organization/roles/add'} title="Add role" size="lg" />}
+        {limits.roles && <IconButton icon="plus" to="/organization/roles/add" title="Add role" size="md" />}
       </Typography>
       <List>
         {roles.map(r => {

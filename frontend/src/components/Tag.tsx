@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { Tooltip, Chip, IconButton } from '@mui/material'
+import { Tooltip, Chip, IconButton, alpha } from '@mui/material'
 import { spacing, Sizes } from '../styling'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from '../components/Icon'
@@ -42,15 +42,22 @@ export const Tag: React.FC<Props> = ({ tag, dot, size = 'xxs', hideLabels, onCli
 
   return (
     <Chip
-      className={css.chip}
       label={
         <>
-          {!hideLabels && <Icon name="tag" type="solid" size={size} />}
+          {!hideLabels && <Icon name="tag" type="solid" size={size} color={color} />}
           {tag.name}
         </>
       }
       size="small"
-      style={{ color }}
+      sx={{
+        color: 'grayDarker.main',
+        marginBottom: 0.3,
+        '& .MuiChip-label > *': { marginRight: 1 },
+        '& .MuiChip-deleteIconSmall': {
+          marginLeft: -1,
+          marginRight: 0,
+        },
+      }}
       deleteIcon={
         <IconButton size="small">
           <Icon name="times" size="xs" />
@@ -69,13 +76,5 @@ const useStyles = makeStyles({
   }),
   dot: {
     '& + span': { marginLeft: spacing.xxs },
-  },
-  chip: {
-    marginBottom: 4,
-    '& .MuiChip-label > *': { marginRight: spacing.xs },
-    '& .MuiChip-deleteIconSmall': {
-      marginLeft: -spacing.xs,
-      marginRight: 0,
-    },
   },
 })
