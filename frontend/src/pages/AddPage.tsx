@@ -61,10 +61,6 @@ export const AddPage: React.FC = () => {
             <ClaimDevice />
           </ListItem>
         </List>
-        {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
-          <ListSubheader disableGutters>Quick add Command</ListSubheader>
-          <AddQuickPlatform />
-        </List> */}
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
@@ -100,7 +96,6 @@ export const AddPage: React.FC = () => {
             'alpine',
             'axis',
             'advantech',
-            'ubuntu',
             'windows',
             'mac',
           ].map(p => {
