@@ -27,7 +27,7 @@ export function LoadingMessage({ message, logo, logoColor, invert, spinner = tru
           sx={{ position: 'absolute', width: '160px', height: '1px', marginTop: 5 }}
         />
       ) : (
-        <CircularProgress size={50} thickness={1.5} className={css.margin} />
+        spinner && <CircularProgress size={50} thickness={1.5} className={css.margin} />
       )}
       {message && (
         <Typography className={css.text} variant="body2">

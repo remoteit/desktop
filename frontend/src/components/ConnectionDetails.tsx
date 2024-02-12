@@ -138,7 +138,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   return (
     <Collapse in={show}>
       <Paper className={css.paper} elevation={0}>
-        <Box className={css.address} sx={{ bgcolor: disabled ? 'gray.main' : undefined }}>
+        <Box className={css.address} sx={{ bgcolor: disabled ? 'gray.main' : 'primary.main' }}>
           {!!showTitle ? (
             <Gutters size="md">
               <Typography variant="h5" color="alwaysWhite.main">
@@ -317,7 +317,6 @@ const useStyles = makeStyles(({ palette }) => ({
     '& span': { wordBreak: 'break-word' },
   },
   address: {
-    backgroundColor: palette.primary.main,
     color: palette.alwaysWhite.main,
     padding: spacing.xs,
     '& label': { color: palette.alwaysWhite.main },

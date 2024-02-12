@@ -1,7 +1,6 @@
 import React from 'react'
 import feature from './feature.png'
 import { platforms } from '..'
-import { SCREEN_VIEW_APP_LINK } from '../../constants'
 
 export const Component = ({ darkMode, currentColor, ...props }) => {
   const color = currentColor ? 'currentColor' : '#1699D6'

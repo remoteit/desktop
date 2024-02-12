@@ -92,6 +92,9 @@ export const OrganizationRolePage: React.FC = () => {
           </Notice>
         )}
         <ListItem>
+          <ListItemIcon>
+            <Icon name="user-shield" size="md" fixedWidth />
+          </ListItemIcon>
           <TextField
             required
             fullWidth
