@@ -22,13 +22,13 @@ class CloudSync {
     network.off('connect', this.all)
   }
 
-  async call(methods: Methods, parallel?: boolean) {
-    await dispatch.ui.set({ fetching: true })
+  async call(methods: Methods, parallel?: boolean, spinner: boolean = true) {
+    if (spinner) await dispatch.ui.set({ fetching: true })
 
     if (parallel) await Promise.all(methods.map(method => method()))
     else for (const method of methods) await method()
 
-    await dispatch.ui.set({ fetching: false })
+    if (spinner) await dispatch.ui.set({ fetching: false })
   }
 
   async cancel() {
@@ -48,7 +48,8 @@ class CloudSync {
         dispatch.announcements.fetch,
         dispatch.applicationTypes.fetch,
       ],
-      true
+      true,
+      false
     )
   }
 
