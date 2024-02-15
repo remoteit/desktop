@@ -131,7 +131,7 @@ export const darkColors: { [key in Color]: string } = {
   test: '#2B2926',
 }
 
-export const radius: number = 8
+export const radius: number = 10
 
 export const page = {
   marginVertical: 30,
