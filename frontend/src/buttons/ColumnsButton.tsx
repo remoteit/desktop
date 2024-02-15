@@ -13,7 +13,7 @@ export const ColumnsButton: React.FC = () => {
   const icon = open ? 'times' : 'line-columns'
   return (
     <Tooltip
-      placement="left"
+      enterDelay={500}
       title={open ? 'Hide Columns' : 'Show Columns'}
       sx={{
         borderWidth: 1,

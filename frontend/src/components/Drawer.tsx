@@ -15,7 +15,14 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
   const css = useStyles()
 
   return (
-    <ClickAwayListener onClickAway={() => open && ui.set({ drawerMenu: null })}>
+    <ClickAwayListener
+      onClickAway={event => {
+        if (open) {
+          event.preventDefault()
+          ui.set({ drawerMenu: null })
+        }
+      }}
+    >
       <Box
         sx={{
           maxWidth: width,

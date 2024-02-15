@@ -88,7 +88,7 @@ export const SelectSetting: React.FC<Props> = ({
                 {type.description}
               </Typography>
             )}
-            {defaultValue === type.key && modified && (
+            {defaultValue === type.key && (
               <ListItemSecondaryAction>
                 <Typography variant="caption">default</Typography>
               </ListItemSecondaryAction>

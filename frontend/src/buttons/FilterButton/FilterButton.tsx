@@ -7,12 +7,15 @@ import { Icon } from '../../components/Icon'
 
 export const FilterButton: React.FC = () => {
   const modified = useSelector(selectIsFiltered)
-  const open = useSelector((state: State) => state.ui.drawerMenu === 'FILTER')
+  const drawerMenu = useSelector((state: State) => state.ui.drawerMenu)
+  const open = drawerMenu === 'FILTER'
   const { ui } = useDispatch<Dispatch>()
   const icon = open ? 'times' : 'filter'
+  console.log('FilterButton.tsx: Rendering FilterButton.', open, drawerMenu)
+
   return (
     <Tooltip
-      placement="left"
+      enterDelay={500}
       title={open ? 'Hide Filters' : 'Show Filters'}
       sx={{
         borderWidth: 1,
@@ -24,6 +27,7 @@ export const FilterButton: React.FC = () => {
         bgcolor: open ? 'white.main' : undefined,
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
+        '&:hover': { bgcolor: 'white.main' },
       }}
       arrow
     >
