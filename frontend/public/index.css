@@ -63,8 +63,12 @@ body::before {
   top: 0;
   left: 0;
   right: 0;
-  height: 48px;
+  height: 48px; 
   -webkit-app-region: drag;
+}
+
+.body-no-drag::before {
+  height: 0;
 }
 
 body > svg {
