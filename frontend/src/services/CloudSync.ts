@@ -35,7 +35,7 @@ class CloudSync {
     await dispatch.ui.set({ fetching: false })
   }
 
-  async core() {
+  async core(spinner: boolean = false) {
     await this.call(
       [
         dispatch.user.fetch,
@@ -49,7 +49,7 @@ class CloudSync {
         dispatch.applicationTypes.fetch,
       ],
       true,
-      false
+      spinner
     )
   }
 
