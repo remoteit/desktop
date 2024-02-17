@@ -115,7 +115,7 @@ export const LanSharePage: React.FC = () => {
   return (
     <Gutters size="md" bottom={null}>
       <Box display="flex">
-        <ListItemBack title="Local Network Sharing" />
+        <ListItemBack title="Local Network Sharing" to="connect" />
       </Box>
       <AccordionMenuItem gutters subtitle="Settings" defaultExpanded disabled>
         <List>

@@ -18,7 +18,7 @@ export const ServiceUsersPage: React.FC<{ device?: IDevice }> = ({ device }) => 
   return (
     <Gutters size="md" bottom={null}>
       <Box display="flex">
-        <ListItemBack title="Service access" />
+        <ListItemBack title="Service access" to="connect" />
         <IconButton to="share" title="Add guest access" icon="plus" fixedWidth />
         <IconButton
           to="/organization/share"

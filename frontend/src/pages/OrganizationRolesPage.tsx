@@ -5,9 +5,10 @@ import { selectPermissions, selectLimitsLookup, selectOrganization } from '../se
 import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
+import { ListItemBack } from '../components/ListItemBack'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
+import { MobileUI } from '../components/MobileUI'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
@@ -27,21 +28,16 @@ export const OrganizationRolesPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Gutters top="sm" size="lg">
-          <Box display="flex" alignItems="center">
-            <IconButton
-              icon="chevron-left"
-              size="md"
-              onClick={() => history.push('/organization')}
-              fixedWidth={false}
-              inlineLeft
-            />
-            <Title>
-              <Typography variant="h2">Roles</Typography>
-            </Title>
-            <Chip label={name} size="small" />
-          </Box>
-        </Gutters>
+        <>
+          <Typography variant="h1">
+            <Title>Roles</Title>
+          </Typography>
+          <MobileUI hide>
+            <List sx={{ paddingTop: 0 }}>
+              <ListItemBack title={name} to="/organization" disableGutters={false} />
+            </List>
+          </MobileUI>
+        </>
       }
     >
       {!limits.roles && (

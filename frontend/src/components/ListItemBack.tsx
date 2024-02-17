@@ -1,22 +1,22 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import { ListItemButtonProps, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon } from './Icon'
 
-export type Props = {
+export type Props = ListItemButtonProps & {
+  to: string
   title?: string
-  children?: React.ReactNode
 }
 
-export const ListItemBack: React.FC<Props> = ({ title, children, ...props }) => {
+export const ListItemBack: React.FC<Props> = ({ to, title, children, ...props }) => {
   const history = useHistory()
   return (
-    <ListItem dense disableGutters {...props} button onClick={() => history.push('connect')}>
+    <ListItemButton dense disableGutters {...props} onClick={() => history.push(to)}>
       <ListItemIcon>
         <Icon name="angle-left" size="md" fixedWidth />
       </ListItemIcon>
       <ListItemText primary={title || 'Back'} />
       {children}
-    </ListItem>
+    </ListItemButton>
   )
 }
