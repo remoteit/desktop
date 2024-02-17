@@ -21,7 +21,6 @@ import { ListItemCopy } from './ListItemCopy'
 import { PortSetting } from './PortSetting'
 import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
-import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
@@ -37,7 +36,7 @@ export const ConnectAdvanced: React.FC = () => {
     <Gutters size="md" top={null} bottom={null}>
       <ConnectionDetails connection={connection} app={app} show={connection.enabled || connection.connectLink} />
       <Box display="flex" marginTop={2}>
-        <ListItemBack title="Connection configuration" />
+        <ListItemBack title="Connection configuration" to="connect" />
         <IconButton
           name="undo"
           color="grayDark"

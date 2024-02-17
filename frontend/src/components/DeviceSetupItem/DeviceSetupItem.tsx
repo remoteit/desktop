@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import { State } from '../../store'
 import {
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   ListSubheader,
   ListItemIcon,
@@ -27,16 +27,18 @@ type Props = { className?: string; onClick?: () => void }
 
 export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   const history = useHistory()
-  const { registered, hostname, ownDevice, canRestore, restoring } = useSelector((state: State) => ({
-    registered: !!state.backend.thisId,
-    hostname: safeHostname(state.backend.environment.hostname, []),
-    ownDevice: getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id),
-    restoring: state.ui.restoring,
-    canRestore:
+  const registered = useSelector((state: State) => !!state.backend.thisId)
+  const hostname = useSelector((state: State) => safeHostname(state.backend.environment.hostname, []))
+  const ownDevice = useSelector((state: State) =>
+    getAllDevices(state).find(d => d.thisDevice && d.owner.id === state.user.id)
+  )
+  const restoring = useSelector((state: State) => state.ui.restoring)
+  const canRestore = useSelector(
+    (state: State) =>
       !state.backend.thisId &&
       (selectDeviceModelAttributes(state).total > selectDeviceModelAttributes(state).size ||
-        !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
-  }))
+        !!getAllDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared))
+  )
 
   if (restoring)
     return (
@@ -99,7 +101,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
             </>
           }
         >
-          <ListItem button disableGutters onClick={onClick} to={thisLink} component={Link} disabled={disabled}>
+          <ListItemButton disableGutters onClick={onClick} to={thisLink} component={Link} disabled={disabled}>
             <ListItemIcon>
               <Icon name={getOs()} fixedWidth platformIcon size="xxl" />
             </ListItemIcon>
@@ -109,7 +111,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
                 <Chip {...action} size="small" />
               </ListItemSecondaryAction>
             )}
-          </ListItem>
+          </ListItemButton>
         </GuideBubble>
       </List>
     </DesktopUI>

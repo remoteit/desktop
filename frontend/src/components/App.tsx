@@ -71,7 +71,7 @@ export const App: React.FC = () => {
   if (!authInitialized)
     return (
       <Page>
-        <LoadingMessage logo invert />
+        <LoadingMessage logo invert spinner />
       </Page>
     )
 

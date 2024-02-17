@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { Icon } from './Icon'
-import { ListItem, ListItemText, ListItemIcon, Radio } from '@mui/material'
+import { ListItemButton, ListItemText, ListItemIcon, Radio } from '@mui/material'
 
 type Props = {
   keyProp?: string | number
@@ -15,7 +15,7 @@ type Props = {
 export const ListItemRadio: React.FC<Props> = ({ label, subLabel, disabled, checked, onClick, children }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
-    <ListItem disabled={disabled} button dense onClick={() => inputRef.current?.click()}>
+    <ListItemButton disabled={disabled} dense onClick={() => inputRef.current?.click()}>
       <ListItemIcon>
         <Radio
           checked={checked}
@@ -29,6 +29,6 @@ export const ListItemRadio: React.FC<Props> = ({ label, subLabel, disabled, chec
       </ListItemIcon>
       <ListItemText primary={label} secondary={subLabel} />
       {children}
-    </ListItem>
+    </ListItemButton>
   )
 }

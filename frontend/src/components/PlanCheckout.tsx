@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
-import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
+import { Divider, List, ListItem, ListItemButton, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
@@ -89,7 +89,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         </ListItem>
       </List>
       <List className={css.list}>
-        <ListItem button onClick={() => setNextInterval()}>
+        <ListItemButton onClick={() => setNextInterval()}>
           <Typography variant="h3">Interval</Typography>
           <ListItemSecondaryAction>
             <div className={css.group}>
@@ -106,13 +106,13 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
               ))}
             </div>
           </ListItemSecondaryAction>
-        </ListItem>
-        <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
+        </ListItemButton>
+        <ListItemButton onClick={() => setQuantity(form.quantity + 1)}>
           <Typography variant="h3">Licenses</Typography>
           <ListItemSecondaryAction>
             <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
           </ListItemSecondaryAction>
-        </ListItem>
+        </ListItemButton>
         <ListItem>
           <Typography variant="h3">Users</Typography>
           <ListItemSecondaryAction>
@@ -174,7 +174,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   list: {
     width: '50%',
     minWidth: 400,
-    '& .MuiListItem-root': { padding: spacing.sm },
+    '& .MuiListItemButton-root,& .MuiListItem-root': { padding: spacing.sm },
     '& h2': { textTransform: 'capitalize' },
   },
   group: {

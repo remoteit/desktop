@@ -157,19 +157,18 @@ export default createModel<RootModel>()({
     ) {
       accountId = accountId || device?.accountId
       if (!accountId) return console.error('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
-      const devices = [...getDevices(state, accountId)]
+      const previousDevices = getDevices(state, accountId)
 
       let exists = false
-      devices.forEach((d, index) => {
-        if (d.id === id) {
-          if (device) devices[index] = { ...device, hidden: d.hidden }
-          else {
-            console.log('REMOVE DEVICE FROM LIST', devices[index])
-            devices.splice(index, 1)
+      const devices = previousDevices
+        .map(d => {
+          if (d.id === id) {
+            exists = true
+            return device ? { ...device, hidden: d.hidden } : null
           }
-          exists = true
-        }
-      })
+          return d
+        })
+        .filter((d): d is IDevice => !!d)
 
       // Add if new
       if (!exists && device) prepend ? devices.unshift(device) : devices.push(device)

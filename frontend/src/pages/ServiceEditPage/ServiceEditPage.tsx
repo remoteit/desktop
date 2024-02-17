@@ -31,7 +31,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Service configuration" />
+      <ListItemBack title="Service configuration" to="connect" />
       <ServiceForm
         service={service}
         thisDevice={thisDevice}

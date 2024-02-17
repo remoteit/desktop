@@ -1,5 +1,5 @@
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
-import { createTheme, Theme, ThemeOptions, PaletteOptions } from '@mui/material/styles'
+import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { State } from '../store'
 import { ArrowIcon } from '../components/ArrowIcon'
 
@@ -9,6 +9,7 @@ declare module '@mui/styles' {
 
 export const jssTheme = (isDark: boolean): ThemeOptions => {
   const colors = isDark ? darkColors : lightColors
+  const LIST_ITEM_ICON_WIDTH = 56
 
   const palette = {
     mode: isDark ? 'dark' : 'light',
@@ -44,6 +45,34 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     rpi: { main: colors.rpi },
     guide: { main: colors.guide },
     test: { main: colors.test },
+  }
+
+  const ListItemStyles: ComponentsOverrides<Theme>['MuiListItemButton'] & ComponentsOverrides<Theme>['MuiListItem'] = {
+    root: {
+      opacity: 1,
+      marginTop: 1,
+      marginBottom: 1,
+      borderRadius: radius,
+      '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
+      '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
+      '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
+      '& > .hoverHide, & > div > .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
+      '&:hover': {
+        '& > .hidden, & > div > .hidden': { opacity: 1 },
+        '& > .hoverHide, & > div > .hoverHide': { opacity: 0 },
+      },
+    },
+    gutters: {
+      width: `calc(100% - ${spacing.md * 2}px)`,
+      paddingLeft: spacing.xxs,
+      paddingRight: spacing.xxs,
+      marginLeft: spacing.md,
+      marginRight: spacing.md,
+    },
+    dense: {
+      '& .MuiInputBase-root': { fontSize: fontSizes.base },
+      '& .MuiFormHelperText-contained': { marginTop: 0, marginBottom: spacing.xs },
+    },
   }
 
   return {
@@ -142,7 +171,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },
           sizeLarge: {
             fontSize: fontSizes.sm,
-            padding: `${spacing.sm}px ${spacing.xl}px`,
+            padding: `${spacing.sm}px ${spacing.lg}px`,
+            borderRadius: spacing.xxl,
           },
           sizeSmall: {
             borderRadius: spacing.md,
@@ -236,10 +266,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.xs,
             padding: `${spacing.xs}px ${spacing.sm}px`,
             color: palette.gray.main,
-            '&:hover': { backgroundColor: palette.grayLighter.main },
+            '&:hover': { backgroundColor: palette.grayLighter.main, color: palette.grayDarkest.main },
             '&.Mui-selected': {
               backgroundColor: palette.primaryHighlight.main,
               fontWeight: 500,
+              '&:hover': { color: palette.primary.main },
             },
           },
         },
@@ -251,6 +282,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             flexWrap: 'nowrap',
             padding: 0,
             '& .MuiSnackbarContent-message': { padding: 0 },
+          },
+          message: {
+            width: '100%',
           },
         },
       },
@@ -286,7 +320,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiList: {
         styleOverrides: {
           root: {
-            '&.collapseList .MuiListItem-dense': {
+            '&.collapseList .MuiListItemButton-dense': {
               paddingTop: 0,
               paddingBottom: 0,
             },
@@ -342,57 +376,12 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItem: {
         styleOverrides: {
-          root: {
-            opacity: 1,
-            marginTop: 1,
-            marginBottom: 1,
-            borderRadius: radius,
-            '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
-            '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
-            // '& .MuiIconButton-sizeSmall': { marginRight: spacing.xs, marginLeft: spacing.xs },
-            '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
-            '& > .hoverHide, & > div > .hoverHide': { opacity: 1, transition: 'opacity 400ms' },
-            '&:hover': {
-              '& > .hidden, & > div > .hidden': { opacity: 1 },
-              '& > .hoverHide, & > div > .hoverHide': { opacity: 0 },
-            },
-          },
-          gutters: {
-            width: `calc(100% - ${spacing.md * 2}px)`,
-            paddingLeft: spacing.xxs,
-            paddingRight: spacing.xxs,
-            marginLeft: spacing.md,
-            marginRight: spacing.md,
-          },
-          padding: {
-            paddingLeft: 0,
-            paddingRight: 0,
-            paddingTop: 5,
-            paddingBottom: 5,
-          },
-          // button: {
-          //   '&:hover': { backgroundColor: palette.gray.main },
-          // },
-          secondaryAction: {
-            paddingRight: 60,
-            '& .MuiFormControl-root': { verticalAlign: 'middle' },
-          },
-          container: {
-            // For service list
-            '& .hidden': { opacity: 0, transition: 'opacity 200ms' },
-            '& .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
-            '&:hover': { '& .hidden': { opacity: 1 }, '& .hoverHide': { opacity: 0 } },
-            '& .MuiListItemSecondaryAction-root': { right: spacing.xl },
-          },
-          dense: {
-            '& .MuiInputBase-root': { fontSize: fontSizes.base },
-            '& .MuiFormHelperText-contained': { marginTop: 0, marginBottom: spacing.xs },
-          },
+          ...ListItemStyles,
         },
       },
       MuiListItemButton: {
         styleOverrides: {
-          root: { padding: 0 },
+          ...ListItemStyles,
         },
       },
       MuiListItemSecondaryAction: {
@@ -405,7 +394,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: { justifyContent: 'center', minWidth: 50, color: palette.grayDark.main, marginRight: spacing.xs },
+          root: { justifyContent: 'center', minWidth: LIST_ITEM_ICON_WIDTH, color: palette.grayDark.main },
         },
       },
       MuiListItemText: {
@@ -423,7 +412,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           list: {
             backgroundColor: palette.grayLightest.main,
-            '& .MuiListItem-dense, & .MuiMenuItem-dense': {
+            '& .MuiListItemButton-dense, & .MuiMenuItem-dense': {
               width: `calc(100% - ${spacing.xs * 2}px)`,
               marginLeft: spacing.xs,
               marginRight: spacing.xs,
@@ -431,11 +420,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               paddingLeft: spacing.xs,
               whiteSpace: 'nowrap',
               '& .MuiListItemText-root': { paddingRight: spacing.md },
-              '& .MuiListItemIcon-root': { minWidth: 50 },
+              '& .MuiListItemIcon-root': { minWidth: LIST_ITEM_ICON_WIDTH },
             },
             '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
             '& > .MuiList-padding': { padding: 0 },
-            '& .MuiListItemIcon-root': { minWidth: 50 },
+            '& .MuiListItemIcon-root': { minWidth: LIST_ITEM_ICON_WIDTH },
             '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
             '& .MuiDivider-root': {
               marginTop: 10,

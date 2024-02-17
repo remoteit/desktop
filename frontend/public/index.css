@@ -57,6 +57,20 @@ body {
   background-color: #034b9d;
 }
 
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px; 
+  -webkit-app-region: drag;
+}
+
+.body-no-drag::before {
+  height: 0;
+}
+
 body > svg {
   margin-bottom: 40px;
 }

@@ -2,7 +2,7 @@ import React from 'react'
 import browser, { windowOpen } from '../services/Browser'
 import { SCREEN_VIEW_APP_LINK } from '../constants'
 import { useHistory } from 'react-router-dom'
-import { List, ListItem, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'
+import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'
 import { GuideBubble } from '../components/GuideBubble'
 import { MobileUI } from '../components/MobileUI'
 import { Icon } from '../components/Icon'
@@ -40,12 +40,12 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
             </>
           }
         >
-          <ListItem button disableGutters onClick={handleClick}>
+          <ListItemButton disableGutters onClick={handleClick}>
             <ListItemIcon>
               <Icon name="android" fixedWidth platformIcon size="xxl" />
             </ListItemIcon>
             <ListItemText primary="This device" secondary="Control or access this device and local network" />
-          </ListItem>
+          </ListItemButton>
         </GuideBubble>
       </List>
     </MobileUI>

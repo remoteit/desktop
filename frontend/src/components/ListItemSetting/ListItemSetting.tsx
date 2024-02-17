@@ -1,6 +1,15 @@
 import React, { useState, useRef } from 'react'
 import { makeStyles } from '@mui/styles'
-import { Tooltip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@mui/material'
+import {
+  Tooltip,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Switch,
+  Button,
+} from '@mui/material'
 import { Confirm, ConfirmProps } from '../Confirm'
 import { Icon, IconProps } from '../Icon'
 import { spacing } from '../../styling'
@@ -24,12 +33,12 @@ type Props = {
   modified?: boolean
   content?: React.ReactNode
   secondaryContent?: React.ReactNode
-  secondaryContentWidth?: string
+  secondaryContentWidth?: string | number
   onClick?: () => void
   onButtonClick?: () => void
 }
 
-export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
+export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
   (
     {
       icon,
@@ -62,6 +71,8 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
     const showButton = button !== undefined
     const css = useStyles()
 
+    secondaryContentWidth = secondaryContentWidth || (showButton || showToggle || secondaryContent ? '60px' : undefined)
+
     if (!onClick) confirm = false
 
     const handleClick = () => {
@@ -91,51 +102,55 @@ export const ListItemSetting = React.forwardRef<HTMLLIElement, Props>(
         children
       )
 
+    const ListItemContents = (
+      <>
+        <TooltipWrapper>
+          <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
+            <Icon
+              ref={iconRef}
+              name={icon}
+              color={iconColor}
+              size="md"
+              modified={modified}
+              type={iconType}
+              fixedWidth
+            />
+          </ListItemIcon>
+        </TooltipWrapper>
+        {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
+        <ListItemSecondaryAction>
+          {secondaryContent}
+          {showButton && (
+            <Button onClick={onButtonClick} color="primary" size="small">
+              {button}
+            </Button>
+          )}
+          {showToggle && (
+            <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={handleClick} size={size} />
+          )}
+        </ListItemSecondaryAction>
+      </>
+    )
+
     return (
       <>
-        <ListItem
-          dense
-          ref={ref}
-          button={disabled || !onClick ? false : (true as any)}
-          onClick={handleClick}
-          disabled={disabled}
-          onMouseEnter={() => setShowTip(true)}
-          onMouseLeave={() => setShowTip(false)}
-          {...{ sx: secondaryContentWidth ? { paddingRight: secondaryContentWidth } : undefined }}
-        >
-          <TooltipWrapper>
-            <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
-              <Icon
-                ref={iconRef}
-                name={icon}
-                color={iconColor}
-                size="md"
-                modified={modified}
-                type={iconType}
-                fixedWidth
-              />
-            </ListItemIcon>
-          </TooltipWrapper>
-          {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
-          <ListItemSecondaryAction>
-            {secondaryContent}
-            {showButton && (
-              <Button onClick={onButtonClick} color="primary" size="small">
-                {button}
-              </Button>
-            )}
-            {showToggle && (
-              <Switch
-                edge="end"
-                color="primary"
-                disabled={disabled}
-                checked={toggle}
-                onClick={handleClick}
-                size={size}
-              />
-            )}
-          </ListItemSecondaryAction>
-        </ListItem>
+        {disabled || !onClick ? (
+          <ListItem dense sx={{ paddingRight: secondaryContentWidth }}>
+            {ListItemContents}
+          </ListItem>
+        ) : (
+          <ListItemButton
+            dense
+            ref={ref}
+            onClick={handleClick}
+            disabled={disabled}
+            onMouseEnter={() => setShowTip(true)}
+            onMouseLeave={() => setShowTip(false)}
+            sx={{ paddingRight: secondaryContentWidth }}
+          >
+            {ListItemContents}
+          </ListItemButton>
+        )}
         {confirm && onClick && (
           <Confirm {...confirmProps} open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)}>
             {confirmProps?.children}

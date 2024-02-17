@@ -1,6 +1,7 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
+import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import {
   Box,
@@ -206,6 +207,7 @@ const useStyles = makeStyles(({ palette }) => ({
       marginBottom: 1,
       paddingLeft: 2,
       paddingRight: 2,
+      minHeight: 20,
       color: palette.grayDarker.main,
       '&.Mui-focused': { backgroundColor: palette.primaryHighlight.main },
       '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },

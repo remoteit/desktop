@@ -13,7 +13,7 @@ export const ColumnsButton: React.FC = () => {
   const icon = open ? 'times' : 'line-columns'
   return (
     <Tooltip
-      placement="left"
+      enterDelay={500}
       title={open ? 'Hide Columns' : 'Show Columns'}
       sx={{
         borderWidth: 1,
@@ -23,8 +23,9 @@ export const ColumnsButton: React.FC = () => {
         paddingBottom: 2,
         marginTop: 0.5,
         bgcolor: open ? 'white.main' : undefined,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: open ? 0 : undefined,
+        borderBottomRightRadius: open ? 0 : undefined,
+        '&:hover': { bgcolor: open ? 'white.main' : undefined },
       }}
       arrow
     >

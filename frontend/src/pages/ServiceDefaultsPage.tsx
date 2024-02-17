@@ -18,7 +18,7 @@ export const ServiceDefaultsPage: React.FC = () => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Default Connection settings" />
+      <ListItemBack title="Default Connection settings" to="connect" />
       <AccordionMenuItem gutters subtitle="Defaults" defaultExpanded disabled>
         <Gutters>
           <Notice fullWidth>Default local settings for any connections to this service.</Notice>

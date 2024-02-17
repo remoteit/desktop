@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { List, ListItem, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'
+import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'
 import { MobileUI } from '../components/MobileUI'
 import { Icon } from '../components/Icon'
 
@@ -16,12 +16,12 @@ export const ScreenViewSetup: React.FC<Props> = ({ className, onClick }) => {
       <List className={className} dense disablePadding>
         <ListSubheader disableGutters>Remote Control</ListSubheader>
         <Divider />
-        <ListItem button disableGutters onClick={handleClick}>
+        <ListItemButton disableGutters onClick={handleClick}>
           <ListItemIcon>
-            <Icon name="screenview" size="xxl" platformIcon />
+            <Icon name="screenview" fontSize={34} platformIcon />
           </ListItemIcon>
           <ListItemText primary="Remote.It ScreenView" secondary="Share and control a remote Android's screen" />
-        </ListItem>
+        </ListItemButton>
       </List>
     </MobileUI>
   )

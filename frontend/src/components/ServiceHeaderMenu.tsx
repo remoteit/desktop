@@ -34,7 +34,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
   const history = useHistory()
 
   useEffect(() => {
-    dispatch.ui.set({ connectThisDevice: false })
+    if (connectThisDevice) dispatch.ui.set({ connectThisDevice: false })
   }, [device?.id])
 
   if (!service || !device) return null

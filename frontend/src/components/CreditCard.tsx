@@ -1,5 +1,14 @@
 import React from 'react'
-import { Typography, Button, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import {
+  Typography,
+  Button,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+} from '@mui/material'
 import { useLocation } from 'react-router-dom'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -35,7 +44,7 @@ export const CreditCard: React.FC = () => {
             </Notice>
           </ListItem>
         )}
-        <ListItem button onClick={update}>
+        <ListItemButton onClick={update}>
           <ListItemIcon>
             <Icon name="credit-card" size="md" />
           </ListItemIcon>
@@ -48,7 +57,7 @@ export const CreditCard: React.FC = () => {
               {updating ? 'Processing...' : 'Update'}
             </Button>
           </ListItemSecondaryAction>
-        </ListItem>
+        </ListItemButton>
       </List>
     </>
   )

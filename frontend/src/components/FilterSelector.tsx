@@ -1,6 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon } from './Icon'
 
 type Props = {
@@ -12,8 +11,6 @@ type Props = {
 }
 
 export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSelect, children }) => {
-  const css = useStyles()
-
   if (value === undefined) {
     console.warn('FilterSelector: value is undefined', filterList)
     return null
@@ -25,25 +22,24 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
   }
 
   return (
-    <List dense className={css.list}>
+    <List
+      dense
+      sx={{
+        paddingTop: 0,
+        '& .MuiListItemButton-root': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
+      }}
+    >
       {children}
       {filterList.map((f, index) => (
-        <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
+        <ListItemButton key={index} onClick={() => onSelect(f.value)}>
           <ListItemIcon>{isActive(f.value) && <Icon name={icon} color="primary" />}</ListItemIcon>
           <ListItemText
             style={{ color: f.color ? f.color : undefined }}
             primary={f.name}
             primaryTypographyProps={{ color: !f.color && isActive(f.value) ? 'primary' : undefined }}
           />
-        </ListItem>
+        </ListItemButton>
       ))}
     </List>
   )
 }
-
-const useStyles = makeStyles({
-  list: {
-    paddingTop: 0,
-    '& .MuiListItem-dense': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
-  },
-})

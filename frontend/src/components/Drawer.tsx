@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
@@ -14,8 +15,27 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
   const width = open ? WIDTH : 0
   const css = useStyles()
 
+  useEffect(() => {
+    if (!browser.isElectron) return
+
+    const body = document.body
+    if (open) body.classList.add('body-no-drag')
+    else body.classList.remove('body-no-drag')
+
+    return () => {
+      body.classList.remove('body-no-drag')
+    }
+  }, [open])
+
   return (
-    <ClickAwayListener onClickAway={() => open && ui.set({ drawerMenu: null })}>
+    <ClickAwayListener
+      onClickAway={event => {
+        if (open) {
+          event.preventDefault()
+          ui.set({ drawerMenu: null })
+        }
+      }}
+    >
       <Box
         sx={{
           maxWidth: width,

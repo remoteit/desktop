@@ -3,7 +3,17 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
-import { Stack, List, ListItem, ListSubheader, ListItemIcon, ListItemText, Typography, Tooltip } from '@mui/material'
+import {
+  Stack,
+  List,
+  ListItem,
+  ListItemButton,
+  ListSubheader,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Tooltip,
+} from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -20,10 +30,8 @@ import { Icon } from '../components/Icon'
 export const AddPage: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const { claiming, hasDemo } = useSelector((state: State) => ({
-    claiming: state.ui.claiming,
-    hasDemo: selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined,
-  }))
+  const claiming = useSelector((state: State) => state.ui.claiming)
+  const hasDemo = useSelector((state: State) => selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined)
 
   return (
     <Container
@@ -39,8 +47,7 @@ export const AddPage: React.FC = () => {
       <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" paddingX={{ xs: 1, sm: 4 }}>
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
-          <ListItem
-            button
+          <ListItemButton
             disableGutters
             disabled={hasDemo || claiming}
             className={css.smallItem}
@@ -52,7 +59,7 @@ export const AddPage: React.FC = () => {
               <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
             </ListItemIcon>
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
-          </ListItem>
+          </ListItemButton>
         </List>
         <AndroidSetup className={classnames(css.list, css.smallList)} />
         <DeviceSetupItem className={classnames(css.list, css.smallList)} />
@@ -63,10 +70,6 @@ export const AddPage: React.FC = () => {
             <ClaimDevice />
           </ListItem>
         </List>
-        {/* <List className={classnames(css.list, css.bigList)} dense disablePadding>
-          <ListSubheader disableGutters>Quick add Command</ListSubheader>
-          <AddQuickPlatform />
-        </List> */}
         <List className={css.list} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
@@ -102,7 +105,6 @@ export const AddPage: React.FC = () => {
             'alpine',
             'axis',
             'advantech',
-            'ubuntu',
             'windows',
             'mac',
           ].map(p => {
@@ -153,21 +155,25 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     marginTop: spacing.md,
     paddingRight: spacing.xs,
     paddingLeft: spacing.md,
-    '& .MuiListItem-root': {
+    '& .MuiListItemButton-root, & .MuiListItem-root': {
       display: 'block',
       minWidth: 140,
       minHeight: 100,
       margin: 1,
     },
-    '& .MuiListItem-root.MuiListItem-padding': {
+    '& .MuiListItemButton-root': {
       paddingLeft: spacing.md,
       paddingTop: spacing.lg,
-      paddingBottom: spacing.sm,
       paddingRight: spacing.md,
+      flexGrow: 'initial',
     },
     '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
     '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
-    '& .MuiListSubheader-root': { width: '100%', borderBottom: `1px solid ${palette.grayLight.main}` },
+    '& .MuiListSubheader-root': {
+      width: '100%',
+      borderBottom: `1px solid ${palette.grayLight.main}`,
+      marginBottom: spacing.xs,
+    },
   },
   smallItem: {
     width: 140,
@@ -176,9 +182,5 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     width: '50%',
     [breakpoints.up('sm')]: { width: '33%' },
     [breakpoints.up('md')]: { width: '25%' },
-  },
-  bigList: {
-    width: '100%',
-    [breakpoints.up('md')]: { width: '75%' },
   },
 }))

@@ -236,9 +236,9 @@ export default createModel<RootModel>()({
           result.newDevice = true
           dispatch.devices.incrementTotal(accountId)
         }
+        console.log('FETCHED FULL DEVICE', { id, device: result, accountId })
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
-        console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
       } else {
         if (!isService && state.ui.silent !== id)
           dispatch.ui.set({
@@ -270,6 +270,18 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0
       return count
+    },
+
+    async expire(_: void, state) {
+      const rootState = structuredClone(state.devices)
+
+      for (const accountId in rootState) {
+        if (accountId === 'default') continue
+        rootState[accountId].initialized = false
+        console.log('EXPIRE DEVICES', accountId)
+      }
+
+      await dispatch.devices.rootSet(rootState)
     },
 
     async clearLoaded(_: void, state) {

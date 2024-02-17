@@ -5,16 +5,16 @@ import { PersistConfig } from 'redux-persist'
 import persistPlugin, { getPersistor } from '@rematch/persist'
 import DateTransform from './helpers/DateTransform'
 import immerPlugin from '@rematch/immer'
-import storage from 'redux-persist/lib/storage'
+import localForage from 'localforage'
 
 const loggerConfig: ReduxLoggerOptions = {
   predicate: () => !!(window as any).stateLogging,
 }
 
 const persistConfig: PersistConfig<RootModel> = {
-  storage,
   key: 'app',
   version: 1,
+  storage: localForage,
   whitelist: [
     'accounts',
     'announcements',

@@ -11,7 +11,10 @@ class CloudSync {
   init() {
     if (this.initialized) return
     this.initialized = true
-    network.on('connect', this.all)
+    network.on('connect', async () => {
+      await dispatch.devices.expire()
+      this.all()
+    })
   }
 
   reset() {
@@ -19,20 +22,20 @@ class CloudSync {
     network.off('connect', this.all)
   }
 
-  async call(methods: Methods, parallel?: boolean) {
-    await dispatch.ui.set({ fetching: true })
+  async call(methods: Methods, parallel?: boolean, spinner: boolean = true) {
+    if (spinner) await dispatch.ui.set({ fetching: true })
 
     if (parallel) await Promise.all(methods.map(method => method()))
     else for (const method of methods) await method()
 
-    await dispatch.ui.set({ fetching: false })
+    if (spinner) await dispatch.ui.set({ fetching: false })
   }
 
   async cancel() {
     await dispatch.ui.set({ fetching: false })
   }
 
-  async core() {
+  async core(spinner: boolean = false) {
     await this.call(
       [
         dispatch.user.fetch,
@@ -45,7 +48,8 @@ class CloudSync {
         dispatch.announcements.fetch,
         dispatch.applicationTypes.fetch,
       ],
-      true
+      true,
+      spinner
     )
   }
 

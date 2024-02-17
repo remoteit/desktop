@@ -100,10 +100,10 @@ export const Header: React.FC = () => {
               <FilterButton />
               {!mobile && <ColumnsButton />}
             </Route>
-            {manager && !serviceList && (
+            {manager && (
               <Switch>
                 <Route path="/devices" exact>
-                  <IconButton to="/devices/select" icon="check-square" title="Show Select" />
+                  <IconButton to="/devices/select" icon="check-square" title="Show Select" disabled={serviceList} />
                 </Route>
                 <Route path="/devices/select" exact>
                   <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />

@@ -149,7 +149,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
         icon="stop"
         color="primary"
         variant="text"
-        size="medium"
+        size="large"
         iconType="solid"
         onClick={event => clickHandler(event, true)}
       />

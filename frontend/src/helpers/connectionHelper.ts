@@ -126,7 +126,8 @@ export function launchDisabled(connection?: IConnection) {
   return !!(
     (connection.launchType === 'COMMAND' && !browser.hasBackend) ||
     connection.launchType === 'NONE' ||
-    !connection.enabled
+    !connection.enabled ||
+    !connection.online
   )
 }
 
