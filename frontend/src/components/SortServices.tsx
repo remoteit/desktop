@@ -57,10 +57,6 @@ export const SortServices: React.FC = () => {
   const option = getSortOptions(sortService)
   const open = Boolean(anchorEl)
 
-  useEffect(() => {
-    servicesSort(sortService)
-  }, [])
-
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
