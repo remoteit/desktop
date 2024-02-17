@@ -69,33 +69,31 @@ export const DialogNewFeatures = () => {
             />
           </ListItem>
           {browser.isAndroid ? (
-            <ListItem disableGutters>
-              <ListItemButton onClick={handleOpenScreenView}>
-                <ListItemIcon sx={{ marginTop: -4 }}>
-                  <Icon name="wave-pulse" size="lg" type="light" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Register this device"
-                  secondary={
-                    <>
-                      You can now register this device with our new Screen View app. &nbsp;
-                      <em>If you had previously registered, you can restore the old device using it's restore code.</em>
-                      <br />
-                      <Button
-                        onClick={handleOpenScreenView}
-                        variant="contained"
-                        size="small"
-                        color="inherit"
-                        endIcon={<Icon name="google-play" type="brands" size="xs" fixedWidth />}
-                        sx={{ color: 'guide.main', marginTop: 1 }}
-                      >
-                        Get Screen-View
-                      </Button>
-                    </>
-                  }
-                />
-              </ListItemButton>
-            </ListItem>
+            <ListItemButton onClick={handleOpenScreenView} disableGutters>
+              <ListItemIcon sx={{ marginTop: -4 }}>
+                <Icon name="wave-pulse" size="lg" type="light" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Register this device"
+                secondary={
+                  <>
+                    You can now register this device with our new Screen View app. &nbsp;
+                    <em>If you had previously registered, you can restore the old device using it's restore code.</em>
+                    <br />
+                    <Button
+                      onClick={handleOpenScreenView}
+                      variant="contained"
+                      size="small"
+                      color="inherit"
+                      endIcon={<Icon name="google-play" type="brands" size="xs" fixedWidth />}
+                      sx={{ color: 'guide.main', marginTop: 1 }}
+                    >
+                      Get Screen-View
+                    </Button>
+                  </>
+                }
+              />
+            </ListItemButton>
           ) : (
             <ListItem disableGutters>
               <ListItemIcon>

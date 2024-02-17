@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { DeviceListContext } from '../services/Context'
 import { AttributeValueMemo } from './AttributeValue'
-import { Box, ListItemIcon, ListItem } from '@mui/material'
+import { Box, ListItemIcon, ListItemButton } from '@mui/material'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
 import { radius, spacing } from '../styling'
 import { Icon } from './Icon'
@@ -43,7 +43,7 @@ export const DeviceListItem: React.FC<Props> = ({
   }
 
   return (
-    <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
+    <ListItemButton className={css.row} onClick={handleClick} selected={selected} disableGutters>
       <Box className={css.sticky}>
         {duplicateName && !mobile ? null : (
           <Box>
@@ -68,7 +68,7 @@ export const DeviceListItem: React.FC<Props> = ({
             <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
           </Box>
         ))}
-    </ListItem>
+    </ListItemButton>
   )
 }
 

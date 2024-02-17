@@ -11,7 +11,6 @@ export const FilterButton: React.FC = () => {
   const open = drawerMenu === 'FILTER'
   const { ui } = useDispatch<Dispatch>()
   const icon = open ? 'times' : 'filter'
-  console.log('FilterButton.tsx: Rendering FilterButton.', open, drawerMenu)
 
   return (
     <Tooltip

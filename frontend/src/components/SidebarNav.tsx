@@ -10,7 +10,6 @@ import {
   Box,
   Badge,
   List,
-  ListItem,
   ListItemButton,
   ListItemSecondaryAction,
   Typography,
@@ -110,14 +109,12 @@ export const SidebarNav: React.FC = () => {
       )}
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
-      <ListItem sx={{ marginTop: 2 }}>
-        <ListItemButton onClick={() => setMore(!more)}>
-          <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
-            More
-            <ExpandIcon open={more} color="grayDark" />
-          </Typography>
-        </ListItemButton>
-      </ListItem>
+      <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
+        <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
+          More
+          <ExpandIcon open={more} color="grayDark" />
+        </Typography>
+      </ListItemButton>
       <Collapse in={more}>
         <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
         <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />

@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import { State } from '../../store'
 import {
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   ListSubheader,
   ListItemIcon,
@@ -101,7 +101,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
             </>
           }
         >
-          <ListItem button disableGutters onClick={onClick} to={thisLink} component={Link} disabled={disabled}>
+          <ListItemButton disableGutters onClick={onClick} to={thisLink} component={Link} disabled={disabled}>
             <ListItemIcon>
               <Icon name={getOs()} fixedWidth platformIcon size="xxl" />
             </ListItemIcon>
@@ -111,7 +111,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
                 <Chip {...action} size="small" />
               </ListItemSecondaryAction>
             )}
-          </ListItem>
+          </ListItemButton>
         </GuideBubble>
       </List>
     </DesktopUI>

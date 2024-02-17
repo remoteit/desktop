@@ -236,9 +236,9 @@ export default createModel<RootModel>()({
           result.newDevice = true
           dispatch.devices.incrementTotal(accountId)
         }
+        console.log('FETCHED FULL DEVICE', { id, device: result, accountId })
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
         await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
-        console.log('FETCHED DEVICE', { id: result.id, device: result, accountId })
       } else {
         if (!isService && state.ui.silent !== id)
           dispatch.ui.set({

@@ -2,7 +2,7 @@ import React from 'react'
 import classnames from 'classnames'
 import { useHistory } from 'react-router-dom'
 import { useMatches } from '../../hooks/useMatches'
-import { MenuItem, ListItem, ListItemIcon, ListItemText, Badge } from '@mui/material'
+import { MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
 import { Color, Sizes, spacing } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Icon } from '../Icon'
@@ -104,9 +104,7 @@ export const ListItemLocation: React.FC<Props> = ({
   return menuItem ? (
     <MenuItem {...ItemProps}>{Contents}</MenuItem>
   ) : to || props.onClick ? (
-    <ListItem {...ItemProps} button>
-      {Contents}
-    </ListItem>
+    <ListItemButton {...ItemProps}>{Contents}</ListItemButton>
   ) : (
     <ListItem {...ItemProps}>{Contents}</ListItem>
   )

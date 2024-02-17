@@ -86,24 +86,24 @@ const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, required, columnWidths, mobile }: StyleProps) => ({
     minWidth: '100%',
     width: required.width(columnWidths) + (mobile ? 0 : attributes?.reduce((w, a) => w + a.width(columnWidths), 0)),
-    '& .MuiListItem-root, & .MuiListSubheader-root': {
+    '& .MuiListItemButton-root, & .MuiListSubheader-root': {
       gridTemplateColumns: `${required.width(columnWidths)}px ${
         mobile ? '' : attributes?.map(a => a.width(columnWidths)).join('px ') + 'px'
       }`,
     },
   }),
   list: {
-    '& .MuiListItem-root:nth-child(2)': {
+    '& .MuiListItemButton-root:nth-child(2)': {
       marginTop: SHRINK / 2,
     },
-    '& .MuiListItem-root, & .MuiListSubheader-root': {
+    '& .MuiListItemButton-root, & .MuiListSubheader-root': {
       display: 'inline-grid',
       alignItems: 'start',
       '& > .MuiBox-root': {
         paddingRight: spacing.sm,
       },
     },
-    '& .MuiListItem-root': {
+    '& .MuiListItemButton-root': {
       minHeight: ROW_HEIGHT - SHRINK,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
