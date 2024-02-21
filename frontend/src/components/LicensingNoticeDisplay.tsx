@@ -122,5 +122,5 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
       break
   }
 
-  return fullWidth ? notice : <ListItem>{notice}</ListItem>
+  return notice ? fullWidth ? notice : <ListItem>{notice}</ListItem> : null
 }

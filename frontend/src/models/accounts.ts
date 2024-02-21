@@ -113,19 +113,19 @@ export default createModel<RootModel>()({
     },
     /*     
       Keeps the existing devices and device list order and merges in newly loaded device data
-      -- For adding hidden device data or fully loaded device data
+      -- For adding hidden device data or fully loaded device data and saving loaded services
     */
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices || !devices.length) return
       const all = getDevices(state, accountId)
-      let mergedDevices: IDevice[] = []
+      const devicesMap = new Map(devices.map(device => [device.id, device]))
 
-      all.forEach(overwrite => {
-        const device = devices.find(d => d.id === overwrite.id)
+      let mergedDevices: IDevice[] = all.map(overwrite => {
+        const device = devicesMap.get(overwrite.id)
         if (device) {
-          mergedDevices.push(mergeDevice(overwrite, device))
+          return mergeDevice(overwrite, device)
         } else {
-          mergedDevices.push(overwrite)
+          return overwrite
         }
       })
 
@@ -157,13 +157,16 @@ export default createModel<RootModel>()({
     ) {
       accountId = accountId || device?.accountId
       if (!accountId) return console.error('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
-      const previousDevices = getDevices(state, accountId)
 
-      let exists = false
+      const previousDevices = getDevices(state, accountId)
+      let updated = false
+
       const devices = previousDevices
         .map(d => {
           if (d.id === id) {
-            exists = true
+            updated = true
+            if (device?.loaded || d.loaded)
+              console.log('SET DEVICE LOADED', { id, newloaded: device?.loaded, prevloaded: d.loaded, name: d.name })
             return device ? { ...device, hidden: d.hidden } : null
           }
           return d
@@ -171,7 +174,7 @@ export default createModel<RootModel>()({
         .filter((d): d is IDevice => !!d)
 
       // Add if new
-      if (!exists && device) prepend ? devices.unshift(device) : devices.push(device)
+      if (!updated && device) prepend ? devices.unshift(device) : devices.push(device)
       await dispatch.accounts.setDevices({ devices, accountId })
     },
     /* 

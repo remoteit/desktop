@@ -1,5 +1,12 @@
 import React from 'react'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@mui/material'
+import {
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  InputLabel,
+} from '@mui/material'
 import { EditButton } from '../buttons/EditButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { useStyles } from './InlineSetting'
@@ -49,34 +56,45 @@ export const FormDisplay: React.FC<Props> = ({
   if (typeof icon === 'string') icon = <Icon name={icon} size="md" modified={modified} fixedWidth />
   icon = <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
 
+  const content = (
+    <>
+      {icon}
+      <Title>
+        {label && <InputLabel shrink>{label}</InputLabel>}
+        <ListItemText style={{ color }}>{(displayValue === undefined ? value : displayValue) || '–'}</ListItemText>
+      </Title>
+      {!disabled && !displayOnly && (
+        <ListItemSecondaryAction className="hidden">
+          <EditButton onClick={onClick} />
+          {onDelete && <DeleteButton onDelete={onDelete} warning={warning} />}
+        </ListItemSecondaryAction>
+      )}
+      {loading && (
+        <ListItemSecondaryAction>
+          <Icon spin type="solid" name="spinner-third" color="primary" inlineLeft />
+        </ListItemSecondaryAction>
+      )}
+    </>
+  )
+
   return (
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
-      <ListItem
-        button={!displayOnly as false}
-        className={css.view}
-        onClick={onClick}
-        disabled={disabled}
-        disableGutters={disableGutters}
-        dense
-      >
-        {icon}
-        <Title>
-          {label && <InputLabel shrink>{label}</InputLabel>}
-          <ListItemText style={{ color }}>{(displayValue === undefined ? value : displayValue) || '–'}</ListItemText>
-        </Title>
-        {!disabled && !displayOnly && (
-          <ListItemSecondaryAction className="hidden">
-            <EditButton onClick={onClick} />
-            {onDelete && <DeleteButton onDelete={onDelete} warning={warning} />}
-          </ListItemSecondaryAction>
-        )}
-        {loading && (
-          <ListItemSecondaryAction>
-            <Icon spin type="solid" name="spinner-third" color="primary" inlineLeft />
-          </ListItemSecondaryAction>
-        )}
-      </ListItem>
+      {displayOnly ? (
+        <ListItem className={css.view} disableGutters={disableGutters} dense>
+          {content}
+        </ListItem>
+      ) : (
+        <ListItemButton
+          className={css.view}
+          onClick={onClick}
+          disabled={disabled}
+          disableGutters={disableGutters}
+          dense
+        >
+          {content}
+        </ListItemButton>
+      )}
     </>
   )
 }

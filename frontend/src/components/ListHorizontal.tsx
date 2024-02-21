@@ -32,7 +32,7 @@ const useStyles = makeStyles({
     '& .MuiListItemIcon-root': {
       justifyContent: 'flex-start',
     },
-    '& .MuiListItem-root': {
+    '& .MuiListItemButton-root': {
       display: small ? undefined : 'block',
       minWidth: mobile ? undefined : 120,
       width: mobile ? 90 : 100,
@@ -40,6 +40,7 @@ const useStyles = makeStyles({
       paddingTop: small ? undefined : spacing.lg,
       paddingBottom: small ? undefined : spacing.sm,
       paddingRight: spacing.md,
+      flexGrow: 'initial',
       margin: 1,
     },
     '& .MuiListItemText-root > .MuiTypography-root': {

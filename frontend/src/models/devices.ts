@@ -673,12 +673,15 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   return [devices, total, id, error]
 }
 
-export function mergeDevice(target: IDevice, source: IDevice) {
+export function mergeDevice(overwrite: IDevice, device: IDevice): IDevice {
+  const serviceIds = new Set(device.services.map(s => s.id))
+  console.log('MERGE DEVICE', { name: overwrite.name, overwriteLoaded: overwrite.loaded, keepLoaded: device.loaded })
+
   return {
-    ...target,
-    ...source,
-    services: [...target.services.filter(ts => !source.services.find(ss => ss.id === ts.id)), ...source.services], // might not need this?
-    hidden: source.hidden && target.hidden,
+    ...overwrite,
+    ...device,
+    services: [...overwrite.services.filter(os => !serviceIds.has(os.id)), ...device.services],
+    hidden: device.hidden && overwrite.hidden,
   }
 }
 
