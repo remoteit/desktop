@@ -132,8 +132,7 @@ export const DevicePage: React.FC = () => {
         <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
-
-      <List className={css.list}>
+      <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
         {editable && <LicensingNotice instance={device} />}
         {editable && setupAddingService && (
           <ListItemLocation to="" disableIcon disabled dense>
@@ -174,7 +173,7 @@ export const DevicePage: React.FC = () => {
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
                 disabled={setupDeletingService === s.id}
-                disableIcon
+                inset={1.5}
                 dense
               >
                 <ConnectButton
@@ -205,7 +204,6 @@ export const DevicePage: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
+  connect: { marginLeft: -spacing.xxs, marginRight: spacing.xs },
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
-  list: { '& .MuiListItem-root': { paddingRight: spacing.sm } },
 })

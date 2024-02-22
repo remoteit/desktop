@@ -47,7 +47,7 @@ export const PlanCard: React.FC<Props> = ({
   const css = useStyles({ wide, selected })
 
   return (
-    <div className={classnames(css.card, selected ? css.selected : promoted && css.promoted)}>
+    <div className={classnames(css.card, selected ? css.selected : promoted && css.promoted, 'planCard')}>
       {selected ? <header>Current plan</header> : promoted && <header>New</header>}
       <div className={css.plan}>
         <Typography variant="h1">{name}</Typography>
@@ -100,7 +100,7 @@ export const Item: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, breakpoints }) => ({
   card: ({ wide, selected }: StyleProps) => ({
     display: 'flex',
     width: '100%',
@@ -109,9 +109,13 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     textAlign: 'center',
     borderRadius: radius,
-    backgroundColor: selected ? palette.primaryHighlight.main : wide ? palette.grayLightest.main : undefined,
+    backgroundColor: selected ? palette.primaryHighlight.main : palette.grayLightest.main,
+    marginBottom: spacing.md,
+    [breakpoints.up('sm')]: {
+      '& + .planCard': { marginLeft: spacing.md },
+    },
     '& .planCardColumn': {
-      paddingBottom: spacing.lg,
+      // paddingBottom: spacing.lg,
       display: wide ? 'flex' : 'block',
       '& > div + div': { marginLeft: wide ? spacing.md : undefined },
     },

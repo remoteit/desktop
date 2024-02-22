@@ -53,6 +53,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       marginTop: 1,
       marginBottom: 1,
       borderRadius: radius,
+      padding: `5px 0px`,
       '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
       '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
       '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },
@@ -64,8 +65,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     },
     gutters: {
       width: `calc(100% - ${spacing.md * 2}px)`,
-      paddingLeft: spacing.xxs,
-      paddingRight: spacing.xxs,
       marginLeft: spacing.md,
       marginRight: spacing.md,
     },
@@ -504,6 +503,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiTextField: {
+        defaultProps: {
+          onKeyDown: (event: React.KeyboardEvent) => {
+            if (event.key === '#') event.stopPropagation()
+          },
+        },
         styleOverrides: {
           root: {
             '& .MuiSelect-iconStandard': { right: spacing.md },
@@ -512,7 +516,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               marginBottom: spacing.xxs,
               height: 20,
               borderRadius: 10,
-              fontSize: fontSizes.xxs,
+              '& .MuiSelect-select': { fontSize: fontSizes.xxs },
               '& .MuiSelect-icon': { marginRight: 2 },
             },
             '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },

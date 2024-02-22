@@ -80,6 +80,7 @@ const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: StyleProps) => ({
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
+    width: '100%',
     '&:hover': {
       backgroundColor: palette.primaryHighlight.main,
     },

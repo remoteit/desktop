@@ -16,7 +16,7 @@ export const PlansPage: React.FC = () => {
     <Container
       integrated
       gutterBottom
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={<Typography variant="h1">Subscriptions</Typography>}
     >
       <Plans />
