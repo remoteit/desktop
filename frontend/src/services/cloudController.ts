@@ -288,7 +288,7 @@ class CloudController {
 
           // if device exists
           if (target.device?.id) {
-            accounts.setDevice({ id: target.device.id, device: target.device })
+            accounts.setDevice({ id: target.device.id, device: target.device, accountId: target.accountId })
           }
 
           // New unknown device discovered
