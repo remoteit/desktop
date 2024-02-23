@@ -262,7 +262,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, plans, ui, devices } = store.dispatch
+    const dispatch = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -288,7 +288,7 @@ class CloudController {
 
           // if device exists
           if (target.device?.id) {
-            accounts.setDevice({ id: target.device.id, device: target.device, accountId: target.accountId })
+            dispatch.accounts.setDevice({ id: target.device.id, device: target.device, accountId: target.accountId })
           }
 
           // New unknown device discovered
@@ -300,9 +300,9 @@ class CloudController {
               target.owner?.id === selectActiveAccountId(state) &&
               event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
             ) {
-              if (state.ui.registrationCommand) ui.set({ redirect: `/devices/${target.deviceId}` })
-              ui.set({ successMessage: `${target.name} registered successfully!` })
-              devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
+              if (state.ui.registrationCommand) dispatch.ui.set({ redirect: `/devices/${target.deviceId}` })
+              dispatch.ui.set({ successMessage: `${target.name} registered successfully!` })
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
             }
           }
         })
@@ -325,7 +325,7 @@ class CloudController {
 
           // session state
           if (event.state === 'connected') {
-            sessions.setSession({
+            dispatch.sessions.setSession({
               id: event.sessionId,
               manufacturer: event.manufacturerType,
               reverseProxy: event.reverseProxy,
@@ -344,7 +344,7 @@ class CloudController {
               },
             })
           } else {
-            sessions.removeSession(event.sessionId)
+            dispatch.sessions.removeSession(event.sessionId)
           }
 
           this.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
@@ -362,7 +362,7 @@ class CloudController {
         // device unshared from me or my org
         if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) devices.cleanup([target.id])
+            if (target.typeID === DEVICE_TYPE) dispatch.devices.cleanup([target.id])
           })
         }
 
@@ -370,19 +370,20 @@ class CloudController {
         else if (accountTo && ['add', 'update'].includes(event.action)) {
           event.target.forEach(target => {
             if (target.typeID === DEVICE_TYPE)
-              devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
           })
         }
-
         break
 
       case 'DEVICE_REFRESH':
+        let accountId = ''
         const refreshIds = event.target.reduce((result: string[], target) => {
           // Check that it's the bulk service and that the device is loaded in the ui
           if (target.typeID === DEVICE_TYPE && target.device) result.push(target.deviceId)
+          accountId = target.accountId
           return result
         }, [])
-        if (refreshIds.length) devices.fetchDevices({ ids: refreshIds })
+        if (refreshIds.length) dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
         break
 
       case 'DEVICE_DELETE':
@@ -390,12 +391,12 @@ class CloudController {
           if (target.device) result.push(target.deviceId)
           return result
         }, [])
-        if (deleteIds.length) devices.cleanup(deleteIds)
+        if (deleteIds.length) dispatch.devices.cleanup(deleteIds)
         break
 
       case 'LICENSE_UPDATED':
         this.log('LICENSE UPDATED EVENT', event)
-        setTimeout(plans.updated, 2000) // because event comes in before plan is fully updated
+        setTimeout(dispatch.plans.updated, 2000) // because event comes in before plan is fully updated
         break
     }
     return event
