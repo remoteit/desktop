@@ -14,6 +14,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   const palette = {
     mode: isDark ? 'dark' : 'light',
     info: { main: colors.grayDark },
+    action: { hover: colors.hover },
     primary: { main: colors.primary, dark: colors.primaryDark },
     secondary: { main: colors.secondary, contrastText: colors.white },
     error: { main: colors.danger },
@@ -214,7 +215,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontWeight: 400,
             color: 'inherit',
             letterSpacing: 0,
-            fontSize: fontSizes.xxs,
+            fontSize: fontSizes.xs,
             paddingLeft: spacing.xxs,
             paddingRight: spacing.xxs,
             marginRight: spacing.xxs,
@@ -607,7 +608,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           h4: {
             fontSize: fontSizes.sm,
-            fontFamily: "'Roboto Mono'",
+            fontFamily: "'Roboto Mono', Roboto",
             color: palette.grayDark.main,
             marginTop: spacing.xs,
             marginBottom: spacing.sm,
@@ -619,6 +620,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             textTransform: 'uppercase',
           },
           subtitle1: {
+            fontFamily: "'Roboto Mono', Roboto",
             fontSize: fontSizes.xxs,
             color: palette.grayDarkest.main,
             display: 'flex',
@@ -631,6 +633,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontWeight: 500,
           },
           subtitle2: {
+            fontFamily: "'Roboto Mono', Roboto",
             fontSize: fontSizes.xxs,
             color: palette.grayDarkest.main,
             display: 'flex',
@@ -649,7 +652,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& b': { fontWeight: 500 },
           },
           caption: {
-            fontSize: fontSizes.xs,
+            fontSize: fontSizes.sm,
             color: palette.grayDark.main,
             lineHeight: '1.25em',
             '& b': { color: palette.grayDarkest.main, fontWeight: 400 },

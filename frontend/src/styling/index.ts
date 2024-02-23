@@ -57,6 +57,7 @@ export type Color =
   | 'alwaysWhite'
   | 'black'
   | 'darken'
+  | 'hover'
   | 'screen'
   | 'shadow'
   | 'rpi'
@@ -66,7 +67,7 @@ export type Color =
 export const lightColors: { [key in Color]: string } = {
   primary: '#0096e7',
   primaryLight: '#9ed3f0',
-  primaryLighter: '#e3f4ff', //'#e7f2f9',
+  primaryLighter: '#e3f4ff',
   primaryHighlight: '#edf8ff',
   primaryBackground: '#EAF4FA',
   primaryDark: '#034b9d',
@@ -79,16 +80,17 @@ export const lightColors: { [key in Color]: string } = {
   warning: '#ed9912',
   warningLightest: 'rgba(237,153,18,0.16)',
   warningHighlight: 'rgba(237,153,18,0.06)',
-  grayLightest: '#f9f9f9',
-  grayLighter: '#efefef',
-  grayLight: '#dbdbdb',
-  gray: '#bbb',
-  grayDark: '#999',
+  grayLightest: '#f8fafc',
+  grayLighter: '#f3f5f7',
+  grayLight: '#e3e6e8',
+  gray: '#b6bbbe',
+  grayDark: '#9199a1',
   grayDarker: '#666',
   grayDarkest: '#333',
   black: '#000',
   white: '#fff',
   alwaysWhite: '#fff',
+  hover: 'rgba(0,30,61,0.04)',
   darken: 'rgba(0,0,0,0.5)',
   screen: 'rgba(0,0,0,0.06)',
   shadow: 'rgba(0,0,0,0.2)',
@@ -123,6 +125,7 @@ export const darkColors: { [key in Color]: string } = {
   black: '#fff',
   white: '#202124',
   alwaysWhite: '#fff',
+  hover: 'rgba(255,255,255,0.04)',
   darken: 'rgba(255,255,255,0.3)',
   screen: 'rgba(255,255,255,0.06)',
   shadow: 'rgba(0,0,0,0.3)',

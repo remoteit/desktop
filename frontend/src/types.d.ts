@@ -171,7 +171,7 @@ declare global {
     title: string
     link: string
     image: string
-    body: string
+    body: string | React.ReactNode
     modified?: Date
     read?: Date
   }
