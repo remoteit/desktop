@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { Typography } from '@mui/material'
 import { selectAnnouncements } from '../selectors/announcements'
+import { AnnouncementCardTest } from '../components/AnnouncementCardTest'
 import { AnnouncementCard } from '../components/AnnouncementCard'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
@@ -37,6 +38,7 @@ export const AnnouncementsPage = () => {
         </Typography>
       }
     >
+      <AnnouncementCardTest hide />
       {announcements.map((announcement, index) => (
         <AnnouncementCard
           key={index}

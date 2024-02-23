@@ -55,7 +55,13 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
             </Tooltip>
           )}
         </Typography>
-        <Typography variant="body2" color="textSecondary" dangerouslySetInnerHTML={{ __html: data.body }} />
+        {typeof data.body === 'string' ? (
+          <Typography variant="body2" color="textSecondary" dangerouslySetInnerHTML={{ __html: data.body }} />
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            {data.body}
+          </Typography>
+        )}
       </CardContent>
       {data.link && (
         <CardActions>

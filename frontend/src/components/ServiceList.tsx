@@ -79,8 +79,8 @@ type StyleProps = {
   mobile?: boolean
 }
 
-const ROW_HEIGHT = 42
-const SHRINK = 8
+const ROW_HEIGHT = 40
+const SHRINK = 6
 
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, required, columnWidths, mobile }: StyleProps) => ({

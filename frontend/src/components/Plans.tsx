@@ -266,6 +266,7 @@ const useStyles = makeStyles({
     flexWrap: small ? 'wrap' : 'nowrap',
     marginBottom: 0,
     marginTop: 0,
+    maxWidth: 840,
   }),
   notice: {
     maxWidth: 840,

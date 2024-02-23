@@ -172,8 +172,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
-      const accountId = selectActiveAccountId(state)
+    async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
+      accountId = accountId || selectActiveAccountId(state)
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
         ids,

@@ -1,10 +1,9 @@
 import React from 'react'
-import classnames from 'classnames'
 import { useHistory } from 'react-router-dom'
-import { useMatches } from '../../hooks/useMatches'
+import { useMatches } from '../hooks/useMatches'
 import { MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
-import { Color, Sizes, spacing } from '../../styling'
-import { Icon } from '../Icon'
+import { Color, Sizes } from '../styling'
+import { Icon } from './Icon'
 
 export type Props = {
   key?: React.Key
@@ -101,8 +100,8 @@ export const ListItemLocation: React.FC<Props> = ({
     sx: {
       paddingLeft: disableIcon ? 2 + (inset || 0) : inset,
       paddingRight: inset,
-      opacity: showDisabled ? undefined : 1,
     },
+    style: showDisabled ? undefined : { opacity: 1 },
   }
 
   return menuItem ? (
