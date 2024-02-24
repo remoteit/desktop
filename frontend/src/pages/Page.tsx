@@ -96,7 +96,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         onClose={clearErrorMessage}
         message={
-          <Notice severity="error" solid fullWidth>
+          <Notice severity="error" invert fullWidth>
             {errorMessage}
           </Notice>
         }
@@ -108,7 +108,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         onClose={() => ui.set({ noticeMessage: '' })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message={
-          <Notice severity="info" solid fullWidth>
+          <Notice severity="info" invert fullWidth>
             {noticeMessage}
           </Notice>
         }
@@ -120,7 +120,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         onClose={clearSuccessMessage}
         message={
-          <Notice severity="success" solid fullWidth>
+          <Notice severity="success" invert fullWidth>
             {successMessage}
           </Notice>
         }
