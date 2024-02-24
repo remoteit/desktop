@@ -4,7 +4,7 @@ import { IP_PRIVATE, DEFAULT_CONNECTION } from '@common/constants'
 import { Application, getApplicationType } from '@common/applications'
 import { State, store } from '../store'
 import { selectEnabledConnections } from '../selectors/connections'
-import { getActiveUser } from '../selectors/accounts'
+import { selectActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { selectById } from '../selectors/devices'
 import browser from '../services/Browser'
@@ -57,7 +57,7 @@ export function findLocalConnection(state: State, id: string, sessionId: string 
 
 export function newConnection(service?: IService | null): IConnection {
   const state = store.getState()
-  const user = getActiveUser(state)
+  const user = selectActiveUser(state)
   const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
   let routeType: IRouteType = service?.attributes.route || cd?.route || 'failover'
   if (!browser.hasBackend && routeType === 'failover') routeType = 'public'

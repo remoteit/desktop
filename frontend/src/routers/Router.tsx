@@ -17,12 +17,13 @@ import { SettingsPage } from '../pages/SettingsPage'
 import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
-import { AddPlatformPage } from '../pages/AddPlatformPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
-import { AnnouncementsPage } from '../pages/AnnouncementsPage'
+import { ResellerPage } from '../pages/ResellerPage'
+import { AddPlatformPage } from '../pages/AddPlatformPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
+import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationUserPage } from '../pages/OrganizationUserPage'
@@ -283,6 +284,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           }
           secondary={
             <Switch>
+              <Route path="/organization/reseller">
+                <ResellerPage />
+              </Route>
+
               <Route path="/organization/share">
                 <OrganizationAddPage />
               </Route>
@@ -303,7 +308,13 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <SharePage />
               </Route>
 
-              <Route path={['/organization/guests/:userID', '/organization/members/:userID']}>
+              <Route
+                path={[
+                  '/organization/guests/:userID',
+                  '/organization/members/:userID',
+                  '/organization/account/:userID',
+                ]}
+              >
                 <OrganizationUserPage />
               </Route>
 

@@ -235,7 +235,7 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getFreeUsers(state: State) {
+export function getAvailableUsers(state: State) {
   if (isEnterprise(state)) return 1
   const purchased = selectRemoteitLicense(state)?.quantity || 0
   const plan = selectPlan(state)

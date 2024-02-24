@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemSetting } from './ListItemSetting'
-import { getActiveUser } from '../selectors/accounts'
+import { selectActiveUser } from '../selectors/accounts'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
@@ -35,7 +35,7 @@ export const AvatarMenu: React.FC = () => {
   const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
   const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
   const licenseIndicator = useSelector(selectLicenseIndicator)
-  const activeUser = useSelector(getActiveUser)
+  const activeUser = useSelector(selectActiveUser)
 
   const css = useStyles()
   const handleOpen = () => {

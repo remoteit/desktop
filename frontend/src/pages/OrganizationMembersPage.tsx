@@ -1,7 +1,7 @@
 import React from 'react'
-import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography, List } from '@mui/material'
+import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { selectRemoteitLicense, selectPermissions, selectOrganization, selectOwner } from '../selectors/organizations'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
@@ -17,7 +17,7 @@ export const OrganizationMembersPage: React.FC = () => {
   const permissions = useSelector(selectPermissions)
   const license = useSelector(selectRemoteitLicense) || null
   const owner = useSelector(selectOwner)
-  const enterprise = !!license && !license.plan.billing
+  const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
 
   if (!permissions?.includes('ADMIN'))
     return (

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
-import { getFreeUsers } from '../models/plans'
+import { getAvailableUsers } from '../models/plans'
 import { OrganizationMember } from '../components/OrganizationMember'
 import { IOrganizationState } from '../models/organization'
 import { List } from '@mui/material'
@@ -9,7 +9,7 @@ import { List } from '@mui/material'
 type Props = { organization?: IOrganizationState; owner?: IOrganizationMember; enterprise?: boolean }
 
 export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, enterprise }) => {
-  const freeUsers = useSelector((state: State) => getFreeUsers(state))
+  const freeUsers = useSelector((state: State) => getAvailableUsers(state))
   const members = organization?.members ? [...organization.members].sort(alphaEmailSort) : []
   return (
     <List>

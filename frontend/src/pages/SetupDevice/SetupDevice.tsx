@@ -4,7 +4,7 @@ import { State, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '@common/nameHelper'
 import { TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { getActiveUser } from '../../selectors/accounts'
+import { selectActiveUser } from '../../selectors/accounts'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../selectors/devices'
@@ -17,7 +17,7 @@ type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
   const { activeUser, hostname, nameBlacklist } = useSelector((state: State) => ({
-    activeUser: getActiveUser(state),
+    activeUser: selectActiveUser(state),
     hostname: state.backend.environment.hostname,
     nameBlacklist: getDevices(state)
       .filter((device: IDevice) => !device.shared)

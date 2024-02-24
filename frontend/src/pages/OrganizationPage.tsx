@@ -11,17 +11,21 @@ import {
   selectLimitsLookup,
   selectOrganization,
 } from '../selectors/organizations'
+import { selectActiveUser } from '../selectors/accounts'
 import { PlanActionChip } from '../components/PlanActionChip'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { TestUI } from '../components/TestUI'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 
 export const OrganizationPage: React.FC = () => {
   const { userID = '', deviceID = '' } = useParams<{ userID: string; deviceID: string }>()
+  const user = useSelector((state: State) => state.user)
   const initialized = useSelector((state: State) => state.organization.initialized)
   const organization = useSelector(selectOrganization)
+  const owner = useSelector(selectActiveUser)
   const permissions = useSelector(selectPermissions)
   const limits = useSelector(selectLimitsLookup)
   const license = useSelector(selectRemoteitLicense)
@@ -38,7 +42,7 @@ export const OrganizationPage: React.FC = () => {
       header={
         <Gutters top={null} size="lg">
           <Box display="flex" alignItems="center" marginTop={2}>
-            <Avatar email={organization.account.email} fallback={organization.name} size={46} inline />
+            <Avatar email={owner.email} fallback={organization.name} size={46} inline />
             <Box width="100%">
               {license && (
                 <Typography variant="subtitle2">
@@ -60,6 +64,16 @@ export const OrganizationPage: React.FC = () => {
         </Notice>
       )}
       <List>
+        <TestUI>
+          <ListItemLocation
+            title="Reseller"
+            to="/organization/reseller"
+            icon="circle-dollar-to-slot"
+            disabled={!admin}
+            showDisabled
+            dense
+          />
+        </TestUI>
         <ListItemLocation
           title="Members"
           to="/organization/members"
@@ -116,6 +130,9 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
+        <TestUI>
+          <ListItemLocation title="My Account" to={`/organization/account/${user.id}`} icon="user" dense />
+        </TestUI>
       </List>
     </Container>
   )

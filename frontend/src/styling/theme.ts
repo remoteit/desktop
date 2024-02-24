@@ -214,7 +214,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: 10,
             fontWeight: 400,
             color: 'inherit',
-            letterSpacing: 0,
             fontSize: fontSizes.xs,
             paddingLeft: spacing.xxs,
             paddingRight: spacing.xxs,
