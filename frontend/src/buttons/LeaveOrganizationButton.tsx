@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import { ConfirmIconButton } from './ConfirmIconButton'
 import { Notice } from '../components/Notice'
 
-export const LeaveOrganizationButton = ({ user }: { user: IUser }) => {
+export const LeaveOrganizationButton = ({ organizationId }: { organizationId: string }) => {
   const dispatch = useDispatch<Dispatch>()
   return (
     <ConfirmIconButton
@@ -22,7 +22,7 @@ export const LeaveOrganizationButton = ({ user }: { user: IUser }) => {
           </Notice>
         ),
       }}
-      onClick={() => dispatch.accounts.leaveMembership(user.id)}
+      onClick={() => dispatch.accounts.leaveMembership(organizationId)}
     />
   )
 }

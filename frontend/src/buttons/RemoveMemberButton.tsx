@@ -3,7 +3,7 @@ import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { ConfirmIconButton } from './ConfirmIconButton'
 
-export const RemoveMemberButton = ({ user }: { user: IUser }) => {
+export const RemoveMemberButton = ({ member }: { member: IOrganizationMember }) => {
   const [removing, setRemoving] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   return (
@@ -12,7 +12,7 @@ export const RemoveMemberButton = ({ user }: { user: IUser }) => {
       confirmProps={{
         children: (
           <>
-            This will remove <b>{user.email}’s </b>
+            This will remove <b>{member.user.email}’s </b>
             access to all the organization’s devices
           </>
         ),
@@ -25,7 +25,7 @@ export const RemoveMemberButton = ({ user }: { user: IUser }) => {
       disabled={removing}
       onClick={async () => {
         setRemoving(true)
-        await dispatch.organization.removeMember(user)
+        await dispatch.organization.removeMember(member)
         setRemoving(false)
       }}
     />

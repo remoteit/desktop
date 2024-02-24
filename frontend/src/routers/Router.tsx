@@ -168,11 +168,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Redirect to={{ pathname: `/add/${os}`, state: { isRedirect: true } }} />
         )}
       </Route>
-      <Route path="/devices/membership">
-        <Panel layout={layout}>
-          <OrganizationMembershipPage />
-        </Panel>
-      </Route>
       <Route path="/devices/setupWaiting">
         <Panel layout={layout}>
           <SetupWaiting os={os} />

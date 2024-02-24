@@ -1,4 +1,6 @@
 import React from 'react'
+import { State } from '../store'
+import { Redirect } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography, List } from '@mui/material'
 import { ENTERPRISE_PLAN_ID } from '../models/plans'
@@ -10,23 +12,17 @@ import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
-import { Body } from '../components/Body'
 
 export const OrganizationMembersPage: React.FC = () => {
   const organization = useSelector(selectOrganization)
   const permissions = useSelector(selectPermissions)
   const license = useSelector(selectRemoteitLicense) || null
   const owner = useSelector(selectOwner)
+  const userId = useSelector((state: State) => state.user.id)
   const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
 
   if (!permissions?.includes('ADMIN'))
-    return (
-      <Body center>
-        <Typography variant="body2" color="textSecondary">
-          Please contact the organization owner to request admin privileges.
-        </Typography>
-      </Body>
-    )
+    return <Redirect to={{ pathname: `/organization/account/${userId}`, state: { isRedirect: true } }} />
 
   return (
     <Container

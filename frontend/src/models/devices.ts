@@ -675,8 +675,6 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
 
 export function mergeDevice(overwrite: IDevice, device: IDevice): IDevice {
   const serviceIds = new Set(device.services.map(s => s.id))
-  console.log('MERGE DEVICE', { name: overwrite.name, overwriteLoaded: overwrite.loaded, keepLoaded: device.loaded })
-
   return {
     ...overwrite,
     ...device,

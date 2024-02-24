@@ -340,7 +340,7 @@ export default createModel<RootModel>()({
         dispatch.organization.setActive({
           members: organization.members.filter(m => m.user.email !== member.user.email),
         })
-        dispatch.ui.set({ successMessage: `Successfully removed ${member?.user?.email}.` })
+        dispatch.ui.set({ successMessage: `Successfully removed ${member.user?.email}.` })
       }
     },
 
