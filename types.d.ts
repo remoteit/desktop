@@ -167,14 +167,14 @@ declare global {
     connecting?: boolean
     connectLink?: boolean // is public persistent link
     connectOnReady?: boolean // if the connection should be started when the service is ready
-    createdTime?: number // unix timestamp track for garbage cleanup
+    createdTime?: Timestamp // unix timestamp track for garbage cleanup
     default?: boolean // if the connection is in a default state - gets removed on modification
     description?: string
     deviceID?: string
     disableSecurity?: boolean //disable https security
     disconnecting?: boolean
     enabled: boolean // if the connection is active
-    endTime?: number // unix timestamp connection close time
+    endTime?: Timestamp // unix timestamp connection close time
     error?: ISimpleError
     failover?: boolean // allow proxy failover
     host?: string // returned hostname from cli
@@ -199,7 +199,7 @@ declare global {
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
     starting?: boolean // if the connection listening is starting up
-    startTime?: number // unix timestamp connection start time
+    startTime?: Timestamp // unix timestamp connection start time
     stopLock?: number // connection stopped by user do not re-added if missing from cli for 5 minutes
     stopping?: boolean // service stopping the listener
     surveyed?: string // the session ID of the survey that has been answered
@@ -308,6 +308,8 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
+    onlineSince: Timestamp
+    offlineSince: Timestamp
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     configurable: boolean // cloud shift device
@@ -566,7 +568,7 @@ declare global {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'DEVICE_REFRESH' | 'DEVICE_DELETE' | 'LICENSE_UPDATED'
     state: IDevice['state'] | 'connected' | 'disconnected'
     action: 'add' | 'update' | 'remove'
-    timestamp: Date
+    timestamp: Timestamp
     isP2P: boolean
     actor: IUserRef
     users: IUserRef[]
@@ -694,7 +696,7 @@ declare global {
 
   type IScanData = {
     [networkName: string]: {
-      timestamp: number
+      timestamp: Timestamp
       data: IScan[]
     }
   }
@@ -741,6 +743,8 @@ declare global {
   type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
 
   type ipAddress = string // namespace to indicate if expecting an ip address
+
+  type Timestamp = number
 
   type ipClass = 'A' | 'B' | 'C'
 

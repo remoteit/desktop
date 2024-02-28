@@ -109,6 +109,8 @@ const DeviceSelectLookup: ILookup<string> = {
 
   endpoint: `
   endpoint {
+    onlineSince
+    offlineSince
     externalAddress
     internalAddress
     availability
@@ -437,6 +439,8 @@ export function graphQLDeviceAdaptor({
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       quality: d.endpoint?.quality,
+      onlineSince: new Date(d.endpoint?.onlineSince).getTime(),
+      offlineSince: new Date(d.endpoint?.offlineSince).getTime(),
       version: d.version,
       geo: d.endpoint?.geo,
       license: d.license,

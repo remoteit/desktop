@@ -224,7 +224,7 @@ class CloudController {
         type: event.type,
         state: event.state,
         action: event.action,
-        timestamp: new Date(event.timestamp),
+        timestamp: new Date(event.timestamp).getTime(),
         isP2P: !event.proxy,
         actor: getManufacturerUser(event.manufacturer, reverseProxy) || event.actor,
         users: event.users,
@@ -270,19 +270,18 @@ class CloudController {
         const onlineState = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
           // if device and device exists
-          if (target.device?.id === target.id) {
+          if (target.device && target.device.id === target.id) {
             target.device.state = onlineState
-            this.log('DEVICE STATE', target.device.name, target.device.state)
+            target.device[onlineState === 'active' ? 'onlineSince' : 'offlineSince'] = event.timestamp
+            this.log('DEVICE STATE', target.device.name, target.device.state, event.timestamp)
 
             // if service and service exists
           } else {
-            target.device?.services.find(service => {
+            target.device?.services.forEach(service => {
               if (service.id === target.service?.id) {
                 service.state = onlineState
                 this.log('SERVICE STATE', service.name, service.state)
-                return true
               }
-              return false
             })
           }
 
@@ -298,7 +297,7 @@ class CloudController {
             // Device created within one minute of the event
             if (
               target.owner?.id === selectActiveAccountId(state) &&
-              event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
+              event.timestamp - target.deviceCreated.getTime() < 1000 * 60
             ) {
               if (state.ui.registrationCommand) dispatch.ui.set({ redirect: `/devices/${target.deviceId}` })
               dispatch.ui.set({ successMessage: `${target.name} registered successfully!` })
@@ -329,7 +328,7 @@ class CloudController {
               id: event.sessionId,
               manufacturer: event.manufacturerType,
               reverseProxy: event.reverseProxy,
-              timestamp: event.timestamp,
+              timestamp: new Date(event.timestamp),
               source: event.source,
               platform: event.platform,
               isP2P: event.isP2P,
