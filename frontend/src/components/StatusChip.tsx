@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useInterval } from '../hooks/useInterval'
 import { ColorChip } from './ColorChip'
 import { Duration } from './Duration'
 import { Badge, Tooltip } from '@mui/material'
@@ -12,16 +13,19 @@ export type Props = {
 const RESENT_THRESHOLD = 1000 * 60 * 30
 
 export const StatusChip: React.FC<Props> = ({ device, service, connections }) => {
+  const [badge, setBadge] = useState({ dropped: false, activated: false })
   const instance = device || service
-  let dropped = false
-  let activated = false
 
-  if (device) {
-    const offlineDuration = Date.now() - device.offlineSince
-    const onlineDuration = Date.now() - device.onlineSince
-    dropped = offlineDuration < RESENT_THRESHOLD && offlineDuration < onlineDuration
-    activated = onlineDuration < RESENT_THRESHOLD && onlineDuration < offlineDuration
-  }
+  useInterval(() => {
+    if (device) {
+      const offlineDuration = Date.now() - device.offlineSince
+      const onlineDuration = Date.now() - device.onlineSince
+      setBadge({
+        dropped: offlineDuration < RESENT_THRESHOLD && offlineDuration < onlineDuration,
+        activated: onlineDuration < RESENT_THRESHOLD && onlineDuration < offlineDuration,
+      })
+    }
+  }, 1000 * 60)
 
   const Chip =
     instance?.license === 'UNLICENSED' ? (
@@ -40,13 +44,19 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
       <ColorChip label="Unknown" size="small" color="gray" />
     )
 
-  return dropped || activated ? (
+  return badge.dropped || badge.activated ? (
     <Tooltip
       arrow
       placement="top"
-      title={<Duration startTime={dropped ? device?.offlineSince : device?.onlineSince} ago />}
+      title={
+        <Duration
+          startTime={badge.dropped ? device?.offlineSince : device?.onlineSince}
+          humanizeOptions={{ largest: 1 }}
+          ago
+        />
+      }
     >
-      <Badge variant="dot" color={activated ? 'primary' : 'warning'} sx={{ marginY: 0.5, marginRight: 0.5 }}>
+      <Badge variant="dot" color={badge.activated ? 'primary' : 'warning'} sx={{ marginY: 0.5, marginRight: 0.5 }}>
         {Chip}
       </Badge>
     </Tooltip>
