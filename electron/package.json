@@ -26,7 +26,7 @@
     "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
     "postinstall": "run-s install-*",
     "install-electron": "electron-builder install-app-deps",
-    "install-binaries": "sh ./scripts/build.sh",
+    "install-binaries": "sh ./scripts/binary-installer.sh",
     "start": "npm-run-all -l -n -p copy-* watch-*",
     "watch-backend": "cd ../backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
@@ -119,7 +119,7 @@
     },
     "extraResources": [
       {
-        "from": "../backend/src/cli-version.json",
+        "from": "../backend/src/binary-versions.json",
         "to": "./"
       },
       {
