@@ -105,6 +105,7 @@ export const AddPage: React.FC = () => {
             'alpine',
             'axis',
             'advantech',
+            'ubuntu',
             'windows',
             'mac',
           ].map(p => {
