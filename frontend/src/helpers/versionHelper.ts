@@ -12,3 +12,7 @@ export function fullVersion() {
   const dev = browser.environment() === 'development' ? 'Development' : ''
   return `${platform} Version ${json.version} ${dev}`
 }
+
+export function numericVersion() {
+  return parseInt(version.replace(/\D/g, ''), 10)
+}
