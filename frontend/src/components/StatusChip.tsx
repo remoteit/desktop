@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { useInterval } from '../hooks/useInterval'
+import React, { useState, useEffect } from 'react'
 import { ColorChip } from './ColorChip'
 import { Duration } from './Duration'
 import { Badge, Tooltip } from '@mui/material'
@@ -10,22 +9,35 @@ export type Props = {
   connections?: IConnection[]
 }
 
-const RESENT_THRESHOLD = 1000 * 60 * 30
+const RESENT_THRESHOLD = 1000 * 60 * 1
+
+function badgeState(device?: IDevice) {
+  const offlineDuration = Date.now() - (device?.offlineSince || 0)
+  const onlineDuration = Date.now() - (device?.onlineSince || 0)
+  return {
+    dropped: offlineDuration < RESENT_THRESHOLD && offlineDuration < onlineDuration,
+    activated: onlineDuration < RESENT_THRESHOLD && onlineDuration < offlineDuration,
+  }
+}
 
 export const StatusChip: React.FC<Props> = ({ device, service, connections }) => {
-  const [badge, setBadge] = useState({ dropped: false, activated: false })
+  const [badge, setBadge] = useState(badgeState(device))
   const instance = device || service
 
-  useInterval(() => {
-    if (device) {
-      const offlineDuration = Date.now() - device.offlineSince
-      const onlineDuration = Date.now() - device.onlineSince
-      setBadge({
-        dropped: offlineDuration < RESENT_THRESHOLD && offlineDuration < onlineDuration,
-        activated: onlineDuration < RESENT_THRESHOLD && onlineDuration < offlineDuration,
-      })
+  useEffect(() => {
+    if (!device) return
+
+    let timer: NodeJS.Timeout
+    const state = badgeState(device)
+
+    if (state.dropped || state.activated) {
+      const remaining = RESENT_THRESHOLD - (Date.now() - (state.dropped ? device.offlineSince : device.onlineSince))
+      timer = setTimeout(() => setBadge(badgeState(device)), remaining)
     }
-  }, 1000 * 60)
+
+    setBadge(state)
+    return () => clearTimeout(timer)
+  }, [device])
 
   const Chip =
     instance?.license === 'UNLICENSED' ? (
