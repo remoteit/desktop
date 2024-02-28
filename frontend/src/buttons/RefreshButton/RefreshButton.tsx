@@ -64,11 +64,11 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       await dispatch.devices.set({ fetching: false })
       return
     }
-    network.connect()
-    cloudController.ping()
-    await dispatch.devices.expire()
     await cloudSync.call(methods)
     await cloudSync.core(!methods.length)
+    dispatch.devices.expire()
+    cloudController.ping()
+    network.connect()
     emit('refresh')
   }
 
