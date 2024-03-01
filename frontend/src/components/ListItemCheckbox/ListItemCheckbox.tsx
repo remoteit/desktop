@@ -1,17 +1,13 @@
 import React, { useRef } from 'react'
 import { Icon } from '../Icon'
-import { ListItem, ListItemText, ListItemIcon, Checkbox } from '@mui/material'
+import { ListItemButton, ListItemButtonProps, ListItemText, ListItemIcon, Checkbox } from '@mui/material'
 
-type Props = {
-  keyProp?: string | number
+type Props = Omit<ListItemButtonProps, 'onClick'> & {
   label: string | React.ReactNode
   subLabel?: string | React.ReactNode
   height?: number
-  disabled?: boolean
   checked?: boolean
   indeterminate?: boolean
-  disableGutters?: boolean
-  children?: React.ReactNode
   onClick: (checked: boolean) => void
 }
 
@@ -28,9 +24,8 @@ export const ListItemCheckbox: React.FC<Props> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
-    <ListItem
+    <ListItemButton
       dense
-      button
       disabled={disabled}
       sx={{ height }}
       disableGutters={disableGutters}
@@ -51,6 +46,6 @@ export const ListItemCheckbox: React.FC<Props> = ({
       </ListItemIcon>
       <ListItemText primary={label} secondary={subLabel} />
       {children}
-    </ListItem>
+    </ListItemButton>
   )
 }

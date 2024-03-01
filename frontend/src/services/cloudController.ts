@@ -245,7 +245,7 @@ class CloudController {
             id: t.id,
             name: combinedName(t, t.device),
             owner: t.owner,
-            accountId: accountFromDevice(state, t.owner.id, t.device?.access.map(a => a.user.id) || []),
+            accountId: accountFromDevice(state, t.owner?.id, t.device?.access.map(a => a.user.id) || []),
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device?.id || device?.id,
@@ -345,8 +345,6 @@ class CloudController {
           } else {
             dispatch.sessions.removeSession(event.sessionId)
           }
-
-          this.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
         })
         break
 
@@ -390,6 +388,7 @@ class CloudController {
           if (target.device) result.push(target.deviceId)
           return result
         }, [])
+        this.log('DEVICE DELETE EVENT', deleteIds, event)
         if (deleteIds.length) dispatch.devices.cleanup(deleteIds)
         break
 

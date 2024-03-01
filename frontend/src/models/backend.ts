@@ -105,15 +105,10 @@ export default createModel<RootModel>()({
 
           // deleted
         } else if (state.ui.setupDeletingDevice) {
-          console.log('DELETE THIS DEVICE', thisId)
-          const device = await selectDevice(state, undefined, thisId)
-          if (device) await devices.destroy(device)
-          else console.warn('COULD NOT DELETE DEVICE, device not found', thisId)
-
+          console.log('THIS DEVICE DELETED', thisId)
           ui.set({
             setupBusy: false,
             setupDeletingDevice: false,
-            redirect: '/devices',
             successMessage: 'Device unregistered successfully!',
           })
 

@@ -21,7 +21,10 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
   const css = useStyles()
 
   useEffect(() => {
-    if (device) history.push(`/devices/${device.id}`)
+    if (device) {
+      console.log('GO TO THIS DEVICE', device)
+      history.push(`/devices/${device.id}`)
+    }
   }, [device])
 
   if (errorMessage) history.push('/devices/setup')
@@ -32,9 +35,6 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
       <section>
         <Typography className={css.title} variant="h3" align="center" gutterBottom>
           Your {osName(os)} is being registered with Remote.It
-        </Typography>
-        <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
-          This may take up to a minute to complete.
         </Typography>
       </section>
       <div className={css.divider}>

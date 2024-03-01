@@ -13,6 +13,7 @@ export type DataButtonProps = {
   iconColor?: Color
   gutterBottom?: boolean
   fullWidth?: boolean
+  invertBackground?: boolean
   showBackground?: boolean
   alwaysWhite?: boolean
   action?: React.ReactNode
@@ -28,12 +29,13 @@ export const ListItemButton: React.FC<DataButtonProps> = ({
   iconColor,
   gutterBottom,
   fullWidth,
+  invertBackground,
   showBackground,
   alwaysWhite,
   onClick,
   action,
 }) => {
-  const css = useStyles({ icon: !!icon, showBackground, fullWidth, gutterBottom, alwaysWhite, dense })
+  const css = useStyles({ icon: !!icon, showBackground, invertBackground, fullWidth, gutterBottom, alwaysWhite, dense })
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
@@ -55,6 +57,7 @@ const useStyles = makeStyles(({ palette }) => ({
   box: ({
     icon,
     showBackground,
+    invertBackground,
     fullWidth,
     gutterBottom,
     alwaysWhite,
@@ -62,6 +65,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }: {
     icon?: boolean
     showBackground?: boolean
+    invertBackground?: boolean
     fullWidth?: boolean
     gutterBottom?: boolean
     alwaysWhite?: boolean
@@ -76,10 +80,18 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingRight: dense ? spacing.md : spacing.lg,
     width: fullWidth ? '100%' : undefined,
     marginBottom: gutterBottom ? spacing.sm : undefined,
-    backgroundColor: showBackground ? palette.screen.main : undefined,
+    backgroundColor: showBackground
+      ? invertBackground
+        ? alpha(palette.white.main, 0.7)
+        : palette.screen.main
+      : undefined,
     '& .MuiTypography-root > *': { color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main },
     '&:hover': {
-      backgroundColor: showBackground ? alpha(palette.black.main, 0.1) : undefined,
+      backgroundColor: showBackground
+        ? invertBackground
+          ? palette.white.main
+          : alpha(palette.black.main, 0.1)
+        : undefined,
     },
     '& svg': { minWidth: 60 },
   }),

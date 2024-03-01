@@ -20,10 +20,6 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
         Connect to this device from anywhere
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
-      <Link href="https://link.remote.it/documentation-minecraft/overview">
-        Host a Minecraft server with Remote.It
-        <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
-      </Link>
     </section>
   )
 }

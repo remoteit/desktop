@@ -163,7 +163,6 @@ const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
-  console.log('GRAPHQL FETCH DEVICE LIST', params)
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
