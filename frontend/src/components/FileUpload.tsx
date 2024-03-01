@@ -66,7 +66,7 @@ const useStyles = makeStyles(({ palette }) => ({
     border: `2px dotted ${isDragActive ? palette.primary.main : palette.grayLightest.main}`,
     background: palette.grayLightest.main,
     padding: `${spacing.lg}px ${spacing.xl}px`,
-    borderRadius: radius,
+    borderRadius: radius.lg,
     minWidth: 400,
     '&:hover': { background: palette.primaryHighlight.main, borderColor: palette.primaryHighlight.main },
   }),

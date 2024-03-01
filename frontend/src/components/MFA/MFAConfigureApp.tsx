@@ -81,6 +81,6 @@ const useStyles = makeStyles(({ palette }) => ({
   qrcode: {
     padding: spacing.md,
     backgroundColor: palette.alwaysWhite.main,
-    borderRadius: radius,
+    borderRadius: radius.sm,
   },
 }))

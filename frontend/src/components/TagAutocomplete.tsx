@@ -201,7 +201,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   option: {
     '&.MuiAutocomplete-option': {
-      borderRadius: radius,
+      borderRadius: radius.sm,
       marginLeft: spacing.xs,
       marginRight: spacing.xs,
       marginBottom: 1,

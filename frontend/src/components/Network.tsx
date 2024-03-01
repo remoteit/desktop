@@ -97,7 +97,7 @@ const useStyles = makeStyles(({ palette }) => ({
       ? {
           backgroundColor: highlight ? palette.primaryHighlight.main : undefined,
           margin: spacing.md,
-          borderRadius: radius,
+          borderRadius: radius.sm,
           '& .MuiListItem-root': {
             width: `calc(100% - ${spacing.lg}px)`,
             marginLeft: spacing.sm,

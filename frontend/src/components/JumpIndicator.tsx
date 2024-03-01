@@ -12,7 +12,7 @@ export function JumpIndicator({ service }: Props) {
 
   return (
     <Tooltip arrow placement="top" title={`Jump to ${service.host}`}>
-      <Icon color="grayDark" name="bracket-round" rotate={90} type="solid" size="xxs" inlineLeft />
+      <Icon color="grayDark" name="arrow-turn-down" rotate={270} type="solid" size="xxs" inlineLeft />
     </Tooltip>
   )
 }

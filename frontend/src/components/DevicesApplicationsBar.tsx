@@ -44,7 +44,7 @@ export const DevicesApplicationsBar: React.FC = () => {
             key={app.ids.toString()}
             label={
               <Stack flexDirection="row" alignItems="center">
-                <Icon name="android-screenview" size="sm" platformIcon currentColor />
+                <Icon name="android-screenview" size="xxs" platformIcon currentColor />
                 &nbsp; ScreenView
               </Stack>
             }

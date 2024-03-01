@@ -108,7 +108,7 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
-    borderRadius: radius,
+    borderRadius: radius.lg,
     backgroundColor: selected ? palette.primaryHighlight.main : palette.grayLightest.main,
     marginBottom: spacing.md,
     [breakpoints.up('sm')]: {
@@ -121,7 +121,7 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     },
   }),
   selected: {
-    borderRadius: radius,
+    borderRadius: radius.lg,
     position: 'relative',
     overflow: 'hidden',
     '& .MuiDivider-root': { borderColor: palette.primaryLight.main },

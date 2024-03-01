@@ -47,7 +47,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
   useEffect(() => {
     if (!location.state) return
     if (location.state.autoConnect) dispatch.ui.set({ autoConnect: true })
-    if (location.state.autoLaunch) dispatch.ui.set({ autoLaunch: true })
+    if (location.state.autoLaunch) dispatch.ui.set({ autoLaunch: connection.id })
     if (location.state.autoCopy) dispatch.ui.set({ autoCopy: true })
   }, [location])
 

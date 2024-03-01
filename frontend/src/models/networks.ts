@@ -109,6 +109,8 @@ export default createModel<RootModel>()({
 
       const networks = await dispatch.networks.parse({ response, accountId })
       await dispatch.networks.setNetworks({ networks, accountId })
+      
+      console.log('LOADED NETWORKS', networks)
       dispatch.networks.set({ loading: false, initialized: true })
     },
 
@@ -171,8 +173,6 @@ export default createModel<RootModel>()({
           }
         })
       )
-
-      console.log('LOAD NETWORKS', parsed)
       return parsed
     },
 

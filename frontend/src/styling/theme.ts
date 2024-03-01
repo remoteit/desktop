@@ -53,7 +53,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       opacity: 1,
       marginTop: 1,
       marginBottom: 1,
-      borderRadius: radius,
+      borderRadius: radius.sm,
       padding: `5px 0px`,
       '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
       '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
@@ -104,7 +104,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '&:before': { display: 'none' },
           },
           rounded: {
-            borderRadius: `${radius}px !important`,
+            borderRadius: `${radius.lg}px !important`,
             paddingTop: spacing.sm,
             paddingBottom: spacing.sm,
             marginTop: spacing.md,
@@ -140,7 +140,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiIconButton: {
         styleOverrides: {
-          root: { borderRadius: radius, padding: spacing.sm },
+          root: { borderRadius: radius.sm, padding: spacing.sm },
           sizeSmall: { padding: spacing.xs },
         },
       },
@@ -151,7 +151,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             color: palette.grayDark.main,
-            borderRadius: radius,
+            borderRadius: radius.sm,
             fontWeight: 600,
             letterSpacing: 1.5,
             whiteSpace: 'nowrap',
@@ -185,7 +185,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiButtonBase: {
         styleOverrides: {
           root: {
-            borderRadius: radius,
+            borderRadius: radius.sm,
             WebkitAppRegion: 'no-drag',
             '& .MuiTouchRipple-root': { color: palette.primary.main },
           },
@@ -195,7 +195,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             color: palette.grayDarker.main,
-            borderRadius: radius,
+            borderRadius: radius.sm,
             backgroundColor: palette.grayLightest.main,
             textTransform: 'initial',
             '& .MuiChip-icon': { color: 'inherit', marginLeft: 8 },
@@ -258,13 +258,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiTab: {
         styleOverrides: {
           root: {
-            borderRadius: radius,
+            borderRadius: radius.sm,
             minWidth: 0,
             minHeight: 0,
             textTransform: 'initial',
+            fontWeight: 400,
             fontSize: fontSizes.xs,
             padding: `${spacing.xs}px ${spacing.sm}px`,
-            color: palette.gray.main,
+            color: palette.grayDark.main,
             '&:hover': { backgroundColor: palette.grayLighter.main, color: palette.grayDarkest.main },
             '&.Mui-selected': {
               backgroundColor: palette.primaryHighlight.main,
@@ -277,7 +278,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       MuiSnackbarContent: {
         styleOverrides: {
           root: {
-            borderRadius: radius,
+            borderRadius: radius.lg,
             flexWrap: 'nowrap',
             padding: 0,
             '& .MuiSnackbarContent-message': { padding: 0 },
@@ -318,12 +319,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiList: {
         styleOverrides: {
-          root: {
-            '&.collapseList .MuiListItemButton-dense': {
-              paddingTop: 0,
-              paddingBottom: 0,
-            },
-          },
           padding: {
             paddingTop: spacing.sm,
             paddingBottom: spacing.sm,
@@ -369,7 +364,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiPaper: {
         styleOverrides: {
-          rounded: { borderRadius: radius },
+          rounded: { borderRadius: radius.lg },
           root: { backgroundColor: palette.white.main, backgroundImage: 'none' },
         },
       },
@@ -472,7 +467,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               height: '1.1876em',
             },
             '&.MuiFilledInput-root .MuiInputBase-input': {
-              borderRadius: radius,
+              borderRadius: radius.sm,
             },
             '& .MuiInputBase-inputSizeSmall': {
               paddingTop: spacing.xxs,
@@ -482,7 +477,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           input: {
             paddingTop: spacing.xxs,
             paddingBottom: spacing.xxs,
-            borderRadius: radius,
+            borderRadius: radius.sm,
           },
           adornedEnd: {
             // interferers with global search adornment
@@ -533,10 +528,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             padding: 0,
-            borderTopLeftRadius: radius,
-            borderBottomLeftRadius: radius,
-            borderTopRightRadius: radius,
-            borderBottomRightRadius: radius,
+            borderTopLeftRadius: radius.sm,
+            borderBottomLeftRadius: radius.sm,
+            borderTopRightRadius: radius.sm,
+            borderBottomRightRadius: radius.sm,
             backgroundColor: palette.grayLightest.main,
             '&.Mui-focused': { backgroundColor: palette.primaryHighlight.main },
             '&.Mui-disabled': { backgroundColor: palette.grayLightest.main },
@@ -554,7 +549,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiOutlinedInput: {
         styleOverrides: {
-          root: { borderRadius: radius },
+          root: { borderRadius: radius.sm },
         },
       },
       MuiSelect: {
@@ -581,7 +576,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           underlineHover: {
             '&:hover': {
               backgroundColor: palette.primaryHighlight.main,
-              borderRadius: radius,
+              borderRadius: radius.sm,
               textDecoration: 'none',
               cursor: 'pointer',
             },

@@ -122,7 +122,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: palette.primary.main,
-    borderRadius: radius,
+    borderRadius: radius.lg,
     marginLeft: spacing.sm,
     marginRight: spacing.sm,
     marginBottom: spacing.xs,

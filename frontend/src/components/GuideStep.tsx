@@ -134,7 +134,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
     // boxShadow: highlight ? `0 0 2px 0px ${palette.guide.main} inset` : undefined,
     // background: highlight ? alpha(palette.guide.main, 0.05) : undefined,
-    borderRadius: radius,
+    borderRadius: radius.lg,
     position: 'relative',
   }),
   nav: {
@@ -150,7 +150,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     paddingRight: spacing.xl,
     margin: spacing.lg,
     position: 'relative',
-    borderRadius: radius,
+    borderRadius: radius.lg,
     '& .MuiTypography-caption': { color: palette.white.main, marginTop: spacing.md, display: 'block' },
     '& .MuiLink-root': {
       color: palette.white.main,

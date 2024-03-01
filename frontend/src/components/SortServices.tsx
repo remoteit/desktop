@@ -1,28 +1,13 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
 
-export interface ISortService {
-  name: string
-  sortService: (a: IService, b: IService) => number
-  icon: string
-}
-
-export function getSortOptions(key: string) {
+export function getSortOptions(key: ISortServiceType) {
   const option = optionSortServices[key]
   return option || {}
-}
-
-export type SortServiceType = 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
-
-export interface IOptionServiceSort {
-  ATOZ: ISortService
-  ZTOA: ISortService
-  NEWEST: ISortService
-  OLDEST: ISortService
 }
 
 const optionSortServices: IOptionServiceSort = {
@@ -65,7 +50,7 @@ export const SortServices: React.FC = () => {
     setAnchorEl(null)
   }
 
-  const servicesSort = async (option?: SortServiceType) => {
+  const servicesSort = async (option?: ISortServiceType) => {
     devices.set({ sortServiceOption: option })
     handleClose()
   }
@@ -79,7 +64,12 @@ export const SortServices: React.FC = () => {
       </IconButton>
       <Menu anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
         {Object.keys(optionSortServices).map(key => (
-          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key as SortServiceType)} dense>
+          <MenuItem
+            key={key}
+            selected={key === sortService}
+            onClick={() => servicesSort(key as ISortServiceType)}
+            dense
+          >
             {optionSortServices[key].name}
           </MenuItem>
         ))}

@@ -34,7 +34,7 @@ const useStyles = makeStyles({
     },
     '& .MuiListItemButton-root': {
       display: small ? undefined : 'block',
-      minWidth: mobile ? undefined : 120,
+      minWidth: mobile ? undefined : 100,
       width: mobile ? 90 : 100,
       paddingLeft: small ? undefined : spacing.md,
       paddingTop: small ? undefined : spacing.lg,

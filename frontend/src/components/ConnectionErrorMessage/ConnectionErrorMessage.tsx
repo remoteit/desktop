@@ -48,7 +48,7 @@ const useStyles = makeStyles(({ palette }) => ({
   container: {
     position: 'relative',
     backgroundColor: palette.danger.main,
-    borderRadius: radius,
+    borderRadius: radius.lg,
     color: palette.alwaysWhite.main,
     '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
     '& .MuiListItemText-secondary': { color: palette.alwaysWhite.main },

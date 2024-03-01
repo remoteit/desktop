@@ -35,7 +35,7 @@ export const DevicePage: React.FC = () => {
   const history = useHistory()
   const css = useStyles()
 
-  const sortService = useSelector(selectDeviceModelAttributes).sortServiceOption
+  const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
   const setupDeletingService = useSelector((state: State) => state.ui.setupDeletingService)
   const connectThisDevice = useSelector((state: State) => state.ui.connectThisDevice)
@@ -162,7 +162,7 @@ export const DevicePage: React.FC = () => {
             </>
           }
         >
-          {services.sort(getSortOptions(sortService).sortService).map(s => {
+          {services.sort(getSortOptions(sort).sortService).map(s => {
             const c = connections?.find(c => c.id === s.id)
             let pathname = `/devices/${device.id}/${s.id}${servicePage}`
             if (pathname === location.pathname) pathname = `/devices/${device.id}/${s.id}/connect`
