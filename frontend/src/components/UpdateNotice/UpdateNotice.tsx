@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { Snackbar, Button, IconButton } from '@mui/material'
+import { Snackbar, Button } from '@mui/material'
 import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
-import { Icon } from '../Icon'
 import browser from '../../services/Browser'
 
 export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
@@ -41,26 +40,26 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
       <Snackbar
         open={open}
         className={className}
-        message={`An update is available (v${updateReady}).`}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        action={[
-          <Button key="disable" size="small" color="primary" onClick={handleDisable}>
-            Disable Updates
-          </Button>,
-          <Button key="restart" variant="contained" color="primary" size="small" onClick={handleClick}>
-            Install
-          </Button>,
-          <IconButton
-            key="close"
-            onClick={() => {
+        message={
+          <Notice
+            invert
+            onClose={() => {
               setOpen(false)
               dispatch.backend.setUpdateNotice(updateReady)
             }}
-            size="large"
+            fullWidth
+            button={[
+              <Button key="disable" size="small" color="primary" onClick={handleDisable}>
+                Disable Updates
+              </Button>,
+              <Button key="restart" variant="contained" color="primary" size="small" onClick={handleClick}>
+                Install
+              </Button>,
+            ]}
           >
-            <Icon name="times" color="white" size="md" fixedWidth />
-          </IconButton>,
-        ]}
+            An update is available (v{updateReady}).
+          </Notice>
+        }
       />
       {confirm && (
         <Confirm

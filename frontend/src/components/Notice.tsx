@@ -80,9 +80,9 @@ export const Notice: React.FC<NoticeProps> = ({
       {onClose && (
         <IconButton
           name="times"
-          type="solid"
           onClick={onClose}
-          color={solid || invert ? 'alwaysWhite' : undefined}
+          sx={{ marginRight: -1 }}
+          color={solid ? 'alwaysWhite' : invert ? 'grayLight' : undefined}
           title="Close"
         />
       )}

@@ -82,11 +82,19 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         className={css.snackbar}
         open={snackbar === 'retry'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        message="Webserver connection lost. Retrying..."
-        action={
-          <IconButton onClick={reconnect} size="large">
-            <Icon name="sync" size="md" color="white" fixedWidth />
-          </IconButton>
+        message={
+          <Notice
+            invert
+            severity="warning"
+            fullWidth
+            button={
+              <IconButton onClick={reconnect} sx={{ marginLeft: 1, marginRight: -1 }}>
+                <Icon name="sync" size="md" color="white" fixedWidth />
+              </IconButton>
+            }
+          >
+            Webserver connection lost. Retrying...
+          </Notice>
         }
       />
       <Snackbar
