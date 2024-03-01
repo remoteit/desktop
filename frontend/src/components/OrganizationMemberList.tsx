@@ -17,7 +17,7 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, e
         <OrganizationMember
           disabled
           key={owner.user.id}
-          link={false}
+          link={true}
           member={owner}
           roles={organization?.roles}
           enterprise={enterprise}

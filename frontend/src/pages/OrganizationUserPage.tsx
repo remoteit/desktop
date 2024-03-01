@@ -1,15 +1,16 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
 import { State } from '../store'
+import { Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
+import { ProfilePage } from './ProfilePage'
 import { REGEX_LAST_PATH } from '../constants'
-import { selectOrganization } from '../selectors/organizations'
 import { RemoveMemberButton } from '../buttons/RemoveMemberButton'
 import { useParams, useLocation } from 'react-router-dom'
 import { LeaveOrganizationButton } from '../buttons/LeaveOrganizationButton'
 import { OrganizationMemberDetails } from '../components/OrganizationMemberDetails'
+import { selectOrganization, selectOwner } from '../selectors/organizations'
 import { OrganizationGuestDetails } from '../components/OrganizationGuestDetails'
-import { Typography } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { Container } from '../components/Container'
 import { Avatar } from '../components/Avatar'
@@ -19,19 +20,24 @@ export const OrganizationUserPage: React.FC = () => {
   const location = useLocation()
   const { userID = '' } = useParams<{ userID: string }>()
 
-  const organization = useSelector((state: State) => selectOrganization(state))
-  const myAccount = useSelector((state: State) => (state.user.id === userID ? state.user : undefined))
+  let user: IUser = useSelector((state: State) => state.user)
+  const owner = useSelector(selectOwner)
+  const organization = useSelector(selectOrganization)
   const guest = organization.guests.find(g => g.id === userID)
-  const member = organization.members.find(m => m.user.id === userID) || organization.membership
-  const guestsLoaded = organization.guestsLoaded
+  const member = organization.members.find(m => m.user.id === userID)
+  const isMyAccount = user.id === userID
+  const isOwnerAccount = user.id === userID && organization.id === userID
 
-  const user = guest || member?.user || myAccount
+  user = guest || member?.user || (owner?.user.id === userID && owner.user) || user
+  // console.log({ user, guest, memberUser: member?.user, owner, isMyAccount })
 
-  if (!user || organization.id === user.id)
+  if (isOwnerAccount) return <ProfilePage />
+
+  if (!user)
     return (
       <Redirect
         to={{
-          pathname: myAccount ? '/account' : location.pathname.replace(REGEX_LAST_PATH, ''),
+          pathname: location.pathname.replace(REGEX_LAST_PATH, ''),
           state: { isRedirect: true },
         }}
       />
@@ -39,25 +45,23 @@ export const OrganizationUserPage: React.FC = () => {
 
   return (
     <Container
+      gutterBottom
       header={
-        <>
-          <Typography variant="h1" marginTop={1} gutterBottom>
-            <Title>
-              <Avatar email={user?.email} size={46} inline />
-              {user?.email}
-            </Title>
-            {member && myAccount ? (
-              <LeaveOrganizationButton organizationId={organization.id} />
-            ) : (
-              <RemoveMemberButton member={member} />
-            )}
-          </Typography>
-          {!guestsLoaded && <LinearProgress loading />}
-        </>
+        <Typography variant="h1" marginTop={1} gutterBottom>
+          <Title>
+            <Avatar email={user?.email} marginRight={16} />
+            {user?.email}
+          </Title>
+          {isMyAccount ? (
+            <LeaveOrganizationButton organizationId={organization.id} />
+          ) : (
+            member && <RemoveMemberButton member={member} />
+          )}
+        </Typography>
       }
     >
-      <OrganizationMemberDetails member={member} organization={organization} />
-      <OrganizationGuestDetails guest={guest} loaded={guestsLoaded} />
+      <OrganizationMemberDetails member={member || organization.membership} organization={organization} />
+      <OrganizationGuestDetails guest={guest} loaded={organization.guestsLoaded} />
     </Container>
   )
 }

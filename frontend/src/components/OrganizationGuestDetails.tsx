@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { getAllDevices } from '../selectors/devices'
-import { useSelector, useDispatch } from 'react-redux'
 import { selectNetworks } from '../selectors/networks'
+import { useSelector, useDispatch } from 'react-redux'
+import { LinearProgress, Typography, List, Box } from '@mui/material'
 import { State, Dispatch } from '../store'
-import { Typography, List, Box } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
+import { LoadingMessage } from './LoadingMessage'
 import { TargetPlatform } from './TargetPlatform'
 import { ShareDetails } from './ShareDetails'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 type Props = {
-  loaded: boolean
   guest?: IGuest
+  loaded?: boolean
 }
 
 export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => {
@@ -37,7 +38,9 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
 
   useEffect(() => {
     if (!loaded) dispatch.organization.fetchGuests()
-  }, [guest])
+  }, [guest, loaded])
+
+  if (!loaded) return <LinearProgress color="info" sx={{ marginTop: 5, marginX: 5, height: '1px' }} />
 
   if (!guest?.deviceIds.length && !guest?.networkIds.length) return null
 

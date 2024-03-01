@@ -64,7 +64,14 @@ export const OrganizationPage: React.FC = () => {
         </Notice>
       )}
       <List>
-        <TestUI>
+        <ListItemLocation
+          title="My Account"
+          to={`/organization/account/${user.id}`}
+          match={['/organization/account']}
+          icon="user"
+          dense
+        />
+        {organization.reseller && (
           <ListItemLocation
             title="Reseller"
             to="/organization/reseller"
@@ -73,7 +80,7 @@ export const OrganizationPage: React.FC = () => {
             showDisabled
             dense
           />
-        </TestUI>
+        )}
         <ListItemLocation
           title="Members"
           to="/organization/members"
@@ -130,9 +137,6 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
-        <TestUI>
-          <ListItemLocation title="My Account" to={`/organization/account/${user.id}`} icon="user" dense />
-        </TestUI>
       </List>
     </Container>
   )

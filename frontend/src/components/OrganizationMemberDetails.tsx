@@ -9,13 +9,14 @@ import { Typography, List, Box } from '@mui/material'
 import { RoleAccessCounts } from './RoleAccessCounts'
 import { ListItemLocation } from './ListItemLocation'
 import { LicenseSelect } from './LicenseSelect'
+import { FormDisplay } from './FormDisplay'
 import { RoleSelect } from './RoleSelect'
-import { Duration } from '../components/Duration'
+import { Timestamp } from './Timestamp'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 type Props = {
-  member: IOrganizationMember
+  member?: IOrganizationMember
   organization: IOrganizationState
 }
 
@@ -36,9 +37,6 @@ export const OrganizationMemberDetails: React.FC<Props> = ({ member, organizatio
         <>
           <Typography variant="subtitle1">Member</Typography>
           <Gutters>
-            <Typography variant="caption" marginBottom={3} component="div">
-              Since <Duration startTime={member?.created?.getTime()} ago />
-            </Typography>
             <Box display="flex" flexWrap="wrap" alignItems="center" justifyContent="space-between">
               <Box display="flex" marginRight={2} gap={1}>
                 <RoleSelect
@@ -61,6 +59,12 @@ export const OrganizationMemberDetails: React.FC<Props> = ({ member, organizatio
               </Box>
             </Box>
           </Gutters>
+          <FormDisplay
+            icon={<Icon name="calendar-star" />}
+            label="Member since"
+            displayValue={<Timestamp date={member?.created} />}
+            displayOnly
+          />
         </>
       )}
       {!!accessible.length && (

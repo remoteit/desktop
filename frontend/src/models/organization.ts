@@ -72,6 +72,12 @@ export type IOrganizationState = {
   id: string
   name: string
   created?: Date
+  reseller: boolean
+  contact: {
+    name?: string
+    email?: string
+    phone?: string
+  }
   licenses: ILicense[]
   limits: ILimit[]
   guests: IGuest[]
@@ -94,6 +100,12 @@ export const defaultState: IOrganizationState = {
   id: '',
   name: '',
   domain: undefined,
+  reseller: false,
+  contact: {
+    name: '',
+    email: '',
+    phone: '',
+  },
   identityProvider: undefined,
   providers: null,
   verificationCNAME: undefined,
@@ -261,6 +273,7 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const guests = parseGuests(result)
+      console.log('LOAD GUESTS', accountId, guests)
       await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId })
     },
 
