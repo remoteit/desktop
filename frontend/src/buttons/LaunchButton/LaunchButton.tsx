@@ -40,11 +40,11 @@ export const LaunchButton: React.FC<Props> = ({
   const ready = connection?.connectLink || connection?.ready
   const loading = !ready || connection?.starting || (app?.service && !app.service.loaded)
   const disabled = launchDisabled(connection) || loading
-  const autoLaunch = useSelector((state: State) => state.ui.autoLaunch && connection?.autoLaunch)
+  const autoLaunch = useSelector((state: State) => state.ui.autoLaunch === connection?.id && connection?.autoLaunch)
 
   useEffect(() => {
     if (autoLaunch && !launchDisabled(connection) && ready) {
-      dispatch.ui.set({ autoLaunch: false })
+      dispatch.ui.set({ autoLaunch: undefined })
       clickHandler()
     }
   }, [autoLaunch, connection])
@@ -54,7 +54,7 @@ export const LaunchButton: React.FC<Props> = ({
   const clickHandler = async () => {
     if (app.service && !app.service.loaded) {
       await dispatch.devices.fetchSingleFull({ id: app.service.deviceID, hidden: true })
-      dispatch.ui.set({ autoLaunch: true })
+      dispatch.ui.set({ autoLaunch: connection?.id })
       return
     }
     if (app.prompt) setPrompt(true)

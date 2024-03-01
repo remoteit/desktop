@@ -97,7 +97,7 @@ export type UIState = {
   confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
   autoConnect: boolean
-  autoLaunch: boolean
+  autoLaunch?: string
   autoCopy: boolean
   updateNoticeCleared?: number
   showRestoreModal: boolean
@@ -191,7 +191,7 @@ export const defaultState: UIState = {
   accordion: { config: false, configConnected: false, options: false, service: false, networks: false, logs: false },
   confirm: undefined,
   autoConnect: false,
-  autoLaunch: false,
+  autoLaunch: undefined,
   autoCopy: false,
   updateNoticeCleared: undefined,
   showRestoreModal: false,
