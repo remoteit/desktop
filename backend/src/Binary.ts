@@ -1,7 +1,7 @@
 import cli from './cliInterface'
 import semverCompare from 'semver/functions/compare'
 import environment from './environment'
-import versionJson from './cli-version.json'
+import versions from './binary-versions.json'
 import Logger from './Logger'
 import path from 'path'
 
@@ -93,11 +93,11 @@ export default class Binary {
   }
 }
 
-export const cliBinary = new Binary({ name: 'remoteit', version: versionJson.cli, isCli: true })
+export const cliBinary = new Binary({ name: 'remoteit', version: versions.cli, isCli: true })
 
 export const binaries = [
   cliBinary,
-  new Binary({ name: 'muxer', version: versionJson.muxer }),
-  new Binary({ name: 'demuxer', version: versionJson.demuxer }),
-  new Binary({ name: 'connectd', version: versionJson.connectd }),
+  new Binary({ name: 'muxer', version: versions.muxer }),
+  new Binary({ name: 'demuxer', version: versions.demuxer }),
+  new Binary({ name: 'connectd', version: versions.connectd }),
 ]

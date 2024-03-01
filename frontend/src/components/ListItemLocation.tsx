@@ -1,11 +1,9 @@
 import React from 'react'
-import classnames from 'classnames'
 import { useHistory } from 'react-router-dom'
-import { useMatches } from '../../hooks/useMatches'
+import { useMatches } from '../hooks/useMatches'
 import { MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
-import { Color, Sizes, spacing } from '../../styling'
-import { makeStyles } from '@mui/styles'
-import { Icon } from '../Icon'
+import { Color, Sizes } from '../styling'
+import { Icon } from './Icon'
 
 export type Props = {
   key?: React.Key
@@ -22,6 +20,7 @@ export type Props = {
   disableGutters?: boolean
   disableIcon?: boolean
   dense?: boolean
+  inset?: number
   className?: string
   menuItem?: boolean
   match?: string | string[]
@@ -46,6 +45,7 @@ export const ListItemLocation: React.FC<Props> = ({
   menuItem,
   match,
   exactMatch,
+  inset,
   badge,
   className,
   children,
@@ -53,7 +53,6 @@ export const ListItemLocation: React.FC<Props> = ({
 }) => {
   const history = useHistory()
   const matches = useMatches({ to, match, exactMatch })
-  const css = useStyles({ disableIcon: !!disableIcon })
 
   const onClick = (event: React.MouseEvent) => {
     props.onClick?.(event)
@@ -96,8 +95,12 @@ export const ListItemLocation: React.FC<Props> = ({
     ...props,
     onClick,
     disabled,
-    className: classnames(css.root, className),
+    className,
     selected: !!matches,
+    sx: {
+      paddingLeft: disableIcon ? 2 + (inset || 0) : inset,
+      paddingRight: inset,
+    },
     style: showDisabled ? undefined : { opacity: 1 },
   }
 
@@ -109,9 +112,3 @@ export const ListItemLocation: React.FC<Props> = ({
     <ListItem {...ItemProps}>{Contents}</ListItem>
   )
 }
-
-type styleProps = { disableIcon: boolean }
-
-const useStyles = makeStyles({
-  root: ({ disableIcon }: styleProps) => ({ paddingLeft: disableIcon ? spacing.md : undefined }),
-})

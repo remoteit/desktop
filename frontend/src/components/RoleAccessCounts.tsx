@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Chip } from '@mui/material'
+import { Stack, Chip } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 
@@ -23,9 +23,9 @@ export const RoleAccessCounts: React.FC<Props> = ({ role }) => {
   return counts === null ? (
     <Chip size="small" label="Counting..." />
   ) : (
-    <Box display="flex" flexDirection="column">
+    <Stack spacing={0.2}>
       <Chip size="small" label={`${counts.devices} device${counts.devices === 1 ? '' : 's'}`} />
       <Chip size="small" label={`${counts.networks} network${counts.networks === 1 ? '' : 's'}`} />
-    </Box>
+    </Stack>
   )
 }

@@ -40,7 +40,7 @@ export function ServiceCheckboxes({
   }
 
   return (
-    <List className="collapseList">
+    <List disablePadding>
       <ListItemCheckbox
         disabled={saving}
         label={<i>Select all</i>}

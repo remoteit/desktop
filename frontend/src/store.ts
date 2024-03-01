@@ -1,3 +1,4 @@
+import { numericVersion } from './helpers/versionHelper'
 import { models, RootModel } from './models'
 import { createLogger, ReduxLoggerOptions } from 'redux-logger'
 import { init, RematchDispatch, RematchRootState } from '@rematch/core'
@@ -13,7 +14,7 @@ const loggerConfig: ReduxLoggerOptions = {
 
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
-  version: 1,
+  version: numericVersion(),
   storage: localForage,
   whitelist: [
     'accounts',

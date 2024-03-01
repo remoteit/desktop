@@ -11,7 +11,7 @@ export const isUserAccount = createSelector(
   (activeAccountId, userId) => activeAccountId === userId
 )
 
-export const getActiveUser = createSelector(
+export const selectActiveUser = createSelector(
   [selectActiveAccountId, getMemberships, getUser],
   (accountId, memberships, user): IUserRef => {
     const membershipOrganizations = memberships.map(m => ({

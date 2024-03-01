@@ -61,7 +61,7 @@ type IDeviceState = {
   size: number
   from: number
   eventsUrl: string
-  sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+  sortServiceOption: ISortServiceType
   customAttributes: string[]
 }
 
@@ -172,12 +172,13 @@ export default createModel<RootModel>()({
       }
     },
 
-    async fetchDevices({ ids, hidden }: { ids: string[]; hidden?: boolean }, state) {
-      const accountId = selectActiveAccountId(state)
+    async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
+      accountId = accountId || selectActiveAccountId(state)
+      const columns = selectActiveColumns(state, accountId)
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
         ids,
-        columns: ['deviceName'],
+        columns,
         timeSeries: selectTimeSeries(state).deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)
@@ -673,12 +674,13 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   return [devices, total, id, error]
 }
 
-export function mergeDevice(target: IDevice, source: IDevice) {
+export function mergeDevice(overwrite: IDevice, device: IDevice): IDevice {
+  const serviceIds = new Set(device.services.map(s => s.id))
   return {
-    ...target,
-    ...source,
-    services: [...target.services.filter(ts => !source.services.find(ss => ss.id === ts.id)), ...source.services], // might not need this?
-    hidden: source.hidden && target.hidden,
+    ...overwrite,
+    ...device,
+    services: [...overwrite.services.filter(os => !serviceIds.has(os.id)), ...device.services],
+    hidden: device.hidden && overwrite.hidden,
   }
 }
 

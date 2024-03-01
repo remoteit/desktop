@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-import { getFreeUsers } from '../models/plans'
+import { getAvailableUsers } from '../models/plans'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
@@ -19,7 +19,7 @@ export const OrganizationAddPage = () => {
     return {
       organization,
       contacts: state.contacts.all.filter(c => !organization.members.find(s => s.user.id === c.id)) || [],
-      freeUsers: getFreeUsers(state),
+      freeUsers: getAvailableUsers(state),
     }
   })
 

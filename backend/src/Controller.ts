@@ -189,6 +189,7 @@ class Controller {
   }
 
   refresh = () => {
+    cli.read()
     this.check()
     this.freePort()
     this.io.emit('device', cli.data.device?.uid)

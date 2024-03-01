@@ -224,7 +224,7 @@ class CloudController {
         type: event.type,
         state: event.state,
         action: event.action,
-        timestamp: new Date(event.timestamp),
+        timestamp: new Date(event.timestamp).getTime(),
         isP2P: !event.proxy,
         actor: getManufacturerUser(event.manufacturer, reverseProxy) || event.actor,
         users: event.users,
@@ -245,7 +245,7 @@ class CloudController {
             id: t.id,
             name: combinedName(t, t.device),
             owner: t.owner,
-            accountId: accountFromDevice(state, t.owner.id, t.device?.access.map(a => a.user.id) || []),
+            accountId: accountFromDevice(state, t.owner?.id, t.device?.access.map(a => a.user.id) || []),
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device?.id || device?.id,
@@ -262,7 +262,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, plans, ui, devices } = store.dispatch
+    const dispatch = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -270,25 +270,24 @@ class CloudController {
         const onlineState = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
           // if device and device exists
-          if (target.device?.id === target.id) {
+          if (target.device && target.device.id === target.id) {
             target.device.state = onlineState
-            this.log('DEVICE STATE', target.device.name, target.device.state)
+            target.device[onlineState === 'active' ? 'onlineSince' : 'offlineSince'] = event.timestamp
+            this.log('DEVICE STATE', target.device.name, target.device.state, event.timestamp)
 
             // if service and service exists
           } else {
-            target.device?.services.find(service => {
+            target.device?.services.forEach(service => {
               if (service.id === target.service?.id) {
                 service.state = onlineState
                 this.log('SERVICE STATE', service.name, service.state)
-                return true
               }
-              return false
             })
           }
 
           // if device exists
           if (target.device?.id) {
-            accounts.setDevice({ id: target.device.id, device: target.device })
+            dispatch.accounts.setDevice({ id: target.device.id, device: target.device, accountId: target.accountId })
           }
 
           // New unknown device discovered
@@ -298,11 +297,11 @@ class CloudController {
             // Device created within one minute of the event
             if (
               target.owner?.id === selectActiveAccountId(state) &&
-              event.timestamp.getTime() - target.deviceCreated.getTime() < 1000 * 60
+              event.timestamp - target.deviceCreated.getTime() < 1000 * 60
             ) {
-              if (state.ui.registrationCommand) ui.set({ redirect: `/devices/${target.deviceId}` })
-              ui.set({ successMessage: `${target.name} registered successfully!` })
-              devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
+              if (state.ui.registrationCommand) dispatch.ui.set({ redirect: `/devices/${target.deviceId}` })
+              dispatch.ui.set({ successMessage: `${target.name} registered successfully!` })
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
             }
           }
         })
@@ -325,11 +324,11 @@ class CloudController {
 
           // session state
           if (event.state === 'connected') {
-            sessions.setSession({
+            dispatch.sessions.setSession({
               id: event.sessionId,
               manufacturer: event.manufacturerType,
               reverseProxy: event.reverseProxy,
-              timestamp: event.timestamp,
+              timestamp: new Date(event.timestamp),
               source: event.source,
               platform: event.platform,
               isP2P: event.isP2P,
@@ -344,10 +343,8 @@ class CloudController {
               },
             })
           } else {
-            sessions.removeSession(event.sessionId)
+            dispatch.sessions.removeSession(event.sessionId)
           }
-
-          this.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
         })
         break
 
@@ -362,7 +359,7 @@ class CloudController {
         // device unshared from me or my org
         if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) devices.cleanup([target.id])
+            if (target.typeID === DEVICE_TYPE) dispatch.devices.cleanup([target.id])
           })
         }
 
@@ -370,19 +367,20 @@ class CloudController {
         else if (accountTo && ['add', 'update'].includes(event.action)) {
           event.target.forEach(target => {
             if (target.typeID === DEVICE_TYPE)
-              devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
           })
         }
-
         break
 
       case 'DEVICE_REFRESH':
+        let accountId = ''
         const refreshIds = event.target.reduce((result: string[], target) => {
           // Check that it's the bulk service and that the device is loaded in the ui
           if (target.typeID === DEVICE_TYPE && target.device) result.push(target.deviceId)
+          accountId = target.accountId
           return result
         }, [])
-        if (refreshIds.length) devices.fetchDevices({ ids: refreshIds })
+        if (refreshIds.length) dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
         break
 
       case 'DEVICE_DELETE':
@@ -390,12 +388,13 @@ class CloudController {
           if (target.device) result.push(target.deviceId)
           return result
         }, [])
-        if (deleteIds.length) devices.cleanup(deleteIds)
+        this.log('DEVICE DELETE EVENT', deleteIds, event)
+        if (deleteIds.length) dispatch.devices.cleanup(deleteIds)
         break
 
       case 'LICENSE_UPDATED':
         this.log('LICENSE UPDATED EVENT', event)
-        setTimeout(plans.updated, 2000) // because event comes in before plan is fully updated
+        setTimeout(dispatch.plans.updated, 2000) // because event comes in before plan is fully updated
         break
     }
     return event

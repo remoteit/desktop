@@ -34,12 +34,13 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     // network pages
   } else if (networkPage) {
     title = 'Refresh networks'
+    methods.push(dispatch.networks.fetch)
 
     // log pages
   } else if (logsPage) {
     title = device ? `Refresh ${attributeName(device)} logs` : 'Refresh logs'
     methods.push(async () => {
-      if (device) dispatch.devices.fetchSingleFull({ id: device.id })
+      if (device) await dispatch.devices.fetchSingleFull({ id: device.id })
       await dispatch.logs.set({ after: undefined, maxDate: undefined })
       await dispatch.logs.fetch()
     })
@@ -63,11 +64,11 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       await dispatch.devices.set({ fetching: false })
       return
     }
-    network.connect()
-    cloudController.ping()
-    await dispatch.devices.expire()
     await cloudSync.call(methods)
     await cloudSync.core(!methods.length)
+    dispatch.devices.expire()
+    cloudController.ping()
+    network.connect()
     emit('refresh')
   }
 

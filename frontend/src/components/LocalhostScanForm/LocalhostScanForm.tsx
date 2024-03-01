@@ -69,14 +69,16 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
   return (
     <>
       <Typography className={css.body} variant="body2" color="textSecondary">
-        <Title>Check an active service to enable it.</Title>
+        <Title>Select any found services to auto setup</Title>
         <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" size="lg" />
       </Typography>
-      <List className="collapseList">
+      <List>
         {scanData.map((row, key) => (
           <ListItemCheckbox
+            dense
             key={key}
             label={row.name}
+            height={30}
             checked={state[key]}
             onClick={() => {
               state[key] = !state[key]

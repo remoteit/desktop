@@ -29,8 +29,8 @@ platforms.register({
     link: 'https://link.remote.it/download/desktop',
     instructions: (
       <>
-        Install the Desktop or CLI on an Ubuntu Desktop system <br />
-        or just use our <Link to="./linux">Linux system agent</Link>
+        Install the Desktop app with our CLI on an Ubuntu Desktop system <br />
+        or if you only need to connect use our <Link to="./linux">Linux system agent</Link>
       </>
     ),
   },

@@ -21,7 +21,7 @@ const useStyles = makeStyles(({ palette }) => ({
   style: {
     fontWeight: 500,
     backgroundColor: palette.primaryLighter.main,
-    borderRadius: radius,
+    borderRadius: radius.sm,
     padding: `0 ${spacing.xs}px 2px`,
   },
 }))

@@ -1,6 +1,6 @@
 import { BinaryInstaller } from './binaryInstaller'
 import environment from './environment'
-import versionJson from './cli-version.json'
+import versionJson from './binary-versions.json'
 import Command from './Command'
 import rimraf from 'rimraf'
 import Binary from './Binary'

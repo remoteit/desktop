@@ -36,12 +36,12 @@ class CloudSync {
   }
 
   async core(spinner: boolean = false) {
+    // Account first because organization depends on it
+    await this.call([dispatch.accounts.fetch], false, spinner)
     await this.call(
       [
         dispatch.user.fetch,
-        dispatch.accounts.fetch,
         dispatch.organization.fetch,
-        dispatch.networks.fetch,
         dispatch.sessions.fetch,
         dispatch.tags.fetch,
         dispatch.plans.fetch,
@@ -57,7 +57,7 @@ class CloudSync {
     console.log('CLOUD SYNC ALL')
     await this.core()
     await dispatch.devices.set({ from: 0 })
-    await this.call([dispatch.devices.fetchList, dispatch.connections.fetch])
+    await this.call([dispatch.devices.fetchList, dispatch.networks.fetch, dispatch.connections.fetch])
   }
 }
 

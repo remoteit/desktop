@@ -17,7 +17,8 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   const theme = useTheme()
   const css = useStyles()
 
-  let color: Color = 'grayDarker'
+  let color: Color = 'grayDark'
+  let colorBackground: string = ''
   let state = service ? service.state : 'unknown'
 
   if (state !== 'inactive' && connection) {
@@ -31,7 +32,12 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
       color = 'danger'
       break
     case 'active':
-      color = 'grayDarker'
+      color = 'grayDark'
+      colorBackground = 'grayLighter.main'
+      break
+    case 'inactive':
+      color = 'grayDark'
+      colorBackground = 'grayLighter.main'
       break
     case 'connected':
       color = 'primary'
@@ -66,7 +72,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
         component="span"
         sx={{
           color: `${color}.main`,
-          backgroundColor: alpha(theme.palette[color].main, 0.1),
+          backgroundColor: colorBackground || alpha(theme.palette[color].main, 0.1),
           textDecoration: state === 'inactive' ? 'line-through' : undefined,
         }}
       >
@@ -82,8 +88,8 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'inline-flex',
     alignItems: 'center',
     '& > span': {
-      borderRadius: radius,
-      fontSize: fontSizes.xxs,
+      borderRadius: radius.sm,
+      fontSize: fontSizes.xs,
       fontWeight: 500,
       padding: 1,
       paddingLeft: spacing.xs,

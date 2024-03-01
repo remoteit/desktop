@@ -3,9 +3,10 @@ import { LANGUAGES } from '../constants'
 import { Dispatch, State } from '../store'
 import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'
-import { Typography, List, TextField, MenuItem, ListItem, ListItemIcon } from '@mui/material'
+import { Typography, List } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
+import { SelectSetting } from '../components/SelectSetting'
 import { FormDisplay } from '../components/FormDisplay'
 import { Timestamp } from '../components/Timestamp'
 import { Container } from '../components/Container'
@@ -53,22 +54,16 @@ export const ProfilePage: React.FC = () => {
           displayValue={<Timestamp date={user.created} />}
           displayOnly
         />
-        <ListItem dense className={css.field} button>
-          <ListItemIcon>
-            <Icon name="language" fixedWidth />
-          </ListItemIcon>
-          <TextField
-            select
-            fullWidth
-            variant="standard"
-            label="Email Language"
-            value={user?.language}
-            onChange={e => dispatch.user.changeLanguage(e.target.value)}
-          >
-            <MenuItem value="en">{LANGUAGES.en}</MenuItem>
-            <MenuItem value="ja">{LANGUAGES.ja}</MenuItem>
-          </TextField>
-        </ListItem>
+        <SelectSetting
+          icon="language"
+          label="Email Language"
+          value={user?.language}
+          values={[
+            { key: 'en', name: LANGUAGES.en },
+            { key: 'ja', name: LANGUAGES.ja },
+          ]}
+          onChange={value => dispatch.user.changeLanguage(value)}
+        />
       </List>
       <Typography variant="subtitle1">Account deletion</Typography>
       <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
@@ -84,7 +79,4 @@ const useStyles = makeStyles(({ palette }) => ({
     maxWidth: 500,
     '& .MuiAvatar-root': { marginRight: spacing.xl },
   },
-  menu: { textTransform: 'capitalize' },
-  indent: { marginRight: -spacing.lg },
-  field: { marginBottom: spacing.lg, '&:hover': { backgroundColor: palette.primaryHighlight.main } },
 }))

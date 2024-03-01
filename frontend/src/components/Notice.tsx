@@ -14,6 +14,7 @@ export type NoticeProps = {
   fullWidth?: boolean
   loading?: boolean
   solid?: boolean
+  invert?: boolean
   onClose?: () => void
   iconOverride?: React.ReactNode
   className?: string
@@ -28,6 +29,7 @@ export const Notice: React.FC<NoticeProps> = ({
   gutterBottom,
   loading,
   solid,
+  invert,
   onClose,
   iconOverride,
   className,
@@ -35,10 +37,12 @@ export const Notice: React.FC<NoticeProps> = ({
 }) => {
   const css = useStyles({ fullWidth, gutterBottom, gutterTop })
   let iconName: string
+  let iconColor: string = severity
 
   switch (severity) {
     case 'info':
       iconName = 'info-circle'
+      iconColor = 'primary'
       break
     case 'error':
       iconName = 'exclamation-triangle'
@@ -51,7 +55,7 @@ export const Notice: React.FC<NoticeProps> = ({
       break
   }
 
-  let icon: React.ReactNode = <Icon name={iconName} size="md" type="regular" />
+  let icon: React.ReactNode = <Icon name={iconName} color={invert ? iconColor : undefined} size="md" type="regular" />
   if (iconOverride) icon = iconOverride
   if (loading) icon = <Icon name="spinner-third" spin size="md" fixedWidth />
 
@@ -67,6 +71,7 @@ export const Notice: React.FC<NoticeProps> = ({
           flexDirection: 'column',
           justifyContent: 'center',
           wordBreak: 'break-word',
+          color: invert ? 'white.main' : undefined,
         }}
       >
         <span>{children}</span>
@@ -77,7 +82,7 @@ export const Notice: React.FC<NoticeProps> = ({
           name="times"
           type="solid"
           onClick={onClose}
-          color={solid ? 'alwaysWhite' : undefined}
+          color={solid || invert ? 'alwaysWhite' : undefined}
           title="Close"
         />
       )}
@@ -104,7 +109,6 @@ const useStyles = makeStyles(({ palette }) => ({
     padding: `${spacing.xs}px ${spacing.md}px`,
     display: 'flex',
     position: 'relative',
-    fontWeight: 500,
     '& > svg': {
       marginLeft: spacing.xxs,
       marginRight: spacing.md,

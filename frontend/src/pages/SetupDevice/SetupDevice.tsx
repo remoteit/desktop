@@ -4,7 +4,7 @@ import { State, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '@common/nameHelper'
 import { TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { getActiveUser } from '../../selectors/accounts'
+import { selectActiveUser } from '../../selectors/accounts'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../selectors/devices'
@@ -17,7 +17,7 @@ type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
   const { activeUser, hostname, nameBlacklist } = useSelector((state: State) => ({
-    activeUser: getActiveUser(state),
+    activeUser: selectActiveUser(state),
     hostname: state.backend.environment.hostname,
     nameBlacklist: getDevices(state)
       .filter((device: IDevice) => !device.shared)
@@ -55,7 +55,8 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
         <section className={css.device}>
           <TextField
             label="Name"
-            className={css.input}
+            sx={{ width: 325, maxWidth: 325 }}
+            InputProps={{ sx: { borderBottomRightRadius: 30, borderTopRightRadius: 30 } }}
             value={name}
             variant="filled"
             error={!!nameError}
@@ -78,7 +79,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             helperText={nameError}
           />
           <Button
-            className={css.button}
+            sx={{ marginTop: 0.5, marginLeft: 0.5 }}
             color="primary"
             variant="contained"
             size="large"
@@ -95,17 +96,10 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
 }
 
 const useStyles = makeStyles({
-  button: {
-    marginTop: spacing.xxs,
-    marginLeft: spacing.lg,
-  },
   device: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'start',
     marginBottom: spacing.xl,
-  },
-  input: {
-    width: 300,
   },
 })

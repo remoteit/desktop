@@ -44,7 +44,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabl
             onClick={event => event.stopPropagation()}
           />
           {!enterprise && (
-            <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
+            <Box width={90} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
               <LicenseSelect member={member} disabled={disabled} />
             </Box>
           )}

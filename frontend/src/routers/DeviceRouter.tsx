@@ -14,6 +14,7 @@ import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
+import { Panel } from '../components/Panel'
 import { useSelector } from 'react-redux'
 import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
@@ -31,7 +32,12 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     return { pathname: `/devices/${device?.id}/${redirect}`, state: { isRedirect: true } }
   }
 
-  if (waiting && !device) return <LoadingMessage />
+  if (waiting && !device)
+    return (
+      <Panel layout={layout}>
+        <LoadingMessage message="Loading device..." />
+      </Panel>
+    )
 
   return (
     <DynamicPanel

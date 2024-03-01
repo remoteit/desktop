@@ -87,19 +87,20 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
               <Notice gutterTop solid severity="info">
                 This service can be connected to from anywhere using Remote.It.
               </Notice>
-              <Notice gutterTop severity="warning">
+              <Notice gutterTop severity="info">
                 <Typography variant="body2" gutterBottom>
                   You are on the same device as this service, so you should not connect with Remote.It. Connect directly
-                  using the address below:
+                  using the local address below:
                 </Typography>
                 <ListItemCopy
                   label="Local endpoint"
                   value={`${service?.host || '127.0.0.1'}:${service?.port}`}
+                  invertBackground
                   showBackground
                   fullWidth
                 />
                 <Typography variant="caption" display="block" marginTop={2} marginBottom={1}>
-                  <Link color="grayDark.main" onClick={() => dispatch.ui.set({ connectThisDevice: true })}>
+                  <Link color="grayDarker.main" onClick={() => dispatch.ui.set({ connectThisDevice: true })}>
                     Connect anyway, I know what I'm doing.
                   </Link>
                 </Typography>

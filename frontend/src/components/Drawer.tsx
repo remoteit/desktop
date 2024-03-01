@@ -44,13 +44,13 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
           flexFlow: 'column',
           height: '100%',
           transition: 'max-width 200ms',
-          paddingTop: radius / 2 + 'px',
+          paddingTop: radius.lg / 2 + 'px',
           borderStyle: 'solid',
           borderColor: 'grayLighter.main',
           borderWidth: width ? 1 : 0,
           borderRightWidth: 0,
           borderBottomWidth: 0,
-          borderTopLeftRadius: radius,
+          borderTopLeftRadius: radius.lg,
           '& > *': { minWidth: width },
         }}
       >

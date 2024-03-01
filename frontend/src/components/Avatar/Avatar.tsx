@@ -17,6 +17,7 @@ export interface Props {
   active?: boolean
   border?: number
   fallback?: string
+  marginRight?: number
   children?: React.ReactNode
 }
 
@@ -30,11 +31,12 @@ export const Avatar: React.FC<Props> = ({
   active,
   border = 1,
   fallback,
+  marginRight,
   children,
 }) => {
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const color = createColor(email)
-  const css = useStyles({ size, color, button, inline, active, border })
+  const css = useStyles({ size, color, button, inline, marginRight, active, border })
   fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
 
   let Element = (
@@ -57,10 +59,18 @@ export const Avatar: React.FC<Props> = ({
   )
 }
 
-type StyleProps = { button?: boolean; inline?: boolean; active?: boolean; size: number; color: number; border: number }
+type StyleProps = {
+  button?: boolean
+  inline?: boolean
+  marginRight?: number
+  active?: boolean
+  size: number
+  color: number
+  border: number
+}
 
 const useStyles = makeStyles(({ palette }) => ({
-  avatar: ({ size, color, inline, border }: StyleProps) => ({
+  avatar: ({ size, color, inline, marginRight, border }: StyleProps) => ({
     color: palette.alwaysWhite.main,
     fontSize: size * 0.625,
     height: size,
@@ -70,7 +80,7 @@ const useStyles = makeStyles(({ palette }) => ({
     fontFamily: 'Roboto Mono',
     backgroundColor: labelLookup[color].color,
     border: `${border}px solid ${palette.white.main}`,
-    marginRight: inline ? spacing.sm : 0,
+    marginRight: inline ? spacing.sm : marginRight,
   }),
   button: ({ active, border }: StyleProps) => ({
     backgroundColor: active ? undefined : palette.white.main,

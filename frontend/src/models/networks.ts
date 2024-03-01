@@ -4,7 +4,7 @@ import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { selectTimeSeries } from '../selectors/ui'
 import { selectConnection } from '../selectors/connections'
-import { selectActiveAccountId, getActiveUser } from '../selectors/accounts'
+import { selectActiveAccountId, selectActiveUser } from '../selectors/accounts'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { selectById, selectDeviceColumns } from '../selectors/devices'
@@ -109,6 +109,8 @@ export default createModel<RootModel>()({
 
       const networks = await dispatch.networks.parse({ response, accountId })
       await dispatch.networks.setNetworks({ networks, accountId })
+      
+      console.log('LOADED NETWORKS', networks)
       dispatch.networks.set({ loading: false, initialized: true })
     },
 
@@ -171,8 +173,6 @@ export default createModel<RootModel>()({
           }
         })
       )
-
-      console.log('LOAD NETWORKS', parsed)
       return parsed
     },
 
@@ -335,7 +335,7 @@ export default createModel<RootModel>()({
 
 export function defaultNetwork(state?: State): INetwork {
   if (state) {
-    const owner = getActiveUser(state)
+    const owner = selectActiveUser(state)
     const accountId = selectActiveAccountId(state)
     const defaultNetwork = browser.hasBackend ? defaultLocalNetwork : defaultCloudNetwork
     return { ...defaultNetwork, owner, accountId }

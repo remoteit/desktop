@@ -14,7 +14,7 @@ type Props = {
   onDelete?: () => void
 }
 
-export const Tag: React.FC<Props> = ({ tag, dot, size = 'xxs', hideLabels, onClick, onDelete }) => {
+export const Tag: React.FC<Props> = ({ tag, dot, size = 'xs', hideLabels, onClick, onDelete }) => {
   const getColor = useLabel()
   const color = tag && !hideLabels ? getColor(tag.color) : undefined
   const css = useStyles({ color })

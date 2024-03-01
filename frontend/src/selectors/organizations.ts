@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
 import {
+  getUser,
   getOrganizations,
   getPlans,
   getTestLimits,
@@ -8,17 +9,18 @@ import {
   getPlansTests,
   optionalSecondParam,
 } from './state'
-import { selectActiveAccountId, isUserAccount, getActiveUser } from './accounts'
+import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
 import { defaultState, canMemberView } from '../models/organization'
 import { selectMembership } from './accounts'
 
 export const selectOrganization = createSelector(
-  [selectActiveAccountId, getOrganizations, selectMembership],
-  (accountId, organizations, membership) => {
+  [selectActiveAccountId, getOrganizations, selectMembership, getUser],
+  (accountId, organizations, myMembership, user) => {
     const organization = organizations[accountId] || defaultState
+    const membership: IOrganizationMember = { ...myMembership, user, organizationId: organization.id }
     return {
       ...organization,
-      ...membership,
+      membership,
     }
   }
 )
@@ -82,7 +84,7 @@ export const selectPermissions = createSelector(
 )
 
 export const selectOwner = createSelector(
-  [getActiveUser, selectRemoteitLicense],
+  [selectActiveUser, selectRemoteitLicense],
   (user, license): IOrganizationMember | undefined => {
     return {
       created: user.created || new Date(),

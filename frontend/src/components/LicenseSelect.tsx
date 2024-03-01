@@ -26,7 +26,7 @@ export const LicenseSelect: React.FC<Props> = ({ member, size = 'small', disable
       variant="filled"
       onChange={e => handleSelect(e.target.value as ILicenseTypes)}
       onClick={event => event.stopPropagation()}
-      className={css.licensed}
+      className={disabled ? '' : css.licensed}
     >
       <MenuItem dense value="LICENSED">
         Licensed

@@ -66,7 +66,7 @@ export const SharePage: React.FC = () => {
         email ? (
           <Typography variant="h1" gutterBottom>
             <Title>
-              <Avatar email={email} inline />
+              <Avatar email={email} marginRight={16} />
               {email}
             </Title>
             {deleting ? (

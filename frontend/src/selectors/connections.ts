@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
-import { selectActiveAccountId, getActiveUser } from './accounts'
+import { selectActiveAccountId, selectActiveUser } from './accounts'
 import { getUser, getConnections, getSessions, optionalService } from './state'
 
 export const getConnectionsLookup = createSelector(
@@ -82,7 +82,7 @@ export const selectConnection = createSelector([getConnections, optionalService]
 })
 
 export const selectConnectionsByType = createSelector(
-  [getActiveUser, selectIdleConnections],
+  [selectActiveUser, selectIdleConnections],
   (activeUser, connections): INetwork[] => {
     const connection: IConnection | undefined = connections[0]
 

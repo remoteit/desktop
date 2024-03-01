@@ -144,7 +144,7 @@ export const OrganizationSelect: React.FC = () => {
               </Badge>
             )
           })}
-          <ListItem disableGutters className={css.buttonContainer}>
+          {/* <ListItem disableGutters className={css.buttonContainer}>
             <IconButton
               className={css.button}
               title="Memberships"
@@ -153,7 +153,7 @@ export const OrganizationSelect: React.FC = () => {
               placement="right"
               size="md"
             />
-          </ListItem>
+          </ListItem> */}
         </List>
       </GuideBubble>
     </>
@@ -174,7 +174,7 @@ function Title({ primary, count }: { primary: string; count: number }) {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   list: {
     display: 'flex',
     flexDirection: 'column',
@@ -182,6 +182,7 @@ const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'center',
     backgroundColor: palette.grayLighter.main,
     boxShadow: `0 0 10px 10px ${palette.grayLighter.main}`,
+    marginBottom: spacing(3),
     '& > *': {
       display: 'flex',
       justifyContent: 'center',
@@ -240,7 +241,6 @@ const useStyles = makeStyles(({ palette }) => ({
       position: 'absolute',
       right: 0,
       color: palette.grayDarkest.main,
-      fontWeight: 300,
       letterSpacing: '0.15em',
       fontSize: fontSizes.base,
       textTransform: 'uppercase',

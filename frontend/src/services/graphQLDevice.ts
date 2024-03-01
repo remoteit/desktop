@@ -109,6 +109,8 @@ const DeviceSelectLookup: ILookup<string> = {
 
   endpoint: `
   endpoint {
+    onlineSince
+    offlineSince
     externalAddress
     internalAddress
     availability
@@ -161,7 +163,6 @@ const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
-  console.log('GRAPHQL FETCH DEVICE LIST', params)
   return await graphQLRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
@@ -437,6 +438,8 @@ export function graphQLDeviceAdaptor({
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       quality: d.endpoint?.quality,
+      onlineSince: new Date(d.endpoint?.onlineSince).getTime(),
+      offlineSince: new Date(d.endpoint?.offlineSince).getTime(),
       version: d.version,
       geo: d.endpoint?.geo,
       license: d.license,

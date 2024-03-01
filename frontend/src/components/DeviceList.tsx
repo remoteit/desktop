@@ -132,7 +132,7 @@ const useStyles = makeStyles(({ palette }) => ({
       },
     },
     '& .MuiListItemButton-root': {
-      minHeight: 42,
+      minHeight: 40,
       fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
       '&:hover': { backgroundColor: palette.primaryHighlight.main },

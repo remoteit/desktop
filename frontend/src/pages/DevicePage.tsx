@@ -35,7 +35,7 @@ export const DevicePage: React.FC = () => {
   const history = useHistory()
   const css = useStyles()
 
-  const sortService = useSelector(selectDeviceModelAttributes).sortServiceOption
+  const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
   const setupDeletingService = useSelector((state: State) => state.ui.setupDeletingService)
   const connectThisDevice = useSelector((state: State) => state.ui.connectThisDevice)
@@ -132,8 +132,7 @@ export const DevicePage: React.FC = () => {
         <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
-
-      <List className={css.list}>
+      <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
         {editable && <LicensingNotice instance={device} />}
         {editable && setupAddingService && (
           <ListItemLocation to="" disableIcon disabled dense>
@@ -163,7 +162,7 @@ export const DevicePage: React.FC = () => {
             </>
           }
         >
-          {services.sort(getSortOptions(sortService).sortService).map(s => {
+          {services.sort(getSortOptions(sort).sortService).map(s => {
             const c = connections?.find(c => c.id === s.id)
             let pathname = `/devices/${device.id}/${s.id}${servicePage}`
             if (pathname === location.pathname) pathname = `/devices/${device.id}/${s.id}/connect`
@@ -174,7 +173,7 @@ export const DevicePage: React.FC = () => {
                 match={`/devices/${device.id}/${s.id}`}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: s.id })}
                 disabled={setupDeletingService === s.id}
-                disableIcon
+                inset={1.5}
                 dense
               >
                 <ConnectButton
@@ -205,7 +204,6 @@ export const DevicePage: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  connect: { marginLeft: -spacing.sm, marginRight: spacing.xs },
+  connect: { marginLeft: -spacing.xxs, marginRight: spacing.xs },
   title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
-  list: { '& .MuiListItem-root': { paddingRight: spacing.sm } },
 })

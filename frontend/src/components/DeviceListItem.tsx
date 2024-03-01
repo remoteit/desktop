@@ -80,6 +80,7 @@ const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: StyleProps) => ({
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
+    width: '100%',
     '&:hover': {
       backgroundColor: palette.primaryHighlight.main,
     },
@@ -100,8 +101,8 @@ const useStyles = makeStyles(({ palette }) => ({
     zIndex: 4,
     display: 'flex',
     alignItems: 'start !important',
-    borderTopRightRadius: radius,
-    borderBottomRightRadius: radius,
+    borderTopRightRadius: radius.lg,
+    borderBottomRightRadius: radius.lg,
     backgroundImage: `linear-gradient(90deg, ${palette.white.main} 95%, transparent)`,
     overflow: 'visible',
     paddingLeft: spacing.md,
