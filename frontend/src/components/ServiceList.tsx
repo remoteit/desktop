@@ -1,7 +1,10 @@
 import React, { useRef } from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
+import { useSelector } from 'react-redux'
 import { MOBILE_WIDTH } from '../constants'
+import { getSortOptions } from './SortServices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { List, Divider, useMediaQuery } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { DeviceListContext } from '../services/Context'
@@ -32,17 +35,19 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   columnWidths,
   fetching,
 }) => {
+  const { sortService } = getSortOptions(useSelector(selectDeviceModelAttributes).sortServiceOption)
   const previousName = useRef<string>('')
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const css = useStyles({ attributes, required, columnWidths, mobile })
 
-  const rows = devices.reduce((services, device) => {
+  const rows = devices.reduce((row, device) => {
     const hasFilter = applicationTypes?.length
-    device.services.forEach(s => {
-      if (!hasFilter) services.push([s, device])
-      else if (applicationTypes.includes(s.typeID)) services.push([s, device])
-    })
-    return services
+    const services = [...device.services].sort(sortService)
+    for (const s of services) {
+      if (!hasFilter) row.push([s, device])
+      else if (applicationTypes.includes(s.typeID)) row.push([s, device])
+    }
+    return row
   }, [] as [IService, IDevice][])
 
   // Reset previous name when the list changes
@@ -53,7 +58,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
       <DeviceListContext.Provider value={{ device: devices[0], service: devices[0].services[0] }}>
         <DeviceListHeader {...{ devices, required, attributes, fetching, columnWidths, mobile }} />
       </DeviceListContext.Provider>
-      {rows?.map(([service, device]) => {
+      {rows.map(([service, device]) => {
         const duplicateName = device.name === previousName.current
         const divider = !duplicateName && !!previousName.current
         previousName.current = device.name
@@ -63,7 +68,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
             value={{ device, service, connections: connections[device.id], required, attributes }}
           >
             {divider && <Divider variant="inset" />}
-            <DeviceListItem {...{ mobile, duplicateName }} />
+            <DeviceListItem {...{ mobile, duplicateName }} />{' '}
           </DeviceListContext.Provider>
         )
       })}

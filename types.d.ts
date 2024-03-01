@@ -435,6 +435,21 @@ declare global {
     values: string[]
   }
 
+  interface ISortService {
+    name: string
+    sortService: (a: IService, b: IService) => number
+    icon: string
+  }
+
+  type ISortServiceType = 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+
+  interface IOptionServiceSort {
+    ATOZ: ISortService
+    ZTOA: ISortService
+    NEWEST: ISortService
+    OLDEST: ISortService
+  }
+  
   type IRoleAccess = 'NONE' | 'TAG' | 'ALL'
 
   type ILabel = {

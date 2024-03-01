@@ -61,7 +61,7 @@ type IDeviceState = {
   size: number
   from: number
   eventsUrl: string
-  sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+  sortServiceOption: ISortServiceType
   customAttributes: string[]
 }
 
@@ -174,10 +174,11 @@ export default createModel<RootModel>()({
 
     async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
       accountId = accountId || selectActiveAccountId(state)
+      const columns = selectActiveColumns(state, accountId)
       const gqlResponse = await graphQLPreloadDevices({
         accountId,
         ids,
-        columns: ['deviceName'],
+        columns,
         timeSeries: selectTimeSeries(state).deviceTimeSeries,
       })
       const error = graphQLGetErrors(gqlResponse)
