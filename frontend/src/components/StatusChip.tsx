@@ -9,7 +9,7 @@ export type Props = {
   connections?: IConnection[]
 }
 
-const RESENT_THRESHOLD = 1000 * 60 * 1
+const RESENT_THRESHOLD = 1000 * 60 * 30
 
 function badgeState(device?: IDevice) {
   const offlineDuration = Date.now() - (device?.offlineSince || 0)
