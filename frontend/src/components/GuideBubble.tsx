@@ -36,15 +36,15 @@ export const GuideBubble: React.FC<Props> = ({
   sx,
   children,
 }) => {
-  const poppedBubbles = useSelector((state: State) => state.ui.poppedBubbles)
+  const { ui } = useDispatch<Dispatch>()
   const expired = useSelector(
     (state: State) => (startDate > state.user.created && !state.ui.testUI) || state.ui.expireBubbles
   )
+  const poppedBubbles = useSelector((state: State) => state.ui.poppedBubbles)
   const sidebarOpen = useSelector((state: State) => state.ui.sidebarMenu)
-  const { ui } = useDispatch<Dispatch>()
   const [waiting, setWaiting] = React.useState<boolean>(true)
-  const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
   const hideForSidebar = sidebarOpen && !sidebar
+  const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
   const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued && !hideForSidebar
   const css = useStyles({ highlight: highlight && open })
 

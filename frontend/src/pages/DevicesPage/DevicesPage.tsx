@@ -10,6 +10,7 @@ import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesDrawers } from '../../components/DevicesDrawers'
+import { RegisterMenu } from '../../components/RegisterMenu'
 import { DeviceList } from '../../components/DeviceList'
 import { ServiceList } from '../../components/ServiceList'
 import { DevicesHeader } from '../../components/DevicesHeader'
@@ -39,13 +40,26 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
 
   return (
     <DevicesDrawers>
+      <RegisterMenu buttonSize={56} fontSize={22} fab />
       <DevicesHeader selected={selected} select={select} devices={devices}>
         {(fetching || shouldRedirect) && !devices.length ? (
           <LoadingMessage message="Loading..." spinner={false} />
         ) : !devices.length ? (
           <DeviceListEmpty />
         ) : !restore && applicationTypes?.length ? (
-          <ServiceList {...{ attributes, applicationTypes, required, devices, connections, columnWidths, fetching }} />
+          <ServiceList
+            {...{
+              attributes,
+              applicationTypes,
+              required,
+              devices,
+              connections,
+              columnWidths,
+              fetching,
+              select,
+              selected,
+            }}
+          />
         ) : (
           <DeviceList
             attributes={restore ? restoreAttributes : attributes}
