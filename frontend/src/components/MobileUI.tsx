@@ -13,8 +13,8 @@ type Props = {
 export const MobileUI: React.FC<Props> = ({ ios, android, hide, children }) => {
   let mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
 
-  if (android) mobile = mobile || browser.isAndroid
-  if (ios) mobile = mobile || browser.isIOS
+  if (android) mobile = mobile && browser.isAndroid
+  if (ios) mobile = mobile && browser.isIOS
   if (hide) mobile = !mobile
 
   return mobile ? <>{children}</> : null
