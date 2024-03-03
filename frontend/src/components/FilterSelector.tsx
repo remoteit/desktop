@@ -22,16 +22,10 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
   }
 
   return (
-    <List
-      dense
-      sx={{
-        paddingTop: 0,
-        '& .MuiListItemButton-root': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
-      }}
-    >
+    <List dense disablePadding>
       {children}
       {filterList.map((f, index) => (
-        <ListItemButton key={index} onClick={() => onSelect(f.value)}>
+        <ListItemButton key={index} onClick={() => onSelect(f.value)} sx={{ paddingY: 0 }}>
           <ListItemIcon>{isActive(f.value) && <Icon name={icon} color="primary" />}</ListItemIcon>
           <ListItemText
             style={{ color: f.color ? f.color : undefined }}

@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@mui/material'
+import { ListSubheader, List, ListItemText, ListItemButton, ListItemIcon, Button } from '@mui/material'
 import { selectAllActiveAttributes } from '../selectors/devices'
 import { defaultState } from '../models/ui'
 import { spacing } from '../styling'
@@ -46,12 +46,11 @@ export const ColumnsDrawer: React.FC = () => {
         {attributes.map(data => {
           const checked = selected.indexOf(data.id)
           return (
-            <ListItem
+            <ListItemButton
               dense
-              button
-              disableGutters
-              disabled={data.required}
               key={data.id}
+              disabled={data.required}
+              sx={{ paddingY: 0 }}
               onClick={() => (checked >= 0 ? remove(checked) : add(data.id))}
             >
               <ListItemIcon>{checked >= 0 && <Icon name="check" color="primary" />}</ListItemIcon>
@@ -59,7 +58,7 @@ export const ColumnsDrawer: React.FC = () => {
                 primary={data.label}
                 primaryTypographyProps={{ color: checked >= 0 ? 'primary' : undefined }}
               />
-            </ListItem>
+            </ListItemButton>
           )
         })}
       </List>
@@ -72,7 +71,6 @@ const useStyles = makeStyles({
     padding: 0,
     marginBottom: spacing.lg,
     textTransform: 'capitalize',
-    '& .MuiListItem-dense': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
     '& .MuiListSubheader-root': { display: 'flex', justifyContent: 'space-between', paddingRight: 0 },
   },
 })

@@ -136,5 +136,5 @@ export const darkColors: { [key in Color]: string } = {
 
 export const radius = {
   sm: 8,
-  lg: 16,
+  lg: 24,
 }
