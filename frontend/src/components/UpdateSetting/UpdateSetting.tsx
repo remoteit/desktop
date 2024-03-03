@@ -37,7 +37,15 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
             icon="chevron-double-up"
             secondaryContent={
               preferences.autoUpdate && (
-                <Button onClick={() => emit('update/check')} color="primary" size="small" disabled={downloading}>
+                <Button
+                  onClick={event => {
+                    event.stopPropagation()
+                    emit('update/check')
+                  }}
+                  color="primary"
+                  size="small"
+                  disabled={downloading}
+                >
                   {downloading ? 'Downloading...' : checking ? 'Checking...' : 'Check'}
                 </Button>
               )

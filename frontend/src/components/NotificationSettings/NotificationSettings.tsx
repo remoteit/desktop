@@ -5,8 +5,8 @@ import { State, Dispatch } from '../../store'
 import {
   Chip,
   List,
-  ListItem,
   ListItemIcon,
+  ListItemButton,
   ListItemSecondaryAction,
   ListItemText,
   Switch,
@@ -99,7 +99,7 @@ export const NotificationSettings: React.FC = () => {
       <Chip
         label="Custom"
         size="small"
-        deleteIcon={<IconButton icon="times" size="xs" />}
+        deleteIcon={<IconButton icon="times" size="xs" buttonBaseSize="small" />}
         onDelete={() => onClose(value)}
       />
     )
@@ -124,7 +124,7 @@ export const NotificationSettings: React.FC = () => {
         />
       </Typography>
       <List>
-        <ListItem button onClick={handleInAppNotifications} dense>
+        <ListItemButton onClick={handleInAppNotifications} dense>
           <ListItemIcon>
             <Icon name={inapp ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
@@ -133,8 +133,8 @@ export const NotificationSettings: React.FC = () => {
             {inAppOverridden && chipOverridden('inapp')}
             <Switch edge="end" color="primary" checked={inapp} onClick={handleInAppNotifications} />
           </ListItemSecondaryAction>
-        </ListItem>
-        <ListItem button onClick={handleEmailNotifications} dense>
+        </ListItemButton>
+        <ListItemButton onClick={handleEmailNotifications} dense>
           <ListItemIcon>
             <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
@@ -143,7 +143,7 @@ export const NotificationSettings: React.FC = () => {
             {emailOverridden && chipOverridden('email')}
             <Switch edge="end" color="primary" checked={email} onClick={handleEmailNotifications} />
           </ListItemSecondaryAction>
-        </ListItem>
+        </ListItemButton>
       </List>
     </>
   )

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
-import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
+import { ListItemButton, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'
@@ -45,8 +45,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   }, [filePath])
 
   return (
-    <ListItem
-      button
+    <ListItemButton
       className={classnames(className, css.container)}
       onClick={filePrompt}
       disabled={disabled}
@@ -61,7 +60,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
         <IconButton title="Reset" icon="undo" type="solid" size="sm" onClick={() => onSave && onSave(undefined)} />
         <IconButton title="Select Application" icon="folder-open" size="md" onClick={filePrompt} />
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   )
 }
 
