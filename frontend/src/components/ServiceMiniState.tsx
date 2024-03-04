@@ -101,8 +101,6 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   clickable: {
     cursor: 'pointer',
-    '&:hover > span': {
-      boxShadow: `0px 1px 2px ${palette.darken.main}`,
-    },
+    '&:hover > span': { backgroundColor: palette.action.hover },
   },
 }))
