@@ -87,6 +87,8 @@ Var FileHandle
     ${if} ${IsUpdated}
         FileWrite $FileHandle "Updating... do not check for registered device.$\r$\n"
     ${else}
+        FileWrite $FileHandle "Uninstalling...$\r$\n"
+
         IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
         config_found:
             FileWrite $FileHandle "Config found$\r$\n"
@@ -112,9 +114,6 @@ Var FileHandle
                         FileWrite $FileHandle "RMDir $APPDATA\remoteit$\r$\n"
                         RMDir /r "$APPDATA\remoteit"
 
-                        FileWrite $FileHandle "RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
-                        RMDir /r "$PROFILE\AppData\Local\remoteit"
-
                         Goto next
                     false:
                         Goto next
@@ -125,9 +124,11 @@ Var FileHandle
         config_not_found:
             FileWrite $FileHandle "Device config not found$\r$\n"
         end_of_config:
-    ${endIf}
 
-    FileWrite $FileHandle "Uninstalling...$\r$\n"
+        ; Remove app data
+        FileWrite $FileHandle "RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+        RMDir /r "$PROFILE\AppData\Local\remoteit"
+    ${endIf}
 
     ; Remove agent
     !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" agent uninstall"
