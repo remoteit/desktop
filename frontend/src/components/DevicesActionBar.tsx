@@ -14,6 +14,7 @@ import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Notice } from './Notice'
 import { Title } from './Title'
+import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 
 type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] }
@@ -36,7 +37,9 @@ export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devic
     <Collapse in={!!(select || selected.length)} mountOnEnter>
       <Box className={css.actions}>
         <Title>
-          <Typography variant="subtitle1">{selected.length} Selected</Typography>
+          <Typography variant="subtitle1">
+            {selected.length} {mobile ? <Icon name="check" inline /> : 'Selected'}
+          </Typography>
         </Title>
         {feature.tagging && (
           <>

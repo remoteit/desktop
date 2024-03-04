@@ -12,9 +12,14 @@ type Props = {
   disabled?: boolean
 }
 
+
+/* 
+  deprecate for SelectSetting?
+*/
+
 export const ListItemSelect: React.FC<Props> = ({ icon, label, subLabel, value, options, onChange, disabled }) => {
   return (
-    <ListItem disabled={disabled} dense>
+    <ListItem dense>
       <ListItemIcon>
         <Icon name={icon} size="md" fixedWidth />
       </ListItemIcon>
@@ -28,6 +33,7 @@ export const ListItemSelect: React.FC<Props> = ({ icon, label, subLabel, value, 
           value={value}
           variant="filled"
           onChange={onChange}
+          sx={{ marginRight: 2 }}
         >
           {options.map(option => (
             <MenuItem dense value={option.value} selected={value === option.value} key={option.value}>

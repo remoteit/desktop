@@ -19,7 +19,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
-          <RegisterMenu buttonSize={38} size="md" type="light" sidebar />
+          <RegisterMenu buttonSize={38} sidebar type="solid" />
         </section>
         <SidebarNav />
         <RemoteManagement />

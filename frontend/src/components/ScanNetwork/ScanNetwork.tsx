@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import {
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
@@ -98,23 +99,21 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
       <List>
         {data.map((ip, row) => (
           <span key={row}>
-            <ListItem button onClick={() => toggle(row)}>
+            <ListItemButton onClick={() => toggle(row)}>
               <ListItemIcon>
                 {ip[0] === privateIP ? <Icon name="router" type="regular" /> : InterfaceIcon[interfaceType]}
               </ListItemIcon>
               <ListItemText primary={ip[0]} secondary={ip[0] === privateIP ? 'This system' : null} />
               <ListItemSecondaryAction>
-                <IconButton onClick={() => toggle(row)} size="large">
-                  {open.includes(row) ? <Icon name="chevron-up" size="md" /> : <Icon name="chevron-down" size="md" />}
-                </IconButton>
+                <Icon name={open.includes(row) ? 'chevron-up' : 'chevron-down'} color="gray" />
               </ListItemSecondaryAction>
-            </ListItem>
+            </ListItemButton>
             <Collapse in={open.includes(row)}>
               {ip[1].map((port, key) => (
                 <ListItem key={key} dense className={css.port}>
                   <ListItemText primary={port[0]} />
                   <ListItemText primary={port[1]} />
-                  <ListItemSecondaryAction>
+                  <ListItemSecondaryAction sx={{ right: spacing.lg }}>
                     {isAdded(ip[0], port[0]) ? (
                       <Button disabled size="small">
                         Added
@@ -139,7 +138,6 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
                         }}
                       >
                         Add
-                        <Icon name="plus" size="sm" type="regular" inline />
                       </Button>
                     )}
                   </ListItemSecondaryAction>

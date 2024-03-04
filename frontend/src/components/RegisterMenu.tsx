@@ -1,26 +1,25 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { Typography } from '@mui/material'
+import { State } from '../store'
 import { useLocation } from 'react-router-dom'
+import { IconButton, ButtonProps } from '../buttons/IconButton'
+import { selectPermissions } from '../selectors/organizations'
+import { Typography, Paper } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { GuideBubble } from './GuideBubble'
-import { State } from '../store'
-import { selectPermissions } from '../selectors/organizations'
-import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { spacing } from '../styling'
 
-type Props = ButtonProps & { buttonSize?: number; sidebar?: boolean }
+type Props = ButtonProps & { fab?: boolean; buttonSize: number; sidebar?: boolean }
 
-export const RegisterMenu: React.FC<Props> = ({ buttonSize, sidebar, ...props }) => {
+export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, ...props }) => {
   const location = useLocation()
-  const css = useStyles({ buttonSize })
+  const layout = useSelector((state: State) => state.ui.layout)
   const permissions = useSelector((state: State) => selectPermissions(state))
   const unauthorized = !permissions?.includes('MANAGE')
   const disabled = unauthorized || location.pathname === '/add'
 
-  if (unauthorized) return null
+  if (unauthorized || (fab && !layout.hideSidebar)) return null
 
-  return (
+  const button = (
     <GuideBubble
       sidebar={sidebar}
       guide="addDevice"
@@ -44,6 +43,7 @@ export const RegisterMenu: React.FC<Props> = ({ buttonSize, sidebar, ...props })
     >
       <IconButton
         {...props}
+        sx={{ borderRadius: '50%', width: buttonSize, height: buttonSize }}
         title={
           unauthorized ? (
             <>
@@ -57,22 +57,29 @@ export const RegisterMenu: React.FC<Props> = ({ buttonSize, sidebar, ...props })
         to="/add"
         forceTitle
         hideDisableFade
-        className={css.register}
         variant="contained"
         disabled={disabled}
         color="primary"
         icon="plus"
-        type="solid"
       />
     </GuideBubble>
   )
-}
 
-const useStyles = makeStyles({
-  register: ({ buttonSize }: Props) => ({
-    borderRadius: '50%',
-    marginRight: spacing.xxs,
-    width: buttonSize,
-    height: buttonSize,
-  }),
-})
+  return fab ? (
+    <Paper
+      elevation={3}
+      sx={{
+        borderRadius: '50%',
+        position: 'absolute',
+        bgcolor: 'primary.main',
+        bottom: spacing.lg,
+        right: spacing.xl,
+        zIndex: 10,
+      }}
+    >
+      {button}
+    </Paper>
+  ) : (
+    button
+  )
+}

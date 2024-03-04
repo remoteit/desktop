@@ -34,6 +34,8 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   connections = {},
   columnWidths,
   fetching,
+  select,
+  selected = [],
 }) => {
   const { sortService } = getSortOptions(useSelector(selectDeviceModelAttributes).sortServiceOption)
   const previousName = useRef<string>('')
@@ -68,7 +70,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
             value={{ device, service, connections: connections[device.id], required, attributes }}
           >
             {divider && <Divider variant="inset" />}
-            <DeviceListItem {...{ mobile, duplicateName }} />{' '}
+            <DeviceListItem {...{ mobile, duplicateName, select, selected }} />
           </DeviceListContext.Provider>
         )
       })}

@@ -1,6 +1,13 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { ListItem, ListItemText, ListItemSecondaryAction, InputLabel, Tooltip, alpha } from '@mui/material'
+import {
+  ListItemButton as MuiListItemButton,
+  ListItemText,
+  ListItemSecondaryAction,
+  InputLabel,
+  Tooltip,
+  alpha,
+} from '@mui/material'
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -40,14 +47,14 @@ export const ListItemButton: React.FC<DataButtonProps> = ({
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
       <span>
-        <ListItem className={css.box} onClick={onClick} disableGutters button>
+        <MuiListItemButton className={css.box} onClick={onClick} disableGutters>
           {typeof icon === 'string' ? <Icon name={icon} color={iconColor} size="md" fixedWidth /> : icon}
           <ListItemText>
             <InputLabel shrink>{label}</InputLabel>
             <pre className={css.key}>{value}</pre>
           </ListItemText>
           {action && <ListItemSecondaryAction>{action}</ListItemSecondaryAction>}
-        </ListItem>
+        </MuiListItemButton>
       </span>
     </Tooltip>
   )

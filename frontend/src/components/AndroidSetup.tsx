@@ -26,7 +26,7 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
         <GuideBubble
           enterDelay={400}
           guide="registerMenu"
-          placement="right"
+          placement="bottom"
           startDate={new Date('2022-09-20')}
           instructions={
             <>

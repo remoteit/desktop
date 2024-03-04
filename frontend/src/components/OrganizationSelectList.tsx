@@ -2,7 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { ListItem, ListSubheader, ListItemIcon, ListItemText, Chip } from '@mui/material'
+import { ListItemButton, ListSubheader, ListItemIcon, ListItemText, Chip } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
@@ -58,9 +58,8 @@ export const OrganizationSelectList: React.FC = () => {
           buttonBaseSize="small"
         />
       </ListSubheader>
-      <ListItem
+      <ListItemButton
         dense
-        button
         disableGutters
         selected={ownOrgId === activeOrg.id}
         onClick={() => onSelect(ownOrgId || user.id)}
@@ -70,12 +69,11 @@ export const OrganizationSelectList: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary={ownOrg?.id ? ownOrg.name : 'Personal Account'} />
         <Chip label="Owner" size="small" />
-      </ListItem>
+      </ListItemButton>
       {options.map(option => (
-        <ListItem
+        <ListItemButton
           key={option.id}
           dense
-          button
           disableGutters
           disabled={option.disabled}
           selected={option.id === activeOrg.id}
@@ -86,7 +84,7 @@ export const OrganizationSelectList: React.FC = () => {
           </ListItemIcon>
           <ListItemText primary={option.name} />
           <Chip label={option.roleName} size="small" />
-        </ListItem>
+        </ListItemButton>
       ))}
     </>
   )

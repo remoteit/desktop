@@ -382,6 +382,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             zIndex: 2,
+            right: spacing.md,
             '& .MuiTextField-root': { verticalAlign: 'middle' },
           },
         },

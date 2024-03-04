@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
@@ -45,7 +45,7 @@ export const SelectSetting: React.FC<Props> = ({
   modified = modified || (!!defaultValue && value !== defaultValue)
 
   return (
-    <ListItem dense onClick={handleClick} disabled={disabled} button>
+    <ListItemButton dense onClick={handleClick} disabled={disabled}>
       <ListItemIcon sx={{ minWidth: hideIcon ? spacing.sm : undefined }}>
         {hideIcon ? null : <Icon name={icon} size="md" modified={modified} fixedWidth />}
       </ListItemIcon>
@@ -97,6 +97,6 @@ export const SelectSetting: React.FC<Props> = ({
         ))}
       </TextField>
       {children && <ListItemSecondaryAction>{children}</ListItemSecondaryAction>}
-    </ListItem>
+    </ListItemButton>
   )
 }

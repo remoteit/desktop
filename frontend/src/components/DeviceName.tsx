@@ -5,7 +5,6 @@ import { ColorChip } from './ColorChip'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '@common/nameHelper'
 import { REGEX_FIRST_PATH } from '../constants'
-import { ServiceLinkIcon } from './ServiceLinkIcon'
 import { Tooltip } from '@mui/material'
 
 type Props = {

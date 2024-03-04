@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
-import { Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
+import { Tooltip, TooltipProps, IconButton as MuiIconButton, IconButtonProps, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 import classnames from 'classnames'
@@ -12,6 +12,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   forceTitle?: boolean
   icon?: string
   name?: string
+  sx?: IconButtonProps['sx']
   disabled?: boolean
   hideDisableFade?: boolean
   iconInlineLeft?: boolean
@@ -33,6 +34,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       to,
+      sx,
       title,
       forceTitle,
       icon,
@@ -78,6 +80,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <MuiIconButton
         ref={ref}
+        sx={sx}
         disabled={disabled}
         size={buttonBaseSize}
         onClick={clickHandler}

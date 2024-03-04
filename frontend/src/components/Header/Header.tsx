@@ -17,18 +17,16 @@ import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
-import { RegisterMenu } from '../RegisterMenu'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
 import { Title } from '../Title'
 import { Pre } from '../Pre'
 
 export const Header: React.FC = () => {
-  const { searched, applicationTypes } = useSelector(selectDeviceModelAttributes)
+  const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
   const canNavigate = useSelector((state: State) => state.backend.canNavigate)
   const layout = useSelector((state: State) => state.ui.layout)
-  const serviceList = !!applicationTypes?.length
 
   const mobileGoBack = useMobileBack()
   const [showSearch, setShowSearch] = useState<boolean>(false)
@@ -103,17 +101,12 @@ export const Header: React.FC = () => {
             {manager && (
               <Switch>
                 <Route path="/devices" exact>
-                  <IconButton to="/devices/select" icon="check-square" title="Show Select" disabled={serviceList} />
+                  <IconButton to="/devices/select" icon="check-square" title="Show Select" />
                 </Route>
                 <Route path="/devices/select" exact>
                   <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
                 </Route>
               </Switch>
-            )}
-            {sidebarHidden && (
-              <Route path="/devices" exact>
-                <RegisterMenu buttonSize={26} size="sm" inline inlineLeft />
-              </Route>
             )}
             <Route path="/devices/:deviceID/:serviceID?">
               <HeaderDeviceOptionMenu />

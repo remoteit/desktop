@@ -112,21 +112,12 @@ export const attributes: Attribute[] = [
     defaultWidth: 400,
     required: true,
     details: false,
-    value: ({ device, service, connection, mobile }) =>
-      mobile && service ? (
-        <Typography variant="body1">
-          <DeviceName service={service} connection={connection}>
-            <Typography variant="caption" color="inherit" sx={{ opacity: 0.6 }}>
-              <DeviceName device={device} connection={connection} />
-            </Typography>
-          </DeviceName>
-        </Typography>
-      ) : (
-        <ListItemText
-          primary={<DeviceName device={device} connection={connection} />}
-          secondary={device?.thisDevice ? 'This system' : undefined}
-        />
-      ),
+    value: ({ device, connection }) => (
+      <ListItemText
+        primary={<DeviceName device={device} connection={connection} />}
+        secondary={device?.thisDevice ? 'This system' : undefined}
+      />
+    ),
   }),
   new ServiceAttribute({
     id: 'serviceStatus',
@@ -169,7 +160,6 @@ export const attributes: Attribute[] = [
     id: 'status',
     label: 'Status',
     query: 'deviceName',
-    details: false,
     defaultWidth: 100,
     value: ({ device, connections }) => <StatusChip device={device} connections={connections} />,
   }),
