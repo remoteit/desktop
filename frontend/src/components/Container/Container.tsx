@@ -2,7 +2,7 @@ import React from 'react'
 import classnames from 'classnames'
 import { Divider } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { spacing, Color } from '../../styling'
+import { spacing, Color, radius } from '../../styling'
 import { Body, BodyProps } from '../Body'
 
 type Props = {
@@ -82,8 +82,9 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'hidden',
     position: 'absolute',
     height: '100%',
+    borderTopLeftRadius: radius.lg,
     backgroundColor: palette.white.main,
-    boxShadow: `0 12px 5px ${palette.shadow.main}`,
+    boxShadow: `0 3px 5px ${palette.shadow.main}`,
     right: 0,
     zIndex: 12,
   },

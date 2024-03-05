@@ -61,7 +61,5 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
 }
 
 const useStyles = makeStyles({
-  body: {
-    maxHeight: '100%',
-  },
+  body: { maxHeight: '100%' },
 })
