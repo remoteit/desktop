@@ -269,20 +269,25 @@ class CloudController {
         // active | inactive
         const onlineState = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
-          // if device and device exists
+          // if device exists and is the target
           if (target.device && target.device.id === target.id) {
             target.device.state = onlineState
             target.device[onlineState === 'active' ? 'onlineSince' : 'offlineSince'] = event.timestamp
             this.log('DEVICE STATE', target.device.name, target.device.state, event.timestamp)
-
-            // if service and service exists
           } else {
+            // if service exists and is the target
             target.device?.services.forEach(service => {
               if (service.id === target.service?.id) {
                 service.state = onlineState
                 this.log('SERVICE STATE', service.name, service.state)
               }
             })
+          }
+
+          // Update connection state
+          if (target.connection) {
+            target.connection.online = onlineState === 'active'
+            setConnection(target.connection)
           }
 
           // if device exists
