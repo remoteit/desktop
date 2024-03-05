@@ -2,12 +2,12 @@ import browser from '../services/Browser'
 import structuredClone from '@ungap/structured-clone'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
-import { selectTimeSeries } from '../selectors/ui'
 import { selectConnection } from '../selectors/connections'
 import { selectActiveAccountId, selectActiveUser } from '../selectors/accounts'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
-import { selectById, selectDeviceColumns } from '../selectors/devices'
+import { graphQLFetchNetworkSingle, graphQLPreloadNetworks } from '../services/graphQLRequest'
+import { selectById, selectVisibleDevices } from '../selectors/devices'
 import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
@@ -17,12 +17,6 @@ import {
   graphQLAddNetworkShare,
   graphQLRemoveNetworkShare,
 } from '../services/graphQLMutation'
-import {
-  graphQLFetchNetworkServices,
-  graphQLNetworkAdaptor,
-  graphQLDeviceAdaptor,
-  graphQLPreloadNetworks,
-} from '../services/graphQLDevice'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 
@@ -97,39 +91,44 @@ export default createModel<RootModel>()({
       dispatch.networks.set({ default: defaultNetwork(state) })
     },
 
-    async fetch(_: void, state) {
+    async fetch(fetchAll: boolean | void, state) {
       const accountId = selectActiveAccountId(state)
-      const columns = selectDeviceColumns(state)
-      const { deviceTimeSeries } = selectTimeSeries(state)
 
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId, columns, deviceTimeSeries)
+      const response = await graphQLPreloadNetworks(accountId)
 
       if (response === 'ERROR') return
 
       const networks = await dispatch.networks.parse({ response, accountId })
+      await dispatch.networks.preloadNetworkDevices({
+        gqlNetworks: response?.data?.data?.login?.account?.networks,
+        fetchAll: !!fetchAll,
+        accountId,
+      })
       await dispatch.networks.setNetworks({ networks, accountId })
-      
+
       console.log('LOADED NETWORKS', networks)
       dispatch.networks.set({ loading: false, initialized: true })
+    },
+
+    async fetchAll() {
+      await dispatch.networks.fetch(true)
     },
 
     async fetchSingle({ network, redirect }: { network: INetwork; redirect?: string }, state) {
       if (!network || !network.cloud) return
 
       const accountId = selectActiveAccountId(state)
-      const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
-
-      dispatch.devices.set({ fetching: true, accountId })
-      const gqlResponse = await graphQLFetchNetworkServices(network.id, accountId, serviceTimeSeries, deviceTimeSeries)
+      await dispatch.devices.set({ fetching: true, accountId })
+      const gqlResponse = await graphQLFetchNetworkSingle(network.id)
 
       if (gqlResponse === 'ERROR') {
         if (redirect) dispatch.ui.set({ redirect })
         return
       }
 
-      const gqlConnections = gqlResponse?.data?.data?.login?.network?.connections || {}
-      await dispatch.networks.parseServices({ gqlConnections, accountId, loaded: true })
+      const gqlNetworks = [gqlResponse?.data?.data?.login?.network]
+      await dispatch.networks.preloadNetworkDevices({ gqlNetworks, accountId, fetchAll: true })
       await dispatch.networks.setNetwork({ ...network, loaded: true })
 
       dispatch.devices.set({ fetching: false, accountId })
@@ -144,43 +143,49 @@ export default createModel<RootModel>()({
       }
     },
 
+    async preloadNetworkDevices(props: { gqlNetworks?: any[]; accountId: string; fetchAll?: boolean }, state) {
+      const { gqlNetworks, accountId, fetchAll } = props
+      if (!gqlNetworks) return
+
+      const allDevices = new Set(fetchAll ? [] : selectVisibleDevices(state, accountId).map(device => device.id))
+
+      const ids = new Set<string>()
+      for (const network of gqlNetworks) {
+        for (const connection of network.connections) {
+          const id = connection.service?.device?.id
+          if (!allDevices.has(id)) ids.add(id)
+        }
+      }
+
+      if (ids.size) {
+        console.log('PRELOAD NETWORK DEVICE IDS', ids)
+        await dispatch.devices.fetchDevices({ ids: Array.from(ids), accountId, hidden: true })
+      }
+    },
+
     async parse({ response, accountId }: { response: AxiosResponse<any> | undefined; accountId: string }) {
       const networks = response?.data?.data?.login?.account?.networks || []
 
-      const parsed: INetwork[] = await Promise.all(
-        networks.map(async n => {
-          const shared = accountId !== n.owner.id
-          const gqlConnections = n?.connections || {}
-          dispatch.networks.parseServices({ gqlConnections, accountId })
+      const parsed: INetwork[] = networks.map(n => ({
+        ...DEFAULT_NETWORK,
+        accountId,
+        id: n.id,
+        name: n.name,
+        owner: n.owner,
+        shared: accountId !== n.owner.id,
+        permissions: n.permissions,
+        created: new Date(n.created),
+        // FIXME this is not enough data to generate new network connections... need full generation for shared networks...
+        // ...maybe can be done by adding the network service IDs to the connection query
+        connectionNames: n.connections.reduce((obj, c) => ({ ...obj, [c.service.id]: c.name }), {}),
+        serviceIds: n.connections.map(c => c.service.id),
+        access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
+        tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
+        icon: 'chart-network',
+        cloud: true,
+      }))
 
-          return {
-            ...DEFAULT_NETWORK,
-            shared,
-            accountId,
-            id: n.id,
-            name: n.name,
-            owner: n.owner,
-            permissions: n.permissions,
-            created: new Date(n.created),
-            // FIXME this is not enough data to generate new network connections... need full generation for shared networks...
-            // ...maybe can be done by adding the network service IDs to the connection query
-            connectionNames: n.connections.reduce((obj, c) => ({ ...obj, [c.service.id]: c.name }), {}),
-            serviceIds: n.connections.map(c => c.service.id),
-            access: n.access.map(s => ({ email: s.user.email, id: s.user.id })),
-            tags: n.tags.map(t => ({ ...t, created: new Date(t.created) })),
-            icon: 'chart-network',
-            cloud: true,
-          }
-        })
-      )
       return parsed
-    },
-
-    async parseServices(props: { gqlConnections: any; loaded?: boolean; accountId: string }) {
-      const { gqlConnections, loaded, accountId } = props
-      const gqlDevices = graphQLNetworkAdaptor(gqlConnections)
-      const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true, loaded })
-      await dispatch.accounts.mergeDevices({ devices, accountId })
     },
 
     async fetchCount(role: IOrganizationRole, state) {

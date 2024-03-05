@@ -34,7 +34,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     // network pages
   } else if (networkPage) {
     title = 'Refresh networks'
-    methods.push(dispatch.networks.fetch)
+    methods.push(dispatch.networks.fetchAll)
 
     // log pages
   } else if (logsPage) {
