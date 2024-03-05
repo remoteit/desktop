@@ -174,12 +174,11 @@ export default createModel<RootModel>()({
 
     async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
       accountId = accountId || selectActiveAccountId(state)
-      const columns = selectActiveColumns(state, accountId)
       const gqlResponse = await graphQLPreloadDevices({
-        accountId,
         ids,
-        columns,
-        timeSeries: selectTimeSeries(state).deviceTimeSeries,
+        accountId,
+        columns: selectActiveColumns(state, accountId),
+        ...selectTimeSeries(state),
       })
       const error = graphQLGetErrors(gqlResponse)
       const result = gqlResponse?.data?.data?.login?.account?.device
@@ -274,14 +273,17 @@ export default createModel<RootModel>()({
     },
 
     async expire(_: void, state) {
+      const activeAccountId = selectActiveAccountId(state)
       const rootState = structuredClone(state.devices)
+      const expired: string[] = []
 
       for (const accountId in rootState) {
-        if (accountId === 'default') continue
+        if (accountId === 'default' || accountId === activeAccountId) continue
         rootState[accountId].initialized = false
-        console.log('EXPIRE DEVICES', accountId)
+        expired.push(accountId)
       }
 
+      console.log('EXPIRE DEVICES', expired)
       await dispatch.devices.rootSet(rootState)
     },
 
