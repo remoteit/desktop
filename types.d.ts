@@ -147,7 +147,7 @@ declare global {
 
   interface INetwork extends IInstance {
     accountId: string
-    cloud: boolean
+    cloud: boolean // is not a local network
     connectionNames: INameLookupByServiceId
     serviceIds: string[]
     sessions?: ISession[]

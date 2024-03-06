@@ -73,8 +73,8 @@ export class User {
       this.authHash = user.authHash
       this.id = user.id
 
-      Logger.info('CHECK CLI SIGN IN')
-      await cli.checkSignIn()
+      Logger.info('CLI SIGN IN')
+      await cli.signIn()
       EventBus.emit(User.EVENTS.signedIn, user)
 
       Logger.info('BACKEND SIGNED IN', { userId: user.id })

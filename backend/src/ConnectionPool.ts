@@ -359,6 +359,7 @@ export default class ConnectionPool {
 
     connections = connections.map(c => {
       if (!c.failover && c.proxyOnly) c.failover = true
+      if (c.connectLink && c.port) delete c.port
       return c
     })
 

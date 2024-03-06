@@ -41,7 +41,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
       dispatch.devices.fetchSingleFull({ id: deviceID, hidden: true, redirect: '/devices' })
     } else if (serviceID) {
       const redirect = location.pathname.match(REGEX_FIRST_PATH)?.[0]
-      if (network && network.cloud) {
+      if (network && network.cloud && !network.loaded) {
         console.log('LOADING NETWORK DATA', network, redirect)
         dispatch.networks.fetchSingle({ network, redirect })
       } else {

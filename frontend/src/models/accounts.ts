@@ -102,18 +102,18 @@ export default createModel<RootModel>()({
     async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       const all = getDevices(state, accountId)
-
-      const mergedDevices = devices.map(keep => {
-        const overwrite = all.find(o => o.id === keep.id)
-        if (!overwrite) return keep
-        return mergeDevice(overwrite, keep)
+      console.log('truncateMergeDevices', { devices, accountId, all })
+      const mergedDevices = devices.map(device => {
+        const overwrite = all.find(o => o.id === device.id)
+        if (!overwrite) return device
+        return mergeDevice(overwrite, device)
       })
 
       await dispatch.accounts.setDevices({ devices: mergedDevices, accountId })
     },
     /*     
       Keeps the existing devices and device list order and merges in newly loaded device data
-      -- For adding hidden device data or fully loaded device data and saving loaded services
+      -- For adding hidden device data or fully loaded device data
     */
     async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices || !devices.length) return
@@ -143,8 +143,8 @@ export default createModel<RootModel>()({
       accountId = accountId || devices[0]?.accountId
       if (!accountId) return console.error('APPEND DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
 
-      // Remove devices in new list
-      const existingDevices = getDevices(state, accountId).filter(ed => !devices.find(d => d.id === ed.id))
+      const devicesMap = new Map(devices.map(device => [device.id, device]))
+      const existingDevices = getDevices(state, accountId).filter(ed => !devicesMap.has(ed.id))
 
       await dispatch.accounts.setDevices({
         devices: [...existingDevices, ...devices],

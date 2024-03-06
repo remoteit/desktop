@@ -201,82 +201,35 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
   )
 }
 
-export async function graphQLPreloadDevices({
-  columns,
-  timeSeries,
-  ...params
-}: {
+export async function graphQLPreloadDevices(params: {
   accountId: string
   ids: string[]
   columns: string[]
-  timeSeries?: ITimeSeriesOptions
+  serviceTimeSeries?: ITimeSeriesOptions
+  deviceTimeSeries?: ITimeSeriesOptions
 }) {
   return await graphQLRequest(
     ` query DevicePreload($ids: [String!]!, $accountId: String${
-      columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''
+      (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
+      (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
     }) {
         login {
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns(columns)}
+              ${deviceQueryColumns(params.columns)}
             }
           }
         }
       }`,
     {
       ...params,
-      deviceTSLength: timeSeries?.length,
-      deviceTSType: timeSeries?.type,
-      deviceTSResolution: timeSeries?.resolution,
-    }
-  )
-}
-
-export async function graphQLPreloadNetworks(accountId: string, columns: string[], timeSeries?: ITimeSeriesOptions) {
-  return await graphQLBasicRequest(
-    ` query Networks($accountId: String${columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : ''}) {
-      login {
-        account(id: $accountId) {
-          networks {
-            id
-            name
-            created
-            permissions
-            owner {
-              id
-              email
-            }
-            connections {
-              service {
-                ${SERVICE_PRELOAD}
-                device {
-                  ${deviceQueryColumns(columns, ['services'])}
-                }          
-              }
-              name
-              port
-            }
-            tags {
-              name
-              color
-              created
-            }
-            access {
-              user {
-                id
-                email
-              }
-            }
-          }
-        }
-      }
-    }`,
-    {
-      accountId,
-      deviceTSLength: timeSeries?.length,
-      deviceTSType: timeSeries?.type,
-      deviceTSResolution: timeSeries?.resolution,
+      deviceTSLength: params.deviceTimeSeries?.length,
+      deviceTSType: params.deviceTimeSeries?.type,
+      deviceTSResolution: params.deviceTimeSeries?.resolution,
+      serviceTSLength: params.serviceTimeSeries?.length,
+      serviceTSType: params.serviceTimeSeries?.type,
+      serviceTSResolution: params.serviceTimeSeries?.resolution,
     }
   )
 }
@@ -329,43 +282,6 @@ export async function graphQLFetchFullDevice(
   )
 }
 
-/* 
-  Fetches single network across shared accounts by id
-*/
-export async function graphQLFetchNetworkServices(
-  id: string,
-  accountId: string,
-  serviceTimeSeries?: ITimeSeriesOptions,
-  deviceTimeSeries?: ITimeSeriesOptions
-) {
-  return await graphQLBasicRequest(
-    ` query NetworkServices($id: String!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
-        login {
-          network(id: $id)  {
-            connections {
-              service {
-                ${SERVICE_SELECT}
-                device {
-                  ${DEVICE_SELECT}
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      id,
-      accountId,
-      deviceTSLength: deviceTimeSeries?.length,
-      deviceTSType: deviceTimeSeries?.type,
-      deviceTSResolution: deviceTimeSeries?.resolution,
-      serviceTSLength: serviceTimeSeries?.length,
-      serviceTSType: serviceTimeSeries?.type,
-      serviceTSResolution: serviceTimeSeries?.resolution,
-    }
-  )
-}
-
 export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: gqlOptions) {
   return await graphQLBasicRequest(
     ` query DeviceCount($size: Int, $tag: ListFilter, $accountId: String, $owner: Boolean) {
@@ -384,21 +300,6 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: g
       accountId,
     }
   )
-}
-
-export function graphQLNetworkAdaptor(gqlConnections) {
-  let devices = {}
-
-  gqlConnections.forEach(({ service }) => {
-    const id = service.device.id
-    devices[id] = devices[id] || service.device
-    devices[id].services = devices[id].services || []
-    const index = devices[id].services.findIndex(s => s.id === service.id)
-    if (index >= 0) devices[id].services[index] = service
-    else devices[id].services.push(service)
-  })
-
-  return Object.keys(devices).map(key => devices[key])
 }
 
 export function graphQLDeviceAdaptor({
