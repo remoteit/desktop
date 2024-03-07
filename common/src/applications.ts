@@ -276,8 +276,8 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'SSH',
         use: 'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.',
-        autoLaunch: ios || android,
-        appLaunchType: portal || ios || android ? 'URL' : 'COMMAND',
+        autoLaunch: !(windows && portal),
+        appLaunchType: (portal && !windows) || ios || android ? 'URL' : 'COMMAND',
         appLaunchTemplate: 'ssh://[username]@[host]:[port]',
         appCommandTemplate: sshConfig
           ? 'ssh_config [User]'
