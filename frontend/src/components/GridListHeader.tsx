@@ -4,28 +4,26 @@ import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
 import { ListSubheader, ListItemIcon, useMediaQuery } from '@mui/material'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
-import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
+import { GridListHeaderTitle } from './GridListHeaderTitle'
 import { LinearProgress } from './LinearProgress'
 import { Attribute } from './Attributes'
 
 const MIN_WIDTH = 50
 
 type Props = {
-  required: Attribute
+  required?: Attribute
   attributes?: Attribute[]
   columnWidths: ILookup<number>
-  devices: IDevice[]
-  select?: boolean
+  icon?: React.ReactNode
   fetching?: boolean
   mobile?: boolean
 }
 
-export const DeviceListHeader: React.FC<Props> = ({
+export const GridListHeader: React.FC<Props> = ({
   required,
   attributes = [],
   columnWidths,
-  devices,
-  select,
+  icon,
   fetching,
   mobile,
 }) => {
@@ -49,8 +47,6 @@ export const DeviceListHeader: React.FC<Props> = ({
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('mouseup', onUp)
     const px = Math.max(moveRef.current[1] + (event.clientX - moveRef.current[2]), MIN_WIDTH)
-    // const containerPx = containerRef.current?.parentElement?.getBoundingClientRect().width || 1000
-    // const percentage = Math.round((px / containerPx) * 10000) / 100
     ui.resizeColumn({ id: moveRef.current[0], width: px })
     setResize(0)
   }
@@ -66,14 +62,14 @@ export const DeviceListHeader: React.FC<Props> = ({
         className={css.handle}
         style={{ left: resize, height: moveRef.current[4], display: resize ? 'block' : 'none' }}
       />
-      <DeviceListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
-        <ListItemIcon>
-          <DeviceListHeaderCheckbox select={select} devices={devices} />
-        </ListItemIcon>
-      </DeviceListHeaderTitle>
+      {required && (
+        <GridListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
+          <ListItemIcon>{icon}</ListItemIcon>
+        </GridListHeaderTitle>
+      )}
       {!mobile &&
         attributes?.map(attribute => (
-          <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
+          <GridListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
         ))}
       <LinearProgress loading={fetching} />
     </ListSubheader>

@@ -11,7 +11,7 @@ type Props = {
   children?: React.ReactNode
 }
 
-export const DeviceListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMouseDown, children }) => {
+export const GridListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMouseDown, children }) => {
   const css = useStyles()
 
   return (
@@ -48,6 +48,7 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
+    display: 'flex',
     '& .hoverHide': { opacity: 0, transition: 'opacity 200ms' },
     '&:hover .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
   },

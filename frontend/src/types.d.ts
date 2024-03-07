@@ -216,6 +216,14 @@ declare global {
     connection?: IConnection
     connections?: IConnection[]
     application?: Application
+    customer?: ICustomer
+  }
+
+  type ICustomer = {
+    id: string
+    email: string
+    license: ILicense
+    created?: Date
   }
 
   type IGlobalTooltip = {

@@ -151,7 +151,7 @@ export const defaultState: UIState = {
     'serviceTimeSeries',
   ],
   columnWidths: {},
-  collapsed: ['recent'],
+  collapsed: [],
   limitsOverride: {},
   globalTooltip: undefined,
   defaultService: {},

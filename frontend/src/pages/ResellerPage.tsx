@@ -1,47 +1,17 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Redirect } from 'react-router-dom'
-import { REGEX_DOMAIN_SAFE } from '../constants'
+import { Dispatch } from '../store'
+import { Typography, List } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, State } from '../store'
-import {
-  TextField,
-  Typography,
-  Button,
-  Box,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-} from '@mui/material'
-import { selectPermissions, selectOrganization, selectLimitsLookup } from '../selectors/organizations'
+import { selectPermissions, selectOrganization } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { ListItemSetting } from '../components/ListItemSetting'
-import { SelectSetting } from '../components/SelectSetting'
-import { DeleteButton } from '../buttons/DeleteButton'
-import { ListItemCopy } from '../components/ListItemCopy'
-import { FormDisplay } from '../components/FormDisplay'
-import { FileUpload } from '../components/FileUpload'
+import { CustomerList } from '../components/CustomerList'
 import { Container } from '../components/Container'
-import { ColorChip } from '../components/ColorChip'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Icon } from '../components/Icon'
-import { Link } from '../components/Link'
 
 export const ResellerPage: React.FC = () => {
-  const { isOrgOwner, organization, limits, permissions } = useSelector((state: State) => {
-    const organization = selectOrganization(state)
-    return {
-      organization,
-      isOrgOwner: organization.id === state.auth.user?.id,
-      updating: state.organization.updating,
-      domain: organization.domain || '',
-      defaultDomain: state.auth.user?.email.split('@')[1],
-      limits: selectLimitsLookup(state),
-      permissions: selectPermissions(state),
-    }
-  })
+  const organization = useSelector(selectOrganization)
+  const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()
 
   if (!permissions?.includes('ADMIN'))
@@ -57,6 +27,16 @@ export const ResellerPage: React.FC = () => {
       }
     >
       <Typography variant="subtitle1">Customers</Typography>
+      <CustomerList
+        customers={[
+          { id: 1, name: 'Customer 1', email: 'customer1@email.com' },
+          { id: 2, name: 'Customer 2', email: 'customer2@email.com' },
+          { id: 3, name: 'Customer 3', email: 'customer3@email.com' },
+          { id: 4, name: 'Customer 4', email: 'customer4@email.com' },
+          { id: 5, name: 'Customer 5', email: 'customer5@email.com' },
+        ]}
+      />
+      <Typography variant="subtitle1">Contact</Typography>
       <List>
         <InlineTextFieldSetting
           icon="industry-alt"

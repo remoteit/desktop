@@ -23,16 +23,14 @@ export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) =
   }
 
   return (
-    <>
-      <Checkbox
-        checked={selected.length === devices.length}
-        indeterminate={indeterminate}
-        onClick={onClick}
-        checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-        indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
-        icon={<Icon name="square" size="md" type="light" />}
-        color="primary"
-      />
-    </>
+    <Checkbox
+      checked={selected.length === devices.length}
+      indeterminate={indeterminate}
+      onClick={onClick}
+      checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+      indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
+      icon={<Icon name="square" size="md" type="light" />}
+      color="primary"
+    />
   )
 }

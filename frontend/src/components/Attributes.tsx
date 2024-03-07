@@ -34,13 +34,13 @@ export class Attribute {
   required: boolean = false
   align?: 'left' | 'right' | 'center'
   defaultWidth: number = 150
-  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' = 'MASTER'
+  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' | 'CUSTOMER' = 'MASTER'
   feature?: string // key to plan limit name - used for tagging visibility
   multiline?: boolean
   details: boolean = true // show on device details page
   column: boolean = true // show as device list column
   query?: string // key to device query - fall back to id
-  value: (options: IDataOptions) => any = () => {}
+  value: (options: IDataOptions) => any = options => options
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
   constructor(options: {
@@ -116,6 +116,7 @@ export const attributes: Attribute[] = [
       <ListItemText
         primary={<DeviceName device={device} connection={connection} />}
         secondary={device?.thisDevice ? 'This system' : undefined}
+        sx={{ marginRight: 1, opacity: device?.state === 'active' ? 1 : 0.4 }}
       />
     ),
   }),
@@ -145,7 +146,10 @@ export const attributes: Attribute[] = [
     required: true,
     details: false,
     value: ({ service, connection }) => (
-      <ListItemText primary={<DeviceName service={service} connection={connection} />} sx={{ marginRight: 1 }} />
+      <ListItemText
+        primary={<DeviceName service={service} connection={connection} />}
+        sx={{ marginRight: 1, opacity: service?.state === 'active' ? 1 : 0.4 }}
+      />
     ),
   }),
   new ServiceAttribute({
