@@ -32,7 +32,7 @@ export const OrganizationMembersPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Members</Title>
-            {organization?.id && <IconButton title="Add member" icon="user-plus" to="/organization/share" size="md" />}
+            {organization?.id && <IconButton title="Add member" icon="user-plus" to="/organization/add" size="md" />}
           </Typography>
           {organization?.id && (
             <>

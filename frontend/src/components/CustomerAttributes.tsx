@@ -8,7 +8,7 @@ class CustomerAttribute extends Attribute {
 export const customerAttributes: CustomerAttribute[] = [
   new CustomerAttribute({
     id: 'customerEmail',
-    label: 'Name',
+    label: 'Customer',
     value: ({ customer }) => <>{customer?.email}</>,
     defaultWidth: 250,
     required: true,
@@ -22,11 +22,11 @@ export const customerAttributes: CustomerAttribute[] = [
   new CustomerAttribute({
     id: 'customerPlan',
     label: 'Plan',
-    value: ({ customer }) => <>{customer?.license?.quantity}</>,
+    value: ({ customer }) => <>{customer?.license?.plan.name}</>,
   }),
   new CustomerAttribute({
     id: 'customerPrice',
     label: 'Price',
-    value: ({ customer }) => <>{customer?.license?.subscription?.price}</>,
+    value: ({ customer }) => <>{customer?.license?.subscription?.price?.amount}</>,
   }),
 ]

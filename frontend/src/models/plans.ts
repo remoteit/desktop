@@ -10,6 +10,7 @@ import {
   graphQLCreditCard,
 } from '../services/graphQLMutation'
 import {
+  selectLicensesWithLimits,
   selectRemoteitLicense,
   selectOrganization,
   selectLimits,
@@ -300,18 +301,7 @@ export function selectFullLicense(state: State, { productId, license }: { produc
 }
 
 export function selectOwnLicenses(state: State) {
-  return getLicenses(state, state.auth.user?.id)
-}
-
-export function getLicenses(state: State, accountId?: string): { licenses: ILicense[]; limits: ILimit[] } {
-  return {
-    licenses: selectLicenses(state, accountId).map(license => ({
-      ...license,
-      managePath: lookupLicenseManagePath(license.plan.product.id),
-      limits: selectLimits(state, accountId).filter(limit => limit.license?.id === license.id),
-    })),
-    limits: selectLimits(state, accountId).filter(limit => !limit.license),
-  }
+  return selectLicensesWithLimits(state, state.auth.user?.id)
 }
 
 export function selectLicenseIndicator(state: State) {
@@ -319,7 +309,7 @@ export function selectLicenseIndicator(state: State) {
   const informed = getInformed(state)
   if (informed) return 0
   let indicators = 0
-  const { licenses } = getLicenses(state, accountId)
+  const { licenses } = selectLicensesWithLimits(state, accountId)
   for (var license of licenses) {
     const { noticeType } = selectFullLicense(state, { license })
     if (noticeType && noticeType !== 'ACTIVE') indicators++

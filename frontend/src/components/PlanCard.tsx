@@ -110,6 +110,7 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     textAlign: 'center',
     borderRadius: radius.lg,
     backgroundColor: selected ? palette.primaryHighlight.main : palette.grayLightest.main,
+    paddingBottom: spacing.md,
     marginBottom: spacing.md,
     [breakpoints.up('sm')]: {
       '& + .planCard': { marginLeft: spacing.md },

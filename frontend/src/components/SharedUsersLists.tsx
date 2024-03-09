@@ -44,7 +44,7 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
           {hasOrganization ? (
             <IconButton
               icon="user-plus"
-              to="/organization/share"
+              to="/organization/add"
               size="md"
               disabled={!instance?.permissions.includes('ADMIN')}
             >

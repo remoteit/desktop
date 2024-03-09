@@ -230,6 +230,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
+    query: 'deviceName',
     defaultWidth: 180,
     value: ({ device }) => TargetPlatform({ id: device?.targetPlatform, label: true }),
   }),

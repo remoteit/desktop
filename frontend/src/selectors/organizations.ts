@@ -11,6 +11,7 @@ import {
 } from './state'
 import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
 import { defaultState, canMemberView } from '../models/organization'
+import { lookupLicenseManagePath } from '../models/plans'
 import { selectMembership } from './accounts'
 
 export const selectOrganization = createSelector(
@@ -75,6 +76,17 @@ export const selectLimitsLookup = createSelector(
     return result
   }
 )
+
+export const selectLicensesWithLimits = createSelector([selectLicenses, selectLimits], (licenses, limits) => {
+  return {
+    licenses: licenses.map(license => ({
+      ...license,
+      managePath: lookupLicenseManagePath(license.plan.product.id),
+      limits: limits.filter(limit => limit.license?.id === license.id),
+    })),
+    limits: limits.filter(limit => !limit.license),
+  }
+})
 
 export const selectPermissions = createSelector(
   [selectMembership, selectOrganization],

@@ -102,7 +102,6 @@ export default createModel<RootModel>()({
     async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       const all = getDevices(state, accountId)
-      console.log('truncateMergeDevices', { devices, accountId, all })
       const mergedDevices = devices.map(device => {
         const overwrite = all.find(o => o.id === device.id)
         if (!overwrite) return device

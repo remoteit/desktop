@@ -7,9 +7,10 @@ type Props = ListItemButtonProps & {
   data?: any
   icon?: React.ReactNode
   required?: React.ReactNode
+  mobile?: boolean
 }
 
-export const GridListItem: React.FC<Props> = ({ required, icon, children, ...props }) => {
+export const GridListItem: React.FC<Props> = ({ required, icon, mobile, children, ...props }) => {
   const css = useStyles()
 
   return (
@@ -20,7 +21,7 @@ export const GridListItem: React.FC<Props> = ({ required, icon, children, ...pro
           {required}
         </Box>
       </Box>
-      {children}
+      {!mobile && children}
     </ListItemButton>
   )
 }

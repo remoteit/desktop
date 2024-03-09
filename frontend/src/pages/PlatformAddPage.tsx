@@ -14,7 +14,7 @@ import { spacing } from '../styling'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
-export const AddPlatformPage: React.FC = () => {
+export const PlatformAddPage: React.FC = () => {
   let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]

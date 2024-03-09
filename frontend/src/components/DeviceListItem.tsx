@@ -51,6 +51,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected, mob
     <GridListItem
       onClick={handleClick}
       selected={isSelected}
+      mobile={mobile}
       icon={
         duplicateName ? null : select ? (
           isSelected ? (
@@ -73,12 +74,11 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected, mob
       }
       disableGutters
     >
-      {!mobile &&
-        attributes?.map(attribute => (
-          <Box key={attribute.id}>
-            <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
-          </Box>
-        ))}
+      {attributes?.map(attribute => (
+        <Box key={attribute.id}>
+          <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
+        </Box>
+      ))}
     </GridListItem>
   )
 }

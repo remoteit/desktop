@@ -21,12 +21,14 @@ import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { ResellerPage } from '../pages/ResellerPage'
-import { AddPlatformPage } from '../pages/AddPlatformPage'
+import { CustomerPage } from '../pages/CustomerPage'
+import { PlatformAddPage } from '../pages/PlatformAddPage'
+import { CustomerAddPage } from '../pages/CustomerAddPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
-import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationUserPage } from '../pages/OrganizationUserPage'
+import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
@@ -148,7 +150,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       {/* Add */}
       <Route path="/add/:platform/:redirect?">
         <Panel layout={layout}>
-          <AddPlatformPage />
+          <PlatformAddPage />
         </Panel>
       </Route>
       <Route path="/add">
@@ -283,7 +285,15 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <ResellerPage />
               </Route>
 
-              <Route path="/organization/share">
+              <Route path="/organization/customer/:userID">
+                <CustomerAddPage />
+              </Route>
+
+              <Route path="/organization/customer/:userID">
+                <CustomerPage />
+              </Route>
+
+              <Route path="/organization/add">
                 <OrganizationAddPage />
               </Route>
 
