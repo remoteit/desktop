@@ -62,6 +62,7 @@ export const REGEX_VALID_IP =
 export const REGEX_VALID_HOSTNAME =
   /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 export const REGEX_TAG_SAFE = /[\s]/g
+export const REGEX_EMAIL_SAFE = /[^a-zA-Z0-9@.-]+/g
 export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]+/g
 export const REGEX_CONNECTION_TRIM = /^-|-$/
 export const REGEX_SERVICE_ID = /^..(:..){7}$/

@@ -1,4 +1,5 @@
 import React from 'react'
+import { REGEX_EMAIL_SAFE } from '../../../constants'
 import { rememberMe } from '../../../helpers/userHelper'
 import { makeStyles } from '@mui/styles'
 import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel, Collapse } from '@mui/material'
@@ -167,7 +168,7 @@ export function SignIn({
             name="email"
             inputProps={{ maxLength: 254 }}
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-              setUsername(e?.currentTarget?.value.trim())
+              setUsername(e?.currentTarget?.value.replace(REGEX_EMAIL_SAFE, ''))
             }}
             onFocus={scrollIntoView}
             onBlur={scrollReset}
