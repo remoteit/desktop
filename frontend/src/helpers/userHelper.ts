@@ -1,9 +1,24 @@
+import { REGEX_EMAIL_SAFE, REGEX_DOMAIN_SAFE } from '../constants'
+
 export function getAccess(device: IDevice, email?: string, selectAllToNewUser?: boolean) {
   let services = device.services.filter(s => s.access?.find(ac => ac.email === email)) || []
   const scripting = device.access?.find(ac => ac.email === email)?.scripting || false
 
   if (selectAllToNewUser && !services.length && !scripting) services = device.services
   return { services, scripting }
+}
+
+export function sanitizeEmail(input: string): string {
+  const index = input.lastIndexOf('@')
+
+  if (index === -1) {
+    return input.replace(REGEX_EMAIL_SAFE, '')
+  } else {
+    const localPart = input.substring(0, index)
+    const domainPart = input.substring(index + 1)
+
+    return localPart.replace(REGEX_EMAIL_SAFE, '') + '@' + domainPart.replace(REGEX_DOMAIN_SAFE, '')
+  }
 }
 
 class RememberMe {
