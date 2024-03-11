@@ -7,7 +7,10 @@ import { store } from '../store'
 
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
-const SERVICE_PRELOAD = `
+const SERVICE_PRELOAD_ATTRIBUTES = ['serviceId']
+
+const ServiceSelectLookup: ILookup<string, string> = {
+  serviceId: `
   id
   name
   state
@@ -22,10 +25,9 @@ const SERVICE_PRELOAD = `
     created
     password
     enabled
-  }`
+  }`,
 
-export const SERVICE_SELECT = `
-  ${SERVICE_PRELOAD}
+  serviceView: `
   enabled
   created
   lastReported
@@ -35,6 +37,14 @@ export const SERVICE_SELECT = `
   protocol
   attributes
   presenceAddress
+  access {
+    user {
+      id
+      email
+    }
+  }`,
+
+  serviceTimeSeries: `
   timeSeries(type: $serviceTSType, resolution: $serviceTSResolution, length: $serviceTSLength, timezone: "${getTimeZone()}") {
     type
     resolution
@@ -42,15 +52,14 @@ export const SERVICE_SELECT = `
     end
     time
     data
-  }
-  access {
-    user {
-      id
-      email
-    }
-  }`
+  }`,
+}
 
-const DeviceSelectLookup: ILookup<string> = {
+const SERVICE_SELECT = Object.keys(ServiceSelectLookup)
+  .map(k => ServiceSelectLookup[k])
+  .join('')
+
+const DeviceSelectLookup: ILookup<string, string> = {
   id: `
   id`,
 
@@ -95,16 +104,6 @@ const DeviceSelectLookup: ILookup<string> = {
       email
     }
     scripting
-  }`,
-
-  services: `
-  services {
-    ${SERVICE_PRELOAD}
-  }`,
-
-  serviceView: `
-  services {
-    ${SERVICE_SELECT}
   }`,
 
   endpoint: `
@@ -152,13 +151,14 @@ const DeviceSelectLookup: ILookup<string> = {
   }`,
 }
 
-export const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
+const DEVICE_SELECT = Object.keys(DeviceSelectLookup)
   .filter(k => k !== 'services')
   .map(k => DeviceSelectLookup[k])
   .join('')
 
 const DEVICE_TIME_SERIES_PARAMS =
   ', $deviceTSType: TimeSeriesType!, $deviceTSResolution: TimeSeriesResolution!, $deviceTSLength: Int'
+
 const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
@@ -404,8 +404,7 @@ export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[]
 }
 
 function deviceQueryColumns(selectedColumns: string[], filter?: string[]) {
-  let columns = DEVICE_PRELOAD_ATTRIBUTES
-  columns = columns.concat(selectedColumns)
+  let columns = DEVICE_PRELOAD_ATTRIBUTES.concat(SERVICE_PRELOAD_ATTRIBUTES).concat(selectedColumns)
   columns = columns.filter(c => (filter ? !filter.includes(c) : true))
   return attributeQuery(columns)
 }
@@ -413,17 +412,28 @@ function deviceQueryColumns(selectedColumns: string[], filter?: string[]) {
 function attributeQuery(attributes: string[]) {
   let lookup = new Set<string>()
   let query = ''
+  let serviceQuery = ''
 
   attributes.forEach(c => {
     const a = getAttribute(c)
     lookup.add(a.query || a.id)
   })
 
-  lookup.forEach(l => {
-    DeviceSelectLookup[l]
-      ? (query += DeviceSelectLookup[l])
-      : console.warn(`Missing query for attribute %c${l}`, 'font-weight: bold')
-  })
+  for (const l of lookup) {
+    if (l === 'service') debugger
+    if (DeviceSelectLookup[l]) {
+      query += DeviceSelectLookup[l]
+    } else if (ServiceSelectLookup[l]) {
+      serviceQuery += ServiceSelectLookup[l]
+    } else {
+      console.warn(`Missing query for attribute %c${l}`, 'font-weight: bold')
+    }
+  }
+
+  if (serviceQuery) {
+    query += `
+    services { ${serviceQuery} }`
+  }
 
   return query
 }

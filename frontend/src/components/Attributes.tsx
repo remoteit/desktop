@@ -122,7 +122,6 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceStatus',
-    query: 'serviceView',
     label: 'Status',
     defaultWidth: 100,
     details: false,
@@ -132,7 +131,6 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceAction',
-    query: 'serviceView',
     label: 'Action',
     details: false,
     defaultWidth: 160,
@@ -154,7 +152,7 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceState',
-    query: 'serviceView',
+    query: 'serviceId',
     label: 'Type',
     defaultWidth: 110,
     details: false,
@@ -184,7 +182,6 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceTimeSeries',
-    query: 'serviceView',
     details: false,
     label: <ServiceGraphColumn />,
     value: ({ device, service }) => (
