@@ -379,6 +379,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiListItemSecondaryAction: {
+        defaultProps: {
+          onMouseDown: (event: React.MouseEvent) => event.stopPropagation(),
+        },
         styleOverrides: {
           root: {
             zIndex: 2,

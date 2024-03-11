@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Button, List, ListItem, ListItemText, ListItemSecondaryAction, Typography, Switch } from '@mui/material'
+import { Button, List, Typography, Box } from '@mui/material'
 import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { ListItemSetting } from '../ListItemSetting'
+import { CopyCodeBlock } from '../CopyCodeBlock'
 import { CodeBlock } from '../CodeBlock'
 import { Timestamp } from '../Timestamp'
 import { Gutters } from '../Gutters'
@@ -53,36 +54,44 @@ export const AccountAccessKey: React.FC = () => {
           Generate Credentials
         </Button>
       </Gutters>
-      <Gutters size="sm">
+      <Gutters bottom={null}>
         <List>
           {accessKeys?.map((k, index) => (
-            <ListItemSetting
-              hideIcon
-              key={index}
-              label={k.key}
-              disabled={updating === k.key}
-              toggle={k.enabled}
-              onClick={() => handleToggle(k)}
-              secondaryContent={
-                updating === k.key ? (
-                  <Icon name="spinner-third" spin inlineLeft />
-                ) : k.enabled ? undefined : (
-                  <DeleteAccessKey deleteKey={k} />
-                )
-              }
-              subLabel={
-                <>
-                  Created <Timestamp date={k.created} variant="long" /> &nbsp;/ &nbsp;
-                  {k.lastUsed ? (
-                    <>
-                      Last used <Timestamp date={k.lastUsed} variant="long" />
-                    </>
-                  ) : (
-                    'Never used'
-                  )}
-                </>
-              }
-            />
+            <Box marginBottom={4}>
+              <CopyCodeBlock
+                label="Public Key"
+                value={k.key}
+                hideCopyLabel
+                sx={{ '& .MuiTypography-root': { opacity: k.enabled ? 1 : 0.5 } }}
+              />
+              <ListItemSetting
+                hideIcon
+                key={index}
+                disabled={updating === k.key}
+                toggle={k.enabled}
+                onClick={() => handleToggle(k)}
+                disableGutters
+                secondaryContent={
+                  updating === k.key ? (
+                    <Icon name="spinner-third" color="gray" spin inlineLeft />
+                  ) : k.enabled ? undefined : (
+                    <DeleteAccessKey deleteKey={k} />
+                  )
+                }
+                subLabel={
+                  <>
+                    Created <Timestamp date={k.created} variant="long" /> &nbsp;/ &nbsp;
+                    {k.lastUsed ? (
+                      <>
+                        Last used <Timestamp date={k.lastUsed} variant="long" />
+                      </>
+                    ) : (
+                      'Never used'
+                    )}
+                  </>
+                }
+              />
+            </Box>
           ))}
         </List>
       </Gutters>

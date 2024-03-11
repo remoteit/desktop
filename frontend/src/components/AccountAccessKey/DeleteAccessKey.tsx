@@ -10,7 +10,8 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
   const [deleteText, setDeleteText] = useState('')
   const dispatch = useDispatch<Dispatch>()
 
-  function handleClose() {
+  function handleClose(e) {
+    e.stopPropagation()
     setOpen(false)
     setDeleteText('')
   }
@@ -19,13 +20,25 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
     e.preventDefault()
     if (deleteText !== 'DELETE') return
     dispatch.keys.deleteAccessKeys(deleteKey.key)
-    handleClose()
+    handleClose(e)
   }
 
   return (
     <>
-      {!deleteKey.enabled && <IconButton icon="trash" size="md" onClick={() => setOpen(true)} />}
-      <Dialog onClose={handleClose} open={open} fullWidth>
+      {!deleteKey.enabled && (
+        <IconButton
+          inlineLeft
+          icon="trash"
+          size="base"
+          color="grayDarker"
+          buttonBaseSize="small"
+          onClick={event => {
+            event.stopPropagation()
+            setOpen(true)
+          }}
+        />
+      )}
+      <Dialog onClose={handleClose} open={open} onClick={e => e.stopPropagation()} fullWidth>
         <DialogTitle>Delete Access Key</DialogTitle>
         <form onSubmit={confirmDelete}>
           <DialogContent>
@@ -49,7 +62,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
             <Button color="primary" onClick={handleClose}>
               Cancel
             </Button>
-            <Button variant="contained" color="primary" type="submit" disabled={deleteText !== 'DELETE'}>
+            <Button variant="contained" color="error" type="submit" disabled={deleteText !== 'DELETE'}>
               Delete
             </Button>
           </DialogActions>
