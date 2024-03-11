@@ -42,17 +42,20 @@ export const AccountAccessKey: React.FC = () => {
           directory of your home folder:
         </Typography>
         <CodeBlock>~/.remoteit/credentials</CodeBlock>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={accessKeys.length > 1}
-          onClick={() => {
-            dispatch.keys.createAccessKey()
-            setShowDialog(true)
-          }}
-        >
-          Generate Credentials
-        </Button>
+        <Box textAlign="right" marginBottom={4}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            disabled={accessKeys.length > 1}
+            onClick={() => {
+              dispatch.keys.createAccessKey()
+              setShowDialog(true)
+            }}
+          >
+            Generate Credentials
+          </Button>
+        </Box>
       </Gutters>
       <Gutters bottom={null}>
         <List>
