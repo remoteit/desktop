@@ -10,8 +10,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
   const [deleteText, setDeleteText] = useState('')
   const dispatch = useDispatch<Dispatch>()
 
-  function handleClose(e) {
-    e.stopPropagation()
+  function handleClose() {
     setOpen(false)
     setDeleteText('')
   }
@@ -20,7 +19,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
     e.preventDefault()
     if (deleteText !== 'DELETE') return
     dispatch.keys.deleteAccessKeys(deleteKey.key)
-    handleClose(e)
+    handleClose()
   }
 
   return (
@@ -32,13 +31,10 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
           size="base"
           color="grayDarker"
           buttonBaseSize="small"
-          onClick={event => {
-            event.stopPropagation()
-            setOpen(true)
-          }}
+          onClick={() => setOpen(true)}
         />
       )}
-      <Dialog onClose={handleClose} open={open} onClick={e => e.stopPropagation()} fullWidth>
+      <Dialog onClose={handleClose} open={open} fullWidth>
         <DialogTitle>Delete Access Key</DialogTitle>
         <form onSubmit={confirmDelete}>
           <DialogContent>
