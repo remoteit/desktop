@@ -40,7 +40,7 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
     if (!loaded) dispatch.organization.fetchGuests()
   }, [guest, loaded])
 
-  if (!loaded) return <LinearProgress color="info" sx={{ marginTop: 5, marginX: 5, height: '1px' }} />
+  if (!loaded) return <LinearProgress color="info" sx={{ marginTop: 5, marginX: 5, width: 150, height: '1px' }} />
 
   if (!guest?.deviceIds.length && !guest?.networkIds.length) return null
 
