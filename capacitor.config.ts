@@ -1,4 +1,5 @@
 import { CapacitorConfig } from '@capacitor/cli';
+import { version } from './package.json'
 
 const config: CapacitorConfig = {
   appName: 'Remote.It',
@@ -17,6 +18,7 @@ const config: CapacitorConfig = {
       androidScaleType: 'CENTER_CROP',
     },
   },
+  appendUserAgent: ` remoteit/${version}`,
 }
 
 console.log('\nNode Environment:', process.env.NODE_ENV)
