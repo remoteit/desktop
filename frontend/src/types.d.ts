@@ -127,7 +127,6 @@ declare global {
     id?: string
     name: IPlanName
     description: string
-    duration: string | null
     commercial?: boolean
     billing?: boolean
     product: {
@@ -163,6 +162,15 @@ declare global {
     paid: boolean
     url?: string
     created: Date
+  }
+
+  type IReseller = {
+    name: string
+    color: string
+    email: string
+    logoUrl: string
+    plans: IPlan[]
+    customers: ICustomer[]
   }
 
   type IAnnouncement = {
@@ -219,11 +227,10 @@ declare global {
     customer?: ICustomer
   }
 
-  type ICustomer = {
-    id: string
-    email: string
+  type ICustomer = IUserRef & {
+    reseller: string
     license: ILicense
-    created?: Date
+    limits: ILimit[]
   }
 
   type IGlobalTooltip = {

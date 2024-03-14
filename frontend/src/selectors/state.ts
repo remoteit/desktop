@@ -10,6 +10,7 @@ export const getUser = (state: State) => state.user
 export const getUserId = (state: State) => state.auth.user?.id || ''
 export const getMemberships = (state: State) => state.accounts.membership
 export const optionalAccountId = (_: State, accountId?: string) => accountId
+export const optionalCustomerId = (_: State, accountId?: string, customerId?: string) => customerId
 export const getActiveId = (state: State) => state.accounts.activeId
 export const getPlans = (state: State) => state.plans.plans
 export const getPlansTests = (state: State) => state.plans.tests

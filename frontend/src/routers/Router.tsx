@@ -285,7 +285,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <ResellerPage />
               </Route>
 
-              <Route path="/organization/customer/:userID">
+              <Route path="/organization/customer/add">
                 <CustomerAddPage />
               </Route>
 

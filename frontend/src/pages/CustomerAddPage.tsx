@@ -60,9 +60,12 @@ export const CustomerAddPage = () => {
       }
     >
       <Gutters top="xl">
+        <Typography variant="body2" gutterBottom>
+          Add a user to your reseller account.
+        </Typography>
         <Notice fullWidth gutterBottom>
-          New users will be added to your reseller account and given a free plan.
-          <em>You can upgrade them to a paid plan after activation.</em>
+          New customers will be added to your reseller account and given a free plan.
+          <em>You can upgrade them to a paid plan afterwards.</em>
         </Notice>
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length}>
           Add

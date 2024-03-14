@@ -30,7 +30,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const errorMessage = useSelector((state: State) => state.ui.errorMessage)
   const offline = useSelector((state: State) => state.ui.offline)
   const layout = useSelector((state: State) => state.ui.layout)
-  const label = useSelector((state: State) => state.labels).find(l => l.id === device?.attributes.color)
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
@@ -49,7 +48,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   return (
     <>
-      <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
+      <RemoteHeader device={device}>
         <DragAppRegion />
         {children}
         {offline && (

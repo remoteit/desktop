@@ -15,6 +15,7 @@ type Props = ListItemButtonProps & {
 
 export const CustomerListItem: React.FC<Props> = ({ customer, required, attributes, mobile, icon, ...props }) => {
   const history = useHistory()
+  console.log('CUSTOMER', customer)
   return (
     <GridListItem
       icon={icon}

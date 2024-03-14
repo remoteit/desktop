@@ -35,6 +35,7 @@ export const OrganizationPage: React.FC = () => {
     return <Redirect to={{ pathname: '/organization/empty', state: { isRedirect: true } }} />
 
   const admin = !!permissions?.includes('ADMIN')
+  const manager = !!permissions?.includes('MANAGE')
 
   return (
     <Container
@@ -65,22 +66,20 @@ export const OrganizationPage: React.FC = () => {
       )}
       <List>
         <ListItemLocation
-          title="My Account"
+          title="Account"
           to={`/organization/account/${user.id}`}
           match={['/organization/account']}
           icon="user"
           dense
         />
-        {organization.reseller && (
-          <ListItemLocation
-            title="Reseller"
-            to="/organization/reseller"
-            icon="circle-dollar-to-slot"
-            disabled={!admin}
-            showDisabled
-            dense
-          />
-        )}
+        <ListItemLocation
+          title="Guests"
+          to="/organization/guests"
+          icon="user-circle"
+          disabled={!manager}
+          showDisabled
+          dense
+        />
         <ListItemLocation
           title="Members"
           to="/organization/members"
@@ -96,14 +95,21 @@ export const OrganizationPage: React.FC = () => {
           showDisabled
           dense
         />
-        <ListItemLocation
-          title="Guests"
-          to="/organization/guests"
-          icon="user-circle"
-          disabled={!permissions?.includes('MANAGE')}
-          showDisabled
-          dense
-        />
+        {organization.reseller && (
+          <ListItemLocation
+            title="Customers"
+            to="/organization/reseller"
+            // icon="circle-dollar-to-slot"
+            icon="address-book"
+            // icon="money-check-dollar"
+            // icon="address-card"
+            // icon="coin-vertical"
+            // icon="money-bills-simple"
+            disabled={!admin}
+            showDisabled
+            dense
+          />
+        )}
         <ListItemLocation
           title="Roles"
           icon="user-shield"

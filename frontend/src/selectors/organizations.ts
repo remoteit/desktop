@@ -7,6 +7,7 @@ import {
   getTestLimits,
   getLimitsOverride,
   getPlansTests,
+  optionalCustomerId,
   optionalSecondParam,
 } from './state'
 import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
@@ -31,6 +32,10 @@ export const selectOrganizationName = createSelector(
   (organization): string => organization.name || 'Unknown'
 )
 
+export const selectReseller = createSelector([selectOrganization], organization => {
+  return organization.reseller
+})
+
 export const selectMembersWithAccess = createSelector(
   [selectOrganization, optionalSecondParam],
   (organization, instance?: IInstance) =>
@@ -41,10 +46,17 @@ export const selectRemoteitPlans = createSelector([getPlans], plans => {
   return plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID)
 })
 
-export const selectLicenses = createSelector([getPlansTests, selectOrganization], (tests, organization) => {
-  if (tests.license) return tests.licenses
-  else return organization.licenses
-})
+export const selectLicenses = createSelector(
+  [getPlansTests, selectOrganization, optionalCustomerId],
+  (tests, organization, customerId): ILicense[] => {
+    if (tests.license) return tests.licenses
+    if (organization.reseller && customerId) {
+      const customer = organization.reseller.customers.find(c => c.id === customerId)
+      return customer ? [customer.license] : []
+    }
+    return organization.licenses
+  }
+)
 
 export const selectRemoteitLicense = createSelector(
   [selectLicenses],
@@ -56,8 +68,13 @@ export const selectPlan = createSelector([selectRemoteitPlans, selectRemoteitLic
 })
 
 export const selectLimits = createSelector(
-  [selectOrganization, getTestLimits],
-  (organization, testLimits) => testLimits || organization.limits
+  [selectOrganization, optionalCustomerId, getTestLimits],
+  (organization, customerId, testLimits): ILimit[] => {
+    console.log('SELECT LIMITS', customerId, organization.reseller)
+    if (organization.reseller && customerId)
+      return organization.reseller.customers.find(c => c.id === customerId)?.limits || []
+    return testLimits || organization.limits || []
+  }
 )
 
 export const selectLimit = createSelector(
@@ -78,6 +95,7 @@ export const selectLimitsLookup = createSelector(
 )
 
 export const selectLicensesWithLimits = createSelector([selectLicenses, selectLimits], (licenses, limits) => {
+  console.log('selectLicensesWithLimits', { licenses, limits })
   return {
     licenses: licenses.map(license => ({
       ...license,

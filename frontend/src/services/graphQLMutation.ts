@@ -213,6 +213,20 @@ export async function graphQLClaimDevice(code: string, accountId?: string) {
   )
 }
 
+export async function graphQLCreditCard() {
+  return await graphQLBasicRequest(
+    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!) {
+        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
+          url
+        }
+      }`,
+    {
+      successUrl: window.location.href + '/success',
+      cancelUrl: window.location.href,
+    }
+  )
+}
+
 export async function graphQLSubscribe(params: IPurchase) {
   return await graphQLBasicRequest(
     ` mutation Subscribe($priceId: String!, $quantity: Int, $successUrl: String!, $cancelUrl: String!) {
@@ -222,20 +236,6 @@ export async function graphQLSubscribe(params: IPurchase) {
       }`,
     {
       ...params,
-      successUrl: window.location.href + '/success',
-      cancelUrl: window.location.href,
-    }
-  )
-}
-
-export async function graphQLCreditCard() {
-  return await graphQLBasicRequest(
-    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!) {
-        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
-          url
-        }
-      }`,
-    {
       successUrl: window.location.href + '/success',
       cancelUrl: window.location.href,
     }

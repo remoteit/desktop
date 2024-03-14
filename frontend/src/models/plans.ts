@@ -18,7 +18,7 @@ import {
   selectPlan,
 } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { graphQLBasicRequest } from '../services/graphQL'
+import { graphQLFetchPlans } from '../services/graphQLRequest'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
 import cloudSync from '../services/CloudSync'
@@ -90,29 +90,7 @@ export default createModel<RootModel>()({
       })
     },
     async fetch() {
-      const result = await graphQLBasicRequest(
-        ` query Plans {
-            plans {
-              id
-              name
-              description
-              product {
-                id
-              }
-              prices {
-                id
-                amount
-                currency
-                interval
-              }
-              limits {
-                name
-                value
-                scale
-              }
-            }          
-          }`
-      )
+      const result = await graphQLFetchPlans()
       if (result === 'ERROR') return
       await dispatch.plans.parse(result)
     },

@@ -5,7 +5,7 @@ import { Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
 import { useParams, useLocation } from 'react-router-dom'
-import { selectOrganization, selectOwner, selectLicensesWithLimits } from '../selectors/organizations'
+import { selectReseller, selectOrganization, selectOwner, selectLicensesWithLimits } from '../selectors/organizations'
 import { LicensingSetting } from '../components/LicensingSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
@@ -16,16 +16,20 @@ import { Title } from '../components/Title'
 export const CustomerPage: React.FC = () => {
   const location = useLocation()
   const { userID = '' } = useParams<{ userID: string }>()
+  const customer = useSelector(selectReseller)?.customers.find(c => c.id === userID)
+  const { licenses, limits } = useSelector((state: State) => {
+    console.log('---------------------------------------------------- begin')
+    console.log('SELECT LIMITS', customer?.id, customer?.license)
+    return selectLicensesWithLimits(state, undefined, customer?.id)
+  })
 
-  const user: IUser = useSelector((state: State) => state.user) // @TODO use userID to get customer
-  const { licenses, limits } = useSelector(selectLicensesWithLimits)
-
-  console.log({ licenses, limits })
+  console.log({ customer, licenses, limits })
+  console.log('---------------------------------------------------- end')
 
   const owner = useSelector(selectOwner)
   const organization = useSelector(selectOrganization)
 
-  if (!user)
+  if (!customer)
     return (
       <Redirect
         to={{
@@ -41,17 +45,18 @@ export const CustomerPage: React.FC = () => {
       header={
         <Typography variant="h1" marginTop={1} gutterBottom>
           <Title>
-            <Avatar email={user?.email} marginRight={16} />
-            {user?.email}
+            <Avatar email={customer?.email} marginRight={16} />
+            {customer?.email}
           </Title>
           <DeleteButton onDelete={() => {}} />
           {/* @TODO replace with RemoveCustomer */}
         </Typography>
       }
     >
+      <Typography variant="subtitle1">License</Typography>
       <LicensingSetting licenses={licenses} limits={limits} />
       <Typography variant="subtitle1">Plan</Typography>
-      <Plans />
+      {/* <Plans /> */}
     </Container>
   )
 }

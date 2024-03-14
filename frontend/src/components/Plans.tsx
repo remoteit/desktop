@@ -95,14 +95,13 @@ export const Plans: React.FC = () => {
   const css = useStyles({ small })
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const { initialized, accountId, plan, plans, license, purchasing } = useSelector((state: State) => ({
-    initialized: state.organization.initialized,
-    accountId: state.user.id,
-    plan: selectPlan(state),
-    plans: selectRemoteitPlans(state),
-    purchasing: state.plans.purchasing,
-    license: selectRemoteitLicense(state, state.user.id),
-  }))
+  const initialized = useSelector((state: State) => state.organization.initialized)
+  const accountId = useSelector((state: State) => state.user.id)
+  const plan = useSelector(selectPlan)
+  const plans = useSelector(selectRemoteitPlans)
+  const purchasing = useSelector((state: State) => state.plans.purchasing)
+  const license = useSelector(selectRemoteitLicense)
+
   function getDefaults(): IPurchase {
     const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
     return {
