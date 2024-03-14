@@ -77,6 +77,7 @@ export const SIDEBAR_WIDTH = 250
 export const ORGANIZATION_BAR_WIDTH = 70
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
+export const APP_MAX_WIDTH = 1800
 export const MOBILE_WIDTH = 500
 
 export const LANGUAGES: ILookup<string> = {
