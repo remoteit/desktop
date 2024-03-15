@@ -4,7 +4,6 @@ import { ConnectionErrorMenu } from '../ConnectionErrorMenu'
 import { radius, spacing } from '../../styling'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
-import { useHistory } from 'react-router-dom'
 import { Dispatch } from '../../store'
 import { Gutters } from '../Gutters'
 
@@ -13,7 +12,6 @@ type Props = { connection?: IConnection; visible?: boolean }
 export const ConnectionErrorMessage: React.FC<Props> = ({ connection, visible }) => {
   const dispatch = useDispatch<Dispatch>()
   const [hasError, setHasError] = useState<boolean>(!!connection?.error)
-  const history = useHistory()
   const css = useStyles()
 
   useEffect(() => {
@@ -42,7 +40,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, visible })
   )
 }
 
-const size = 8
+const size = 9
 
 const useStyles = makeStyles(({ palette }) => ({
   container: {
@@ -55,7 +53,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   pointer: {
     position: 'absolute',
-    top: -size,
+    top: -size + 1,
     left: 14,
     width: 0,
     height: 0,
