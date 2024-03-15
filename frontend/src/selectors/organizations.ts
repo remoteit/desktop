@@ -70,7 +70,6 @@ export const selectPlan = createSelector([selectRemoteitPlans, selectRemoteitLic
 export const selectLimits = createSelector(
   [selectOrganization, optionalCustomerId, getTestLimits],
   (organization, customerId, testLimits): ILimit[] => {
-    console.log('SELECT LIMITS', customerId, organization.reseller)
     if (organization.reseller && customerId)
       return organization.reseller.customers.find(c => c.id === customerId)?.limits || []
     return testLimits || organization.limits || []
@@ -86,7 +85,6 @@ export const selectLimitsLookup = createSelector(
   [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {
     let result: ILookup<boolean> = {}
-
     baseLimits.forEach(l => {
       result[l.name] = limitsOverride[l.name] === undefined || !isUserAccount ? l.value : limitsOverride[l.name]
     })
@@ -95,7 +93,6 @@ export const selectLimitsLookup = createSelector(
 )
 
 export const selectLicensesWithLimits = createSelector([selectLicenses, selectLimits], (licenses, limits) => {
-  console.log('selectLicensesWithLimits', { licenses, limits })
   return {
     licenses: licenses.map(license => ({
       ...license,

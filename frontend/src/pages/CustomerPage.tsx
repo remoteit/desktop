@@ -1,13 +1,14 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
 import { State } from '../store'
-import { Typography } from '@mui/material'
+import { Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
 import { useParams, useLocation } from 'react-router-dom'
-import { selectReseller, selectOrganization, selectOwner, selectLicensesWithLimits } from '../selectors/organizations'
+import { selectReseller, selectLicensesWithLimits } from '../selectors/organizations'
 import { LicensingSetting } from '../components/LicensingSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
+import { FormDisplay } from '../components/FormDisplay'
 import { Container } from '../components/Container'
 import { Avatar } from '../components/Avatar'
 import { Plans } from '../components/Plans'
@@ -17,17 +18,10 @@ export const CustomerPage: React.FC = () => {
   const location = useLocation()
   const { userID = '' } = useParams<{ userID: string }>()
   const customer = useSelector(selectReseller)?.customers.find(c => c.id === userID)
-  const { licenses, limits } = useSelector((state: State) => {
-    console.log('---------------------------------------------------- begin')
-    console.log('SELECT LIMITS', customer?.id, customer?.license)
-    return selectLicensesWithLimits(state, undefined, customer?.id)
-  })
+  const { licenses, limits } = useSelector((state: State) => selectLicensesWithLimits(state, undefined, customer?.id))
 
-  console.log({ customer, licenses, limits })
-  console.log('---------------------------------------------------- end')
-
-  const owner = useSelector(selectOwner)
-  const organization = useSelector(selectOrganization)
+  // const owner = useSelector(selectOwner)
+  // const organization = useSelector(selectOrganization)
 
   if (!customer)
     return (
@@ -55,8 +49,14 @@ export const CustomerPage: React.FC = () => {
     >
       <Typography variant="subtitle1">License</Typography>
       <LicensingSetting licenses={licenses} limits={limits} />
+      <FormDisplay
+        icon={<Avatar email={customer?.reseller} size={28} />}
+        label="Sales Rep"
+        displayValue={customer?.reseller}
+        displayOnly
+      />
       <Typography variant="subtitle1">Plan</Typography>
-      {/* <Plans /> */}
+      <Plans />
     </Container>
   )
 }

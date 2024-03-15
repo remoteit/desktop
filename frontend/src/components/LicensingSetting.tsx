@@ -6,13 +6,21 @@ import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
 import { Timestamp } from './Timestamp'
 
+function sortLimits(a, b) {
+  const order = ['iot-devices', 'org-users', 'tagging']
+  const indexA = order.indexOf(a.name)
+  const indexB = order.indexOf(b.name)
+  if (indexA === -1) return 1 // a is not in the order array, it should come last
+  if (indexB === -1) return -1 // b is not in the order array, it should come last
+  return indexA - indexB // both are in the order array, sort them accordingly
+}
+
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
   if (!licenses.length) return null
-
   return (
     <>
       {licenses.map((license, index) => (
-        <List key={index}>
+        <List key={index} sx={{ maxWidth: 500 }}>
           <LicensingNotice license={license} />
           <ListItem key={license.id} dense>
             <ListItemIcon>
@@ -42,7 +50,7 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
               <Box width="100%">
                 {license.limits && (
                   <Box marginBottom={3} marginTop={1}>
-                    {license.limits?.map(limit => (
+                    {license.limits?.sort(sortLimits).map(limit => (
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}
                   </Box>
@@ -53,7 +61,7 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
           )}
         </List>
       ))}
-      <List>
+      <List sx={{ maxWidth: 500 }}>
         {limits.map(limit => (
           <ListItem key={limit.name}>
             <ListItemIcon />

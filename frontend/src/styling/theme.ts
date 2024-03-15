@@ -80,6 +80,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     typography: {
       fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     },
+    // breakpoints: { @TODO: move arbitrary breakpoints to theme
+    //   values: {
+    //     xs: 0,
+    //     sm: 600, // 500 mobile?
+    //     md: 960,
+    //     lg: 1280,
+    //     xl: 1920, // 1800 max?
+    //   },
+    // },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
