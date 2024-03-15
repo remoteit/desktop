@@ -21,7 +21,10 @@ export const DevicePresenceSetting: React.FC = () => {
         disabled={!device.permissions.includes('MANAGE')}
         resetValue={device.presenceAddress}
         onSave={value =>
-          dispatch.devices.cloudUpdateDevice({ id: device.id, set: { presenceAddress: value?.toString() || '' } })
+          dispatch.devices.cloudUpdatePresenceAddress({
+            id: device.id,
+            set: { presenceAddress: value?.toString() || '' },
+          })
         }
       />
     </TestUI>

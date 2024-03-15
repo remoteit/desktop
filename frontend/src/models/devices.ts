@@ -389,7 +389,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async cloudUpdateDevice({ id, set }: { id: string; set: ILookup<any> }, state) {
+    async cloudUpdatePresenceAddress({ id, set }: { id: string; set: ILookup<any> }, state) {
       let device = structuredClone(selectDevice(state, undefined, id))
       if (!device) return
       for (const key in set) device[key] = set[key]

@@ -14,7 +14,7 @@
     "test": "cross-env NODE_ENV=test jest",
     "test-watch": "npm run test -- --watch",
     "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
-    "watch-compile": "tsc --watch"
+    "watch-compile": "tsc -b --watch"
   },
   "dependencies": {
     "@airbrake/node": "^2.1.8",

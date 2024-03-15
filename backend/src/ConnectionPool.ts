@@ -4,6 +4,7 @@ import { WEB_PORT } from './constants'
 import {
   IP_PRIVATE,
   DEFAULT_CONNECTION,
+  CLI_AGENT_ERROR_CODE,
   CLI_CERT_FAILURE_ERROR_CODE,
   CLI_REACHABLE_ERROR_CODE,
 } from '@common/constants'
@@ -92,6 +93,7 @@ export default class ConnectionPool {
 
       this.handleCertificateError(instance)
       this.handleReachableError(instance)
+      this.handleClearAgentError(instance)
     })
   }
 
@@ -302,6 +304,14 @@ export default class ConnectionPool {
       instance.params.error?.code === CLI_REACHABLE_ERROR_CODE &&
       instance.params.checkpoint.targetServiceReachable === true
     ) {
+      instance.params.error = undefined
+      this.updated(instance)
+    }
+  }
+
+  private handleClearAgentError = (instance: Connection) => {
+    if (instance.params.error?.code === CLI_AGENT_ERROR_CODE && cli.running) {
+      Logger.info('CLEAR AGENT ERROR', { id: instance.params.id })
       instance.params.error = undefined
       this.updated(instance)
     }

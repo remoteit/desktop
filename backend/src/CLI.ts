@@ -91,6 +91,8 @@ export default class CLI {
     command: 'cli/command',
   }
 
+  running: boolean = false
+
   constructor() {
     this.configFile = new JSONFile<ConfigFile>(path.join(environment.adminPath, 'config.json'))
     Logger.info('ADMIN FILE', { path: this.configFile.location })
@@ -272,7 +274,8 @@ export default class CLI {
       skipInstalledCheck: true,
       quiet: true,
     })
-    return data?.running
+    this.running = !!data?.running
+    return this.running
   }
 
   async version() {

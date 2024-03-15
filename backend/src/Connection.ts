@@ -64,6 +64,6 @@ export default class Connection {
   }
 
   error = (e: Error) => {
-    this.params.error = { message: e.message }
+    this.params.error = { message: e.message, code: parseInt(e.name, 10) }
   }
 }

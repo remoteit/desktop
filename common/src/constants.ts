@@ -1,3 +1,4 @@
+export const CLI_AGENT_ERROR_CODE = 101
 export const CLI_REACHABLE_ERROR_CODE = 523
 export const CLI_CERT_FAILURE_ERROR_CODE = 496
 
