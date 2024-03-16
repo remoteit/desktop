@@ -44,13 +44,12 @@ export const AddPage: React.FC = () => {
         </Typography>
       }
     >
-      <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" paddingX={{ xs: 1, sm: 4 }}>
+      <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" width="100%" paddingX={{ xs: 1, sm: 4 }}>
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <ListItemButton
             disableGutters
             disabled={hasDemo || claiming}
-            className={css.smallItem}
             onClick={() => {
               devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
             }}
@@ -70,7 +69,7 @@ export const AddPage: React.FC = () => {
             <ClaimDevice />
           </ListItem>
         </List>
-        <List className={css.list} dense disablePadding>
+        <List className={classnames(css.list, css.icons)} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
@@ -79,7 +78,6 @@ export const AddPage: React.FC = () => {
                 key={p}
                 iconPlatform
                 iconSize="xxl"
-                className={css.smallItem}
                 icon={platform.id}
                 to={`/add/${platform.id}`}
                 title={platform.name}
@@ -89,7 +87,7 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
-        <List className={css.list} dense disablePadding>
+        <List className={classnames(css.list, css.icons)} dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           {[
             'raspberrypi',
@@ -126,7 +124,6 @@ export const AddPage: React.FC = () => {
                 key={p}
                 iconPlatform
                 iconSize="xxl"
-                className={css.smallItem}
                 icon={platform.id}
                 to={`/add/${platform.id}`}
                 title={
@@ -156,13 +153,8 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     marginTop: spacing.md,
     paddingRight: spacing.xs,
     paddingLeft: spacing.md,
-    '& .MuiListItemButton-root, & .MuiListItem-root': {
-      display: 'block',
-      minWidth: 140,
-      minHeight: 100,
-      margin: 1,
-    },
     '& .MuiListItemButton-root': {
+      display: 'block',
       paddingLeft: spacing.md,
       paddingTop: spacing.lg,
       paddingRight: spacing.md,
@@ -176,8 +168,19 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
       marginBottom: spacing.xs,
     },
   },
-  smallItem: {
-    width: 140,
+  icons: {
+    '& .MuiListItemButton-root, & .MuiListItem-root': {
+      width: 140,
+      minWidth: 140,
+      minHeight: 100,
+      margin: 1,
+    },
+    [breakpoints.down('sm')]: {
+      '& .MuiListItemButton-root, & .MuiListItem-root': {
+        width: 110,
+        minWidth: 110,
+      },
+    },
   },
   smallList: {
     width: '50%',

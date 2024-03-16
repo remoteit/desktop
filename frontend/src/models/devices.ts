@@ -278,7 +278,7 @@ export default createModel<RootModel>()({
       const expired: string[] = []
 
       for (const accountId in rootState) {
-        if (accountId === 'default' || accountId === activeAccountId) continue
+        if (['default', 'connections', activeAccountId].includes(accountId)) continue
         rootState[accountId].initialized = false
         expired.push(accountId)
       }

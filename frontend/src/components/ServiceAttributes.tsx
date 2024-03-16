@@ -8,7 +8,7 @@ export const ServiceAttributes: React.FC<{
   service?: IService
   disablePadding?: boolean
 }> = props => (
-  <Gutters>
+  <Gutters top="sm" bottom="sm">
     <DataDisplay {...props} attributes={serviceAttributes.filter(a => a.details)} />
   </Gutters>
 )

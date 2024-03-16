@@ -183,6 +183,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             padding: `${spacing.sm}px ${spacing.lg}px`,
             borderRadius: spacing.xxl,
           },
+          fullWidth: {
+            width: `calc(100% + ${spacing.md}px)`,
+            marginLeft: -spacing.md / 2,
+            marginRight: -spacing.md / 2,
+          },
           sizeSmall: {
             borderRadius: spacing.md,
             fontSize: fontSizes.xxs,
