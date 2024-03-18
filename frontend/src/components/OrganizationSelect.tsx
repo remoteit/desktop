@@ -77,7 +77,7 @@ export const OrganizationSelect: React.FC = () => {
         guide="organizationSelect"
         placement="right"
         startDate={new Date('2023-01-01')}
-        queueAfter="addDevice"
+        queueAfter="refresh"
         enterDelay={600}
         instructions={
           <>

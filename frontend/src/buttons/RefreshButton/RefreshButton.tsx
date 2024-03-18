@@ -3,12 +3,15 @@ import network from '../../services/Network'
 import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
 import { emit } from '../../services/Controller'
+import { Dispatch, State } from '../../store'
 import { useParams, useRouteMatch } from 'react-router-dom'
 import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
-import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
 import { attributeName } from '@common/nameHelper'
+import { GuideBubble } from '../../components/GuideBubble'
+import { Typography } from '@mui/material'
+import { Icon } from '../../components/Icon'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
@@ -73,15 +76,32 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   }
 
   return (
-    <IconButton
-      {...props}
-      fixedWidth
-      icon="sync"
+    <GuideBubble
+      highlight
+      queueAfter="addDevice"
+      guide="refresh"
       placement="bottom"
-      color={fetching ? 'gray' : props.color}
-      title={title}
-      spin={fetching}
-      onClick={refresh}
-    />
+      instructions={
+        <>
+          <Typography variant="h3" gutterBottom>
+            <b>Refresh the application</b>
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            Device state will update automatically as long as you system is on and the app is running.
+          </Typography>
+        </>
+      }
+    >
+      <IconButton
+        {...props}
+        fixedWidth
+        icon="sync"
+        placement="bottom"
+        color={fetching ? 'gray' : props.color}
+        title={title}
+        spin={fetching}
+        onClick={refresh}
+      />
+    </GuideBubble>
   )
 }

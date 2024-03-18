@@ -10,7 +10,7 @@ type Props = {
   placement?: TooltipProps['placement']
   instructions: React.ReactNode
   component?: BoxProps['component']
-  startDate?: Date
+  startDate?: Date // Show to users created before this date
   highlight?: boolean
   hideArrow?: boolean
   hide?: boolean

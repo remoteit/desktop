@@ -252,7 +252,7 @@ export const attributes: Attribute[] = [
     id: 'role',
     query: 'owner',
     label: 'Role',
-    defaultWidth: 210,
+    defaultWidth: 100,
     value: ({ device }) => <DeviceRole device={device} />,
   }),
   new DeviceAttribute({
