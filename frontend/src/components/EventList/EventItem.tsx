@@ -11,7 +11,9 @@ const options: Intl.DateTimeFormatOptions = {
   minute: '2-digit',
 }
 
-export function EventItem({ item, device, user }: { item: IEvent; device?: IDevice; user: IUser }): JSX.Element {
+export function EventItem({ item, device, user }: { item: IEvent; device?: IDevice; user: IUser }) {
+  // Filter refresh events - eventually we need to exclude these in the API query
+  if (item.type === 'DEVICE_REFRESH') return null
   return (
     <ListItem>
       <span>{new Date(item.timestamp).toLocaleDateString(navigator.language, options)}</span>
