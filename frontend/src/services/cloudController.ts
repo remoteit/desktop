@@ -1,5 +1,6 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
+import cloudTimes from './cloudTimes'
 import network from '../services/Network'
 import { isReverseProxy } from '../models/applicationTypes'
 import { accountFromDevice } from '../models/accounts'
@@ -269,17 +270,17 @@ class CloudController {
         // active | inactive
         const onlineState = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
+          if (cloudTimes.outdated(event.timestamp, target.id)) return
+
           // if device exists and is the target
           if (target.device && target.device.id === target.id) {
             target.device.state = onlineState
             target.device[onlineState === 'active' ? 'onlineSince' : 'offlineSince'] = event.timestamp
-            this.log('DEVICE STATE', target.device.name, target.device.state, event.timestamp)
           } else {
             // if service exists and is the target
             target.device?.services.forEach(service => {
               if (service.id === target.service?.id) {
                 service.state = onlineState
-                this.log('SERVICE STATE', service.name, service.state)
               }
             })
           }
@@ -385,7 +386,17 @@ class CloudController {
           accountId = target.accountId
           return result
         }, [])
-        if (refreshIds.length) dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
+        // avoid double loading device if on the device page
+        for (const id of refreshIds) {
+          if (window.location.href.includes(id)) {
+            dispatch.devices.fetchSingleFull({ id, hidden: true, silent: true, accountId })
+            refreshIds.splice(refreshIds.indexOf(id), 1)
+          }
+        }
+        // fetch the rest
+        if (refreshIds.length) {
+          dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
+        }
         break
 
       case 'DEVICE_DELETE':
