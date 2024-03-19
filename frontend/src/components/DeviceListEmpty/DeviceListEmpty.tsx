@@ -15,19 +15,17 @@ import { Body } from '../Body'
 export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const noResults = useSelector(
-    (state: State) =>
-      (selectDeviceModelAttributes(state).searched || selectIsFiltered(state)) &&
-      !selectDeviceModelAttributes(state).results
-  )
-  const userAccount = useSelector((state: State) => isUserAccount(state))
+  const isFiltered = useSelector(selectIsFiltered)
+  const deviceModel = useSelector(selectDeviceModelAttributes)
+  const userAccount = useSelector(isUserAccount)
   const claiming = useSelector((state: State) => state.ui.claiming)
+  const noResults = (deviceModel.searched || isFiltered) && !deviceModel.total
 
   return (
     <Body center>
       {noResults ? (
         <Box>
-          <Notice>Your search returned no results</Notice>
+          <Notice>Your {deviceModel.searched ? 'search' : 'filter'} returned no results</Notice>
         </Box>
       ) : userAccount ? (
         <>
