@@ -176,12 +176,11 @@ export function SignIn({
             type="email"
           />
         </Box>
-        <Collapse in={emailProcessed} unmountOnExit onEntered={() => passRef.current?.focus()}>
+        <Collapse in={emailProcessed} onEntered={() => passRef.current?.focus()}>
           <Box mb={1}>
             <TextField
-              hidden
-              required
               fullWidth
+              required={emailProcessed}
               focused={emailProcessed}
               inputRef={passRef}
               autoCapitalize="none"
