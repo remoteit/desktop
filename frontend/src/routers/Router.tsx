@@ -35,6 +35,7 @@ import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationLicensingPage } from '../pages/OrganizationLicensingPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
+import { LicensingPage } from '../pages/LicensingPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { BillingPage } from '../pages/BillingPage'
@@ -356,6 +357,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
                   <BillingPage />
                 </RedirectOffsite>
+              </Route>
+
+              <Route path="/account/license">
+                <LicensingPage />
               </Route>
 
               <Route path="/account/accessKey">

@@ -50,6 +50,7 @@ export const AccountPage: React.FC = () => {
             {externalBilling}
           </ListItemLocation>
         )}
+        <ListItemLocation title="License" to="/account/license" icon="id-badge" dense />
         <ListItemLocation title="Access Keys" to="/account/accessKey" icon="key" dense />
       </List>
     </Container>
