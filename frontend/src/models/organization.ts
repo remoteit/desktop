@@ -9,13 +9,13 @@ import {
   graphQLUpdateRole,
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { graphQLBasicRequest } from '../services/graphQL'
 import { getAccountIds } from './accounts'
+import { graphQLFetchOrganizations, graphQLFetchGuests } from '../services/graphQLRequest'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { selectOrganization } from '../selectors/organizations'
-import { State } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
+import { State } from '../store'
 
 export const PERMISSION: ILookup<{
   name: string
@@ -72,7 +72,7 @@ export type IOrganizationState = {
   id: string
   name: string
   created?: Date
-  reseller: boolean
+  reseller: null | IReseller
   contact: {
     name?: string
     email?: string
@@ -100,7 +100,7 @@ export const defaultState: IOrganizationState = {
   id: '',
   name: '',
   domain: undefined,
-  reseller: false,
+  reseller: null,
   contact: {
     name: '',
     email: '',
@@ -137,110 +137,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
-      const accountQueries = ids.map(
-        (id, index) => `
-        _${index}: account(id: "${id}") {
-          organization {
-            id
-            name
-            domain
-            created
-            verified
-            verificationCNAME
-            verificationValue
-            roles {
-              id
-              name
-              system
-              permissions
-              access
-              tag {
-                operator
-                values
-              }
-            }
-            members {
-              created
-              customRole {
-                id
-                name
-              }
-              license
-              user {
-                id
-                email
-              }
-            }
-            providers
-            identityProvider {
-              type
-              clientId
-              issuer
-            }
-          }
-          licenses {
-            id
-            updated
-            created
-            expiration
-            valid
-            quantity
-            custom
-            plan {
-              id
-              name
-              description
-              duration
-              commercial
-              billing
-              product {
-                id
-                name
-                description
-              }
-            }
-            subscription {
-              total
-              status
-              price {
-                id
-                amount
-                currency
-                interval
-              }
-              card {
-                brand
-                month
-                year
-                last
-                name
-                email
-                phone
-                postal
-                country
-                expiration
-              }
-            }
-          }
-          limits {
-            name
-            value
-            actual
-            base
-            scale
-            license {
-              id
-            }
-          }
-        }`
-      )
-      const result = await graphQLBasicRequest(
-        ` query Organizations {
-            login {
-              ${accountQueries.join('\n')}
-            }
-          }`
-      )
+      const result = await graphQLFetchOrganizations(ids)
       if (result === 'ERROR') return
       const accounts = await dispatch.organization.parse({ result, ids })
       console.log('ORGANIZATION FETCH', accounts)
@@ -250,27 +147,7 @@ export default createModel<RootModel>()({
 
     async fetchGuests(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      const result = await graphQLBasicRequest(
-        ` query Guests($accountId: String) {
-            login {
-              account(id: $accountId) {
-                guest {
-                  user {
-                    id
-                    email
-                  }
-                  devices {
-                    id
-                  }
-                  networks {
-                    id
-                  }
-                }
-              }
-            }
-          }`,
-        { accountId }
-      )
+      const result = await graphQLFetchGuests(accountId)
       if (result === 'ERROR') return
       const guests = parseGuests(result)
       console.log('LOAD GUESTS', accountId, guests)
@@ -465,6 +342,20 @@ export function parseOrganization(data: any): IOrganizationState {
     //   issuer
     // },
     created: new Date(data.created),
+    reseller: data.reseller && {
+      ...data.reseller,
+      customers: data.reseller.licenses.map((l): ICustomer => {
+        const { user, ...license } = l
+        return {
+          id: user.id,
+          email: user.email,
+          created: user.created,
+          reseller: user.reseller.email,
+          license: parseLicense(license),
+          limits: user.limits,
+        }
+      }),
+    },
     members: [
       ...data.members.map(m => ({
         ...m,
@@ -487,8 +378,7 @@ export function parseOrganization(data: any): IOrganizationState {
   }
 }
 
-export function parseLicense(data): ILicense | null {
-  if (!data) return null
+export function parseLicense(data): ILicense {
   return {
     ...data,
     // custom: true, // for development

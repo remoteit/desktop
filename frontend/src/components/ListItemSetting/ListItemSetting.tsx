@@ -20,7 +20,7 @@ type Props = {
   iconColor?: IconProps['color']
   iconType?: IconProps['type']
   hideIcon?: boolean
-  label: React.ReactNode
+  label?: React.ReactNode
   subLabel?: React.ReactNode
   size?: 'small' | 'medium'
   button?: React.ReactNode
@@ -31,6 +31,7 @@ type Props = {
   confirmProps?: Omit<ConfirmProps, 'open' | 'onConfirm' | 'onDeny'>
   quote?: boolean
   modified?: boolean
+  disableGutters?: boolean
   content?: React.ReactNode
   secondaryContent?: React.ReactNode
   secondaryContentWidth?: string | number
@@ -58,6 +59,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       modified,
       confirm,
       confirmProps,
+      disableGutters,
       content,
       secondaryContent,
       secondaryContentWidth,
@@ -79,6 +81,11 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       if (disabled) return
       if (confirm) setOpen(true)
       else onClick?.()
+    }
+
+    const handleButtonClick = event => {
+      event.stopPropagation()
+      onButtonClick?.()
     }
 
     const handleConfirm = () => {
@@ -121,7 +128,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
         <ListItemSecondaryAction>
           {secondaryContent}
           {showButton && (
-            <Button onClick={onButtonClick} color="primary" size="small">
+            <Button onClick={handleButtonClick} color="primary" size="small">
               {button}
             </Button>
           )}
@@ -135,7 +142,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     return (
       <>
         {disabled || !onClick ? (
-          <ListItem dense sx={{ paddingRight: secondaryContentWidth }}>
+          <ListItem dense sx={{ paddingRight: secondaryContentWidth }} disableGutters={disableGutters}>
             {ListItemContents}
           </ListItem>
         ) : (
@@ -144,6 +151,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
             ref={ref}
             onClick={handleClick}
             disabled={disabled}
+            disableGutters={disableGutters}
             onMouseEnter={() => setShowTip(true)}
             onMouseLeave={() => setShowTip(false)}
             sx={{ paddingRight: secondaryContentWidth }}

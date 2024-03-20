@@ -13,17 +13,10 @@ type Props = {
   noticeType: string
   license: ILicense | null
   serviceLimit?: ILimit
-  managePath?: string
   fullWidth?: boolean
 }
 
-export const LicensingNoticeDisplay: React.FC<Props> = ({
-  noticeType,
-  license,
-  serviceLimit,
-  managePath = '/account/plans',
-  fullWidth,
-}) => {
+export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, serviceLimit, fullWidth }) => {
   const informed = useSelector((state: State) => state.plans.informed)
   const { plans } = useDispatch<Dispatch>()
 
@@ -36,7 +29,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
 
   const UpgradeButton = (
     <>
-      <Link to={managePath}>
+      <Link to="/account/plans">
         <Button color="primary" variant="contained" size="small">
           Upgrade
         </Button>
@@ -56,7 +49,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         <Notice severity="warning" button={UpgradeButton}>
           {title} has expired.
           <em>
-            Please upgrade your license. <Link to={managePath}>Learn more.</Link>
+            Please upgrade your license. <Link to="/account/plans">Learn more.</Link>
           </em>
         </Notice>
       )
@@ -66,7 +59,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         <Notice severity="error">
           {title} is past due.
           <em>
-            Please update your payment method. <Link to={managePath}>Learn more.</Link>
+            Please update your payment method. <Link to="/account/plans">Learn more.</Link>
           </em>
         </Notice>
       )
@@ -77,7 +70,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         <Notice severity="warning">
           {title} is incomplete.
           <em>
-            Please <Link to={managePath}>update your payment information </Link> to continue service.
+            Please <Link to="/account/plans">update your payment information </Link> to continue service.
           </em>
         </Notice>
       )
@@ -87,7 +80,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
         <Notice severity="warning" button={UpgradeButton}>
           {title} has been canceled.
           <em>
-            Please please check. <Link to={managePath}>Learn more.</Link>
+            Please please check. <Link to="/account/plans">Learn more.</Link>
           </em>
         </Notice>
       )
@@ -98,7 +91,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({
           {title} <LicensingTitle count={serviceLimit?.value} />
           <em>
             You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{' '}
-            <Link to={managePath}>Learn more.</Link>
+            <Link to="/account/plans">Learn more.</Link>
           </em>
         </Notice>
       )

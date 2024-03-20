@@ -27,7 +27,6 @@ export const testData: {
         id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
         name: 'TRIAL',
         description: 'trial',
-        duration: 'P30D',
         product: {
           id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
           name: 'AWS',
@@ -53,7 +52,6 @@ export const testData: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'PERSONAL',
         description: 'personal',
-        duration: null,
         product: {
           id: 'b999e047-5532-11eb-8872-063ce187bcd7',
           name: 'remote.it',
@@ -79,7 +77,6 @@ export const testData: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'PROFESSIONAL',
         description: 'professional',
-        duration: null,
         product: {
           id: 'b999e047-5532-11eb-8872-063ce187bcd7',
           name: 'remote.it',
@@ -105,7 +102,6 @@ export const testData: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'BUSINESS',
         description: 'business',
-        duration: null,
         product: {
           id: 'b999e047-5532-11eb-8872-063ce187bcd7',
           name: 'remote.it',
@@ -131,7 +127,6 @@ export const testData: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'BUSINESS',
         description: 'business',
-        duration: null,
         product: {
           id: 'b999e047-5532-11eb-8872-063ce187bcd7',
           name: 'remote.it',
@@ -157,7 +152,6 @@ export const testData: {
         id: 'b44f92a6-a7b9-11eb-b094-02a962787033',
         name: 'ENTERPRISE',
         description: 'enterprise',
-        duration: null,
         product: {
           id: 'b999e047-5532-11eb-8872-063ce187bcd7',
           name: 'remote.it',

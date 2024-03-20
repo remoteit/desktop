@@ -200,6 +200,8 @@ export default createModel<RootModel>()({
         thisDevice,
         newDevice,
         isService,
+        accountId,
+        silent,
       }: {
         id: string // service or device id
         hidden?: boolean
@@ -207,17 +209,19 @@ export default createModel<RootModel>()({
         thisDevice?: boolean
         newDevice?: boolean
         isService?: boolean
+        accountId?: string
+        silent?: boolean
       },
       state
     ) {
       if (!id) return
 
-      const accountId = selectActiveAccountId(state)
+      accountId = accountId || selectActiveAccountId(state)
 
       let result: IDevice | undefined
       let errors: Error[] | undefined
 
-      dispatch.devices.set({ fetching: true, accountId })
+      if (!silent) dispatch.devices.set({ fetching: true, accountId })
       const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
       try {
@@ -251,7 +255,7 @@ export default createModel<RootModel>()({
         }
       }
 
-      dispatch.devices.set({ fetching: false, accountId })
+      if (!silent) dispatch.devices.set({ fetching: false, accountId })
     },
 
     async fetchCount(params: IOrganizationRole, state) {
@@ -278,7 +282,7 @@ export default createModel<RootModel>()({
       const expired: string[] = []
 
       for (const accountId in rootState) {
-        if (accountId === 'default' || accountId === activeAccountId) continue
+        if (['default', 'connections', activeAccountId].includes(accountId)) continue
         rootState[accountId].initialized = false
         expired.push(accountId)
       }
@@ -389,7 +393,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async cloudUpdateDevice({ id, set }: { id: string; set: ILookup<any> }, state) {
+    async cloudUpdatePresenceAddress({ id, set }: { id: string; set: ILookup<any> }, state) {
       let device = structuredClone(selectDevice(state, undefined, id))
       if (!device) return
       for (const key in set) device[key] = set[key]

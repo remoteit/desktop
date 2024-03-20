@@ -69,8 +69,9 @@ R3_SECRET_ACCESS_KEY=${secretKey}`
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Done</Button>
-        <Button variant="contained" onClick={downloadCredentials} startIcon={<Icon name="download" />}>
-          &nbsp; Download &nbsp;
+        <Button variant="contained" onClick={downloadCredentials}>
+          <Icon name="download" inlineLeft />
+          Download
         </Button>
       </DialogActions>
     </Dialog>

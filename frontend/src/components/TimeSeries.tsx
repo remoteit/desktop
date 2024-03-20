@@ -18,7 +18,7 @@ type Props = Omit<BarGraphProps, 'data'> & {
 }
 
 export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'small', ...props }) => {
-  const color = connectionTypes.includes(timeSeries?.type || '') ? 'primary' : online ? 'success' : 'grayDark'
+  const color = connectionTypes.includes(timeSeries?.type || '') ? 'primary' : online ? 'success' : 'gray'
   const [display, setDisplay] = React.useState<[Date, number]>()
 
   if (!timeSeries) return null

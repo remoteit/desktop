@@ -9,8 +9,7 @@ const CONFIG_HEADER = `HostKeyAlgorithms +ssh-rsa
   AddKeysToAgent yes
   ForwardAgent yes
   IdentitiesOnly yes
-  NoHostAuthenticationForLocalhost yes
-  UseKeychain yes\n`
+  NoHostAuthenticationForLocalhost yes\n`
 
 type ConfigType = ILookup<string | number | undefined>
 
@@ -142,6 +141,7 @@ class SSHConfig {
 
   async generateConfig(configs: ConfigType[]): Promise<string> {
     let result = CONFIG_HEADER
+    if (environment.isMac) result += 'UseKeychain yes\n'
 
     for (const config of configs) {
       result += `\nHost ${config.host}\n`

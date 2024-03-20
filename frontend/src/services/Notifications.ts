@@ -100,7 +100,6 @@ function shareNotification(event: ICloudEvent) {
 }
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {
-  console.log('CREATE NOTIFICATION', arguments)
   const notification = new Notification(title, { ...options, icon: browser.isPortal ? icon : undefined })
   notification.onclick = () => store.dispatch.ui.set({ redirect })
   notification.onclose = e => e.preventDefault()
@@ -120,7 +119,6 @@ function showNotice(event: ICloudEvent) {
 }
 
 async function checkNotificationPermission() {
-  console.log('NOTIFICATION PERMISSION', Notification?.permission)
   if (Notification?.permission === 'granted') return
 
   const permission = await Notification?.requestPermission()

@@ -1,5 +1,4 @@
 import React from 'react'
-import { attributeName } from '@common/nameHelper'
 import { Typography, Box } from '@mui/material'
 import { DeviceName } from './DeviceName'
 
@@ -11,10 +10,10 @@ type Props = {
 }
 
 export const MobileServiceName: React.FC<Props> = ({ device, service, connection, duplicateName }) => (
-  <Box>
+  <Box sx={{ opacity: service?.state === 'active' ? 1 : 0.4 }}>
     {!duplicateName && (
-      <Typography variant="caption" color="grayDark.main" component="div">
-        {attributeName(device)}
+      <Typography variant="caption" component="div" sx={{ '& > *': { color: 'grayDark.main' } }}>
+        <DeviceName device={device} />
       </Typography>
     )}
     <Typography variant="body1">

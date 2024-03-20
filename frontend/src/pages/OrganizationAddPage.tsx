@@ -32,7 +32,7 @@ export const OrganizationAddPage = () => {
   const history = useHistory()
   const license = freeUsers ? 'LICENSED' : 'UNLICENSED'
 
-  const exit = () => history.push(location.pathname.replace('/share', ''))
+  const exit = () => history.push(location.pathname.replace('/add', ''))
   const add = () => {
     dispatch.organization.setMembers(
       emails.map(email => ({

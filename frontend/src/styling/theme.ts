@@ -80,6 +80,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     typography: {
       fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     },
+    // breakpoints: { @TODO: move arbitrary breakpoints to theme
+    //   values: {
+    //     xs: 0,
+    //     sm: 600, // 500 mobile?
+    //     md: 960,
+    //     lg: 1280,
+    //     xl: 1920, // 1800 max?
+    //   },
+    // },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
@@ -173,6 +182,13 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.sm,
             padding: `${spacing.sm}px ${spacing.lg}px`,
             borderRadius: spacing.xxl,
+          },
+          fullWidth: {
+            '&.MuiButton-sizeLarge': {
+              width: `calc(100% + ${spacing.md}px)`,
+              marginLeft: -spacing.md / 2,
+              marginRight: -spacing.md / 2,
+            },
           },
           sizeSmall: {
             borderRadius: spacing.md,
@@ -379,6 +395,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiListItemSecondaryAction: {
+        defaultProps: {
+          onMouseDown: (event: React.MouseEvent) => event.stopPropagation(),
+          onClick: (event: React.MouseEvent) => event.stopPropagation(),
+        },
         styleOverrides: {
           root: {
             zIndex: 2,

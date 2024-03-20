@@ -43,6 +43,9 @@ export const Header: React.FC = () => {
   return (
     <>
       <div className={css.header}>
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
+          <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
+        )}
         {(layout.hideSidebar || browser.isMobile) && (
           <>
             <Route path="/add" exact>
@@ -50,9 +53,6 @@ export const Header: React.FC = () => {
             </Route>
             {!isRootMenu && <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />}
           </>
-        )}
-        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
-          <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
         {!(showSearch || searched) && browser.isElectron && !layout.hideSidebar && (
           <>

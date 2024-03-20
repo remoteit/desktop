@@ -212,6 +212,7 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ deleting: undefined })
       dispatch.devices.fetchList()
     },
+
     async setTags({ tags, accountId }: { tags: ITag[]; accountId: string }, state) {
       tags = tags.sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0))
       let all = { ...state.tags.all }

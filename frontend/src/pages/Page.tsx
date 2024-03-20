@@ -30,7 +30,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const errorMessage = useSelector((state: State) => state.ui.errorMessage)
   const offline = useSelector((state: State) => state.ui.offline)
   const layout = useSelector((state: State) => state.ui.layout)
-  const label = useSelector((state: State) => state.labels).find(l => l.id === device?.attributes.color)
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
@@ -48,36 +47,34 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   if (backendAuthenticated && !connected) snackbar = 'retry'
 
   return (
-    <>
-      <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
-        <DragAppRegion />
-        {children}
-        {offline && (
-          <Dialog open maxWidth="xs" fullWidth>
-            <Notice
-              severity={offline.severity}
-              button={
-                <Button
-                  size="small"
-                  onClick={() => window.location.reload()}
-                  color={offline.severity}
-                  variant="contained"
-                >
-                  Reload
-                </Button>
-              }
-              onClose={() => ui.set({ offline: undefined })}
-              fullWidth
-            >
-              {offline.title}
-              {offline.message && <em>{offline.message}</em>}
-            </Notice>
-          </Dialog>
-        )}
-        <GlobalConfirm />
-        <ConnectionNotice className={css.snackbar} />
-        <UpdateNotice className={css.snackbar} />
-      </RemoteHeader>
+    <RemoteHeader device={device}>
+      <DragAppRegion />
+      {children}
+      {offline && (
+        <Dialog open maxWidth="xs" fullWidth>
+          <Notice
+            severity={offline.severity}
+            button={
+              <Button
+                size="small"
+                onClick={() => window.location.reload()}
+                color={offline.severity}
+                variant="contained"
+              >
+                Reload
+              </Button>
+            }
+            onClose={() => ui.set({ offline: undefined })}
+            fullWidth
+          >
+            {offline.title}
+            {offline.message && <em>{offline.message}</em>}
+          </Notice>
+        </Dialog>
+      )}
+      <GlobalConfirm />
+      <ConnectionNotice className={css.snackbar} />
+      <UpdateNotice className={css.snackbar} />
       <Snackbar
         className={css.snackbar}
         open={snackbar === 'retry'}
@@ -133,7 +130,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           </Notice>
         }
       />
-    </>
+    </RemoteHeader>
   )
 }
 

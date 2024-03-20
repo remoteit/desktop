@@ -98,7 +98,6 @@ declare global {
     quantity: number | null
     plan: IPlan
     subscription?: ISubscription
-    managePath?: string
     limits?: ILimit[]
     custom: boolean
   }
@@ -127,7 +126,6 @@ declare global {
     id?: string
     name: IPlanName
     description: string
-    duration: string | null
     commercial?: boolean
     billing?: boolean
     product: {
@@ -163,6 +161,15 @@ declare global {
     paid: boolean
     url?: string
     created: Date
+  }
+
+  type IReseller = {
+    name: string
+    color: string
+    email: string
+    logoUrl: string
+    plans: IPlan[]
+    customers: ICustomer[]
   }
 
   type IAnnouncement = {
@@ -216,6 +223,13 @@ declare global {
     connection?: IConnection
     connections?: IConnection[]
     application?: Application
+    customer?: ICustomer
+  }
+
+  type ICustomer = IUserRef & {
+    reseller: string
+    license: ILicense
+    limits: ILimit[]
   }
 
   type IGlobalTooltip = {

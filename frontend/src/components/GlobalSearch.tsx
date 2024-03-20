@@ -3,10 +3,10 @@ import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
 import debounce from 'lodash.debounce'
 import classnames from 'classnames'
-import { selectDeviceModelAttributes } from '../selectors/devices'
 import { sortSearch } from '../models/search'
-import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { TextField, Typography, ListItem, ListSubheader, Autocomplete, createFilterOptions } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { TargetPlatform } from './TargetPlatform'
@@ -60,6 +60,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   }
 
   const submit = () => {
+    console.log('SUBMIT', query)
     dispatch.devices.set({ query, searched: true, from: 0 })
     dispatch.devices.fetchList()
     onClose?.()
@@ -88,14 +89,17 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         loading={fetching}
         classes={{ listbox: css.listbox }}
         onChange={(event, newValue: any | ISearch | null, reason: string) => {
+          console.log('change', newValue, reason)
           if (reason === 'selectOption') select(newValue)
           if (reason === 'createOption') submit()
         }}
         groupBy={option => option.nodeName}
         onInputChange={(event, newQuery, reason) => {
+          console.log('inputchange', newQuery, reason)
           if (reason === 'input') setQuery(newQuery)
           if (reason === 'clear') clear()
         }}
+        onSubmit={submit}
         getOptionLabel={option => option.serviceName || option}
         isOptionEqualToValue={(option, value) => option.serviceId === value.serviceId}
         filterOptions={createFilterOptions({ stringify: option => option.combinedName })}
@@ -115,6 +119,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             inputRef={inputRef}
             className={css.input}
             onBlur={() => onClose?.()}
+            onKeyDown={event => event.key === 'Enter' && !query && clear()}
             InputProps={{
               ...params.InputProps,
               endAdornment: <>{params.InputProps.endAdornment}</>,

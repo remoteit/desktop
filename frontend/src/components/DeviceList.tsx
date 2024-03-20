@@ -1,20 +1,18 @@
-// import { createMemoDebugger } from '../helpers/utilHelper'
 import React from 'react'
 import browser from '../services/Browser'
-import classnames from 'classnames'
 import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { DeviceListHeader } from './DeviceListHeader'
-import { makeStyles } from '@mui/styles'
-import { List, Typography, useMediaQuery } from '@mui/material'
+import { GridListHeader } from './GridListHeader'
+import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
+import { Typography, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
 import { GuideBubble } from './GuideBubble'
 import { LoadMore } from './LoadMore'
-import { spacing, fontSizes } from '../styling'
+import { GridList } from './GridList'
 
 export interface DeviceListProps {
   attributes: Attribute[]
@@ -41,13 +39,14 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 }) => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles({ attributes, required, columnWidths, mobile })
 
   return (
-    <List className={classnames(css.list, css.grid)} disablePadding>
-      <DeviceListContext.Provider value={{ device: devices[0] }}>
-        <DeviceListHeader {...{ devices, required, attributes, select, fetching, columnWidths, mobile }} />
-      </DeviceListContext.Provider>
+    <GridList
+      {...{ attributes, required, fetching, columnWidths, mobile }}
+      headerIcon={<DeviceListHeaderCheckbox select={select} devices={devices} />}
+      headerContextData={{ device: devices[0] }}
+      headerContextProvider={DeviceListContext.Provider}
+    >
       {devices?.map((device, index) => {
         const canRestore = isOffline(device) && !device.shared
         if (restore && !canRestore) return null
@@ -90,52 +89,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
         )
       })}
       <LoadMore />
-    </List>
+    </GridList>
   )
 }
-
-type StyleProps = {
-  attributes: Attribute[]
-  required: Attribute
-  columnWidths: ILookup<number>
-  mobile?: boolean
-}
-
-const useStyles = makeStyles(({ palette }) => ({
-  grid: ({ attributes, required, columnWidths, mobile }: StyleProps) => ({
-    minWidth: '100%',
-    width: required.width(columnWidths) + (mobile ? 0 : attributes?.reduce((w, a) => w + a.width(columnWidths), 0)),
-    '& .MuiListItemButton-root, & .MuiListSubheader-root': {
-      gridTemplateColumns: `${required.width(columnWidths)}px ${
-        mobile ? '' : attributes?.map(a => a.width(columnWidths)).join('px ') + 'px'
-      }`,
-    },
-  }),
-  list: {
-    '& .MuiListItemButton-root, & .MuiListSubheader-root': {
-      display: 'inline-grid',
-      alignItems: 'start',
-      '& > .MuiBox-root': {
-        paddingRight: spacing.sm,
-      },
-    },
-    '& .MuiListItemButton-root': {
-      minHeight: 40,
-      fontSize: fontSizes.base,
-      color: palette.grayDarkest.main,
-      '&:hover': { backgroundColor: palette.primaryHighlight.main },
-    },
-    '& > * > .MuiBox-root, & > * > * > .MuiBox-root': {
-      display: 'flex',
-      alignItems: 'center',
-      minHeight: 36,
-    },
-    '& .attribute': {
-      display: 'block',
-      minHeight: 0,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    },
-  },
-}))

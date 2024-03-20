@@ -11,7 +11,6 @@ import { LeaveOrganizationButton } from '../buttons/LeaveOrganizationButton'
 import { OrganizationMemberDetails } from '../components/OrganizationMemberDetails'
 import { selectOrganization, selectOwner } from '../selectors/organizations'
 import { OrganizationGuestDetails } from '../components/OrganizationGuestDetails'
-import { LinearProgress } from '../components/LinearProgress'
 import { Container } from '../components/Container'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
@@ -23,13 +22,12 @@ export const OrganizationUserPage: React.FC = () => {
   let user: IUser = useSelector((state: State) => state.user)
   const owner = useSelector(selectOwner)
   const organization = useSelector(selectOrganization)
-  const guest = organization.guests.find(g => g.id === userID)
-  const member = organization.members.find(m => m.user.id === userID)
-  const isMyAccount = user.id === userID
   const isOwnerAccount = user.id === userID && organization.id === userID
+  const isMyAccount = user.id === userID || undefined
+  const member = organization.members.find(m => m.user.id === userID) || (isMyAccount && organization.membership)
+  const guest = organization.guests.find(g => g.id === userID)
 
   user = guest || member?.user || (owner?.user.id === userID && owner.user) || user
-  // console.log({ user, guest, memberUser: member?.user, owner, isMyAccount })
 
   if (isOwnerAccount) return <ProfilePage />
 
@@ -60,7 +58,7 @@ export const OrganizationUserPage: React.FC = () => {
         </Typography>
       }
     >
-      <OrganizationMemberDetails member={member || organization.membership} organization={organization} />
+      <OrganizationMemberDetails member={member} organization={organization} />
       <OrganizationGuestDetails guest={guest} loaded={organization.guestsLoaded} />
     </Container>
   )

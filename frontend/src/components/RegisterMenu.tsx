@@ -67,12 +67,15 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
 
   return fab ? (
     <Paper
-      elevation={3}
+      elevation={0}
       sx={{
+        borderWidth: 3,
+        borderStyle: 'solid',
+        borderColor: 'white.main',
         borderRadius: '50%',
         position: 'absolute',
         bgcolor: 'primary.main',
-        bottom: spacing.lg,
+        bottom: layout.mobile ? spacing.sm : spacing.xl,
         right: spacing.xl,
         zIndex: 10,
       }}

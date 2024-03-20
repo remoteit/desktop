@@ -27,7 +27,6 @@ const getThisMembership = createSelector([getUser], user => ({
   roleId: 'OWNER',
   roleName: 'Owner',
   license: 'UNKNOWN',
-  // license: remoteitLicense?.valid ? 'LICENSED' : 'UNLICENSED',
   created: user.created || new Date(),
   account: {
     id: user.id,

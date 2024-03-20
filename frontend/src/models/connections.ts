@@ -218,6 +218,10 @@ export default createModel<RootModel>()({
             // console.log('FETCHED DEVICE RETURNED:', device)
           }
         }
+        // clear errors on connect
+        if (connection.error && connection.connecting) {
+          connection.error = undefined
+        }
       })
       dispatch.connections.setAll(connections.filter(c => !!c))
     },

@@ -24,7 +24,16 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
 
   return (
     <>
-      {!deleteKey.enabled && <IconButton icon="trash" size="md" onClick={() => setOpen(true)} />}
+      {!deleteKey.enabled && (
+        <IconButton
+          inlineLeft
+          icon="trash"
+          size="base"
+          color="grayDarker"
+          buttonBaseSize="small"
+          onClick={() => setOpen(true)}
+        />
+      )}
       <Dialog onClose={handleClose} open={open} fullWidth>
         <DialogTitle>Delete Access Key</DialogTitle>
         <form onSubmit={confirmDelete}>
@@ -49,7 +58,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
             <Button color="primary" onClick={handleClose}>
               Cancel
             </Button>
-            <Button variant="contained" color="primary" type="submit" disabled={deleteText !== 'DELETE'}>
+            <Button variant="contained" color="error" type="submit" disabled={deleteText !== 'DELETE'}>
               Delete
             </Button>
           </DialogActions>

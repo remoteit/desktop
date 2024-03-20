@@ -94,11 +94,7 @@ const useStyles = makeStyles(({ palette }) => ({
       : undefined,
     '& .MuiTypography-root > *': { color: alwaysWhite ? palette.alwaysWhite.main : palette.grayDarkest.main },
     '&:hover': {
-      backgroundColor: showBackground
-        ? invertBackground
-          ? palette.white.main
-          : alpha(palette.black.main, 0.1)
-        : undefined,
+      backgroundColor: showBackground ? (invertBackground ? palette.white.main : undefined) : undefined,
     },
     '& svg': { minWidth: 60 },
   }),

@@ -16,18 +16,19 @@ export const fontSizes: { [key in Sizes]: string } = {
 }
 
 export const spacing: { [key in Sizes]: number } = {
-  bug: 1, // 7px
-  xxxs: 2, // 8px
-  xxs: 3, // 10px
-  xs: 6, // 11px
-  sm: 12, // 12px
-  base: 14, // 14px
-  md: 18, // 16px
-  lg: 24, // 19px
-  xl: 36, // 24px
-  xxl: 48, // 36px
-  xxxl: 64, // 48px
-  max: 96, // 64px
+  //            px   theme.spacing
+  bug: 1, //    7    0.125
+  xxxs: 2, //   8    0.25
+  xxs: 3, //    10   0.375
+  xs: 6, //     11   0.75
+  sm: 12, //    12   1.5
+  base: 14, //  14   1.75
+  md: 18, //    16   2.25
+  lg: 24, //    19   3
+  xl: 36, //    24   4.5
+  xxl: 48, //   36   6
+  xxxl: 64, //  48   8
+  max: 96, //   64   12
 }
 
 export type Color =
@@ -90,10 +91,10 @@ export const lightColors: { [key in Color]: string } = {
   black: '#000',
   white: '#fff',
   alwaysWhite: '#fff',
-  hover: 'rgba(0,30,61,0.04)',
-  darken: 'rgba(0,0,0,0.5)',
-  screen: 'rgba(0,0,0,0.06)',
-  shadow: 'rgba(0,0,0,0.2)',
+  hover: 'rgba(161, 180, 191, 0.13)',
+  darken: 'rgba(0, 16, 26, 0.5)',
+  screen: 'rgba(161, 180, 191, 0.08)',
+  shadow: 'rgba(0, 16, 26, 0.2)',
   rpi: '#C51A4A',
   guide: '#593098', // '#001247',
   test: '#fffcf0',

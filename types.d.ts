@@ -670,6 +670,7 @@ declare global {
     | 'DEVICE_STATE'
     | 'DEVICE_CONNECT'
     | 'DEVICE_SHARE'
+    | 'DEVICE_REFRESH'
 
   interface IEventList {
     total: number

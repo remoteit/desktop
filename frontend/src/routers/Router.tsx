@@ -6,9 +6,9 @@ import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
+import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { State, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
@@ -21,18 +21,22 @@ import { DevicesPage } from '../pages/DevicesPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { ResellerPage } from '../pages/ResellerPage'
-import { AddPlatformPage } from '../pages/AddPlatformPage'
+import { CustomerPage } from '../pages/CustomerPage'
+import { PlatformAddPage } from '../pages/PlatformAddPage'
+import { CustomerAddPage } from '../pages/CustomerAddPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
+import { CustomerPlansPage } from '../pages/CustomerPlansPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
-import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationUserPage } from '../pages/OrganizationUserPage'
+import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationLicensingPage } from '../pages/OrganizationLicensingPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
+import { LicensingPage } from '../pages/LicensingPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { BillingPage } from '../pages/BillingPage'
@@ -148,7 +152,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       {/* Add */}
       <Route path="/add/:platform/:redirect?">
         <Panel layout={layout}>
-          <AddPlatformPage />
+          <PlatformAddPage />
         </Panel>
       </Route>
       <Route path="/add">
@@ -283,7 +287,19 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <ResellerPage />
               </Route>
 
-              <Route path="/organization/share">
+              <Route path="/organization/customer/add">
+                <CustomerAddPage />
+              </Route>
+
+              <Route path="/organization/customer/:userID/plans">
+                <CustomerPlansPage />
+              </Route>
+
+              <Route path="/organization/customer/:userID">
+                <CustomerPage />
+              </Route>
+
+              <Route path="/organization/add">
                 <OrganizationAddPage />
               </Route>
 
@@ -346,6 +362,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
                   <BillingPage />
                 </RedirectOffsite>
+              </Route>
+
+              <Route path="/account/license">
+                <LicensingPage />
               </Route>
 
               <Route path="/account/accessKey">

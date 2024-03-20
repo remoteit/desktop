@@ -58,14 +58,6 @@ class Environment {
     console.log('Build Environment', this.environment())
   }
 
-  platform() {
-    if (this.isElectron) return 'electron'
-    if (this.isMobile) return 'mobile'
-    if (this.isPortal) return 'portal'
-    if (this.isRemote) return 'remote'
-    return 'unknown'
-  }
-
   environment() {
     return MODE
   }

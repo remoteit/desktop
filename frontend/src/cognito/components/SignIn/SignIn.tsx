@@ -1,5 +1,5 @@
 import React from 'react'
-import { rememberMe } from '../../../helpers/userHelper'
+import { rememberMe, sanitizeEmail } from '../../../helpers/userHelper'
 import { makeStyles } from '@mui/styles'
 import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel, Collapse } from '@mui/material'
 import { useTranslation } from 'react-i18next'
@@ -167,7 +167,7 @@ export function SignIn({
             name="email"
             inputProps={{ maxLength: 254 }}
             onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-              setUsername(e?.currentTarget?.value.trim())
+              setUsername(sanitizeEmail(e?.currentTarget?.value))
             }}
             onFocus={scrollIntoView}
             onBlur={scrollReset}
@@ -176,12 +176,11 @@ export function SignIn({
             type="email"
           />
         </Box>
-        <Collapse in={emailProcessed} unmountOnExit onEntered={() => passRef.current?.focus()}>
+        <Collapse in={emailProcessed} onEntered={() => passRef.current?.focus()}>
           <Box mb={1}>
             <TextField
-              hidden
-              required
               fullWidth
+              required={emailProcessed}
               focused={emailProcessed}
               inputRef={passRef}
               autoCapitalize="none"

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
+import { Paper } from '@mui/material'
 import { Color } from '../styling'
 import { Icon } from './Icon'
 
@@ -9,28 +9,30 @@ export type IndicatorProps = {
   hide?: boolean
 }
 
-export const DiagramIndicator: React.FC<IndicatorProps> = props => {
-  const css = useStyles(props)
-  if (props.hide) return null
+const GUTTERS = 24
+const SIZE = 32
+
+export const DiagramIndicator: React.FC<IndicatorProps> = ({ color, placement, hide }) => {
+  if (hide) return null
 
   return (
-    <span className={css.icon}>
-      <Icon name="arrow-up" fontSize={20} type="regular" color={props.color} fixedWidth />
-    </span>
+    <Paper
+      elevation={4}
+      sx={{
+        bottom: -SIZE,
+        position: 'absolute',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        left: placement === 'right' ? undefined : GUTTERS,
+        right: placement === 'right' ? GUTTERS : undefined,
+        backgroundColor: color + '.main',
+        borderRadius: '50%',
+        height: SIZE,
+        width: SIZE,
+      }}
+    >
+      <Icon name="arrow-up" fontSize={16} type="solid" color="alwaysWhite" fixedWidth />
+    </Paper>
   )
 }
-
-const GUTTERS = 24
-
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  icon: ({ placement }: IndicatorProps) => ({
-    bottom: -30,
-    position: 'absolute',
-    left: placement === 'right' ? undefined : GUTTERS,
-    right: placement === 'right' ? GUTTERS : undefined,
-    backgroundColor: palette.white.main,
-    padding: spacing(0.5),
-    borderBottom: `1px solid ${palette.grayLight.main}`,
-    borderRadius: '50%',
-  }),
-}))
