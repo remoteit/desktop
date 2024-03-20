@@ -2,6 +2,7 @@ import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { setConnection, getManufacturerType, getManufacturerUser } from '../helpers/connectionHelper'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLDisconnect } from '../services/graphQLMutation'
 import { accountFromDevice } from './accounts'
 import { isReverseProxy } from './applicationTypes'
@@ -20,7 +21,8 @@ const sessionsState: ISessionsState = {
 export default createModel<RootModel>()({
   state: sessionsState,
   effects: dispatch => ({
-    async fetch() {
+    async fetch(_: void, state) {
+      const accountId = selectActiveAccountId(state)
       try {
         const response = await graphQLRequest(
           ` query Sessions($accountId: String) {
@@ -65,7 +67,8 @@ export default createModel<RootModel>()({
                   }
                 }
               }
-            }`
+            }`,
+          { accountId }
         )
         graphQLGetErrors(response)
         const all = await dispatch.sessions.parse(response)
