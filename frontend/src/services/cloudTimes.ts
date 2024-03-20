@@ -28,4 +28,4 @@ class CloudTimes {
   }
 }
 
-export default new CloudTimes()
+export default CloudTimes

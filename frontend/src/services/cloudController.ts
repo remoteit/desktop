@@ -1,6 +1,6 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
-import cloudTimes from './cloudTimes'
+import CloudTimes from './CloudTimes'
 import network from '../services/Network'
 import { isReverseProxy } from '../models/applicationTypes'
 import { accountFromDevice } from '../models/accounts'
@@ -24,6 +24,9 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors } from './graphQL'
 import { agent } from '../services/Browser'
 import { emit } from './Controller'
+
+const stateTimes = new CloudTimes()
+const connectTimes = new CloudTimes()
 
 class CloudController {
   initialized: boolean = false
@@ -270,7 +273,7 @@ class CloudController {
         // active | inactive
         const onlineState = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
-          if (cloudTimes.outdated(event.timestamp, target.id)) return
+          if (stateTimes.outdated(event.timestamp, target.id)) return
 
           // if device exists and is the target
           if (target.device && target.device.id === target.id) {
@@ -317,6 +320,8 @@ class CloudController {
         // connected | disconnected
         emit('heartbeat') // sync with backend
         event.target.forEach(target => {
+          if (connectTimes.outdated(event.timestamp, target.id)) return
+
           // Local connection state
           if (target.connection) {
             if (target.connection.public) {
