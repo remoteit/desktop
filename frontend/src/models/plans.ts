@@ -24,7 +24,7 @@ import { RootModel } from '.'
 import cloudSync from '../services/CloudSync'
 import humanize from 'humanize-duration'
 
-type ILicenseLookup = { productId: string; platform?: number; managePath: string }
+type ILicenseLookup = { productId: string; platform?: number }
 
 const PURCHASING_PLAN = 'plans.purchasing'
 const UPDATING_PLAN = 'plans.updating'
@@ -41,16 +41,79 @@ export const LicenseLookup: ILicenseLookup[] = [
   {
     productId: REMOTEIT_PRODUCT_ID,
     platform: undefined,
-    managePath: '/account/plans',
   },
   {
     productId: AWS_PRODUCT_ID,
     platform: 1185,
-    managePath: '/account/plans',
   },
 ]
 
 const defaultLicense = LicenseLookup[0]
+
+export const planDetails = {
+  [PERSONAL_PLAN_ID]: {
+    description: 'For non-commercial usage only',
+    features: [
+      '5 Devices',
+      '7 days of activity logs',
+      'Limited API usage',
+      'Web/Desktop/Mobile apps',
+      'SSO with Google',
+    ],
+  },
+  [PROFESSIONAL_PLAN_ID]: {
+    description: 'Basic commercial use plan',
+    note: 'when billed annually',
+    features: [
+      '3 Devices & 1 user per license',
+      'Commercial usage',
+      'Organization Management (basic roles)',
+      'Basic device tagging',
+      'Virtual Networks',
+      '30 days of activity logs',
+      'Limited API usage',
+      'Forum support',
+    ],
+  },
+  [BUSINESS_PLAN_ID]: {
+    description: 'Simplifies network management',
+    note: 'when billed annually',
+    features: [
+      '10 Devices & 1 user per license',
+      'Organization Management including custom roles',
+      'Virtual networks with custom roles, enhanced device tagging',
+      'SSO with SAML or select identity providers',
+      'Scripting',
+      '1 year of activity logs',
+      'Unrestricted API usage',
+      'Email support',
+    ],
+  },
+  [FLEET_PLAN_ID]: {
+    description: 'Device centric business plan',
+    note: 'discounted monthly price',
+    features: [
+      '100 devices per license',
+      '5 user accounts',
+      'Add additional devices in 100 device increments',
+      'Discounted monthly pricing matches annual pricing',
+      'Includes all Business Plan features',
+    ],
+  },
+  [ENTERPRISE_PLAN_ID]: {
+    description: 'Custom plan for large scale deployment',
+    features: [
+      'Volume based discounts for users and devices',
+      'Statement of Work based projects: development, support, deployment & onboarding',
+      'Custom activity log retention',
+      'Additional support options: Slack, phone',
+      'Provision of customer specific environments: custom portals, dedicated proxy, named device URLs, and more',
+      'Fixed permanent named endpoint URLs',
+      'Support for embedded devices and custom device packages',
+      'Large-scale solutions for unique and custom use-cases',
+    ],
+  },
+}
 
 type IPlans = {
   initialized: boolean
@@ -236,12 +299,6 @@ export function getInformed(state: State) {
   return state.plans.tests.limit ? false : state.plans.informed
 }
 
-export function lookupLicenseManagePath(productId?: string) {
-  let lookup = LicenseLookup.find(l => l.productId === productId)
-  if (!lookup) lookup = defaultLicense
-  return lookup.managePath
-}
-
 export function lookupLicenseProductId(instance?: IInstance) {
   let lookup = LicenseLookup.find(l => l.platform === (instance as IDevice)?.targetPlatform)
   if (!lookup) lookup = defaultLicense
@@ -255,7 +312,6 @@ export function selectFullLicense(state: State, { productId, license }: { produc
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
-  const managePath = lookupLicenseManagePath(productId)
 
   if (!license) return {}
   let noticeType: string = license.subscription?.status || ''
@@ -274,7 +330,6 @@ export function selectFullLicense(state: State, { productId, license }: { produc
     limits,
     serviceLimit,
     evaluationLimit,
-    managePath,
   }
 }
 

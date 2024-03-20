@@ -151,7 +151,6 @@ export const DevicePage: React.FC = () => {
           </ListItemLocation>
         )}
         <GuideBubble
-          highlight
           guide="availableServices"
           enterDelay={400}
           placement="bottom"

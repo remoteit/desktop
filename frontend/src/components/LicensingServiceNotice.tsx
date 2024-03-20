@@ -10,13 +10,7 @@ import { Link } from './Link'
 type Props = { device?: IDevice; license?: ILicense }
 
 export const LicensingServiceNotice: React.FC<Props> = props => {
-  const {
-    noticeType,
-    license,
-    serviceLimit,
-    evaluationLimit,
-    managePath = '',
-  } = useSelector((state: State) => {
+  const { noticeType, license, serviceLimit, evaluationLimit } = useSelector((state: State) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
     return selectFullLicense(state, { productId })
@@ -31,7 +25,7 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
       <Notice
         severity="warning"
         button={
-          <Link to={managePath}>
+          <Link to="/account/plans">
             <Button color="primary" variant="contained" size="small">
               Upgrade
             </Button>
@@ -41,7 +35,7 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
           This service will be accessible for {humanizeDays(evaluationLimit?.value)}, unless you upgrade your license.
-          <Link to={managePath}>Learn more.</Link>
+          <Link to="/account/plans">Learn more.</Link>
         </em>
       </Notice>
     )

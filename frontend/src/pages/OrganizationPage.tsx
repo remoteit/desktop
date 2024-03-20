@@ -16,7 +16,6 @@ import { PlanActionChip } from '../components/PlanActionChip'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { TestUI } from '../components/TestUI'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 
@@ -99,12 +98,7 @@ export const OrganizationPage: React.FC = () => {
           <ListItemLocation
             title="Customers"
             to="/organization/reseller"
-            // icon="circle-dollar-to-slot"
             icon="address-book"
-            // icon="money-check-dollar"
-            // icon="address-card"
-            // icon="coin-vertical"
-            // icon="money-bills-simple"
             disabled={!admin}
             showDisabled
             dense

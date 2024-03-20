@@ -6,9 +6,9 @@ import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
+import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { State, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
@@ -25,6 +25,7 @@ import { CustomerPage } from '../pages/CustomerPage'
 import { PlatformAddPage } from '../pages/PlatformAddPage'
 import { CustomerAddPage } from '../pages/CustomerAddPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
+import { CustomerPlansPage } from '../pages/CustomerPlansPage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationUserPage } from '../pages/OrganizationUserPage'
@@ -288,6 +289,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/organization/customer/add">
                 <CustomerAddPage />
+              </Route>
+
+              <Route path="/organization/customer/:userID/plans">
+                <CustomerPlansPage />
               </Route>
 
               <Route path="/organization/customer/:userID">

@@ -184,9 +184,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             borderRadius: spacing.xxl,
           },
           fullWidth: {
-            width: `calc(100% + ${spacing.md}px)`,
-            marginLeft: -spacing.md / 2,
-            marginRight: -spacing.md / 2,
+            '&.MuiButton-sizeLarge': {
+              width: `calc(100% + ${spacing.md}px)`,
+              marginLeft: -spacing.md / 2,
+              marginRight: -spacing.md / 2,
+            },
           },
           sizeSmall: {
             borderRadius: spacing.md,

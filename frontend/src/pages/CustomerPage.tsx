@@ -1,37 +1,23 @@
 import React from 'react'
-import { Redirect } from 'react-router-dom'
 import { State } from '../store'
-import { Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { REGEX_LAST_PATH } from '../constants'
-import { useParams, useLocation } from 'react-router-dom'
-import { selectReseller, selectLicensesWithLimits } from '../selectors/organizations'
+import { useParams, Redirect, Link } from 'react-router-dom'
+import { Typography, Button } from '@mui/material'
 import { LicensingSetting } from '../components/LicensingSetting'
+import { selectCustomer } from '../selectors/organizations'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { FormDisplay } from '../components/FormDisplay'
 import { Container } from '../components/Container'
 import { Avatar } from '../components/Avatar'
-import { Plans } from '../components/Plans'
 import { Title } from '../components/Title'
 
 export const CustomerPage: React.FC = () => {
-  const location = useLocation()
   const { userID = '' } = useParams<{ userID: string }>()
-  const customer = useSelector(selectReseller)?.customers.find(c => c.id === userID)
-  const { licenses, limits } = useSelector((state: State) => selectLicensesWithLimits(state, undefined, customer?.id))
+  const customer = useSelector((state: State) => selectCustomer(state, undefined, userID))
+  const license = customer?.license
+  const limits = customer?.limits
 
-  // const owner = useSelector(selectOwner)
-  // const organization = useSelector(selectOrganization)
-
-  if (!customer)
-    return (
-      <Redirect
-        to={{
-          pathname: location.pathname.replace(REGEX_LAST_PATH, ''),
-          state: { isRedirect: true },
-        }}
-      />
-    )
+  if (!customer) return <Redirect to={{ pathname: '/organization/reseller', state: { isRedirect: true } }} />
 
   return (
     <Container
@@ -47,16 +33,19 @@ export const CustomerPage: React.FC = () => {
         </Typography>
       }
     >
-      <Typography variant="subtitle1">License</Typography>
-      <LicensingSetting licenses={licenses} limits={limits} />
+      <Typography variant="subtitle1" marginRight={3}>
+        <Title>License</Title>
+        <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
+          Update Plan
+        </Button>
+      </Typography>
+      <LicensingSetting licenses={license ? [{ ...license, limits }] : []} />
       <FormDisplay
         icon={<Avatar email={customer?.reseller} size={28} />}
         label="Sales Rep"
         displayValue={customer?.reseller}
         displayOnly
       />
-      <Typography variant="subtitle1">Plan</Typography>
-      <Plans />
     </Container>
   )
 }

@@ -1,19 +1,9 @@
 import React from 'react'
-import { List, ListItem, ListItemIcon, ListItemText, Typography, Box } from '@mui/material'
-import { LicensingIcon } from './LicensingIcon'
+import { List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
-import { ListItemCopy } from './ListItemCopy'
-import { LimitSetting } from './LimitSetting'
+import { LicensingIcon } from './LicensingIcon'
+import { LimitsSetting } from './LimitsSetting'
 import { Timestamp } from './Timestamp'
-
-function sortLimits(a, b) {
-  const order = ['iot-devices', 'org-users', 'tagging']
-  const indexA = order.indexOf(a.name)
-  const indexB = order.indexOf(b.name)
-  if (indexA === -1) return 1 // a is not in the order array, it should come last
-  if (indexB === -1) return -1 // b is not in the order array, it should come last
-  return indexA - indexB // both are in the order array, sort them accordingly
-}
 
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
   if (!licenses.length) return null
@@ -44,31 +34,14 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
               }
             />
           </ListItem>
-          {!!(license.id || license.limits?.length) && (
-            <ListItem>
-              <ListItemIcon />
-              <Box width="100%">
-                {license.limits && (
-                  <Box marginBottom={3} marginTop={1}>
-                    {license.limits?.sort(sortLimits).map(limit => (
-                      <LimitSetting key={limit.name} limit={limit} />
-                    ))}
-                  </Box>
-                )}
-                <ListItemCopy label="License Key" value={license.id} showBackground />
-              </Box>
-            </ListItem>
-          )}
+          <LimitsSetting limits={license.limits} id={license.id} />
         </List>
       ))}
-      <List sx={{ maxWidth: 500 }}>
-        {limits.map(limit => (
-          <ListItem key={limit.name}>
-            <ListItemIcon />
-            <LimitSetting limit={limit} />
-          </ListItem>
-        ))}
-      </List>
+      {!!limits.length && (
+        <List sx={{ maxWidth: 500 }} disablePadding>
+          <LimitsSetting limits={limits} />
+        </List>
+      )}
     </>
   )
 }

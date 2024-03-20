@@ -87,7 +87,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
             <b>Refresh the application</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Device state will update automatically as long as you system is on and the app is running.
+            Device state will update automatically while your system is on and the app is running.
           </Typography>
         </>
       }

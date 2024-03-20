@@ -164,8 +164,6 @@ export default createModel<RootModel>()({
         .map(d => {
           if (d.id === id) {
             updated = true
-            if (device?.loaded || d.loaded)
-              console.log('SET DEVICE LOADED', { id, newloaded: device?.loaded, prevloaded: d.loaded, name: d.name })
             return device ? { ...device, hidden: d.hidden } : null
           }
           return d

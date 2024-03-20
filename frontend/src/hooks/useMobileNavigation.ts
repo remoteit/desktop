@@ -65,7 +65,7 @@ const useMobileNavigation = () => {
       nextHistory.push(pathname)
     }
 
-    if (state?.isRedirect) console.log('MOBILE NAVIGATION isRedirect')
+    if (state?.isRedirect) console.log('MOBILE NAVIGATION isRedirect', pathname)
 
     dispatch.ui.set({ mobileNavigation: nextHistory })
   }, [dispatch, pathname])

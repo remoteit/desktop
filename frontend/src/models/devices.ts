@@ -200,6 +200,8 @@ export default createModel<RootModel>()({
         thisDevice,
         newDevice,
         isService,
+        accountId,
+        silent,
       }: {
         id: string // service or device id
         hidden?: boolean
@@ -207,17 +209,19 @@ export default createModel<RootModel>()({
         thisDevice?: boolean
         newDevice?: boolean
         isService?: boolean
+        accountId?: string
+        silent?: boolean
       },
       state
     ) {
       if (!id) return
 
-      const accountId = selectActiveAccountId(state)
+      accountId = accountId || selectActiveAccountId(state)
 
       let result: IDevice | undefined
       let errors: Error[] | undefined
 
-      dispatch.devices.set({ fetching: true, accountId })
+      if (!silent) dispatch.devices.set({ fetching: true, accountId })
       const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
       try {
@@ -251,7 +255,7 @@ export default createModel<RootModel>()({
         }
       }
 
-      dispatch.devices.set({ fetching: false, accountId })
+      if (!silent) dispatch.devices.set({ fetching: false, accountId })
     },
 
     async fetchCount(params: IOrganizationRole, state) {

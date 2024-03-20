@@ -98,7 +98,6 @@ declare global {
     quantity: number | null
     plan: IPlan
     subscription?: ISubscription
-    managePath?: string
     limits?: ILimit[]
     custom: boolean
   }
