@@ -283,10 +283,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           }
           secondary={
             <Switch>
-              <Route path="/organization/reseller">
-                <ResellerPage />
-              </Route>
-
               <Route path="/organization/customer/add">
                 <CustomerAddPage />
               </Route>
@@ -297,6 +293,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/organization/customer/:userID">
                 <CustomerPage />
+              </Route>
+
+              <Route path="/organization/customer">
+                <ResellerPage />
               </Route>
 
               <Route path="/organization/add">

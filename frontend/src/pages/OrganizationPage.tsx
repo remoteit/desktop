@@ -97,7 +97,7 @@ export const OrganizationPage: React.FC = () => {
         {organization.reseller && (
           <ListItemLocation
             title="Customers"
-            to="/organization/reseller"
+            to="/organization/customer"
             icon="address-book"
             disabled={!admin}
             showDisabled

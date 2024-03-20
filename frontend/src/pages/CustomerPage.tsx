@@ -17,7 +17,7 @@ export const CustomerPage: React.FC = () => {
   const license = customer?.license
   const limits = customer?.limits
 
-  if (!customer) return <Redirect to={{ pathname: '/organization/reseller', state: { isRedirect: true } }} />
+  if (!customer) return <Redirect to={{ pathname: '/organization/customer', state: { isRedirect: true } }} />
 
   return (
     <Container
