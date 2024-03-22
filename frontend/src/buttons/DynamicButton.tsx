@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
-import { IconButton, Tooltip, Button, alpha, darken } from '@mui/material'
+import { IconButton, Tooltip, Button, ButtonProps, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 import { Color } from '../styling'
@@ -19,6 +19,7 @@ export type DynamicButtonProps = {
   className?: string
   onClick?: React.MouseEventHandler<HTMLButtonElement>
   fullWidth?: boolean
+  sx?: ButtonProps['sx']
 }
 
 export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((props, ref) => {
@@ -36,6 +37,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     disabled,
     loading,
     fullWidth,
+    sx,
   }: DynamicButtonProps = props
 
   if (icon && loading && size === 'small') {
@@ -53,6 +55,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
         disabled={disabled}
         className={classnames(className, css.button)}
         fullWidth={fullWidth}
+        sx={sx}
       >
         {title}
       </Button>
@@ -81,6 +84,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
         disabled={disabled}
         className={classnames(className, css.button)}
         fullWidth={fullWidth}
+        sx={sx}
       >
         {IconComponent}
         {title}

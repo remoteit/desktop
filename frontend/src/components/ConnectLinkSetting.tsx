@@ -37,7 +37,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
         subLabel={
           <Typography
             variant="caption"
-            color={disabled ? 'grayDarkest.main' : 'grayDark.main'}
+            color={disabled ? undefined : 'grayDark.main'}
             sx={{ display: 'block', lineHeight: 1.2, marginTop: 0.4 }}
           >
             {canManage
