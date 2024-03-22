@@ -1,16 +1,16 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { selectDeviceModelAttributes, selectIsFiltered } from '../../selectors/devices'
+import { selectDeviceModelAttributes, selectIsFiltered } from '../selectors/devices'
 import { useSelector, useDispatch } from 'react-redux'
-import { State, Dispatch } from '../../store'
-import { DEMO_DEVICE_CLAIM_CODE } from '../../constants'
+import { State, Dispatch } from '../store'
+import { DEMO_DEVICE_CLAIM_CODE } from '../constants'
 import { Typography, Button, Box } from '@mui/material'
-import { isUserAccount } from '../../selectors/accounts'
-import { GuideStep } from '../GuideStep'
-import { spacing } from '../../styling'
-import { Notice } from '../Notice'
-import { Icon } from '../Icon'
-import { Body } from '../Body'
+import { isUserAccount } from '../selectors/accounts'
+import { GuideStep } from './GuideStep'
+import { spacing } from '../styling'
+import { Notice } from './Notice'
+import { Icon } from './Icon'
+import { Body } from './Body'
 
 export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
@@ -19,7 +19,7 @@ export const DeviceListEmpty: React.FC = () => {
   const deviceModel = useSelector(selectDeviceModelAttributes)
   const userAccount = useSelector(isUserAccount)
   const claiming = useSelector((state: State) => state.ui.claiming)
-  const noResults = (deviceModel.searched || isFiltered) && !deviceModel.total
+  const noResults = deviceModel.searched || isFiltered
 
   return (
     <Body center>
