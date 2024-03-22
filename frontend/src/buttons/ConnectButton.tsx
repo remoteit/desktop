@@ -144,7 +144,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   return state === 'connected' && props.size === 'large' && browser.hasBackend ? (
     <Stack flexDirection="row">
-      {button} &nbsp;
+      {button}
       <DynamicButton
         icon="stop"
         color="primary"
@@ -152,6 +152,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
         size="large"
         iconType="solid"
         onClick={event => clickHandler(event, true)}
+        sx={{ marginLeft: 2 }}
       />
     </Stack>
   ) : (
