@@ -60,9 +60,9 @@ export const ServiceList: React.FC<DeviceListProps> = ({
       headerContextProvider={DeviceListContext.Provider}
     >
       {rows.map(([service, device]) => {
-        const duplicateName = device.name === previousName.current
+        const duplicateName = device.id === previousName.current
         const divider = !duplicateName && !!previousName.current
-        previousName.current = device.name
+        previousName.current = device.id
         return (
           <DeviceListContext.Provider
             key={service.id}
