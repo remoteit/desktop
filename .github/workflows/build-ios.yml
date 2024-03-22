@@ -1,4 +1,4 @@
-name: Build/mobile
+name: Build / iOS
 
 on: workflow_dispatch
 
@@ -17,7 +17,7 @@ jobs:
     strategy:
       # fail-fast: false
       matrix:
-        os: [macos-latest]
+        os: [macos-13]
 
     steps:
       - name: check Xcode version

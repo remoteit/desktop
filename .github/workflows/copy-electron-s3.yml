@@ -1,4 +1,4 @@
-name: Build/release-s3
+name: Copy / Electron to S3
 
 on: 
   workflow_dispatch:
