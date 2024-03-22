@@ -1,8 +1,8 @@
 import { State } from '../store'
 import { createModel } from '@rematch/core'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { getAccountIds } from './accounts'
+import { graphQLFetchSessions } from '../services/graphQLRequest'
 import { setConnection, getManufacturerType, getManufacturerUser } from '../helpers/connectionHelper'
-import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLDisconnect } from '../services/graphQLMutation'
 import { accountFromDevice } from './accounts'
 import { isReverseProxy } from './applicationTypes'
@@ -22,62 +22,28 @@ export default createModel<RootModel>()({
   state: sessionsState,
   effects: dispatch => ({
     async fetch(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      try {
-        const response = await graphQLRequest(
-          ` query Sessions($accountId: String) {
-              login {
-                account(id: $accountId) {
-                  sessions {
-                    id
-                    timestamp
-                    source
-                    endpoint {
-                      proxy
-                      platform
-                      manufacturer
-                      geo {
-                        city
-                        stateName
-                        countryName
-                      }
-                    }
-                    user {
-                      id
-                      email
-                    }
-                    target {
-                      id
-                      name
-                      platform
-                      application
-                      owner {
-                        id
-                      }
-                      device {
-                        id
-                        name
-                        access {
-                          user {
-                            id
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }`,
-          { accountId }
-        )
-        graphQLGetErrors(response)
-        const all = await dispatch.sessions.parse(response)
-        console.log('SESSIONS', all)
-        dispatch.sessions.updatePublicConnections(all)
-        dispatch.sessions.set({ all })
-      } catch (error) {
-        await apiError(error)
+      const ids: string[] = getAccountIds(state)
+      const result = await graphQLFetchSessions(ids)
+      if (result === 'ERROR') return
+
+      const all = await dispatch.sessions.parse({ result, ids })
+      console.log('SESSIONS', all)
+      dispatch.sessions.updatePublicConnections(all)
+      dispatch.sessions.set({ all })
+    },
+
+    async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }): Promise<ISession[]> {
+      if (!result) return []
+      const data = result?.data?.data?.login
+      let all: ISession[] = []
+      for (let index = 0; index < ids.length; index++) {
+        const accountId = ids[index]
+        if (!data?.[`_${index}`]) continue
+        const { sessions } = data[`_${index}`]
+        const parsed = await dispatch.sessions.parseSessions({ data: sessions, accountId })
+        all = all.concat(parsed)
       }
+      return all
     },
 
     /* 
@@ -86,17 +52,20 @@ export default createModel<RootModel>()({
       - Filter out this user's sessions
       - Combine same user sessions
     */
-    async parse(response: AxiosResponse | void, state): Promise<ISession[]> {
-      if (!response) return []
-      const data = response?.data?.data?.login?.account?.sessions
+    async parseSessions({ data, accountId }: { data: any; accountId: string }, state): Promise<ISession[]> {
       if (!data) return []
-      console.log('SESSION DATA', data)
       const dates = data.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
       return sorted.reduce((sessions: ISession[], s: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
         if (!s.endpoint) return sessions
         const reverseProxy = isReverseProxy(state, s.target.application)
+        // const accountIdFromDevice = accountFromDevice(
+        //   state,
+        //   s.target.owner.id,
+        //   s.target.device.access.map(a => a.user.id)
+        // )
+        // if (accountIdFromDevice !== accountId) console.warn('ACCOUNT MISMATCH', accountId, accountIdFromDevice, s)
         sessions.push({
           id: s.id,
           reverseProxy,
@@ -109,11 +78,7 @@ export default createModel<RootModel>()({
           geo: s.endpoint.geo,
           target: {
             id: s.target.id,
-            accountId: accountFromDevice(
-              state,
-              s.target.owner.id,
-              s.target.device.access.map(a => a.user.id)
-            ),
+            accountId,
             deviceId: s.target.device.id,
             platform: s.target.platform,
             name: combinedName(s.target, s.target.device),

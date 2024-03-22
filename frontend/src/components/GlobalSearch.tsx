@@ -95,7 +95,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         }}
         groupBy={option => option.nodeName}
         onInputChange={(event, newQuery, reason) => {
-          console.log('inputchange', newQuery, reason)
           if (reason === 'input') setQuery(newQuery)
           if (reason === 'clear') clear()
         }}

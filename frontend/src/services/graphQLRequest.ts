@@ -303,3 +303,51 @@ export async function graphQLFetchGuests(accountId: string) {
     { accountId }
   )
 }
+
+export async function graphQLFetchSessions(ids: string[]) {
+  return await graphQLBasicRequest(
+    ` query Sessions {
+        login {
+          ${ids
+            .map(
+              (id, index) => `
+            _${index}: account(id: "${id}") {
+              sessions {
+                id
+                timestamp
+                source
+                endpoint {
+                  proxy
+                  platform
+                  manufacturer
+                  geo {
+                    city
+                    stateName
+                    countryName
+                  }
+                }
+                user {
+                  id
+                  email
+                }
+                target {
+                  id
+                  name
+                  platform
+                  application
+                  owner {
+                    id
+                  }
+                  device {
+                    id
+                    name
+                  }
+                }
+              }
+            }`
+            )
+            .join('\n')}
+        }
+      }`
+  )
+}
