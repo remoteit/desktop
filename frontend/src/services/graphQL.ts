@@ -77,6 +77,15 @@ export async function apiError(error: unknown) {
 
   if (axios.isAxiosError(error)) {
     console.error('AXIOS ERROR DETAILS:', { ...error })
+
+    if (error.response?.status === 429) {
+      ui.set({
+        errorMessage:
+          'API request failure. Your API usage has been throttled. Check the usage on your account and if issues persist please contact support.',
+      })
+      return
+    }
+
     if (error.response?.status === 401 || error.response?.status === 403) {
       if (errorCount > 10) {
         auth.signOut()
@@ -84,15 +93,10 @@ export async function apiError(error: unknown) {
       console.log('Incrementing error count: ', errorCount)
       await sleep(1000 * errorCount * errorCount)
       auth.checkSession({ refreshToken: true })
-    } else if (error.code === 'ERR_NETWORK') {
-      ui.set({
-        errorMessage:
-          'API request failure. Your API usage may be throttled. Check the usage on your account and if issues persist please contact support.',
-      })
     }
   }
 
-  if ((error instanceof Error || axios.isAxiosError(error)) && error.message !== 'Network Error') {
+  if (error instanceof Error || axios.isAxiosError(error)) {
     ui.set({ errorMessage: error.message })
   }
 }
