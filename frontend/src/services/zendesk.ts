@@ -1,4 +1,5 @@
-import { insertScript } from './Browser'
+import network from './Network'
+import browser, { insertScript } from './Browser'
 import { ZENDESK_KEY } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { store } from '../store'
@@ -12,7 +13,15 @@ declare const window: Window & {
 class Zendesk {
   visible?: boolean
 
+  constructor() {
+    network.on('connect', async () => {
+      if (this.visible) this.showChat()
+      else this.hideChat()
+    })
+  }
+
   async initChat(user?: IUser) {
+    if (browser.isMobile) return
     if (!window.zE) await this.loadChat()
 
     if (user)
