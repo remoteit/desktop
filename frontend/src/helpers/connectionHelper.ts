@@ -52,7 +52,7 @@ export function isFileToken(token: string) {
 }
 
 export function findLocalConnection(state: State, id: string, sessionId: string | undefined) {
-  return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
+  return state.connections.all.find(c => c.id === id || c.sessionId === sessionId)
 }
 
 export function newConnection(service?: IService | null): IConnection {
