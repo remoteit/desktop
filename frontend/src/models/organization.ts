@@ -4,6 +4,8 @@ import {
   graphQLRemoveOrganization,
   graphQLSetMembers,
   graphQLRemoveMembers,
+  graphQLAddCustomer,
+  graphQLRemoveCustomer,
   graphQLSetIdentityProvider,
   graphQLCreateRole,
   graphQLUpdateRole,
@@ -12,7 +14,7 @@ import {
 import { getAccountIds } from './accounts'
 import { graphQLFetchOrganizations, graphQLFetchGuests } from '../services/graphQLRequest'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { selectOrganization } from '../selectors/organizations'
+import { selectOrganization, selectReseller } from '../selectors/organizations'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 import { State } from '../store'
@@ -49,6 +51,21 @@ export const DEFAULT_ROLE: IOrganizationRole = {
   access: 'NONE',
 }
 
+export const DEFAULT_RESELLER: IReseller = {
+  name: '',
+  email: '',
+  color: '#0096e7',
+  logoUrl: '/r3.svg',
+  plans: [],
+  customers: [],
+  theme: {
+    color: '#0096e7',
+    logoUrl: '/r3.svg',
+    smallRadius: 8,
+    largeRadius: 18,
+  },
+}
+
 export const SYSTEM_ROLES: IOrganizationRole[] = [
   {
     id: 'OWNER',
@@ -73,11 +90,11 @@ export type IOrganizationState = {
   name: string
   created?: Date
   reseller: null | IReseller
-  contact: {
-    name?: string
-    email?: string
-    phone?: string
-  }
+  // contact: {
+  //   name?: string
+  //   email?: string
+  //   phone?: string
+  // }
   licenses: ILicense[]
   limits: ILimit[]
   guests: IGuest[]
@@ -101,11 +118,11 @@ export const defaultState: IOrganizationState = {
   name: '',
   domain: undefined,
   reseller: null,
-  contact: {
-    name: '',
-    email: '',
-    phone: '',
-  },
+  // contact: {
+  //   name: '',
+  //   email: '',
+  //   phone: '',
+  // },
   identityProvider: undefined,
   providers: null,
   verificationCNAME: undefined,
@@ -217,7 +234,7 @@ export default createModel<RootModel>()({
           successMessage:
             members.length > 1
               ? `${members.length} members have been ${action}.`
-              : `The member '${members[0].user.email}' has been ${action}.`,
+              : `The member “${members[0].user.email}” has been ${action}.`,
         })
       }
       dispatch.organization.fetch()
@@ -230,7 +247,7 @@ export default createModel<RootModel>()({
         dispatch.organization.setActive({
           members: organization.members.filter(m => m.user.email !== member.user.email),
         })
-        dispatch.ui.set({ successMessage: `Successfully removed ${member.user?.email}.` })
+        dispatch.ui.set({ successMessage: `Successfully removed “${member.user?.email}”.` })
       }
     },
 
@@ -290,7 +307,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      dispatch.ui.set({ successMessage: `Successfully removed ${role.name}.` })
+      dispatch.ui.set({ successMessage: `Successfully removed “${role.name}”.` })
       dispatch.organization.setActive({ roles })
     },
 
@@ -298,7 +315,57 @@ export default createModel<RootModel>()({
       dispatch.organization.setActive({ ...defaultState })
     },
 
-    async setActive(params: ILookup<any>, state) {
+    async setReseller(params: Partial<IReseller>, state) {
+      const previousReseller = selectReseller(state) || { ...DEFAULT_RESELLER }
+      const reseller = { ...previousReseller, ...params }
+      dispatch.organization.setActive({ reseller })
+    },
+
+    async addCustomer({ id, emails }: { id: string; emails: string[] }) {
+      const result = await graphQLAddCustomer(emails, id)
+      if (result === 'ERROR') return
+
+      if (!result?.data?.data?.addCustomer) {
+        dispatch.ui.set({
+          errorMessage:
+            'One of the customers couldn’t be added. \
+            Users must not have an existing subscription or belong to another reseller.',
+        })
+        return
+      }
+
+      await dispatch.ui.set({
+        successMessage:
+          emails.length > 1
+            ? `Successfully added ${emails.length} customers.`
+            : `Successfully added “${emails[0]}” as a customer.`,
+      })
+
+      await dispatch.organization.fetch()
+    },
+
+    async removeCustomer({ id, emails }: { id: string; emails: string[] }) {
+      const result = await graphQLRemoveCustomer(emails, id)
+      if (result === 'ERROR') return
+
+      if (!result?.data?.data?.removeCustomer) {
+        dispatch.ui.set({
+          errorMessage: 'There was a problem removing a customer. Please contact support if the issue persists',
+        })
+        return
+      }
+
+      await dispatch.ui.set({
+        successMessage:
+          emails.length > 1
+            ? `Successfully removed ${emails.length} customers.`
+            : `Successfully removed “${emails[0]}” as a customer.`,
+      })
+
+      await dispatch.organization.fetch()
+    },
+
+    async setActive(params: Partial<IOrganizationState>, state) {
       const id = params.id || selectActiveAccountId(state)
       let org = { ...selectOrganization(state, id) }
       Object.keys(params).forEach(key => (org[key] = params[key]))
@@ -343,6 +410,7 @@ export function parseOrganization(data: any): IOrganizationState {
     // },
     created: new Date(data.created),
     reseller: data.reseller && {
+      ...DEFAULT_RESELLER,
       ...data.reseller,
       customers: data.reseller.licenses.map((l): ICustomer => {
         const { user, ...license } = l

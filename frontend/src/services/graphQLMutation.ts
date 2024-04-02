@@ -522,3 +522,21 @@ export async function graphQLRemoveNetworkShare(networkId: string, email: string
     { networkId, email }
   )
 }
+
+export async function graphQLAddCustomer(email: string[], resellerId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation AddCustomer($resellerId: String!, $email: [String!]!) {
+        addCustomer(resellerId: $resellerId, email: $email)
+      }`,
+    { resellerId, email }
+  )
+}
+
+export async function graphQLRemoveCustomer(email: string[], resellerId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveCustomer($resellerId: String!, $email: [String!]!) {
+        removeCustomer(resellerId: $resellerId, email: $email)
+      }`,
+    { resellerId, email }
+  )
+}

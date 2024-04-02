@@ -1,10 +1,10 @@
 import React from 'react'
-import { State } from '../store'
-import { useSelector } from 'react-redux'
+import { State, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { useParams, Redirect, Link } from 'react-router-dom'
+import { selectCustomer, selectOrganization } from '../selectors/organizations'
 import { Typography, Button } from '@mui/material'
 import { LicensingSetting } from '../components/LicensingSetting'
-import { selectCustomer } from '../selectors/organizations'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { FormDisplay } from '../components/FormDisplay'
 import { Container } from '../components/Container'
@@ -13,11 +13,17 @@ import { Title } from '../components/Title'
 
 export const CustomerPage: React.FC = () => {
   const { userID = '' } = useParams<{ userID: string }>()
+  const dispatch = useDispatch<Dispatch>()
+  const organization = useSelector(selectOrganization)
   const customer = useSelector((state: State) => selectCustomer(state, undefined, userID))
   const license = customer?.license
   const limits = customer?.limits
 
   if (!customer) return <Redirect to={{ pathname: '/organization/customer', state: { isRedirect: true } }} />
+
+  const removeCustomer = async () => {
+    await dispatch.organization.removeCustomer({ id: organization.id, emails: [customer.email] })
+  }
 
   return (
     <Container
@@ -28,8 +34,11 @@ export const CustomerPage: React.FC = () => {
             <Avatar email={customer?.email} marginRight={16} />
             {customer?.email}
           </Title>
-          <DeleteButton onDelete={() => {}} />
-          {/* @TODO replace with RemoveCustomer */}
+          <DeleteButton
+            title="Remove"
+            warning={`You are removing the customer ”${customer.email}” from ${organization.name}.`}
+            onDelete={removeCustomer}
+          />
         </Typography>
       }
     >
