@@ -61,7 +61,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
               variant="text"
               icon={code ? 'command' : 'clone'}
               type="regular"
-              title="Copy"
+              title={code ? 'Copy command' : 'Copy'}
               onCopy={onCopy}
             />
           )}

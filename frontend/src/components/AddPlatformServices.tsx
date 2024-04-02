@@ -21,7 +21,7 @@ export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange, 
   const allTags = allTypes.map(t => ({ name: t.name, created: TEMP_DATE, color: t.id }))
 
   return (
-    <Stack flexWrap="wrap" marginTop={2} {...props}>
+    <Stack flexWrap="wrap" marginTop={2} alignItems="flex-end" {...props}>
       <Tags
         hideLabels
         showEmpty={!canEdit}
