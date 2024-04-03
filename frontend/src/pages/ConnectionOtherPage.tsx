@@ -42,23 +42,25 @@ export const ConnectionOtherPage: React.FC = () => {
             <Title>{session.target.name}</Title>
             {device && <InfoButton device={device} service={service} />}
           </Typography>
-          <Gutters top={null} bottom="lg">
-            <DynamicButton
-              size="large"
-              title="Disconnect"
-              color="primary"
-              icon={thisStopping ? 'spinner-third' : 'pause'}
-              iconType="solid"
-              variant="text"
-              loading={thisStopping}
-              disabled={thisStopping}
-              onClick={async () => {
-                setStopping(session.id)
-                await dispatch.sessions.disconnect({ id: connection.id, sessionId: session.id })
-              }}
-              fullWidth
-            />
-          </Gutters>
+          {device?.permissions.includes('MANAGE') && (
+            <Gutters top={null} bottom="lg">
+              <DynamicButton
+                size="large"
+                title="Disconnect"
+                color="primary"
+                icon={thisStopping ? 'spinner-third' : 'pause'}
+                iconType="solid"
+                variant="text"
+                loading={thisStopping}
+                disabled={thisStopping}
+                onClick={async () => {
+                  setStopping(session.id)
+                  await dispatch.sessions.disconnect({ id: connection.id, sessionId: session.id })
+                }}
+                fullWidth
+              />
+            </Gutters>
+          )}
         </>
       }
     >
