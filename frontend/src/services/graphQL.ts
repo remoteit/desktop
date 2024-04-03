@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 import { getGraphQLApi, getTestHeader } from '../helpers/apiHelper'
 import { getToken } from './remoteit'
 import { store } from '../store'
+import network from './Network'
 import sleep from '../helpers/sleep'
 
 let errorCount = 0
@@ -77,6 +78,8 @@ export async function apiError(error: unknown) {
 
   if (axios.isAxiosError(error)) {
     console.error('AXIOS ERROR DETAILS:', { ...error })
+
+    if (!navigator.onLine) network.offline()
 
     if (error.response?.status === 429) {
       ui.set({
