@@ -20,7 +20,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const activeAccount = useSelector(selectActiveAccountId)
   const { events, deviceId, minDate, selectedDate } = useSelector((state: State) => state.logs)
 
-  let allowed = limitDays(logLimit)
+  let allowed = limitDays(logLimit?.value)
 
   const getMinDays = () => {
     let lifetimeDays = 0

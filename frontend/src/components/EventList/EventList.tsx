@@ -43,7 +43,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
             </Button>
           }
         >
-          Plan upgrade required to view logs past {humanizeDays(logLimit)}.
+          Plan upgrade required to view logs past {humanizeDays(logLimit?.value)}.
         </Notice>
       ) : (
         <Box className={css.box}>

@@ -276,19 +276,6 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getAvailableUsers(state: State) {
-  if (isEnterprise(state)) return 1
-  const purchased = selectRemoteitLicense(state)?.quantity || 0
-  const plan = selectPlan(state)
-  const totals = deviceUserTotal(purchased, plan)
-  const used = selectOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 1)
-  return Math.max(totals.users - used, 0)
-}
-
-function isEnterprise(state: State) {
-  return selectLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
-}
-
 export function isPersonal(state: State) {
   const license = selectRemoteitLicense(state)
   return license?.plan.id === PERSONAL_PLAN_ID

@@ -11,7 +11,7 @@ import { Pre } from './Pre'
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
 export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () => {
-  const limits = useSelector((state: State) => selectLimits(state))
+  const limits = useSelector(selectLimits)
   const visible = useSelector(
     (state: State) => !state.ui.updateNoticeCleared || state.ui.updateNoticeCleared < Date.now() - oneWeek
   )

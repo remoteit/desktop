@@ -21,8 +21,8 @@ export const TestPage: React.FC = () => {
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
   const preferences = useSelector((state: State) => state.backend.preferences)
-  const limitsOverride = useSelector((state: State) => selectLimitsLookup(state, state.user.id))
-  const limits = useSelector((state: State) => selectLimits(state, state.user.id))
+  const limitsOverride = useSelector(selectLimitsLookup)
+  const limits = useSelector(selectLimits)
 
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })

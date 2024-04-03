@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom'
 import { Dispatch } from '../store'
 import { Typography, List, Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectPermissions, selectOrganization, selectReseller } from '../selectors/organizations'
+import { selectPermissions, selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { CustomerList } from '../components/CustomerList'
 import { IconButton } from '../buttons/IconButton'
@@ -15,7 +15,7 @@ import { Notice } from '../components/Notice'
 export const ResellerPage: React.FC = () => {
   const organization = useSelector(selectOrganization)
   const permissions = useSelector(selectPermissions)
-  const reseller = useSelector(selectReseller)
+  const reseller = useSelector(selectOrganizationReseller)
   const canManage = permissions?.includes('MANAGE')
 
   if (!permissions?.includes('ADMIN'))

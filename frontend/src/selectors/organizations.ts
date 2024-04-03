@@ -4,7 +4,6 @@ import {
   getUser,
   getOrganizations,
   getPlans,
-  getTestLimits,
   getLimitsOverride,
   getPlansTests,
   optionalCustomerId,
@@ -31,13 +30,16 @@ export const selectOrganizationName = createSelector(
   (organization): string => organization.name || 'Unknown'
 )
 
-export const selectReseller = createSelector([selectOrganization], organization => {
+export const selectOrganizationReseller = createSelector([selectOrganization], organization => {
   return organization.reseller
 })
 
-export const selectCustomer = createSelector([selectReseller, optionalSecondParam], (reseller, customerId) => {
-  return reseller?.customers.find(c => c.id === customerId)
-})
+export const selectCustomer = createSelector(
+  [selectOrganizationReseller, optionalSecondParam],
+  (reseller, customerId) => {
+    return reseller?.customers.find(c => c.id === customerId)
+  }
+)
 
 export const selectMembersWithAccess = createSelector(
   [selectOrganization, optionalSecondParam],
@@ -70,18 +72,18 @@ export const selectPlan = createSelector([selectRemoteitPlans, selectRemoteitLic
   return plans.find(plan => plan.id === license?.plan?.id)
 })
 
-export const selectLimits = createSelector(
-  [selectOrganization, optionalCustomerId, getTestLimits],
-  (organization, customerId, testLimits): ILimit[] => {
-    if (organization.reseller && customerId)
-      return organization.reseller.customers.find(c => c.id === customerId)?.limits || []
-    return testLimits || organization.limits || []
-  }
-)
+export const selectLimits = createSelector([selectOrganization], (organization): ILimit[] => {
+  return organization.limits || []
+})
+
+// export const selectResellerLimits = createSelector(
+//   [selectOrganization, optionalCustomerId],
+//   (organization, customerId): ILimit[] => organization.reseller?.customers.find(c => c.id === customerId)?.limits || []
+// )
 
 export const selectLimit = createSelector(
   [selectLimits, optionalSecondParam],
-  (limits, limitName) => limits.find(limit => limit.name === limitName)?.value || 'P1D'
+  (limits, limitName): ILimit | undefined => limits.find(limit => limit.name === limitName)
 )
 
 export const selectLimitsLookup = createSelector(
@@ -126,4 +128,9 @@ export const selectOwner = createSelector(
       },
     }
   }
+)
+
+export const selectAvailableUsers = createSelector(
+  [state => selectLimit(state, undefined, 'org-users')],
+  (limit): number => Math.max(limit?.value - limit?.actual, 0)
 )
