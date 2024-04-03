@@ -1,7 +1,7 @@
 import React from 'react'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
-import { Typography, Box, Button, TextField, List } from '@mui/material'
+import { Stack, Typography, Box, Button, TextField, List } from '@mui/material'
 import { ListItemCheckbox } from '../components/ListItemCheckbox'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
@@ -36,7 +36,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
 }) => {
   const connections = useSelector((state: State) => state.connections.all).slice(0, 5)
   const [confirm, setConfirm] = React.useState<boolean>(false)
-  const [contact, setContact] = React.useState<boolean>(false)
+  const [contact, setContact] = React.useState<boolean>(true)
   const [reasons, setReasons] = React.useState<string[]>([])
   const [body, setBody] = React.useState<string>('')
   const dispatch = useDispatch<Dispatch>()
@@ -90,16 +90,34 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
               color="error"
               maxWidth="sm"
               onDeny={() => setConfirm(false)}
-              title="Why do you want to delete your account?"
+              title={
+                <>
+                  <Box
+                    sx={{
+                      fontSize: 105,
+                      lineHeight: '1em',
+                      float: 'right',
+                      marginRight: -1,
+                      marginTop: -1,
+                      marginBottom: -3,
+                      marginLeft: 1,
+                    }}
+                  >
+                    {/* Pleading Emoji */}
+                    &#x1F97A;
+                  </Box>
+                  Why do you want to delete your account?
+                  <Typography variant="body2" marginTop={1}>
+                    Please, help us improve by telling us why it didn't work out.
+                    <br />
+                    <i>We are sorry to see you go! </i>
+                  </Typography>
+                </>
+              }
               action="Delete"
               disabled={body.length < 2 && reasons.length < 1}
             >
-              <Typography variant="body2">
-                Help us improve by telling us why you want to delete your account.
-                <br />
-                <i>We are sorry to see you go! </i>
-              </Typography>
-              <List>
+              <List disablePadding>
                 {REASONS.map((reason, i) => (
                   <ListItemCheckbox
                     key={i}

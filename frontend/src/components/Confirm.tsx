@@ -12,7 +12,7 @@ import { TransitionProps } from '@mui/material/transitions'
 import React from 'react'
 
 export type ConfirmProps = {
-  title?: string
+  title?: React.ReactNode
   action?: string
   open: boolean
   disabled?: boolean

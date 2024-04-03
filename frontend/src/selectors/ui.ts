@@ -4,7 +4,6 @@ import { findLongestLength, defaultDeviceTimeSeries, defaultServiceTimeSeries } 
 import {
   getDefaultSelected,
   getThemeDark,
-  getThemeModified,
   getUpdateStatus,
   getNotifiedVersion,
   getPreferences,
@@ -21,9 +20,7 @@ export const selectDefaultSelectedPage = createSelector(
   (activeAccountId, defaultSelected) => defaultSelected[activeAccountId] || {}
 )
 
-export const selectTheme = createSelector([getThemeDark, getThemeModified], (darkTheme, themeModified) =>
-  getTheme(darkTheme, themeModified)
-)
+export const selectTheme = createSelector([getThemeDark], getTheme)
 
 export const selectUpdateNotice = createSelector(
   [getUpdateStatus, getPreferences, getNotifiedVersion],

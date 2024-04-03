@@ -240,7 +240,6 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                   name
                   email
                   logoUrl
-                  color
                   plans {
                     ${PLANS_QUERY}
                   }

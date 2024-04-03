@@ -23,7 +23,7 @@ export const ResellerPage: React.FC = () => {
 
   return (
     <Container
-      bodyProps={{ inset: false, verticalOverflow: true }}
+      bodyProps={{ inset: false, verticalOverflow: true, horizontalOverflow: true }}
       integrated
       header={
         <Typography variant="h1">

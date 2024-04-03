@@ -11,6 +11,7 @@ type IUserState = {
   email: string
   created: Date
   notificationSettings: INotificationSetting
+  reseller: IResellerRef | null
   language: string
   attributes: ILookup<any>
 }
@@ -20,6 +21,7 @@ const defaultState: IUserState = {
   email: '',
   created: new Date(0),
   notificationSettings: {},
+  reseller: null,
   language: 'en',
   attributes: {},
 }
@@ -37,6 +39,11 @@ export default createModel<RootModel>()({
                 email
                 language
                 created
+                reseller {
+                  name
+                  email
+                  logoUrl
+                }
                 notificationSettings {
                   emailNotifications
                   desktopNotifications

@@ -58,6 +58,7 @@ declare global {
   type IOrganizationSettings = {
     name?: string
     domain?: string
+    logoUrl?: string
     providers?: null | IOrganizationProvider[]
     accountId?: string
   }
@@ -163,11 +164,13 @@ declare global {
     created: Date
   }
 
-  type IReseller = {
+  type IResellerRef = {
     name: string
-    color: string
     email: string
     logoUrl: string
+  }
+
+  type IReseller = IResellerRef & {
     plans: IPlan[]
     customers: ICustomer[]
   }
@@ -261,7 +264,6 @@ declare module '@mui/material/styles' {
     primaryLighter: ColorType
     primaryHighlight: ColorType
     primaryBackground: ColorType
-    secondary: ColorType
     successLight: ColorType
     success: ColorType
     successDark: ColorType
@@ -292,7 +294,6 @@ declare module '@mui/material/styles' {
     primaryLighter?: ColorPartial
     primaryHighlight?: ColorPartial
     primaryBackground?: ColorPartial
-    secondary?: ColorPartial
     successLight?: ColorPartial
     success?: ColorPartial
     successDark?: ColorPartial

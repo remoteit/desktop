@@ -14,7 +14,7 @@ import {
 import { getAccountIds } from './accounts'
 import { graphQLFetchOrganizations, graphQLFetchGuests } from '../services/graphQLRequest'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { selectOrganization, selectReseller } from '../selectors/organizations'
+import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 import { State } from '../store'
@@ -54,16 +54,10 @@ export const DEFAULT_ROLE: IOrganizationRole = {
 export const DEFAULT_RESELLER: IReseller = {
   name: '',
   email: '',
-  color: '#0096e7',
-  logoUrl: '/r3.svg',
+  logoUrl: '',
+  // color: '#0096e7', // not used
   plans: [],
   customers: [],
-  theme: {
-    color: '#0096e7',
-    logoUrl: '/r3.svg',
-    smallRadius: 8,
-    largeRadius: 18,
-  },
 }
 
 export const SYSTEM_ROLES: IOrganizationRole[] = [
@@ -90,11 +84,6 @@ export type IOrganizationState = {
   name: string
   created?: Date
   reseller: null | IReseller
-  // contact: {
-  //   name?: string
-  //   email?: string
-  //   phone?: string
-  // }
   licenses: ILicense[]
   limits: ILimit[]
   guests: IGuest[]
@@ -118,11 +107,6 @@ export const defaultState: IOrganizationState = {
   name: '',
   domain: undefined,
   reseller: null,
-  // contact: {
-  //   name: '',
-  //   email: '',
-  //   phone: '',
-  // },
   identityProvider: undefined,
   providers: null,
   verificationCNAME: undefined,
@@ -316,9 +300,10 @@ export default createModel<RootModel>()({
     },
 
     async setReseller(params: Partial<IReseller>, state) {
-      const previousReseller = selectReseller(state) || { ...DEFAULT_RESELLER }
+      const previousReseller = selectOrganizationReseller(state) || { ...DEFAULT_RESELLER }
       const reseller = { ...previousReseller, ...params }
       dispatch.organization.setActive({ reseller })
+      await dispatch.organization.setOrganization({ ...params })
     },
 
     async addCustomer({ id, emails }: { id: string; emails: string[] }) {

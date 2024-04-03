@@ -233,7 +233,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
     },
-    async setTheme(themeMode: UIState['themeMode'] | undefined, state) {
+    async setTheme(themeMode: UIState['themeMode'] | void, state) {
       themeMode = themeMode || state.ui.themeMode
       const themeDark = isDarkMode(themeMode)
       dispatch.ui.setPersistent({ themeMode })
