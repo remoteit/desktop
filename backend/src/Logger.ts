@@ -36,7 +36,9 @@ const logFormat = format.combine(
       return info
     },
   },
-  format.printf(({ level, message, label, timestamp }) => `${timestamp} ${label || '-'} ${level}: ${message}`)
+  format.printf(
+    ({ level, message, label, timestamp }) => `${timestamp} [PID ${process.pid}] ${label || '-'} ${level}: ${message}`
+  )
 )
 
 const logger = createLogger({
