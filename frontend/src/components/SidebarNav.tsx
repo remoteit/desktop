@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
+import { selectResellerRef } from '../selectors/organizations'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { selectOrganizationReseller } from '../selectors/organizations'
 import {
   Box,
   Badge,
@@ -30,8 +30,7 @@ import { spacing } from '../styling'
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
   const counts = useCounts()
-  const user = useSelector((state: State) => state.user)
-  const reseller = useSelector(selectOrganizationReseller)
+  const reseller = useSelector(selectResellerRef)
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
   const remoteUI = useSelector(isRemoteUI)
   const limits = useSelector(selectLimitsLookup)
@@ -125,7 +124,7 @@ export const SidebarNav: React.FC = () => {
         <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
       <Box className={css.footer}>
-        <ResellerLogo reseller={reseller || user.reseller} marginLeft={4} />
+        <ResellerLogo reseller={reseller} marginLeft={4} />
         <ListItemLocation
           title="Notifications"
           to="/announcements"

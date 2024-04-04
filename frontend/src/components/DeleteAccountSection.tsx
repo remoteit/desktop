@@ -1,7 +1,7 @@
 import React from 'react'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
-import { Stack, Typography, Box, Button, TextField, List } from '@mui/material'
+import { Typography, Box, Button, TextField, List } from '@mui/material'
 import { ListItemCheckbox } from '../components/ListItemCheckbox'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'

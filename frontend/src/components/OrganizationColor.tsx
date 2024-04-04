@@ -21,14 +21,14 @@ export const OrganizationTheme: React.FC<{ color?: string }> = ({ color }) => {
   const tag: ITag = { name: label.name, color: label.id, created: new Date() }
 
   const onReset = () => {
-    dispatch.organization.setReseller({ color: undefined })
-    dispatch.ui.set({ themeModified: Math.random() })
+    // dispatch.organization.setReseller({ color: undefined })
+    // dispatch.ui.set({ themeModified: Math.random() })
     setOpen(false)
   }
 
   const onSave = (key: string, value: number | string) => {
     dispatch.organization.setReseller({ [key]: value })
-    dispatch.ui.set({ themeModified: Math.random() })
+    // dispatch.ui.set({ themeModified: Math.random() })
   }
 
   const cx = Color(color)

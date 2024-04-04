@@ -34,6 +34,11 @@ export const selectOrganizationReseller = createSelector([selectOrganization], o
   return organization.reseller
 })
 
+export const selectResellerRef = createSelector([selectOrganizationReseller, getUser], (reseller, user) => {
+  console.log('SELECT RESELLER REF', reseller, user.reseller)
+  return reseller || user.reseller
+})
+
 export const selectCustomer = createSelector(
   [selectOrganizationReseller, optionalSecondParam],
   (reseller, customerId) => {
