@@ -38,10 +38,6 @@ export function ConnectionStateIcon({
     spin = true
   }
 
-  if (instance?.state === 'inactive') {
-    showQuality = false
-  }
-
   const css = useStyles()
 
   if (mini)

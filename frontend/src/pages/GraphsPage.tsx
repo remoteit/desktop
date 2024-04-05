@@ -27,12 +27,12 @@ export const GraphsPage: React.FC = () => {
       }
     >
       <Notice severity="info" button={<PlanActionChip />} gutterTop>
-        {humanizeDays(logLimit)} of logs are available with your plan. <em>Update to see more.</em>
+        {humanizeDays(logLimit?.value)} of logs are available with your plan. <em>Update to see more.</em>
       </Notice>
       <Typography variant="subtitle1">Device list and details</Typography>
       <TimeSeriesSelect
         timeSeriesOptions={deviceTimeSeries}
-        logLimit={logLimit}
+        logLimit={logLimit?.value}
         defaults={timeSeriesDefaults.deviceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ deviceTimeSeries: value })
@@ -42,7 +42,7 @@ export const GraphsPage: React.FC = () => {
       <Typography variant="subtitle1">Service details</Typography>
       <TimeSeriesSelect
         timeSeriesOptions={serviceTimeSeries}
-        logLimit={logLimit}
+        logLimit={logLimit?.value}
         defaults={timeSeriesDefaults.serviceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ serviceTimeSeries: value })

@@ -425,8 +425,8 @@ function attributeQuery(attributes: string[]) {
       query += DeviceSelectLookup[l]
     } else if (ServiceSelectLookup[l]) {
       serviceQuery += ServiceSelectLookup[l]
-    } else {
-      console.warn(`Missing query for attribute %c${l}`, 'font-weight: bold')
+      // } else {
+      //   console.warn(`Missing query for attribute %c${l}`, 'font-weight: bold')
     }
   }
 

@@ -2,10 +2,11 @@ import React from 'react'
 import { Redirect } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { Typography, List } from '@mui/material'
+import { Typography, List, ListSubheader } from '@mui/material'
 import { selectPermissions, selectOrganization } from '../selectors/organizations'
 import { OrganizationSAMLSettings } from '../components/OrganizationSAMLSettings'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
+import { ResellerSettings } from '../components/ResellerSettings'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
@@ -22,6 +23,7 @@ export const OrganizationSettingsPage: React.FC = () => {
 
   return (
     <Container
+      gutterBottom
       bodyProps={{ inset: false }}
       header={
         <Typography variant="h1">
@@ -43,36 +45,9 @@ export const OrganizationSettingsPage: React.FC = () => {
         </Typography>
       }
     >
-      {organization.reseller && (
-        <>
-          <Typography variant="subtitle1">Reseller</Typography>
-          <List>
-            <InlineTextFieldSetting
-              icon="user"
-              value={organization.contact.name}
-              label="Name"
-              resetValue={organization.contact.name}
-              onSave={value => alert(`Save contact ${value}`)}
-            />
-            <InlineTextFieldSetting
-              icon="at"
-              value={organization.contact.email}
-              label="Email"
-              resetValue={organization.contact.email}
-              onSave={value => alert(`Save contact ${value}`)}
-            />
-            <InlineTextFieldSetting
-              icon="phone"
-              value={organization.contact.phone}
-              label="Phone"
-              resetValue={organization.contact.phone}
-              onSave={value => alert(`Save contact ${value}`)}
-            />
-          </List>
-        </>
-      )}
-      <Typography variant="subtitle1">General</Typography>
       <List>
+        <ResellerSettings reseller={organization.reseller} />
+        <ListSubheader>General</ListSubheader>
         <InlineTextFieldSetting
           icon="industry-alt"
           value={organization.name}

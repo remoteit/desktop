@@ -20,7 +20,7 @@ export const selectDefaultSelectedPage = createSelector(
   (activeAccountId, defaultSelected) => defaultSelected[activeAccountId] || {}
 )
 
-export const selectTheme = createSelector([getThemeDark], darkTheme => getTheme(darkTheme))
+export const selectTheme = createSelector([getThemeDark], getTheme)
 
 export const selectUpdateNotice = createSelector(
   [getUpdateStatus, getPreferences, getNotifiedVersion],
@@ -31,19 +31,16 @@ export const selectUpdateNotice = createSelector(
   }
 )
 
-export const selectTimeSeriesDefaults = createSelector(
-  [state => selectLimit(state, undefined, 'log-limit')],
-  logLimit => ({
-    deviceTimeSeries: {
-      ...defaultDeviceTimeSeries,
-      length: findLongestLength(Duration.fromISO(logLimit), defaultDeviceTimeSeries.resolution),
-    },
-    serviceTimeSeries: {
-      ...defaultServiceTimeSeries,
-      length: findLongestLength(Duration.fromISO(logLimit), defaultServiceTimeSeries.resolution),
-    },
-  })
-)
+export const selectTimeSeriesDefaults = createSelector([state => selectLimit(state, undefined, 'log-limit')], logLimit => ({
+  deviceTimeSeries: {
+    ...defaultDeviceTimeSeries,
+    length: findLongestLength(Duration.fromISO(logLimit?.value), defaultDeviceTimeSeries.resolution),
+  },
+  serviceTimeSeries: {
+    ...defaultServiceTimeSeries,
+    length: findLongestLength(Duration.fromISO(logLimit?.value), defaultServiceTimeSeries.resolution),
+  },
+}))
 
 export const selectTimeSeries = createSelector(
   [selectTimeSeriesDefaults, getDeviceTimeSeries, getServiceTimeSeries],

@@ -1,27 +1,38 @@
 import React from 'react'
 import { Typography, CircularProgress, LinearProgress } from '@mui/material'
+import { spacing, Color } from '../../styling'
+import { ResellerLogo } from '../ResellerLogo'
 import { makeStyles } from '@mui/styles'
 import { Gutters } from '../Gutters'
-import { Logo } from '../../components/Logo'
+import { Logo } from '../Logo'
 import { Body } from '../Body'
-import { spacing, Color } from '../../styling'
 
 export interface LoadingMessageProps {
   message?: React.ReactNode
   spinner?: boolean
   logo?: boolean
   logoColor?: Color
+  reseller?: IResellerRef | null
   inline?: boolean
   invert?: boolean
 }
 
-export function LoadingMessage({ message, logo, logoColor, invert, spinner = true, inline }: LoadingMessageProps) {
+export function LoadingMessage({
+  message,
+  logo,
+  logoColor,
+  reseller,
+  invert,
+  spinner = true,
+  inline,
+}: LoadingMessageProps) {
   const css = useStyles()
   const Container = inline ? Gutters : Body
   return (
     <Container className={invert ? css.invert : undefined} center>
+      {reseller && <ResellerLogo reseller={reseller} marginBottom={8} />}
       {logo && <Logo color={invert ? 'alwaysWhite' : logoColor} className={css.margin} />}
-      {spinner && logo ? (
+      {spinner && (logo || reseller) ? (
         <LinearProgress
           className={css.fadeIn}
           sx={{ position: 'absolute', width: '160px', height: '1px', marginTop: 5 }}

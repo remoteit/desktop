@@ -137,8 +137,8 @@ export async function graphQLShareDevice(params: IShareProps) {
 
 export async function graphQLSetOrganization(params: IOrganizationSettings & { accountId: string }) {
   return await graphQLBasicRequest(
-    ` mutation SetOrganization($accountId: String, $name: String, $domain: String, $providers: [AuthenticationProvider!]) {
-        setOrganization(accountId: $accountId, name: $name, domain: $domain, providers: $providers)
+    ` mutation SetOrganization($accountId: String, $name: String, $domain: String, $logoUrl: String, $providers: [AuthenticationProvider!]) {
+        setOrganization(accountId: $accountId, name: $name, domain: $domain, logoUrl: $logoUrl, providers: $providers)
       }`,
     params
   )
@@ -520,5 +520,23 @@ export async function graphQLRemoveNetworkShare(networkId: string, email: string
         removeNetworkShare(networkId: $networkId, email: $email)
       }`,
     { networkId, email }
+  )
+}
+
+export async function graphQLAddCustomer(email: string[], resellerId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation AddCustomer($resellerId: String!, $email: [String!]!) {
+        addCustomer(resellerId: $resellerId, email: $email)
+      }`,
+    { resellerId, email }
+  )
+}
+
+export async function graphQLRemoveCustomer(email: string[], resellerId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveCustomer($resellerId: String!, $email: [String!]!) {
+        removeCustomer(resellerId: $resellerId, email: $email)
+      }`,
+    { resellerId, email }
   )
 }

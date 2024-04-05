@@ -52,5 +52,6 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: spacing.sm,
   },
 }))

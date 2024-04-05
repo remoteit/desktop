@@ -38,7 +38,6 @@ export type Color =
   | 'primaryHighlight'
   | 'primaryBackground'
   | 'primaryDark'
-  | 'secondary'
   | 'successLight'
   | 'success'
   | 'successDark'
@@ -67,12 +66,12 @@ export type Color =
 
 export const lightColors: { [key in Color]: string } = {
   primary: '#0096e7',
+  primaryDark: '#034b9d',
   primaryLight: '#9ed3f0',
   primaryLighter: '#e3f4ff',
   primaryHighlight: '#edf8ff',
   primaryBackground: '#EAF4FA',
-  primaryDark: '#034b9d',
-  secondary: '#75bd00',
+  // secondary: '#75bd00', - can become the reseller logo color
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',
@@ -102,12 +101,12 @@ export const lightColors: { [key in Color]: string } = {
 
 export const darkColors: { [key in Color]: string } = {
   primary: '#0096e7',
+  primaryDark: '#034b9d',
   primaryLight: '#1C72AD', // 70%
   primaryLighter: '#21435B', // 20%
   primaryHighlight: '#1f3042', //'#222D38', // 10%
   primaryBackground: '#212a35',
-  primaryDark: '#034b9d',
-  secondary: '#75bd00',
+  // secondary: '#75bd00',
   successLight: '#436807',
   success: '#75bd00',
   successDark: '#a4db4c',
@@ -136,6 +135,6 @@ export const darkColors: { [key in Color]: string } = {
 }
 
 export const radius = {
-  sm: 8,
-  lg: 18,
+  sm: 7,
+  lg: 14,
 }

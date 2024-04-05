@@ -75,6 +75,7 @@ export default class ElectronApp {
   }
 
   private handleBeforeQuit = () => {
+    Logger.info('QUITTING APP')
     this.quitSelected = true
     this.saveWindowState()
   }

@@ -1,9 +1,9 @@
 import React from 'react'
 import { State, Dispatch } from '../store'
+import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { IOrganizationState } from '../models/organization'
 import { useSelector, useDispatch } from 'react-redux'
-import { ENTERPRISE_PLAN_ID, getAvailableUsers } from '../models/plans'
-import { selectRemoteitLicense, selectPermissions } from '../selectors/organizations'
+import { selectRemoteitLicense, selectPermissions, selectAvailableUsers } from '../selectors/organizations'
 import { selectAccessibleNetworks } from '../models/networks'
 import { Typography, List, Box } from '@mui/material'
 import { RoleAccessCounts } from './RoleAccessCounts'
@@ -23,7 +23,7 @@ type Props = {
 export const OrganizationMemberDetails: React.FC<Props> = ({ member, organization }) => {
   const dispatch = useDispatch<Dispatch>()
   const permissions = useSelector((state: State) => selectPermissions(state))
-  const availableUsers = useSelector((state: State) => getAvailableUsers(state))
+  const availableUsers = useSelector((state: State) => selectAvailableUsers(state))
   const accessible = useSelector((state: State) => selectAccessibleNetworks(state, organization, member))
   const license = useSelector((state: State) => selectRemoteitLicense(state))
 

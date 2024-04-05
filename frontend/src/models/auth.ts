@@ -206,7 +206,7 @@ export default createModel<RootModel>()({
       }
 
       if (selectDeviceModelAttributes(state).initialized) {
-        console.warn('DEVICE ALREADY INITIALIZED')
+        console.warn('STATE ALREADY INITIALIZED')
         return
       } else {
         console.log('INITIALIZE STATE')

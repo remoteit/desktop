@@ -246,7 +246,7 @@ export default createModel<RootModel>()({
       } else {
         if (!isService && state.ui.silent !== id)
           dispatch.ui.set({
-            errorMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
+            noticeMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
           })
         if (redirect) dispatch.ui.set({ redirect })
         if (!errors) {

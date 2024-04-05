@@ -1,7 +1,8 @@
+import browser from '../services/Browser'
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
-import { State } from '../store'
 import { ArrowIcon } from '../components/ArrowIcon'
+import { State } from '../store'
 
 declare module '@mui/styles' {
   interface DefaultTheme extends Theme {}
@@ -11,12 +12,17 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   const colors = isDark ? darkColors : lightColors
   const LIST_ITEM_ICON_WIDTH = 56
 
+  if (!browser.isApple) {
+    radius.sm = 4
+    radius.lg = 4
+  }
+
   const palette = {
     mode: isDark ? 'dark' : 'light',
     info: { main: colors.grayDark },
     action: { hover: colors.hover },
     primary: { main: colors.primary, dark: colors.primaryDark },
-    secondary: { main: colors.secondary, contrastText: colors.white },
+    // secondary: { main: '#F0F', contrastText: colors.white }, // this can later become the reseller editable color
     error: { main: colors.danger },
     primaryLight: { main: colors.primaryLight },
     primaryLighter: { main: colors.primaryLighter },
@@ -181,7 +187,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           sizeLarge: {
             fontSize: fontSizes.sm,
             padding: `${spacing.sm}px ${spacing.lg}px`,
-            borderRadius: spacing.xxl,
+            borderRadius: radius.lg + radius.sm,
           },
           fullWidth: {
             '&.MuiButton-sizeLarge': {
@@ -191,7 +197,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             },
           },
           sizeSmall: {
-            borderRadius: spacing.md,
+            borderRadius: radius.lg,
             fontSize: fontSizes.xxs,
             padding: `${spacing.xs}px ${spacing.md}px`,
             minWidth: spacing.xxl,
@@ -227,7 +233,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           sizeSmall: {
             height: 20,
-            borderRadius: 10,
+            borderRadius: radius.sm * 1.25,
             fontWeight: 400,
             color: 'inherit',
             fontSize: fontSizes.xs,
@@ -373,8 +379,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             backgroundColor: palette.white.main,
           },
           gutters: {
-            marginLeft: spacing.lg,
-            marginRight: spacing.lg,
+            marginLeft: spacing.md,
+            marginRight: spacing.md,
           },
         },
       },
@@ -531,7 +537,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
               marginTop: spacing.xxs,
               marginBottom: spacing.xxs,
               height: 20,
-              borderRadius: 10,
+              borderRadius: radius.sm * 1.25,
               '& .MuiSelect-select': { fontSize: fontSizes.xxs },
               '& .MuiSelect-icon': { marginRight: 2 },
             },
@@ -677,7 +683,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiDialogTitle: {
         styleOverrides: {
-          root: { margin: `${spacing.lg}px ${spacing.xl}px 0`, padding: 0 },
+          root: { margin: `${spacing.lg}px ${spacing.xl}px 0`, padding: 0, lineHeight: '1.1em' },
         },
       },
       MuiDialogContent: {

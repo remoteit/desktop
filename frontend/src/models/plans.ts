@@ -82,6 +82,7 @@ export const planDetails = {
       '10 Devices & 1 user per license',
       'Organization Management including custom roles',
       'Virtual networks with custom roles, enhanced device tagging',
+      'Persistent Public URLs without the splash screen',
       'SSO with SAML or select identity providers',
       'Scripting',
       '1 year of activity logs',
@@ -204,15 +205,12 @@ export default createModel<RootModel>()({
         const success = result?.data?.data?.updateSubscription
         if (!success) {
           dispatch.ui.set({ errorMessage: 'Subscription update failed, please contact support.' })
-          dispatch.plans.set({ purchasing: undefined })
         }
       }
-      setTimeout(() => {
-        // event should come from ws and cause the update, otherwise:
-        dispatch.plans.set({ purchasing: undefined })
-        cloudSync.all()
-      }, 30 * 1000)
+      // event should come from ws and cause the update, otherwise:
+      setTimeout(() => cloudSync.all(), 20 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
+      dispatch.plans.set({ purchasing: undefined })
     },
 
     async unsubscribe(planId: string | undefined) {
@@ -224,6 +222,7 @@ export default createModel<RootModel>()({
         return
       }
       dispatch.devices.fetchList()
+      dispatch.plans.set({ purchasing: undefined })
       console.log('UNSUBSCRIBE')
     },
 
@@ -276,19 +275,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function getAvailableUsers(state: State) {
-  if (isEnterprise(state)) return 1
-  const purchased = selectRemoteitLicense(state)?.quantity || 0
-  const plan = selectPlan(state)
-  const totals = deviceUserTotal(purchased, plan)
-  const used = selectOrganization(state).members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 1)
-  return Math.max(totals.users - used, 0)
-}
-
-function isEnterprise(state: State) {
-  return selectLicenses(state).some(l => l.plan.id === ENTERPRISE_PLAN_ID)
-}
 
 export function isPersonal(state: State) {
   const license = selectRemoteitLicense(state)

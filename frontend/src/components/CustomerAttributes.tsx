@@ -12,13 +12,14 @@ export const customerAttributes: CustomerAttribute[] = [
   new CustomerAttribute({
     id: 'customerEmail',
     label: 'Email',
-    value: ({ customer }) => <>{customer?.email}</>,
-    defaultWidth: 250,
     required: true,
+    defaultWidth: 250,
+    value: ({ customer }) => <>{customer?.email}</>,
   }),
   new CustomerAttribute({
     id: 'customerPlan',
     label: 'Plan',
+    defaultWidth: 100,
     value: ({ customer }) => (
       <ColorChip
         label={customer?.license?.plan.description || 'Personal'}
@@ -30,12 +31,13 @@ export const customerAttributes: CustomerAttribute[] = [
   new CustomerAttribute({
     id: 'customerQuantity',
     label: 'Quantity',
-    value: ({ customer }) => <>{customer?.license?.quantity || '–'}</>,
     defaultWidth: 100,
+    value: ({ customer }) => <>{customer?.license?.quantity || '–'}</>,
   }),
   new CustomerAttribute({
     id: 'customerPrice',
     label: 'Price',
+    defaultWidth: 74,
     value: ({ customer }) => {
       const price = customer?.license?.subscription?.price
       return currencyFormatter(price?.currency, price?.amount)
@@ -44,7 +46,7 @@ export const customerAttributes: CustomerAttribute[] = [
   new CustomerAttribute({
     id: 'customerReseller',
     label: 'Rep',
+    defaultWidth: 74,
     value: ({ customer }) => <Avatar email={customer?.reseller} size={28} tooltip />,
-    defaultWidth: 100,
   }),
 ]

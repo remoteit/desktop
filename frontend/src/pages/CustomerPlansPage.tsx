@@ -3,7 +3,7 @@ import { State } from '../store'
 import { useParams } from 'react-router-dom'
 import { Typography, Stack } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { selectCustomer, selectReseller } from '../selectors/organizations'
+import { selectCustomer, selectOrganizationReseller } from '../selectors/organizations'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Avatar } from '../components/Avatar'
@@ -11,7 +11,7 @@ import { Plans } from '../components/Plans'
 
 export const CustomerPlansPage: React.FC = () => {
   const { userID = '' } = useParams<{ userID: string }>()
-  const reseller = useSelector(selectReseller)
+  const reseller = useSelector(selectOrganizationReseller)
   const customer = useSelector((state: State) => selectCustomer(state, undefined, userID))
   const license = customer?.license
 

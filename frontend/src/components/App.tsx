@@ -5,6 +5,7 @@ import useCapacitor from '../hooks/useCapacitor'
 import { persistor } from '../store'
 import { useLocation } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
+import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   HIDE_SIDEBAR_WIDTH,
@@ -14,8 +15,8 @@ import {
   ORGANIZATION_BAR_WIDTH,
   REGEX_FIRST_PATH,
 } from '../constants'
-import { useMediaQuery, Box } from '@mui/material'
 import { State, Dispatch } from '../store'
+import { useMediaQuery, Box } from '@mui/material'
 import { InstallationNotice } from './InstallationNotice'
 import { LoadingMessage } from './LoadingMessage'
 import { SignInPage } from '../pages/SignInPage'
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
   const signedOut = useSelector((state: State) => !state.auth.initialized || !state.auth.authenticated)
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
+  const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
@@ -70,9 +72,7 @@ export const App: React.FC = () => {
 
   if (!authInitialized)
     return (
-      <Page>
-        <LoadingMessage logo invert spinner />
-      </Page>
+      <Page>{reseller ? <LoadingMessage reseller={reseller} spinner /> : <LoadingMessage logo invert spinner />}</Page>
     )
 
   if (signedOut)

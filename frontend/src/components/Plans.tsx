@@ -7,12 +7,13 @@ import { makeStyles } from '@mui/styles'
 import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
-import { currencyFormatter } from '../helpers/utilHelper'
-import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
 import { State, Dispatch } from '../store'
+import { currencyFormatter } from '../helpers/utilHelper'
 import { useSelector, useDispatch } from 'react-redux'
+import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
+import { useMediaQuery, Typography } from '@mui/material'
 import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
-import { useMediaQuery } from '@mui/material'
+import { ResellerLogo } from '../components/ResellerLogo'
 import { windowOpen } from '../services/Browser'
 import { Confirm } from '../components/Confirm'
 import { Pre } from '../components/Pre'
@@ -22,10 +23,11 @@ type Props = {
   license: ILicense | null
   plan?: IPlan
   plans: IPlan[]
+  reseller?: IResellerRef | null
   showEnterprise?: boolean
 }
 
-export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, showEnterprise }) => {
+export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, reseller, showEnterprise }) => {
   const small = useMediaQuery(`(max-width:600px)`)
   const css = useStyles({ small })
   const location = useLocation()
@@ -58,6 +60,33 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, showEn
   }, [])
 
   if (!initialized) return <LoadingMessage />
+
+  if (reseller)
+    return (
+      <Gutters size="lg" className={css.plans}>
+        <PlanCard
+          wide
+          name="Partner Support Plan"
+          description="Dedicated support and services"
+          caption={
+            <>
+              <ResellerLogo reseller={reseller} />
+              <Typography variant="h2" gutterBottom>
+                <b>{reseller.name}</b>
+              </Typography>
+              Experience tailored services and dedicated support. <br />
+              For help and inquiries, please reach out to {reseller.email}.
+            </>
+          }
+          button="Contact"
+          selected={enterprise}
+          onSelect={() => {
+            if (enterprise) window.location.href = encodeURI(`mailto:${reseller.email}?subject=Remote.It Plan`)
+            else windowOpen('https://link.remote.it/contact', '_blank')
+          }}
+        />
+      </Gutters>
+    )
 
   return (
     <>
@@ -158,8 +187,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, showEn
               ) : (
                 <>
                   Large-scale solutions for
-                  <br />
-                  unique and custom use-cases
+                  <br /> unique and custom use-cases
                 </>
               )
             }
