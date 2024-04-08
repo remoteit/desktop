@@ -32,10 +32,18 @@ export const ResellerSettings: React.FC<{ reseller?: IReseller | null }> = ({ re
           overflow="hidden"
           borderRadius={radius.lg + 'px'}
         >
-          <Paper elevation={0} square sx={{ bgcolor: lightColors.grayLighter, flexGrow: 1, textAlign: 'center' }}>
+          <Paper
+            elevation={0}
+            square
+            sx={{ bgcolor: lightColors.grayLighter, flexGrow: 1, textAlign: 'center', lineHeight: 0 }}
+          >
             <ResellerLogo reseller={reseller} />
           </Paper>
-          <Paper elevation={0} square sx={{ bgcolor: darkColors.grayLighter, flexGrow: 1, textAlign: 'center' }}>
+          <Paper
+            elevation={0}
+            square
+            sx={{ bgcolor: darkColors.grayLighter, flexGrow: 1, textAlign: 'center', lineHeight: 0 }}
+          >
             <ResellerLogo reseller={reseller} />
           </Paper>
         </Stack>

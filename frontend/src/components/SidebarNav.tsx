@@ -13,6 +13,7 @@ import {
   List,
   ListItemButton,
   ListItemSecondaryAction,
+  Divider,
   Typography,
   Tooltip,
   Collapse,
@@ -124,7 +125,9 @@ export const SidebarNav: React.FC = () => {
         <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
       <Box className={css.footer}>
-        <ResellerLogo reseller={reseller} marginLeft={4} />
+        <ResellerLogo reseller={reseller} marginLeft={4} size="small">
+          <Divider />
+        </ResellerLogo>
         <ListItemLocation
           title="Notifications"
           to="/announcements"
