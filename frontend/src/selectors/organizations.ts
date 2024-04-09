@@ -35,7 +35,6 @@ export const selectOrganizationReseller = createSelector([selectOrganization], o
 })
 
 export const selectResellerRef = createSelector([selectOrganizationReseller, getUser], (reseller, user) => {
-  console.log('SELECT RESELLER REF', reseller, user.reseller)
   return reseller || user.reseller
 })
 
