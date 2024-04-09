@@ -4,7 +4,7 @@ import { Link } from '../../components/Link'
 import logo from '../docker/docker.svg'
 
 const Component = ({ darkMode, ...props }) => {
-  return <img src={logo} alt="Docker" {...props} />
+  return <img src={logo} alt="Docker Jumpbox" {...props} />
 }
 
 platforms.register({

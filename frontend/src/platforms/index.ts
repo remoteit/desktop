@@ -57,8 +57,10 @@ class Platforms {
     this.initialize()
   }
 
-  initialize() {
-    this.installed.forEach(async platform => await import(`./${platform}/index.tsx`))
+  async initialize() {
+    for (const platform of this.installed) {
+      await import(`./${platform}/index.tsx`)
+    }
   }
 
   register(platform: IPlatform) {

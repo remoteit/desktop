@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
     minify: mode === 'production',
     emptyOutDir: true,
     sourcemap: true,
+    assetsInlineLimit: 0,
     rollupOptions: {
       output: {
         manualChunks(id) {
