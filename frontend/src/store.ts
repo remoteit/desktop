@@ -37,6 +37,7 @@ const persistConfig: PersistConfig<RootModel> = {
 export const store = init<RootModel>({
   models,
   plugins: [immerPlugin(), persistPlugin(persistConfig)],
+  // @ts-ignore
   redux: { middlewares: [createLogger(loggerConfig)] },
 })
 
