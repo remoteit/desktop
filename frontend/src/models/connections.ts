@@ -73,12 +73,12 @@ export default createModel<RootModel>()({
       await dispatch.accounts.truncateMergeDevices({ devices, accountId: 'connections' })
 
       cleanOrphanConnections(serviceIds)
+      await dispatch.connections.set({ initialized: true })
     },
 
     async updateFromServices({ devices, accountId }: { devices: IDevice[]; accountId: string }) {
       await dispatch.connections.updateConnectionState({ devices, accountId })
       await dispatch.connections.updateCLI()
-      await dispatch.connections.set({ initialized: true })
     },
 
     async updateConnectionState({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {

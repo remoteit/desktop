@@ -24,7 +24,6 @@ export function ConnectionStateIcon({
   ...props
 }: ConnectionStateIconProps) {
   const history = useHistory()
-  const instance = device || service
 
   let name
   let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
