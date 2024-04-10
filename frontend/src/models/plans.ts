@@ -1,8 +1,8 @@
+import { State } from '../store'
+import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-import { State } from '../store'
-import { Duration } from 'luxon'
 import {
   graphQLSubscribe,
   graphQLUnsubscribe,
@@ -12,10 +12,8 @@ import {
 import {
   selectLicensesWithLimits,
   selectRemoteitLicense,
-  selectOrganization,
   selectLimits,
   selectLicenses,
-  selectPlan,
 } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLFetchPlans } from '../services/graphQLRequest'
@@ -36,6 +34,7 @@ export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
 export const FLEET_PLAN_ID = 'ce579369-9deb-11ee-9f81-0a5b07a7ad3f'
 export const ENTERPRISE_PLAN_ID = 'b44f92a6-a7b9-11eb-b094-02a962787033'
+export const RESELLER_PLAN_ID = '4c5ea4d8-d10a-11ee-9f81-0a5b07a7ad3f'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
@@ -99,6 +98,18 @@ export const planDetails = {
       'Add additional devices in 100 device increments',
       'Discounted monthly pricing matches annual pricing',
       'Includes all Business Plan features',
+    ],
+  },
+  [RESELLER_PLAN_ID]: {
+    description: 'Authorized Remote.It reseller plan',
+    caption: 'Partner pricing',
+    note: 'For changes, and support:',
+    features: [
+      '25 Devices',
+      '10 user accounts',
+      'Customer account management',
+      'Exclusive reseller pricing',
+      'Exclusive Reseller support',
     ],
   },
   [ENTERPRISE_PLAN_ID]: {

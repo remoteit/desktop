@@ -1,9 +1,9 @@
 import React from 'react'
 import { Notice } from './Notice'
 import { Overlay } from './Overlay'
-import { Gutters } from './Gutters'
 import { PlanCard } from './PlanCard'
 import { makeStyles } from '@mui/styles'
+import { PlanGutters } from './PlanGutters'
 import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
@@ -11,25 +11,19 @@ import { State, Dispatch } from '../store'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
-import { useMediaQuery, Typography } from '@mui/material'
 import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
-import { ResellerLogo } from '../components/ResellerLogo'
-import { windowOpen } from '../services/Browser'
 import { Confirm } from '../components/Confirm'
-import { Pre } from '../components/Pre'
 
 type Props = {
   accountId: string
   license: ILicense | null
   plan?: IPlan
   plans: IPlan[]
-  reseller?: IResellerRef | null
-  showEnterprise?: boolean
+  customer?: IResellerRef | null
 }
 
-export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, reseller, showEnterprise }) => {
-  const small = useMediaQuery(`(max-width:600px)`)
-  const css = useStyles({ small })
+export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
+  const css = useStyles()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const initialized = useSelector((state: State) => state.organization.initialized)
@@ -47,7 +41,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
-  const enterprise = !!license && license.plan.id === ENTERPRISE_PLAN_ID
+  const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
   const totals = deviceUserTotal(license?.quantity || 1, plan)
 
@@ -60,33 +54,6 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
   }, [])
 
   if (!initialized) return <LoadingMessage />
-
-  if (reseller)
-    return (
-      <Gutters size="lg" className={css.plans}>
-        <PlanCard
-          wide
-          name="Partner Support Plan"
-          description="Dedicated support and services"
-          caption={
-            <>
-              <ResellerLogo reseller={reseller} />
-              <Typography variant="h2" gutterBottom>
-                <b>{reseller.name}</b>
-              </Typography>
-              Experience tailored services and dedicated support. <br />
-              For help and inquiries, please reach out to {reseller.email}.
-            </>
-          }
-          button="Contact"
-          selected={enterprise}
-          onSelect={() => {
-            if (enterprise) window.location.href = encodeURI(`mailto:${reseller.email}?subject=Remote.It Plan`)
-            else windowOpen('https://link.remote.it/contact', '_blank')
-          }}
-        />
-      </Gutters>
-    )
 
   return (
     <>
@@ -102,13 +69,13 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
         </Overlay>
       )}
       {license?.custom && (
-        <Gutters size="lg" className={css.plans}>
+        <PlanGutters>
           <NoticeCustomPlan className={css.notice} fullWidth />
-        </Gutters>
+        </PlanGutters>
       )}
       {!enterprise && (
         <>
-          <Gutters size="lg" className={css.plans}>
+          <PlanGutters>
             {plans.map(plan => {
               const planPrice = plan.prices && plan.prices.find(p => p.interval === 'YEAR')
               const details = plan.id ? planDetails[plan.id] : {}
@@ -151,8 +118,8 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
                 />
               )
             })}
-          </Gutters>
-          <Gutters size="lg" className={css.plans}>
+          </PlanGutters>
+          <PlanGutters>
             <PlanCard
               wide
               name="Personal"
@@ -169,37 +136,8 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
               }
               features={planDetails[PERSONAL_PLAN_ID].features}
             />
-          </Gutters>
+          </PlanGutters>
         </>
-      )}
-      {showEnterprise && (
-        <Gutters size="lg" className={css.plans}>
-          <PlanCard
-            wide
-            name="Enterprise"
-            description={planDetails[ENTERPRISE_PLAN_ID].description}
-            caption={
-              enterprise ? (
-                <>
-                  For changes, see
-                  <br /> your administrator or
-                </>
-              ) : (
-                <>
-                  Large-scale solutions for
-                  <br /> unique and custom use-cases
-                </>
-              )
-            }
-            button="Contact Us"
-            selected={enterprise}
-            onSelect={() => {
-              if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
-              else windowOpen('https://link.remote.it/contact', '_blank')
-            }}
-            features={enterprise ? undefined : planDetails[ENTERPRISE_PLAN_ID].features}
-          />
-        </Gutters>
       )}
       <Confirm
         open={!!form.confirm}
@@ -220,14 +158,6 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
 }
 
 const useStyles = makeStyles({
-  plans: ({ small }: { small: boolean }) => ({
-    display: 'flex',
-    justifyContent: 'center',
-    flexWrap: small ? 'wrap' : 'nowrap',
-    marginBottom: 0,
-    marginTop: 0,
-    maxWidth: 840,
-  }),
   notice: {
     maxWidth: 840,
   },
