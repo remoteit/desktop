@@ -27,7 +27,7 @@ export const CustomerPlansPage: React.FC = () => {
             <Typography variant="h2" marginTop={1}>
               Select a plan for {customer?.email}
             </Typography>
-            <Avatar email={customer?.email} marginRight={16} />
+            <Avatar email={customer?.email} />
           </Stack>
         </Gutters>
       }

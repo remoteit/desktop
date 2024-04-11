@@ -10,7 +10,7 @@ import { LoadingMessage } from './LoadingMessage'
 import { State, Dispatch } from '../store'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { useSelector, useDispatch } from 'react-redux'
-import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
+import { PERSONAL_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
 import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
 import { Confirm } from '../components/Confirm'
 
@@ -19,7 +19,6 @@ type Props = {
   license: ILicense | null
   plan?: IPlan
   plans: IPlan[]
-  customer?: IResellerRef | null
 }
 
 export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
@@ -41,7 +40,6 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
-  const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
   const totals = deviceUserTotal(license?.quantity || 1, plan)
 
@@ -73,72 +71,85 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
           <NoticeCustomPlan className={css.notice} fullWidth />
         </PlanGutters>
       )}
-      {!enterprise && (
-        <>
-          <PlanGutters>
-            {plans.map(plan => {
-              const planPrice = plan.prices && plan.prices.find(p => p.interval === 'YEAR')
-              const details = plan.id ? planDetails[plan.id] : {}
-              const selected = license?.plan?.id === plan.id
-              let price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
-              let caption = 'per month / per license'
-              let note = details.note
-              if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
-                price =
-                  currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
-                  ` / ${license?.subscription?.price.interval?.toLowerCase()}`
-                caption = `${license.quantity} license${(license.quantity || 0) > 1 ? 's' : ''}`
-                note = `${totals.users} users + ${totals.devices} devices`
-              }
-              const result = plan.prices?.find(p => p.id === form.priceId)
-              const priceId = result?.id || (plan.prices && plan.prices[0].id)
-              const isDowngrade = plan.prices && plan.prices[0].amount < (license?.subscription?.price?.amount || 0)
-              return (
-                <PlanCard
-                  key={plan.id}
-                  name={plan.description}
-                  description={details.description}
-                  price={price}
-                  caption={caption}
-                  note={note}
-                  disabled={selected && license?.custom}
-                  button={selected ? 'Update' : 'Select'}
-                  selected={selected}
-                  loading={purchasing === plan.id}
-                  onSelect={() =>
-                    setForm({
-                      ...form,
-                      confirm: isDowngrade,
-                      checkout: !isDowngrade,
-                      planId: plan.id,
-                      priceId,
-                    })
-                  }
-                  features={details.features}
-                />
-              )
-            })}
-          </PlanGutters>
-          <PlanGutters>
+      <PlanGutters>
+        {plans.map(plan => {
+          const details = plan.id ? planDetails[plan.id] : {}
+          const selected = license?.plan?.id === plan.id
+
+          let note = details.note
+          let caption = 'per month / per license'
+          let planPrice: IPrice | undefined
+          let planInterval: string
+          let price: string = '-'
+
+          if (plan.prices) {
+            planInterval = 'YEAR'
+            planPrice = plan.prices.find(p => p.interval === planInterval)
+            price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
+            if (!planPrice) {
+              planInterval = 'MONTH'
+              planPrice = plan.prices.find(p => p.interval === planInterval)
+              price = currencyFormatter(planPrice?.currency, planPrice?.amount || 1, 0)
+              note = 'billed monthly'
+            }
+          }
+
+          if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
+            price =
+              currencyFormatter(license.subscription.price.currency, license.subscription.total, 0) +
+              ` / ${license.subscription.price.interval?.toLowerCase()}`
+            caption = `${license.quantity} license${(license.quantity || 0) > 1 ? 's' : ''}`
+            note = `${totals.users} users + ${totals.devices} devices`
+          }
+
+          const result = plan.prices?.find(p => p.id === form.priceId)
+          const priceId = result?.id || (plan.prices && plan.prices[0].id)
+          const isDowngrade = plan.prices && plan.prices[0].amount < (license?.subscription?.price?.amount || 0)
+
+          return (
             <PlanCard
-              wide
-              name="Personal"
-              description={planDetails[PERSONAL_PLAN_ID].description}
-              price="$0"
-              caption="Free Plan"
-              button={personal ? 'Current Plan' : 'Select'}
-              selected={personal}
-              disabled={personal}
+              key={plan.id}
+              name={plan.description}
+              description={details.description}
+              price={price}
+              caption={caption}
+              note={note}
+              disabled={selected && license?.custom}
+              button={selected ? 'Update' : 'Select'}
+              selected={selected}
+              loading={purchasing === plan.id}
               onSelect={() =>
-                personal
-                  ? setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
-                  : setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
+                setForm({
+                  ...form,
+                  confirm: isDowngrade,
+                  checkout: !isDowngrade,
+                  planId: plan.id,
+                  priceId,
+                })
               }
-              features={planDetails[PERSONAL_PLAN_ID].features}
+              features={details.features}
             />
-          </PlanGutters>
-        </>
-      )}
+          )
+        })}
+      </PlanGutters>
+      <PlanGutters>
+        <PlanCard
+          wide
+          name="Personal"
+          description={planDetails[PERSONAL_PLAN_ID].description}
+          price="$0"
+          caption="Free Plan"
+          button={personal ? 'Current Plan' : 'Select'}
+          selected={personal}
+          disabled={personal}
+          onSelect={() =>
+            personal
+              ? setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
+              : setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
+          }
+          features={planDetails[PERSONAL_PLAN_ID].features}
+        />
+      </PlanGutters>
       <Confirm
         open={!!form.confirm}
         onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}

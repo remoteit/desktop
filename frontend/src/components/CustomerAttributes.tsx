@@ -13,7 +13,7 @@ export const customerAttributes: CustomerAttribute[] = [
     id: 'customerEmail',
     label: 'Email',
     required: true,
-    defaultWidth: 250,
+    defaultWidth: 300,
     value: ({ customer }) => <>{customer?.email}</>,
   }),
   new CustomerAttribute({

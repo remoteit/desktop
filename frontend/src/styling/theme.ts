@@ -106,7 +106,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiDivider: {
         styleOverrides: {
-          root: { borderColor: palette.screen.main, '&.MuiDivider-flexItem': { height: 1 } },
+          root: { borderColor: palette.action.hover, '&.MuiDivider-flexItem': { height: 1 } },
           inset: { marginRight: spacing.lg, marginLeft: spacing.lg },
         },
       },
