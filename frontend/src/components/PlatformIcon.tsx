@@ -3,10 +3,9 @@ import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { platforms } from '../platforms'
 
-type Props = {
+type Props = React.SVGProps<SVGSVGElement> & {
   name?: string
   platform?: number
-  className?: string
   currentColor?: boolean
 }
 

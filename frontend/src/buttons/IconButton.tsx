@@ -1,10 +1,10 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
-import { Tooltip, TooltipProps, IconButton as MuiIconButton, IconButtonProps, darken } from '@mui/material'
+import { SystemStyleObject } from '@mui/system'
+import { Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
-import { spacing } from '../styling'
-import classnames from 'classnames'
+
+type VariantType = 'text' | 'contained' | 'outlined'
 
 export type ButtonProps = Omit<IconProps, 'title'> & {
   to?: string
@@ -12,12 +12,12 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   forceTitle?: boolean
   icon?: string
   name?: string
-  sx?: IconButtonProps['sx']
+  sx?: SystemStyleObject
   disabled?: boolean
   hideDisableFade?: boolean
   iconInlineLeft?: boolean
   buttonBaseSize?: 'small' | 'medium' | 'large'
-  variant?: 'text' | 'contained' | 'outlined'
+  variant?: VariantType
   shiftDown?: boolean
   loading?: boolean
   submit?: boolean
@@ -34,7 +34,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       to,
-      sx,
+      sx = {},
       title,
       forceTitle,
       icon,
@@ -42,7 +42,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       hideDisableFade,
       spin,
-      color,
+      color = 'primary',
       variant,
       shiftDown,
       size = 'base',
@@ -66,7 +66,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const history = useHistory()
-    const css = useStyles({ color })
+
     if (hide) return null
     icon = icon || name
     if (loading) {
@@ -77,25 +77,35 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (onClick) onClick(e)
       if (to) history.push(to)
     }
+
+    const updatedSx: SystemStyleObject = {
+      ...sx,
+      opacity: disabled && !hideDisableFade ? 0.5 : undefined,
+      marginBottom: shiftDown ? -0.75 : undefined,
+      marginTop: shiftDown ? -0.75 : undefined,
+      marginLeft: inline ? 1.5 : undefined,
+      marginRight: inlineLeft ? 1.5 : undefined,
+    }
+
+    switch (variant) {
+      case 'contained':
+        updatedSx.color = 'alwaysWhite.main'
+        updatedSx.backgroundColor = `${color}.main`
+        updatedSx['&:hover'] = {
+          backgroundColor: ({ palette }) => darken(palette[color].main, 0.2),
+        }
+        break
+      case 'outlined':
+        updatedSx.border = `1px solid ${color}.main`
+    }
+
     const button = (
       <MuiIconButton
-        ref={ref}
-        sx={sx}
-        disabled={disabled}
+        {...{ ref, disabled, onMouseDown, onMouseEnter, onMouseLeave, className }}
+        sx={updatedSx}
         size={buttonBaseSize}
         onClick={clickHandler}
-        onMouseDown={onMouseDown}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        className={classnames(className, variant && css[variant])}
         type={submit ? 'submit' : undefined}
-        style={{
-          opacity: disabled && !hideDisableFade ? 0.5 : undefined,
-          marginBottom: shiftDown ? -spacing.xs : undefined,
-          marginTop: shiftDown ? -spacing.xs : undefined,
-          marginLeft: inline ? spacing.sm : undefined,
-          marginRight: inlineLeft ? spacing.sm : undefined,
-        }}
       >
         <Icon
           {...props}
@@ -119,16 +129,3 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   }
 )
-
-const useStyles = makeStyles(({ palette }) => ({
-  contained: ({ color = 'primary' }: IconProps) => ({
-    color: palette.alwaysWhite.main,
-    backgroundColor: palette[color].main,
-    '&:hover': {
-      backgroundColor: darken(palette[color].main, 0.2),
-    },
-  }),
-  outlined: ({ color = 'primary' }: IconProps) => ({
-    border: `1px solid ${palette[color].main}`,
-  }),
-}))
