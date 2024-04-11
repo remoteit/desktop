@@ -66,7 +66,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         <List className={css.list}>
           <ListItem>
             <Button
-              onClick={() => dispatch.plans.unsubscribe(form.planId)}
+              onClick={() => dispatch.plans.unsubscribe(form)}
               color="primary"
               variant="contained"
               disabled={purchasing}

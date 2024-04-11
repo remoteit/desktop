@@ -186,7 +186,7 @@ export default createModel<RootModel>()({
 
       const license = selectRemoteitLicense(state)
       if (license?.subscription) {
-        await dispatch.plans.unsubscribe(form.planId)
+        await dispatch.plans.unsubscribe(form)
       }
       const result = await graphQLSubscribe(form)
 
@@ -224,9 +224,9 @@ export default createModel<RootModel>()({
       dispatch.plans.set({ purchasing: undefined })
     },
 
-    async unsubscribe(planId: string | undefined) {
+    async unsubscribe({ planId, licenseId }: IPurchase) {
       dispatch.plans.set({ purchasing: planId })
-      const result = await graphQLUnsubscribe()
+      const result = await graphQLUnsubscribe(licenseId)
       if (result === 'ERROR' || !result?.data?.data?.cancelSubscription) {
         dispatch.ui.set({ errorMessage: 'Subscription cancellation failed, please contact support.' })
         dispatch.plans.set({ purchasing: undefined })

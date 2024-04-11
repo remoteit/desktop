@@ -42,7 +42,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       hideDisableFade,
       spin,
-      color = 'primary',
+      color,
       variant,
       shiftDown,
       size = 'base',
@@ -90,13 +90,13 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     switch (variant) {
       case 'contained':
         updatedSx.color = 'alwaysWhite.main'
-        updatedSx.backgroundColor = `${color}.main`
+        updatedSx.backgroundColor = `${color || 'primary'}.main`
         updatedSx['&:hover'] = {
-          backgroundColor: ({ palette }) => darken(palette[color].main, 0.2),
+          backgroundColor: ({ palette }) => darken(palette[color || 'primary'].main, 0.2),
         }
         break
       case 'outlined':
-        updatedSx.border = `1px solid ${color}.main`
+        updatedSx.border = `1px solid ${color || 'primary'}.main`
     }
 
     const button = (

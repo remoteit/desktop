@@ -195,6 +195,7 @@ declare global {
     quantity: number
     accountId: string
     confirm?: boolean
+    licenseId?: string
   }
 
   type LogType = 'general' | 'connectd' | 'alert'

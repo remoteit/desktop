@@ -37,6 +37,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
       priceId: price?.id,
       quantity: license?.quantity || 1,
       confirm: false,
+      licenseId: license?.id,
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
