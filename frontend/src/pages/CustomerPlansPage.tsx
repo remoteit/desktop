@@ -23,16 +23,29 @@ export const CustomerPlansPage: React.FC = () => {
       integrated
       header={
         <Gutters>
-          <Stack flexDirection="row" justifyContent="space-between">
-            <Typography variant="h2" marginTop={1}>
-              Select a plan for {customer?.email}
+          <Stack flexDirection="row" alignItems="center" justifyContent="space-between">
+            <Typography
+              variant="caption"
+              textAlign="right"
+              marginRight={-2}
+              borderRight="1px solid"
+              borderColor="grayLight.main"
+              paddingRight={2}
+            >
+              Select a <br />
+              plan for
+            </Typography>
+            <Typography variant="h1" flexGrow={1}>
+              {customer?.email}
             </Typography>
             <Avatar email={customer?.email} />
           </Stack>
         </Gutters>
       }
     >
-      {reseller && <Plans accountId={userID} license={license} plan={license.plan} plans={reseller.plans} />}
+      {reseller && (
+        <Plans accountId={userID} license={license} plan={license.plan} plans={reseller.plans} includeLicenseId />
+      )}
     </Container>
   )
 }

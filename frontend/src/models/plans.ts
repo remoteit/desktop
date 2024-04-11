@@ -205,13 +205,13 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateSubscription({ priceId, planId, quantity, accountId }: IPurchase) {
-      if (!priceId) {
-        dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
+    async updateSubscription(form: IPurchase) {
+      if (!form.priceId) {
+        dispatch.ui.set({ errorMessage: 'Plan selection missing price' })
         return
       }
-      dispatch.plans.set({ purchasing: planId })
-      const result = await graphQLUpdateSubscription({ priceId, quantity, accountId })
+      dispatch.plans.set({ purchasing: form.planId })
+      const result = await graphQLUpdateSubscription(form)
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
         if (!success) {
@@ -220,7 +220,7 @@ export default createModel<RootModel>()({
       }
       // event should come from ws and cause the update, otherwise:
       setTimeout(() => cloudSync.all(), 20 * 1000)
-      console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
+      console.log('UPDATE SUBSCRIPTION', form)
       dispatch.plans.set({ purchasing: undefined })
     },
 

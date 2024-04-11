@@ -17,11 +17,12 @@ import { Confirm } from '../components/Confirm'
 type Props = {
   accountId: string
   license: ILicense | null
+  includeLicenseId?: boolean
   plan?: IPlan
   plans: IPlan[]
 }
 
-export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
+export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, plan, plans }) => {
   const css = useStyles()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -30,6 +31,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
 
   function getDefaults(): IPurchase {
     const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
+    console.log('INCLUDE LICENSE ID?', includeLicenseId, license?.id)
     return {
       accountId,
       checkout: false,
@@ -37,7 +39,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans }) => {
       priceId: price?.id,
       quantity: license?.quantity || 1,
       confirm: false,
-      licenseId: license?.id,
+      licenseId: includeLicenseId ? license?.id : undefined,
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
