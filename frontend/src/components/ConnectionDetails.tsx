@@ -195,7 +195,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                     <CopyIconButton
                       ref={buttonRef}
                       color="alwaysWhite"
-                      colorCopied="guide"
                       icon="clone"
                       value={endpoint}
                       onMouseEnter={() => setHover('endpoint')}
@@ -208,7 +207,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                           <>
                             <CopyIconButton
                               color="alwaysWhite"
-                              colorCopied="guide"
                               icon="host"
                               value={connection.host}
                               onMouseEnter={() => setHover('host')}
@@ -216,7 +214,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                             />
                             <CopyIconButton
                               color="alwaysWhite"
-                              colorCopied="guide"
                               icon="port"
                               value={connection.port}
                               onMouseEnter={() => setHover('port')}
@@ -226,7 +223,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                         )}
                         <CopyIconButton
                           color="alwaysWhite"
-                          colorCopied="guide"
                           icon={app.launchType !== 'COMMAND' ? 'link-horizontal' : 'terminal'}
                           app={app}
                           value={app.displayString}
@@ -243,7 +239,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                       </Typography>
                       <CopyIconButton
                         color="alwaysWhite"
-                        colorCopied="guide"
                         icon="share"
                         value={app.string}
                         onClick={() => navigator.share?.({ url: app.string })}
