@@ -24,9 +24,6 @@ import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number }
 
-const PURCHASING_PLAN = 'plans.purchasing'
-const UPDATING_PLAN = 'plans.updating'
-
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
@@ -154,16 +151,6 @@ const defaultState: IPlans = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async restore(_: void, state) {
-      const license = selectRemoteitLicense(state)
-      const last = license?.subscription?.card?.last
-      const planId = license?.plan.id
-
-      dispatch.plans.set({
-        purchasing: localStorage.getItem(PURCHASING_PLAN) !== planId ? planId : undefined,
-        updating: localStorage.getItem(UPDATING_PLAN) === last ? last : undefined,
-      })
-    },
     async fetch() {
       const result = await graphQLFetchPlans()
       if (result === 'ERROR') return
@@ -182,14 +169,8 @@ export default createModel<RootModel>()({
 
     async subscribe(form: IPurchase, state) {
       dispatch.plans.set({ purchasing: form.planId })
-      localStorage.setItem(PURCHASING_PLAN, form.planId || '')
 
-      const license = selectRemoteitLicense(state)
-      if (license?.subscription) {
-        await dispatch.plans.unsubscribe(form)
-      }
       const result = await graphQLSubscribe(form)
-
       if (result === 'ERROR' || !result?.data?.data?.createSubscription) {
         dispatch.ui.set({ errorMessage: 'Checkout failed, please contact support.' })
         dispatch.plans.set({ purchasing: undefined })
@@ -239,7 +220,6 @@ export default createModel<RootModel>()({
 
     async updateCreditCard(last: string | undefined) {
       dispatch.plans.set({ updating: last })
-      localStorage.setItem(UPDATING_PLAN, last || '')
       const result = await graphQLCreditCard()
       if (result !== 'ERROR') {
         const card = result?.data?.data?.updateCreditCard

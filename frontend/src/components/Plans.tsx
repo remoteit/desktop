@@ -48,10 +48,6 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
     setForm(getDefaults())
   }, [license])
 
-  React.useEffect(() => {
-    if (location.pathname.includes('success')) dispatch.plans.restore()
-  }, [])
-
   if (!initialized) return <LoadingMessage />
 
   return (
