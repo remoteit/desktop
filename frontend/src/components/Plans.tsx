@@ -106,7 +106,8 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
 
           const result = plan.prices?.find(p => p.id === form.priceId)
           const priceId = result?.id || (plan.prices && plan.prices[0].id)
-          const isDowngrade = plan.prices && plan.prices[0].amount < (license?.subscription?.price?.amount || 0)
+          const downgradePrice = plan.prices?.find(p => p.interval === license?.subscription?.price?.interval)?.amount
+          const isDowngrade = (downgradePrice || 0) < (license?.subscription?.price?.amount || 0)
 
           return (
             <PlanCard
