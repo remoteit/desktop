@@ -32,7 +32,6 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
   function getDefaults(): IPurchase {
     const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
     return {
-      accountId,
       checkout: false,
       planId: plan?.id,
       priceId: price?.id,

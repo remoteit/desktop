@@ -246,8 +246,8 @@ export async function graphQLSubscribe(params: IPurchase) {
 export async function graphQLUpdateSubscription(params: IPurchase) {
   console.log('UPDATE SUBSCRIPTION: ' + JSON.stringify(params))
   return await graphQLBasicRequest(
-    ` mutation UpdateSubscription($priceId: String!, $quantity: Int, $accountId: String, $licenseId: String) {
-        updateSubscription(priceId: $priceId, quantity: $quantity, accountId: $accountId, licenseId: $licenseId) {
+    ` mutation UpdateSubscription($priceId: String!, $quantity: Int, $licenseId: String) {
+        updateSubscription(priceId: $priceId, quantity: $quantity, licenseId: $licenseId) {
       }`,
     params
   )
