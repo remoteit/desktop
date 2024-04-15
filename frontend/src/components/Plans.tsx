@@ -4,11 +4,11 @@ import { Overlay } from './Overlay'
 import { PlanCard } from './PlanCard'
 import { makeStyles } from '@mui/styles'
 import { PlanGutters } from './PlanGutters'
-import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
 import { State, Dispatch } from '../store'
 import { currencyFormatter } from '../helpers/utilHelper'
+import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { PERSONAL_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
 import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
@@ -24,6 +24,7 @@ type Props = {
 
 export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, plan, plans }) => {
   const css = useStyles()
+  const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const initialized = useSelector((state: State) => state.organization.initialized)
@@ -47,6 +48,13 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
   React.useEffect(() => {
     setForm(getDefaults())
   }, [license])
+
+  React.useEffect(() => {
+    if (location.pathname.includes('success')) {
+      dispatch.plans.restore()
+      history.push('..')
+    }
+  }, [])
 
   if (!initialized) return <LoadingMessage />
 

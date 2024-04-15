@@ -151,6 +151,10 @@ const defaultState: IPlans = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
+    async restore(_: void, state) {
+      dispatch.plans.set({ purchasing: undefined, updating: undefined })
+    },
+
     async fetch() {
       const result = await graphQLFetchPlans()
       if (result === 'ERROR') return
@@ -169,8 +173,8 @@ export default createModel<RootModel>()({
 
     async subscribe(form: IPurchase, state) {
       dispatch.plans.set({ purchasing: form.planId })
-
       const result = await graphQLSubscribe(form)
+
       if (result === 'ERROR' || !result?.data?.data?.createSubscription) {
         dispatch.ui.set({ errorMessage: 'Checkout failed, please contact support.' })
         dispatch.plans.set({ purchasing: undefined })
