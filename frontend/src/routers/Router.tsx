@@ -286,39 +286,30 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/organization/customer/add">
                 <CustomerAddPage />
               </Route>
-
               <Route path="/organization/customer/:userID/plans">
                 <CustomerPlansPage />
               </Route>
-
               <Route path="/organization/customer/:userID">
                 <CustomerPage />
               </Route>
-
               <Route path="/organization/customer">
                 <ResellerPage />
               </Route>
-
               <Route path="/organization/add">
                 <OrganizationAddPage />
               </Route>
-
               <Route path="/organization/settings">
                 <OrganizationSettingsPage />
               </Route>
-
               <Route path="/organization/licensing">
                 <OrganizationLicensingPage />
               </Route>
-
               <Route path="/organization/tags">
                 <TagsPage />
               </Route>
-
               <Route path={['/organization/guests/:userID/:deviceID', '/organization/members/:userID/:deviceID']}>
                 <SharePage />
               </Route>
-
               <Route
                 path={[
                   '/organization/guests/:userID',
@@ -328,14 +319,13 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               >
                 <OrganizationUserPage />
               </Route>
-
               <Route path="/organization/guests">
                 <OrganizationGuestsPage />
               </Route>
-
-              <Route path={['/organization', '/organization/members']}>
+              <Route path="/organization/members">
                 <OrganizationMembersPage />
               </Route>
+              <Redirect from="/organization" to={{ pathname: '/organization/members', state: { isRedirect: true } }} />
             </Switch>
           }
           layout={layout}

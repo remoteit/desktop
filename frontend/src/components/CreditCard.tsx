@@ -31,7 +31,7 @@ export const CreditCard: React.FC = () => {
   React.useEffect(() => {
     if (location.pathname.includes('success')) {
       dispatch.plans.restore()
-      history.push('..')
+      history.push('.')
     }
   }, [])
 

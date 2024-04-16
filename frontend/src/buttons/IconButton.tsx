@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { SystemStyleObject } from '@mui/system'
-import { Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
+import { Tooltip, TooltipProps, IconButton as MuiIconButton, IconButtonProps, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 
 type VariantType = 'text' | 'contained' | 'outlined'
@@ -12,7 +12,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   forceTitle?: boolean
   icon?: string
   name?: string
-  sx?: SystemStyleObject
+  sx?: IconButtonProps
   disabled?: boolean
   hideDisableFade?: boolean
   iconInlineLeft?: boolean

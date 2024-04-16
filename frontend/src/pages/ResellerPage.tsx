@@ -1,16 +1,14 @@
 import React from 'react'
-import { State } from '../store'
 import { Redirect } from 'react-router-dom'
-import { Dispatch } from '../store'
-import { Typography, List, Box } from '@mui/material'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { Typography, Divider, Box } from '@mui/material'
 import { selectPermissions, selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
-import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { CustomerList } from '../components/CustomerList'
+import { ResellerLogo } from '../components/ResellerLogo'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
-import { Title } from '../components/Title'
 import { Notice } from '../components/Notice'
+import { Title } from '../components/Title'
 
 export const ResellerPage: React.FC = () => {
   const organization = useSelector(selectOrganization)
@@ -26,19 +24,28 @@ export const ResellerPage: React.FC = () => {
       bodyProps={{ inset: false, verticalOverflow: true, horizontalOverflow: true }}
       integrated
       header={
-        <Typography variant="h1">
-          <Title>Customers</Title>
-          {organization?.id && (
-            <IconButton title="Add customer" icon="user-plus" to="/organization/customer/add" size="md" />
+        <>
+          <Typography variant="h1">
+            <Title>Customers</Title>
+            {organization?.id && (
+              <IconButton
+                title="Add customer"
+                icon="user-plus"
+                to="/organization/customer/add"
+                size="md"
+                type="solid"
+              />
+            )}
+          </Typography>
+          <ResellerLogo marginLeft={5} reseller={reseller} size="small" />
+          {!canManage && (
+            <Notice severity="warning" gutterTop>
+              You do not have permission to manage customers.
+            </Notice>
           )}
-        </Typography>
+        </>
       }
     >
-      {!canManage && (
-        <Notice severity="warning" gutterTop>
-          You do not have permission to manage customers.
-        </Notice>
-      )}
       <Box position="relative" overflow="scroll">
         <CustomerList customers={reseller?.customers || []} disabled={!canManage} />
       </Box>

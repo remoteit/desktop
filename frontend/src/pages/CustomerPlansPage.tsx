@@ -1,11 +1,12 @@
 import React from 'react'
 import { State } from '../store'
 import { useParams } from 'react-router-dom'
-import { Typography, Stack } from '@mui/material'
 import { useSelector } from 'react-redux'
+import { Typography, Stack, List } from '@mui/material'
 import { selectCustomer, selectOrganizationReseller } from '../selectors/organizations'
+import { ListItemBack } from '../components/ListItemBack'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
+import { MobileUI } from '../components/MobileUI'
 import { Avatar } from '../components/Avatar'
 import { Plans } from '../components/Plans'
 
@@ -22,25 +23,20 @@ export const CustomerPlansPage: React.FC = () => {
       gutterBottom
       integrated
       header={
-        <Gutters>
-          <Stack flexDirection="row" alignItems="center" justifyContent="space-between">
-            <Typography
-              variant="caption"
-              textAlign="right"
-              marginRight={-2}
-              borderRight="1px solid"
-              borderColor="grayLight.main"
-              paddingRight={2}
-            >
-              Select a <br />
-              plan for
-            </Typography>
-            <Typography variant="h1" flexGrow={1}>
+        <>
+          <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginRight={4}>
+            <Typography variant="h1" flexGrow={1} flexDirection="column">
+              <Typography variant="caption">Select a plan for</Typography>
               {customer?.email}
             </Typography>
             <Avatar email={customer?.email} />
           </Stack>
-        </Gutters>
+          <MobileUI hide>
+            <List sx={{ paddingTop: 0 }}>
+              <ListItemBack to={`/organization/customer/${customer?.id}`} disableGutters={false} />
+            </List>
+          </MobileUI>
+        </>
       }
     >
       {reseller && (

@@ -31,7 +31,7 @@ import { spacing } from '../styling'
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
   const counts = useCounts()
-  const reseller = useSelector(selectResellerRef)
+  const reseller = useSelector((state: State) => state.user.reseller)
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
   const remoteUI = useSelector(isRemoteUI)
   const limits = useSelector(selectLimitsLookup)

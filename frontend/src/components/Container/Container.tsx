@@ -70,7 +70,6 @@ const useStyles = makeStyles(({ palette }) => ({
     borderBottom: backgroundColor && `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-h1': {
       display: 'flex',
-      alignItems: 'center',
       padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
       minHeight: 50,
     },

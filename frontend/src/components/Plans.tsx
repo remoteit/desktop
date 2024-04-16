@@ -52,7 +52,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
   React.useEffect(() => {
     if (location.pathname.includes('success')) {
       dispatch.plans.restore()
-      history.push('..')
+      history.push('.')
     }
   }, [])
 
