@@ -29,12 +29,11 @@ export const OrganizationPage: React.FC = () => {
   const limits = useSelector(selectLimitsLookup)
   const license = useSelector(selectRemoteitLicense)
   const licenseIndicator = useSelector(selectLicenseIndicator)
+  const admin = !!permissions?.includes('ADMIN')
+  const manager = !!permissions?.includes('MANAGE')
 
   if (initialized && !organization.id)
     return <Redirect to={{ pathname: '/organization/empty', state: { isRedirect: true } }} />
-
-  const admin = !!permissions?.includes('ADMIN')
-  const manager = !!permissions?.includes('MANAGE')
 
   return (
     <Container

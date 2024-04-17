@@ -15,14 +15,13 @@ import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
 import { Confirm } from '../components/Confirm'
 
 type Props = {
-  accountId: string
   license: ILicense | null
   includeLicenseId?: boolean
   plan?: IPlan
   plans: IPlan[]
 }
 
-export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, plan, plans }) => {
+export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans }) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -46,15 +45,15 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
   const totals = deviceUserTotal(license?.quantity || 1, plan)
 
   React.useEffect(() => {
-    setForm(getDefaults())
-  }, [license])
-
-  React.useEffect(() => {
-    if (location.pathname.includes('success')) {
-      dispatch.plans.restore()
+    const success = async () => {
+      await dispatch.organization.set({ initialized: false })
+      await dispatch.plans.restore()
+      setForm(getDefaults())
       history.push('.')
     }
-  }, [])
+
+    if (location.pathname.includes('success')) success()
+  }, [location.pathname])
 
   if (!initialized) return <LoadingMessage />
 
@@ -80,6 +79,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
         {plans.map(plan => {
           const details = plan.id ? planDetails[plan.id] : {}
           const selected = license?.plan?.id === plan.id
+          const loading = purchasing === plan.id
 
           let note = details.note
           let caption = 'per month / per license'
@@ -123,15 +123,17 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
               disabled={selected && license?.custom}
               button={selected ? 'Update' : 'Select'}
               selected={selected}
-              loading={purchasing === plan.id}
+              loading={loading}
               onSelect={() =>
-                setForm({
-                  ...form,
-                  confirm: isDowngrade,
-                  checkout: !isDowngrade,
-                  planId: plan.id,
-                  priceId,
-                })
+                loading
+                  ? dispatch.plans.restore()
+                  : setForm({
+                      ...form,
+                      confirm: isDowngrade,
+                      checkout: !isDowngrade,
+                      planId: plan.id,
+                      priceId,
+                    })
               }
               features={details.features}
             />
@@ -161,7 +163,7 @@ export const Plans: React.FC<Props> = ({ accountId, license, includeLicenseId, p
         onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
         onDeny={() => setForm({ ...form, confirm: false })}
         title="Downgrade Plan?"
-        action="Downgrade"
+        action="Continue"
         color="warning"
         maxWidth="xs"
       >

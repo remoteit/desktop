@@ -39,9 +39,7 @@ export const CustomerPlansPage: React.FC = () => {
         </>
       }
     >
-      {reseller && (
-        <Plans accountId={userID} license={license} plan={license.plan} plans={reseller.plans} includeLicenseId />
-      )}
+      {reseller && <Plans license={license} plan={license.plan} plans={reseller.plans} includeLicenseId />}
     </Container>
   )
 }

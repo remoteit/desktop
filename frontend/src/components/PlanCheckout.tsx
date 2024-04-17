@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
+import { useHistory } from 'react-router-dom'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
@@ -20,6 +21,7 @@ type Props = {
 
 export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
   const css = useStyles()
+  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const purchasing = useSelector((state: State) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
@@ -66,7 +68,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         <List className={css.list}>
           <ListItem>
             <Button
-              onClick={() => dispatch.plans.unsubscribe(form)}
+              onClick={async () => {
+                await dispatch.plans.unsubscribe(form)
+                history.push('success')
+              }}
               color="primary"
               variant="contained"
               disabled={purchasing}

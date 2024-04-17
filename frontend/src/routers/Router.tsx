@@ -322,10 +322,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/organization/guests">
                 <OrganizationGuestsPage />
               </Route>
-              <Route path="/organization/members">
+              <Route path={['organization', '/organization/members']}>
                 <OrganizationMembersPage />
               </Route>
-              <Redirect from="/organization" to={{ pathname: '/organization/members', state: { isRedirect: true } }} />
             </Switch>
           }
           layout={layout}
