@@ -322,7 +322,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/organization/guests">
                 <OrganizationGuestsPage />
               </Route>
-              <Route path={['organization', '/organization/members']}>
+              <Route path={['/organization', '/organization/members']}>
                 <OrganizationMembersPage />
               </Route>
             </Switch>
@@ -340,27 +340,22 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/account/security">
                 <SecurityPage />
               </Route>
-
               <Route path="/account/plans">
                 <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
                   <PlansPage />
                 </RedirectOffsite>
               </Route>
-
               <Route path="/account/billing">
                 <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
                   <BillingPage />
                 </RedirectOffsite>
               </Route>
-
               <Route path="/account/license">
                 <LicensingPage />
               </Route>
-
               <Route path="/account/accessKey">
                 <AccessKeyPage />
               </Route>
-
               <Route path={['/account', '/account/overview']}>
                 <ProfilePage />
               </Route>

@@ -16,9 +16,9 @@ import { Plans } from '../components/Plans'
 export const PlansPage: React.FC = () => {
   const { initialized } = useSelector((state: State) => state.plans)
   const user = useSelector(getUser)
-  const license = useSelector(selectRemoteitLicense)
-  const plans = useSelector(selectRemoteitPlans)
-  const plan = useSelector(selectPlan)
+  const license = useSelector((state: State) => selectRemoteitLicense(state, state.user.id))
+  const plans = useSelector((state: State) => selectRemoteitPlans(state))
+  const plan = useSelector((state: State) => selectPlan(state, state.user.id))
 
   const isReseller = license?.plan.id === RESELLER_PLAN_ID
   const isEnterprise = license?.plan.id === ENTERPRISE_PLAN_ID
