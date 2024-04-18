@@ -9,14 +9,15 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
 } from '@mui/material'
-import { useLocation } from 'react-router-dom'
 import { State, Dispatch } from '../store'
+import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectRemoteitLicense } from '../selectors/organizations'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 export const CreditCard: React.FC = () => {
+  const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: State) => ({
@@ -28,7 +29,10 @@ export const CreditCard: React.FC = () => {
   const update = () => dispatch.plans.updateCreditCard(license?.subscription?.card?.last)
 
   React.useEffect(() => {
-    if (location.pathname.includes('success')) dispatch.plans.restore()
+    if (location.pathname.includes('success')) {
+      dispatch.plans.restore()
+      history.push('.')
+    }
   }, [])
 
   if (!card) return null

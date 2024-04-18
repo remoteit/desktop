@@ -64,9 +64,9 @@ export const PlanCard: React.FC<Props> = ({
           <Button
             onClick={onSelect}
             size="small"
-            color="primary"
             variant="contained"
-            disabled={loading || disabled}
+            disabled={disabled}
+            color={loading ? 'inherit' : 'primary'}
             className={css.select}
           >
             {loading ? 'Processing...' : button}

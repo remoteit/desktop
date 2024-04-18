@@ -13,7 +13,7 @@ android {
         applicationId "com.remoteit"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 234
+        versionCode 235
         versionName "3.29.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

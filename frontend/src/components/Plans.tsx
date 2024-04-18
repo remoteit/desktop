@@ -1,35 +1,29 @@
 import React from 'react'
 import { Notice } from './Notice'
 import { Overlay } from './Overlay'
-import { Gutters } from './Gutters'
 import { PlanCard } from './PlanCard'
 import { makeStyles } from '@mui/styles'
-import { useLocation } from 'react-router-dom'
+import { PlanGutters } from './PlanGutters'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
 import { State, Dispatch } from '../store'
 import { currencyFormatter } from '../helpers/utilHelper'
+import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
-import { useMediaQuery, Typography } from '@mui/material'
+import { PERSONAL_PLAN_ID, planDetails, deviceUserTotal } from '../models/plans'
 import { NoticeCustomPlan } from '../components/NoticeCustomPlan'
-import { ResellerLogo } from '../components/ResellerLogo'
-import { windowOpen } from '../services/Browser'
 import { Confirm } from '../components/Confirm'
-import { Pre } from '../components/Pre'
 
 type Props = {
-  accountId: string
   license: ILicense | null
+  includeLicenseId?: boolean
   plan?: IPlan
   plans: IPlan[]
-  reseller?: IResellerRef | null
-  showEnterprise?: boolean
 }
 
-export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, reseller, showEnterprise }) => {
-  const small = useMediaQuery(`(max-width:600px)`)
-  const css = useStyles({ small })
+export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans }) => {
+  const css = useStyles()
+  const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const initialized = useSelector((state: State) => state.organization.initialized)
@@ -38,55 +32,30 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
   function getDefaults(): IPurchase {
     const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
     return {
-      accountId,
       checkout: false,
       planId: plan?.id,
       priceId: price?.id,
       quantity: license?.quantity || 1,
       confirm: false,
+      licenseId: includeLicenseId ? license?.id : undefined,
     }
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
-  const enterprise = !!license && license.plan.id === ENTERPRISE_PLAN_ID
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
   const totals = deviceUserTotal(license?.quantity || 1, plan)
 
-  React.useEffect(() => {
+  const success = async (push?: boolean) => {
+    await dispatch.organization.set({ initialized: false })
+    await dispatch.plans.restore()
     setForm(getDefaults())
-  }, [license])
+    if (push) history.push('.')
+  }
 
   React.useEffect(() => {
-    if (location.pathname.includes('success')) dispatch.plans.restore()
-  }, [])
+    if (location.pathname.includes('success')) success(true)
+  }, [location.pathname])
 
   if (!initialized) return <LoadingMessage />
-
-  if (reseller)
-    return (
-      <Gutters size="lg" className={css.plans}>
-        <PlanCard
-          wide
-          name="Partner Support Plan"
-          description="Dedicated support and services"
-          caption={
-            <>
-              <ResellerLogo reseller={reseller} />
-              <Typography variant="h2" gutterBottom>
-                <b>{reseller.name}</b>
-              </Typography>
-              Experience tailored services and dedicated support. <br />
-              For help and inquiries, please reach out to {reseller.email}.
-            </>
-          }
-          button="Contact"
-          selected={enterprise}
-          onSelect={() => {
-            if (enterprise) window.location.href = encodeURI(`mailto:${reseller.email}?subject=Remote.It Plan`)
-            else windowOpen('https://link.remote.it/contact', '_blank')
-          }}
-        />
-      </Gutters>
-    )
 
   return (
     <>
@@ -98,115 +67,104 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
             license={license}
             onChange={form => setForm(form)}
             onCancel={() => setForm(getDefaults())}
+            onSuccess={success}
           />
         </Overlay>
       )}
       {license?.custom && (
-        <Gutters size="lg" className={css.plans}>
+        <PlanGutters>
           <NoticeCustomPlan className={css.notice} fullWidth />
-        </Gutters>
+        </PlanGutters>
       )}
-      {!enterprise && (
-        <>
-          <Gutters size="lg" className={css.plans}>
-            {plans.map(plan => {
-              const planPrice = plan.prices && plan.prices.find(p => p.interval === 'YEAR')
-              const details = plan.id ? planDetails[plan.id] : {}
-              const selected = license?.plan?.id === plan.id
-              let price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
-              let caption = 'per month / per license'
-              let note = details.note
-              if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
-                price =
-                  currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
-                  ` / ${license?.subscription?.price.interval?.toLowerCase()}`
-                caption = `${license.quantity} license${(license.quantity || 0) > 1 ? 's' : ''}`
-                note = `${totals.users} users + ${totals.devices} devices`
-              }
-              const result = plan.prices?.find(p => p.id === form.priceId)
-              const priceId = result?.id || (plan.prices && plan.prices[0].id)
-              const isDowngrade = plan.prices && plan.prices[0].amount < (license?.subscription?.price?.amount || 0)
-              return (
-                <PlanCard
-                  key={plan.id}
-                  name={plan.description}
-                  description={details.description}
-                  price={price}
-                  caption={caption}
-                  note={note}
-                  disabled={selected && license?.custom}
-                  button={selected ? 'Update' : 'Select'}
-                  selected={selected}
-                  loading={purchasing === plan.id}
-                  onSelect={() =>
-                    setForm({
+      <PlanGutters>
+        {plans.map(plan => {
+          const details = plan.id ? planDetails[plan.id] : {}
+          const selected = license?.plan?.id === plan.id
+          const loading = purchasing === plan.id
+
+          let note = details.note
+          let caption = 'per month / per license'
+          let planPrice: IPrice | undefined
+          let planInterval: string
+          let price: string = '-'
+
+          if (plan.prices) {
+            planInterval = 'YEAR'
+            planPrice = plan.prices.find(p => p.interval === planInterval)
+            price = currencyFormatter(planPrice?.currency, (planPrice?.amount || 1) / 12, 0)
+            if (!planPrice) {
+              planInterval = 'MONTH'
+              planPrice = plan.prices.find(p => p.interval === planInterval)
+              price = currencyFormatter(planPrice?.currency, planPrice?.amount || 1, 0)
+              note = 'billed monthly'
+            }
+          }
+
+          if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
+            price =
+              currencyFormatter(license.subscription.price.currency, license.subscription.total, 0) +
+              ` / ${license.subscription.price.interval?.toLowerCase()}`
+            caption = `${license.quantity} license${(license.quantity || 0) > 1 ? 's' : ''}`
+            note = `${totals.users} users + ${totals.devices} devices`
+          }
+
+          const result = plan.prices?.find(p => p.id === form.priceId)
+          const priceId = result?.id || (plan.prices && plan.prices[0].id)
+          const downgradePrice = plan.prices?.find(p => p.interval === license?.subscription?.price?.interval)?.amount
+          const isDowngrade = (downgradePrice || 0) < (license?.subscription?.price?.amount || 0)
+
+          return (
+            <PlanCard
+              key={plan.id}
+              name={plan.description}
+              description={details.description}
+              price={price}
+              caption={caption}
+              note={note}
+              disabled={selected && license?.custom}
+              button={selected ? 'Update' : 'Select'}
+              selected={selected}
+              loading={loading}
+              onSelect={() =>
+                loading
+                  ? dispatch.plans.restore()
+                  : setForm({
                       ...form,
                       confirm: isDowngrade,
                       checkout: !isDowngrade,
                       planId: plan.id,
                       priceId,
                     })
-                  }
-                  features={details.features}
-                />
-              )
-            })}
-          </Gutters>
-          <Gutters size="lg" className={css.plans}>
-            <PlanCard
-              wide
-              name="Personal"
-              description={planDetails[PERSONAL_PLAN_ID].description}
-              price="$0"
-              caption="Free Plan"
-              button={personal ? 'Current Plan' : 'Select'}
-              selected={personal}
-              disabled={personal}
-              onSelect={() =>
-                personal
-                  ? setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
-                  : setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
               }
-              features={planDetails[PERSONAL_PLAN_ID].features}
+              features={details.features}
             />
-          </Gutters>
-        </>
-      )}
-      {showEnterprise && (
-        <Gutters size="lg" className={css.plans}>
-          <PlanCard
-            wide
-            name="Enterprise"
-            description={planDetails[ENTERPRISE_PLAN_ID].description}
-            caption={
-              enterprise ? (
-                <>
-                  For changes, see
-                  <br /> your administrator or
-                </>
-              ) : (
-                <>
-                  Large-scale solutions for
-                  <br /> unique and custom use-cases
-                </>
-              )
-            }
-            button="Contact Us"
-            selected={enterprise}
-            onSelect={() => {
-              if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
-              else windowOpen('https://link.remote.it/contact', '_blank')
-            }}
-            features={enterprise ? undefined : planDetails[ENTERPRISE_PLAN_ID].features}
-          />
-        </Gutters>
-      )}
+          )
+        })}
+      </PlanGutters>
+      <PlanGutters>
+        <PlanCard
+          wide
+          name="Personal"
+          description={planDetails[PERSONAL_PLAN_ID].description}
+          price="$0"
+          caption="Free Plan"
+          button={personal ? 'Current Plan' : 'Select'}
+          selected={personal}
+          disabled={personal}
+          onSelect={() =>
+            personal
+              ? setForm({ ...form, confirm: false, checkout: true, planId: PERSONAL_PLAN_ID })
+              : setForm({ ...form, confirm: true, checkout: false, planId: PERSONAL_PLAN_ID })
+          }
+          features={planDetails[PERSONAL_PLAN_ID].features}
+        />
+      </PlanGutters>
       <Confirm
         open={!!form.confirm}
         onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
         onDeny={() => setForm({ ...form, confirm: false })}
         title="Downgrade Plan?"
-        action="Downgrade"
+        action="Continue"
         color="warning"
         maxWidth="xs"
       >
@@ -220,14 +178,6 @@ export const Plans: React.FC<Props> = ({ accountId, license, plan, plans, resell
 }
 
 const useStyles = makeStyles({
-  plans: ({ small }: { small: boolean }) => ({
-    display: 'flex',
-    justifyContent: 'center',
-    flexWrap: small ? 'wrap' : 'nowrap',
-    marginBottom: 0,
-    marginTop: 0,
-    maxWidth: 840,
-  }),
   notice: {
     maxWidth: 840,
   },

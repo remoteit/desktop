@@ -57,17 +57,6 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
     } else {
       secondary = 'This is not your system.'
       disabled = true
-      // action = {
-      //   label: 'unregister',
-      //   onClick: () => {
-      //     dispatch.ui.set({
-      //       confirm: {
-      //         id: 'forceUnregister',
-      //         callback: () => emit('forceUnregister'),
-      //       },
-      //     })
-      //   },
-      // }
     }
   } else if (canRestore) {
     action = {
@@ -101,14 +90,21 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
             </>
           }
         >
-          <ListItemButton disableGutters onClick={onClick} to={thisLink} component={Link} disabled={disabled}>
+          <ListItemButton
+            disableGutters
+            onClick={onClick}
+            to={thisLink}
+            component={Link}
+            disabled={disabled}
+            sx={{ minWidth: 140 }}
+          >
             <ListItemIcon>
               <Icon name={getOs()} fixedWidth platformIcon size="xxl" />
             </ListItemIcon>
             <ListItemText primary={hostname} secondary={secondary} />
             {action && (
               <ListItemSecondaryAction>
-                <Chip {...action} size="small" />
+                <Chip {...action} size="small" variant="outlined" />
               </ListItemSecondaryAction>
             )}
           </ListItemButton>

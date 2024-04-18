@@ -228,9 +228,10 @@ export async function graphQLCreditCard() {
 }
 
 export async function graphQLSubscribe(params: IPurchase) {
+  console.log('SUBSCRIBE: ' + JSON.stringify(params))
   return await graphQLBasicRequest(
-    ` mutation Subscribe($priceId: String!, $quantity: Int, $successUrl: String!, $cancelUrl: String!) {
-        createSubscription(priceId: $priceId, quantity: $quantity, successUrl: $successUrl, cancelUrl: $cancelUrl) {
+    ` mutation Subscribe($licenseId: String, $priceId: String!, $quantity: Int, $successUrl: String!, $cancelUrl: String!) {
+        createSubscription(licenseId: $licenseId, priceId: $priceId, quantity: $quantity, successUrl: $successUrl, cancelUrl: $cancelUrl) {
           url
         }
       }`,
@@ -242,20 +243,23 @@ export async function graphQLSubscribe(params: IPurchase) {
   )
 }
 
-export async function graphQLUpdateSubscription(params: { priceId: string; quantity: number; accountId: string }) {
+export async function graphQLUpdateSubscription(params: IPurchase) {
+  console.log('UPDATE SUBSCRIPTION: ' + JSON.stringify(params))
   return await graphQLBasicRequest(
-    ` mutation UpdateSubscription($priceId: String!, $quantity: Int, $accountId: String!) {
-        updateSubscription(priceId: $priceId, quantity: $quantity, accountId: $accountId)
+    ` mutation UpdateSubscription($licenseId: String, $priceId: String!, $quantity: Int) {
+        updateSubscription(licenseId: $licenseId, priceId: $priceId, quantity: $quantity)
       }`,
     params
   )
 }
 
-export async function graphQLUnsubscribe() {
+export async function graphQLUnsubscribe(licenseId?: string) {
+  console.log('UNSUBSCRIBE: ' + JSON.stringify(licenseId))
   return await graphQLBasicRequest(
-    ` mutation {
-        cancelSubscription
-      }`
+    ` mutation Unsubscribe($licenseId: String) {
+        cancelSubscription(licenseId: $licenseId)
+      }`,
+    { licenseId }
   )
 }
 

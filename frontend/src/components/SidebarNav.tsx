@@ -31,7 +31,7 @@ import { spacing } from '../styling'
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
   const counts = useCounts()
-  const reseller = useSelector(selectResellerRef)
+  const reseller = useSelector((state: State) => state.user.reseller)
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
   const remoteUI = useSelector(isRemoteUI)
   const limits = useSelector(selectLimitsLookup)
@@ -164,7 +164,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
-    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px` },
+    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: palette.grayLight.main },
     '& .Mui-selected': {
       backgroundColor: palette.white.main,
       '& .MuiListItemText-primary': {

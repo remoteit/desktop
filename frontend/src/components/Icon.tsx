@@ -1,6 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { Badge } from '@mui/material'
+import { useTheme, Badge } from '@mui/material'
 import { PlatformIcon } from './PlatformIcon'
 import { fontSizes, spacing, Color, Sizes } from '../styling'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -10,7 +9,6 @@ import { fal } from '@fortawesome/pro-light-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { R3gray } from '../assets/R3gray'
-import classnames from 'classnames'
 
 library.add(fal, fab, far, fas)
 
@@ -55,6 +53,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     },
     ref
   ) => {
+    // Custom icon name handling
     if (name === 'share') {
       name = 'arrow-up-from-bracket'
     }
@@ -75,37 +74,50 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       scale = 0.8
     }
 
-    const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize, scale })
+    const theme = useTheme()
+    const styles: React.CSSProperties = { objectFit: 'contain' }
 
-    // Platform icons
-    if (props.platform || platformIcon)
-      return <PlatformIcon {...props} className={classnames(props.className, css.icon)} name={name} />
+    if (color) styles.color = theme.palette[color]?.main || color
+    if (inline) styles.marginLeft = size ? spacing[size] : spacing.md
+    if (inlineLeft) styles.marginRight = size ? spacing[size] : spacing.md
+    if (size) {
+      styles.fontSize = fontSizes[size]
+      styles.height = fontSizes[size]
+      styles.maxWidth = `calc(${fontSizes[size]} + ${spacing.sm}px)`
+    }
+    if (fontSize) {
+      styles.fontSize = fontSize
+      styles.height = fontSize
+      styles.maxWidth = `${fontSize + spacing.sm}px`
+    }
+    if (scale) styles.height = `calc(${styles.height || 0} * ${scale})`
+    if (rotate) styles.transform = `rotate(${rotate}deg)`
 
-    // No icon
+    // Handling for different icon sources (platform-specific or FontAwesome)
+    if (platformIcon || props.platform) return <PlatformIcon {...props} style={styles} name={name} />
+
     if (!name) return null
 
-    // Special Icon Handling
-    if (name === 'r3') return <R3gray {...props} className={classnames(props.className, css.icon)} />
+    // Handle special icon cases
+    if (name === 'r3') return <R3gray {...props} style={styles} />
 
     let fontType: IconPrefix = 'far'
 
     switch (type) {
-      case 'brands': {
+      case 'brands':
         fontType = 'fab'
         break
-      }
-      case 'regular': {
+      case 'regular':
         fontType = 'far'
         break
-      }
-      case 'solid': {
+      case 'solid':
         fontType = 'fas'
         break
-      }
-      case 'light': {
+      case 'light':
         fontType = 'fal'
         break
-      }
+      default:
+        fontType = 'far'
     }
 
     let icon = (
@@ -115,11 +127,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
         icon={[fontType, name as IconName]}
         spin={spin}
         fixedWidth={fixedWidth}
-        style={{
-          // moved here because sometimes wouldn't render in class
-          transform: rotate ? `rotate(${rotate}deg)` : undefined,
-        }}
-        className={classnames(props.className, css.icon)}
+        style={styles}
       />
     )
 
@@ -133,22 +141,3 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     return icon
   }
 )
-
-const useStyles = makeStyles(({ palette }) => ({
-  icon: ({ color, inline, inlineLeft, size, fontSize, scale }: IconProps) => {
-    const styles: any = { objectFit: 'contain' }
-    if (color) styles.color = palette[color] ? palette[color].main : color
-    if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
-    if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
-    if (size) {
-      styles.fontSize = styles.height = fontSizes[size]
-      styles.maxWidth = `calc(${fontSizes[size]} + ${fontSizes.sm})`
-    }
-    if (fontSize) {
-      styles.fontSize = styles.height = fontSize
-      styles.maxWidth = fontSize + spacing.sm
-    }
-    if (scale) styles.height = `calc(${styles.height} * ${scale})`
-    return styles
-  },
-}))

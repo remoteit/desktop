@@ -13,7 +13,7 @@ export const customerAttributes: CustomerAttribute[] = [
     id: 'customerEmail',
     label: 'Email',
     required: true,
-    defaultWidth: 250,
+    defaultWidth: 300,
     value: ({ customer }) => <>{customer?.email}</>,
   }),
   new CustomerAttribute({
@@ -40,7 +40,9 @@ export const customerAttributes: CustomerAttribute[] = [
     defaultWidth: 74,
     value: ({ customer }) => {
       const price = customer?.license?.subscription?.price
-      return currencyFormatter(price?.currency, price?.amount)
+      const amount = price?.amount || 0
+      const quantity = customer?.license?.quantity || 1
+      return currencyFormatter(price?.currency, amount * quantity)
     },
   }),
   new CustomerAttribute({

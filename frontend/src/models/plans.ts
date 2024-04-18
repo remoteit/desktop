@@ -1,8 +1,8 @@
+import { State } from '../store'
+import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-import { State } from '../store'
-import { Duration } from 'luxon'
 import {
   graphQLSubscribe,
   graphQLUnsubscribe,
@@ -12,10 +12,8 @@ import {
 import {
   selectLicensesWithLimits,
   selectRemoteitLicense,
-  selectOrganization,
   selectLimits,
   selectLicenses,
-  selectPlan,
 } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLFetchPlans } from '../services/graphQLRequest'
@@ -26,9 +24,6 @@ import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number }
 
-const PURCHASING_PLAN = 'plans.purchasing'
-const UPDATING_PLAN = 'plans.updating'
-
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
@@ -36,6 +31,7 @@ export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
 export const FLEET_PLAN_ID = 'ce579369-9deb-11ee-9f81-0a5b07a7ad3f'
 export const ENTERPRISE_PLAN_ID = 'b44f92a6-a7b9-11eb-b094-02a962787033'
+export const RESELLER_PLAN_ID = '4c5ea4d8-d10a-11ee-9f81-0a5b07a7ad3f'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
@@ -101,6 +97,18 @@ export const planDetails = {
       'Includes all Business Plan features',
     ],
   },
+  [RESELLER_PLAN_ID]: {
+    description: 'Authorized Remote.It reseller plan',
+    caption: 'Partner pricing',
+    note: 'For changes, and support:',
+    features: [
+      '25 Devices',
+      '10 user accounts',
+      'Customer account management',
+      'Exclusive reseller pricing',
+      'Exclusive Reseller support',
+    ],
+  },
   [ENTERPRISE_PLAN_ID]: {
     description: 'Custom plan for large scale deployment',
     features: [
@@ -144,15 +152,9 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async restore(_: void, state) {
-      const license = selectRemoteitLicense(state)
-      const last = license?.subscription?.card?.last
-      const planId = license?.plan.id
-
-      dispatch.plans.set({
-        purchasing: localStorage.getItem(PURCHASING_PLAN) !== planId ? planId : undefined,
-        updating: localStorage.getItem(UPDATING_PLAN) === last ? last : undefined,
-      })
+      dispatch.plans.set({ purchasing: undefined, updating: undefined })
     },
+
     async fetch() {
       const result = await graphQLFetchPlans()
       if (result === 'ERROR') return
@@ -171,12 +173,6 @@ export default createModel<RootModel>()({
 
     async subscribe(form: IPurchase, state) {
       dispatch.plans.set({ purchasing: form.planId })
-      localStorage.setItem(PURCHASING_PLAN, form.planId || '')
-
-      const license = selectRemoteitLicense(state)
-      if (license?.subscription) {
-        await dispatch.plans.unsubscribe(form.planId)
-      }
       const result = await graphQLSubscribe(form)
 
       if (result === 'ERROR' || !result?.data?.data?.createSubscription) {
@@ -194,13 +190,13 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateSubscription({ priceId, planId, quantity, accountId }: IPurchase) {
-      if (!priceId) {
-        dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
+    async updateSubscription(form: IPurchase) {
+      if (!form.priceId) {
+        dispatch.ui.set({ errorMessage: 'Plan selection missing price' })
         return
       }
-      dispatch.plans.set({ purchasing: planId })
-      const result = await graphQLUpdateSubscription({ priceId, quantity, accountId })
+      dispatch.plans.set({ purchasing: form.planId })
+      const result = await graphQLUpdateSubscription(form)
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
         if (!success) {
@@ -209,13 +205,13 @@ export default createModel<RootModel>()({
       }
       // event should come from ws and cause the update, otherwise:
       setTimeout(() => cloudSync.all(), 20 * 1000)
-      console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
+      console.log('UPDATE SUBSCRIPTION', form)
       dispatch.plans.set({ purchasing: undefined })
     },
 
-    async unsubscribe(planId: string | undefined) {
+    async unsubscribe({ planId, licenseId }: IPurchase) {
       dispatch.plans.set({ purchasing: planId })
-      const result = await graphQLUnsubscribe()
+      const result = await graphQLUnsubscribe(licenseId)
       if (result === 'ERROR' || !result?.data?.data?.cancelSubscription) {
         dispatch.ui.set({ errorMessage: 'Subscription cancellation failed, please contact support.' })
         dispatch.plans.set({ purchasing: undefined })
@@ -228,7 +224,6 @@ export default createModel<RootModel>()({
 
     async updateCreditCard(last: string | undefined) {
       dispatch.plans.set({ updating: last })
-      localStorage.setItem(UPDATING_PLAN, last || '')
       const result = await graphQLCreditCard()
       if (result !== 'ERROR') {
         const card = result?.data?.data?.updateCreditCard

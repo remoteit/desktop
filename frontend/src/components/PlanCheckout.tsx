@@ -16,9 +16,10 @@ type Props = {
   license: ILicense | null
   onChange: (form: IPurchase) => void
   onCancel: () => void
+  onSuccess: () => void
 }
 
-export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
+export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel, onSuccess }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const purchasing = useSelector((state: State) => state.plans.purchasing === form.planId)
@@ -40,9 +41,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
     onChange({ ...form, priceId })
   }
 
-  const onSubmit = () => {
-    if (license?.subscription) dispatch.plans.updateSubscription(form)
-    else dispatch.plans.subscribe(form)
+  const onSubmit = async () => {
+    if (license?.subscription) await dispatch.plans.updateSubscription(form)
+    else await dispatch.plans.subscribe(form)
+    onSuccess()
   }
 
   const unchanged = () =>
@@ -66,7 +68,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         <List className={css.list}>
           <ListItem>
             <Button
-              onClick={() => dispatch.plans.unsubscribe(form.planId)}
+              onClick={async () => {
+                await dispatch.plans.unsubscribe(form)
+                onSuccess()
+              }}
               color="primary"
               variant="contained"
               disabled={purchasing}
@@ -159,7 +164,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             variant="contained"
             disabled={purchasing || unchanged() || !form.quantity}
           >
-            {purchasing ? 'Processing...' : 'Checkout'}
+            {purchasing ? 'Processing...' : 'Submit'}
           </Button>
           <Button onClick={onCancel} disabled={purchasing}>
             Cancel

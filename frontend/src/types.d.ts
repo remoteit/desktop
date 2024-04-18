@@ -193,8 +193,8 @@ declare global {
     planId?: string
     priceId?: string
     quantity: number
-    accountId: string
     confirm?: boolean
+    licenseId?: string
   }
 
   type LogType = 'general' | 'connectd' | 'alert'

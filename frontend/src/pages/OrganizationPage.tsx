@@ -29,12 +29,11 @@ export const OrganizationPage: React.FC = () => {
   const limits = useSelector(selectLimitsLookup)
   const license = useSelector(selectRemoteitLicense)
   const licenseIndicator = useSelector(selectLicenseIndicator)
+  const admin = !!permissions?.includes('ADMIN')
+  const manager = !!permissions?.includes('MANAGE')
 
   if (initialized && !organization.id)
     return <Redirect to={{ pathname: '/organization/empty', state: { isRedirect: true } }} />
-
-  const admin = !!permissions?.includes('ADMIN')
-  const manager = !!permissions?.includes('MANAGE')
 
   return (
     <Container
@@ -65,21 +64,6 @@ export const OrganizationPage: React.FC = () => {
       )}
       <List>
         <ListItemLocation
-          title="Account"
-          to={`/organization/account/${user.id}`}
-          match={['/organization/account']}
-          icon="user"
-          dense
-        />
-        <ListItemLocation
-          title="Guests"
-          to="/organization/guests"
-          icon="user-circle"
-          disabled={!manager}
-          showDisabled
-          dense
-        />
-        <ListItemLocation
           title="Members"
           to="/organization/members"
           icon="users"
@@ -104,6 +88,21 @@ export const OrganizationPage: React.FC = () => {
             dense
           />
         )}
+        <ListItemLocation
+          title="Guests"
+          to="/organization/guests"
+          icon="user-circle"
+          disabled={!manager}
+          showDisabled
+          dense
+        />
+        <ListItemLocation
+          title="Account"
+          to={`/organization/account/${user.id}`}
+          match={['/organization/account']}
+          icon="user"
+          dense
+        />
         <ListItemLocation
           title="Roles"
           icon="user-shield"
