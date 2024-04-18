@@ -16,7 +16,7 @@ export const ResellerPage: React.FC = () => {
   const reseller = useSelector(selectOrganizationReseller)
   const canManage = permissions?.includes('MANAGE')
 
-  if (!permissions?.includes('ADMIN'))
+  if (!permissions?.includes('ADMIN') || !reseller)
     return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (
