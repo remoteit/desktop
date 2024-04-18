@@ -402,8 +402,14 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiListItemSecondaryAction: {
         defaultProps: {
-          onMouseDown: (event: React.MouseEvent) => event.stopPropagation(),
-          onClick: (event: React.MouseEvent) => event.stopPropagation(),
+          onMouseDown: (event: React.MouseEvent) => {
+            event.stopPropagation()
+            event.preventDefault()
+          },
+          onClick: (event: React.MouseEvent) => {
+            event.stopPropagation()
+            event.preventDefault()
+          },
         },
         styleOverrides: {
           root: {
