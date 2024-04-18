@@ -164,7 +164,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             variant="contained"
             disabled={purchasing || unchanged() || !form.quantity}
           >
-            {purchasing ? 'Processing...' : license?.subscription ? 'Update' : 'Checkout'}
+            {purchasing ? 'Processing...' : 'Submit'}
           </Button>
           <Button onClick={onCancel} disabled={purchasing}>
             Cancel

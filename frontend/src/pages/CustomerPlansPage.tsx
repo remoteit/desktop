@@ -24,18 +24,24 @@ export const CustomerPlansPage: React.FC = () => {
       integrated
       header={
         <>
-          <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginRight={4}>
+          <Stack
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between"
+            marginRight={4}
+            marginBottom={2}
+          >
             <Typography variant="h1" flexGrow={1} flexDirection="column">
               <Typography variant="caption">Select a plan for</Typography>
               {customer?.email}
             </Typography>
             <Avatar email={customer?.email} />
           </Stack>
-          <MobileUI hide>
+          {/* <MobileUI hide>
             <List sx={{ paddingTop: 0 }}>
               <ListItemBack to={`/organization/customer/${customer?.id}`} disableGutters={false} />
             </List>
-          </MobileUI>
+          </MobileUI> */}
         </>
       }
     >
