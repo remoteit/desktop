@@ -70,10 +70,9 @@ export function ClaimDevice() {
       <ConfirmButton
         ref={buttonRef}
         size="chip"
-        variant="contained"
+        variant={valid ? 'contained' : 'text'}
         title={claiming ? 'Claiming' : 'Claim'}
         confirm={organization.id !== user.id}
-        color="primary"
         disabled={claiming || !valid}
         onClick={() => devices.claimDevice({ code, redirect: true })}
         confirmProps={{

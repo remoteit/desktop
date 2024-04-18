@@ -40,7 +40,9 @@ export const customerAttributes: CustomerAttribute[] = [
     defaultWidth: 74,
     value: ({ customer }) => {
       const price = customer?.license?.subscription?.price
-      return currencyFormatter(price?.currency, price?.amount)
+      const amount = price?.amount || 0
+      const quantity = customer?.license?.quantity || 1
+      return currencyFormatter(price?.currency, amount * quantity)
     },
   }),
   new CustomerAttribute({

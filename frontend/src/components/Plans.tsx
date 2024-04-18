@@ -44,15 +44,15 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
   const totals = deviceUserTotal(license?.quantity || 1, plan)
 
-  React.useEffect(() => {
-    const success = async () => {
-      await dispatch.organization.set({ initialized: false })
-      await dispatch.plans.restore()
-      setForm(getDefaults())
-      history.push('.')
-    }
+  const success = async (push?: boolean) => {
+    await dispatch.organization.set({ initialized: false })
+    await dispatch.plans.restore()
+    setForm(getDefaults())
+    if (push) history.push('.')
+  }
 
-    if (location.pathname.includes('success')) success()
+  React.useEffect(() => {
+    if (location.pathname.includes('success')) success(true)
   }, [location.pathname])
 
   if (!initialized) return <LoadingMessage />
@@ -67,6 +67,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
             license={license}
             onChange={form => setForm(form)}
             onCancel={() => setForm(getDefaults())}
+            onSuccess={success}
           />
         </Overlay>
       )}

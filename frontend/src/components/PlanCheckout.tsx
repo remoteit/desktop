@@ -1,6 +1,5 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { useHistory } from 'react-router-dom'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
@@ -17,11 +16,11 @@ type Props = {
   license: ILicense | null
   onChange: (form: IPurchase) => void
   onCancel: () => void
+  onSuccess: () => void
 }
 
-export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
+export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel, onSuccess }) => {
   const css = useStyles()
-  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const purchasing = useSelector((state: State) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
@@ -42,10 +41,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
     onChange({ ...form, priceId })
   }
 
-  const onSubmit = () => {
-    console.log('onSubmit', form, license)
-    if (license?.subscription) dispatch.plans.updateSubscription(form)
-    else dispatch.plans.subscribe(form)
+  const onSubmit = async () => {
+    if (license?.subscription) await dispatch.plans.updateSubscription(form)
+    else await dispatch.plans.subscribe(form)
+    onSuccess()
   }
 
   const unchanged = () =>
@@ -71,7 +70,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             <Button
               onClick={async () => {
                 await dispatch.plans.unsubscribe(form)
-                history.push('success')
+                onSuccess()
               }}
               color="primary"
               variant="contained"
@@ -165,7 +164,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             variant="contained"
             disabled={purchasing || unchanged() || !form.quantity}
           >
-            {purchasing ? 'Processing...' : 'Checkout'}
+            {purchasing ? 'Processing...' : license?.subscription ? 'Update' : 'Checkout'}
           </Button>
           <Button onClick={onCancel} disabled={purchasing}>
             Cancel
