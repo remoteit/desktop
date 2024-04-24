@@ -245,8 +245,8 @@ export default class CLI {
     await this.read()
   }
 
-  async reset() {
-    await this.exec({ cmds: [strings.reset()], admin: true })
+  async uninstall() {
+    await this.exec({ cmds: [strings.uninstall()], admin: true })
   }
 
   async serviceUninstall() {
