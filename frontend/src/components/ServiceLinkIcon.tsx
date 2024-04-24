@@ -6,4 +6,4 @@ type Props = IconProps & {
 }
 
 export const ServiceLinkIcon: React.FC<Props> = ({ service, ...props }) =>
-  service?.link?.enabled && <Icon name={service.link.url.startsWith('http') ? 'globe' : 'key'} {...props} />
+  service?.link?.enabled && <Icon name={service.link.web ? 'globe' : 'key'} {...props} />

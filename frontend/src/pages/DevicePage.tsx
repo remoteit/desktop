@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { DeviceContext } from '../services/Context'
-import { makeStyles } from '@mui/styles'
 import { AddFromNetwork } from '../components/AddFromNetwork'
 import { Dispatch, State } from '../store'
 import { DeviceTagEditor } from '../components/DeviceTagEditor'
@@ -10,7 +9,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress, Theme } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
@@ -33,7 +32,6 @@ export const DevicePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  const css = useStyles()
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
@@ -63,7 +61,11 @@ export const DevicePage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
-              className={css.title}
+              sx={{
+                paddingTop: 0.75,
+                paddingBottom: 0.75,
+                marginBottom: 0.75,
+              }}
               to={`/devices/${device.id}/details`}
               match={[
                 `/devices/${device.id}/details`,
@@ -82,7 +84,7 @@ export const DevicePage: React.FC = () => {
               exactMatch
             >
               {editable && (
-                <ListItemSecondaryAction className="hidden">
+                <ListItemSecondaryAction sx={{ marginTop: -0.1 }} className="hidden">
                   <IconButton
                     title="Configure"
                     buttonBaseSize="small"
@@ -98,10 +100,11 @@ export const DevicePage: React.FC = () => {
                     sx={{
                       zIndex: 6,
                       bgcolor: 'white.main',
+                      border: '1px solid',
+                      borderColor: 'white.main',
                       '&:hover': { bgcolor: 'grayLighter.main' },
-                      boxShadow: theme => theme.shadows[1],
+                      boxShadow: theme => theme.shadows[2],
                     }}
-                    shiftDown
                   />
                 </ListItemSecondaryAction>
               )}
@@ -191,7 +194,7 @@ export const DevicePage: React.FC = () => {
                   service={s}
                   loading={setupDeletingService === s.id}
                   color={setupDeletingService === s.id ? 'danger' : 'primary'}
-                  className={css.connect}
+                  sx={{ marginLeft: 0.375, marginRight: 0.75 }}
                   permissions={device.permissions}
                   disabled={s.state !== 'active' || disableThisConnect}
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
@@ -209,8 +212,3 @@ export const DevicePage: React.FC = () => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  connect: { marginLeft: -spacing.xxs, marginRight: spacing.xs },
-  title: { paddingTop: spacing.xs, paddingBottom: spacing.xs, marginBottom: spacing.xs },
-})

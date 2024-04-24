@@ -58,7 +58,9 @@ export const PlanCard: React.FC<Props> = ({
         <div>
           <div className={css.price}>
             {price !== undefined && <Typography variant="h1">{price}</Typography>}
-            <Typography variant="body2">{caption}</Typography>
+            <Typography variant="body2" component="div">
+              {caption}
+            </Typography>
             {note !== undefined && <Typography variant="caption">{note}</Typography>}
           </div>
           <Button

@@ -46,7 +46,7 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
       <ColorChip label="Offline" size="small" color="gray" />
     ) : connections?.some(c => c.connected) ? (
       <ColorChip label="Connected" size="small" color="primary" variant="contained" />
-    ) : device?.services.some(s => s.link?.enabled) || service?.link?.enabled ? (
+    ) : device?.services.some(s => s.link?.enabled && s.link?.web) || (service?.link?.enabled && service?.link?.web) ? (
       <ColorChip label="Public" size="small" color="primary" />
     ) : connections?.some(c => c.enabled && c.online) ? (
       <ColorChip label="Idle" size="small" color="primary" />

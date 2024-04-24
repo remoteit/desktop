@@ -1,7 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { SystemStyleObject } from '@mui/system'
-import { Tooltip, TooltipProps, IconButton as MuiIconButton, IconButtonProps, darken } from '@mui/material'
+import { SxProps, Theme, Tooltip, TooltipProps, IconButton as MuiIconButton, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 
 type VariantType = 'text' | 'contained' | 'outlined'
@@ -12,7 +11,7 @@ export type ButtonProps = Omit<IconProps, 'title'> & {
   forceTitle?: boolean
   icon?: string
   name?: string
-  sx?: IconButtonProps
+  sx?: SxProps<Theme>
   disabled?: boolean
   hideDisableFade?: boolean
   iconInlineLeft?: boolean
@@ -78,25 +77,31 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (to) history.push(to)
     }
 
-    const updatedSx: SystemStyleObject = {
-      ...sx,
+    let updatedSx: SxProps<Theme> = {
       opacity: disabled && !hideDisableFade ? 0.5 : undefined,
       marginBottom: shiftDown ? -0.75 : undefined,
       marginTop: shiftDown ? -0.75 : undefined,
       marginLeft: inline ? 1.5 : undefined,
       marginRight: inlineLeft ? 1.5 : undefined,
+      ...sx,
     }
 
     switch (variant) {
       case 'contained':
-        updatedSx.color = 'alwaysWhite.main'
-        updatedSx.backgroundColor = `${color || 'primary'}.main`
-        updatedSx['&:hover'] = {
-          backgroundColor: ({ palette }) => darken(palette[color || 'primary'].main, 0.2),
+        updatedSx = {
+          color: 'alwaysWhite.main',
+          backgroundColor: `${color || 'primary'}.main`,
+          ['&:hover']: {
+            backgroundColor: ({ palette }) => darken(palette[color || 'primary'].main, 0.2),
+          },
+          ...updatedSx,
         }
         break
       case 'outlined':
-        updatedSx.border = `1px solid ${color || 'primary'}.main`
+        updatedSx = {
+          border: `1px solid ${color || 'primary'}.main`,
+          ...updatedSx,
+        }
     }
 
     const button = (

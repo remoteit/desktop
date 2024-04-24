@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useMatches } from '../hooks/useMatches'
-import { MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
+import { SxProps, Theme, MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
 import { Color, Sizes } from '../styling'
 import { Icon } from './Icon'
 
@@ -26,6 +26,7 @@ export type Props = {
   match?: string | string[]
   exactMatch?: boolean
   badge?: number
+  sx?: SxProps<Theme>
   children?: React.ReactNode | React.ReactNode[]
   onClick?: (event: React.MouseEvent) => void
 }
@@ -100,6 +101,7 @@ export const ListItemLocation: React.FC<Props> = ({
     sx: {
       paddingLeft: disableIcon ? 2 + (inset || 0) : inset,
       paddingRight: inset,
+      ...props.sx,
     },
     style: showDisabled ? undefined : { opacity: 1 },
   }
