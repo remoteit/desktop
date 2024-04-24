@@ -408,7 +408,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           onClick: (event: React.MouseEvent) => {
             event.stopPropagation()
-            event.preventDefault()
           },
         },
         styleOverrides: {
