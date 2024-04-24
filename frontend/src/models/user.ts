@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { API_URL, DEVELOPER_KEY, LANGUAGES } from '../constants'
-import { graphQLNotificationSettings, graphQLSetAttributes } from '../services/graphQLMutation'
-import { graphQLBasicRequest } from '../services/graphQL'
+import { graphQLNotificationSettings, graphQLSetAttributes, graphQLLeaveReseller } from '../services/graphQLMutation'
+import { graphQLUser } from '../services/graphQLRequest'
 import { RootModel } from '.'
 import { getToken } from '../services/remoteit'
 
@@ -31,32 +31,8 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const account = state.auth.user?.id
-      const result = await graphQLBasicRequest(
-        ` query User($account: String) {
-            login {
-              account(id: $account) {
-                id
-                email
-                language
-                created
-                reseller {
-                  name
-                  email
-                  logoUrl
-                }
-                notificationSettings {
-                  emailNotifications
-                  desktopNotifications
-                  urlNotifications
-                  notificationEmail
-                  notificationUrl
-                }
-                attributes
-              }
-            }
-          }`,
-        { account }
-      )
+      if (!account) return
+      const result = await graphQLUser(account)
       if (result === 'ERROR') return
       const data = await dispatch.user.parse(result)
       if (data) dispatch.user.set(data)
@@ -69,6 +45,16 @@ export default createModel<RootModel>()({
         created: new Date(data?.created),
         attributes: data?.attributes?.$remoteit,
       }
+    },
+    async leaveReseller() {
+      const result = await graphQLLeaveReseller()
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Failed to leave reseller' })
+        return
+      }
+      await dispatch.user.fetch()
+      await dispatch.organization.fetch()
+      // await dispatch.user.set({ reseller: null })
     },
     async setAttribute(attribute: ILookup<any>, state) {
       dispatch.user.set({ attributes: { ...state.user.attributes, ...attribute } })

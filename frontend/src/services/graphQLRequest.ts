@@ -13,6 +13,35 @@ export async function graphQLLogin() {
   )
 }
 
+export async function graphQLUser(accountId: string) {
+  return await graphQLBasicRequest(
+    ` query User($accountId: String) {
+        login {
+          account(id: $accountId) {
+            id
+            email
+            language
+            created
+            reseller {
+              name
+              email
+              logoUrl
+            }
+            notificationSettings {
+              emailNotifications
+              desktopNotifications
+              urlNotifications
+              notificationEmail
+              notificationUrl
+            }
+            attributes
+          }
+        }
+      }`,
+    { accountId }
+  )
+}
+
 export async function graphQLRegistration(props: {
   name?: string
   tags?: string[]

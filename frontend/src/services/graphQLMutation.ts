@@ -544,3 +544,11 @@ export async function graphQLRemoveCustomer(email: string[], resellerId?: string
     { resellerId, email }
   )
 }
+
+export async function graphQLLeaveReseller() {
+  return await graphQLBasicRequest(
+    ` mutation LeaveReseller {
+        leaveReseller
+      }`
+  )
+}
