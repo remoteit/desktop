@@ -228,7 +228,7 @@ class Controller {
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
     binaryInstaller.uninstallInitiated = true
-    await cli.reset()
+    await cli.uninstall()
     await binaryInstaller.uninstall()
     await this.pool.clearMemory()
     try {

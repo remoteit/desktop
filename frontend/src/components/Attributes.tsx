@@ -421,8 +421,7 @@ export const attributes: Attribute[] = [
     label: 'Service Key',
     query: 'serviceView',
     details: false,
-    value: ({ service }) =>
-      service?.link?.url && !service.link.url.startsWith('http') ? <pre>{service.link.code}</pre> : null,
+    value: ({ service }) => (service?.link?.url && !service.link.web ? <pre>{service.link.code}</pre> : null),
   }),
   new ServiceAttribute({
     id: 'serviceAccess',

@@ -48,7 +48,7 @@ export const ConnectionMenu: React.FC<Props> = ({ connection, service }) => {
           </ListItemIcon>
           <ListItemText primary="Report Issue" />
         </MenuItem>
-        {service?.link?.url.startsWith('http') && (
+        {service?.link?.web && (
           <MenuItem
             dense
             onClick={() =>

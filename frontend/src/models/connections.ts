@@ -91,7 +91,7 @@ export default createModel<RootModel>()({
           const online = s.state === 'active'
 
           // add / update enabled connect links
-          if (s.link?.enabled && s.link.url.startsWith('http')) {
+          if (s.link?.enabled && s.link.web) {
             connection = connection || newConnection(s)
             connection = {
               ...connection,

@@ -102,12 +102,8 @@ export default {
     return '-j tools uninstall --yes'
   },
 
-  reset() {
-    return `-j reset --yes`
-  },
-
   uninstall() {
-    return `-j uninstall --yes`
+    return `-j uninstall --yes --keepTools`
   },
 
   scan(ipMask?: string) {

@@ -14,14 +14,10 @@ import { Title } from '../components/Title'
 import { useHistory } from 'react-router-dom'
 
 export const OrganizationAddPage = () => {
-  const { contacts, organization, freeUsers } = useSelector((state: State) => {
-    const organization = selectOrganization(state)
-    return {
-      organization,
-      contacts: state.contacts.all.filter(c => !organization.members.find(s => s.user.id === c.id)) || [],
-      freeUsers: selectAvailableUsers(state),
-    }
-  })
+  const organization = useSelector(selectOrganization)
+  const allContacts = useSelector((state: State) => state.contacts.all)
+  const freeUsers = useSelector(selectAvailableUsers)
+  const contacts = allContacts.filter(c => !organization.members.find(s => s.user.id === c.id)) || []
 
   const [emails, setEmails] = React.useState<string[]>([])
   const [roleId, setRoleId] = React.useState<IOrganizationRoleIdType>(

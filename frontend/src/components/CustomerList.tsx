@@ -4,10 +4,11 @@ import { useSelector } from 'react-redux'
 import { customerAttributes } from './CustomerAttributes'
 import { MOBILE_WIDTH } from '../constants'
 import { removeObject } from '../helpers/utilHelper'
-import { useMediaQuery } from '@mui/material'
+import { useMediaQuery, Stack, Typography } from '@mui/material'
 import { CustomerListItem } from './CustomerListItem'
 import { GridList } from './GridList'
 import { Avatar } from './Avatar'
+import { Icon } from './Icon'
 
 export interface CustomerListProps {
   customers: ICustomer[]
@@ -21,6 +22,14 @@ export const CustomerList: React.FC<CustomerListProps> = ({ customers = [], disa
 
   return (
     <GridList {...{ attributes, required, columnWidths, mobile }}>
+      {!customers.length && (
+        <Stack marginY={8} width="100%" alignItems="center">
+          <Icon name="address-book" type="light" fontSize={48} color="gray" />
+          <Typography variant="caption" sx={{ marginTop: 2 }}>
+            You have no customers yet.
+          </Typography>
+        </Stack>
+      )}
       {customers.map(customer => (
         <CustomerListItem
           key={customer.id}

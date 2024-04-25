@@ -42,7 +42,6 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
   }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
-  const totals = deviceUserTotal(license?.quantity || 1, plan)
 
   const success = async (push?: boolean) => {
     await dispatch.organization.set({ initialized: false })
@@ -78,6 +77,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
       )}
       <PlanGutters>
         {plans.map(plan => {
+          const totals = deviceUserTotal(license?.quantity || 1, plan)
           const details = plan.id ? planDetails[plan.id] : {}
           const selected = license?.plan?.id === plan.id
           const loading = purchasing === plan.id

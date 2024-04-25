@@ -1,23 +1,23 @@
 import React from 'react'
+import { Dispatch } from '../store'
 import { Redirect } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { Typography, Divider, Box } from '@mui/material'
+import { Typography, Box } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectPermissions, selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
+import { CSVDownloadButton } from '../buttons/CSVDownloadButton'
 import { CustomerList } from '../components/CustomerList'
 import { ResellerLogo } from '../components/ResellerLogo'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const ResellerPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const organization = useSelector(selectOrganization)
   const permissions = useSelector(selectPermissions)
   const reseller = useSelector(selectOrganizationReseller)
-  const canManage = permissions?.includes('MANAGE')
 
-  if (!permissions?.includes('ADMIN') || !reseller)
-    return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
+  if (!reseller) return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (
     <Container
@@ -27,6 +27,7 @@ export const ResellerPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Customers</Title>
+            <CSVDownloadButton fetchUrl={dispatch.organization.resellerReportUrl} />
             {organization?.id && (
               <IconButton
                 title="Add customer"
@@ -38,16 +39,11 @@ export const ResellerPage: React.FC = () => {
             )}
           </Typography>
           <ResellerLogo marginLeft={5} reseller={reseller} size="small" />
-          {!canManage && (
-            <Notice severity="warning" gutterTop>
-              You do not have permission to manage customers.
-            </Notice>
-          )}
         </>
       }
     >
       <Box position="relative" overflow="scroll">
-        <CustomerList customers={reseller?.customers || []} disabled={!canManage} />
+        <CustomerList customers={reseller?.customers || []} />
       </Box>
     </Container>
   )

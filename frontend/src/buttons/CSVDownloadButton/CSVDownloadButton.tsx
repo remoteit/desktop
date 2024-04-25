@@ -1,17 +1,18 @@
 import { IconButton, Tooltip } from '@mui/material'
 import React, { useState } from 'react'
-import { Icon } from '../../components/Icon'
-import { Dispatch } from '../../store'
-import { useDispatch } from 'react-redux'
 import { windowOpen } from '../../services/Browser'
+import { Icon } from '../../components/Icon'
 
-export function CSVDownloadButton() {
-  const { logs } = useDispatch<Dispatch>()
+interface CSVDownloadButtonProps {
+  fetchUrl: () => Promise<string | undefined>
+}
+
+export function CSVDownloadButton({ fetchUrl }: CSVDownloadButtonProps) {
   const [fetching, setFetching] = useState<boolean>(false)
 
   const download = async () => {
     setFetching(true)
-    const url = await logs.fetchUrl()
+    const url = await fetchUrl()
     if (url) windowOpen(url)
     setFetching(false)
   }

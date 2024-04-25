@@ -79,14 +79,7 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         {organization.reseller && (
-          <ListItemLocation
-            title="Customers"
-            to="/organization/customer"
-            icon="address-book"
-            disabled={!admin}
-            showDisabled
-            dense
-          />
+          <ListItemLocation title="Customers" to="/organization/customer" icon="address-book" showDisabled dense />
         )}
         <ListItemLocation
           title="Guests"

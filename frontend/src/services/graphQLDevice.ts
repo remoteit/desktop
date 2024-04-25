@@ -392,6 +392,7 @@ export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[]
         timeSeries: processTimeSeries(s),
         link: s.link && {
           ...s.link,
+          web: s.link?.url.startsWith('http'),
           created: new Date(s.link.created),
         },
         access: s.access?.map(e => ({
