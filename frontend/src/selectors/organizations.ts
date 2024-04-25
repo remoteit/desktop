@@ -80,11 +80,6 @@ export const selectLimits = createSelector([selectOrganization], (organization):
   return organization.limits || []
 })
 
-// export const selectResellerLimits = createSelector(
-//   [selectOrganization, optionalCustomerId],
-//   (organization, customerId): ILimit[] => organization.reseller?.customers.find(c => c.id === customerId)?.limits || []
-// )
-
 export const selectLimit = createSelector(
   [selectLimits, optionalSecondParam],
   (limits, limitName): ILimit | undefined => limits.find(limit => limit.name === limitName)
@@ -136,5 +131,5 @@ export const selectOwner = createSelector(
 
 export const selectAvailableUsers = createSelector(
   [state => selectLimit(state, undefined, 'org-users')],
-  (limit): number => Math.max(limit?.value - limit?.actual, 0)
+  (limit): number => Math.max(limit?.value - limit?.actual || -1, 0)
 )
