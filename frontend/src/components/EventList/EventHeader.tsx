@@ -69,7 +69,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
-          <CSVDownloadButton />
+          <CSVDownloadButton fetchUrl={dispatch.logs.fetchUrl} />
         </ListItemSecondaryAction>
       </ListItem>
     </List>

@@ -12,9 +12,9 @@ import {
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
 import { getAccountIds } from './accounts'
-import { graphQLFetchOrganizations, graphQLFetchGuests } from '../services/graphQLRequest'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { graphQLFetchOrganizations, graphQLFetchGuests, graphQLGetResellerReportUrl } from '../services/graphQLRequest'
 import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 import { State } from '../store'
@@ -348,6 +348,19 @@ export default createModel<RootModel>()({
       })
 
       await dispatch.organization.fetch()
+    },
+
+    async resellerReportUrl(_: void, state): Promise<string | undefined> {
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLGetResellerReportUrl(accountId)
+      console.log('RESPONSE', response)
+      if (response === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Failed to get reseller report URL' })
+        return
+      }
+      const result = response?.data?.data?.login?.account?.organization?.reseller
+      console.log('RESELLER REPORT URL', result.reportUrl)
+      return result?.reportUrl
     },
 
     async setActive(params: Partial<IOrganizationState>, state) {

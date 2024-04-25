@@ -1,8 +1,10 @@
 import React from 'react'
+import { Dispatch } from '../store'
 import { Redirect } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { Typography, Divider, Box } from '@mui/material'
+import { Typography, Box } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectPermissions, selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
+import { CSVDownloadButton } from '../buttons/CSVDownloadButton'
 import { CustomerList } from '../components/CustomerList'
 import { ResellerLogo } from '../components/ResellerLogo'
 import { IconButton } from '../buttons/IconButton'
@@ -11,6 +13,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const ResellerPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const organization = useSelector(selectOrganization)
   const permissions = useSelector(selectPermissions)
   const reseller = useSelector(selectOrganizationReseller)
@@ -27,6 +30,7 @@ export const ResellerPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Customers</Title>
+            <CSVDownloadButton fetchUrl={dispatch.organization.resellerReportUrl} />
             {organization?.id && (
               <IconButton
                 title="Add customer"

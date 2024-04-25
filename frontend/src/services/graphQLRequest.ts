@@ -311,23 +311,23 @@ export async function graphQLFetchOrganizations(ids: string[]) {
 export async function graphQLFetchGuests(accountId: string) {
   return await graphQLBasicRequest(
     ` query Guests($accountId: String) {
-      login {
-        account(id: $accountId) {
-          guest {
-            user {
-              id
-              email
-            }
-            devices {
-              id
-            }
-            networks {
-              id
+        login {
+          account(id: $accountId) {
+            guest {
+              user {
+                id
+                email
+              }
+              devices {
+                id
+              }
+              networks {
+                id
+              }
             }
           }
         }
-      }
-    }`,
+      }`,
     { accountId }
   )
 }
@@ -377,5 +377,22 @@ export async function graphQLFetchSessions(ids: string[]) {
             .join('\n')}
         }
       }`
+  )
+}
+
+export async function graphQLGetResellerReportUrl(accountId: string) {
+  return await graphQLBasicRequest(
+    ` query ResellerReportUrl($accountId: String)  {
+        login {
+          account(id: $accountId) {
+            organization {
+              reseller {
+                reportUrl
+              }
+            }
+          }
+        }
+      }`,
+    { accountId }
   )
 }
