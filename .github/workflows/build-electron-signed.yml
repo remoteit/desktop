@@ -56,7 +56,7 @@ jobs:
           npm install ../backend/dist/remoteit-headless.tgz
   
       - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1.6.0
+        uses: mebays/action-electron-builder@node-16
         with:
           package_root: electron
           mac_certs: ${{ secrets.mac_certs }}
