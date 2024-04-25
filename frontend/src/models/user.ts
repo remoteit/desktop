@@ -54,7 +54,6 @@ export default createModel<RootModel>()({
       }
       await dispatch.user.fetch()
       await dispatch.organization.fetch()
-      // await dispatch.user.set({ reseller: null })
     },
     async setAttribute(attribute: ILookup<any>, state) {
       dispatch.user.set({ attributes: { ...state.user.attributes, ...attribute } })
