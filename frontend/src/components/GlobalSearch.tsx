@@ -89,11 +89,11 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         loading={fetching}
         classes={{ listbox: css.listbox }}
         onChange={(event, newValue: any | ISearch | null, reason: string) => {
-          console.log('change', newValue, reason)
+          console.log('CHANGE', newValue, reason)
           if (reason === 'selectOption') select(newValue)
           if (reason === 'createOption') submit()
         }}
-        groupBy={option => option.nodeName}
+        groupBy={option => option.nodeId}
         onInputChange={(event, newQuery, reason) => {
           if (reason === 'input') setQuery(newQuery)
           if (reason === 'clear') clear()
@@ -136,14 +136,13 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             )
           )
           const enabled = enabledIds.includes(option.serviceId)
-          // console.log('RENDER OPTION', props, option, state)
           return (
             <ListItem {...props} key={props.id}>
               <span
                 className={classnames(enabled && css.enabled, css.indent)}
                 data-email={option.ownerEmail}
                 data-platform={option.targetPlatform || option.nodeType}
-                data-id={option.nodeId}
+                data-name={option.nodeName}
               >
                 {parts}
               </span>
@@ -152,7 +151,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         }}
         renderGroup={option => {
           const props = option.children && option.children[0].props.children.props
-
           return [
             <ListSubheader disableGutters className={css.subhead} key={option.key}>
               <Typography variant="body2">
@@ -161,11 +159,15 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
                 ) : (
                   <TargetPlatform id={props['data-platform']} inlineLeft size="md" />
                 )}
-                {reactStringReplace(option.group, new RegExp(`(${escapeRegexp(query.trim())})`, 'i'), (match, i) => (
-                  <span key={i} className={css.highlight}>
-                    {match}
-                  </span>
-                ))}
+                {reactStringReplace(
+                  props['data-name'],
+                  new RegExp(`(${escapeRegexp(query.trim())})`, 'i'),
+                  (match, i) => (
+                    <span key={i} className={css.highlight}>
+                      {match}
+                    </span>
+                  )
+                )}
               </Typography>
               {userEmail !== props['data-email'] && <Typography variant="caption">{props['data-email']}</Typography>}
             </ListSubheader>,
