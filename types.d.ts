@@ -617,6 +617,7 @@ declare global {
     }
     quantity?: number
     expiration?: Date
+    owner?: IUserRef
   }
 
   interface IRoute {

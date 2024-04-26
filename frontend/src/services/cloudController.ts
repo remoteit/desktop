@@ -175,6 +175,10 @@ class CloudController {
             }
           }
           ... on LicenseUpdatedEvent {
+            owner {
+              id
+              email
+            }
             plan {
               name
               product {
@@ -232,6 +236,7 @@ class CloudController {
         isP2P: !event.proxy,
         actor: getManufacturerUser(event.manufacturer, reverseProxy) || event.actor,
         users: event.users,
+        owner: event.owner,
         authUserId: state.auth.user?.id || '',
         platform: event.platform,
         sessionId: event.session,
@@ -414,8 +419,15 @@ class CloudController {
         break
 
       case 'LICENSE_UPDATED':
-        this.log('LICENSE UPDATED EVENT', event)
-        setTimeout(dispatch.plans.updated, 2000) // because event comes in before plan is fully updated
+        setTimeout(
+          () =>
+            dispatch.plans.updated({
+              owner: event.owner,
+              planName: event.plan?.name,
+              quantity: event.quantity,
+            }),
+          1000 // because event comes in before plan is fully updated
+        )
         break
     }
     return event

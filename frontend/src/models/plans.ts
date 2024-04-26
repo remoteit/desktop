@@ -232,10 +232,11 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updated() {
+    async updated(event: { owner?: IUserRef; planName?: string; quantity?: number }, state) {
+      const who = event.owner?.id === state.user.id ? 'Your' : `${event.owner?.email}'s`
       await cloudSync.call([dispatch.plans.fetch, dispatch.organization.fetch, dispatch.devices.fetchList], true)
       dispatch.plans.set({ purchasing: undefined, updating: undefined })
-      dispatch.ui.set({ successMessage: 'Subscription updated.' })
+      dispatch.ui.set({ successMessage: `${who} ${event.planName?.toLowerCase()} subscription updated.` })
     },
 
     async testServiceLicensing(_: void, state) {
