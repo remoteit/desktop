@@ -50,14 +50,14 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Capacitor: 4fe9adf012caceb4c71ffea2f1f4d005cdcbeea7
-  CapacitorApp: 17fecd0e6cb23feafac7eb0939417389038b0979
-  CapacitorAppLauncher: 7b2705481a74cbe322441bd374f56194de59ab1a
-  CapacitorBrowser: a6deae9e5bf87f62b62a753cff7992c5def9e771
-  CapacitorClipboard: 45e5e25f2271f98712985d422776cdc5a779cca1
+  CapacitorApp: d65f901bd19591c7162249715477b78e7c0e66bb
+  CapacitorAppLauncher: e20e53bcc6500dd1a69a4702cf73e71ddafbcb2a
+  CapacitorBrowser: 38c06267a3b48bc29450c92d42f1446ecaa58521
+  CapacitorClipboard: 36055ccf1218b543866292242f76ad8775c23048
   CapacitorCordova: a6e87fccc0307dee7aec1560ec9398485f2b0ce7
-  CapacitorPluginSafeArea: d55e4d4e70c98f611240f11dd80561438d0d70cb
-  CapacitorSplashScreen: dd3de3f3644710fa2a697cfb91ec262eece4d242
-  CapacitorStatusBar: f390fbb49b82ffb754ea4b3cf71dc8b048baf3e7
+  CapacitorPluginSafeArea: f3c42862be5e3a6734127a196de8086f8675b342
+  CapacitorSplashScreen: e094098677cce38e38d4bbe03dde73f50f28cd0a
+  CapacitorStatusBar: 2ec3ce58650afc2ace6bbe7009ac2c20aeaf5f49
 
 PODFILE CHECKSUM: a6f2000103465e61657345d6151fc295113ca0ad
 

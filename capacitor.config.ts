@@ -21,7 +21,7 @@ const config: CapacitorConfig = {
   appendUserAgent: ` remoteit/${version}`,
 }
 
-console.log('\nNode Environment:', process.env.NODE_ENV)
+console.log('\nNode Environment:', process.env.NODE_ENV || 'production')
 
 if (process.env.CAPACITOR_DESKTOP_LIVE_RELOAD && process.env.NODE_ENV === 'development') {
   console.log('Using live reload server:', process.env.CAPACITOR_DESKTOP_LIVE_RELOAD, '\n')
