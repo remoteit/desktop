@@ -5,27 +5,27 @@ import user from './User'
 
 export default {
   signIn() {
-    return `-j signin --user ${user.username} --authhash ${user.authHash}`
+    return `-j account signin --user ${user.username} --authhash ${user.authHash}`
   },
 
   signOut() {
-    return `-j signout --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} account signout`
   },
 
   status() {
-    return `-j status --connections --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} status --connections`
   },
 
   agentStatus() {
-    return `-j agent status --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} agent status`
   },
 
   register(code: string) {
-    return `-j --manufacture-id ${environment.appCode} register --registrationCode "${code}" --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} --manufacture-id ${environment.appCode} device register --registrationCode "${code}"`
   },
 
   unregister() {
-    return `-j unregister --yes --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} device unregister --yes`
   },
 
   restore(deviceId: string) {
@@ -33,7 +33,7 @@ export default {
   },
 
   connect(c: IConnection) {
-    return `-j connection add \
+    return `-j --authhash ${user.authHash} connection add \
       --id ${c.id} \
       --name "${c.name}" \
       --port ${c.port} \
@@ -49,20 +49,19 @@ export default {
       --enableCertificate ${!!preferences.get().useCertificate && c.ip === IP_PRIVATE} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
-      --manufacture-id ${environment.appCode} \
-      --authhash ${user.authHash}`
+      --manufacture-id ${environment.appCode}`
   },
 
   stop(c: IConnection) {
-    return `-j connection disconnect --id ${c.id} --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} connection disconnect --id ${c.id}`
   },
 
   remove(c: IConnection) {
-    return `-j connection remove --id ${c.id} --authhash ${user.authHash}`
+    return `-j --authhash ${user.authHash} connection remove --id ${c.id}`
   },
 
   setConnect(c: IConnection) {
-    return `-j connection modify \
+    return `-j --authhash ${user.authHash} connection modify \
     --id ${c.id} \
     --name "${c.name}" \
     --port ${c.port} \
@@ -78,8 +77,7 @@ export default {
     --enableCertificate ${!!preferences.get().useCertificate && c.ip === IP_PRIVATE} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
-    --manufacture-id ${environment.appCode} \
-    --authhash ${user.authHash}`
+    --manufacture-id ${environment.appCode}`
   },
 
   serviceInstall() {
@@ -95,19 +93,19 @@ export default {
   },
 
   toolsInstall() {
-    return '-j tools install --update'
+    return '-j agent tools-install --yes'
   },
 
   toolsUninstall() {
-    return '-j tools uninstall --yes'
+    return '-j agent tools-uninstall --yes'
   },
 
   uninstall() {
-    return `-j uninstall --yes --keepTools`
+    return `-j uninstall --yes --force`
   },
 
   scan(ipMask?: string) {
-    return ipMask ? `-j scan -m ${ipMask}` : '-j scan'
+    return ipMask ? `-j network-scan -m ${ipMask}` : '-j network-scan'
   },
 
   agentVersion() {
