@@ -6,7 +6,6 @@ import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleD
 import { selectPermissions } from '../../selectors/organizations'
 import { getConnectionsLookup } from '../../selectors/connections'
 import { restoreAttributes } from '../../components/Attributes'
-import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesDrawers } from '../../components/DevicesDrawers'
@@ -67,7 +66,6 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           />
         )}
       </DevicesHeader>
-      <DialogNewFeatures />
     </DevicesDrawers>
   )
 }
