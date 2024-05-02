@@ -1,5 +1,4 @@
 import React, { useState, forwardRef } from 'react'
-import { Button, ButtonProps } from '@mui/material'
 import { Confirm, ConfirmProps } from '../components/Confirm'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 
