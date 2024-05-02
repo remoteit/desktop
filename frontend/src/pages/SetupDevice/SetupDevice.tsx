@@ -5,13 +5,13 @@ import { safeHostname, osName, serviceNameValidation } from '@common/nameHelper'
 import { TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
 import { selectActiveUser } from '../../selectors/accounts'
+import { spacing, radius } from '../../styling'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../selectors/devices'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
 import { Link } from '../../components/Link'
-import { spacing } from '../../styling'
 
 type Props = { os?: Ios }
 
@@ -56,7 +56,9 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
           <TextField
             label="Name"
             sx={{ width: 325, maxWidth: 325 }}
-            InputProps={{ sx: { borderBottomRightRadius: 30, borderTopRightRadius: 30 } }}
+            InputProps={{
+              sx: { borderRadius: radius.lg + radius.sm, paddingX: 1, marginLeft: -1 },
+            }}
             value={name}
             variant="filled"
             error={!!nameError}

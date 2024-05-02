@@ -10,6 +10,7 @@ import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
+import { OnboardRouter } from './OnboardRouter'
 import { DeviceContextWrapper } from '../components/DeviceContextWrapper'
 import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
@@ -158,6 +159,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/add">
         <Panel layout={layout}>
           <AddPage />
+        </Panel>
+      </Route>
+      {/* Onboard */}
+      <Route path="/onboard/:platform?">
+        <Panel layout={layout}>
+          <OnboardRouter />
         </Panel>
       </Route>
       {/* Devices */}

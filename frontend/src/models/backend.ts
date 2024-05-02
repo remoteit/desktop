@@ -1,6 +1,5 @@
 import browser, { setLocalStorage, getOs } from '../services/Browser'
 import { createModel } from '@rematch/core'
-import { selectDevice } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import sleep from '../helpers/sleep'

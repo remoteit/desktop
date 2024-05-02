@@ -1,17 +1,28 @@
 import React from 'react'
 import { ListItemButton, ListItemButtonProps, ListItemIcon, ListItemText } from '@mui/material'
 import { windowOpen } from '../services/Browser'
-import { Icon } from './Icon'
+import { Icon, IconProps } from './Icon'
 
 export type Props = ListItemButtonProps & {
   href: string
   title?: React.ReactNode
   subtitle?: string
   icon?: string
+  iconProps?: IconProps
   badge?: number
 }
 
-export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, badge, onClick, children, ...props }) => {
+export const ListItemLink: React.FC<Props> = ({
+  href,
+  title,
+  subtitle,
+  icon,
+  iconProps,
+  badge,
+  onClick,
+  children,
+  ...props
+}) => {
   const handleClick = event => {
     windowOpen(href, '_blank', true)
     onClick?.(event)
@@ -21,7 +32,7 @@ export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, bad
     <ListItemButton {...props} onClick={handleClick}>
       {icon && (
         <ListItemIcon>
-          <Icon name={icon} size="md" modified={!!badge} fixedWidth />
+          <Icon name={icon} size="md" modified={!!badge} fixedWidth {...iconProps} />
         </ListItemIcon>
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}

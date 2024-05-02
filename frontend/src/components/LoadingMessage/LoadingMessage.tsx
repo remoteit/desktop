@@ -1,60 +1,54 @@
 import React from 'react'
 import { Box, Typography, CircularProgress, LinearProgress } from '@mui/material'
-import { spacing, Color } from '../../styling'
-import { ResellerLogo } from '../ResellerLogo'
 import { makeStyles } from '@mui/styles'
 import { Gutters } from '../Gutters'
-import { Logo } from '../Logo'
 import { Body } from '../Body'
 
 export interface LoadingMessageProps {
   message?: React.ReactNode
   spinner?: boolean
-  logo?: boolean
-  logoColor?: Color
-  reseller?: IResellerRef | null
+  logo?: React.ReactNode
   inline?: boolean
   invert?: boolean
+  children?: React.ReactNode
 }
 
-export function LoadingMessage({
-  message,
-  logo,
-  logoColor,
-  reseller,
-  invert,
-  spinner = true,
-  inline,
-}: LoadingMessageProps) {
+export function LoadingMessage({ message, logo, invert, spinner = true, inline, children }: LoadingMessageProps) {
   const css = useStyles()
   const Container = inline ? Gutters : Body
   return (
     <Container className={invert ? css.invert : undefined} center>
-      <Box position="relative" className={css.margin}>
-        {reseller && <ResellerLogo reseller={reseller} />}
-        {logo && <Logo color={invert ? 'alwaysWhite' : logoColor} />}
-        {spinner && (logo || reseller) ? (
+      {message && (
+        <Typography color="grayDark.main" variant="body2" gutterBottom>
+          {message}
+        </Typography>
+      )}
+      <Box position="relative" marginBottom={5}>
+        {logo}
+        {spinner && logo ? (
           <LinearProgress
             className={css.fadeIn}
-            sx={{ position: 'absolute', width: '100%', height: '1px', marginTop: 2 }}
+            color="info"
+            sx={{
+              // bgcolor: 'gray.main',
+              // color: 'grayDarkest.main',
+              position: 'absolute',
+              width: '100%',
+              height: '1px',
+              marginTop: 2,
+            }}
           />
         ) : (
           spinner && <CircularProgress size={50} thickness={1.5} />
         )}
       </Box>
-      {message && (
-        <Typography className={css.text} variant="body2">
-          {message}
-        </Typography>
-      )}
+      {children}
     </Container>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
   invert: { backgroundColor: palette.primary.dark },
-  margin: { marginBottom: spacing.xl, color: palette.primary.main },
-  text: { color: palette.grayDark.main },
   fadeIn: { animation: '$fadeIn 600ms ease-in' },
   '@keyframes fadeIn': {
     '0%': { opacity: 0 },

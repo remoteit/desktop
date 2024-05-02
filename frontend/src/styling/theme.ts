@@ -217,7 +217,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             color: palette.grayDarker.main,
-            borderRadius: radius.sm,
+            borderRadius: radius.lg,
             backgroundColor: palette.grayLightest.main,
             textTransform: 'initial',
             '& .MuiChip-icon': { color: 'inherit', marginLeft: 8 },
@@ -233,7 +233,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           },
           sizeSmall: {
             height: 20,
-            borderRadius: radius.sm * 1.25,
             fontWeight: 400,
             color: 'inherit',
             fontSize: fontSizes.xs,

@@ -162,7 +162,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   >
                     {portReachable === 'REACHABLE' ? (
                       <>
-                        Service found on
+                        Service found on&nbsp;
                         <b>
                           {form.host}:{form.port}
                         </b>

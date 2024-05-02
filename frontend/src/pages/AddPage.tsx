@@ -19,6 +19,7 @@ import { Dispatch, State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ScreenViewSetup } from '../components/ScreenViewSetup'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
+import { BluetoothScan } from '../components/BluetoothScan'
 import { AndroidSetup } from '../components/AndroidSetup'
 import { ClaimDevice } from '../components/ClaimDevice'
 import { Container } from '../components/Container'
@@ -60,6 +61,7 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItemButton>
         </List>
+        <BluetoothScan className={classnames(css.list, css.smallList)} />
         <AndroidSetup className={classnames(css.list, css.smallList)} />
         <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         <ScreenViewSetup className={classnames(css.list, css.smallList)} />

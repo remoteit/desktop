@@ -11,7 +11,6 @@ import { spacing } from '../styling'
 const CLAIM_CODE_LENGTH = 8
 
 export function ClaimDevice() {
-  const css = useStyles()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
@@ -42,7 +41,10 @@ export function ClaimDevice() {
 
   return (
     <form
-      className={css.form}
+      style={{
+        width: 160,
+        textAlign: 'right',
+      }}
       onSubmit={e => {
         e.preventDefault()
         buttonRef.current?.click()
@@ -54,13 +56,23 @@ export function ClaimDevice() {
         variant="filled"
         disabled={claiming}
         onChange={handleChange}
+        sx={{
+          width: { xs: 130, sm: 160 },
+          display: 'flex',
+          marginBottom: 0.75,
+          justifyContent: 'flex-end',
+          '& svg': { marginRight: 2.25 },
+          '& .MuiFilledInput-root': {
+            fontSize: 14,
+          },
+        }}
         InputProps={{
-          endAdornment: (
+          endAdornment: code && (
             <Icon
               name={claiming ? 'spinner-third' : 'check'}
               size="base"
               type="solid"
-              color={claiming || !valid ? 'grayDark' : 'success'}
+              color={claiming || !valid ? 'gray' : 'success'}
               spin={!!claiming}
               fixedWidth
             />
@@ -70,6 +82,7 @@ export function ClaimDevice() {
       <ConfirmButton
         ref={buttonRef}
         size="chip"
+        sx={{ marginRight: 0.375 }}
         variant={valid ? 'contained' : 'text'}
         title={claiming ? 'Claiming' : 'Claim'}
         confirm={organization.id !== user.id}
@@ -84,23 +97,3 @@ export function ClaimDevice() {
     </form>
   )
 }
-
-const useStyles = makeStyles({
-  form: {
-    width: 160,
-    textAlign: 'right',
-    '& .MuiTextField-root': {
-      width: 160,
-      display: 'flex',
-      marginBottom: spacing.xs,
-      justifyContent: 'flex-end',
-      '& svg': { marginRight: spacing.md },
-      '& .MuiFilledInput-root': {
-        fontSize: 14,
-      },
-    },
-    '& .MuiButton-root': {
-      marginRight: spacing.xxs,
-    },
-  },
-})
