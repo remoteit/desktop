@@ -29,7 +29,7 @@
     "install-binaries": "sh ./scripts/binary-installer.sh",
     "start": "npm-run-all -l -n -p link copy-* watch-*",
     "link": "npm --prefix ../backend link && npm link remoteit-headless",
-    "unlink": "npm unlink remoteit-headless && npm --prefix ../backend unlink",
+    "unlink": "npm --prefix ../backend unlink",
     "watch-backend": "cd ../backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
     "watch-build": "tsc --watch",
