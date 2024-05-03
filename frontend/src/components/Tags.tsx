@@ -44,7 +44,7 @@ export const Tags: React.FC<TagProps> = ({
       </Typography>
     )
 
-  return <Box {...props}>{dot ? <Chip size="small" label={Tags} /> : Tags}</Box>
+  return <>{dot ? <Chip size="small" label={Tags} /> : Tags}</>
 }
 
 function colorSort(a: ITag, b: ITag) {

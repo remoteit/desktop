@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
-import { useMediaQuery, Typography, Box, Divider, Theme } from '@mui/material'
+import { useMediaQuery, Typography, Box, Stack, Divider, Theme } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
@@ -26,19 +26,29 @@ export const PlatformAddPage: React.FC = () => {
 
   return (
     <Body center>
-      <Box display="flex" flexWrap="wrap" justifyContent="center" paddingBottom={5}>
+      <Stack
+        flexDirection={smallScreen ? 'column-reverse' : 'row'}
+        justifyContent="center"
+        alignItems="center"
+        flexWrap="wrap"
+        paddingBottom={5}
+      >
         <Box className={css.icon}>
           <Icon name={platform} fontSize={100} platformIcon />
           {platformObj.installation?.command && permissions?.includes('MANAGE') && (
-            <>
+            <Stack alignItems={smallScreen ? 'flex-start' : 'flex-end'}>
               <Divider sx={{ marginTop: 4, width: '80%' }} />
               <AddPlatformServices
                 types={applicationTypes}
                 onChange={type => setApplicationTypes(type)}
-                textAlign={{ xs: 'center', md: 'right' }}
+                alignItems={{ xs: 'flex-start', md: 'flex-end' }}
               />
-              <AddPlatformTags tags={platformTags} onChange={tags => setPlatformTags(tags)} />
-            </>
+              <AddPlatformTags
+                tags={platformTags}
+                onChange={tags => setPlatformTags(tags)}
+                alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+              />
+            </Stack>
           )}
         </Box>
         <Box className={css.box}>
@@ -64,16 +74,13 @@ export const PlatformAddPage: React.FC = () => {
             </>
           )}
         </Box>
-      </Box>
+      </Stack>
     </Body>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
   icon: ({ smallScreen }: any) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: smallScreen ? 'center' : 'flex-end',
     maxWidth: 130,
     marginTop: spacing.md,
     marginRight: smallScreen ? 0 : spacing.xl,
@@ -83,7 +90,6 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    textAlign: smallScreen ? 'center' : undefined,
     alignItems: smallScreen ? 'center' : undefined,
     borderLeft: smallScreen ? undefined : `1px solid ${palette.divider}`,
     paddingLeft: smallScreen ? 0 : spacing.xl,

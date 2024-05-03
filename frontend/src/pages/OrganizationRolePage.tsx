@@ -7,6 +7,7 @@ import { useParams, useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import {
+  Stack,
   Button,
   Typography,
   List,
@@ -151,22 +152,24 @@ export const OrganizationRolePage: React.FC = () => {
         {form.access === 'TAG' && (
           <ListItem>
             <ListItemIcon />
-            <Tags
-              tags={filteredTags}
-              onDelete={({ name }) => {
-                let tag = structuredClone(form.tag || DEFAULT_ROLE.tag) as ITagFilter
-                if (!tag.values) return
-                const index = tag.values.indexOf(name)
-                tag.values.splice(index, 1)
-                form.tag = tag
-                changeForm(form)
-              }}
-              onClick={tag => {
-                dispatch.devices.set({ tag: { values: [tag.name], operator: tag.operator } })
-                dispatch.devices.fetchList()
-                history.push('/devices')
-              }}
-            />
+            <Stack flexDirection="row" flexWrap="wrap">
+              <Tags
+                tags={filteredTags}
+                onDelete={({ name }) => {
+                  let tag = structuredClone(form.tag || DEFAULT_ROLE.tag) as ITagFilter
+                  if (!tag.values) return
+                  const index = tag.values.indexOf(name)
+                  tag.values.splice(index, 1)
+                  form.tag = tag
+                  changeForm(form)
+                }}
+                onClick={tag => {
+                  dispatch.devices.set({ tag: { values: [tag.name], operator: tag.operator } })
+                  dispatch.devices.fetchList()
+                  history.push('/devices')
+                }}
+              />
+            </Stack>
             <TagEditor
               onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
               onSelect={tag => {

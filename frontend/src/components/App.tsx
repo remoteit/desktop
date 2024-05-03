@@ -19,12 +19,14 @@ import { State, Dispatch } from '../store'
 import { useMediaQuery, Box } from '@mui/material'
 import { InstallationNotice } from './InstallationNotice'
 import { LoadingMessage } from './LoadingMessage'
-import { SignInPage } from '../pages/SignInPage'
+import { ResellerLogo } from './ResellerLogo'
 import { SidebarMenu } from './SidebarMenu'
+import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
+import { Logo } from './Logo'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
@@ -72,7 +74,13 @@ export const App: React.FC = () => {
 
   if (!authInitialized)
     return (
-      <Page>{reseller ? <LoadingMessage reseller={reseller} spinner /> : <LoadingMessage logo invert spinner />}</Page>
+      <Page>
+        {reseller ? (
+          <LoadingMessage logo={<ResellerLogo reseller={reseller} />} spinner />
+        ) : (
+          <LoadingMessage logo={<Logo color="alwaysWhite" />} invert spinner />
+        )}
+      </Page>
     )
 
   if (signedOut)

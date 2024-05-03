@@ -61,7 +61,10 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   } else if (canRestore) {
     action = {
       label: 'restore',
-      onClick: () => history.push('/devices/restore'),
+      onClick: event => {
+        event.preventDefault()
+        history.push('/devices/restore')
+      },
     }
   }
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box } from '@mui/material'
+import { Stack, StackProps } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -8,9 +8,9 @@ import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 
-type Props = { button?: string; tags: string[]; onChange: (tags: string[]) => void }
+type Props = StackProps & { button?: string; tags: string[]; onChange: (tags: string[]) => void }
 
-export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange }) => {
+export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange, ...props }) => {
   const { allTags, accountId, canEdit } = useSelector((state: State) => ({
     accountId: selectActiveAccountId(state),
     allTags: selectTags(state),
@@ -20,9 +20,8 @@ export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange }) => 
   const selectedTags = allTags.filter(t => tags.includes(t.name))
 
   return (
-    <Box display="flex" flexWrap="wrap" justifyContent="flex-end" marginTop={2}>
+    <Stack flexWrap="wrap" alignItems="flex-end" marginTop={2} {...props}>
       <Tags
-        textAlign="right"
         showEmpty={!canEdit}
         tags={selectedTags}
         onDelete={canEdit ? tag => onChange(tags.filter(t => t !== tag.name)) : undefined}
@@ -36,6 +35,6 @@ export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange }) => 
           button={button}
         />
       )}
-    </Box>
+    </Stack>
   )
 }

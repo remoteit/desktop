@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box } from '@mui/material'
+import { Stack } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
@@ -21,7 +21,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
   if (!device) return null
 
   return (
-    <Box display="flex" marginLeft={9} marginRight={2}>
+    <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
       <Tags
         showEmpty={!canEdit}
         tags={device.tags}
@@ -41,6 +41,6 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
           button={button}
         />
       )}
-    </Box>
+    </Stack>
   )
 }
