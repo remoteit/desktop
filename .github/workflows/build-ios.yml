@@ -103,7 +103,7 @@ jobs:
       - name: Build archive
         working-directory: ./ios/App
         run: |
-          xcodebuild -workspace -verbose App.xcworkspace \
+          xcodebuild -workspace App.xcworkspace \
           -scheme Remote.It \
           -archivePath $BUILD_PATH/remoteit.xcarchive \
           archive
