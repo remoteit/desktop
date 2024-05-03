@@ -255,6 +255,10 @@ If it's not working check that the developer account is signed into XCode and th
 
 More info can be found in this setup guide: [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)
 
+#### Packaging in GitHub Actions
+
+To update the certificates when they expire you will also need to update the /ios/App/ExportOptions.plist provisioningProfiles to the new provisioning profile.
+
 #### Packaging for linux snaps
 
 To test install a snap package:
