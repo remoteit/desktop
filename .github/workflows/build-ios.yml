@@ -87,6 +87,11 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $RUNNER_TEMP/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
 
+      - name: Verify Provisioning Profiles
+        run: |
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          security find-identity -v -p codesigning
+
       - name: Clean build dir
         run: |
           if [ -d "$BUILD_PATH" ]; then rm -rf "$BUILD_PATH"; fi
