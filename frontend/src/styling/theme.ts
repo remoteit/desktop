@@ -180,7 +180,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           contained: {
             color: palette.alwaysWhite.main,
             '&:hover': { backgroundColor: palette.grayDarkest.main },
-            '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
+            '&:hover.Mui-disabled, &.Mui-disabled': {
+              backgroundColor: palette.gray.main,
+              color: palette.alwaysWhite.main,
+            },
           },
           text: { padding: `${spacing.sm}px ${spacing.md}px` },
           outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },
@@ -552,6 +555,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
+            '& .MuiSelect-icon': { marginRight: spacing.xs },
           },
         },
       },

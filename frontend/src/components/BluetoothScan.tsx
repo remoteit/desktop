@@ -16,8 +16,8 @@ export const BluetoothScan: React.FC<Props> = ({ className }) => {
           <ListItemIcon
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', '& > *': { marginRight: 0.5 } }}
           >
-            <Icon name="mobile-signal-out" type="light" fontSize={30} color="gray" />
-            <Icon name="plus" type="solid" color="gray" fixedWidth />
+            <Icon name="mobile" type="light" fontSize={30} color="gray" />
+            <Icon name="bluetooth" size="md" color="gray" fixedWidth />
             <Icon name="raspberrypi" fixedWidth fontSize={40} color="primary" platform={1072} platformIcon />
             {/* <Icon name="wifi" type="solid" fontSize={14} color="gray" /> */}
           </ListItemIcon>

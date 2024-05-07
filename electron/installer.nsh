@@ -104,7 +104,7 @@ Var FileHandle
                     true:
                         FileWrite $FileHandle "YES unregister device...$\r$\n"
 
-                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" unregister --yes"
+                        !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" device unregister --yes"
 
                         MessageBox MB_OK "Your device has been unregistered."
 

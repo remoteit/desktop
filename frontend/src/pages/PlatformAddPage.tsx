@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
-import { useSelector } from 'react-redux'
 import { State } from '../store'
+import { useParams } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { useMediaQuery, Typography, Box, Stack, Divider, Theme } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
@@ -10,7 +9,6 @@ import { AddPlatformTags } from '../components/AddPlatformTags'
 import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
 import { platforms } from '../platforms'
-import { spacing } from '../styling'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
@@ -21,23 +19,28 @@ export const PlatformAddPage: React.FC = () => {
   const permissions = useSelector((state: State) => selectPermissions(state))
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
-  const smallScreen = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
-  const css = useStyles({ smallScreen })
+  const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
   return (
     <Body center>
       <Stack
-        flexDirection={smallScreen ? 'column-reverse' : 'row'}
-        justifyContent="center"
-        alignItems="center"
-        flexWrap="wrap"
+        flexDirection={{ xs: 'column', md: 'row' }}
+        justifyContent={{ xs: 'center', md: 'left' }}
+        alignItems={{ xs: 'left', md: 'center' }}
+        paddingX={{ xs: 3, md: 0 }}
         paddingBottom={5}
+        flexWrap="wrap"
       >
-        <Box className={css.icon}>
-          <Icon name={platform} fontSize={100} platformIcon />
+        <Stack
+          maxWidth={130}
+          marginRight={{ md: 3 }}
+          marginBottom={{ xs: 3, md: 0 }}
+          flexDirection={{ xs: 'row', md: 'column' }}
+        >
+          <Icon name={platform} fontSize={100} inlineLeft={xs} platformIcon />
           {platformObj.installation?.command && permissions?.includes('MANAGE') && (
-            <Stack alignItems={smallScreen ? 'flex-start' : 'flex-end'}>
-              <Divider sx={{ marginTop: 4, width: '80%' }} />
+            <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
+              {!xs && <Divider sx={{ marginTop: 4, width: '80%' }} />}
               <AddPlatformServices
                 types={applicationTypes}
                 onChange={type => setApplicationTypes(type)}
@@ -50,8 +53,22 @@ export const PlatformAddPage: React.FC = () => {
               />
             </Stack>
           )}
-        </Box>
-        <Box className={css.box}>
+        </Stack>
+        <Stack
+          sx={{
+            alignItems: xs ? 'left' : undefined,
+            borderLeft: xs ? undefined : '1px solid',
+            borderLeftColor: 'grayLighter.main',
+            paddingLeft: xs ? 0 : 4.5,
+            paddingRight: xs ? 0 : 0,
+            paddingTop: 2.25,
+            paddingBottom: 2.25,
+            maxWidth: 650,
+            width: xs ? '100%' : 650,
+            '& .MuiAvatar-root': { marginTop: 0.375 },
+            '& .MuiTypography-body2': { marginBottom: 0.75 },
+          }}
+        >
           {platformObj.installation?.command && !platformObj.installation?.download ? (
             <AddDevice platform={platformObj} tags={platformTags} types={applicationTypes} redirect={redirect} />
           ) : (
@@ -73,40 +90,8 @@ export const PlatformAddPage: React.FC = () => {
               )}
             </>
           )}
-        </Box>
+        </Stack>
       </Stack>
     </Body>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  icon: ({ smallScreen }: any) => ({
-    maxWidth: 130,
-    marginTop: spacing.md,
-    marginRight: smallScreen ? 0 : spacing.xl,
-    marginBottom: smallScreen ? spacing.lg : 0,
-  }),
-  box: ({ smallScreen }: any) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: smallScreen ? 'center' : undefined,
-    borderLeft: smallScreen ? undefined : `1px solid ${palette.divider}`,
-    paddingLeft: smallScreen ? 0 : spacing.xl,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
-    maxWidth: 650,
-    width: smallScreen ? '100%' : 650,
-    '& .MuiAvatar-root': { marginTop: spacing.xxs },
-    '& .MuiTypography-body2': { marginBottom: spacing.xs },
-    '& .MuiTypography-h3': smallScreen ? { paddingLeft: spacing.md, paddingRight: spacing.md } : undefined,
-
-    // '& .MuiListItem-root': {
-    //   minHeight: 80,
-    //   minWidth: 575,
-    //   maxWidth: 575,
-    //   marginTop: spacing.sm,
-    //   marginBottom: spacing.sm,
-    // },
-  }),
-}))

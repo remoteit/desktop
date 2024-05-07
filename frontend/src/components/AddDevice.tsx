@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { windowOpen } from '../services/Browser'
-import { platforms, IPlatform } from '../platforms'
+import React from 'react'
+import { IPlatform } from '../platforms'
 import { List, Box, Typography } from '@mui/material'
-import { useSelector, useDispatch } from 'react-redux'
-import { State, Dispatch } from '../store'
-import { selectPermissions, selectOrganization } from '../selectors/organizations'
+import { useSelector } from 'react-redux'
+import { selectPermissions } from '../selectors/organizations'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
+import { useAutoRegistration } from '../hooks/useAutoRegistration'
 import { Notice } from './Notice'
 import { Link } from './Link'
 
@@ -19,54 +18,14 @@ type Props = {
 }
 
 export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, minimal }) => {
-  const { organization, registrationCommand, registrationCode, permissions, fetching, user } = useSelector(
-    (state: State) => ({
-      organization: selectOrganization(state),
-      registrationCommand: state.ui.registrationCommand,
-      registrationCode: state.ui.registrationCode,
-      permissions: selectPermissions(state),
-      fetching: state.ui.fetching,
-      user: state.user,
-    })
-  )
-  const [redirected, setRedirected] = useState<boolean>(false)
-  const dispatch = useDispatch<Dispatch>()
+  const { registrationCode, registrationCommand, redirectUrl, fetching } = useAutoRegistration({
+    platform,
+    tags,
+    types,
+    redirect,
+  })
+  const permissions = useSelector(selectPermissions)
   const codeOnly = platform.installation?.command === '[CODE]'
-  let accountId = organization.id || user.id
-
-  function getRedirect(location: string, code: string) {
-    const url = new URL(decodeURIComponent(location))
-    url.searchParams.set('code', code)
-    return url.toString()
-  }
-
-  useEffect(() => {
-    if (fetching) return
-    ;(async () => {
-      const platformType = platforms.findType(platform.id)
-      const code = await dispatch.devices.createRegistration({
-        tags,
-        accountId,
-        services: types.map(type => ({ application: type })),
-        platform: platformType,
-        template: platform.installation?.command,
-      })
-
-      if (!redirect || redirected) return
-      try {
-        const url = getRedirect(redirect, code)
-        console.log('REDIRECT TO:', url)
-        windowOpen(url, '_blank', true)
-        setRedirected(true)
-      } catch (error) {
-        console.warn('Failed to redirect to:', error)
-      }
-    })()
-
-    return function cleanup() {
-      dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
-    }
-  }, [accountId, platform, tags, types, fetching])
 
   if (!permissions?.includes('MANAGE')) {
     return (
@@ -83,7 +42,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
           fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
         }
         code={registrationCode}
-        link={redirect && registrationCode ? getRedirect(redirect, registrationCode) : undefined}
+        link={redirectUrl}
         label={platform.installation?.label}
         sx={{ textAlign: 'left' }}
       />
