@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import browser from '../services/Browser'
-import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
+import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { List, Stack } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -37,7 +37,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
 
   const [form, setForm] = useState<IPurchase>(getDefaults())
   const [confirm, setConfirm] = useState<boolean>(false)
-  const enterprise = !!license && !license.plan.billing
+  const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
   const price = plan?.prices?.find(price => price.id === form.priceId)
   const displayOnly = context === 'user' && !plan?.limits?.find(l => l.name === 'org-users')?.scale
   const totals = deviceUserTotal(form.quantity, plan)

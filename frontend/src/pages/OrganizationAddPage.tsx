@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
+import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { selectAvailableUsers } from '../selectors/organizations'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
@@ -17,6 +18,7 @@ export const OrganizationAddPage = () => {
   const organization = useSelector(selectOrganization)
   const allContacts = useSelector((state: State) => state.contacts.all)
   const freeUsers = useSelector(selectAvailableUsers)
+  const enterprise = organization.licenses.find(l => l.plan.id === ENTERPRISE_PLAN_ID)
   const contacts = allContacts.filter(c => !organization.members.find(s => s.user.id === c.id)) || []
 
   const [emails, setEmails] = React.useState<string[]>([])
@@ -68,7 +70,7 @@ export const OrganizationAddPage = () => {
               fullWidth
             />
           </Box>
-          {!freeUsers && (
+          {!freeUsers && !enterprise && (
             <Notice severity="warning" fullWidth>
               Purchase additional licenses to grant this user full access.
               <br />
