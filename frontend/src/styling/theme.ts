@@ -167,7 +167,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             color: palette.grayDark.main,
             borderRadius: radius.sm,
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: 1.5,
             whiteSpace: 'nowrap',
             fontSize: fontSizes.xs,

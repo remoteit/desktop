@@ -172,7 +172,7 @@ export const useStyles = makeStyles(({ palette }) => ({
     '& cite': {
       fontStyle: 'normal',
       textTransform: 'uppercase',
-      fontWeight: 600,
+      fontWeight: 700,
       fontSize: '0.8em',
       letterSpacing: 1,
       paddingLeft: spacing.xs,

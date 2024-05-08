@@ -225,7 +225,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     backgroundColor: palette.white.main,
   },
   badge: {
-    fontWeight: 600,
+    fontWeight: 700,
     marginTop: 3,
     marginLeft: 1,
     color: palette.alwaysWhite.main,
