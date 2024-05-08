@@ -138,10 +138,12 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 }}
               />
               {appType.description && (
-                <ListItem sx={{ paddingRight: 3, paddingLeft: 2 }}>
-                  <Typography variant="caption" component="div" sx={{ margin: 1 }}>
-                    <b>{appType.description}</b> - {application.use}
-                  </Typography>
+                <ListItem>
+                  <Notice>
+                    <em>
+                      <strong>{appType.description}</strong> - {application.use}
+                    </em>
+                  </Notice>
                 </ListItem>
               )}
               {thisDevice && (

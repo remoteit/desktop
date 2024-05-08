@@ -47,7 +47,7 @@ export default createModel<RootModel>()({
       const applicationTypes: IApplicationType[] = result?.data?.data?.login?.account?.applicationTypes
       dispatch.applicationTypes.set({ account: { ...state.applicationTypes.account, [accountId]: applicationTypes } })
     },
-    async fetchAll() {
+    async fetchAll(_: void, state) {
       const result = await graphQLBasicRequest(
         ` query ApplicationTypesAll {
             ${APPLICATION_TYPES_QUERY}
@@ -55,6 +55,20 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const all = result?.data?.data?.applicationTypes
+
+      if (state.ui.testUI) {
+        // TEMP - add SOCKS proxy
+        all.push({
+          id: 66,
+          name: 'SOCKS',
+          port: 5999,
+          proxy: true,
+          scheme: 'proxy',
+          protocol: 'TCP',
+          description: 'SOCKS proxy',
+        })
+      }
+
       dispatch.applicationTypes.set({ all })
     },
   }),
