@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import browser from '../services/Browser'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
-import { selectResellerRef } from '../selectors/organizations'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
@@ -21,6 +20,7 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
+import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
@@ -125,6 +125,7 @@ export const SidebarNav: React.FC = () => {
         <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
       <Box className={css.footer}>
+        <UpgradeBanner />
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
           <Divider />
         </ResellerLogo>
