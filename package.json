@@ -33,6 +33,7 @@
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images"
   },
   "dependencies": {
+    "@capacitor-community/bluetooth-le": "^6.0.0",
     "@capacitor/android": "^6.0.0",
     "@capacitor/app": "^6.0.0",
     "@capacitor/app-launcher": "^6.0.0",

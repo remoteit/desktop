@@ -1,18 +1,18 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { Dispatch, State } from '../store'
 import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { selectAvailableUsers } from '../selectors/organizations'
+import { useLocation, useHistory, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, State } from '../store'
-import { selectOrganization } from '../selectors/organizations'
 import { Typography, Button, Box } from '@mui/material'
+import { selectOrganization } from '../selectors/organizations'
 import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
 import { Container } from '../components/Container'
+import { ColorChip } from '../components/ColorChip'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { useHistory } from 'react-router-dom'
 
 export const OrganizationAddPage = () => {
   const organization = useSelector(selectOrganization)
@@ -71,7 +71,15 @@ export const OrganizationAddPage = () => {
             />
           </Box>
           {!freeUsers && !enterprise && (
-            <Notice severity="warning" fullWidth>
+            <Notice
+              severity="warning"
+              button={
+                <Link to="/account/plans">
+                  <ColorChip sx={{ marginTop: 1.4 }} size="small" variant="contained" color="warning" label="Upgrade" />
+                </Link>
+              }
+              fullWidth
+            >
               Purchase additional licenses to grant this user full access.
               <br />
             </Notice>
