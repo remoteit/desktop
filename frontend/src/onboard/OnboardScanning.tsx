@@ -47,7 +47,7 @@ export const OnboardScanning: React.FC<Props> = ({ disabled, onNext }) => {
               Connect
             </Button>
           )}
-          {state.connecting && <CircularProgress size={30} thickness={3} sx={{ marginLeft: 2 }} />}
+          {state.processing && <CircularProgress size={30} thickness={3} sx={{ marginLeft: 2 }} />}
         </Stack>
       </Box>
       <List>
@@ -75,8 +75,6 @@ export const OnboardScanning: React.FC<Props> = ({ disabled, onNext }) => {
           disableGutters
         />
       </List>
-      <Pre>{state}</Pre>
-      {/* <Pre>{bluetooth.state}</Pre> */}
     </>
   )
 }

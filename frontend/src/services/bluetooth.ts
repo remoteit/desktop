@@ -22,7 +22,7 @@ interface DeviceInfo {
 export interface BluetoothState {
   characteristics: string[]
   initialized: boolean
-  connecting: boolean
+  processing: boolean
   connected: boolean
   error: string
 }
@@ -33,7 +33,7 @@ class Bluetooth extends EventEmitter {
   state: BluetoothState = {
     characteristics: [],
     initialized: false,
-    connecting: false,
+    processing: false,
     connected: false,
     error: '',
   }
@@ -66,7 +66,7 @@ class Bluetooth extends EventEmitter {
     }
     try {
       this.set('error', '')
-      this.set('connecting', true)
+      this.set('processing', true)
 
       await BleClient.connect(this.device.deviceId, deviceId => {
         console.log('BLUETOOTH CONNECTED TO DEVICE:', deviceId)
@@ -80,14 +80,14 @@ class Bluetooth extends EventEmitter {
           )
           console.log('BLUETOOTH SERVICES', services)
           this.set('connected', true)
-          this.set('connecting', false)
+          this.set('processing', false)
         } else console.log('NO SERVICES FOUND')
       })
     } catch (error) {
       this.set('error', 'Failed to connect to device')
-      console.error('ERROR CONNECTING TO DEVICE', error)
+      console.error('ERROR processing TO DEVICE', error)
       this.set('connected', true)
-      this.set('connecting', false)
+      this.set('processing', false)
     }
   }
 
@@ -132,15 +132,58 @@ class Bluetooth extends EventEmitter {
     }
   }
 
-  async read(characteristic) {
+  async writeWifi(ssid: string, password: string) {
+    if (!this.device) return
+    this.set('processing', true)
+    try {
+      await this.write(ssid, BT_UUIDS.SSID)
+      await this.write(password, BT_UUIDS.PASSWORD)
+      console.log('WIFI WRITTEN', ssid, password)
+    } catch (error) {
+      console.error('Error writing wifi', error)
+      this.set('error', 'Error writing wifi')
+    }
+    this.set('processing', false)
+  }
+
+  async read(characteristic: string) {
     if (!this.device) return
     try {
       const value = await BleClient.read(this.device.deviceId, BT_UUIDS.SERVICE, characteristic)
-      return this.parse(value)
+      return JSON.parse(this.parse(value))
     } catch (error) {
       console.error('Error reading value', error)
       this.set('error', `Error reading value from ${characteristic}`)
     }
+  }
+
+  async readSSIDs() {
+    let count: number | null = null
+    let attempts = 0
+    this.set('processing', true)
+
+    while (count === null && attempts < 50) {
+      const result = await this.read(BT_UUIDS.WIFI_LIST)
+      console.log('FIND WIFI COUNT', result)
+      if (typeof result === 'number') count = result
+      attempts++
+    }
+    console.log('WIFI COUNT', count)
+
+    if (count === null) {
+      this.set('error', 'Failed to read wifi count')
+      this.set('processing', false)
+      return
+    }
+
+    const list: string[] = []
+    for (let i = 0; i < count; i++) {
+      const wifi = (await this.read(BT_UUIDS.WIFI_LIST)) || 'unknown'
+      list.push(wifi.ssid)
+    }
+    console.log('WIFI LIST', list)
+    this.set('processing', false)
+    return list
   }
 
   parse(data: DataView) {
