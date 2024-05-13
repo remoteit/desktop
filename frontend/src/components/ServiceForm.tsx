@@ -57,7 +57,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
 
   const initForm = () => {
     setError(undefined)
-    const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
+    const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID || (adding ? 8 : undefined))
     return {
       ...DEFAULT_SERVICE,
       id: service?.id || '',

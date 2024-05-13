@@ -17,6 +17,8 @@ const defaultState: IApplicationTypeState = {
   account: {},
 }
 
+const APPLICATION_TYPES_ORDER = [8, 7, 66, 28, 4, 5, 34]
+
 const APPLICATION_TYPES_QUERY = `
   applicationTypes {
     name 
@@ -45,7 +47,9 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const applicationTypes: IApplicationType[] = result?.data?.data?.login?.account?.applicationTypes
-      dispatch.applicationTypes.set({ account: { ...state.applicationTypes.account, [accountId]: applicationTypes } })
+      dispatch.applicationTypes.set({
+        account: { ...state.applicationTypes.account, [accountId]: applicationTypes.sort(sortFunction) },
+      })
     },
     async fetchAll(_: void, state) {
       const result = await graphQLBasicRequest(
@@ -69,6 +73,7 @@ export default createModel<RootModel>()({
         })
       }
 
+      all.sort(sortFunction)
       dispatch.applicationTypes.set({ all })
     },
   }),
@@ -83,6 +88,10 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function sortFunction(a: IApplicationType, b: IApplicationType) {
+  return APPLICATION_TYPES_ORDER.indexOf(a.id) - APPLICATION_TYPES_ORDER.indexOf(b.id)
+}
 
 export function findType(all?: IApplicationType[], typeId?: number): IApplicationType {
   return all?.find(t => t.id === typeId) || all?.[0] || emptyServiceType

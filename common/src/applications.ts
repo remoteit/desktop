@@ -2,11 +2,11 @@ import { adaptor } from './adaptor'
 import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
-export const KEY_APPS = [8, 7, 28, 4, 5, 34]
-// export const KEY_APPS = [8, 7, 28, 66, 4, 5]
+export const KEY_APPS = new Set([4, 5, 7, 8, 28, 34])
+// export const KEY_APPS = new Set([4, 5, 7, 8, 28, 66])
 export const APPLICATION_PLATFORM_FILTER = {
-  48: [1213], // ScreenView allowed on Android
-  42: [0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185], // Admin Panel allowed on
+  48: new Set([1213]), // ScreenView allowed on Android
+  42: new Set([0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185]), // Admin Panel allowed on
 }
 
 export class Application {
