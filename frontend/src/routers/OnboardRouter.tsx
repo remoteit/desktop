@@ -20,13 +20,14 @@ export const OnboardRouter: React.FC = () => {
   const step = Math.max(steps.indexOf(location.pathname.match(REGEX_LAST_PATH)?.[0] || ''), 0)
 
   useEffect(() => {
-    if (step >= steps.length) {
+    if (step >= steps.length)
       dispatch.ui.set({ successMessage: 'RaspberryPi onboarding complete!', redirect: '/devices' })
-      history.push(`/onboard/${platform}${steps[0]}`)
-    }
   }, [step])
 
-  const onNext = () => history.push(`/onboard/${platform}${steps[step + 1]}`)
+  const onNext = () => {
+    const nextStep = step >= steps.length ? 0 : step + 1
+    history.push(`/onboard/${platform}${steps[nextStep]}`)
+  }
 
   if (!platform) return <Redirect to={{ pathname: '/add', state: { isRedirect: true } }} />
 

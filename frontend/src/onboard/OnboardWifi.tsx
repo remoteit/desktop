@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import bluetooth from '../services/bluetooth'
-import { BT_UUIDS } from '../constants'
 import { Typography, Stack, Box, Button, List, TextField, MenuItem } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { Icon } from '../components/Icon'

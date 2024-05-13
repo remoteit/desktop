@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import bluetooth from '../services/bluetooth'
 import { useBluetooth } from '../hooks/useBluetooth'
 import { Typography, Stack, Box, Button, List, ListSubheader, CircularProgress } from '@mui/material'
@@ -14,7 +14,23 @@ type Props = {
 }
 
 export const OnboardScanning: React.FC<Props> = ({ disabled, onNext }) => {
+  const [ready, setReady] = useState<boolean>(false)
   const state = useBluetooth()
+  disabled = disabled || state.processing
+
+  useEffect(() => {
+    bluetooth.clear()
+    setReady(true)
+  }, [])
+
+  // useEffect(() => {
+  //   if (ready && state.connected) onNext()
+  // }, [state])
+
+  const onScan = async () => {
+    await bluetooth.start()
+    onNext()
+  }
 
   return (
     <>
@@ -34,20 +50,13 @@ export const OnboardScanning: React.FC<Props> = ({ disabled, onNext }) => {
           </Notice>
         )}
         <Stack flexDirection="row" marginTop={5} marginBottom={4}>
-          {!state.initialized ? (
-            <Button variant="contained" size="small" disabled={disabled} onClick={() => bluetooth.start()}>
+          {state.processing || state.initialized ? (
+            <CircularProgress size={30} thickness={3} />
+          ) : (
+            <Button variant="contained" size="small" disabled={disabled} onClick={onScan}>
               scan
             </Button>
-          ) : state.connected ? (
-            <Button variant="contained" size="small" disabled={disabled} onClick={onNext}>
-              next
-            </Button>
-          ) : (
-            <Button variant="contained" size="small" disabled={disabled} onClick={() => bluetooth.connect()}>
-              Connect
-            </Button>
           )}
-          {state.processing && <CircularProgress size={30} thickness={3} sx={{ marginLeft: 2 }} />}
         </Stack>
       </Box>
       <List>

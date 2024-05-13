@@ -28,10 +28,7 @@ export function LoadingMessage({ message, logo, invert, spinner = true, inline, 
         {spinner && logo ? (
           <LinearProgress
             className={css.fadeIn}
-            color="info"
             sx={{
-              // bgcolor: 'gray.main',
-              // color: 'grayDarkest.main',
               position: 'absolute',
               width: '100%',
               height: '1px',

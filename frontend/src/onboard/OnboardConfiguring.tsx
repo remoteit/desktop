@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import bluetooth from '../services/bluetooth'
 import { Typography, Stack, Box, Button } from '@mui/material'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
 import { platforms } from '../platforms'
@@ -11,12 +12,15 @@ type Props = {
 
 export const OnboardConfiguring: React.FC<Props> = ({ platformId, onNext }) => {
   const platform = platforms.get(platformId)
-  const { registrationCommand } = useAutoRegistration({ platform, types: [] })
-  const processing = !registrationCommand
+  const { registrationCode } = useAutoRegistration({ platform, types: [] })
+  const processing = !registrationCode
 
   useEffect(() => {
-    if (registrationCommand) console.log('DISPATCH REGISTER DEVICE!')
-  }, [registrationCommand])
+    if (registrationCode) {
+      console.log('REGISTRATION CODE', registrationCode)
+      bluetooth.writeRegistrationCode(registrationCode)
+    }
+  }, [registrationCode])
 
   return (
     <Box maxWidth={300}>

@@ -32,7 +32,7 @@ export const PlatformAddPage: React.FC = () => {
         flexWrap="wrap"
       >
         <Stack
-          maxWidth={130}
+          maxWidth={{ md: 130 }}
           marginRight={{ md: 3 }}
           marginBottom={{ xs: 3, md: 0 }}
           flexDirection={{ xs: 'row', md: 'column' }}

@@ -27,21 +27,24 @@ export interface BluetoothState {
   error: string
 }
 
+const defaultState: BluetoothState = {
+  characteristics: [],
+  initialized: false,
+  processing: false,
+  connected: false,
+  error: '',
+}
+
 class Bluetooth extends EventEmitter {
   device: DeviceInfo | null = null
   notifications = new Set<string>()
-  state: BluetoothState = {
-    characteristics: [],
-    initialized: false,
-    processing: false,
-    connected: false,
-    error: '',
-  }
+  state: BluetoothState = { ...defaultState }
 
   async start() {
-    this.set('error', '')
+    await this.clear()
     await this.initialize()
     await this.connect()
+    await this.notify(BT_UUIDS.CONNECT_STATUS)
   }
 
   async initialize() {
@@ -59,6 +62,11 @@ class Bluetooth extends EventEmitter {
     }
   }
 
+  async clear() {
+    if (this.device) await BleClient.disconnect(this.device.deviceId)
+    this.state = { ...defaultState }
+  }
+
   async connect() {
     if (!this.device) {
       console.log('NO DEVICE TO CONNECT TO', this.device)
@@ -68,10 +76,7 @@ class Bluetooth extends EventEmitter {
       this.set('error', '')
       this.set('processing', true)
 
-      await BleClient.connect(this.device.deviceId, deviceId => {
-        console.log('BLUETOOTH CONNECTED TO DEVICE:', deviceId)
-        alert('DO WE REACH THIS POINT?')
-      })
+      await BleClient.connect(this.device.deviceId)
       await BleClient.getServices(this.device.deviceId).then(services => {
         if (services[0]) {
           this.set(
@@ -139,9 +144,24 @@ class Bluetooth extends EventEmitter {
       await this.write(ssid, BT_UUIDS.SSID)
       await this.write(password, BT_UUIDS.PASSWORD)
       console.log('WIFI WRITTEN', ssid, password)
+      await this.write(password, BT_UUIDS.CONNECT)
+      console.log('WIFI CONNECTED', ssid, password)
     } catch (error) {
       console.error('Error writing wifi', error)
       this.set('error', 'Error writing wifi')
+    }
+    this.set('processing', false)
+  }
+
+  async writeRegistrationCode(code: string) {
+    if (!this.device) return
+    this.set('processing', true)
+    try {
+      await this.write(code, BT_UUIDS.REGISTRATION_CODE)
+      console.log('REGISTRATION CODE WRITTEN', code)
+    } catch (error) {
+      console.error('Error writing registration code', error)
+      this.set('error', 'Error writing registration code')
     }
     this.set('processing', false)
   }
@@ -185,6 +205,13 @@ class Bluetooth extends EventEmitter {
     this.set('processing', false)
     return list
   }
+
+  // async status() {
+  //   // incorrect!
+  //   const result = await this.read(BT_UUIDS.CONNECT_STATUS)
+  //   console.log('CONNECT STATUS', result)
+  //   return result
+  // }
 
   parse(data: DataView) {
     const decoder = new TextDecoder('utf-8')
