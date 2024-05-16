@@ -23,7 +23,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
-import { getLocalStorage, removeLocalStorage } from '../services/Browser'
+import { getLocalStorage, removeLocalStorage } from '../services/browser'
 import { selectTimeSeries } from '../selectors/ui'
 import {
   getAllDevices,

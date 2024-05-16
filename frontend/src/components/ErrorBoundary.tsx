@@ -3,7 +3,7 @@ import { AIRBRAKE_ID, AIRBRAKE_KEY } from '../constants'
 import { Notifier } from '@airbrake/browser'
 import { version } from '../helpers/versionHelper'
 import { Store } from '../store'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 type ErrorBoundaryProps = {
   store?: Store

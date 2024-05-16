@@ -5,7 +5,7 @@ import { Snackbar, Button } from '@mui/material'
 import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
-import browser from '../../services/Browser'
+import browser from '../../services/browser'
 
 export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
   const updateReady = useSelector((state: State) => selectUpdateNotice(state))

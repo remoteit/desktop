@@ -2,7 +2,7 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
   CLIENT_ID,

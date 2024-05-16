@@ -1,5 +1,5 @@
 import network from '../services/Network'
-import browser from './Browser'
+import browser from './browser'
 import { store } from '../store'
 import { emit } from './Controller'
 

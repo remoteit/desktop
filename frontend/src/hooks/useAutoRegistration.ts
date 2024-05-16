@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { windowOpen } from '../services/Browser'
+import { windowOpen } from '../services/browser'
 import { State, Dispatch } from '../store'
 import { platforms, IPlatform } from '../platforms'
 import { useSelector, useDispatch } from 'react-redux'

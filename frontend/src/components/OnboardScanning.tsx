@@ -1,35 +1,30 @@
-import React, { useEffect, useState } from 'react'
-import bluetooth from '../services/bluetooth'
-import { useBluetooth } from '../hooks/useBluetooth'
+import React, { useEffect } from 'react'
+import { State, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { Typography, Stack, Box, Button, List, ListSubheader, CircularProgress } from '@mui/material'
-import { ListItemLink } from '../components/ListItemLink'
-import { IconButton } from '../buttons/IconButton'
-import { Notice } from '../components/Notice'
-import { Icon } from '../components/Icon'
-import { Pre } from '../components/Pre'
+import { ListItemLink } from './ListItemLink'
+import { Notice } from './Notice'
+import { Icon } from './Icon'
 
 type Props = {
-  disabled?: boolean
-  onNext: () => void
+  next: () => void
 }
 
-export const OnboardScanning: React.FC<Props> = ({ disabled, onNext }) => {
-  const [ready, setReady] = useState<boolean>(false)
-  const state = useBluetooth()
-  disabled = disabled || state.processing
+export const OnboardScanning: React.FC<Props> = ({ next }) => {
+  const { initialized, connected, processing, wifi, error } = useSelector((state: State) => state.bluetooth)
+  const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
-    bluetooth.clear()
-    setReady(true)
+    dispatch.bluetooth.clear()
   }, [])
 
-  // useEffect(() => {
-  //   if (ready && state.connected) onNext()
-  // }, [state])
+  useEffect(() => {
+    if (connected && wifi !== 'CONNECTED') next()
+  }, [connected, wifi])
 
   const onScan = async () => {
-    await bluetooth.start()
-    onNext()
+    await dispatch.bluetooth.start()
+    console.log('SCANNING STATE', initialized, connected, processing, error)
   }
 
   return (
@@ -42,18 +37,18 @@ export const OnboardScanning: React.FC<Props> = ({ disabled, onNext }) => {
           </Typography>
         </Stack>
         <Typography variant="body2">
-          Start your Remote.It enabled Pi. It will be discoverable for one minute after startup.
+          Start your Remote.It enabled Pi. It will be discoverable for five minutes after startup.
         </Typography>
-        {state.error && (
+        {error && (
           <Notice severity="error" fullWidth gutterTop>
-            {state.error}
+            {error}
           </Notice>
         )}
         <Stack flexDirection="row" marginTop={5} marginBottom={4}>
-          {state.processing || state.initialized ? (
-            <CircularProgress size={30} thickness={3} />
+          {processing ? (
+            <CircularProgress size={29.5} thickness={3} />
           ) : (
-            <Button variant="contained" size="small" disabled={disabled} onClick={onScan}>
+            <Button variant="contained" size="small" disabled={processing} onClick={onScan}>
               scan
             </Button>
           )}

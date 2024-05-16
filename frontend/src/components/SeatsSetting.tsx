@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { List, Stack } from '@mui/material'
 import { State, Dispatch } from '../store'

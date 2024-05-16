@@ -22,7 +22,7 @@ import {
 } from '../helpers/connectionHelper'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLGetErrors } from './graphQL'
-import { agent } from '../services/Browser'
+import { agent } from './browser'
 import { emit } from './Controller'
 
 const stateTimes = new CloudTimes()

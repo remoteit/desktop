@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'

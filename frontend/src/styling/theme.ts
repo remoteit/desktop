@@ -1,4 +1,4 @@
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'
@@ -388,7 +388,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiPaper: {
         styleOverrides: {
-          rounded: { borderRadius: radius.lg },
+          rounded: { borderRadius: radius.sm },
           root: { backgroundColor: palette.white.main, backgroundImage: 'none' },
         },
       },

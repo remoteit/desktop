@@ -1,5 +1,5 @@
 import React from 'react'
-import browser, { windowOpen } from '../services/Browser'
+import browser, { windowOpen } from '../services/browser'
 import { MOBILE_LAUNCH_DATE, SCREEN_VIEW_APP_LINK } from '../constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'

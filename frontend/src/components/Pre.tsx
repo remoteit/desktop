@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { Box } from '@mui/material'
 
 export const Pre: React.FC<ILookup<any>> = props => {
@@ -14,14 +14,13 @@ export const Pre: React.FC<ILookup<any>> = props => {
     </>
   )
 
-  return browser.isMobile ? (
+  return !browser.isMobile ? (
     <Box
       sx={{
         position: 'absolute',
         bgcolor: 'magenta',
         bottom: 0,
         left: 0,
-        right: 0,
         paddingX: 1.5,
         '& pre': {
           color: 'white',

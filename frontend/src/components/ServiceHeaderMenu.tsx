@@ -84,26 +84,11 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
           {displayThisDevice ? (
             <Gutters top={null} bottom="lg" size="xxs">
-              <Notice gutterTop solid severity="info">
-                This service can be connected to from anywhere using Remote.It.
-              </Notice>
-              <Notice gutterTop severity="info">
-                <Typography variant="body2" gutterBottom>
-                  You are on the same device as this service, so you should not connect with Remote.It. Connect directly
-                  using the local address below:
-                </Typography>
-                <ListItemCopy
-                  label="Local endpoint"
-                  value={`${service?.host || '127.0.0.1'}:${service?.port}`}
-                  invertBackground
-                  showBackground
-                  fullWidth
-                />
-                <Typography variant="caption" display="block" marginTop={2} marginBottom={1}>
-                  <Link color="grayDarker.main" onClick={() => dispatch.ui.set({ connectThisDevice: true })}>
-                    Connect anyway, I know what I'm doing.
-                  </Link>
-                </Typography>
+              <Notice gutterTop solid severity="info" onClose={() => dispatch.ui.set({ connectThisDevice: true })}>
+                <strong>This service is running on this device.</strong>
+                <br />
+                It can be connected to from anywhere using Remote.It.{' '}
+                <em>Select another device from the devices menu to connect to a remotely.</em>
               </Notice>
             </Gutters>
           ) : (

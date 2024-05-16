@@ -3,7 +3,7 @@ import { getAccountIds } from '../models/accounts'
 import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'
 import { store } from '../store'
-import browser from '../services/Browser'
+import browser from './browser'
 import icon from '../assets/noticeIcon.png'
 
 const actions = {

@@ -1,4 +1,4 @@
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import structuredClone from '@ungap/structured-clone'
 import { State } from '../store'
 import { createModel } from '@rematch/core'

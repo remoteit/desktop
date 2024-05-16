@@ -1,5 +1,5 @@
 import React from 'react'
-import browser, { getOs } from '../../services/Browser'
+import browser, { getOs } from '../../services/browser'
 import { safeHostname } from '@common/nameHelper'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'

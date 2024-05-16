@@ -2,8 +2,8 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { State } from '../store'
 import { RootModel } from '.'
+import { State } from '../store'
 
 type IApplicationTypeState = {
   all: IApplicationType[]

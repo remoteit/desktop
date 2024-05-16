@@ -1,7 +1,7 @@
 import './polyfills'
 import React from 'react'
 import Controller from './services/Controller'
-import browser from './services/Browser'
+import browser from './services/browser'
 import { App } from './components/App'
 import { store } from './store'
 import { ErrorBoundary } from './components/ErrorBoundary'

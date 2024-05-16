@@ -1,5 +1,5 @@
 import io, { Socket } from 'socket.io-client'
-import browser from '../services/Browser'
+import browser from './browser'
 import { store } from '../store'
 import { IP_PRIVATE } from '@common/constants'
 import { IBackendState } from '../models/backend'

@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'

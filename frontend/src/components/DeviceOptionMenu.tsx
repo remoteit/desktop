@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'

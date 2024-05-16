@@ -9,7 +9,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress, Theme } from '@mui/material'
+import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { spacing, fontSizes } from '../styling'
@@ -115,27 +115,28 @@ export const DevicePage: React.FC = () => {
         </>
       }
     >
-      {device.state === 'inactive' && (
-        <Notice
-          gutterTop
-          severity="info"
-          button={
-            device.permissions.includes('MANAGE') && (
-              <IconButton
-                icon="wave-pulse"
-                title="Restore Device"
-                onClick={() => dispatch.ui.set({ showRestoreModal: true })}
-              />
-            )
-          }
-        >
-          Device offline
-        </Notice>
-      )}
-      {device.license === 'UNLICENSED' && (
-        <Notice severity="warning" button={<PlanActionChip color="warning" />} gutterTop>
+      {device.license === 'UNLICENSED' ? (
+        <Notice severity="warning" button={<PlanActionChip color="warning" sx={{ marginTop: 1.4 }} />} gutterTop>
           Device unlicensed
         </Notice>
+      ) : (
+        device.state === 'inactive' && (
+          <Notice
+            gutterTop
+            severity="info"
+            button={
+              device.permissions.includes('MANAGE') && (
+                <IconButton
+                  icon="wave-pulse"
+                  title="Restore Device"
+                  onClick={() => dispatch.ui.set({ showRestoreModal: true })}
+                />
+              )
+            }
+          >
+            Device offline
+          </Notice>
+        )
       )}
       <Typography variant="subtitle1">
         <Title>Service</Title>

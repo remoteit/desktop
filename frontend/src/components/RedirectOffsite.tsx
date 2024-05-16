@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { windowOpen } from '../services/Browser'
+import { windowOpen } from '../services/browser'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'

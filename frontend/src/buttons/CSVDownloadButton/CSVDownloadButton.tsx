@@ -1,6 +1,6 @@
 import { IconButton, Tooltip } from '@mui/material'
 import React, { useState } from 'react'
-import { windowOpen } from '../../services/Browser'
+import { windowOpen } from '../../services/browser'
 import { Icon } from '../../components/Icon'
 
 interface CSVDownloadButtonProps {

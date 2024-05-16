@@ -1,11 +1,13 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import browser from '../services/browser'
 import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider } from '@mui/material'
+import { Link } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 
 type Props = { className?: string }
 
 export const BluetoothScan: React.FC<Props> = ({ className }) => {
+  if (browser.isElectron) return null
   return (
     <List className={className} dense disablePadding>
       <ListSubheader disableGutters>Onboard</ListSubheader>
@@ -20,11 +22,11 @@ export const BluetoothScan: React.FC<Props> = ({ className }) => {
           {/* <Icon name="wifi" type="solid" fontSize={14} color="gray" /> */}
         </ListItemIcon>
         <ListItemText
-          primary="Setup RaspberryPi"
+          primary="Setup WiFi"
           secondary={
             <>
-              Connect your Remote.It
-              <br /> Pi to Wifi
+              Connect your Pi to
+              <br /> Wifi and Remote.It
             </>
           }
         />

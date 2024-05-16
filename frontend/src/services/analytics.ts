@@ -1,4 +1,4 @@
-import browser from './Browser'
+import browser from './browser'
 import {
   GOOGLE_TAG_MANAGER_DESKTOP_KEY,
   GOOGLE_TAG_MANAGER_PORTAL_KEY,

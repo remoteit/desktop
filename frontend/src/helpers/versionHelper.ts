@@ -1,5 +1,5 @@
 import json from '../../package.json'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 export const version = json.version
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListItemButton, ListItemButtonProps, ListItemIcon, ListItemText } from '@mui/material'
-import { windowOpen } from '../services/Browser'
+import { windowOpen } from '../services/browser'
 import { Icon, IconProps } from './Icon'
 
 export type Props = ListItemButtonProps & {

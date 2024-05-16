@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
 import { persistor } from '../store'

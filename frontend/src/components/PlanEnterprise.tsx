@@ -1,6 +1,6 @@
 import React from 'react'
 import { PlanCard } from './PlanCard'
-import { windowOpen } from '../services/Browser'
+import { windowOpen } from '../services/browser'
 import { PlanGutters } from './PlanGutters'
 import { ENTERPRISE_PLAN_ID, planDetails } from '../models/plans'
 

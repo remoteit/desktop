@@ -18,11 +18,6 @@ export function LoadingMessage({ message, logo, invert, spinner = true, inline, 
   const Container = inline ? Gutters : Body
   return (
     <Container className={invert ? css.invert : undefined} center>
-      {message && (
-        <Typography color="grayDark.main" variant="body2" gutterBottom>
-          {message}
-        </Typography>
-      )}
       <Box position="relative" marginBottom={5}>
         {logo}
         {spinner && logo ? (
@@ -39,6 +34,11 @@ export function LoadingMessage({ message, logo, invert, spinner = true, inline, 
           spinner && <CircularProgress size={50} thickness={1.5} />
         )}
       </Box>
+      {message && (
+        <Typography color="grayDark.main" variant="body2" gutterBottom>
+          {message}
+        </Typography>
+      )}
       {children}
     </Container>
   )
