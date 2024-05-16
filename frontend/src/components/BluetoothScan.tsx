@@ -1,5 +1,4 @@
 import React from 'react'
-import browser from '../services/browser'
 import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { Icon } from '../components/Icon'
@@ -7,7 +6,6 @@ import { Icon } from '../components/Icon'
 type Props = { className?: string }
 
 export const BluetoothScan: React.FC<Props> = ({ className }) => {
-  if (browser.isElectron) return null
   return (
     <List className={className} dense disablePadding>
       <ListSubheader disableGutters>Onboard</ListSubheader>

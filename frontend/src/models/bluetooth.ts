@@ -61,11 +61,14 @@ export default createModel<RootModel>()({
     async initialize() {
       try {
         await BleClient.initialize()
-        console.log('BLUETOOTH INITIALIZED')
+        console.log('BLUETOOTH INITIALIZING')
+        dispatch.bluetooth.set({ error: '', processing: true })
 
+        const device = await BleClient.requestDevice({ services: [BT_UUIDS.SERVICE] })
         dispatch.bluetooth.set({
-          device: await BleClient.requestDevice({ services: [BT_UUIDS.SERVICE] }),
+          device,
           initialized: true,
+          processing: false,
         })
       } catch (error) {
         dispatch.bluetooth.set({ error: 'Failed to initialize Bluetooth' })
