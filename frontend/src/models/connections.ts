@@ -4,7 +4,7 @@ import { parse as urlParse } from 'url'
 import { pickTruthy, dedupe } from '../helpers/utilHelper'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
-import browser, { getLocalStorage, removeLocalStorage } from '../services/Browser'
+import browser, { getLocalStorage, removeLocalStorage } from '../services/browser'
 import {
   cleanOrphanConnections,
   getFetchConnectionIds,

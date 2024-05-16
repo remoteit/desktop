@@ -1,5 +1,5 @@
 import network from './Network'
-import browser, { insertScript } from './Browser'
+import browser, { insertScript } from './browser'
 import { ZENDESK_KEY } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { store } from '../store'

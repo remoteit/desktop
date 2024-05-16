@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import classnames from 'classnames'
 import { spacing, Color } from '../styling'
 import { makeStyles } from '@mui/styles'

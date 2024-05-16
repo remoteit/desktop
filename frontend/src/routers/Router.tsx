@@ -54,7 +54,7 @@ import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
-import browser, { getOs } from '../services/Browser'
+import browser, { getOs } from '../services/browser'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   useMobileNavigation()

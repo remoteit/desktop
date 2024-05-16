@@ -1,6 +1,6 @@
 import classnames from 'classnames'
 import React, { useState, useContext } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'

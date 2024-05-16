@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { emit } from '../services/Controller'
 import { State, Dispatch } from '../store'
 import { List, Typography } from '@mui/material'

@@ -5,7 +5,7 @@ import { TargetPlatform } from './TargetPlatform'
 import { Icon } from './Icon'
 import { Logo } from './Logo'
 import screenfull from 'screenfull'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 type Props = { device?: IDevice; children: React.ReactNode }
 

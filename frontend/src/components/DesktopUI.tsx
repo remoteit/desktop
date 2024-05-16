@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 export const DesktopUI: React.FC<{ hide?: boolean; children?: React.ReactNode }> = ({ hide, children }) => {
   let isDesktop = !browser.hasBackend

@@ -14,7 +14,7 @@ import { spacing } from '../styling'
 import { Icon } from './Icon'
 
 type Props = Omit<TextFieldProps, 'onChange'> & {
-  label: string
+  label?: string
   value?: string | number
   values: ISelect[]
   icon?: string
@@ -22,6 +22,7 @@ type Props = Omit<TextFieldProps, 'onChange'> & {
   hideIcon?: boolean
   helpMessage?: string
   defaultValue?: string | number
+  disableGutters?: boolean
   onChange?: (value: string) => void
 }
 
@@ -35,6 +36,7 @@ export const SelectSetting: React.FC<Props> = ({
   modified,
   helpMessage,
   defaultValue,
+  disableGutters,
   onChange,
   children,
   ...props
@@ -45,7 +47,7 @@ export const SelectSetting: React.FC<Props> = ({
   modified = modified || (!!defaultValue && value !== defaultValue)
 
   return (
-    <ListItemButton dense onClick={handleClick} disabled={disabled}>
+    <ListItemButton dense onClick={handleClick} disabled={disabled} disableGutters={disableGutters}>
       <ListItemIcon sx={{ minWidth: hideIcon ? spacing.sm : undefined }}>
         {hideIcon ? null : <Icon name={icon} size="md" modified={modified} fixedWidth />}
       </ListItemIcon>

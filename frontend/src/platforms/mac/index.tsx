@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../../services/Browser'
+import browser from '../../services/browser'
 import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {

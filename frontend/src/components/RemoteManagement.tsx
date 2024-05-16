@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { RemoteOnLan } from '../assets/RemoteOnLan'
 import { RemoteOnRemote } from '../assets/RemoteOnRemote'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 type NetworkType = { primary: string; secondary?: string }
 

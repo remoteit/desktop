@@ -1,6 +1,6 @@
 import { State } from '../store'
 import seedRandom from 'seedrandom'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 export function isRemoteUI(state: State) {
   return browser.isRemote && !state.backend.preferences.remoteUIOverride

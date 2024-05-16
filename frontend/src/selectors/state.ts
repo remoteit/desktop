@@ -1,5 +1,5 @@
 import { State } from '../store'
-import { getLocalStorage } from '../services/Browser'
+import { getLocalStorage } from '../services/browser'
 import { NOTICE_VERSION_ID } from '../models/backend'
 
 export const optionalParam = (_: State, first?: any) => first

@@ -1,4 +1,4 @@
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'
@@ -167,7 +167,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           root: {
             color: palette.grayDark.main,
             borderRadius: radius.sm,
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: 1.5,
             whiteSpace: 'nowrap',
             fontSize: fontSizes.xs,
@@ -180,7 +180,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           contained: {
             color: palette.alwaysWhite.main,
             '&:hover': { backgroundColor: palette.grayDarkest.main },
-            '&.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
+            '&:hover.Mui-disabled, &.Mui-disabled': {
+              backgroundColor: palette.gray.main,
+              color: palette.alwaysWhite.main,
+            },
           },
           text: { padding: `${spacing.sm}px ${spacing.md}px` },
           outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },
@@ -385,7 +388,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiPaper: {
         styleOverrides: {
-          rounded: { borderRadius: radius.lg },
+          rounded: { borderRadius: radius.sm },
           root: { backgroundColor: palette.white.main, backgroundImage: 'none' },
         },
       },
@@ -552,6 +555,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.Mui-disabled': { paddingRight: spacing.sm },
             '& .MuiSelect-icon.Mui-disabled': { display: 'none' },
+            '& .MuiSelect-icon': { marginRight: spacing.xs },
           },
         },
       },

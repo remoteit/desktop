@@ -1,20 +1,22 @@
 PODS:
-  - Capacitor (5.7.4):
+  - Capacitor (6.0.0):
     - CapacitorCordova
-  - CapacitorApp (5.0.7):
+  - CapacitorApp (6.0.0):
     - Capacitor
-  - CapacitorAppLauncher (5.0.7):
+  - CapacitorAppLauncher (6.0.0):
     - Capacitor
-  - CapacitorBrowser (5.2.0):
+  - CapacitorBrowser (6.0.0):
     - Capacitor
-  - CapacitorClipboard (5.0.7):
+  - CapacitorClipboard (6.0.0):
     - Capacitor
-  - CapacitorCordova (5.7.4)
-  - CapacitorPluginSafeArea (2.0.6):
+  - CapacitorCommunityBluetoothLe (6.0.0):
     - Capacitor
-  - CapacitorSplashScreen (5.0.7):
+  - CapacitorCordova (6.0.0)
+  - CapacitorPluginSafeArea (3.0.1):
     - Capacitor
-  - CapacitorStatusBar (5.0.7):
+  - CapacitorSplashScreen (6.0.0):
+    - Capacitor
+  - CapacitorStatusBar (6.0.0):
     - Capacitor
 
 DEPENDENCIES:
@@ -23,6 +25,7 @@ DEPENDENCIES:
   - "CapacitorAppLauncher (from `../../node_modules/@capacitor/app-launcher`)"
   - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
+  - "CapacitorCommunityBluetoothLe (from `../../node_modules/@capacitor-community/bluetooth-le`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - CapacitorPluginSafeArea (from `../../node_modules/capacitor-plugin-safe-area`)
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
@@ -39,6 +42,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/browser"
   CapacitorClipboard:
     :path: "../../node_modules/@capacitor/clipboard"
+  CapacitorCommunityBluetoothLe:
+    :path: "../../node_modules/@capacitor-community/bluetooth-le"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorPluginSafeArea:
@@ -49,16 +54,17 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
 
 SPEC CHECKSUMS:
-  Capacitor: 4fe9adf012caceb4c71ffea2f1f4d005cdcbeea7
-  CapacitorApp: d65f901bd19591c7162249715477b78e7c0e66bb
-  CapacitorAppLauncher: e20e53bcc6500dd1a69a4702cf73e71ddafbcb2a
-  CapacitorBrowser: 38c06267a3b48bc29450c92d42f1446ecaa58521
-  CapacitorClipboard: 36055ccf1218b543866292242f76ad8775c23048
-  CapacitorCordova: a6e87fccc0307dee7aec1560ec9398485f2b0ce7
-  CapacitorPluginSafeArea: f3c42862be5e3a6734127a196de8086f8675b342
-  CapacitorSplashScreen: e094098677cce38e38d4bbe03dde73f50f28cd0a
-  CapacitorStatusBar: 2ec3ce58650afc2ace6bbe7009ac2c20aeaf5f49
+  Capacitor: 559d073c4ca6c27f8e7002c807eea94c3ba435a9
+  CapacitorApp: 9d53aec7101f7b030a950c5bdc4df8612576b279
+  CapacitorAppLauncher: 24ce4be152a84883378d22114ffe6c492056ced2
+  CapacitorBrowser: 7e1e2cdbb3e372f09f0bad0c4c21a6d187b679ad
+  CapacitorClipboard: 80282f684154124b9019ebf401235b70b0cf4994
+  CapacitorCommunityBluetoothLe: 53eb347a559c15b0e6ff6b83ee383ed6b0825b6a
+  CapacitorCordova: 8c4bfdf69368512e85b1d8b724dd7546abeb30af
+  CapacitorPluginSafeArea: b99681e1d9986ae1c059ca0e1b5e7025916e5e04
+  CapacitorSplashScreen: 5431ab8d19c1c6e95777d53bfaa7a36a6c3d94c7
+  CapacitorStatusBar: 2e4369f99166125435641b1908d05f561eaba6f6
 
-PODFILE CHECKSUM: a6f2000103465e61657345d6151fc295113ca0ad
+PODFILE CHECKSUM: e6bb4690dd8321387a19f62a1512c05eee5345ec
 
 COCOAPODS: 1.14.1

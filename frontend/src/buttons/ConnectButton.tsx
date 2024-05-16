@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { Stack } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'

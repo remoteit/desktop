@@ -1,7 +1,7 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import {
   Box,

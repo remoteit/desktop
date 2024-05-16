@@ -57,7 +57,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
 
   const initForm = () => {
     setError(undefined)
-    const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID)
+    const defaultType = findType(applicationTypes, service?.typeID || setupAdded?.typeID || (adding ? 8 : undefined))
     return {
       ...DEFAULT_SERVICE,
       id: service?.id || '',
@@ -138,10 +138,12 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 }}
               />
               {appType.description && (
-                <ListItem sx={{ paddingRight: 3, paddingLeft: 2 }}>
-                  <Typography variant="caption" component="div" sx={{ margin: 1 }}>
-                    <b>{appType.description}</b> - {application.use}
-                  </Typography>
+                <ListItem>
+                  <Notice>
+                    <em>
+                      <strong>{appType.description}</strong> - {application.use}
+                    </em>
+                  </Notice>
                 </ListItem>
               )}
               {thisDevice && (

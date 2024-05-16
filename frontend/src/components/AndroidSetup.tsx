@@ -1,5 +1,5 @@
 import React from 'react'
-import browser, { windowOpen } from '../services/Browser'
+import browser, { windowOpen } from '../services/browser'
 import { SCREEN_VIEW_APP_LINK } from '../constants'
 import { useHistory } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'

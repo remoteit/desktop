@@ -222,6 +222,20 @@ export default class ElectronApp {
       }
     })
 
+    this.window.webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
+      event.preventDefault()
+      Logger.info('SELECT BLUETOOTH DEVICE', { deviceList })
+      const result = deviceList.find(device => {
+        return device.deviceName.includes('Remote.It')
+      })
+      if (result) {
+        callback(result.deviceId)
+      } else {
+        // The device wasn't found so we need to either wait longer (eg until the
+        // device is turned on) or until the user cancels the request
+      }
+    })
+  
     this.logWebErrors()
   }
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { Box } from '@mui/material'
 
 export const Pre: React.FC<ILookup<any>> = props => {
@@ -7,21 +7,20 @@ export const Pre: React.FC<ILookup<any>> = props => {
   const output = (
     <>
       {Object.keys(props).map(key => (
-        <pre key={key} style={{ maxHeight: '50vh', overflow: 'scroll' }}>
+        <pre key={key} style={{ maxHeight: '50vh', overflow: 'scroll', opacity: 0.5 }}>
           {key}: {`\n${JSON.stringify(props[key], null, 2)}\n\n`}
         </pre>
       ))}
     </>
   )
 
-  return browser.isMobile ? (
+  return !browser.isMobile ? (
     <Box
       sx={{
         position: 'absolute',
         bgcolor: 'magenta',
         bottom: 0,
         left: 0,
-        right: 0,
         paddingX: 1.5,
         '& pre': {
           color: 'white',

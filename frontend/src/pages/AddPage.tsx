@@ -115,7 +115,7 @@ export const AddPage: React.FC = () => {
                 &nbsp;&nbsp;
                 <Tooltip title="Remote.It ScreenView Enabled" placement="top" arrow>
                   <span>
-                    <Icon name="android-screenview" size="sm" platformIcon currentColor />
+                    <Icon name="android-screenview" size="xxs" platformIcon currentColor />
                   </span>
                 </Tooltip>
               </>

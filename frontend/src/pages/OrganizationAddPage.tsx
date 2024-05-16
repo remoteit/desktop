@@ -1,22 +1,24 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
-import { selectAvailableUsers } from '../selectors/organizations'
-import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { selectOrganization } from '../selectors/organizations'
+import { ENTERPRISE_PLAN_ID } from '../models/plans'
+import { selectAvailableUsers } from '../selectors/organizations'
+import { useLocation, useHistory, Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import { Typography, Button, Box } from '@mui/material'
+import { selectOrganization } from '../selectors/organizations'
 import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
 import { Container } from '../components/Container'
+import { ColorChip } from '../components/ColorChip'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { useHistory } from 'react-router-dom'
 
 export const OrganizationAddPage = () => {
   const organization = useSelector(selectOrganization)
   const allContacts = useSelector((state: State) => state.contacts.all)
   const freeUsers = useSelector(selectAvailableUsers)
+  const enterprise = organization.licenses.find(l => l.plan.id === ENTERPRISE_PLAN_ID)
   const contacts = allContacts.filter(c => !organization.members.find(s => s.user.id === c.id)) || []
 
   const [emails, setEmails] = React.useState<string[]>([])
@@ -68,8 +70,16 @@ export const OrganizationAddPage = () => {
               fullWidth
             />
           </Box>
-          {!freeUsers && (
-            <Notice severity="warning" fullWidth>
+          {!freeUsers && !enterprise && (
+            <Notice
+              severity="warning"
+              button={
+                <Link to="/account/plans">
+                  <ColorChip sx={{ marginTop: 1.4 }} size="small" variant="contained" color="warning" label="Upgrade" />
+                </Link>
+              }
+              fullWidth
+            >
               Purchase additional licenses to grant this user full access.
               <br />
             </Notice>

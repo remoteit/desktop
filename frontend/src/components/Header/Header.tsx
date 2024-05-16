@@ -1,7 +1,7 @@
 import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
 import React, { useState, useRef } from 'react'
 import useMobileBack from '../../hooks/useMobileBack'
-import browser from '../../services/Browser'
+import browser from '../../services/browser'
 import { emit } from '../../services/Controller'
 import { State } from '../../store'
 import { Dispatch } from '../../store'

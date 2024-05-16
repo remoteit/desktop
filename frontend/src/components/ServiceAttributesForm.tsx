@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import { useStyles } from './ServiceForm'
 import { useSelector } from 'react-redux'
 import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'

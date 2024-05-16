@@ -1,5 +1,5 @@
 import network from '../services/Network'
-import browser, { windowClose } from '../services/Browser'
+import browser, { windowClose } from '../services/browser'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'

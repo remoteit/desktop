@@ -12,7 +12,7 @@ import {
 import React, { useState, useEffect } from 'react'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { Application } from '@common/applications'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 type Props = {
   app: Application

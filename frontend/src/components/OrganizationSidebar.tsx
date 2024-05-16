@@ -1,5 +1,5 @@
 import React from 'react'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 import classnames from 'classnames'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'

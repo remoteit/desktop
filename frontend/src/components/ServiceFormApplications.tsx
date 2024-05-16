@@ -23,8 +23,8 @@ export const ServiceFormApplications: React.FC<Props> = ({
 }) => {
   const css = useStyles()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const allowedApplications = applicationTypes.filter(a => !APF[a.id] || APF[a.id]?.includes(targetPlatform))
-  const keyApplications = allowedApplications.filter(a => KEY_APPS.includes(a.id))
+  const allowedApplications = applicationTypes.filter(a => !APF[a.id] || APF[a.id].has(targetPlatform))
+  const keyApplications = allowedApplications.filter(a => KEY_APPS.has(a.id))
   const otherApplications = allowedApplications.filter(a => !keyApplications.find(k => k.id === a.id))
   const otherSelected = otherApplications.find(a => a.id === selected)
 

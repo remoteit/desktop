@@ -1,4 +1,4 @@
-import browser, { setLocalStorage, getOs } from '../services/Browser'
+import browser, { setLocalStorage, getOs } from '../services/browser'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'

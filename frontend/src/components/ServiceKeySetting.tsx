@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Notice } from './Notice'
-import { windowOpen } from '../services/Browser'
+import { windowOpen } from '../services/browser'
 import { Typography, Collapse, ButtonBase, Box, Stack } from '@mui/material'
 import { ListItemSetting } from './ListItemSetting'
 import { ListItemQuote } from './ListItemQuote'

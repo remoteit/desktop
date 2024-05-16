@@ -2,10 +2,11 @@ import { adaptor } from './adaptor'
 import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
-export const KEY_APPS = [8, 7, 28, 4, 5, 34]
+export const KEY_APPS = new Set([4, 5, 7, 8, 28, 34])
+// export const KEY_APPS = new Set([4, 5, 7, 8, 28, 66])
 export const APPLICATION_PLATFORM_FILTER = {
-  48: [1213], // ScreenView allowed on Android
-  42: [0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185], // Admin Panel allowed on
+  48: new Set([1213]), // ScreenView allowed on Android
+  42: new Set([0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185]), // Admin Panel allowed on
 }
 
 export class Application {
@@ -387,6 +388,18 @@ export function getApplicationType(typeId?: number) {
         title: 'ScreenView',
         use: 'Use for remote screen viewing or control via Remote.It’s Android ScreenView app. Facilitates support, collaboration and remote access.',
         appLaunchType: 'URL',
+        autoLaunch: true,
+      })
+    case 66:
+      return new Application({
+        title: 'SOCKS Proxy',
+        use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
+        defaultTokenData: { app: windows ? undefined : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' },
+        appLaunchType: 'COMMAND',
+        // C:\\\\Program Files (x86)\\GoogleChromeApplicationchrome.exe
+        appCommandTemplate: windows
+          ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks://[host]:[port]"'
+          : 'open -a "[app]" --user-data-dir=~/.remoteit/Chrome-[host] --proxy-server="socks://[host]:[port]"',
         autoLaunch: true,
       })
     case 32769:

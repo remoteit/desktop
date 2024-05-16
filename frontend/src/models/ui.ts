@@ -8,7 +8,7 @@ import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
 import { State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
-import browser, { getLocalStorage, setLocalStorage } from '../services/Browser'
+import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 
 export const DEFAULT_INTERFACE = 'searching'
 

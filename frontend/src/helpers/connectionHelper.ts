@@ -7,7 +7,7 @@ import { selectEnabledConnections } from '../selectors/connections'
 import { selectActiveUser } from '../selectors/accounts'
 import { getAllDevices } from '../selectors/devices'
 import { selectById } from '../selectors/devices'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'

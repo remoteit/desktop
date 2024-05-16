@@ -1,5 +1,5 @@
 import React from 'react'
-import browser, { windowOpen } from '../../services/Browser'
+import browser, { windowOpen } from '../../services/browser'
 import { PROTOCOL } from '../../constants'
 import { ConnectButton, ConnectButtonProps } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'

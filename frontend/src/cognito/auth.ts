@@ -1,4 +1,4 @@
-import browser, { windowOpen } from '../services/Browser'
+import browser, { windowOpen } from '../services/browser'
 // import { OAuth2Client } from '@byteowls/capacitor-oauth2'
 import { ICredentials } from '@aws-amplify/core'
 import { DEVELOPER_KEY } from '../constants'

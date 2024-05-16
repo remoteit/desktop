@@ -1,5 +1,5 @@
 import React from 'react'
-import browser, { windowOpen } from '../services/Browser'
+import browser, { windowOpen } from '../services/browser'
 import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom'
 import { Link as MUILink, LinkProps as MuiLinkProps } from '@mui/material'
 

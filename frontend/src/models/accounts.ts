@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { State } from '../store'
-import { getLocalStorage, removeLocalStorage } from '../services/Browser'
+import { getLocalStorage, removeLocalStorage } from '../services/browser'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'

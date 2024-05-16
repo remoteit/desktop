@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SafeArea } from 'capacitor-plugin-safe-area'
 import { spacing } from '../styling'
-import browser from '../services/Browser'
+import browser from '../services/browser'
 
 type UseSafeAreaResult = {
   insets: ILayout['insets']

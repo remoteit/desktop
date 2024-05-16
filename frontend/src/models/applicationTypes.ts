@@ -2,8 +2,8 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { State } from '../store'
 import { RootModel } from '.'
+import { State } from '../store'
 
 type IApplicationTypeState = {
   all: IApplicationType[]
@@ -16,6 +16,8 @@ const defaultState: IApplicationTypeState = {
   groups: [{ name: 'HTTP/S', ids: [7, 8] }],
   account: {},
 }
+
+const APPLICATION_TYPES_ORDER = [8, 7, 66, 28, 4, 5, 34]
 
 const APPLICATION_TYPES_QUERY = `
   applicationTypes {
@@ -45,9 +47,11 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const applicationTypes: IApplicationType[] = result?.data?.data?.login?.account?.applicationTypes
-      dispatch.applicationTypes.set({ account: { ...state.applicationTypes.account, [accountId]: applicationTypes } })
+      dispatch.applicationTypes.set({
+        account: { ...state.applicationTypes.account, [accountId]: applicationTypes.sort(sortFunction) },
+      })
     },
-    async fetchAll() {
+    async fetchAll(_: void, state) {
       const result = await graphQLBasicRequest(
         ` query ApplicationTypesAll {
             ${APPLICATION_TYPES_QUERY}
@@ -55,6 +59,21 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const all = result?.data?.data?.applicationTypes
+
+      if (state.ui.testUI) {
+        // TEMP - add SOCKS proxy
+        all.push({
+          id: 66,
+          name: 'SOCKS',
+          port: 5999,
+          proxy: true,
+          scheme: 'proxy',
+          protocol: 'TCP',
+          description: 'SOCKS proxy',
+        })
+      }
+
+      all.sort(sortFunction)
       dispatch.applicationTypes.set({ all })
     },
   }),
@@ -69,6 +88,10 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function sortFunction(a: IApplicationType, b: IApplicationType) {
+  return APPLICATION_TYPES_ORDER.indexOf(a.id) - APPLICATION_TYPES_ORDER.indexOf(b.id)
+}
 
 export function findType(all?: IApplicationType[], typeId?: number): IApplicationType {
   return all?.find(t => t.id === typeId) || all?.[0] || emptyServiceType

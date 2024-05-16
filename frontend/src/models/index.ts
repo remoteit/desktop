@@ -6,6 +6,7 @@ import auth from './auth'
 import backend from './backend'
 import billing from './billing'
 import binaries from './binaries'
+import bluetooth from './bluetooth'
 import connections from './connections'
 import contacts from './contacts'
 import devices from './devices'
@@ -32,6 +33,7 @@ export interface RootModel extends Models<RootModel> {
   backend: typeof backend
   billing: typeof billing
   binaries: typeof binaries
+  bluetooth: typeof bluetooth
   connections: typeof connections
   contacts: typeof contacts
   devices: typeof devices
@@ -59,6 +61,7 @@ export const models: RootModel = {
   backend,
   billing,
   binaries,
+  bluetooth,
   connections,
   contacts,
   devices,

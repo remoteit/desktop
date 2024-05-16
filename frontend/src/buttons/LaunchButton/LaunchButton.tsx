@@ -8,7 +8,7 @@ import { IconButton, ButtonProps } from '../../buttons/IconButton'
 import { Color, Sizes } from '../../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../../components/PromptModal'
-import { windowOpen } from '../../services/Browser'
+import { windowOpen } from '../../services/browser'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 
