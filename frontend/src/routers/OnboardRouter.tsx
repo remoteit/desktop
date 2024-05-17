@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { State, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
+import { State } from '../store'
+import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
 import { useParams, useHistory, useLocation, Switch, Route, Redirect } from 'react-router-dom'
 import { OnboardConfiguring } from '../components/OnboardConfiguring'
@@ -49,7 +49,7 @@ export const OnboardRouter: React.FC = () => {
           </Route>
         </Switch>
       </Box>
-      <Pre>{rest}</Pre>
+      {/* <Pre>{rest}</Pre> */}
     </Body>
   )
 }

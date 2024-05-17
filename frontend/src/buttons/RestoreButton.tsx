@@ -1,23 +1,35 @@
 import React, { useState } from 'react'
 import { emit } from '../services/Controller'
+import { useParams } from 'react-router-dom'
+import { attributeName } from '@common/nameHelper'
 import { Button, Box } from '@mui/material'
-import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { Dispatch } from '../store'
 import { Confirm } from '../components/Confirm'
 
 export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> = ({ device, onClick }) => {
+  const { platform } = useParams<{ platform?: string }>()
   const [open, setOpen] = useState<boolean>(false)
-  const { ui } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
+
+  const onRestore = async () => {
+    if (platform === 'pi') {
+      dispatch.ui.set({ noticeMessage: `Restoring '${attributeName(device)}' to your Raspberry Pi.` })
+      const result = await dispatch.devices.getRestoreCommand(device.id)
+      if (result?.restoreCode) await dispatch.bluetooth.writeRegistrationCode(result.restoreCode)
+      dispatch.ui.set({ redirect: `/devices/${device.id}` })
+    } else setOpen(true)
+  }
 
   return (
     <Box>
-      <Button onClick={() => setOpen(true)} color="primary" variant="contained" size="small">
+      <Button onClick={onRestore} color="primary" variant="contained" size="small">
         RESTORE
       </Button>
       <Confirm
         open={open}
         onConfirm={() => {
-          ui.set({ restoring: true, redirect: '/devices' })
+          dispatch.ui.set({ restoring: true, redirect: '/devices' })
           emit('restore', device.id)
           setOpen(false)
         }}

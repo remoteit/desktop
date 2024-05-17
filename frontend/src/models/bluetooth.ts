@@ -13,6 +13,14 @@ interface NetworkInfo {
   signal: number
 }
 
+interface Notification {
+  ssid?: string
+  wifi?: 'CONNECTED' | 'CONNECTING' | 'DISCONNECTED' | 'FAILED_START' | 'INVALID_PASSWORD' | 'INVALID_SSID'
+  scan?: 'SCANNING' | 'COMPLETE'
+  reg?: 'UNREGISTERED' | 'REGISTERING' | 'REGISTERED'
+  id?: string // device id if registered
+}
+
 const CHARACTERISTIC_NAMES = {
   [BT_UUIDS.SERVICE]: 'Service',
   [BT_UUIDS.CONNECT]: 'Connect',
@@ -24,7 +32,7 @@ const CHARACTERISTIC_NAMES = {
   [BT_UUIDS.REGISTRATION_STATUS]: 'Registration Status',
 }
 
-export interface BluetoothState {
+export interface BluetoothState extends Notification {
   device?: DeviceInfo
   notify: Set<string>
   initialized: boolean
@@ -32,12 +40,6 @@ export interface BluetoothState {
   connected: boolean // bluetooth connected
   networks: NetworkInfo[]
   error: string
-  // notification statuses:
-  wifi?: 'CONNECTED' | 'CONNECTING' | 'DISCONNECTED' | 'FAILED_START' | 'INVALID_PASSWORD' | 'INVALID_SSID'
-  ssid?: string
-  scan?: 'SCANNING' | 'COMPLETE'
-  reg?: 'UNREGISTERED' | 'REGISTERING' | 'REGISTERED'
-  id?: string // device id if registered
 }
 
 const defaultState: BluetoothState = {
@@ -68,10 +70,9 @@ export default createModel<RootModel>()({
         dispatch.bluetooth.set({
           device,
           initialized: true,
-          processing: false,
         })
       } catch (error) {
-        dispatch.bluetooth.set({ error: 'Failed to initialize Bluetooth' })
+        dispatch.bluetooth.set({ error: 'Failed to initialize Bluetooth', processing: false })
         console.error('BLUETOOTH INITIALIZATION ERROR:', error)
       }
     },
@@ -120,8 +121,22 @@ export default createModel<RootModel>()({
         notify.add(characteristic)
         console.log('NOTIFY', characteristic)
         await BleClient.startNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic, value => {
-          console.log('NOTIFICATION', characteristic, parse(value))
-          dispatch.bluetooth.set({ ...parse(value) })
+          const result: Notification = parse(value)
+          console.log('NOTIFICATION', characteristic, result)
+
+          switch (result.wifi) {
+            case 'FAILED_START':
+            case 'INVALID_SSID':
+              dispatch.bluetooth.set({ error: 'Invalid Network SSID' })
+              break
+            case 'INVALID_PASSWORD':
+              dispatch.bluetooth.set({ error: 'Invalid Password' })
+              break
+            default:
+              dispatch.bluetooth.set({ error: '' })
+          }
+
+          dispatch.bluetooth.set({ ...result })
         })
       } catch (error) {
         dispatch.bluetooth.set({ error: `Failed to start notification ${CHARACTERISTIC_NAMES[characteristic]}` })
@@ -167,7 +182,7 @@ export default createModel<RootModel>()({
       const { set, write } = dispatch.bluetooth
       const device = state.bluetooth.device
       if (!device) return
-      set({ processing: true })
+      set({ processing: true, error: '' })
       try {
         await write({ value: JSON.stringify({ ssid, pwd }), characteristic: BT_UUIDS.CONNECT })
         console.log('WIFI WRITTEN', ssid, pwd)
@@ -230,7 +245,6 @@ export default createModel<RootModel>()({
     async readSSIDs() {
       dispatch.bluetooth.set({ processing: true })
       const count = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LENGTH)
-      console.log('WIFI COUNT', count)
 
       if (count === null) {
         dispatch.bluetooth.set({ error: 'Failed to read wifi count', processing: false })

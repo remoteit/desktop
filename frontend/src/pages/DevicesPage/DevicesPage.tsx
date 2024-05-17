@@ -3,8 +3,8 @@ import { State } from '../../store'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../../selectors/devices'
-import { selectPermissions } from '../../selectors/organizations'
 import { getConnectionsLookup } from '../../selectors/connections'
+import { selectPermissions } from '../../selectors/organizations'
 import { restoreAttributes } from '../../components/Attributes'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
@@ -20,13 +20,13 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const history = useHistory()
   const [initLoad, setInitLoad] = useState<boolean>(false)
   const { attributes, required } = useSelector(selectDeviceListAttributes)
-  const { fetching: fetch, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
+  const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
   const devices = useSelector(selectVisibleDevices)
   const permissions = useSelector(selectPermissions)
   const connections = useSelector(getConnectionsLookup)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const selected = useSelector((state: State) => state.ui.selected)
-  const fetching = useSelector((state: State) => state.ui.fetching) || fetch
+  const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
   const shouldRedirect = initLoad && permissions?.includes('MANAGE')
 

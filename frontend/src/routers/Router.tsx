@@ -184,7 +184,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <SetupWaiting os={os} />
         </Panel>
       </Route>
-      <Route path="/devices/restore">
+      <Route path="/devices/restore/:platform?">
         <Panel layout={layout}>
           <DevicesPage restore />
         </Panel>
