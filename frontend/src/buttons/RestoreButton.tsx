@@ -14,7 +14,7 @@ export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> 
 
   const onRestore = async () => {
     if (platform === 'pi') {
-      dispatch.ui.set({ noticeMessage: `Restoring ${attributeName(device)} to your Pi.` })
+      dispatch.ui.set({ noticeMessage: `Restoring '${attributeName(device)}' to your Raspberry Pi.` })
       const result = await dispatch.devices.getRestoreCommand(device.id)
       if (result?.restoreCode) await dispatch.bluetooth.writeRegistrationCode(result.restoreCode)
       dispatch.ui.set({ redirect: `/devices/${device.id}` })
