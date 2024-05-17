@@ -26,10 +26,10 @@ export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
   return (
     <Box marginX={2}>
       <Stack flexDirection="row" alignItems="center" marginY={2}>
-        <Icon name={reg === 'REGISTERED' ? 'check' : 'plus-circle'} color="primary" type="solid" size="xl" />
+        <Icon name={reg === 'REGISTERED' ? 'check' : 'arrow-right-arrow-left'} color="primary" type="solid" size="xl" />
         <Box marginLeft={2}>
           <Typography variant="h2">
-            {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registeration' : 'Registered!'}
+            {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registration' : 'Registered!'}
           </Typography>
           {id && <Typography variant="h4">{id}</Typography>}
         </Box>
@@ -63,6 +63,17 @@ export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
           <>
             <Button size="small" variant="contained" onClick={register} disabled={processing}>
               Register
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="inherit"
+              to="/devices/restore/pi"
+              component={Link}
+              disabled={processing}
+              sx={{ marginLeft: 1 }}
+            >
+              Restore
             </Button>
             <Button size="small" to={id ? `/devices/${id}` : '/devices'} component={Link} sx={{ marginLeft: 1 }}>
               skip
