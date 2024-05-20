@@ -143,9 +143,10 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           <Box flexGrow={1} textAlign="right">
             <ColorChip
               color={wifi === 'CONNECTED' ? 'primary' : undefined}
-              label={wifi === 'CONNECTED' ? 'Connected' : wifi === 'CONNECTING' ? 'Connecting...' : 'Not Connected'}
+              label={
+                wifi === 'CONNECTED' ? 'WiFi Connected' : wifi === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
+              }
               size="small"
-              variant={wifi === 'CONNECTED' ? 'contained' : undefined}
               sx={{ textTransform: 'capitalize' }}
             />
           </Box>

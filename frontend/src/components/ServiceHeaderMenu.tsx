@@ -87,8 +87,8 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
               <Notice gutterTop solid severity="info" onClose={() => dispatch.ui.set({ connectThisDevice: true })}>
                 <strong>This service is running on this device.</strong>
                 <br />
-                It can be connected to from anywhere using Remote.It.{' '}
-                <em>Select another device from the devices menu to connect to a remotely.</em>
+                It can be connected to from anywhere using Remote.It.
+                <em>Select another device from the devices menu to connect to it remotely.</em>
               </Notice>
             </Gutters>
           ) : (
