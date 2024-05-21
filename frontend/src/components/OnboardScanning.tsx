@@ -37,7 +37,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
           </Typography>
         </Stack>
         <Typography variant="body2">
-          Start your Remote.It enabled Pi. It will be discoverable for five minutes after startup.
+          Start your Pi with Bluetooth commissioning enabled. It will be discoverable for five minutes after startup.
         </Typography>
         {error && (
           <Notice severity="error" fullWidth gutterTop>
@@ -55,13 +55,14 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
         </Stack>
       </Box>
       <List>
-        <ListSubheader disableGutters>Other options</ListSubheader>
+        <ListSubheader disableGutters sx={{ paddingBottom: 1 }}>
+          Or Add Bluetooth Commissioning
+        </ListSubheader>
         <ListItemLink
           dense
-          icon="arrow-turn-down"
-          iconProps={{ rotate: 270 }}
+          icon="plus"
           href="http://remote.it/jumpbox"
-          title="Purchase our Pi JumpBox"
+          title="Add commissioning to your Pi image"
           disableGutters
         />
         <ListItemLink
@@ -73,9 +74,10 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
         />
         <ListItemLink
           dense
-          icon="plus"
+          icon="arrow-turn-down"
+          iconProps={{ rotate: 270 }}
           href="http://remote.it/jumpbox"
-          title="Add commissioning to your Pi image"
+          title="Purchase our Pi JumpBox"
           disableGutters
         />
       </List>

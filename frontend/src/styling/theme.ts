@@ -13,8 +13,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   const LIST_ITEM_ICON_WIDTH = 56
 
   if (!browser.isApple) {
-    radius.sm = 4
-    radius.lg = 4
+    radius.sm = 2
+    radius.lg = 3
   }
 
   const palette = {
@@ -220,7 +220,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           root: {
             color: palette.grayDarker.main,
-            borderRadius: radius.lg,
+            borderRadius: radius.sm,
             backgroundColor: palette.grayLightest.main,
             textTransform: 'initial',
             '& .MuiChip-icon': { color: 'inherit', marginLeft: 8 },
@@ -238,6 +238,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             height: 20,
             fontWeight: 400,
             color: 'inherit',
+            borderRadius: radius.lg,
             fontSize: fontSizes.xs,
             paddingLeft: spacing.xxs,
             paddingRight: spacing.xxs,
@@ -388,7 +389,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiPaper: {
         styleOverrides: {
-          rounded: { borderRadius: radius.sm },
+          rounded: { borderRadius: radius.lg },
           root: { backgroundColor: palette.white.main, backgroundImage: 'none' },
         },
       },
