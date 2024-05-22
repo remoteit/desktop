@@ -671,8 +671,10 @@ declare global {
     | 'LICENSE_UPDATED'
     | 'DEVICE_STATE'
     | 'DEVICE_CONNECT'
+    | 'DEVICE_DELETE'
     | 'DEVICE_SHARE'
     | 'DEVICE_REFRESH'
+    | 'DEVICE_TRANSFER'
 
   interface IEventList {
     total: number

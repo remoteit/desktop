@@ -73,6 +73,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
           onTransfer()
         }}
         onDeny={() => setOpen(false)}
+        color="error"
         title="Are you sure?"
         action="Transfer"
       >
