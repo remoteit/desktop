@@ -20,7 +20,7 @@
     "ios": "cross-env NODE_ENV=development npx cap run ios",
     "mobile-sync": "npx cap sync",
     "open-android": "npx cap open android",
-    "open-ios": "npx cap open ios",
+    "open-ios": "npm run build-mobile && npx cap open ios",
     "postinstall": "npm run copy-env",
     "install-electron": "npm run build-frontend && npm run build-backend && cd electron && npm install",
     "start": "npm start -w=frontend",
