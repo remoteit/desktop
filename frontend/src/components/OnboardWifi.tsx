@@ -38,7 +38,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && wifi === 'CONNECTED') next()
+    if (ready && !error && wifi === 'CONNECTED') next()
   }, [wifi, ready])
 
   const onScan = async () => {

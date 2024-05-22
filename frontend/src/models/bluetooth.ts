@@ -131,9 +131,7 @@ export default createModel<RootModel>()({
               break
             case 'INVALID_PASSWORD':
               dispatch.bluetooth.set({ error: 'Invalid Password' })
-              break
-            default:
-              dispatch.bluetooth.set({ error: '' })
+              break              
           }
 
           dispatch.bluetooth.set({ ...result })
@@ -214,6 +212,7 @@ export default createModel<RootModel>()({
         return
       }
       try {
+        dispatch.bluetooth.set({ error: '' })
         await dispatch.bluetooth.read(BT_UUIDS.SCAN_WIFI)
         console.log('SCANNING SSIDs')
       } catch (error) {
