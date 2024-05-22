@@ -17,6 +17,14 @@ const config: CapacitorConfig = {
       backgroundColor: '#034b9d',
       androidScaleType: 'CENTER_CROP',
     },
+    BluetoothLe: {
+      displayStrings: {
+        scanning: 'Scanning...',
+        cancel: 'Cancel',
+        availableDevices: 'Available devices',
+        noDeviceFound: 'No device found',
+      },
+    },
   },
   appendUserAgent: ` remoteit/${version}`,
 }
