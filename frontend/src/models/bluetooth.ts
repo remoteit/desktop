@@ -72,7 +72,6 @@ export default createModel<RootModel>()({
           initialized: true,
         })
       } catch (error) {
-        dispatch.bluetooth.set({ error: 'Failed to initialize Bluetooth', processing: false })
         console.error('BLUETOOTH INITIALIZATION ERROR:', error)
       }
     },
