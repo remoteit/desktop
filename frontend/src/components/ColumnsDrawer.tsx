@@ -10,7 +10,7 @@ import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
-  const attributes = useSelector(selectAllActiveAttributes)
+  const attributes = useSelector(selectAllActiveAttributes).filter(a => a.column)
   const selected = useSelector((state: State) => state.ui.columns)
   const { ui, devices } = useDispatch<Dispatch>()
   const css = useStyles()
