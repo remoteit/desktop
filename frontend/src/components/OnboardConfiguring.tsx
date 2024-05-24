@@ -4,8 +4,8 @@ import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { Typography, Stack, CircularProgress, Box, Button } from '@mui/material'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
+import { OnboardError } from './OnboardError'
 import { platforms } from '../platforms'
-import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = {
@@ -34,11 +34,7 @@ export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
           {id && <Typography variant="h4">{id}</Typography>}
         </Box>
       </Stack>
-      {error && (
-        <Notice severity="error" fullWidth gutterTop>
-          {error}
-        </Notice>
-      )}
+      <OnboardError error={error} />
       {reg === 'REGISTERED' ? (
         <Typography variant="body2">
           Your Raspberry Pi is registered and

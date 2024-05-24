@@ -1,6 +1,6 @@
 import { EVENTS, PROTOCOL, environment, preferences, EventBus, Logger } from 'remoteit-headless'
-import AutoUpdater from './AutoUpdater'
 import electron, { Menu, dialog } from 'electron'
+import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import path from 'path'
 
@@ -17,6 +17,7 @@ export default class ElectronApp {
   private deepLinkUrl?: string
   private authCallback?: boolean
   private protocol: string
+  private bluetoothCallback?: (deviceId: string) => void
 
   constructor() {
     this.app = electron.app
@@ -52,6 +53,7 @@ export default class ElectronApp {
     EventBus.on(EVENTS.filePrompt, this.handleFilePrompt)
     EventBus.on(EVENTS.navigate, this.handleNavigate)
     EventBus.on(EVENTS.maximize, this.handleMaximize)
+    EventBus.on(EVENTS.cancelBluetooth, this.handleCancelBluetooth)
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
@@ -224,18 +226,20 @@ export default class ElectronApp {
 
     this.window.webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
       event.preventDefault()
-      Logger.info('SELECT BLUETOOTH DEVICE', { deviceList })
+      Logger.info('SCAN BLUETOOTH', { deviceList })
+      this.bluetoothCallback = callback
+
       const result = deviceList.find(device => {
         return device.deviceName.includes('Remote.It')
       })
       if (result) {
         callback(result.deviceId)
       } else {
-        // The device wasn't found so we need to either wait longer (eg until the
-        // device is turned on) or until the user cancels the request
+        // The device wasn't found so we wait until the
+        // device is turned on or the user cancels the request
       }
     })
-  
+
     this.logWebErrors()
   }
 
@@ -300,6 +304,14 @@ export default class ElectronApp {
       ? 'iconLinuxColor.png'
       : 'iconLinux.png'
     return path.join(__dirname, 'images', iconFile)
+  }
+
+  private handleCancelBluetooth = () => {
+    Logger.info('CANCEL BLUETOOTH SCAN')
+    if (this.bluetoothCallback) {
+      this.bluetoothCallback('')
+      this.bluetoothCallback = undefined
+    }
   }
 
   private openWindow = (location?: string, openDevTools?: boolean) => {

@@ -38,6 +38,7 @@ declare global {
     | 'maximize'
     | 'showFolder'
     | 'filePrompt'
+    | 'cancelBluetooth'
 
     // Backend
     | 'init'

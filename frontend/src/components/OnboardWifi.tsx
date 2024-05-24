@@ -12,10 +12,10 @@ import {
   TextField,
   MenuItem,
 } from '@mui/material'
+import { OnboardError } from './OnboardError'
 import { IconButton } from '../buttons/IconButton'
 import { SignalIcon } from '../buttons/SignalIcon'
 import { ColorChip } from './ColorChip'
-import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = {
@@ -68,11 +68,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
         <br />
         Select a network and enter its password.
       </Typography>
-      {error && (
-        <Notice severity="error" fullWidth gutterTop>
-          {error}
-        </Notice>
-      )}
+      <OnboardError error={error} />
       <form onSubmit={onSubmit}>
         <List>
           <TextField

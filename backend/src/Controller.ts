@@ -90,6 +90,7 @@ class Controller {
     socket.on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', type => EventBus.emit(electronInterface.EVENTS.filePrompt, type))
+    socket.on('cancelBluetooth', type => EventBus.emit(electronInterface.EVENTS.cancelBluetooth))
   }
 
   init = () => {
