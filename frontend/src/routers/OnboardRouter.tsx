@@ -3,7 +3,7 @@ import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
 import { useParams, useHistory, useLocation, Switch, Route, Redirect } from 'react-router-dom'
-import { OnboardConfiguring } from '../components/OnboardConfiguring'
+import { OnboardRegistration } from '../components/OnboardRegisteration'
 import { OnboardScanning } from '../components/OnboardScanning'
 import { OnboardWifi } from '../components/OnboardWifi'
 import { Body } from '../components/Body'
@@ -45,7 +45,7 @@ export const OnboardRouter: React.FC = () => {
             <OnboardWifi next={onNext} />
           </Route>
           <Route path="/onboard/:platform/configuring">
-            <OnboardConfiguring platformId={platform} />
+            <OnboardRegistration platformId={platform} />
           </Route>
         </Switch>
       </Box>

@@ -1,3 +1,4 @@
+import browser from '../services/browser'
 import { createModel } from '@rematch/core'
 import { BleClient } from '@capacitor-community/bluetooth-le'
 import { RootModel } from '.'
@@ -40,7 +41,8 @@ export interface BluetoothState extends Notification {
   processing: boolean
   connected: boolean // bluetooth connected
   networks: NetworkInfo[]
-  error: string
+  message: string
+  severity?: 'info' | 'warning' | 'error' | 'success'
 }
 
 const defaultState: BluetoothState = {
@@ -49,7 +51,7 @@ const defaultState: BluetoothState = {
   processing: false,
   connected: false,
   networks: [],
-  error: '',
+  message: '',
 }
 
 const SCAN_TIMEOUT = 30000
@@ -59,6 +61,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async start() {
       await dispatch.bluetooth.initialize()
+      if (browser.isAndroid) await dispatch.bluetooth.disconnect()
       await dispatch.bluetooth.connect()
       await dispatch.bluetooth.startNotifications()
     },
@@ -68,8 +71,8 @@ export default createModel<RootModel>()({
 
       try {
         console.log('BLUETOOTH INITIALIZING')
-        await dispatch.bluetooth.set({ error: '', processing: true })
-        await BleClient.initialize()
+        await dispatch.bluetooth.set({ message: '', processing: true })
+        await BleClient.initialize({ androidNeverForLocation: true })
 
         scanTimer = setTimeout(async () => {
           clearTimeout(scanTimer)
@@ -86,14 +89,13 @@ export default createModel<RootModel>()({
           initialized: true,
         })
       } catch (error) {
-        console.error('BLUETOOTH INITIALIZATION ERROR:')
-        console.error(error.message, error.code)
+        console.error('BLUETOOTH INITIALIZATION ERROR', error)
         await dispatch.bluetooth.stop()
         if (scanTimer) {
           clearTimeout(scanTimer)
-          await dispatch.bluetooth.set({ error: 'Bluetooth scan canceled' })
+          await dispatch.bluetooth.set({ message: 'Bluetooth scan canceled', severity: 'info' })
         } else {
-          await dispatch.bluetooth.set({ error: 'Bluetooth scan timed out' })
+          await dispatch.bluetooth.set({ message: 'Bluetooth scan timed out', severity: 'warning' })
         }
       }
     },
@@ -117,23 +119,35 @@ export default createModel<RootModel>()({
         return
       }
       try {
-        set({ error: '', processing: true })
+        set({ message: '', processing: true })
+
         await BleClient.connect(device.deviceId)
-        await BleClient.getServices(device.deviceId).then(services => {
-          if (services.length) {
-            set({ connected: true, processing: false })
-            console.log('BLUETOOTH SERVICES', services)
-          } else console.log('NO SERVICES FOUND')
-        })
+
+        const services = await BleClient.getServices(device.deviceId)
+        if (services.length) {
+          set({ connected: true, processing: false })
+          console.log('BLUETOOTH SERVICES', services)
+        } else {
+          console.log('NO SERVICES FOUND')
+        }
       } catch (error) {
         console.error('ERROR processing TO DEVICE', error)
-        set({ error: 'Failed to connect to device', connected: false, processing: false })
+        set({ message: 'Failed to connect to device', severity: 'error', connected: false, processing: false })
       }
     },
 
-    async reconnect(_: void, state) {
-      const device = state.bluetooth.device
-      if (device) await BleClient.disconnect(device.deviceId)
+    async disconnect(_: void, state) {
+      if (!state.bluetooth.device) return
+      try {
+        await BleClient.disconnect(state.bluetooth.device.deviceId)
+        dispatch.bluetooth.set({ connected: false })
+      } catch (error) {
+        console.error('ERROR DISCONNECTING', error)
+      }
+    },
+
+    async reconnect(_: void) {
+      await dispatch.bluetooth.disconnect()
       await dispatch.bluetooth.connect()
     },
 
@@ -152,10 +166,10 @@ export default createModel<RootModel>()({
           switch (result.wifi) {
             case 'FAILED_START':
             case 'INVALID_SSID':
-              dispatch.bluetooth.set({ error: 'Invalid Network SSID' })
+              dispatch.bluetooth.set({ message: 'Invalid Network SSID', severity: 'error' })
               break
             case 'INVALID_PASSWORD':
-              dispatch.bluetooth.set({ error: 'Invalid Password' })
+              dispatch.bluetooth.set({ message: 'Invalid Password', severity: 'error' })
               break
           }
 
@@ -214,12 +228,12 @@ export default createModel<RootModel>()({
       const { set, write } = dispatch.bluetooth
       const device = state.bluetooth.device
       if (!device) return
-      set({ processing: true, error: '' })
+      set({ processing: true, message: '' })
       try {
         await write({ value: JSON.stringify({ ssid, pwd }), characteristic: BT_UUIDS.CONNECT })
         console.log('WIFI WRITTEN', ssid, pwd)
       } catch (error) {
-        set({ error: 'Error setting WiFi' })
+        set({ message: 'Could not set WiFi', severity: 'error' })
         console.error('ERROR WRITING WIFI', error)
       }
       set({ processing: false })
@@ -233,8 +247,8 @@ export default createModel<RootModel>()({
         await dispatch.bluetooth.write({ value: code, characteristic: BT_UUIDS.REGISTRATION_CODE })
         console.log('REGISTRATION CODE WRITTEN', code)
       } catch (error) {
-        console.error('Error writing registration code', error)
-        dispatch.bluetooth.set({ error: 'Error setting registration code' })
+        console.error('ERROR WRITING REGISTRATION CODE', error)
+        dispatch.bluetooth.set({ message: 'Could not register this device', severity: 'error' })
       }
       dispatch.bluetooth.set({ processing: false })
     },
@@ -242,16 +256,16 @@ export default createModel<RootModel>()({
     async scanSSIDs(_: void, state) {
       const device = state.bluetooth.device
       if (!device) {
-        dispatch.bluetooth.set({ error: 'No device to scan SSIDs' })
+        dispatch.bluetooth.set({ message: 'Device has disconnected', severity: 'error' })
         return
       }
       try {
-        dispatch.bluetooth.set({ error: '' })
+        dispatch.bluetooth.set({ message: '' })
         await dispatch.bluetooth.read(BT_UUIDS.SCAN_WIFI)
         console.log('SCANNING SSIDs')
       } catch (error) {
         console.error('Error scanning SSIDs', error)
-        dispatch.bluetooth.set({ error: 'Error scanning SSIDs' })
+        dispatch.bluetooth.set({ message: 'Unable to scan for WiFi', severity: 'error' })
       }
     },
 
@@ -259,19 +273,14 @@ export default createModel<RootModel>()({
       const device = state.bluetooth.device
       if (!device) return
       try {
+        console.log('READING', CHARACTERISTIC_NAMES[characteristic])
         const value = await BleClient.read(device.deviceId, BT_UUIDS.SERVICE, characteristic)
-        return parse(value)
+        const result: Notification = parse(value)
+        console.log('READ', CHARACTERISTIC_NAMES[characteristic], result)
+        dispatch.bluetooth.set({ ...result })
       } catch (error) {
-        console.error(`ERROR READING VALUE ${CHARACTERISTIC_NAMES[characteristic]}`, error)
+        console.error(`ERROR READING VALUE ${CHARACTERISTIC_NAMES[characteristic]}`, error.message, error.code, error)
       }
-    },
-
-    async readWifiStatus() {
-      dispatch.bluetooth.read(BT_UUIDS.WIFI_STATUS)
-    },
-
-    async readRegistrationStatus() {
-      dispatch.bluetooth.read(BT_UUIDS.REGISTRATION_STATUS)
     },
 
     async readSSIDs() {
@@ -279,7 +288,7 @@ export default createModel<RootModel>()({
       const count = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LENGTH)
 
       if (count === null) {
-        dispatch.bluetooth.set({ error: 'Failed to read device WiFi', processing: false })
+        dispatch.bluetooth.set({ message: 'Failed to read device WiFi', severity: 'error', processing: false })
         return
       }
 
@@ -292,13 +301,6 @@ export default createModel<RootModel>()({
       console.log('WIFI LIST', networks)
       dispatch.bluetooth.set({ networks, processing: false })
     },
-
-    // async status() {
-    //   // incorrect!
-    //   const result = await this.read(BT_UUIDS.CONNECT_STATUS)
-    //   console.log('CONNECT STATUS', result)
-    //   return result
-    // }
   }),
   reducers: {
     reset(state: BluetoothState) {

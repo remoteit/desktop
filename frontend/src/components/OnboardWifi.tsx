@@ -12,7 +12,7 @@ import {
   TextField,
   MenuItem,
 } from '@mui/material'
-import { OnboardError } from './OnboardError'
+import { OnboardMessage } from './OnboardMessage'
 import { IconButton } from '../buttons/IconButton'
 import { SignalIcon } from '../buttons/SignalIcon'
 import { ColorChip } from './ColorChip'
@@ -24,7 +24,7 @@ type Props = {
 
 export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { error, ssid, scan, wifi, networks } = useSelector((state: State) => state.bluetooth)
+  const { message, severity, ssid, scan, wifi, networks } = useSelector((state: State) => state.bluetooth)
   const [ready, setReady] = useState<boolean>(false)
   const [form, setForm] = useState({ ssid: '', pwd: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -38,7 +38,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && !error && wifi === 'CONNECTED') next()
+    if (ready && !message && wifi === 'CONNECTED') next()
   }, [wifi, ready])
 
   const onScan = async () => {
@@ -68,7 +68,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
         <br />
         Select a network and enter its password.
       </Typography>
-      <OnboardError error={error} />
+      <OnboardMessage message={message} severity={severity} />
       <form onSubmit={onSubmit}>
         <List>
           <TextField
@@ -126,11 +126,11 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             <CircularProgress size={29.5} thickness={3} />
           ) : (
             <>
-              <Button variant="contained" size="small" disabled={!form.pwd} type="submit">
+              <Button variant="contained" disabled={!form.pwd} type="submit">
                 {wifi === 'CONNECTED' ? 'Update' : 'Save'}
               </Button>
               {wifi === 'CONNECTED' && (
-                <Button size="small" onClick={next} sx={{ marginLeft: 1 }}>
+                <Button onClick={next} sx={{ marginLeft: 1 }}>
                   Skip
                 </Button>
               )}

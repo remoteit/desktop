@@ -3,7 +3,7 @@ import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { Tooltip, Typography, Stack, Box, Button, List, ListItem, ListSubheader, CircularProgress } from '@mui/material'
 import { ListItemLink } from './ListItemLink'
-import { OnboardError } from './OnboardError'
+import { OnboardMessage } from './OnboardMessage'
 import { Icon } from './Icon'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const OnboardScanning: React.FC<Props> = ({ next }) => {
-  const { initialized, connected, processing, wifi, error } = useSelector((state: State) => state.bluetooth)
+  const { initialized, connected, processing, wifi, message, severity } = useSelector((state: State) => state.bluetooth)
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
 
   const onScan = async () => {
     await dispatch.bluetooth.start()
-    console.log('SCANNING STATE', initialized, connected, processing, error)
+    console.log('SCANNING STATE', initialized, connected, processing, message)
   }
 
   const onCancel = async () => {
@@ -43,18 +43,16 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
         <Typography variant="body2">
           <b>Note:</b> This setup is only for Raspberry Pis that are enabled with Remote.It.
         </Typography>
-        <OnboardError error={error} />
+        <OnboardMessage message={message} severity={severity} />
         <Stack flexDirection="row" alignItems="center" marginTop={5} marginBottom={3}>
           {processing ? (
             <>
               <CircularProgress size={22} thickness={5} sx={{ marginRight: 3 }} />
-              <Button size="small" onClick={onCancel}>
-                cancel
-              </Button>
+              <Button onClick={onCancel}>cancel</Button>
             </>
           ) : (
             <>
-              <Button variant="contained" size="small" onClick={onScan}>
+              <Button variant="contained" onClick={onScan}>
                 scan
               </Button>
               <Tooltip
