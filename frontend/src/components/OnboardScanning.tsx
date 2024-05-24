@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const OnboardScanning: React.FC<Props> = ({ next }) => {
-  const { initialized, connected, processing, wifi, message, severity } = useSelector((state: State) => state.bluetooth)
+  const { connected, processing, wifi, message, severity } = useSelector((state: State) => state.bluetooth)
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
@@ -24,7 +24,6 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
 
   const onScan = async () => {
     await dispatch.bluetooth.start()
-    console.log('SCANNING STATE', initialized, connected, processing, message)
   }
 
   const onCancel = async () => {
@@ -40,7 +39,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
             Bluetooth Commissioning
           </Typography>
         </Stack>
-        <Typography variant="body2">
+        <Typography variant="caption" color="grayDarker.main">
           <b>Note:</b> This setup is only for Raspberry Pis that are enabled with Remote.It.
         </Typography>
         <OnboardMessage message={message} severity={severity} />
@@ -68,14 +67,10 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
             </>
           )}
         </Stack>
-        {/* <Typography variant="caption">
-          Once your Raspberry Pi is set up with Remote.It, start your Pi with Bluetooth commissioning enabled. Your
-          device will be discoverable via Bluetooth for five minutes after startup.
-        </Typography> */}
       </Box>
       <List>
         <ListSubheader disableGutters sx={{ paddingBottom: 1 }}>
-          First-Time Users
+          First-Time Users:
         </ListSubheader>
         <ListItem>
           <Typography variant="body2" gutterBottom>

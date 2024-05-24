@@ -59,6 +59,8 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Uses Bluetooth to configure WiFi on enabled RaspberryPi devices</string>
+	<string>We need your permission to use Bluetooth to commission WiFi</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>We need your permission to use Bluetooth to commission WiFi</string>
 </dict>
 </plist>

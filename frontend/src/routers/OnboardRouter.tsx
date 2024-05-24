@@ -21,7 +21,7 @@ export const OnboardRouter: React.FC = () => {
   const step = Math.max(steps.indexOf(location.pathname.match(REGEX_LAST_PATH)?.[0] || ''), 0)
 
   useEffect(() => {
-    if (step !== 0 && !bluetooth.initialized) {
+    if (step !== 0 && (!bluetooth.initialized || !bluetooth.connected)) {
       history.push(`/onboard/${platform}${steps[0]}`)
     }
   }, [bluetooth])

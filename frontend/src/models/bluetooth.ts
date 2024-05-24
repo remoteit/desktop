@@ -89,7 +89,8 @@ export default createModel<RootModel>()({
           initialized: true,
         })
       } catch (error) {
-        console.error('BLUETOOTH INITIALIZATION ERROR', error)
+        console.error('BLUETOOTH INITIALIZATION ERROR', error, error.message)
+
         await dispatch.bluetooth.stop()
         if (scanTimer) {
           clearTimeout(scanTimer)
@@ -119,20 +120,28 @@ export default createModel<RootModel>()({
         return
       }
       try {
-        set({ message: '', processing: true })
+        await set({ message: '', processing: true })
 
-        await BleClient.connect(device.deviceId)
+        await BleClient.connect(device.deviceId, () =>
+          // disconnect callback
+          set({ message: 'Bluetooth disconnected', severity: 'warning', connected: false })
+        )
 
         const services = await BleClient.getServices(device.deviceId)
         if (services.length) {
-          set({ connected: true, processing: false })
+          await set({ connected: true, processing: false })
           console.log('BLUETOOTH SERVICES', services)
         } else {
           console.log('NO SERVICES FOUND')
         }
       } catch (error) {
         console.error('ERROR processing TO DEVICE', error)
-        set({ message: 'Failed to connect to device', severity: 'error', connected: false, processing: false })
+        await set({
+          message: `Failed to connect to device: ${error.message}`,
+          severity: 'error',
+          connected: false,
+          processing: false,
+        })
       }
     },
 
@@ -140,7 +149,6 @@ export default createModel<RootModel>()({
       if (!state.bluetooth.device) return
       try {
         await BleClient.disconnect(state.bluetooth.device.deviceId)
-        dispatch.bluetooth.set({ connected: false })
       } catch (error) {
         console.error('ERROR DISCONNECTING', error)
       }
@@ -159,26 +167,26 @@ export default createModel<RootModel>()({
         if (notify.has(characteristic)) await dispatch.bluetooth.stopNotify(characteristic)
         notify.add(characteristic)
         console.log('NOTIFY ON', characteristic)
-        await BleClient.startNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic, value => {
+        await BleClient.startNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic, async value => {
           const result: Notification = parse(value)
           console.log('NOTIFICATION', characteristic, result)
 
           switch (result.wifi) {
             case 'FAILED_START':
             case 'INVALID_SSID':
-              dispatch.bluetooth.set({ message: 'Invalid Network SSID', severity: 'error' })
+              await dispatch.bluetooth.set({ message: 'Invalid Network SSID', severity: 'error' })
               break
             case 'INVALID_PASSWORD':
-              dispatch.bluetooth.set({ message: 'Invalid Password', severity: 'error' })
+              await dispatch.bluetooth.set({ message: 'Invalid Password', severity: 'error' })
               break
           }
 
-          dispatch.bluetooth.set({ ...result })
+          await dispatch.bluetooth.set({ ...result })
         })
       } catch (error) {
         console.error('NOTIFY ERROR', error)
       }
-      dispatch.bluetooth.set({ notify })
+      await dispatch.bluetooth.set({ notify })
     },
 
     async stopNotify(characteristic: string, state) {
@@ -189,7 +197,7 @@ export default createModel<RootModel>()({
         console.log('STOP NOTIFY', characteristic)
         await BleClient.stopNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic)
         notify.delete(characteristic)
-        dispatch.bluetooth.set({ notify })
+        await dispatch.bluetooth.set({ notify })
       } catch (error) {
         console.error('STOP NOTIFY ERROR', error)
       }
@@ -199,7 +207,9 @@ export default createModel<RootModel>()({
       const characteristics = [BT_UUIDS.WIFI_STATUS, BT_UUIDS.REGISTRATION_STATUS]
       for (const characteristic of characteristics) {
         await dispatch.bluetooth.notify(characteristic)
-        await dispatch.bluetooth.read(characteristic)
+        const result = await dispatch.bluetooth.read(characteristic)
+        console.log('READ', CHARACTERISTIC_NAMES[characteristic], result)
+        await dispatch.bluetooth.set(result)
       }
     },
 
@@ -228,44 +238,42 @@ export default createModel<RootModel>()({
       const { set, write } = dispatch.bluetooth
       const device = state.bluetooth.device
       if (!device) return
-      set({ processing: true, message: '' })
+      await set({ processing: true, message: '' })
       try {
         await write({ value: JSON.stringify({ ssid, pwd }), characteristic: BT_UUIDS.CONNECT })
         console.log('WIFI WRITTEN', ssid, pwd)
       } catch (error) {
-        set({ message: 'Could not set WiFi', severity: 'error' })
+        await set({ message: `Could not set WiFi: ${error.message}`, severity: 'error' })
         console.error('ERROR WRITING WIFI', error)
       }
-      set({ processing: false })
+      await set({ processing: false })
     },
 
     async writeRegistrationCode(code: string, state) {
       const device = state.bluetooth.device
       if (!device) return
-      dispatch.bluetooth.set({ processing: true })
+      await dispatch.bluetooth.set({ processing: true })
       try {
-        await dispatch.bluetooth.write({ value: code, characteristic: BT_UUIDS.REGISTRATION_CODE })
+        await await dispatch.bluetooth.write({ value: code, characteristic: BT_UUIDS.REGISTRATION_CODE })
         console.log('REGISTRATION CODE WRITTEN', code)
       } catch (error) {
+        await dispatch.bluetooth.set({ message: `Could not register this device: ${error.message}`, severity: 'error' })
         console.error('ERROR WRITING REGISTRATION CODE', error)
-        dispatch.bluetooth.set({ message: 'Could not register this device', severity: 'error' })
       }
-      dispatch.bluetooth.set({ processing: false })
+      await dispatch.bluetooth.set({ processing: false })
     },
 
     async scanSSIDs(_: void, state) {
       const device = state.bluetooth.device
-      if (!device) {
-        dispatch.bluetooth.set({ message: 'Device has disconnected', severity: 'error' })
-        return
-      }
+      if (!device) return
+
       try {
-        dispatch.bluetooth.set({ message: '' })
+        console.log('SCANNING NETWORKS')
+        await dispatch.bluetooth.set({ message: '', scan: 'SCANNING' })
         await dispatch.bluetooth.read(BT_UUIDS.SCAN_WIFI)
-        console.log('SCANNING SSIDs')
       } catch (error) {
         console.error('Error scanning SSIDs', error)
-        dispatch.bluetooth.set({ message: 'Unable to scan for WiFi', severity: 'error' })
+        await dispatch.bluetooth.set({ message: `Unable to scan for WiFi: ${error.message}`, severity: 'error' })
       }
     },
 
@@ -274,21 +282,23 @@ export default createModel<RootModel>()({
       if (!device) return
       try {
         console.log('READING', CHARACTERISTIC_NAMES[characteristic])
-        const value = await BleClient.read(device.deviceId, BT_UUIDS.SERVICE, characteristic)
-        const result: Notification = parse(value)
-        console.log('READ', CHARACTERISTIC_NAMES[characteristic], result)
-        dispatch.bluetooth.set({ ...result })
+        const value = await BleClient.read(device.deviceId, BT_UUIDS.SERVICE, characteristic, { timeout: 10000 })
+        return parse(value)
       } catch (error) {
+        await dispatch.bluetooth.set({
+          message: `Failed to read ${CHARACTERISTIC_NAMES[characteristic]}: ${error.message}`,
+          severity: 'error',
+        })
         console.error(`ERROR READING VALUE ${CHARACTERISTIC_NAMES[characteristic]}`, error.message, error.code, error)
       }
     },
 
     async readSSIDs() {
-      dispatch.bluetooth.set({ processing: true })
+      await dispatch.bluetooth.set({ processing: true })
       const count = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LENGTH)
 
-      if (count === null) {
-        dispatch.bluetooth.set({ message: 'Failed to read device WiFi', severity: 'error', processing: false })
+      if (!count) {
+        await dispatch.bluetooth.set({ message: 'Failed to read device WiFi', severity: 'error', processing: false })
         return
       }
 
@@ -299,7 +309,7 @@ export default createModel<RootModel>()({
       }
 
       console.log('WIFI LIST', networks)
-      dispatch.bluetooth.set({ networks, processing: false })
+      await dispatch.bluetooth.set({ networks, processing: false })
     },
   }),
   reducers: {

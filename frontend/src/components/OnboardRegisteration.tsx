@@ -31,7 +31,6 @@ export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
           <Typography variant="h2">
             {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registration' : 'Registered!'}
           </Typography>
-          {id && <Typography variant="h4">{id}</Typography>}
         </Box>
       </Stack>
       <OnboardMessage message={message} severity={severity} />
