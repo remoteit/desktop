@@ -16,7 +16,7 @@ export const OnboardMessage: React.FC<Props> = ({ message, severity }) => {
 
   return (
     <Collapse in={!!message} timeout={600}>
-      <Notice severity={severity} solid fullWidth gutterTop>
+      <Notice severity={severity} fullWidth gutterTop>
         {cache}
       </Notice>
     </Collapse>

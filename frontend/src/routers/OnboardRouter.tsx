@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import browser from '../services/browser'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
@@ -34,8 +35,14 @@ export const OnboardRouter: React.FC = () => {
   if (!platform) return <Redirect to={{ pathname: '/add', state: { isRedirect: true } }} />
   const { notify, networks, ...rest } = bluetooth
   return (
-    <Body center>
-      <Box maxWidth={{ xs: 300, sm: 370 }} width={370} minHeight={500}>
+    <Body verticalOverflow center gutterBottom gutterTop>
+      <Box
+        maxWidth={{ xs: 300, sm: 370 }}
+        width={370}
+        height="auto"
+        paddingTop={4}
+        paddingBottom={browser.isAndroid ? 25 : 4}
+      >
         <Icon name={platform} fontSize={100} platformIcon inline />
         <Switch>
           <Route path={['/onboard/:platform', '/onboard/:platform/scanning']} exact>

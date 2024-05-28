@@ -229,9 +229,7 @@ export default class ElectronApp {
       Logger.info('SCAN BLUETOOTH', { deviceList })
       this.bluetoothCallback = callback
 
-      const result = deviceList.find(device => {
-        return device.deviceName.includes('Remote.It')
-      })
+      const result = deviceList.pop()
       if (result) {
         callback(result.deviceId)
       } else {

@@ -103,7 +103,7 @@ export default createModel<RootModel>()({
 
     async stop(_: void, state) {
       await dispatch.bluetooth.stopNotifications()
-      if (state.bluetooth.device) await BleClient.disconnect(state.bluetooth.device.deviceId)
+      await dispatch.bluetooth.disconnect()
       await dispatch.bluetooth.reset()
     },
 
@@ -112,20 +112,26 @@ export default createModel<RootModel>()({
     },
 
     async connect(_: void, state) {
-      const device = state.bluetooth.device
+      const { device, connected } = state.bluetooth
       const set = dispatch.bluetooth.set
 
       if (!device) {
         console.log('NO DEVICE TO CONNECT TO', device)
         return
       }
+
+      if (connected) {
+        console.log('ALREADY CONNECTED')
+        return
+      }
+
       try {
         await set({ message: '', processing: true })
 
-        await BleClient.connect(device.deviceId, () =>
-          // disconnect callback
-          set({ message: 'Bluetooth disconnected', severity: 'warning', connected: false })
-        )
+        await BleClient.connect(device.deviceId, async deviceId => {
+          console.log('BLUETOOTH DISCONNECTED', deviceId)
+          await set({ message: 'Bluetooth disconnected', severity: 'warning', connected: false })
+        })
 
         const services = await BleClient.getServices(device.deviceId)
         if (services.length) {
@@ -304,7 +310,10 @@ export default createModel<RootModel>()({
 
       const networks: NetworkInfo[] = []
       for (let i = 0; i < count; i++) {
-        const wifi = (await dispatch.bluetooth.read(BT_UUIDS.WIFI_LIST)) || 'unknown'
+        const wifi: NetworkInfo = (await dispatch.bluetooth.read(BT_UUIDS.WIFI_LIST)) || {
+          ssid: 'unknown',
+          signal: -100,
+        }
         networks.push(wifi)
       }
 
@@ -318,6 +327,7 @@ export default createModel<RootModel>()({
       return state
     },
     set(state: BluetoothState, params: Partial<BluetoothState>) {
+      if (!params) return state
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

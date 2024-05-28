@@ -15,11 +15,11 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
-    dispatch.bluetooth.stop()
+    dispatch.bluetooth.disconnect()
   }, [])
 
   useEffect(() => {
-    if (connected && wifi !== 'CONNECTED') next()
+    if (connected) next()
   }, [connected, wifi])
 
   const onScan = async () => {

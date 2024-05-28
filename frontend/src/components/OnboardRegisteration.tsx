@@ -17,7 +17,7 @@ export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
   const platform = platforms.get(platformId)
   const { registrationCode } = useAutoRegistration({ platform, types: [28] })
   const { message, severity, reg, id } = useSelector((state: State) => state.bluetooth)
-  const processing = reg === 'REGISTERING' || !registrationCode
+  const processing = reg === 'REGISTERING' || (reg === 'REGISTERED' && !registrationCode)
 
   const register = async () => {
     if (registrationCode) await dispatch.bluetooth.writeRegistrationCode(registrationCode)

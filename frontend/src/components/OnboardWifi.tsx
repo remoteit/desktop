@@ -10,6 +10,7 @@ import {
   List,
   ListItemText,
   TextField,
+  InputAdornment,
   MenuItem,
 } from '@mui/material'
 import { OnboardMessage } from './OnboardMessage'
@@ -81,10 +82,10 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             sx={{ marginBottom: 1 }}
             InputProps={{
               endAdornment: !disabled && (
-                <>
+                <InputAdornment position="end" sx={{ position: 'absolute', right: ({ spacing }) => spacing(3.3) }}>
                   {selectedNetwork && <SignalIcon strength={selectedNetwork.signal} type="solid" />}
-                  <IconButton onClick={onScan} icon="radar" sx={{ marginRight: 3.5 }} />
-                </>
+                  <IconButton onClick={onScan} icon="radar" />
+                </InputAdornment>
               ),
             }}
             SelectProps={{
@@ -116,7 +117,12 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             onChange={event => setForm({ ...form, pwd: event.target.value })}
             InputProps={{
               endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)} icon={showPassword ? 'eye-slash' : 'eye'} />
+                <InputAdornment position="end" sx={{ marginRight: ({ spacing }) => spacing(1) }}>
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    icon={showPassword ? 'eye-slash' : 'eye'}
+                  />
+                </InputAdornment>
               ),
             }}
           />
@@ -126,8 +132,8 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             <CircularProgress size={29.5} thickness={3} />
           ) : (
             <>
-              <Button variant="contained" disabled={!form.pwd} type="submit">
-                {wifi === 'CONNECTED' ? 'Update' : 'Save'}
+              <Button variant="contained" disabled={!form.pwd || disabled} type="submit">
+                {wifi === 'CONNECTED' ? 'Update WiFi' : 'Set WiFi'}
               </Button>
               {wifi === 'CONNECTED' && (
                 <Button onClick={next} sx={{ marginLeft: 1 }}>

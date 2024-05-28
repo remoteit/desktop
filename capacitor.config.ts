@@ -40,4 +40,4 @@ if (process.env.CAPACITOR_DESKTOP_LIVE_RELOAD && process.env.NODE_ENV === 'devel
   }
 }
 
-export default config;
+export default config
