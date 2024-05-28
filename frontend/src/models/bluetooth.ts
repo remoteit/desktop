@@ -26,10 +26,10 @@ interface Notification {
 const CHARACTERISTIC_NAMES = {
   [BT_UUIDS.SERVICE]: 'Service',
   [BT_UUIDS.CONNECT]: 'Connect',
-  [BT_UUIDS.SCAN_WIFI]: 'Scan Wifi',
-  [BT_UUIDS.WIFI_LENGTH]: 'Wifi Length',
-  [BT_UUIDS.WIFI_LIST]: 'Wifi List',
-  [BT_UUIDS.WIFI_STATUS]: 'Wifi Status',
+  [BT_UUIDS.SCAN_WIFI]: 'Scan WiFi',
+  [BT_UUIDS.WIFI_LENGTH]: 'WiFi Length',
+  [BT_UUIDS.WIFI_LIST]: 'WiFi List',
+  [BT_UUIDS.WIFI_STATUS]: 'WiFi Status',
   [BT_UUIDS.REGISTRATION_CODE]: 'Registration Code',
   [BT_UUIDS.REGISTRATION_STATUS]: 'Registration Status',
 }
