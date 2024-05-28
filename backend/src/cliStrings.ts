@@ -101,7 +101,7 @@ export default {
   },
 
   uninstall() {
-    return `-j uninstall --yes --force`
+    return `-j purge --yes --force --keepTools`
   },
 
   scan(ipMask?: string) {
