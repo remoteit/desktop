@@ -18,7 +18,7 @@ export function EventItem({ item, device, user }: { item: IEvent; device?: IDevi
     <ListItem>
       <span>{new Date(item.timestamp).toLocaleDateString(navigator.language, options)}</span>
       <ListItemIcon>
-        <EventIcon {...item} />
+        <EventIcon item={item} loggedInUser={user} />
       </ListItemIcon>
       <EventMessage item={item} device={device} loggedInUser={user} />
     </ListItem>

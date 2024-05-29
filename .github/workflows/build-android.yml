@@ -39,6 +39,7 @@ jobs:
           cache: 'gradle'
 
       - name: Change wrapper permissions
+        working-directory: ./android
         run: chmod +x ./gradlew
   
       - name: Install Node.js, NPM and Yarn
@@ -78,24 +79,58 @@ jobs:
       - name: npm build-mobile
         run: npm run build-mobile
 
+      # outputs to:
+      # ./app/build/outputs/apk/release/app-release.apk
+      # ./app/build/outputs/apk/debug/app-debug.apk
       - name: Build Project
         working-directory: ./android
         run: ./gradlew build
 
-      - name: Build APK Debug
-        working-directory: ./android
-        run: ./gradlew assembleDebug
+      # - name: Assemble APK Debug
+      #   working-directory: ./android
+      #   run: ./gradlew assembleDebug
 
-      - name: Build APK Release
-        working-directory: ./android
-        run: ./gradlew assemble
+      # - name: Build APK Release
+      #   working-directory: ./android
+      #   run: ./gradlew assemble
 
       # Create Bundle AAB Release
+      # outputs to:
+      # ./app/build/intermediates/intermediary_bundle/release/intermediary-bundle.aab
+      # ./app/build/outputs/bundle/release/app-release.aab
       - name: Build App Bundle
+        working-directory: ./android
         run: ./gradlew bundleRelease
 
-      # - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
+      # # Upload Bundle AAB Release
+      # - name: Upload AAB (App Bundle) Release
       #   uses: actions/upload-artifact@v3
       #   with:
       #     name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
       #     path: ${{ env.main_project_module }}/build/outputs/bundle/release/
+
+      # - name: Create Release
+      #   id: create_release
+      #   uses: softprops/action-gh-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: v${{ github.event.inputs.version }}
+      #     name: Release v${{ github.event.inputs.version }}
+      #     draft: true
+      #     prerelease: false
+      #     files: <<application name>>/<<application name>>_${{ github.event.inputs.version }}.apk
+
+      - name : Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.remoteit
+          releaseFiles: ./android/app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          status: inProgress
+          inAppUpdatePriority: 0
+          userFraction: 0.2
+          # whatsNewDirectory: distribution/whatsnew
+          # mappingFile: app/build/outputs/mapping/release/mapping.txt
+          # debugSymbols: app/build/intermediates/merged_native_libs/release/out/lib/

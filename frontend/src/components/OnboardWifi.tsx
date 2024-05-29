@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import {
@@ -10,12 +10,14 @@ import {
   List,
   ListItemText,
   TextField,
+  InputAdornment,
+  Autocomplete,
   MenuItem,
 } from '@mui/material'
+import { OnboardMessage } from './OnboardMessage'
 import { IconButton } from '../buttons/IconButton'
 import { SignalIcon } from '../buttons/SignalIcon'
 import { ColorChip } from './ColorChip'
-import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = {
@@ -24,10 +26,11 @@ type Props = {
 
 export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { error, ssid, scan, wifi, networks } = useSelector((state: State) => state.bluetooth)
+  const { message, severity, ssid, scan, wifi, networks } = useSelector((state: State) => state.bluetooth)
+  const [showPassword, setShowPassword] = useState(false)
   const [ready, setReady] = useState<boolean>(false)
   const [form, setForm] = useState({ ssid: '', pwd: '' })
-  const [showPassword, setShowPassword] = useState(false)
+  const passwordRef = useRef<HTMLInputElement>()
 
   useEffect(() => {
     dispatch.bluetooth.readSSIDs()
@@ -38,10 +41,11 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && wifi === 'CONNECTED') next()
+    if (ready && !message && wifi === 'CONNECTED') next()
   }, [wifi, ready])
 
-  const onScan = async () => {
+  const onScan = async event => {
+    event.stopPropagation()
     await dispatch.bluetooth.scanSSIDs()
     await dispatch.bluetooth.readSSIDs()
   }
@@ -49,7 +53,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     await dispatch.bluetooth.writeWifi(form)
-    setTimeout(() => setReady(true), 1000)
+    setTimeout(() => setReady(true), 500)
   }
 
   const selectedNetwork = networks.find(network => network.ssid === form.ssid)
@@ -68,47 +72,62 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
         <br />
         Select a network and enter its password.
       </Typography>
-      {error && (
-        <Notice severity="error" fullWidth gutterTop>
-          {error}
-        </Notice>
-      )}
-      <form onSubmit={onSubmit}>
+      <OnboardMessage message={message} severity={severity} />
+      <form onSubmit={onSubmit} autoComplete="off">
         <List>
-          <TextField
-            select
+          <Autocomplete
+            freeSolo
+            autoFocus
             fullWidth
-            label="Network"
-            variant="filled"
-            value={form.ssid || 'none'}
+            autoComplete
+            selectOnFocus
+            forcePopupIcon
+            disableClearable
+            handleHomeEndKeys
+            includeInputInList
             disabled={disabled}
+            noOptionsText="No networks found"
+            options={networks.map(n => n.ssid) || []}
+            value={disabled ? 'Scanning...' : form.ssid}
             sx={{ marginBottom: 1 }}
-            InputProps={{
-              endAdornment: !disabled && (
-                <>
-                  {selectedNetwork && <SignalIcon strength={selectedNetwork.signal} type="solid" />}
-                  <IconButton onClick={onScan} icon="radar" sx={{ marginRight: 3.5 }} />
-                </>
-              ),
+            onChange={(event, ssid, reason) => {
+              if (!ssid || disabled) return
+              setForm({ ...form, ssid })
+              passwordRef.current?.focus()
             }}
-            SelectProps={{
-              renderValue: value => (scan === 'SCANNING' ? <>Scanning...</> : (value as React.ReactNode)),
-            }}
-            onChange={event => setForm({ ...form, ssid: event.target.value })}
-          >
-            {scan === 'SCANNING' ? (
-              <MenuItem value="none">Scanning...</MenuItem>
-            ) : networks.length ? (
-              networks.map(network => (
-                <MenuItem value={network.ssid} key={network.ssid}>
-                  <ListItemText>{network.ssid}</ListItemText>
-                  <SignalIcon strength={network.signal} type="solid" />
+            renderOption={(props, ssid) => {
+              const network = networks.find(n => n.ssid === ssid)
+              return (
+                <MenuItem {...props} key={ssid}>
+                  <ListItemText>{ssid}</ListItemText>
+                  {network && <SignalIcon strength={network.signal} type="solid" />}
                 </MenuItem>
-              ))
-            ) : (
-              <MenuItem value="none">No networks found</MenuItem>
+              )
+            }}
+            renderInput={params => (
+              <TextField
+                variant="filled"
+                label="Network"
+                {...params}
+                autoComplete="off"
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: !disabled && (
+                    <>
+                      {params.InputProps.endAdornment}
+                      <InputAdornment
+                        position="end"
+                        sx={{ position: 'absolute', marginTop: -2, right: ({ spacing }) => spacing(3.5) }}
+                      >
+                        {selectedNetwork && <SignalIcon strength={selectedNetwork.signal} type="solid" />}
+                        <IconButton onClick={onScan} icon="radar" />
+                      </InputAdornment>
+                    </>
+                  ),
+                }}
+              />
             )}
-          </TextField>
+          />
           <TextField
             fullWidth
             type={showPassword ? 'text' : 'password'}
@@ -116,11 +135,18 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             value={form.pwd}
             variant="filled"
             disabled={disabled}
-            autoComplete="off"
+            autoComplete="new-password"
+            name="wifi-password"
+            inputRef={passwordRef}
             onChange={event => setForm({ ...form, pwd: event.target.value })}
             InputProps={{
               endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)} icon={showPassword ? 'eye-slash' : 'eye'} />
+                <InputAdornment position="end" sx={{ marginRight: ({ spacing }) => spacing(1) }}>
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    icon={showPassword ? 'eye-slash' : 'eye'}
+                  />
+                </InputAdornment>
               ),
             }}
           />
@@ -130,11 +156,11 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             <CircularProgress size={29.5} thickness={3} />
           ) : (
             <>
-              <Button variant="contained" size="small" disabled={!form.pwd} type="submit">
-                {wifi === 'CONNECTED' ? 'Update' : 'Save'}
+              <Button variant="contained" disabled={!form.pwd || disabled} type="submit">
+                {wifi === 'CONNECTED' ? 'Update WiFi' : 'Set WiFi'}
               </Button>
               {wifi === 'CONNECTED' && (
-                <Button size="small" onClick={next} sx={{ marginLeft: 1 }}>
+                <Button onClick={next} sx={{ marginLeft: 1 }}>
                   Skip
                 </Button>
               )}

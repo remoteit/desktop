@@ -3,14 +3,19 @@ import { Icon } from '../Icon'
 import { Color } from '../../styling'
 import { EventState, EventActions } from './EventMessage'
 
-export function EventIcon(item: IEvent): JSX.Element {
-  let color: Color = 'grayLighter'
+type Props = {
+  item: IEvent
+  loggedInUser: IUser
+}
+
+export function EventIcon({ item, loggedInUser }: Props): JSX.Element {
+  let color: Color = 'gray'
   let icon = ''
   let title = ''
   switch (item.type) {
     case 'AUTH_LOGIN':
       icon = 'arrow-right-to-bracket'
-      color = 'success'
+      color = 'primary'
       break
     case 'AUTH_LOGIN_ATTEMPT':
       icon = 'arrow-right-to-bracket'
@@ -53,8 +58,8 @@ export function EventIcon(item: IEvent): JSX.Element {
         color = 'primary'
         title = 'Device Connected'
       } else {
-        icon = 'times-circle'
-        color = 'dangerLight'
+        icon = 'dot-circle'
+        color = 'grayDarker'
         title = 'Device Disconnected'
       }
       break
@@ -71,11 +76,32 @@ export function EventIcon(item: IEvent): JSX.Element {
       }
       break
 
+    case 'DEVICE_TRANSFER':
+      title = 'Device transferred'
+      if (item.actor?.email === loggedInUser.email) {
+        icon = 'circle-arrow-right'
+        color = 'danger'
+      } else {
+        icon = 'circle-arrow-left'
+        color = 'primary'
+      }
+      break
+
+    case 'DEVICE_DELETE':
+      icon = 'circle-xmark'
+      color = 'danger'
+      title = 'Device deleted'
+      break
+
     case 'LICENSE_UPDATED':
       icon = 'info-circle'
-      color = 'grayDarker'
+      color = 'primary'
       title = 'License changed'
       break
+
+    default:
+      icon = 'question-circle'
+      title = 'Unknown Event'
   }
 
   return <Icon name={icon} size="md" color={color} title={title} />

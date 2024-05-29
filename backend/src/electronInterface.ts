@@ -7,6 +7,7 @@ export const EVENTS = {
   canNavigate: 'app/canNavigate',
   filePrompt: 'app/filePrompt',
   filePath: 'app/filePath',
+  cancelBluetooth: 'app/cancelBluetooth',
   preferences: 'preferences',
   recapitate: 'recapitate',
   signOut: 'sign-out',

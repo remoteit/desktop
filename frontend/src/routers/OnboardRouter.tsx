@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
+import browser from '../services/browser'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
 import { useParams, useHistory, useLocation, Switch, Route, Redirect } from 'react-router-dom'
-import { OnboardConfiguring } from '../components/OnboardConfiguring'
+import { OnboardRegistration } from '../components/OnboardRegisteration'
 import { OnboardScanning } from '../components/OnboardScanning'
 import { OnboardWifi } from '../components/OnboardWifi'
 import { Body } from '../components/Body'
@@ -21,7 +22,7 @@ export const OnboardRouter: React.FC = () => {
   const step = Math.max(steps.indexOf(location.pathname.match(REGEX_LAST_PATH)?.[0] || ''), 0)
 
   useEffect(() => {
-    if (step !== 0 && !bluetooth.initialized) {
+    if (step !== 0 && (!bluetooth.initialized || !bluetooth.connected)) {
       history.push(`/onboard/${platform}${steps[0]}`)
     }
   }, [bluetooth])
@@ -34,8 +35,14 @@ export const OnboardRouter: React.FC = () => {
   if (!platform) return <Redirect to={{ pathname: '/add', state: { isRedirect: true } }} />
   const { notify, networks, ...rest } = bluetooth
   return (
-    <Body center>
-      <Box maxWidth={{ xs: 300, sm: 370 }} width={370} minHeight={500}>
+    <Body verticalOverflow center gutterBottom gutterTop>
+      <Box
+        maxWidth={{ xs: 300, sm: 370 }}
+        width={370}
+        height="auto"
+        paddingTop={4}
+        paddingBottom={browser.isAndroid ? 25 : 4}
+      >
         <Icon name={platform} fontSize={100} platformIcon inline />
         <Switch>
           <Route path={['/onboard/:platform', '/onboard/:platform/scanning']} exact>
@@ -45,7 +52,7 @@ export const OnboardRouter: React.FC = () => {
             <OnboardWifi next={onNext} />
           </Route>
           <Route path="/onboard/:platform/configuring">
-            <OnboardConfiguring platformId={platform} />
+            <OnboardRegistration platformId={platform} />
           </Route>
         </Switch>
       </Box>

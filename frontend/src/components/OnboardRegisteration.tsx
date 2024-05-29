@@ -4,20 +4,20 @@ import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { Typography, Stack, CircularProgress, Box, Button } from '@mui/material'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
+import { OnboardMessage } from './OnboardMessage'
 import { platforms } from '../platforms'
-import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = {
   platformId: string
 }
 
-export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
+export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
   const dispatch = useDispatch<Dispatch>()
   const platform = platforms.get(platformId)
   const { registrationCode } = useAutoRegistration({ platform, types: [28] })
-  const { error, reg, id } = useSelector((state: State) => state.bluetooth)
-  const processing = reg === 'REGISTERING' || !registrationCode
+  const { message, severity, reg, id } = useSelector((state: State) => state.bluetooth)
+  const processing = reg === 'REGISTERING' || (reg === 'REGISTERED' && !registrationCode)
 
   const register = async () => {
     if (registrationCode) await dispatch.bluetooth.writeRegistrationCode(registrationCode)
@@ -31,14 +31,9 @@ export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
           <Typography variant="h2">
             {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registration' : 'Registered!'}
           </Typography>
-          {id && <Typography variant="h4">{id}</Typography>}
         </Box>
       </Stack>
-      {error && (
-        <Notice severity="error" fullWidth gutterTop>
-          {error}
-        </Notice>
-      )}
+      <OnboardMessage message={message} severity={severity} />
       {reg === 'REGISTERED' ? (
         <Typography variant="body2">
           Your Raspberry Pi is registered and
@@ -61,11 +56,10 @@ export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
           <CircularProgress size={29.5} thickness={3} />
         ) : reg !== 'REGISTERED' ? (
           <>
-            <Button size="small" variant="contained" onClick={register} disabled={processing}>
+            <Button variant="contained" onClick={register} disabled={processing}>
               Register
             </Button>
             <Button
-              size="small"
               variant="contained"
               color="inherit"
               to="/devices/restore/pi"
@@ -75,18 +69,12 @@ export const OnboardConfiguring: React.FC<Props> = ({ platformId }) => {
             >
               Restore
             </Button>
-            <Button size="small" to={id ? `/devices/${id}` : '/devices'} component={Link} sx={{ marginLeft: 1 }}>
+            <Button to={id ? `/devices/${id}` : '/devices'} component={Link} sx={{ marginLeft: 1 }}>
               skip
             </Button>
           </>
         ) : (
-          <Button
-            size="small"
-            variant="contained"
-            to={id ? `/devices/${id}` : '/devices'}
-            component={Link}
-            disabled={processing}
-          >
+          <Button variant="contained" to={id ? `/devices/${id}` : '/devices'} component={Link} disabled={processing}>
             Done
           </Button>
         )}

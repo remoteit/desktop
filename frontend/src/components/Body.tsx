@@ -138,11 +138,11 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
   gutterTop: {
     paddingTop: spacing.sm,
   },
-  center: {
+  center: ({ verticalOverflow }: StyleProps) => ({
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: verticalOverflow ? undefined : 'center',
     flexDirection: 'column',
     padding: `${spacing.md}px ${spacing.md}px ${spacing.xl}px`,
-  },
+  }),
 }))

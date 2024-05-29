@@ -23,6 +23,12 @@ export function EventMessage({
   const actorName = item.actor?.email === loggedInUser.email ? 'You' : item.actor?.email
   const actorAdjective = actorName === 'You' ? 'your' : 'their'
 
+  const messageDevice = device || item.devices?.[0]
+  const deviceName = messageDevice?.name || ''
+  const users = item.users?.map(user => user.email || '(deleted)') || []
+  const userList = users.length === 1 ? users[0] : `${users.slice(0, -1).join(', ')} and ${users.slice(-1)}`
+  const affected = userList === loggedInUser.email ? 'you' : userList
+
   let message: JSX.Element | string = ''
   switch (item.type) {
     case 'AUTH_LOGIN':
@@ -87,13 +93,6 @@ export function EventMessage({
       break
 
     case 'DEVICE_SHARE':
-      const messageDevice = device || item.devices?.[0]
-      const deviceName = messageDevice?.name || ''
-      const users = item.users && item.users.map(user => user.email || '(deleted)')
-      const userList =
-        users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
-      const affected = userList === loggedInUser.email ? 'you' : userList
-
       if (item.shared) {
         message = (
           <>
@@ -120,6 +119,22 @@ export function EventMessage({
           </>
         )
       }
+      break
+
+    case 'DEVICE_TRANSFER':
+      message = (
+        <>
+          {actorName} transferred <b>{deviceName}</b> to <i>{affected}</i>
+        </>
+      )
+      break
+
+    case 'DEVICE_DELETE':
+      message = (
+        <>
+          <i>{actorName}</i> deleted <b>{name}</b>
+        </>
+      )
       break
 
     case 'LICENSE_UPDATED':
