@@ -70,7 +70,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
       </Box>
       <List>
         <ListSubheader disableGutters sx={{ paddingBottom: 1 }}>
-          First-Time Users:
+          First-Time Users
         </ListSubheader>
         <ListItem>
           <Typography variant="body2" gutterBottom>
@@ -91,14 +91,14 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
           title="Add commissioning to your Pi image"
           disableGutters
         />
-        <ListItemLink
+        {/* <ListItemLink
           dense
           icon="arrow-turn-down"
           iconProps={{ rotate: 270 }}
           href="http://remote.it/jumpbox"
           title="Purchase our Pi JumpBox"
           disableGutters
-        />
+        /> */}
       </List>
     </>
   )

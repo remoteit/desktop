@@ -25,6 +25,7 @@ import { ClaimDevice } from '../components/ClaimDevice'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
+import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
@@ -61,7 +62,9 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItemButton>
         </List>
-        <BluetoothScan className={classnames(css.list, css.smallList)} />
+        <TestUI>
+          <BluetoothScan className={classnames(css.list, css.smallList)} />
+        </TestUI>
         <AndroidSetup className={classnames(css.list, css.smallList)} />
         <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         <ScreenViewSetup className={classnames(css.list, css.smallList)} />
