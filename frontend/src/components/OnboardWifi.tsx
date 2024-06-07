@@ -26,7 +26,7 @@ type Props = {
 
 export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { message, severity, ssid, scan, wifi, networks } = useSelector((state: State) => state.bluetooth)
+  const { message, severity, ssid, scan, wlan, networks } = useSelector((state: State) => state.bluetooth)
   const [showPassword, setShowPassword] = useState(false)
   const [ready, setReady] = useState<boolean>(false)
   const [form, setForm] = useState({ ssid: '', pwd: '' })
@@ -41,8 +41,8 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && !message && wifi === 'CONNECTED') next()
-  }, [wifi, ready])
+    if (ready && !message && wlan === 'CONNECTED') next()
+  }, [wlan, ready])
 
   const onScan = async event => {
     event.stopPropagation()
@@ -57,7 +57,14 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }
 
   const selectedNetwork = networks.find(network => network.ssid === form.ssid)
-  const disabled = scan === 'SCANNING' || wifi === 'CONNECTING'
+  const disabled = scan === 'SCANNING' || wlan === 'CONNECTING'
+  let ssidFieldValue = form.ssid
+  if (scan === 'SCANNING') {
+    ssidFieldValue = 'Scanning...'
+  }
+  if (wlan === 'CONNECTING') {
+    ssidFieldValue = 'Connecting...'
+  }
 
   return (
     <Box marginX={2}>
@@ -88,7 +95,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             disabled={disabled}
             noOptionsText="No networks found"
             options={networks.map(n => n.ssid) || []}
-            value={disabled ? 'Scanning...' : form.ssid}
+            value={ssidFieldValue}
             sx={{ marginBottom: 1 }}
             onChange={(event, ssid, reason) => {
               if (!ssid || disabled) return
@@ -108,6 +115,8 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
               <TextField
                 variant="filled"
                 label="Network"
+                type='text'
+                name="network"
                 {...params}
                 autoComplete="off"
                 InputProps={{
@@ -124,6 +133,10 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
                       </InputAdornment>
                     </>
                   ),
+                }}
+                inputProps={{
+                  ...params.inputProps,
+                  'data-lpignore': 'true',
                 }}
               />
             )}
@@ -149,17 +162,20 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
                 </InputAdornment>
               ),
             }}
+            inputProps={{
+              'data-lpignore': 'true',
+            }}
           />
         </List>
         <Stack flexDirection="row" alignItems="center" marginY={3}>
-          {wifi === 'CONNECTING' ? (
+          {wlan === 'CONNECTING' ? (
             <CircularProgress size={29.5} thickness={3} />
           ) : (
             <>
               <Button variant="contained" disabled={!form.pwd || disabled} type="submit">
-                {wifi === 'CONNECTED' ? 'Update WiFi' : 'Set WiFi'}
+                {wlan === 'CONNECTED' ? 'Update WiFi' : 'Set WiFi'}
               </Button>
-              {wifi === 'CONNECTED' && (
+              {wlan === 'CONNECTED' && (
                 <Button onClick={next} sx={{ marginLeft: 1 }}>
                   Skip
                 </Button>
@@ -168,9 +184,9 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           )}
           <Box flexGrow={1} textAlign="right">
             <ColorChip
-              color={wifi === 'CONNECTED' ? 'primary' : undefined}
+              color={wlan === 'CONNECTED' ? 'primary' : undefined}
               label={
-                wifi === 'CONNECTED' ? 'WiFi Connected' : wifi === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
+                wlan === 'CONNECTED' ? 'WiFi Connected' : wlan === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
               }
               size="small"
               sx={{ textTransform: 'capitalize' }}
