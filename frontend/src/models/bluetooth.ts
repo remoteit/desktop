@@ -1,9 +1,10 @@
 import browser from '../services/browser'
 import { createModel } from '@rematch/core'
-import { BleClient } from '@capacitor-community/bluetooth-le'
+import { BleClient, textToDataView } from '@capacitor-community/bluetooth-le'
 import { RootModel } from '.'
 import { BT_UUIDS } from '../constants'
 import { emit } from '../services/Controller'
+import { off } from 'process'
 
 interface DeviceInfo {
   deviceId: string
@@ -17,7 +18,8 @@ interface NetworkInfo {
 
 interface Notification {
   ssid?: string
-  wifi?: 'CONNECTED' | 'CONNECTING' | 'DISCONNECTED' | 'FAILED_START' | 'INVALID_PASSWORD' | 'INVALID_SSID'
+  wlan?: 'CONNECTED' | 'CONNECTING' | 'DISCONNECTED' | 'FAILED_START' | 'INVALID_PASSWORD' | 'INVALID_SSID'
+  eth?: 'CONNECTED' | 'DISCONNECTED'
   scan?: 'SCANNING' | 'COMPLETE'
   reg?: 'UNREGISTERED' | 'REGISTERING' | 'REGISTERED'
   id?: string // device id if registered
@@ -25,17 +27,15 @@ interface Notification {
 
 const CHARACTERISTIC_NAMES = {
   [BT_UUIDS.SERVICE]: 'Service',
-  [BT_UUIDS.CONNECT]: 'Connect',
-  [BT_UUIDS.SCAN_WIFI]: 'Scan WiFi',
-  [BT_UUIDS.WIFI_LENGTH]: 'WiFi Length',
+  [BT_UUIDS.COMMAND]: 'Command',
   [BT_UUIDS.WIFI_LIST]: 'WiFi List',
   [BT_UUIDS.WIFI_STATUS]: 'WiFi Status',
-  [BT_UUIDS.REGISTRATION_CODE]: 'Registration Code',
   [BT_UUIDS.REGISTRATION_STATUS]: 'Registration Status',
 }
 
 export interface BluetoothState extends Notification {
   device?: DeviceInfo
+  buffers?: { [key: string]: string }
   notify: Set<string>
   initialized: boolean
   processing: boolean
@@ -87,6 +87,7 @@ export default createModel<RootModel>()({
         await dispatch.bluetooth.set({
           device,
           initialized: true,
+          buffers: {},
         })
       } catch (error) {
         console.error('BLUETOOTH INITIALIZATION ERROR', error, error.message)
@@ -169,29 +170,81 @@ export default createModel<RootModel>()({
       const notify = new Set(state.bluetooth.notify)
       const device = state.bluetooth.device
       if (!device) return
+
+      // Define the markers
+      const START_MARKER = "[START]"
+      const END_MARKER = "[END]"
+
       try {
         if (notify.has(characteristic)) await dispatch.bluetooth.stopNotify(characteristic)
         notify.add(characteristic)
         console.log('NOTIFY ON', characteristic)
+
         await BleClient.startNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic, async value => {
-          const result: Notification = parse(value)
-          console.log('NOTIFICATION', characteristic, result)
+          try {
 
-          switch (result.wifi) {
-            case 'FAILED_START':
-            case 'INVALID_SSID':
-              await dispatch.bluetooth.set({ message: 'Invalid Network SSID', severity: 'error' })
-              break
-            case 'INVALID_PASSWORD':
-              await dispatch.bluetooth.set({ message: 'Invalid Password', severity: 'error' })
-              break
+            // Ensure state.bluetooth.buffers exists and is mutable
+            const buffers = { ...state.bluetooth.buffers }
+
+            const decoder = new TextDecoder('utf-8')
+            let chunk = decoder.decode(value)
+            console.log('NOTIFICATION CHUNK', characteristic, chunk)
+
+            if (chunk.includes(START_MARKER)) {
+              console.log('START MARKER FOUND', characteristic)
+              if (buffers[characteristic]) {
+                throw new Error('Received unexpected [START] without [END]')
+              }
+              chunk = chunk.replace(START_MARKER, '')
+              buffers[characteristic] = ''
+            }
+
+            if (chunk.includes(END_MARKER)) {
+              if (buffers[characteristic] === undefined) {
+                throw new Error('Received unexpected [END] without [START]')
+              }
+
+              chunk = chunk.replace(END_MARKER, '')
+              buffers[characteristic] += chunk
+
+              // Process the complete message
+              const result: Notification = JSON.parse(buffers[characteristic])
+              console.log('COMPLETE NOTIFICATION', characteristic, result)
+              // Remove key from buffers
+              delete buffers[characteristic]
+              dispatch.bluetooth.set({ buffers })
+
+              switch (result.wlan) {
+                case 'FAILED_START':
+                case 'INVALID_SSID':
+                  dispatch.bluetooth.set({ message: 'Invalid Network SSID', severity: 'error' })
+                  break
+                case 'INVALID_PASSWORD':
+                  dispatch.bluetooth.set({ message: 'Invalid Password', severity: 'error' })
+                  break
+              }
+
+              dispatch.bluetooth.set({ ...result })
+              return
+            } else {
+              // Add the chunk to the buffer
+              if (buffers[characteristic] === undefined) {
+                throw new Error('Received chunk without [START]')
+              }
+              buffers[characteristic] += chunk
+              dispatch.bluetooth.set({ buffers })
+            }
+
+
+          } catch (error) {
+            console.error('NOTIFY ERROR', error)
+            dispatch.bluetooth.set({ message: 'Notify Error: ' + error, severity: 'error' })
           }
-
-          await dispatch.bluetooth.set({ ...result })
         })
       } catch (error) {
         console.error('NOTIFY ERROR', error)
       }
+
       await dispatch.bluetooth.set({ notify })
     },
 
@@ -229,14 +282,41 @@ export default createModel<RootModel>()({
     async write({ value, characteristic }: { value: string; characteristic: string }, state) {
       const device = state.bluetooth.device
       if (!device) return
-      try {
-        const buffer = new TextEncoder().encode(value)
-        const data = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength)
-        console.log('WRITING', device.deviceId, characteristic, value, data)
-        await BleClient.write(device.deviceId, BT_UUIDS.SERVICE, characteristic, data)
-        console.log('WRITE SUCCESSFUL', characteristic, value, data)
-      } catch (error) {
-        console.error(`ERROR WRITING VALUE ${value} to ${CHARACTERISTIC_NAMES[characteristic]}`, error)
+
+      const MTU = 248; // Maximum Transmission Unit size in bytes
+      const START_MARKER = "[START]"
+      const END_MARKER = "[END]"
+      let offset = 0;
+
+      console.log('WRITING', value, characteristic)
+
+      while (offset < value.length) {
+
+        let chunk = ''
+        if (offset === 0) {
+          chunk = START_MARKER
+        }
+
+        if (chunk.length < MTU) {
+          const remaining = MTU - chunk.length;
+          chunk += value.substring(offset, offset + remaining)
+          offset += remaining
+        }
+
+        if (offset >= value.length) {
+          const remaining = MTU - chunk.length
+          if (remaining > END_MARKER.length) {
+            chunk += END_MARKER
+          }
+        }
+        console.log('CHUNK', chunk)
+
+        await BleClient.write(
+          device.deviceId,
+          BT_UUIDS.SERVICE,
+          characteristic,
+          textToDataView(chunk)
+        )
       }
     },
 
@@ -246,7 +326,7 @@ export default createModel<RootModel>()({
       if (!device) return
       await set({ processing: true, message: '' })
       try {
-        await write({ value: JSON.stringify({ ssid, pwd }), characteristic: BT_UUIDS.CONNECT })
+        await write({ value: JSON.stringify({ command: "WIFI_CONNECT", ssid, password: pwd }), characteristic: BT_UUIDS.COMMAND })
         console.log('WIFI WRITTEN', ssid, pwd)
       } catch (error) {
         await set({ message: `Could not set WiFi: ${error.message}`, severity: 'error' })
@@ -260,7 +340,7 @@ export default createModel<RootModel>()({
       if (!device) return
       await dispatch.bluetooth.set({ processing: true })
       try {
-        await await dispatch.bluetooth.write({ value: code, characteristic: BT_UUIDS.REGISTRATION_CODE })
+        await dispatch.bluetooth.write({ value: JSON.stringify({ command: "R3_REGISTER", code }), characteristic: BT_UUIDS.COMMAND })
         console.log('REGISTRATION CODE WRITTEN', code)
       } catch (error) {
         await dispatch.bluetooth.set({ message: `Could not register this device: ${error.message}`, severity: 'error' })
@@ -276,7 +356,8 @@ export default createModel<RootModel>()({
       try {
         console.log('SCANNING NETWORKS')
         await dispatch.bluetooth.set({ message: '', scan: 'SCANNING' })
-        await dispatch.bluetooth.read(BT_UUIDS.SCAN_WIFI)
+        const command = { command: 'WIFI_SCAN' }
+        await dispatch.bluetooth.write({ value: JSON.stringify(command), characteristic: BT_UUIDS.COMMAND })
       } catch (error) {
         console.error('Error scanning SSIDs', error)
         await dispatch.bluetooth.set({ message: `Unable to scan for WiFi: ${error.message}`, severity: 'error' })
@@ -284,41 +365,72 @@ export default createModel<RootModel>()({
     },
 
     async read(characteristic: string, state) {
-      const device = state.bluetooth.device
-      if (!device) return
+      const device = state.bluetooth.device;
+      if (!device) return;
+
+      const START_MARKER = "[START]"
+      const END_MARKER = "[END]"
+      let completeData = ''
+      let reading = true
+      let count = 0
+
       try {
         console.log('READING', CHARACTERISTIC_NAMES[characteristic])
-        const value = await BleClient.read(device.deviceId, BT_UUIDS.SERVICE, characteristic, { timeout: 10000 })
-        return parse(value)
+
+        while (reading) {
+          const value = await BleClient.read(device.deviceId, BT_UUIDS.SERVICE, characteristic, { timeout: 10000 });
+          const decoder = new TextDecoder('utf-8')
+          let data = decoder.decode(value);
+
+          console.log('CHUNK RECEIVED', data)
+
+          if (data.includes(START_MARKER)) {
+            if (count > 0) {
+              throw new Error('START_MARKER found after the first read.');
+            }
+            data = data.replace(START_MARKER, '')
+          }
+
+          if (data.includes(END_MARKER)) {
+            // Remove the END_MARKER from the data
+            data = data.replace(END_MARKER, '')
+            reading = false;
+          }
+          completeData += data
+          count++
+        }
+
+        console.log('COMPLETE DATA RECEIVED', completeData);
+
+        // Parse the complete data
+        try {
+          return JSON.parse(completeData);
+        } catch (error) {
+          throw new Error('Failed to parse JSON data.');
+        }
       } catch (error) {
-        await dispatch.bluetooth.set({
+        dispatch.bluetooth.set({
           message: `Failed to read ${CHARACTERISTIC_NAMES[characteristic]}: ${error.message}`,
           severity: 'error',
-        })
-        console.error(`ERROR READING VALUE ${CHARACTERISTIC_NAMES[characteristic]}`, error.message, error.code, error)
+        });
+        console.error(`ERROR READING VALUE ${CHARACTERISTIC_NAMES[characteristic]}`, error.message, error.code, error);
       }
     },
 
     async readSSIDs() {
       await dispatch.bluetooth.set({ processing: true })
-      const count = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LENGTH)
-
-      if (!count) {
-        await dispatch.bluetooth.set({ message: 'Failed to read device WiFi', severity: 'error', processing: false })
-        return
-      }
 
       const networks: NetworkInfo[] = []
-      for (let i = 0; i < count; i++) {
-        const wifi: NetworkInfo = (await dispatch.bluetooth.read(BT_UUIDS.WIFI_LIST)) || {
-          ssid: 'unknown',
-          signal: -100,
-        }
-        networks.push(wifi)
+      const networks_list = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LIST)
+      // Load the networks into the networks array
+      if (networks_list) {
+        networks_list.forEach((network: NetworkInfo) => {
+          networks.push(network)
+        })
       }
 
       console.log('WIFI LIST', networks)
-      await dispatch.bluetooth.set({ networks, processing: false })
+      dispatch.bluetooth.set({ networks, processing: false })
     },
   }),
   reducers: {
@@ -333,13 +445,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-function parse(data: DataView) {
-  const decoder = new TextDecoder('utf-8')
-  const json = decoder.decode(data)
-  try {
-    return JSON.parse(json)
-  } catch (error) {
-    return json
-  }
-}
