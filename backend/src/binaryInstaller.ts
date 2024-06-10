@@ -31,11 +31,12 @@ export class BinaryInstaller {
   async check() {
     if (this.inProgress) return
 
-    const shouldInstall = await this.shouldInstall()
+    const status = await this.status()
+    const shouldInstall = (Object.keys(status) as (keyof BinaryReason)[]).some(key => status[key])
 
     if (shouldInstall) {
       if (environment.isElevated) return await this.install()
-      return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
+      return EventBus.emit(Binary.EVENTS.notInstalled, status)
     } else if (!this.ready) {
       Logger.info('INSTALLER DONE')
       this.ready = true
@@ -44,15 +45,17 @@ export class BinaryInstaller {
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
   }
 
-  async shouldInstall() {
+  async status(): Promise<BinaryReason> {
     const binariesOutdated = !(await this.cliBinary.isCurrent())
     const agentStopped = !(await cli.agentRunning())
     const agentMismatched = this.cliBinary.agentVersion !== this.cliBinary.version
     const cliUpdated = await this.cliUpdated()
     const desktopUpdated = await this.desktopUpdated()
 
-    Logger.info('SHOULD INSTALL?', { binariesOutdated, agentStopped, agentMismatched, cliUpdated, desktopUpdated })
-    return binariesOutdated || agentStopped || agentMismatched || cliUpdated || desktopUpdated
+    const status = { binariesOutdated, agentStopped, agentMismatched, cliUpdated, desktopUpdated }
+    Logger.info('SHOULD INSTALL?', status)
+
+    return status
   }
 
   async install() {

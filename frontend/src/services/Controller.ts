@@ -206,7 +206,7 @@ function getEventHandlers() {
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => controller.log('event: binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
-    'binary/not-installed': (binary: BinaryName) => binaries.notInstalled(binary),
+    'binary/not-installed': (status: BinaryReason) => binaries.notInstalled(status),
   } as EventHandlers
 }
 

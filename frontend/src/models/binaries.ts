@@ -9,6 +9,7 @@ export interface BinariesState {
   path?: string
   version?: string
   installedVersion?: string
+  reason?: BinaryReason
 }
 
 const state: BinariesState = {
@@ -42,13 +43,15 @@ export default createModel<RootModel>()({
       state.path = info.path
       state.version = info.version
       state.installedVersion = info.installedVersion
+      state.reason = undefined
       return state
     },
-    notInstalled(state: BinariesState, name: BinaryName) {
-      console.log('BINARY NOT INSTALLED', name)
+    notInstalled(state: BinariesState, reason: BinaryReason) {
+      console.log('BINARY NOT INSTALLED', reason)
       state.installed = false
       state.path = undefined
       state.version = undefined
+      state.reason = reason
       return state
     },
     installError(state: BinariesState, error: string) {
