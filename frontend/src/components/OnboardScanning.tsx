@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { Tooltip, Typography, Stack, Box, Button, List, ListItem, ListSubheader, CircularProgress } from '@mui/material'
-import { ListItemLink } from './ListItemLink'
+import { Tooltip, Typography, Stack, Box, Button, CircularProgress } from '@mui/material'
 import { OnboardMessage } from './OnboardMessage'
+import { Link } from './Link'
 import { Icon } from './Icon'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const OnboardScanning: React.FC<Props> = ({ next }) => {
-  const { connected, processing, wifi, message, severity } = useSelector((state: State) => state.bluetooth)
+  const { connected, processing, wlan, message, severity } = useSelector((state: State) => state.bluetooth)
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
 
   useEffect(() => {
     if (connected) next()
-  }, [connected, wifi])
+  }, [connected, wlan])
 
   const onScan = async () => {
     await dispatch.bluetooth.start()
@@ -34,13 +34,11 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
     <>
       <Box marginX={2} marginTop={4}>
         <Stack flexDirection="row" alignItems="center" marginY={2}>
-          <Icon name="bluetooth" type="brands" size="xl" color={true ? 'primary' : 'grayDark'} />
-          <Typography variant="h2" marginLeft={2}>
-            Bluetooth Commissioning
-          </Typography>
+          <Typography variant="h2">Bluetooth Commissioning</Typography>
         </Stack>
         <Typography variant="caption" color="grayDarker.main">
-          <b>Note:</b> This setup is only for Raspberry Pis that are enabled with Remote.It.
+          <b>Note:</b> This setup is only for Raspberry Pis that are enabled with Remote.It. If you already have a Pi
+          online<Link to="/add/raspberrypi">add remote access.</Link>
         </Typography>
         <OnboardMessage message={message} severity={severity} />
         <Stack flexDirection="row" alignItems="center" marginTop={5} marginBottom={3}>
@@ -68,38 +66,6 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
           )}
         </Stack>
       </Box>
-      <List>
-        <ListSubheader disableGutters sx={{ paddingBottom: 1 }}>
-          First-Time Users
-        </ListSubheader>
-        <ListItem>
-          <Typography variant="body2" gutterBottom>
-            To set up WiFi on your Raspberry Pi using Bluetooth commissioning, choose one of these options:
-          </Typography>
-        </ListItem>
-        <ListItemLink
-          dense
-          icon="arrow-down-to-bracket"
-          href="http://remote.it/jumpbox"
-          title="Download our Pi image"
-          disableGutters
-        />
-        <ListItemLink
-          dense
-          icon="plus"
-          href="http://remote.it/jumpbox"
-          title="Add commissioning to your Pi image"
-          disableGutters
-        />
-        {/* <ListItemLink
-          dense
-          icon="arrow-turn-down"
-          iconProps={{ rotate: 270 }}
-          href="http://remote.it/jumpbox"
-          title="Purchase our Pi JumpBox"
-          disableGutters
-        /> */}
-      </List>
     </>
   )
 }

@@ -9,8 +9,10 @@ export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ childre
 
   if (!testUI) return null
 
+  if (testUI !== 'HIGHLIGHT') return children
+
   return (
-    <div title="test ui feature" className={testUI === 'HIGHLIGHT' ? css.style : undefined} {...props}>
+    <div title="test ui feature" className={css.style} {...props}>
       {children}
     </div>
   )

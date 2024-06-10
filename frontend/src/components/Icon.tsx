@@ -23,6 +23,7 @@ export interface IconProps {
   fontSize?: number
   onClick?: (event: React.MouseEvent) => void
   size?: Sizes
+  styles?: React.CSSProperties
   rotate?: number
   spin?: boolean
   scale?: number
@@ -45,6 +46,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       rotate,
       spin,
       scale,
+      styles = {},
       type = 'regular',
       inline,
       inlineLeft,
@@ -75,7 +77,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     }
 
     const theme = useTheme()
-    const styles: React.CSSProperties = { objectFit: 'contain' }
+    styles.objectFit = 'contain'
 
     if (color) styles.color = theme.palette[color]?.main || color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md

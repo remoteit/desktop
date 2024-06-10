@@ -36,14 +36,8 @@ export const OnboardRouter: React.FC = () => {
   const { notify, networks, ...rest } = bluetooth
   return (
     <Body verticalOverflow center gutterBottom gutterTop>
-      <Box
-        maxWidth={{ xs: 300, sm: 370 }}
-        width={370}
-        height="auto"
-        paddingTop={4}
-        paddingBottom={browser.isAndroid ? 25 : 4}
-      >
-        <Icon name={platform} fontSize={100} platformIcon inline />
+      <Box maxWidth={{ xs: 300, sm: 370 }} width={370} height="auto" paddingTop={4} paddingBottom={25}>
+        <Icon name="bluetooth" fontSize={80} color="primary" inline />
         <Switch>
           <Route path={['/onboard/:platform', '/onboard/:platform/scanning']} exact>
             <OnboardScanning next={onNext} />

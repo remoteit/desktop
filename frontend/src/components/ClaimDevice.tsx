@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { ConfirmButton } from '../buttons/ConfirmButton'
-import { TextField } from '@mui/material'
+import { List, ListSubheader, ListItem, TextField } from '@mui/material'
 import { Icon } from '../components/Icon'
-import { spacing } from '../styling'
 
 const CLAIM_CODE_LENGTH = 8
+type Props = { className?: string }
 
-export function ClaimDevice() {
+export const ClaimDevice: React.FC<Props> = ({ className }) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
@@ -40,60 +39,64 @@ export function ClaimDevice() {
   }
 
   return (
-    <form
-      style={{
-        width: 160,
-        textAlign: 'right',
-      }}
-      onSubmit={e => {
-        e.preventDefault()
-        buttonRef.current?.click()
-      }}
-    >
-      <TextField
-        label="Claim Code"
-        value={code}
-        variant="filled"
-        disabled={claiming}
-        onChange={handleChange}
-        sx={{
-          width: { xs: 130, sm: 160 },
-          display: 'flex',
-          marginBottom: 0.75,
-          justifyContent: 'flex-end',
-          '& svg': { marginRight: 2.25 },
-          '& .MuiFilledInput-root': {
-            fontSize: 14,
-          },
-        }}
-        InputProps={{
-          endAdornment: code && (
-            <Icon
-              name={claiming ? 'spinner-third' : 'check'}
-              size="base"
-              type="solid"
-              color={claiming || !valid ? 'gray' : 'success'}
-              spin={!!claiming}
-              fixedWidth
-            />
-          ),
-        }}
-      />
-      <ConfirmButton
-        ref={buttonRef}
-        size="chip"
-        sx={{ marginRight: 0.375 }}
-        variant={valid ? 'contained' : 'text'}
-        title={claiming ? 'Claiming' : 'Claim'}
-        confirm={organization.id !== user.id}
-        disabled={claiming || !valid}
-        onClick={() => devices.claimDevice({ code, redirect: true })}
-        confirmProps={{
-          title: `Claiming for ${organization.name}`,
-          action: 'Ok',
-          children: 'You are claiming this device for an organization instead of yourself.',
-        }}
-      />
-    </form>
+    <List className={className} dense disablePadding>
+      <ListSubheader disableGutters>Claim a device</ListSubheader>
+      <ListItem sx={{ paddingTop: 3 }} disablePadding>
+        <form
+          style={{
+            width: 160,
+            textAlign: 'right',
+          }}
+          onSubmit={e => {
+            e.preventDefault()
+            buttonRef.current?.click()
+          }}
+        >
+          <TextField
+            label="Claim Code"
+            value={code}
+            variant="filled"
+            disabled={claiming}
+            onChange={handleChange}
+            sx={{
+              width: { xs: 130, sm: 160 },
+              display: 'flex',
+              marginBottom: 0.75,
+              justifyContent: 'flex-end',
+              marginLeft: -1.5,
+              '& svg': { marginRight: 2.25 },
+              '& .MuiFilledInput-root': { fontSize: 14 },
+            }}
+            InputProps={{
+              endAdornment: code && (
+                <Icon
+                  name={claiming ? 'spinner-third' : 'check'}
+                  size="base"
+                  type="solid"
+                  color={claiming || !valid ? 'gray' : 'success'}
+                  spin={!!claiming}
+                  fixedWidth
+                />
+              ),
+            }}
+          />
+          <ConfirmButton
+            ref={buttonRef}
+            size="chip"
+            sx={{ marginRight: 0.375 }}
+            variant={valid ? 'contained' : 'text'}
+            title={claiming ? 'Claiming' : 'Claim'}
+            confirm={organization.id !== user.id}
+            disabled={claiming || !valid}
+            onClick={() => devices.claimDevice({ code, redirect: true })}
+            confirmProps={{
+              title: `Claiming for ${organization.name}`,
+              action: 'Ok',
+              children: 'You are claiming this device for an organization instead of yourself.',
+            }}
+          />
+        </form>
+      </ListItem>
+    </List>
   )
 }

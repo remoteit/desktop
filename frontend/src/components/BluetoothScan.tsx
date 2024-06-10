@@ -14,17 +14,22 @@ export const BluetoothScan: React.FC<Props> = ({ className }) => {
         <ListItemIcon
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', '& > *': { marginRight: 0.5 } }}
         >
-          <Icon name="mobile" type="regular" fontSize={32} color="primary" />
-          <Icon name="bluetooth" type="light" size="md" color="grayDarker" fixedWidth />
-          <Icon name="raspberrypi" fixedWidth fontSize={40} color="primary" platform={1072} platformIcon />
+          <Icon name="bluetooth" type="regular" fontSize={32} color="primary" />
+          {/* <Icon name="bluetooth" type="light" size="md" color="grayDarker" fixedWidth /> */}
+          {/* <Icon name="linux" fixedWidth fontSize={40} color="primary" platformIcon /> */}
           {/* <Icon name="wifi" type="solid" fontSize={14} color="gray" /> */}
         </ListItemIcon>
         <ListItemText
-          primary="Setup WiFi"
+          primary={
+            <>
+              Setup WiFi &nbsp;
+              {/* <Icon name="raspberrypi" size="base" color="primary" platformIcon /> */}
+            </>
+          }
           secondary={
             <>
-              Connect your Pi to
-              <br /> Wifi and Remote.It
+              Connect your Pi to Wifi
+              <br /> and Remote.It
             </>
           }
         />

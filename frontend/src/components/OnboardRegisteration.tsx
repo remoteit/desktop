@@ -26,8 +26,8 @@ export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
   return (
     <Box marginX={2}>
       <Stack flexDirection="row" alignItems="center" marginY={2}>
-        <Icon name={reg === 'REGISTERED' ? 'check' : 'arrow-right-arrow-left'} color="primary" type="solid" size="xl" />
-        <Box marginLeft={2}>
+        {/* <Icon name={reg === 'REGISTERED' ? 'check' : 'arrow-right-arrow-left'} color="primary" type="solid" size="xl" /> */}
+        <Box>
           <Typography variant="h2">
             {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registration' : 'Registered!'}
           </Typography>

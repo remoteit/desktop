@@ -58,21 +58,12 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
 
   const selectedNetwork = networks.find(network => network.ssid === form.ssid)
   const disabled = scan === 'SCANNING' || wlan === 'CONNECTING'
-  let ssidFieldValue = form.ssid
-  if (scan === 'SCANNING') {
-    ssidFieldValue = 'Scanning...'
-  }
-  if (wlan === 'CONNECTING') {
-    ssidFieldValue = 'Connecting...'
-  }
 
   return (
     <Box marginX={2}>
       <Stack flexDirection="row" alignItems="center" marginY={2}>
-        <Icon name="wifi" type="solid" size="xl" color="primary" />
-        <Typography variant="h2" marginLeft={2}>
-          WiFi Setup
-        </Typography>
+        {/* <Icon name="wifi" type="solid" size="xl" color="primary" /> */}
+        <Typography variant="h2">WiFi Setup</Typography>
       </Stack>
       <Typography variant="body2" gutterBottom>
         Connect your Raspberry Pi to WiFi.
@@ -95,7 +86,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             disabled={disabled}
             noOptionsText="No networks found"
             options={networks.map(n => n.ssid) || []}
-            value={ssidFieldValue}
+            value={wlan === 'CONNECTING' ? 'Connecting...' : scan === 'SCANNING' ? 'Scanning...' : form.ssid}
             sx={{ marginBottom: 1 }}
             onChange={(event, ssid, reason) => {
               if (!ssid || disabled) return
@@ -115,7 +106,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
               <TextField
                 variant="filled"
                 label="Network"
-                type='text'
+                type="text"
                 name="network"
                 {...params}
                 autoComplete="off"

@@ -6,6 +6,8 @@ export interface IPlatform {
   component: (props: any) => React.ReactElement
   types?: INumberLookup<string>
   services?: IServiceRegistration[]
+  listItemTitle?: React.ReactNode
+  route?: string
   hasScreenView?: boolean
   installation?: {
     label?: string
@@ -44,7 +46,6 @@ class Platforms {
     'openwrt',
     'raspberrypi',
     'remoteit',
-    'screenview',
     'this',
     'tinkerboard',
     'ubiquiti',

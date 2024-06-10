@@ -4,7 +4,6 @@ import { BleClient, textToDataView } from '@capacitor-community/bluetooth-le'
 import { RootModel } from '.'
 import { BT_UUIDS } from '../constants'
 import { emit } from '../services/Controller'
-import { off } from 'process'
 
 interface DeviceInfo {
   deviceId: string
