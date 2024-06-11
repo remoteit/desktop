@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import browser from '../services/browser'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { REGEX_LAST_PATH } from '../constants'
@@ -10,7 +9,6 @@ import { OnboardWifi } from '../components/OnboardWifi'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import { Box } from '@mui/material'
-import { Pre } from '../components/Pre'
 
 const steps = ['/scanning', '/wifi', '/configuring']
 
@@ -50,7 +48,6 @@ export const OnboardRouter: React.FC = () => {
           </Route>
         </Switch>
       </Box>
-      {/* <Pre>{rest}</Pre> */}
     </Body>
   )
 }
