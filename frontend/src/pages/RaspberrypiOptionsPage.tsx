@@ -50,7 +50,7 @@ export const RaspberrypiOptionsPage: React.FC = () => (
           <Stack flexDirection="row" alignItems="center" height={70} gap={1.5}>
             <Icon name="raspberrypi" fontSize={50} platformIcon />
             <Icon name="plus" fontSize={20} type="solid" styles={{}} />
-            <Icon name="sd-card" fontSize={50} type="solid" color="grayDark" />
+            <Icon name="sd-card" fontSize={50} type="solid" color="gray" />
           </Stack>
         }
         href="https://link.remote.it/getting-started/rpi-ble-image"

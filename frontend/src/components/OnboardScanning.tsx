@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { Tooltip, Typography, Stack, Box, Button, CircularProgress } from '@mui/material'
@@ -13,14 +13,21 @@ type Props = {
 export const OnboardScanning: React.FC<Props> = ({ next }) => {
   const { connected, processing, wlan, message, severity } = useSelector((state: State) => state.bluetooth)
   const dispatch = useDispatch<Dispatch>()
+  const [ready, setReady] = useState<boolean>(false)
 
   useEffect(() => {
-    dispatch.bluetooth.disconnect()
+    ;(async () => {
+      console.log('disconnecting...')
+      await dispatch.bluetooth.stop()
+      console.log('disconnected')
+      setReady(true)
+    })()
   }, [])
 
   useEffect(() => {
-    if (connected) next()
-  }, [connected, wlan])
+    console.log('ready:', ready, 'connected:', connected)
+    if (ready && connected) next()
+  }, [connected, wlan, ready])
 
   const onScan = async () => {
     await dispatch.bluetooth.start()
