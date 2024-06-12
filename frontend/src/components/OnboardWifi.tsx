@@ -18,7 +18,6 @@ import { OnboardMessage } from './OnboardMessage'
 import { IconButton } from '../buttons/IconButton'
 import { SignalIcon } from '../buttons/SignalIcon'
 import { ColorChip } from './ColorChip'
-import { Icon } from './Icon'
 
 type Props = {
   next: () => void
@@ -58,11 +57,13 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
 
   const selectedNetwork = networks.find(network => network.ssid === form.ssid)
   const disabled = scan === 'SCANNING' || wlan === 'CONNECTING'
+  const options = networks.map(n => n.ssid)
+
+  if (!options.length) options.push('No networks found')
 
   return (
     <Box marginX={2}>
       <Stack flexDirection="row" alignItems="center" marginY={2}>
-        {/* <Icon name="wifi" type="solid" size="xl" color="primary" /> */}
         <Typography variant="h2">WiFi Setup</Typography>
       </Stack>
       <Typography variant="body2" gutterBottom>
@@ -84,9 +85,8 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             handleHomeEndKeys
             includeInputInList
             disabled={disabled}
-            noOptionsText="No networks found"
-            options={networks.map(n => n.ssid) || []}
-            value={wlan === 'CONNECTING' ? 'Connecting...' : scan === 'SCANNING' ? 'Scanning...' : form.ssid}
+            options={options}
+            value={scan === 'SCANNING' ? 'Scanning...' : form.ssid}
             sx={{ marginBottom: 1 }}
             onChange={(event, ssid, reason) => {
               if (!ssid || disabled) return
@@ -96,7 +96,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             renderOption={(props, ssid) => {
               const network = networks.find(n => n.ssid === ssid)
               return (
-                <MenuItem {...props} key={ssid}>
+                <MenuItem {...props} key={ssid} disabled={!networks.length}>
                   <ListItemText>{ssid}</ListItemText>
                   {network && <SignalIcon strength={network.signal} type="solid" />}
                 </MenuItem>
