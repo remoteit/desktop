@@ -178,7 +178,13 @@ describe('backend/binaryInstaller', () => {
       expect(installSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(1)
       expect(versionSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', {
+        agentMismatched: false,
+        agentStopped: true,
+        binariesOutdated: false,
+        cliUpdated: false,
+        desktopUpdated: false,
+      })
       expect(versionSpy).toBeCalledTimes(1)
     })
 
@@ -192,7 +198,13 @@ describe('backend/binaryInstaller', () => {
       expect(installSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(1)
       expect(agentVersionSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', {
+        agentMismatched: true,
+        agentStopped: false,
+        binariesOutdated: false,
+        cliUpdated: false,
+        desktopUpdated: false,
+      })
       expect(agentVersionSpy).toBeCalledTimes(1)
     })
 
@@ -220,7 +232,13 @@ describe('backend/binaryInstaller', () => {
 
       expect(installSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', {
+        agentMismatched: false,
+        agentStopped: false,
+        binariesOutdated: true,
+        cliUpdated: false,
+        desktopUpdated: false,
+      })
       expect(versionSpy).toBeCalledTimes(1)
     })
 
@@ -232,7 +250,13 @@ describe('backend/binaryInstaller', () => {
 
       expect(installSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', {
+        agentMismatched: false,
+        agentStopped: false,
+        binariesOutdated: false,
+        cliUpdated: false,
+        desktopUpdated: true,
+      })
       expect(versionSpy).toBeCalledTimes(1)
     })
 
