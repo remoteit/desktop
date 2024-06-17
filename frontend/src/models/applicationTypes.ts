@@ -90,7 +90,13 @@ export default createModel<RootModel>()({
 })
 
 function sortFunction(a: IApplicationType, b: IApplicationType) {
-  return APPLICATION_TYPES_ORDER.indexOf(a.id) - APPLICATION_TYPES_ORDER.indexOf(b.id)
+  const indexA = APPLICATION_TYPES_ORDER.indexOf(a.id)
+  const indexB = APPLICATION_TYPES_ORDER.indexOf(b.id)
+
+  const rankA = indexA === -1 ? Number.MAX_VALUE : indexA
+  const rankB = indexB === -1 ? Number.MAX_VALUE : indexB
+
+  return rankA - rankB
 }
 
 export function findType(all?: IApplicationType[], typeId?: number): IApplicationType {
