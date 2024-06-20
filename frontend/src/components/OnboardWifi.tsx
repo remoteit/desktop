@@ -40,13 +40,19 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && !message && wlan === 'CONNECTED') setTimeout(next, 600)
+    if (ready && !message && wlan === 'CONNECTED') {
+      dispatch.bluetooth.set({ message: 'Device WiFi connected', severity: 'info' })
+      next()
+    }
   }, [wlan, ready])
 
   const onScan = async event => {
     event.stopPropagation()
     await dispatch.bluetooth.scanSSIDs()
     await dispatch.bluetooth.readSSIDs()
+    setTimeout(() => {
+      if (!form.ssid) setForm({ ...form, ssid: networks[0]?.ssid || '' })
+    }, 500)
   }
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -79,6 +85,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             freeSolo
             autoFocus
             fullWidth
+            autoSelect
             autoComplete
             selectOnFocus
             forcePopupIcon
@@ -161,7 +168,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
         </List>
         <Stack flexDirection="row" alignItems="center" marginY={3}>
           {wlan === 'CONNECTING' ? (
-            <CircularProgress size={29.5} thickness={3} />
+            <CircularProgress size={22} thickness={5} sx={{ marginRight: 3 }} />
           ) : (
             <>
               <Button variant="contained" disabled={!form.pwd || disabled} type="submit">

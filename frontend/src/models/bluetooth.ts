@@ -97,14 +97,19 @@ export default createModel<RootModel>()({
           buffers: {},
         })
       } catch (error) {
-        console.error('BLUETOOTH INITIALIZATION ERROR', error, error.message)
+        console.error('BLUETOOTH INITIALIZATION ERROR', { error, code: error.code, message: error.message })
 
         await dispatch.bluetooth.stop()
         if (scanTimer) {
           clearTimeout(scanTimer)
           await dispatch.bluetooth.set({ message: 'Bluetooth scan canceled', severity: 'info' })
+        } else if (error.code === 'UNAVAILABLE') {
+          await dispatch.bluetooth.set({
+            message: 'Bluetooth is not available from this browser or device. Try Google Chrome.',
+            severity: 'error',
+          })
         } else {
-          await dispatch.bluetooth.set({ message: 'Bluetooth scan timed out', severity: 'warning' })
+          await dispatch.bluetooth.set({ message: 'No bluetooth devices found', severity: 'warning' })
         }
       }
     },
@@ -438,8 +443,6 @@ export default createModel<RootModel>()({
     },
 
     async readSSIDs() {
-      await dispatch.bluetooth.set({ scan: 'SCANNING' })
-
       const networks: NetworkInfo[] = []
       const networks_list = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LIST)
       // Load the networks into the networks array
@@ -451,7 +454,7 @@ export default createModel<RootModel>()({
 
       console.log('WIFI LIST', networks)
       event('BLE_DEVICE_WIFI_LIST', { count: networks.length })
-      dispatch.bluetooth.set({ networks, scan: 'COMPLETE' })
+      dispatch.bluetooth.set({ networks })
     },
   }),
   reducers: {
