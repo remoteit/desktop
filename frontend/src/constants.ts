@@ -57,7 +57,7 @@ export const ANONYMOUS_MANUFACTURER_CODE = 34560
 export const SCREEN_VIEW_APP_LINK = 'https://play.google.com/store/apps/details?id=it.remote.screenview'
 
 export const REGEX_LAST_PATH = /\/[^/]+$/g
-export const REGEX_FIRST_PATH = /^\/(\w+)/g
+export const REGEX_FIRST_PATH = /^\/([^\/]+)/g
 export const REGEX_IP_SAFE = /[^0-9.]+/g
 export const REGEX_PORT_SAFE = /[^0-9]+/g
 export const REGEX_DOMAIN_SAFE = /[^a-zA-Z0-9-.]+/g

@@ -282,7 +282,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path={['/organization/roles', '/organization/roles/:roleID']}>
         <RolesRouter layout={layout} />
       </Route>
-      <Route path="/organization/empty">
+      <Route path="/organization-empty">
         <Panel layout={layout}>
           <OrganizationEmptyPage />
         </Panel>

@@ -33,7 +33,7 @@ export const OrganizationPage: React.FC = () => {
   const manager = !!permissions?.includes('MANAGE')
 
   if (initialized && !organization.id)
-    return <Redirect to={{ pathname: '/organization/empty', state: { isRedirect: true } }} />
+    return <Redirect to={{ pathname: '/organization-empty', state: { isRedirect: true } }} />
 
   return (
     <Container
