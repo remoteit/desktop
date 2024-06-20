@@ -23,7 +23,6 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { graphQLGetErrors, apiError } from '../services/graphQL'
-import { getLocalStorage, removeLocalStorage } from '../services/browser'
 import { selectTimeSeries } from '../selectors/ui'
 import {
   getAllDevices,
@@ -38,8 +37,6 @@ import { store, State } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-
-const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'applicationTypes', 'sortServiceOption']
 
 type IDeviceState = {
   all: IDevice[]
@@ -103,16 +100,6 @@ export default createModel<RootModel>()({
     async migrate(_: void, state) {
       const accountId = selectActiveAccountId(state)
       console.log('INIT DEVICES', accountId)
-      let states = {}
-      SAVED_STATES.forEach(key => {
-        const value = getLocalStorage(state, `device-${accountId}-${key}`)
-        if (value) {
-          states[key] = value
-          removeLocalStorage(state, `device-${accountId}-${key}`)
-          console.log('MIGRATE DEVICE STATE', key, value)
-        }
-      })
-      await dispatch.devices.set({ ...states, accountId })
     },
 
     async fetchList(_: void, state) {
@@ -274,6 +261,43 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       const count = result?.data?.data?.login?.account?.devices?.total || 0
       return count
+    },
+
+    async sortByState(accountId: string | void, state) {
+      accountId = accountId || selectActiveAccountId(state)
+      const deviceModel = getDeviceModel(state, accountId)
+      const all = [...deviceModel.all]
+
+      const sortKeys = deviceModel.sort.split(',').map(k => {
+        const direction = k.startsWith('-') ? -1 : 1
+        const key = k.startsWith('-') ? k.slice(1) : k
+        return { key, direction }
+      })
+      /* 
+        Because some of the internal key names don't match the gql ones
+        and we are accounting for stage changes, we can just sort if it's by state.
+      */
+      if (sortKeys[0].key !== 'state') return
+
+      const result = all.sort((a, b) => {
+        for (let { key, direction } of sortKeys) {
+          let [keyA, keyB]: any = [a, b]
+          key.split('.').forEach(subKey => {
+            keyA = keyA?.[subKey]
+            keyB = keyB?.[subKey]
+          })
+
+          const valueA = typeof keyA === 'string' ? keyA.toLowerCase() : keyA
+          const valueB = typeof keyB === 'string' ? keyB.toLowerCase() : keyB
+
+          if (valueA < valueB) return -1 * direction
+          if (valueA > valueB) return 1 * direction
+        }
+        return 0
+      })
+
+      console.log('SORT DEVICES', { accountId, sortKeys })
+      await dispatch.devices.set({ all: result, accountId })
     },
 
     async expire(_: void, state) {
