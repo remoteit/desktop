@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { Confirm } from '../components/Confirm'
 
-export const RestoreButton: React.FC<{ device: IDevice; onClick?: () => void }> = ({ device, onClick }) => {
+export const RestoreButton: React.FC<{ device: IDevice }> = ({ device }) => {
   const { platform } = useParams<{ platform?: string }>()
   const [open, setOpen] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()

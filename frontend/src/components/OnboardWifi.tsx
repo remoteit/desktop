@@ -40,7 +40,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && !message && wlan === 'CONNECTED') next()
+    if (ready && !message && wlan === 'CONNECTED') setTimeout(next, 600)
   }, [wlan, ready])
 
   const onScan = async event => {
@@ -51,6 +51,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setShowPassword(false)
     await dispatch.bluetooth.writeWifi(form)
     setTimeout(() => setReady(true), 500)
   }
@@ -176,6 +177,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           <Box flexGrow={1} textAlign="right">
             <ColorChip
               color={wlan === 'CONNECTED' ? 'primary' : undefined}
+              variant={wlan === 'CONNECTED' ? 'contained' : 'text'}
               label={
                 wlan === 'CONNECTED' ? 'WiFi Connected' : wlan === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
               }

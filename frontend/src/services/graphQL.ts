@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from 'axios'
-import { getGraphQLApi, getTestHeader } from '../helpers/apiHelper'
-import { getToken } from './remoteit'
+import { post } from './post'
 import { store } from '../store'
 import network from './Network'
 import sleep from '../helpers/sleep'
@@ -21,20 +20,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 }
 
 export async function graphQLRequest(query: String, variables: ILookup<any> = {}): Promise<undefined | AxiosResponse> {
-  if (store.getState().ui.offline) return
-  const token = await getToken()
-  if (!token) {
-    console.warn('Unable to get token for graphQL request.', query, variables)
-    return
-  }
-  const request = {
-    url: getGraphQLApi(),
-    method: 'post' as 'post',
-    headers: { Authorization: token, ...getTestHeader() },
-    data: { query, variables },
-  }
-
-  return await axios.request(request)
+  return await post({ query, variables })
 }
 
 export function graphQLGetErrors(

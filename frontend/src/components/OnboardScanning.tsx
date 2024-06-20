@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const OnboardScanning: React.FC<Props> = ({ next }) => {
-  const { connected, processing, wlan, message, severity } = useSelector((state: State) => state.bluetooth)
+  const { connected, searching, wlan, message, severity } = useSelector((state: State) => state.bluetooth)
   const dispatch = useDispatch<Dispatch>()
   const [ready, setReady] = useState<boolean>(false)
 
@@ -25,7 +25,6 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
   }, [])
 
   useEffect(() => {
-    console.log('ready:', ready, 'connected:', connected)
     if (ready && connected) next()
   }, [connected, wlan, ready])
 
@@ -49,7 +48,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
         </Typography>
         <OnboardMessage message={message} severity={severity} />
         <Stack flexDirection="row" alignItems="center" marginTop={5} marginBottom={3}>
-          {processing ? (
+          {searching ? (
             <>
               <CircularProgress size={22} thickness={5} sx={{ marginRight: 3 }} />
               <Button onClick={onCancel}>cancel</Button>

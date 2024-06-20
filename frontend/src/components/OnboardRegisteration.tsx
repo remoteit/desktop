@@ -59,17 +59,10 @@ export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
             <Button variant="contained" onClick={register} disabled={processing}>
               Register
             </Button>
-            <Button
-              variant="contained"
-              color="inherit"
-              to="/devices/restore/pi"
-              component={Link}
-              disabled={processing}
-              sx={{ marginLeft: 1 }}
-            >
+            <Button to="/devices/restore/pi" component={Link} disabled={processing} sx={{ marginLeft: 2 }}>
               Restore
             </Button>
-            <Button to={id ? `/devices/${id}` : '/devices'} component={Link} sx={{ marginLeft: 1 }}>
+            <Button to={id ? `/devices/${id}` : '/devices'} component={Link}>
               skip
             </Button>
           </>
