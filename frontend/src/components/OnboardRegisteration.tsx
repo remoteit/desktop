@@ -25,15 +25,12 @@ export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
 
   return (
     <Box marginX={2}>
-      <Stack flexDirection="row" alignItems="center" marginY={2}>
-        <Icon name={reg === 'REGISTERED' ? 'check' : 'arrow-right-arrow-left'} color="primary" type="solid" size="xl" />
-        <Box marginLeft={2}>
-          <Typography variant="h2">
-            {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registration' : 'Registered!'}
-          </Typography>
-        </Box>
+      <Stack marginY={2}>
+        <Typography variant="h2">
+          {reg === 'REGISTERING' ? 'Registering...' : reg === 'UNREGISTERED' ? 'Registration' : 'Registered!'}
+        </Typography>
+        <OnboardMessage message={message} severity={severity} />
       </Stack>
-      <OnboardMessage message={message} severity={severity} />
       {reg === 'REGISTERED' ? (
         <Typography variant="body2">
           Your Raspberry Pi is registered and
@@ -59,17 +56,10 @@ export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
             <Button variant="contained" onClick={register} disabled={processing}>
               Register
             </Button>
-            <Button
-              variant="contained"
-              color="inherit"
-              to="/devices/restore/pi"
-              component={Link}
-              disabled={processing}
-              sx={{ marginLeft: 1 }}
-            >
+            <Button to="/devices/restore/pi" component={Link} disabled={processing} sx={{ marginLeft: 2 }}>
               Restore
             </Button>
-            <Button to={id ? `/devices/${id}` : '/devices'} component={Link} sx={{ marginLeft: 1 }}>
+            <Button to={id ? `/devices/${id}` : '/devices'} component={Link}>
               skip
             </Button>
           </>

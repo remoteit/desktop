@@ -32,6 +32,7 @@ import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { OrganizationUserPage } from '../pages/OrganizationUserPage'
 import { OrganizationEmptyPage } from '../pages/OrganizationEmptyPage'
 import { OrganizationGuestsPage } from '../pages/OrganizationGuestsPage'
+import { RaspberrypiOptionsPage } from '../pages/RaspberrypiOptionsPage'
 import { OrganizationMembersPage } from '../pages/OrganizationMembersPage'
 import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationLicensingPage } from '../pages/OrganizationLicensingPage'
@@ -151,6 +152,11 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </DeviceContextWrapper>
       </Route>
       {/* Add */}
+      <Route path="/add/raspberrypi-options">
+        <Panel layout={layout}>
+          <RaspberrypiOptionsPage />
+        </Panel>
+      </Route>
       <Route path="/add/:platform/:redirect?">
         <Panel layout={layout}>
           <PlatformAddPage />
@@ -276,7 +282,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path={['/organization/roles', '/organization/roles/:roleID']}>
         <RolesRouter layout={layout} />
       </Route>
-      <Route path="/organization/empty">
+      <Route path="/organization-empty">
         <Panel layout={layout}>
           <OrganizationEmptyPage />
         </Panel>

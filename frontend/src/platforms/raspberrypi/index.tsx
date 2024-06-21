@@ -1,5 +1,7 @@
 import React from 'react'
+import { Tooltip, Typography } from '@mui/material'
 import { platforms } from '..'
+import { Icon } from '../../components/Icon'
 
 const Component = ({ darkMode, ...props }) => {
   const berry = '#cd2355'
@@ -74,7 +76,17 @@ platforms.register({
   id: 'raspberrypi',
   name: 'Raspberry Pi',
   component: Component,
+  route: '/add/raspberrypi-options',
   types: { 1072: 'Raspberry Pi', 1075: 'Remote.It Pi', 1076: 'Remote.It Pi Lite', 1077: 'Remote.It Pi 64' },
+  listItemTitle: (
+    <>
+      Raspberry Pi &nbsp;
+      <Typography variant="caption" component="div">
+        <Icon name="bluetooth" size="sm" color="grayDarker" />
+        &nbsp;WiFi Onboarding
+      </Typography>
+    </>
+  ),
   installation: {
     command: true,
     qualifier: 'For any Raspberry Pi or Linux based system',

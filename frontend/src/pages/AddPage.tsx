@@ -3,21 +3,10 @@ import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
-import {
-  Stack,
-  List,
-  ListItem,
-  ListItemButton,
-  ListSubheader,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Tooltip,
-} from '@mui/material'
+import { Stack, List, ListItemButton, ListSubheader, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { ScreenViewSetup } from '../components/ScreenViewSetup'
 import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { BluetoothScan } from '../components/BluetoothScan'
 import { AndroidSetup } from '../components/AndroidSetup'
@@ -41,7 +30,7 @@ export const AddPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       gutterBottom
       header={
-        <Typography variant="h1" gutterBottom sx={{ marginRight: 4 }}>
+        <Typography variant="h1" sx={{ marginRight: 4 }}>
           <Title>What do you want to connect&nbsp;to?</Title>
         </Typography>
       }
@@ -62,18 +51,12 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItemButton>
         </List>
+        <AndroidSetup className={classnames(css.list, css.smallList)} />
+        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
+        <ClaimDevice className={classnames(css.list, css.smallList)} />
         <TestUI>
           <BluetoothScan className={classnames(css.list, css.smallList)} />
         </TestUI>
-        <AndroidSetup className={classnames(css.list, css.smallList)} />
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
-        <ScreenViewSetup className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.smallList)} dense disablePadding>
-          <ListSubheader disableGutters>Claim a device</ListSubheader>
-          <ListItem sx={{ paddingTop: 3 }} disablePadding>
-            <ClaimDevice />
-          </ListItem>
-        </List>
         <List className={classnames(css.list, css.icons)} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
@@ -113,30 +96,14 @@ export const AddPage: React.FC = () => {
             'mac',
           ].map(p => {
             const platform = platforms.get(p)
-            const platformIcon = platform.hasScreenView ? (
-              <>
-                &nbsp;&nbsp;
-                <Tooltip title="Remote.It ScreenView Enabled" placement="top" arrow>
-                  <span>
-                    <Icon name="android-screenview" size="xxs" platformIcon currentColor />
-                  </span>
-                </Tooltip>
-              </>
-            ) : null
-
             return (
               <ListItemLocation
                 key={p}
                 iconPlatform
                 iconSize="xxl"
                 icon={platform.id}
-                to={`/add/${platform.id}`}
-                title={
-                  <>
-                    {platform.name}
-                    {platformIcon}
-                  </>
-                }
+                to={platform.route || `/add/${platform.id}`}
+                title={<>{platform.listItemTitle || platform.name}</>}
                 subtitle={platform.subtitle}
                 disableGutters
               />
@@ -148,7 +115,7 @@ export const AddPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette, breakpoints }) => ({
+export const useStyles = makeStyles(({ palette, breakpoints }) => ({
   list: {
     minWidth: 175,
     display: 'flex',
@@ -189,7 +156,7 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
   },
   smallList: {
     width: '50%',
-    [breakpoints.up('sm')]: { width: '33%' },
-    [breakpoints.up('md')]: { width: '25%' },
+    [breakpoints.up('sm')]: { width: 200 },
+    // [breakpoints.up('md')]: { width: 200 },
   },
 }))

@@ -141,7 +141,7 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
   center: ({ verticalOverflow }: StyleProps) => ({
     display: 'flex',
     alignItems: 'center',
-    justifyContent: verticalOverflow ? undefined : 'center',
+    justifyContent: verticalOverflow && browser.isAndroid ? undefined : 'center',
     flexDirection: 'column',
     padding: `${spacing.md}px ${spacing.md}px ${spacing.xl}px`,
   }),

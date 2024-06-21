@@ -1,6 +1,9 @@
 import React from 'react'
-import { platforms } from '..'
+import feature from './feature.png'
 import { SCREEN_VIEW_APP_LINK } from '../../constants'
+import { Tooltip, Typography } from '@mui/material'
+import { platforms } from '..'
+import { Icon } from '../../components/Icon'
 
 const Component = ({ darkMode, ...props }) => {
   const android = '#3DDB85'
@@ -22,12 +25,31 @@ platforms.register({
   component: Component,
   types: { 1213: 'Android Phone' },
   services: [{ application: 48 }],
+  listItemTitle: (
+    <>
+      Android &nbsp;
+      <Tooltip title="Remote.It ScreenView Enabled" placement="top" arrow>
+        <span>
+          <Icon name="android-screenview" size="xxs" platformIcon currentColor />
+        </span>
+      </Tooltip>
+      <Typography variant="caption" component="div">
+        with ScreenView
+      </Typography>
+    </>
+  ),
   installation: {
     download: true,
     command: '[CODE]',
     qualifier: 'To register an Android phone or tablet',
-    instructions:
-      'Install the screen view app from the Google Play Store to share your screen or any other local or network services.',
+    instructions: (
+      <>
+        <img src={feature} width={450} style={{ borderRadius: 8, marginBottom: 12 }} />
+        <br />
+        Install the screen view app from the Google Play Store to share your screen or any other local or network
+        services
+      </>
+    ),
     link: SCREEN_VIEW_APP_LINK,
   },
 })

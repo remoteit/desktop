@@ -2,7 +2,7 @@ import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_U
 import { version } from './versionHelper'
 import { store } from '../store'
 
-export function getGraphQLApi(): string | undefined {
+export function getApiURL(): string | undefined {
   if (!store) return GRAPHQL_API
 
   const { apiGraphqlURL, switchApi } = store.getState().ui.apis

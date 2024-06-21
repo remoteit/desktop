@@ -9,11 +9,11 @@ type Props = IconProps & {
 export const SignalIcon: React.FC<Props> = ({ strength, ...props }) => {
   let icon
 
-  if (strength >= -50) {
+  if (strength == 100) {
     icon = 'signal-bars'
-  } else if (strength >= -60) {
+  } else if (strength >= 80) {
     icon = 'signal-bars-good'
-  } else if (strength >= -70) {
+  } else if (strength >= 60) {
     icon = 'signal-bars-fair'
   } else {
     icon = 'signal-bars-weak'

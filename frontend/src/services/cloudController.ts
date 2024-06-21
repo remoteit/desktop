@@ -302,6 +302,7 @@ class CloudController {
           // if device exists
           if (target.device?.id) {
             dispatch.accounts.setDevice({ id: target.device.id, device: target.device, accountId: target.accountId })
+            dispatch.devices.sortByState(target.accountId)
           }
 
           // New unknown device discovered

@@ -101,7 +101,13 @@ declare global {
     privateIP: string
   }
 
-  type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
+  type BinaryReason = {
+    binariesOutdated: boolean
+    agentStopped: boolean
+    agentMismatched: boolean
+    cliUpdated: boolean
+    desktopUpdated: boolean
+  }
 
   type Ios = 'mac' | 'windows' | 'linux' | 'rpi' | 'android' | 'ios'
 

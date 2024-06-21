@@ -11,10 +11,11 @@ import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 
 export const InstallationNotice: React.FC = () => {
-  const { connected, error, installing } = useSelector((state: State) => ({
+  const { connected, error, installing, reason } = useSelector((state: State) => ({
     error: state.binaries.error,
     installing: state.binaries.installing,
     connected: state.ui.connected,
+    reason: state.binaries.reason,
   }))
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
@@ -43,9 +44,8 @@ export const InstallationNotice: React.FC = () => {
         </Notice>
       )}
       <Typography className={css.space} variant="h3" align="center">
-        We need to install or update our system
-        <br />
-        agent in order to maintain background connections.
+        We need to install our system agent
+        <br /> in order to maintain background connections.
       </Typography>
       <Button
         className={css.space}
@@ -70,6 +70,17 @@ export const InstallationNotice: React.FC = () => {
       <Typography className={css.space} variant="caption" align="center">
         <Icon name="info-circle" type="regular" size="xs" inlineLeft />
         You will be prompted for permission to continue the installation.
+        <br />
+        {reason &&
+          (reason.agentStopped
+            ? 'The agent is not running.'
+            : reason.agentMismatched
+            ? 'The running version is incorrect.'
+            : reason.binariesOutdated
+            ? 'The agent’s version is incorrect.'
+            : reason.cliUpdated
+            ? 'There is a new version available.'
+            : reason.desktopUpdated && 'The desktop app has been updated')}
       </Typography>
     </Body>
   )

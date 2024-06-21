@@ -3,7 +3,7 @@ import cloudSync from '../services/CloudSync'
 import { TEST_HEADER } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
-import { getGraphQLApi, getWebSocketURL } from '../helpers/apiHelper'
+import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
 import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -84,10 +84,10 @@ export const TestPage: React.FC = () => {
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
               <InlineTextFieldSetting
-                value={getGraphQLApi()}
+                value={getApiURL()}
                 label="Switch GraphQL APIs"
                 disabled={!apis.switchApi}
-                resetValue={getGraphQLApi()}
+                resetValue={getApiURL()}
                 maxLength={200}
                 onSave={url => {
                   setAPIPreference('apiGraphqlURL', url)

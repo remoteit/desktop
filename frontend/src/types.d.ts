@@ -51,6 +51,8 @@ declare global {
     relay?: boolean
   }
 
+  type EventName = 'BLE_DEVICE_SCAN' | 'BLE_DEVICE_WIFI_LIST' | 'BLE_DEVICE_WIFI_CONNECT' | 'BLE_DEVICE_REGISTER'
+
   type IPortScan = 'REACHABLE' | 'UNREACHABLE' | 'SCANNING' | 'INVALID'
 
   type IOrganizationProvider = 'SAML' | 'OIDC'

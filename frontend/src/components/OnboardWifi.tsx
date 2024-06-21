@@ -18,7 +18,6 @@ import { OnboardMessage } from './OnboardMessage'
 import { IconButton } from '../buttons/IconButton'
 import { SignalIcon } from '../buttons/SignalIcon'
 import { ColorChip } from './ColorChip'
-import { Icon } from './Icon'
 
 type Props = {
   next: () => void
@@ -41,38 +40,38 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   }, [ssid])
 
   useEffect(() => {
-    if (ready && !message && wlan === 'CONNECTED') next()
+    if (ready && !message && wlan === 'CONNECTED') {
+      dispatch.bluetooth.set({ message: 'Device WiFi connected', severity: 'info' })
+      next()
+    }
   }, [wlan, ready])
 
   const onScan = async event => {
     event.stopPropagation()
     await dispatch.bluetooth.scanSSIDs()
     await dispatch.bluetooth.readSSIDs()
+    setTimeout(() => {
+      if (!form.ssid) setForm({ ...form, ssid: networks[0]?.ssid || '' })
+    }, 500)
   }
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setShowPassword(false)
     await dispatch.bluetooth.writeWifi(form)
     setTimeout(() => setReady(true), 500)
   }
 
   const selectedNetwork = networks.find(network => network.ssid === form.ssid)
   const disabled = scan === 'SCANNING' || wlan === 'CONNECTING'
-  let ssidFieldValue = form.ssid
-  if (scan === 'SCANNING') {
-    ssidFieldValue = 'Scanning...'
-  }
-  if (wlan === 'CONNECTING') {
-    ssidFieldValue = 'Connecting...'
-  }
+  const options = networks.map(n => n.ssid)
+
+  if (!options.length) options.push('No networks found')
 
   return (
     <Box marginX={2}>
       <Stack flexDirection="row" alignItems="center" marginY={2}>
-        <Icon name="wifi" type="solid" size="xl" color="primary" />
-        <Typography variant="h2" marginLeft={2}>
-          WiFi Setup
-        </Typography>
+        <Typography variant="h2">WiFi Setup</Typography>
       </Stack>
       <Typography variant="body2" gutterBottom>
         Connect your Raspberry Pi to WiFi.
@@ -86,6 +85,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             freeSolo
             autoFocus
             fullWidth
+            autoSelect
             autoComplete
             selectOnFocus
             forcePopupIcon
@@ -93,9 +93,8 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             handleHomeEndKeys
             includeInputInList
             disabled={disabled}
-            noOptionsText="No networks found"
-            options={networks.map(n => n.ssid) || []}
-            value={ssidFieldValue}
+            options={options}
+            value={scan === 'SCANNING' ? 'Scanning...' : form.ssid}
             sx={{ marginBottom: 1 }}
             onChange={(event, ssid, reason) => {
               if (!ssid || disabled) return
@@ -105,7 +104,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             renderOption={(props, ssid) => {
               const network = networks.find(n => n.ssid === ssid)
               return (
-                <MenuItem {...props} key={ssid}>
+                <MenuItem {...props} key={ssid} disabled={!networks.length}>
                   <ListItemText>{ssid}</ListItemText>
                   {network && <SignalIcon strength={network.signal} type="solid" />}
                 </MenuItem>
@@ -115,7 +114,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
               <TextField
                 variant="filled"
                 label="Network"
-                type='text'
+                type="text"
                 name="network"
                 {...params}
                 autoComplete="off"
@@ -169,7 +168,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
         </List>
         <Stack flexDirection="row" alignItems="center" marginY={3}>
           {wlan === 'CONNECTING' ? (
-            <CircularProgress size={29.5} thickness={3} />
+            <CircularProgress size={22} thickness={5} sx={{ marginRight: 3 }} />
           ) : (
             <>
               <Button variant="contained" disabled={!form.pwd || disabled} type="submit">
@@ -185,6 +184,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           <Box flexGrow={1} textAlign="right">
             <ColorChip
               color={wlan === 'CONNECTED' ? 'primary' : undefined}
+              variant={wlan === 'CONNECTED' ? 'contained' : 'text'}
               label={
                 wlan === 'CONNECTED' ? 'WiFi Connected' : wlan === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
               }
