@@ -1,29 +1,29 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Chip, Menu, MenuItem } from '@mui/material'
-import { KEY_APPS, APPLICATION_PLATFORM_FILTER as APF } from '@common/applications'
+import { KEY_APPS, getApplicationType } from '@common/applications'
 import { spacing } from '../styling'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 type Props = {
+  device?: IDevice
   applicationTypes: IApplicationType[]
-  targetPlatform?: IDevice['targetPlatform']
   selected?: IApplicationType['id']
   disabled?: boolean
   onSelect: (selected: IApplicationType) => void
 }
 
 export const ServiceFormApplications: React.FC<Props> = ({
+  device,
   applicationTypes,
-  targetPlatform,
   selected,
   disabled,
   onSelect,
 }) => {
   const css = useStyles()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const allowedApplications = applicationTypes.filter(a => !APF[a.id] || APF[a.id].has(targetPlatform))
+  const allowedApplications = applicationTypes.filter(a => getApplicationType(a.id).visibility(device))
   const keyApplications = allowedApplications.filter(a => KEY_APPS.has(a.id))
   const otherApplications = allowedApplications.filter(a => !keyApplications.find(k => k.id === a.id))
   const otherSelected = otherApplications.find(a => a.id === selected)

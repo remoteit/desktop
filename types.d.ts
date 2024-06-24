@@ -318,7 +318,7 @@ declare global {
     onlineSince: Timestamp
     offlineSince: Timestamp
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
-    version: number // daemon version
+    version?: number // daemon version
     configurable: boolean // cloud shift device
     accountId: string // organization id
     thisDevice?: boolean
