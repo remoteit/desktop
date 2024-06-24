@@ -59,20 +59,6 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const all = result?.data?.data?.applicationTypes
-
-      if (state.ui.testUI) {
-        // TEMP - add SOCKS proxy
-        all.push({
-          id: 49,
-          name: 'SOCKS',
-          port: 65535,
-          proxy: true,
-          scheme: 'proxy',
-          protocol: 'TCP',
-          description: 'SOCKS proxy',
-        })
-      }
-
       all.sort(sortFunction)
       dispatch.applicationTypes.set({ all })
     },

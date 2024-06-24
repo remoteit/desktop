@@ -30,19 +30,16 @@ export const ServiceFormApplications: React.FC<Props> = ({
 
   return (
     <Gutters top={null} bottom={null} className={css.item}>
-      {keyApplications.map(
-        t =>
-          t.scheme && (
-            <Chip
-              label={t.name}
-              key={t.id}
-              disabled={disabled}
-              onClick={() => onSelect(t)}
-              color={t.id === selected ? 'primary' : undefined}
-              variant="filled"
-            />
-          )
-      )}
+      {keyApplications.map(t => (
+        <Chip
+          label={t.name}
+          key={t.id}
+          disabled={disabled}
+          onClick={() => onSelect(t)}
+          color={t.id === selected ? 'primary' : undefined}
+          variant="filled"
+        />
+      ))}
       <Chip
         label={
           <>
