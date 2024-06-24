@@ -2,8 +2,9 @@ import { adaptor } from './adaptor'
 import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
-export const KEY_APPS = new Set([4, 5, 7, 8, 28, 66])
+export const KEY_APPS = new Set([4, 5, 7, 8, 28, 49])
 export const APPLICATION_PLATFORM_FILTER = {
+  // 49: (device) => device?.attributes.daemon_version >= 5.2,
   48: new Set([1213]), // ScreenView allowed on Android
   42: new Set([0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185]), // Admin Panel allowed on
 }
@@ -389,9 +390,9 @@ export function getApplicationType(typeId?: number) {
         appLaunchType: 'URL',
         autoLaunch: true,
       })
-    case 66:
+    case 49:
       return new Application({
-        title: 'SOCKS Proxy',
+        title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
         defaultTokenData: { app: windows ? undefined : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' },
         appLaunchType: 'COMMAND',
