@@ -2,11 +2,7 @@ import { adaptor } from './adaptor'
 import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
-export const KEY_APPS = new Set([4, 5, 7, 8, 28, 66])
-export const APPLICATION_PLATFORM_FILTER = {
-  48: new Set([1213]), // ScreenView allowed on Android
-  42: new Set([0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185]), // Admin Panel allowed on
-}
+export const KEY_APPS = new Set([4, 5, 7, 8, 28, 49])
 
 export class Application {
   title: string = ''
@@ -51,6 +47,10 @@ export class Application {
 
   preview(data: ILookup<string>) {
     return this.parse(this.template, { ...this.lookup, ...data })
+  }
+
+  visibility(device?: IDevice) {
+    return true
   }
 
   get canLaunch() {
@@ -310,7 +310,6 @@ export function getApplicationType(typeId?: number) {
       })
     case 7:
     case 30:
-    case 42:
       return new Application({
         title: 'Browser',
         use: 'Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern.',
@@ -355,6 +354,16 @@ export function getApplicationType(typeId?: number) {
         title: 'Minecraft',
         use: 'Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world.',
       })
+    case 42:
+      return new Application({
+        title: 'Admin Panel',
+        use: 'Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal.',
+        appLaunchType: 'URL',
+        urlForm: true,
+        autoLaunch: true,
+        visibility: (device?: IDevice) =>
+          device && [0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185].includes(device?.targetPlatform),
+      })
     case 43:
       return new Application({
         title: 'Terraria',
@@ -388,10 +397,11 @@ export function getApplicationType(typeId?: number) {
         use: 'Use for remote screen viewing or control via Remote.It’s Android ScreenView app. Facilitates support, collaboration and remote access.',
         appLaunchType: 'URL',
         autoLaunch: true,
+        visibility: (device?: IDevice) => device?.targetPlatform === 1213,
       })
-    case 66:
+    case 49:
       return new Application({
-        title: 'SOCKS Proxy',
+        title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
         defaultTokenData: { app: windows ? undefined : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' },
         appLaunchType: 'COMMAND',
@@ -400,6 +410,7 @@ export function getApplicationType(typeId?: number) {
           ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks://[host]:[port]"'
           : 'open -a "[app]" --user-data-dir=~/.remoteit/Chrome-[host] --proxy-server="socks://[host]:[port]"',
         autoLaunch: true,
+        visibility: (device?: IDevice) => (device?.version || 0) >= 5.2,
       })
     case 32769:
       return new Application({

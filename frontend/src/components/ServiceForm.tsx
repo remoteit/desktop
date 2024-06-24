@@ -26,8 +26,8 @@ import { Notice } from './Notice'
 import { Pre } from './Pre'
 
 export type ServiceFormProps = {
+  device?: IDevice
   service?: IService
-  targetPlatform?: IDevice['targetPlatform']
   thisDevice: boolean
   editable: boolean
   disabled?: boolean
@@ -38,8 +38,8 @@ export type ServiceFormProps = {
 }
 
 export const ServiceForm: React.FC<ServiceFormProps> = ({
+  device,
   service,
-  targetPlatform,
   thisDevice,
   editable,
   disabled,
@@ -117,8 +117,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           {editable && (
             <>
               <ServiceFormApplications
+                device={device}
                 applicationTypes={applicationTypes}
-                targetPlatform={targetPlatform}
                 selected={form.typeID}
                 disabled={!editable}
                 onSelect={type => {

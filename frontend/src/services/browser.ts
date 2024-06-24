@@ -136,7 +136,12 @@ export function getLocalStorage(state: State | null, key: string) {
 
 export function setLocalStorage(state: State | null, key: string, value: any) {
   const currentSession = state?.auth.user?.id || 'app'
-  currentSession && window.localStorage.setItem(currentSession + ':' + key, JSON.stringify(value))
+  if (!value) {
+    console.log('REMOVE LOCAL STORAGE', key, 'value:', value, 'session:', currentSession)
+    removeLocalStorage(state, key)
+  } else {
+    currentSession && window.localStorage.setItem(currentSession + ':' + key, JSON.stringify(value))
+  }
 }
 
 export function removeLocalStorage(state: State | null, key: string) {

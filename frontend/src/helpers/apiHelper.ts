@@ -27,9 +27,9 @@ export function getRestApi(): string | undefined {
 export function getWebSocketURL(): string | undefined {
   if (!store) return WEBSOCKET_URL
 
-  const { webSocketURL, switchApi } = store.getState().ui.apis
+  const apis = store.getState().ui.apis
   const defaultURL = version.includes('alpha') || version.includes('beta') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
-  return webSocketURL && switchApi ? webSocketURL : defaultURL
+  return apis?.webSocketURL && apis?.switchApi ? apis.webSocketURL : defaultURL
 }
 
 export function getTestHeader(): { [key: string]: string } {

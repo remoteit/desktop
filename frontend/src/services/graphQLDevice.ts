@@ -341,7 +341,7 @@ export function graphQLDeviceAdaptor({
       quality: d.endpoint?.quality,
       onlineSince: new Date(d.endpoint?.onlineSince).getTime(),
       offlineSince: new Date(d.endpoint?.offlineSince).getTime(),
-      version: d.version,
+      version: d.version ? parseFloat(d.version) : undefined,
       geo: d.endpoint?.geo,
       license: d.license,
       permissions: d.permissions || [],

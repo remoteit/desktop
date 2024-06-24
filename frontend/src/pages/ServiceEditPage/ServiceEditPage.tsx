@@ -33,9 +33,9 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
     <Gutters size="md" bottom={null}>
       <ListItemBack title="Service configuration" to="connect" />
       <ServiceForm
+        device={device}
         service={service}
         thisDevice={thisDevice}
-        targetPlatform={device?.targetPlatform}
         editable={!!device?.configurable || thisDevice}
         disabled={!device?.permissions.includes('MANAGE')}
         onCancel={exit}

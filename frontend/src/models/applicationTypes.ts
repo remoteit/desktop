@@ -63,9 +63,9 @@ export default createModel<RootModel>()({
       if (state.ui.testUI) {
         // TEMP - add SOCKS proxy
         all.push({
-          id: 66,
+          id: 49,
           name: 'SOCKS',
-          port: 5999,
+          port: 65535,
           proxy: true,
           scheme: 'proxy',
           protocol: 'TCP',

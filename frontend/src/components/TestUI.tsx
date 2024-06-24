@@ -1,23 +1,18 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
+import { Box, BoxProps } from '@mui/material'
 
-export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
+export const TestUI: React.FC<BoxProps> = ({ children, ...props }) => {
   const { testUI } = useSelector((state: State) => state.ui)
-  const css = useStyles()
 
   if (!testUI) return null
 
   if (testUI !== 'HIGHLIGHT') return children
 
   return (
-    <div title="test ui feature" className={css.style} {...props}>
+    <Box title="test ui feature" bgcolor="test.main" {...props}>
       {children}
-    </div>
+    </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  style: { backgroundColor: palette.test.main },
-}))
