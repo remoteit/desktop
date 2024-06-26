@@ -14,7 +14,6 @@ import { ClaimDevice } from '../components/ClaimDevice'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
@@ -54,9 +53,7 @@ export const AddPage: React.FC = () => {
         <AndroidSetup className={classnames(css.list, css.smallList)} />
         <DeviceSetupItem className={classnames(css.list, css.smallList)} />
         <ClaimDevice className={classnames(css.list, css.smallList)} />
-        <TestUI>
-          <BluetoothScan className={classnames(css.list, css.smallList)} />
-        </TestUI>
+        <BluetoothScan className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.icons)} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
