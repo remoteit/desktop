@@ -125,7 +125,7 @@ export default createModel<RootModel>()({
       emit('cancelBluetooth')
     },
 
-    async connect(_: void, state) {
+    async connect(_: void, state, ignoreConnected = false) {
       const { device, connected } = state.bluetooth
       const set = dispatch.bluetooth.set
 
@@ -134,7 +134,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      if (connected) {
+      if (connected && !ignoreConnected) {
         console.log('ALREADY CONNECTED')
         return
       }
@@ -143,8 +143,10 @@ export default createModel<RootModel>()({
         await set({ message: '', searching: true })
 
         await BleClient.connect(device.deviceId, async deviceId => {
+          // Called on disconect
           console.log('BLUETOOTH DISCONNECTED', deviceId)
-          await set({ message: 'Bluetooth disconnected', severity: 'warning', connected: false })
+          // Set Connected false
+          await set({ message: 'Bluetooth disconnected', severity: 'warning', connected: false, device: undefined })
         })
 
         const services = await BleClient.getServices(device.deviceId)
@@ -169,6 +171,7 @@ export default createModel<RootModel>()({
     async disconnect(_: void, state) {
       if (!state.bluetooth.device) return
       try {
+        console.log('DISCONNECTING')
         await BleClient.disconnect(state.bluetooth.device.deviceId)
       } catch (error) {
         console.error('ERROR DISCONNECTING', error)
@@ -310,6 +313,19 @@ export default createModel<RootModel>()({
       const device = state.bluetooth.device
       if (!device) return
 
+      let connected = await this.isConnected()
+      if (!connected) {
+        // Try to connect
+        await dispatch.bluetooth.connect()
+        connected = await this.isConnected()
+
+        if (!connected) {
+          console.log('DEVICE DISCONNECTED setting status')
+          await dispatch.bluetooth.set({ message: 'Device disconnected', severity: 'warning', connected: false })
+          return
+        }
+      }
+
       const MTU = 248 // Maximum Transmission Unit size in bytes
       const START_MARKER = '[START]'
       const END_MARKER = '[END]'
@@ -337,6 +353,16 @@ export default createModel<RootModel>()({
         }
 
         await BleClient.write(device.deviceId, BT_UUIDS.SERVICE, characteristic, textToDataView(chunk))
+      }
+    },
+
+    async isConnected(_: void, state) {
+      if (!state.bluetooth.device) return false
+      try {
+        const services = await BleClient.getServices(state.bluetooth.device?.deviceId)
+        return services.length > 0
+      } catch (error) {
+        return false
       }
     },
 
@@ -397,8 +423,22 @@ export default createModel<RootModel>()({
       const device = state.bluetooth.device
       if (!device) return
 
+      let connected = await this.isConnected()
+      if (!connected) {
+        // Try to connect
+        await dispatch.bluetooth.connect()
+        connected = await this.isConnected()
+
+        if (!connected) {
+          console.log('DEVICE DISCONNECTED setting status')
+          await dispatch.bluetooth.set({ message: 'Device disconnected', severity: 'warning', connected: false })
+          return
+        }
+      }
+
       const START_MARKER = '[START]'
       const END_MARKER = '[END]'
+
       let completeData = ''
       let reading = true
       let count = 0
@@ -442,7 +482,9 @@ export default createModel<RootModel>()({
       }
     },
 
-    async readSSIDs() {
+    async readSSIDs(_: void, state) {
+      if (!state.bluetooth.device) return
+      await dispatch.bluetooth.set({ scan: 'SCANNING' })
       const networks: NetworkInfo[] = []
       const networks_list = await dispatch.bluetooth.read(BT_UUIDS.WIFI_LIST)
       // Load the networks into the networks array
