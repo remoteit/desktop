@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useState, useContext } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { DeviceListContext } from '../services/Context'
 import { AttributeValueMemo } from './AttributeValue'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
 import { GridListItem } from './GridListItem'
+import { Restore } from './Restore'
 import { Icon } from './Icon'
 import { Box } from '@mui/material'
 
@@ -20,6 +21,7 @@ type Props = {
 }
 
 export const DeviceListItem: React.FC<Props> = ({ restore, select, selected, mobile, duplicateName, onClick }) => {
+  const [startRestore, setStartRestore] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const { connections, device, service, attributes, required } = useContext(DeviceListContext)
   const connection =
@@ -44,41 +46,45 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected, mob
   const handleClick = () => {
     onClick?.()
     if (select) onSelect?.(device.id)
-    else if (!restore) history.push(`/devices/${device.id}${service ? `/${service.id}/connect` : ''}`)
+    else if (restore) setStartRestore(true)
+    else history.push(`/devices/${device.id}${service ? `/${service.id}/connect` : ''}`)
   }
 
   return (
-    <GridListItem
-      onClick={handleClick}
-      selected={isSelected}
-      mobile={mobile}
-      icon={
-        duplicateName ? null : select ? (
-          isSelected ? (
-            <Icon name="check-square" size="md" type="solid" color="primary" />
+    <>
+      <GridListItem
+        onClick={handleClick}
+        selected={isSelected}
+        mobile={mobile}
+        icon={
+          duplicateName ? null : select ? (
+            isSelected ? (
+              <Icon name="check-square" size="md" type="solid" color="primary" />
+            ) : (
+              <Icon name="square" size="md" />
+            )
           ) : (
-            <Icon name="square" size="md" />
+            <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
           )
-        ) : (
-          <ConnectionStateIcon className="hoverHide" device={device} connection={connection} />
-        )
-      }
-      required={
-        mobile && service ? (
-          <MobileServiceName {...{ mobile, device, service, connection, connections, duplicateName }} />
-        ) : (
-          !duplicateName && (
-            <AttributeValueMemo {...{ mobile, device, service, connection, connections, attribute: required }} />
+        }
+        required={
+          mobile && service ? (
+            <MobileServiceName {...{ mobile, device, service, connection, connections, duplicateName }} />
+          ) : (
+            !duplicateName && (
+              <AttributeValueMemo {...{ mobile, device, service, connection, connections, attribute: required }} />
+            )
           )
-        )
-      }
-      disableGutters
-    >
-      {attributes?.map(attribute => (
-        <Box key={attribute.id}>
-          <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
-        </Box>
-      ))}
-    </GridListItem>
+        }
+        disableGutters
+      >
+        {attributes?.map(attribute => (
+          <Box key={attribute.id}>
+            <AttributeValueMemo {...{ mobile, device, service, attribute, connection, connections }} />
+          </Box>
+        ))}
+      </GridListItem>
+      {restore && <Restore deviceId={device.id} restore={startRestore} onComplete={() => setStartRestore(false)} />}
+    </>
   )
 }
