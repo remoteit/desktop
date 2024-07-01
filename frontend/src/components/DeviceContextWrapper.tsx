@@ -10,6 +10,7 @@ import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../selectors/connections'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { LoadingMessage } from './LoadingMessage'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   let { deviceID, serviceID, networkID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
@@ -50,6 +51,9 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
       }
     }
   }, [deviceID, serviceID, waiting, thisId, instance?.loaded, device?.loaded])
+
+  if (!device)
+    return <LoadingMessage message="Loading device data..." />;
 
   return (
     <DeviceContext.Provider value={{ user, service, device, network, instance, connection, connections, waiting }}>

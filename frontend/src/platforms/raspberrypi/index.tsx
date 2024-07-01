@@ -1,7 +1,6 @@
 import React from 'react'
 import { Typography } from '@mui/material'
 import { platforms } from '..'
-import { TestUI } from '../../components/TestUI'
 import { Icon } from '../../components/Icon'
 
 const Component = ({ darkMode, ...props }) => {
@@ -77,17 +76,15 @@ platforms.register({
   id: 'raspberrypi',
   name: 'Raspberry Pi',
   component: Component,
-  // route: '/add/raspberrypi-options',
+  route: '/add/raspberrypi-options',
   types: { 1072: 'Raspberry Pi', 1075: 'Remote.It Pi', 1076: 'Remote.It Pi Lite', 1077: 'Remote.It Pi 64' },
   listItemTitle: (
     <>
       Raspberry Pi &nbsp;
-      <TestUI>
-        <Typography variant="caption" component="div">
-          <Icon name="bluetooth" size="sm" color="grayDarker" />
-          &nbsp;WiFi Onboarding
-        </Typography>
-      </TestUI>
+      <Typography variant="caption" component="div">
+        <Icon name="bluetooth" size="sm" color="grayDarker" />
+        &nbsp;WiFi Onboarding
+      </Typography>
     </>
   ),
   installation: {
