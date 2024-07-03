@@ -25,7 +25,7 @@ type Props = {
 
 export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { message, severity, ssid, scan, wlan, networks } = useSelector((state: State) => state.bluetooth)
+  const { device, message, severity, ssid, scan, wlan, networks } = useSelector((state: State) => state.bluetooth)
   const [showPassword, setShowPassword] = useState(false)
   const [ready, setReady] = useState<boolean>(false)
   const [form, setForm] = useState({ ssid: '', pwd: '' })
@@ -74,7 +74,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
         <Typography variant="h2">WiFi Setup</Typography>
       </Stack>
       <Typography variant="body2" gutterBottom>
-        Connect your Raspberry Pi to WiFi.
+        Connect your Raspberry Pi ({device?.name?.replace('Remote.It Onboard', '').trim() || 'unknown'}) to WiFi.
         <br />
         Select a network and enter its password.
       </Typography>
