@@ -12,7 +12,7 @@ type Props = {
 }
 
 export const OnboardScanning: React.FC<Props> = ({ next }) => {
-  const { connected, searching, wlan, message, severity } = useSelector((state: State) => state.bluetooth)
+  const { connected, searching, wlan, message, severity, enabledMessage, enabledSeverity } = useSelector((state: State) => state.bluetooth)
   const dispatch = useDispatch<Dispatch>()
   const [ready, setReady] = useState<boolean>(false)
   const [help, setHelp] = useState<boolean>(false)
@@ -20,6 +20,8 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
   useEffect(() => {
     ;(async () => {
       console.log('disconnecting...')
+      await dispatch.bluetooth.init()
+      await checkBluetooth()
       await dispatch.bluetooth.stop()
       console.log('disconnected')
       setReady(true)
@@ -27,11 +29,42 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
   }, [])
 
   useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        // Handle the event when the page becomes visible again
+        console.log('Page is visible again');
+        await checkBluetooth()
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
     if (ready && connected) next()
   }, [connected, wlan, ready])
 
+  const checkBluetooth = async () => {
+    if(!await dispatch.bluetooth.isBluetoothEnabled()) {
+      // console.log('Bluetooth is not enabled')
+      // Set state message to inform user that bluetooth is not enabled
+      dispatch.bluetooth.set({ enabledMessage: 'Bluetooth is disabled', enabledSeverity: 'error' })
+    } else {
+      // console.log('Bluetooth is enabled')
+      console.log('message: ', message)
+
+      dispatch.bluetooth.set({ enabledMessage: '', enabledSeverity: 'info' })
+    }
+  }
+
   const onScan = async () => {
-    await dispatch.bluetooth.start()
+    if(await dispatch.bluetooth.isBluetoothEnabled()) {
+      await dispatch.bluetooth.start()
+    } 
   }
 
   const onCancel = async () => {
@@ -48,6 +81,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
           <b>Note:</b> This setup is only for Raspberry Pis that are enabled with Remote.It. If you already have a Pi
           online<Link to="/add/raspberrypi">add remote access.</Link>
         </Typography>
+        <OnboardMessage message={enabledMessage} severity={enabledSeverity} />
         <OnboardMessage message={message} severity={severity} />
         <Stack flexDirection="row" alignItems="center" marginTop={5} marginBottom={3}>
           {searching ? (

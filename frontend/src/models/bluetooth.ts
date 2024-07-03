@@ -1,6 +1,6 @@
 import browser from '../services/browser'
 import { createModel } from '@rematch/core'
-import { BleClient, textToDataView } from '@capacitor-community/bluetooth-le'
+import { BleClient, BluetoothLe, textToDataView } from '@capacitor-community/bluetooth-le'
 import { RootModel } from '.'
 import { BT_UUIDS } from '../constants'
 import { emit } from '../services/Controller'
@@ -43,6 +43,8 @@ export interface BluetoothState extends Notification {
   networks: NetworkInfo[]
   message: string
   severity?: 'info' | 'warning' | 'error' | 'success'
+  enabledMessage?: string
+  enabledSeverity?: 'info' | 'warning' | 'error' | 'success'
   eventAutoRegister: boolean
   eventRegistering: boolean
 }
@@ -54,6 +56,8 @@ const defaultState: BluetoothState = {
   connected: false,
   networks: [],
   message: '',
+  enabledMessage: '',
+  enabledSeverity: 'info',
   eventRegistering: false,
   eventAutoRegister: true,
 }
@@ -66,20 +70,43 @@ const SCAN_TIMEOUT = 30000
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
+
+    // Init Bluetooth library
+    async init() {
+      try {
+        await BleClient.initialize({ androidNeverForLocation: true })
+        console.log('Bluetooth initialized')
+      } catch (error) {
+        console.error('Bluetooth initialization error:', error)
+      }
+    },
+
+    // Function to start the Bluetooth process
     async start() {
-      await dispatch.bluetooth.initialize()
+      await dispatch.bluetooth.startScan()
+
       if (browser.isAndroid) await dispatch.bluetooth.disconnect()
       await dispatch.bluetooth.connect()
       await dispatch.bluetooth.startNotifications()
     },
 
-    async initialize() {
+    // Function to check if Bluetooth is enabled
+    async isBluetoothEnabled(): Promise<boolean> {
+      try {
+        const isEnabled = await BluetoothLe.isEnabled();
+        return isEnabled.value;
+      } catch (error) {
+        console.error('Error checking Bluetooth status:', error);
+        return false;
+      }
+    },
+
+    async startScan() {
       let scanTimer: NodeJS.Timeout | undefined
 
       try {
         console.log('BLUETOOTH INITIALIZING')
         await dispatch.bluetooth.set({ message: '', searching: true })
-        await BleClient.initialize({ androidNeverForLocation: true })
 
         scanTimer = setTimeout(async () => {
           clearTimeout(scanTimer)
