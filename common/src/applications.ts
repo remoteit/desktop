@@ -403,12 +403,12 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
-        defaultTokenData: { app: windows ? undefined : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' },
+        defaultTokenData: { app: windows ? undefined : 'Google Chrome' },
         appLaunchType: 'COMMAND',
         // C:\\\\Program Files (x86)\\GoogleChromeApplicationchrome.exe
         appCommandTemplate: windows
-          ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks://[host]:[port]"'
-          : 'open -a "[app]" --user-data-dir=~/.remoteit/Chrome-[host] --proxy-server="socks://[host]:[port]"',
+          ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks5://[host]:[port]"'
+          : 'osascript -e \'quit app "[app]"\' && sleep 3 && open -na "[app]" --args --proxy-server="socks5://[host]:[port]"',
         autoLaunch: true,
         visibility: (device?: IDevice) => (device?.version || 0) >= 5.2,
       })
