@@ -42,7 +42,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
     <>
       <Box marginX={2} marginTop={4}>
         <Stack flexDirection="row" alignItems="center" marginY={2}>
-          <Typography variant="h2">Bluetooth Commissioning</Typography>
+          <Typography variant="h2">Bluetooth Onboarding</Typography>
         </Stack>
         <Typography variant="caption" color="grayDarker.main">
           <b>Note:</b> This setup is only for Raspberry Pis that are enabled with Remote.It. If you already have a Pi
