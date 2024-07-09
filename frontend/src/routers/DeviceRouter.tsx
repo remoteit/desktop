@@ -3,8 +3,8 @@ import { State } from '../store'
 import { ScanPage } from '../pages/ScanPage'
 import { DeviceContext } from '../services/Context'
 import { ServiceRouter } from './ServiceRouter'
-import { Switch, Route, Redirect } from 'react-router-dom'
 import { selectDeviceModelAttributes } from '../selectors/devices'
+import { Switch, Route, Redirect, useParams } from 'react-router-dom'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
@@ -19,17 +19,19 @@ import { useSelector } from 'react-redux'
 import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
+  const { deviceID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
   const { device } = React.useContext(DeviceContext)
   const { fetching, initialized } = useSelector(selectDeviceModelAttributes)
   const defaultServiceLookup = useSelector((state: State) => state.ui.defaultService)
   const waiting = fetching || !initialized
 
   const defaultService = () => {
-    const lookupResult = defaultServiceLookup[device?.id || '']
+    const lookupResult = defaultServiceLookup[deviceID || '']
     const validLookup = lookupResult === null || device?.services.find(s => s.id === lookupResult)
     const serviceId = validLookup ? lookupResult : device?.services?.[0]?.id
     const redirect = device?.state === 'active' && serviceId ? `${serviceId}/connect` : 'details'
-    return { pathname: `/devices/${device?.id}/${redirect}`, state: { isRedirect: true } }
+    console.log('DEFAULT SERVICE', { lookupResult, validLookup, serviceId, redirect })
+    return { pathname: `/devices/${deviceID}/${redirect}`, state: { isRedirect: true } }
   }
 
   if (waiting && !device)

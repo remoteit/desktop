@@ -52,9 +52,6 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [deviceID, serviceID, waiting, thisId, instance?.loaded, device?.loaded])
 
-  if (!device)
-    return <LoadingMessage message="Loading device data..." />;
-
   return (
     <DeviceContext.Provider value={{ user, service, device, network, instance, connection, connections, waiting }}>
       {children}
