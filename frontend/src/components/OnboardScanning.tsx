@@ -19,9 +19,7 @@ export const OnboardScanning: React.FC<Props> = ({ next }) => {
 
   useEffect(() => {
     ;(async () => {
-      console.log('disconnecting...')
       await dispatch.bluetooth.stop()
-      console.log('disconnected')
       setReady(true)
     })()
   }, [])

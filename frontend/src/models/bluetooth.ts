@@ -143,7 +143,7 @@ export default createModel<RootModel>()({
         await set({ message: '', searching: true })
 
         await BleClient.connect(device.deviceId, async deviceId => {
-          // Called on disconect
+          // Called on disconnect
           console.log('BLUETOOTH DISCONNECTED', deviceId)
           // Set Connected false
           await set({ message: 'Bluetooth disconnected', severity: 'warning', connected: false, device: undefined })
@@ -159,6 +159,7 @@ export default createModel<RootModel>()({
         }
       } catch (error) {
         console.error('ERROR processing TO DEVICE', error)
+        event('BLE_DEVICE_SCAN', { success: false })
         await set({
           message: `Failed to connect to device: ${error.message}`,
           severity: 'error',
@@ -292,7 +293,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async startNotifications(_: void) {
+    async startNotifications(_: void, state) {
+      if (!state.bluetooth.connected) return
       const characteristics = [BT_UUIDS.WIFI_STATUS, BT_UUIDS.REGISTRATION_STATUS]
       for (const characteristic of characteristics) {
         await dispatch.bluetooth.notify(characteristic)
