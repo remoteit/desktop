@@ -97,21 +97,15 @@ const defaultAccountState: IDeviceAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async migrate(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      console.log('INIT DEVICES', accountId)
-    },
-
     async fetchList(_: void, state) {
       const accountId = selectActiveAccountId(state)
       let deviceModel = selectDeviceModelAttributes(state, accountId)
 
-      if (!deviceModel.initialized) {
-        await dispatch.devices.migrate()
-        // Update the state object after
-        state = store.getState()
-        deviceModel = selectDeviceModelAttributes(state, accountId)
-      }
+      // if (!deviceModel.initialized) {
+      //   // Update the state object after
+      //   state = store.getState()
+      //   deviceModel = selectDeviceModelAttributes(state, accountId)
+      // }
 
       const columns = selectActiveColumns(state, accountId)
       const { set, graphQLListProcessor } = dispatch.devices

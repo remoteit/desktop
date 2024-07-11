@@ -1,7 +1,6 @@
 import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
-import { getLocalStorage, removeLocalStorage } from '../services/browser'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
@@ -23,16 +22,6 @@ const accountsState: IAccountsState = {
 export default createModel<RootModel>()({
   state: { ...accountsState },
   effects: dispatch => ({
-    async migrate(_: void, state) {
-      let activeId = getLocalStorage(state, ACCOUNT_KEY)
-      if (activeId) {
-        dispatch.accounts.set({ activeId: activeId })
-        removeLocalStorage(state, ACCOUNT_KEY)
-        console.log('MIGRATE ACTIVE ACCOUNT', activeId)
-      }
-      await dispatch.accounts.fetch()
-    },
-
     async fetch() {
       const result = await graphQLBasicRequest(
         ` query Accounts {
