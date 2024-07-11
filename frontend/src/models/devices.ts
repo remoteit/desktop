@@ -99,14 +99,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetchList(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      let deviceModel = selectDeviceModelAttributes(state, accountId)
-
-      // if (!deviceModel.initialized) {
-      //   // Update the state object after
-      //   state = store.getState()
-      //   deviceModel = selectDeviceModelAttributes(state, accountId)
-      // }
-
+      const deviceModel = selectDeviceModelAttributes(state, accountId)
       const columns = selectActiveColumns(state, accountId)
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts

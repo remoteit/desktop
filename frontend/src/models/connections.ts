@@ -59,6 +59,7 @@ export default createModel<RootModel>()({
       // Migrate launch templates (v3.30)
       console.log('CONNECTIONS MIGRATE LAUNCH TEMPLATES')
       const connections = state.connections.all.map(c => {
+        c = structuredClone(c)
         if (c.launchTemplate || c.commandTemplate) console.log('MIGRATING', c.name, c.id)
         if (!c.launchTemplates) c.launchTemplates = {}
         if (c.launchTemplate) c.launchTemplates.URL = c.launchTemplate
