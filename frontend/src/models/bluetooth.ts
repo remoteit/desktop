@@ -290,7 +290,7 @@ export default createModel<RootModel>()({
         await dispatch.bluetooth.set({ notify })
       } catch (error) {
         console.error('STOP NOTIFY ERROR', error)
-      }
+      } 
     },
 
     async startNotifications(_: void, state) {
