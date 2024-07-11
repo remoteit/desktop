@@ -4,17 +4,73 @@ import { replaceHost } from './nameHelper'
 export const DEVICE_TYPE = 35
 export const KEY_APPS = new Set([4, 5, 7, 8, 28, 49])
 
+class LaunchMethod {
+  type: Exclude<IConnection['launchType'], undefined> = 'NONE'
+  icon: string = ''
+  name: string = ''
+  key: string = ''
+  template: string = ''
+  defaultTemplate: string = ''
+  copyIcon?: string = ''
+  display?: string
+  disconnect?: string
+  disconnectDisplay?: string
+
+  constructor(options?: Partial<{ [key in keyof LaunchMethod]: LaunchMethod[key] }>) {
+    this.setDefaults()
+    if (options) {
+      options.defaultTemplate = options.defaultTemplate || options.template
+      Object.assign(this, options)
+    }
+  }
+
+  setDefaults() {
+    // intended to be used by child classes
+  }
+
+  get form() {
+    return { key: this.type, name: this.name }
+  }
+}
+
+class UrlLaunchMethod extends LaunchMethod {
+  setDefaults() {
+    this.type = 'URL'
+    this.key = 'launchTemplate'
+    this.icon = 'launch'
+    this.copyIcon = 'link-horizontal'
+    this.name = 'URL'
+    this.template = 'https://[host]:[port]'
+  }
+}
+
+class CommandLaunchMethod extends LaunchMethod {
+  setDefaults() {
+    this.type = 'COMMAND'
+    this.key = 'commandTemplate'
+    this.icon = 'terminal'
+    this.name = 'Command'
+    this.template = '[host]:[port]'
+  }
+}
+
+class SystemLaunchMethod extends LaunchMethod {
+  setDefaults() {
+    this.type = 'SYSTEM'
+    this.icon = 'code-simple'
+    this.key = 'systemTemplate'
+    this.name = 'System Configuration'
+    this.template = '[host]:[port]'
+  }
+}
+
 export class Application {
   title: string = ''
   use: string = ''
-  launchIcon: string = 'launch'
-  commandIcon: string = 'terminal'
   urlForm: boolean = false
   sshConfig: boolean = false
   appLaunchType: IConnection['launchType'] = 'NONE'
-  appCommandTemplate: string = '[host]:[port]'
-  appLaunchTemplate: string = 'https://[host]:[port]'
-  displayTemplate?: string
+  launchMethods: LaunchMethod[] = [new UrlLaunchMethod(), new CommandLaunchMethod()]
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
@@ -22,6 +78,7 @@ export class Application {
   localhost?: boolean
   helpMessage?: string
   autoLaunch?: boolean
+  autoClose?: boolean // run command on disconnect
   canShare?: boolean
 
   connection?: IConnection
@@ -32,12 +89,12 @@ export class Application {
 
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
-  constructor(options: { [key in keyof Application]?: any }) {
+  constructor(options: Partial<{ [key in keyof Application]: Application[key] }>) {
     const environment = adaptor?.getState().environment
     const portal = environment?.portal
     const os = environment?.os
     options.windows = os === 'windows'
-    options.portal = portal
+    options.portal = !!portal
     Object.assign(this, options)
   }
 
@@ -58,15 +115,19 @@ export class Application {
   }
 
   get icon() {
-    return this.launchType === 'COMMAND' ? this.commandIcon : this.launchIcon
+    return this.launchMethod.icon
+  }
+
+  get copyIcon() {
+    return this.launchMethod.copyIcon || this.icon
   }
 
   get templateKey() {
-    return this.launchType === 'COMMAND' ? 'commandTemplate' : 'launchTemplate'
+    return this.launchMethod.key
   }
 
   get contextTitle() {
-    return this.launchType === 'COMMAND' ? this.commandTitle : this.launchTitle
+    return `${this.title} ${this.launchMethod.name}`
   }
 
   get commandTitle() {
@@ -77,22 +138,36 @@ export class Application {
     return `${this.title} URL`
   }
 
+  get launchMethod(): LaunchMethod {
+    return this.getLaunchMethod(this.launchType)
+  }
+
+  get commandLaunchMethod(): LaunchMethod {
+    return this.getLaunchMethod('COMMAND')
+  }
+
+  get urlLaunchMethod(): LaunchMethod {
+    return this.getLaunchMethod('URL')
+  }
+
   get defaultTemplate() {
-    return this.launchType === 'COMMAND' ? this.resolvedDefaultCommandTemplate : this.resolvedDefaultLaunchTemplate
+    return this.launchMethod.defaultTemplate // need resolved
   }
 
   get template() {
-    return this.launchType === 'COMMAND' ? this.commandTemplate : this.launchTemplate
+    const type = this.launchType
+    if (this.connection?.connectLink) return this.resolvedDefaultTemplate(type)
+    return this.connection?.launchTemplates?.[this.launchMethod.type] || this.resolvedDefaultTemplate(type)
   }
 
   get launchTemplate() {
-    if (this.connection?.connectLink) return this.resolvedDefaultLaunchTemplate
-    return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
+    if (this.connection?.connectLink) return this.resolvedDefaultTemplate('URL')
+    return this.connection?.launchTemplate || this.resolvedDefaultTemplate('URL')
   }
 
   get commandTemplate() {
-    if (this.connection?.connectLink) return this.resolvedDefaultCommandTemplate
-    return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
+    if (this.connection?.connectLink) return this.resolvedDefaultTemplate('COMMAND')
+    return this.connection?.commandTemplate || this.resolvedDefaultTemplate('COMMAND')
   }
 
   get string() {
@@ -100,7 +175,7 @@ export class Application {
   }
 
   get displayString() {
-    return this.parse(this.displayTemplate || this.template, this.lookup)
+    return this.parse(this.launchMethod?.display || this.template, this.lookup)
   }
 
   get commandString() {
@@ -109,6 +184,10 @@ export class Application {
 
   get launchString() {
     return this.parse(this.launchTemplate, this.lookup)
+  }
+
+  get disconnectString() {
+    return this.parse(this.launchMethod.disconnect, this.lookup)
   }
 
   get prompt() {
@@ -120,7 +199,7 @@ export class Application {
   }
 
   get allTokens() {
-    return this.extractTokens(this.commandTemplate + this.launchTemplate)
+    return this.extractTokens(this.launchMethods.map(method => method.template).join())
   }
 
   get commandTokens() {
@@ -140,11 +219,11 @@ export class Application {
   }
 
   get defaultCommandTemplate() {
-    return this.appCommandTemplate
+    return this.commandLaunchMethod.template
   }
 
   get defaultLaunchTemplate() {
-    return this.appLaunchTemplate
+    return this.urlLaunchMethod.template
   }
 
   get defaultTokens() {
@@ -186,17 +265,23 @@ export class Application {
     return secure ? this.template.replace('http:', 'https:') : this.template.replace('https:', 'http:')
   }
 
-  private get resolvedDefaultLaunchTemplate(): string {
-    return this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
+  private resolvedDefaultTemplate(type?: LaunchMethod['type']): string {
+    switch (type) {
+      case 'URL':
+        return (
+          this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
+        )
+      case 'COMMAND':
+        return (
+          this.service?.attributes.commandTemplate || this.globalDefaults.commandTemplate || this.defaultCommandTemplate
+        )
+      default:
+        return this.launchMethod.defaultTemplate
+    }
   }
 
-  private get resolvedDefaultCommandTemplate(): string {
-    return (
-      this.service?.attributes.commandTemplate ||
-      this.globalDefaults.commandTemplate ||
-      this.defaultCommandTemplate ||
-      this.defaultLaunchTemplate
-    )
+  private getLaunchMethod(type?: LaunchMethod['type']) {
+    return this.launchMethods.find(method => method.type === type) || this.launchMethods[0]
   }
 
   private parse(template: string = '', lookup: ILookup<string>) {
@@ -233,8 +318,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
     const url = service.link.url
     app.title = app.reverseProxy ? 'Public' : 'Unauthenticated'
     app.canShare = true
-    app.appCommandTemplate = url
-    app.appLaunchTemplate = url
+    app.launchMethods = [new UrlLaunchMethod({ template: url }), new CommandLaunchMethod({ template: url })]
     app.appLaunchType = app.reverseProxy ? 'URL' : 'NONE'
   }
 
@@ -261,16 +345,19 @@ export function getApplicationType(typeId?: number) {
     case 4:
       return new Application({
         title: 'VNC',
-        launchIcon: 'desktop',
         use: 'Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely.',
         appLaunchType: ios || android || mac ? 'URL' : 'COMMAND',
-        defaultTokenData: { app: windows ? undefined : 'VNC Viewer' },
-        appLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        appCommandTemplate: windows
-          ? '"[path]" -Username "[username]" [host]:[port]'
-          : mac
-          ? 'open -a "[app]" --args -Username [username] [host]:[port]'
-          : 'vnc://[host]:[port]',
+        defaultTokenData: windows ? undefined : { app: 'VNC Viewer' },
+        launchMethods: [
+          new UrlLaunchMethod({ template: 'vnc://[username]@[host]:[port]', icon: 'desktop' }),
+          new CommandLaunchMethod({
+            template: windows
+              ? '"[path]" -Username "[username]" [host]:[port]'
+              : mac
+              ? 'open -a "[app]" --args -Username [username] [host]:[port]'
+              : 'vnc://[host]:[port]',
+          }),
+        ],
       })
     case 28:
       return new Application({
@@ -278,13 +365,17 @@ export function getApplicationType(typeId?: number) {
         use: 'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.',
         autoLaunch: !(windows && portal),
         appLaunchType: (portal && !windows) || ios || android ? 'URL' : 'COMMAND',
-        appLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        appCommandTemplate: sshConfig
-          ? 'ssh_config [User]'
-          : windows
-          ? 'start cmd /k ssh [username]@[host] -p [port]'
-          : 'ssh -l [username] [host] -p [port]',
-        displayTemplate: sshConfig && (windows ? 'start cmd /k ssh [host]' : 'ssh [host]'),
+        launchMethods: [
+          new UrlLaunchMethod({ template: 'ssh://[username]@[host]:[port]' }),
+          new CommandLaunchMethod({
+            template: sshConfig
+              ? 'ssh_config [User]'
+              : windows
+              ? 'start cmd /k ssh [username]@[host] -p [port]'
+              : 'ssh -l [username] [host] -p [port]',
+            display: sshConfig ? (windows ? 'start cmd /k ssh [host]' : 'ssh [host]') : undefined,
+          }),
+        ],
         helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
         sshConfig,
       })
@@ -294,9 +385,13 @@ export function getApplicationType(typeId?: number) {
         title: 'RDP',
         use: 'For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely.',
         appLaunchType: ios || android ? 'URL' : 'COMMAND',
-        defaultTokenData: { app: windows ? undefined : 'Microsoft Remote Desktop' },
-        appLaunchTemplate: rdpCommand,
-        appCommandTemplate: windows ? 'mstsc /v: [host]:[port]' : mac ? `open -a "[app]" "${rdpCommand}"` : rdpCommand,
+        defaultTokenData: windows ? undefined : { app: 'Microsoft Remote Desktop' },
+        launchMethods: [
+          new UrlLaunchMethod({ template: rdpCommand }),
+          new CommandLaunchMethod({
+            template: windows ? 'mstsc /v: [host]:[port]' : mac ? `open -a "[app]" "${rdpCommand}"` : rdpCommand,
+          }),
+        ],
       })
     case 8:
     case 10:
@@ -321,12 +416,12 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'Samba',
         use: 'Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol.',
-        launchIcon: 'folder',
-        commandIcon: 'clipboard',
         localhost: true,
         appLaunchType: 'URL',
-        appLaunchTemplate: 'smb://[host]:[port]',
-        appCommandTemplate: windows ? '\\\\[host]:[port]' : '[host]:[port]',
+        launchMethods: [
+          new UrlLaunchMethod({ template: 'smb://[host]:[port]', icon: 'folder' }),
+          new CommandLaunchMethod({ template: windows ? '\\\\[host]:[port]' : '[host]:[port]', icon: 'clipboard' }),
+        ],
       })
     case 37:
       return new Application({
@@ -362,7 +457,7 @@ export function getApplicationType(typeId?: number) {
         urlForm: true,
         autoLaunch: true,
         visibility: (device?: IDevice) =>
-          device && [0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185].includes(device?.targetPlatform),
+          !!device && [0, 5, 10, 1120, 1076, 256, 769, 1121, 1200, 1185].includes(device?.targetPlatform),
       })
     case 43:
       return new Application({
@@ -389,7 +484,12 @@ export function getApplicationType(typeId?: number) {
         title: 'Docker API',
         use: 'Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely.',
         appLaunchType: 'COMMAND',
-        appCommandTemplate: windows ? 'start cmd /k docker -H [host]:[port] ps' : 'docker -H [host]:[port] ps',
+        launchMethods: [
+          new UrlLaunchMethod({ template: 'https://[host]:[port]' }),
+          new CommandLaunchMethod({
+            template: windows ? 'start cmd /k docker -H [host]:[port] ps' : 'docker -H [host]:[port] ps',
+          }),
+        ],
       })
     case 48:
       return new Application({
@@ -403,13 +503,29 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
-        defaultTokenData: { app: windows ? undefined : 'Google Chrome' },
+        defaultTokenData: {
+          app: windows ? 'C:\\\\Program Files (x86)\\GoogleChromeApplicationchrome.exe' : 'Google Chrome',
+        },
         appLaunchType: 'COMMAND',
-        // C:\\\\Program Files (x86)\\GoogleChromeApplicationchrome.exe
-        appCommandTemplate: windows
-          ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks5://[host]:[port]"'
-          : 'osascript -e \'quit app "[app]"\' && sleep 3 && open -na "[app]" --args --proxy-server="socks5://[host]:[port]"',
+        autoClose: true,
         autoLaunch: true,
+        launchMethods: [
+          new CommandLaunchMethod({
+            name: 'Chrome Command',
+            template: windows
+              ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks5://[host]:[port]"'
+              : 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]" --args --proxy-server="socks5://[host]:[port]"',
+            disconnect: 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]"',
+            disconnectDisplay: 'Restarts Chrome to remove SOCKS Proxy on disconnect',
+          }),
+          // new SystemLaunchMethod({
+          //   template:
+          //     'networksetup -setsocksfirewallproxy Wi-Fi [host] [port] && networksetup -setsocksfirewallproxystate Wi-Fi on',
+          //   disconnect:
+          //     'networksetup -setsocksfirewallproxystate Wi-Fi off && networksetup -setsocksfirewallproxystate Ethernet off',
+          //   disconnectDisplay: 'Turns off system SOCKS Proxy on disconnect',
+          // }),
+        ],
         visibility: (device?: IDevice) => (device?.version || 0) >= 5.2,
       })
     case 32769:

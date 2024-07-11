@@ -360,6 +360,7 @@ class CloudController {
               },
             })
           } else {
+            dispatch.connections.closed(target.id)
             dispatch.sessions.removeSession(event.sessionId)
           }
         })

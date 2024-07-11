@@ -18,6 +18,7 @@ import { ServiceKeySetting } from './ServiceKeySetting'
 import { ListItemLocation } from './ListItemLocation'
 import { AutoLaunchToggle } from './AutoLaunchToggle'
 import { ConnectionSurvey } from './ConnectionSurvey'
+import { AutoCloseToggle } from './AutoCloseToggle'
 import { AccessAccordion } from './AccessAccordion'
 import { ConnectionMenu } from './ConnectionMenu'
 import { GraphItem } from './GraphItem'
@@ -95,6 +96,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
               <Divider variant="inset" sx={{ marginTop: 1, marginBottom: 1 }} />
               <Collapse in={!connection.connectLink && app.canLaunch}>
                 <AutoLaunchToggle connection={connection} service={service} />
+                <AutoCloseToggle app={app} />
               </Collapse>
               {reverseProxy ? (
                 <ConnectLinkSetting

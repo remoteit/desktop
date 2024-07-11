@@ -20,9 +20,10 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
 
   const update = (template: string) =>
     connection &&
+    app.launchType &&
     setConnection({
       ...connection,
-      [app.templateKey]: template,
+      launchTemplates: { ...connection.launchTemplates, [app.launchType]: template },
       disableSecurity: isSecureReverseProxy(template) === false,
     })
 
