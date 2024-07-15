@@ -481,9 +481,7 @@ export default createModel<RootModel>()({
       else set({ all: all.filter(c => c.enabled && c.online) })
     },
 
-    async closed(id: string, state) {
-      const connection = state.connections.all.find(c => c.id === id)
-      if (!connection) return
+    async closed(connection: IConnection, state) {
       const app = selectApplication(state, undefined, connection)
       if (connection.launched && connection.autoClose && app.disconnectString) {
         console.log('ON CONNECTION CLOSE', app.disconnectString)
