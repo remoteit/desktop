@@ -5,7 +5,7 @@ import Command from './Command'
 import environment from './environment'
 
 export default async function launch(command: string, terminal: boolean) {
-  Logger.info('LAUNCH', { terminal })
+  Logger.info('LAUNCH', { terminal, path: __filename,  })
 
   if (terminal) {
     if (environment.isMac) {
@@ -28,6 +28,8 @@ export default async function launch(command: string, terminal: boolean) {
 
   if (result && result.includes('Command failed:')) {
     EventBus.emit(cli.EVENTS.error, result.toString())
-    Logger.warn('LAUNCH APP COMMAND FAILURE', { result })
+    Logger.warn('LAUNCH APP COMMAND FAILURE')
   }
+
+  Logger.info('LAUNCH RESULT', { result })
 }

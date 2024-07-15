@@ -139,7 +139,7 @@ export default class ElectronApp {
     })
 
     let filePath = result?.filePaths[0]
-    if (type === 'app') filePath = path.basename(filePath, '.app')
+    if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
 
     EventBus.emit(EVENTS.filePath, filePath)
     Logger.info('FILE PROMPT RESULT', { result, filePath })

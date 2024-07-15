@@ -503,9 +503,7 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
-        defaultTokenData: {
-          app: windows ? 'C:\\\\Program Files (x86)\\GoogleChromeApplicationchrome.exe' : 'Google Chrome',
-        },
+        defaultTokenData:  windows ? undefined : { app:'Google Chrome' },
         appLaunchType: 'COMMAND',
         autoClose: true,
         autoLaunch: true,
@@ -513,9 +511,10 @@ export function getApplicationType(typeId?: number) {
           new CommandLaunchMethod({
             name: 'Chrome Command',
             template: windows
-              ? '"[app]" --user-data-dir="%USERPROFILE%\\AppData\\Local\\remoteit\\Chrome-[host]" --proxy-server="socks5://[host]:[port]"'
+              ? 'powershell -ExecutionPolicy Bypass -File ".\\scripts\\socks.ps1" -path "[app]" -proxy "socks5://[host]:[port]"'
               : 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]" --args --proxy-server="socks5://[host]:[port]"',
-            disconnect: 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]"',
+            disconnect: windows ?  'powershell -ExecutionPolicy Bypass -File ".\\scripts\\socks.ps1" -path "[app]"'
+            : 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]"',
             disconnectDisplay: 'Restarts Chrome to remove SOCKS Proxy on disconnect',
           }),
           // new SystemLaunchMethod({
