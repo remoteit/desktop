@@ -8,7 +8,6 @@ class LaunchMethod {
   type: Exclude<IConnection['launchType'], undefined> = 'NONE'
   icon: string = ''
   name: string = ''
-  // key: 'commandTemplate' | 'launchTemplate' = 'commandTemplate'
   template: string = ''
   defaultTemplate: string = ''
   copyIcon?: string = ''
@@ -36,7 +35,6 @@ class LaunchMethod {
 class UrlLaunchMethod extends LaunchMethod {
   setDefaults() {
     this.type = 'URL'
-    // this.key = 'launchTemplate'
     this.icon = 'launch'
     this.copyIcon = 'link-horizontal'
     this.name = 'URL'

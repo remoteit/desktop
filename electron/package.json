@@ -127,6 +127,10 @@
       {
         "from": "./bin/${arch}",
         "to": "./"
+      },
+      {
+        "from": "./scripts/*.ps1",
+        "to": "./"
       }
     ],
     "files": [
