@@ -498,7 +498,7 @@ export default createModel<RootModel>()({
 
       console.log('WIFI LIST', networks)
       event('BLE_DEVICE_WIFI_LIST', { count: networks.length })
-      dispatch.bluetooth.set({ networks })
+      dispatch.bluetooth.set({ networks, scan: 'COMPLETE' })
     },
   }),
   reducers: {

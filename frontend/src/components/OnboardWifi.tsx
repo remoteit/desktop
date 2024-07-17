@@ -28,6 +28,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const { device, message, severity, ssid, scan, wlan, networks } = useSelector((state: State) => state.bluetooth)
   const [showPassword, setShowPassword] = useState(false)
   const [ready, setReady] = useState<boolean>(false)
+  const [open, setOpen] = useState<boolean>(false)
   const [form, setForm] = useState({ ssid: '', pwd: '' })
   const passwordRef = useRef<HTMLInputElement>()
 
@@ -82,8 +83,8 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
       <form onSubmit={onSubmit} autoComplete="off">
         <List>
           <Autocomplete
+            open={open}
             freeSolo
-            autoFocus
             fullWidth
             autoSelect
             autoComplete
@@ -96,6 +97,16 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             options={options}
             value={scan === 'SCANNING' ? 'Scanning...' : form.ssid}
             sx={{ marginBottom: 1 }}
+            componentsProps={{
+              popupIndicator: {
+                onClick: e => {
+                  e.stopPropagation()
+                  setOpen(!open)
+                },
+              },
+            }}
+            onOpen={() => setOpen(true)}
+            onClose={() => setOpen(false)}
             onChange={(event, ssid, reason) => {
               if (!ssid || disabled) return
               setForm({ ...form, ssid })
@@ -112,11 +123,11 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             }}
             renderInput={params => (
               <TextField
+                {...params}
                 variant="filled"
                 label="Network"
                 type="text"
                 name="network"
-                {...params}
                 autoComplete="off"
                 InputProps={{
                   ...params.InputProps,
