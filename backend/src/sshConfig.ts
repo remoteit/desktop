@@ -5,7 +5,8 @@ import Logger from './Logger'
 import path from 'path'
 import fs from 'fs/promises'
 
-const CONFIG_HEADER = `HostKeyAlgorithms +ssh-rsa
+const CONFIG_HEADER = `Host *
+  HostKeyAlgorithms +ssh-rsa
   AddKeysToAgent yes
   ForwardAgent yes
   IdentitiesOnly yes
@@ -141,7 +142,7 @@ class SSHConfig {
 
   async generateConfig(configs: ConfigType[]): Promise<string> {
     let result = CONFIG_HEADER
-    if (environment.isMac) result += 'UseKeychain yes\n'
+    if (environment.isMac) result += `  UseKeychain yes\n`
 
     for (const config of configs) {
       result += `\nHost ${config.host}\n`

@@ -11,7 +11,7 @@ class LaunchMethod {
   template: string = ''
   defaultTemplate: string = ''
   copyIcon?: string = ''
-  display?: string
+  sshConfig?: string
   disconnect?: string
   disconnectDisplay?: string
 
@@ -171,8 +171,8 @@ export class Application {
     return this.parse(this.template, this.lookup)
   }
 
-  get displayString() {
-    return this.parse(this.launchMethod?.display || this.template, this.lookup)
+  get sshConfigString() {
+    return this.parse(this.launchMethod?.sshConfig || this.template, this.lookup)
   }
 
   get commandString() {
@@ -381,7 +381,7 @@ export function getApplicationType(typeId?: number) {
               : windows
               ? 'ssh [username]@[host] -p [port]'
               : 'ssh -l [username] [host] -p [port]',
-            display: sshConfig ? (windows ? 'start cmd /k ssh [host]' : 'ssh [host]') : undefined,
+            sshConfig: sshConfig ? 'ssh [host]' : undefined,
           }),
         ],
         helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
@@ -525,9 +525,7 @@ export function getApplicationType(typeId?: number) {
             template: windows
               ? 'socks.ps1 -path "[app]" -proxy "socks5://[host]:[port]"'
               : 'socks.sh "[app]" "socks5://[host]:[port]"',
-            disconnect: windows
-              ? 'powershell -ExecutionPolicy Bypass -File ".\\scripts\\socks.ps1" -path "[app]"'
-              : 'socks.sh "[app]"',
+            disconnect: windows ? 'socks.ps1 -path "[app]"' : 'socks.sh "[app]"',
             disconnectDisplay: 'Restarts Chrome to remove SOCKS Proxy on disconnect',
           }),
           // new ScriptLaunchMethod({
