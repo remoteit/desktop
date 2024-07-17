@@ -17,12 +17,6 @@ export const DevicesApplicationsBar: React.FC = () => {
 
   if (!allTypes.length) return null
 
-  const hasScreenView = allTypes.findIndex(t => t.ids.includes(SCREEN_VIEW_ID))
-
-  if (hasScreenView > -1) {
-    allTypes.unshift(allTypes.splice(hasScreenView, 1)[0])
-  }
-
   let selection = allTypes.findIndex(t => isEqual(applicationTypes, t.ids))
 
   const update = async (updated?: number[]) => {

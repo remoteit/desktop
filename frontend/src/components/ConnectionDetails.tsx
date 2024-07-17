@@ -5,6 +5,7 @@ import { replaceHost } from '@common/nameHelper'
 import { Application } from '@common/applications'
 import { Typography, Tooltip, Collapse, Paper, Box, alpha } from '@mui/material'
 import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
+import { LaunchQuickSelect } from './LaunchQuickSelect'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { GuideBubble } from './GuideBubble'
@@ -189,7 +190,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
               >
                 <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
                   <span>
-                    <Typography variant="h5" color="alwaysWhite.main">
+                    <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
                       Copy {hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover}
                     </Typography>
                     <CopyIconButton
@@ -223,7 +224,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                         )}
                         <CopyIconButton
                           color="alwaysWhite"
-                          icon={app.launchType !== 'COMMAND' ? 'link-horizontal' : 'terminal'}
+                          icon={app.copyIcon}
                           app={app}
                           value={app.displayString}
                           onMouseEnter={() => setHover('copy')}
@@ -234,7 +235,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                   </span>
                   {app.canShare && (
                     <span className={css.share}>
-                      <Typography variant="h5" color="alwaysWhite.main">
+                      <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
                         Share
                       </Typography>
                       <CopyIconButton
@@ -249,9 +250,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                   )}
                   {app.launchType !== 'NONE' && (
                     <span className={css.marginLeft}>
-                      <Typography variant="h5" color="alwaysWhite.main">
-                        Launch
-                      </Typography>
+                      <LaunchQuickSelect app={app} disabled={disabled} />
                       {app.canLaunch ? (
                         <LaunchButton
                           app={app}

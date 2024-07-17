@@ -1,10 +1,10 @@
+import browser from '../services/browser'
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { parse as urlParse } from 'url'
-import { pickTruthy, dedupe } from '../helpers/utilHelper'
+import { pickTruthy } from '../helpers/utilHelper'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
-import browser, { getLocalStorage, removeLocalStorage } from '../services/browser'
 import {
   cleanOrphanConnections,
   getFetchConnectionIds,
@@ -56,10 +56,21 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async migrate(_: void, state) {
-      let connections = getLocalStorage(state, 'connections')
-      if (connections) await dispatch.connections.setAll(dedupe<IConnection>(connections, 'id'))
-      console.log('MIGRATE CONNECTIONS', connections)
-      removeLocalStorage(state, 'connections')
+      // Migrate launch templates (v3.30)
+      console.log('CONNECTIONS MIGRATE LAUNCH TEMPLATES')
+      const connections = state.connections.all.map(c => {
+        const app = selectApplication(state, undefined, c)
+        c = structuredClone(c)
+        if (c.launchTemplate || c.commandTemplate) console.log('MIGRATING', c.name, c.id)
+        if (!c.launchTemplates) c.launchTemplates = {}
+        if (c.launchTemplate) c.launchTemplates.URL = c.launchTemplate
+        if (c.commandTemplate) c.launchTemplates.COMMAND = c.commandTemplate
+        if (!app.launchMethods.find(m => m.type === c.launchType)) delete c.launchType
+        delete c.launchTemplate
+        delete c.commandTemplate
+        return c
+      })
+      await dispatch.connections.setAll(connections)
     },
 
     async fetch(_: void, state) {
@@ -470,6 +481,15 @@ export default createModel<RootModel>()({
       const { all } = state.connections
       if (state.auth.backendAuthenticated) emit('service/clearRecent')
       else set({ all: all.filter(c => c.enabled && c.online) })
+    },
+
+    async onClose(connection: IConnection, state) {
+      const app = selectApplication(state, undefined, connection)
+      if (connection.launched && connection.autoClose && app.disconnectString) {
+        console.log('ON CONNECTION CLOSE', app.disconnectString)
+        emit('launch/app', app.disconnectString, app.launchType)
+      }
+      dispatch.connections.updateConnection({ ...connection, launched: false })
     },
 
     async setAll(all: IConnection[], state) {

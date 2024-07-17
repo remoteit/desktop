@@ -16,11 +16,7 @@ export const LaunchTypeSelect: React.FC<Props> = ({ app, disabled, onChange }) =
       modified={app.template !== app.defaultTemplate}
       label="Launch method"
       value={app.launchType || 'NONE'}
-      values={[
-        { key: 'NONE', name: 'None' },
-        { key: 'URL', name: 'URL' },
-        { key: 'COMMAND', name: 'Command' },
-      ]}
+      values={[{ key: 'NONE', name: 'None' }, ...app.launchMethods.map(method => method.form)]}
       onChange={onChange}
     />
   )

@@ -35,7 +35,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
 
-  let clickHandler = (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
+  let clickHandler = async (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
     event?.stopPropagation()
     event?.preventDefault()
 
@@ -45,13 +45,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
 
     if (connection?.connectLink) {
-      dispatch.connections.setConnectLink({ ...connection, enabled: false })
+      await dispatch.connections.setConnectLink({ ...connection, enabled: false })
     } else if (connection?.connecting || connection?.enabled || connection?.starting) {
-      dispatch.connections.disconnect({ connection, forceStop })
+      if (connection.connected) await dispatch.connections.onClose(connection)
+      await dispatch.connections.disconnect({ connection, forceStop })
     } else {
       connection = connection || newConnection(service)
-      dispatch.connections.connect({ ...connection, connectOnReady: true })
-      dispatch.networks.join(instanceId)
+      await dispatch.connections.connect({ ...connection, connectOnReady: true })
+      await dispatch.networks.join(instanceId)
     }
     event && onClick?.(event)
   }
@@ -78,7 +79,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (chip && chip.show) {
     color = chip.colorName
     title = chip.disabled ? chip.name : title
-    if (chip.disabled) clickHandler = () => history.push('/account/plans')
+    if (chip.disabled) clickHandler = async () => history.push('/account/plans')
   }
 
   switch (state) {

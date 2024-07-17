@@ -16,3 +16,5 @@ export function fullVersion() {
 export function numericVersion() {
   return parseInt(version.replace(/\D/g, ''), 10)
 }
+
+export const floatVersion = parseFloat(version)

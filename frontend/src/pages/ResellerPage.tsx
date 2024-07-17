@@ -3,7 +3,7 @@ import { Dispatch } from '../store'
 import { Redirect } from 'react-router-dom'
 import { Typography, Box } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectPermissions, selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
+import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
 import { CSVDownloadButton } from '../buttons/CSVDownloadButton'
 import { CustomerList } from '../components/CustomerList'
 import { ResellerLogo } from '../components/ResellerLogo'
@@ -14,7 +14,6 @@ import { Title } from '../components/Title'
 export const ResellerPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const organization = useSelector(selectOrganization)
-  const permissions = useSelector(selectPermissions)
   const reseller = useSelector(selectOrganizationReseller)
 
   if (!reseller) return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />

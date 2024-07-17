@@ -200,6 +200,9 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
     },
     async appReady(_: void, state) {
+      // Temp migration of state
+      await dispatch.connections.migrate()
+
       if (state.backend.initialized) {
         console.warn('BACKEND ALREADY INITIALIZED')
         return
@@ -211,9 +214,6 @@ export default createModel<RootModel>()({
       } else {
         console.log('INITIALIZE STATE')
       }
-
-      // Temp migration of state
-      await dispatch.connections.migrate()
 
       dispatch.backend.init()
       dispatch.applicationTypes.fetchAll()

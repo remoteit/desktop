@@ -14,7 +14,6 @@ import heartbeat from './services/Heartbeat'
 import analytics from './services/analytics'
 import './initializeCommon'
 import './services/Controller'
-import './models/migratePersistState'
 
 if (browser.environment() !== 'development') analytics.initialize()
 

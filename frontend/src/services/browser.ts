@@ -119,6 +119,12 @@ export function getOs(): Ios {
   return 'linux'
 }
 
+export function getApp(): 'PORTAL' | 'DESKTOP' | 'MOBILE' {
+  if (isElectron()) return 'DESKTOP'
+  if (isMobile()) return 'MOBILE'
+  return 'PORTAL'
+}
+
 export function agent() {
   const result = navigator.userAgent.match(/\(.*?\)/)
   return result?.length ? result[0] : ''

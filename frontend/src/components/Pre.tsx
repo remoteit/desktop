@@ -14,7 +14,7 @@ export const Pre: React.FC<ILookup<any>> = props => {
     </>
   )
 
-  return !browser.isMobile ? (
+  return browser.isMobile ? (
     <Box
       sx={{
         position: 'absolute',

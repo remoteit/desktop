@@ -167,9 +167,10 @@ declare global {
   interface IConnection {
     accountId?: string // organization id
     autoLaunch?: boolean
+    autoClose?: boolean // run close command on disconnect
     autoStart?: boolean
     commandLog?: string[]
-    commandTemplate?: string // command line launch template
+    commandTemplate?: string // DEPRECATED command line launch template
     connected?: boolean
     connecting?: boolean
     connectLink?: boolean // is public persistent link
@@ -189,8 +190,10 @@ declare global {
     identity?: ISSHIdentity
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
-    launchTemplate?: string // deep link launch url template
-    launchType?: 'COMMAND' | 'URL' | 'NONE' // scheme to use for launching
+    launchTemplate?: string // DEPRECATED deep link launch url template
+    launchTemplates?: ILookup<string> // deep link launch templates
+    launchType?: 'URL' | 'SCRIPT' | 'COMMAND' | 'TERMINAL' | 'NONE' // scheme to use for launching
+    launched?: boolean // if the connection has been launched
     log?: boolean // if cli should log the connectd stdout to file
     name?: string
     online?: boolean // online if service is online

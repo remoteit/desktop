@@ -67,6 +67,7 @@ export function newConnection(service?: IService | null): IConnection {
     ...routeTypeToSettings(routeType),
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     autoLaunch: cd?.autoLaunch === undefined ? getApplicationType(service?.typeID || 0)?.autoLaunch : cd.autoLaunch,
+    autoClose: getApplicationType(service?.typeID || 0)?.autoClose,
   }
 
   if (service) {

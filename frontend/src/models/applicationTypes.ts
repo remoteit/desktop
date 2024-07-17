@@ -17,7 +17,7 @@ const defaultState: IApplicationTypeState = {
   account: {},
 }
 
-const APPLICATION_TYPES_ORDER = [8, 7, 66, 28, 4, 5, 34]
+const APPLICATION_TYPES_ORDER = [48, 49, 8, 7, 66, 28, 4, 5, 34]
 
 const APPLICATION_TYPES_QUERY = `
   applicationTypes {
