@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import React, { useState, useEffect } from 'react'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
+import { isFileToken } from '../helpers/connectionHelper'
 import { Application } from '@common/applications'
 import browser from '../services/browser'
 
@@ -50,7 +51,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
           <Typography variant="h4">{app.preview(tokens)}</Typography>
           <List dense>
             {app.missingTokens.map((token, index) =>
-              token === 'path' && browser.hasBackend ? (
+              isFileToken(token) && browser.hasBackend ? (
                 <InlineFileFieldSetting
                   key={token}
                   token={token}
