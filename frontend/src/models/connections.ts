@@ -59,11 +59,13 @@ export default createModel<RootModel>()({
       // Migrate launch templates (v3.30)
       console.log('CONNECTIONS MIGRATE LAUNCH TEMPLATES')
       const connections = state.connections.all.map(c => {
+        const app = selectApplication(state, undefined, c)
         c = structuredClone(c)
         if (c.launchTemplate || c.commandTemplate) console.log('MIGRATING', c.name, c.id)
         if (!c.launchTemplates) c.launchTemplates = {}
         if (c.launchTemplate) c.launchTemplates.URL = c.launchTemplate
         if (c.commandTemplate) c.launchTemplates.COMMAND = c.commandTemplate
+        if (!app.launchMethods.find(m => m.type === c.launchType)) delete c.launchType
         delete c.launchTemplate
         delete c.commandTemplate
         return c
@@ -481,11 +483,11 @@ export default createModel<RootModel>()({
       else set({ all: all.filter(c => c.enabled && c.online) })
     },
 
-    async closed(connection: IConnection, state) {
+    async onClose(connection: IConnection, state) {
       const app = selectApplication(state, undefined, connection)
       if (connection.launched && connection.autoClose && app.disconnectString) {
         console.log('ON CONNECTION CLOSE', app.disconnectString)
-        emit('launch/app', app.disconnectString, false)
+        emit('launch/app', app.disconnectString, app.launchType)
       }
       dispatch.connections.updateConnection({ ...connection, launched: false })
     },

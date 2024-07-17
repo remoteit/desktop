@@ -138,7 +138,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       >
         Default tokens <b>{app.defaultTokens.join(', ')}</b>
         <br />
-        Default template <b>{app.defaultLaunchTemplate}</b>
+        Default template <b>{globalDefaults ? app.defaultLaunchTemplate : app.launchTemplate}</b>
         {!!app.launchCustomTokens.length && (
           <>
             <br />
@@ -156,7 +156,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       >
         Default tokens <b>{app.defaultTokens.join(', ')}</b>
         <br />
-        Default template <b>{app.defaultCommandTemplate}</b>
+        Default template <b>{globalDefaults ? app.defaultCommandTemplate : app.commandTemplate}</b>
         {!!app.commandCustomTokens.length && (
           <>
             <br />

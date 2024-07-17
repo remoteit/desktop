@@ -75,7 +75,7 @@ export const LaunchButton: React.FC<Props> = ({
     if (!app.connection) return
     updateConnection(app, { ...app.connection, launched: true })
     if (app.launchType === 'URL') windowOpen(app.string, '_blank', !app.string.startsWith('http'))
-    else emit('launch/app', app.string, !(app.tokens.includes('path') || app.tokens.includes('app')))
+    else emit('launch/app', app.string, app.launchType)
     heartbeat.connect()
   }
 

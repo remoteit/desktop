@@ -192,7 +192,7 @@ declare global {
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // DEPRECATED deep link launch url template
     launchTemplates?: ILookup<string> // deep link launch templates
-    launchType?: 'COMMAND' | 'URL' | 'SYSTEM' | 'NONE' // scheme to use for launching
+    launchType?: 'URL' | 'SCRIPT' | 'COMMAND' | 'TERMINAL' | 'NONE' // scheme to use for launching
     launched?: boolean // if the connection has been launched
     log?: boolean // if cli should log the connectd stdout to file
     name?: string

@@ -8,7 +8,7 @@ class LaunchMethod {
   type: Exclude<IConnection['launchType'], undefined> = 'NONE'
   icon: string = ''
   name: string = ''
-  key: string = ''
+  // key: 'commandTemplate' | 'launchTemplate' = 'commandTemplate'
   template: string = ''
   defaultTemplate: string = ''
   copyIcon?: string = ''
@@ -36,7 +36,7 @@ class LaunchMethod {
 class UrlLaunchMethod extends LaunchMethod {
   setDefaults() {
     this.type = 'URL'
-    this.key = 'launchTemplate'
+    // this.key = 'launchTemplate'
     this.icon = 'launch'
     this.copyIcon = 'link-horizontal'
     this.name = 'URL'
@@ -47,20 +47,27 @@ class UrlLaunchMethod extends LaunchMethod {
 class CommandLaunchMethod extends LaunchMethod {
   setDefaults() {
     this.type = 'COMMAND'
-    this.key = 'commandTemplate'
-    this.icon = 'terminal'
+    this.icon = 'code-simple'
     this.name = 'Command'
     this.template = '[host]:[port]'
   }
 }
 
-class SystemLaunchMethod extends LaunchMethod {
+class TerminalLaunchMethod extends LaunchMethod {
   setDefaults() {
-    this.type = 'SYSTEM'
-    this.icon = 'code-simple'
-    this.key = 'systemTemplate'
-    this.name = 'System Configuration'
+    this.type = 'TERMINAL'
+    this.icon = 'terminal'
+    this.name = 'Terminal'
     this.template = '[host]:[port]'
+  }
+}
+
+class ScriptLaunchMethod extends LaunchMethod {
+  setDefaults() {
+    this.type = 'SCRIPT'
+    this.icon = 'code-simple'
+    this.name = 'Script'
+    this.template = ''
   }
 }
 
@@ -70,7 +77,7 @@ export class Application {
   urlForm: boolean = false
   sshConfig: boolean = false
   appLaunchType: IConnection['launchType'] = 'NONE'
-  launchMethods: LaunchMethod[] = [new UrlLaunchMethod(), new CommandLaunchMethod()]
+  launchMethods: LaunchMethod[] = [new UrlLaunchMethod(), new TerminalLaunchMethod(), new CommandLaunchMethod()]
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
@@ -111,7 +118,7 @@ export class Application {
   }
 
   get canLaunch() {
-    return !(this.portal && this.launchType === 'COMMAND') && this.launchType !== 'NONE'
+    return !(this.portal && this.launchType !== 'URL') && this.launchType !== 'NONE'
   }
 
   get icon() {
@@ -120,10 +127,6 @@ export class Application {
 
   get copyIcon() {
     return this.launchMethod.copyIcon || this.icon
-  }
-
-  get templateKey() {
-    return this.launchMethod.key
   }
 
   get contextTitle() {
@@ -155,19 +158,15 @@ export class Application {
   }
 
   get template() {
-    const type = this.launchType
-    if (this.connection?.connectLink) return this.resolvedDefaultTemplate(type)
-    return this.connection?.launchTemplates?.[this.launchMethod.type] || this.resolvedDefaultTemplate(type)
+    return this.getTemplate(this.launchType)
   }
 
   get launchTemplate() {
-    if (this.connection?.connectLink) return this.resolvedDefaultTemplate('URL')
-    return this.connection?.launchTemplate || this.resolvedDefaultTemplate('URL')
+    return this.getTemplate('URL')
   }
 
   get commandTemplate() {
-    if (this.connection?.connectLink) return this.resolvedDefaultTemplate('COMMAND')
-    return this.connection?.commandTemplate || this.resolvedDefaultTemplate('COMMAND')
+    return this.getTemplate('COMMAND')
   }
 
   get string() {
@@ -199,7 +198,7 @@ export class Application {
   }
 
   get allTokens() {
-    return this.extractTokens(this.launchMethods.map(method => method.template).join())
+    return this.extractTokens(this.launchMethods.map(method => this.getTemplate(method.type)).join())
   }
 
   get commandTokens() {
@@ -211,7 +210,7 @@ export class Application {
   }
 
   get launchType() {
-    return this.connection?.launchType || this.defaultLaunchType
+    return this.connection?.launchType || this.defaultLaunchType || 'NONE'
   }
 
   get defaultLaunchType(): IConnection['launchType'] {
@@ -265,6 +264,11 @@ export class Application {
     return secure ? this.template.replace('http:', 'https:') : this.template.replace('https:', 'http:')
   }
 
+  private getTemplate(type: LaunchMethod['type']) {
+    if (this.connection?.connectLink) return this.resolvedDefaultTemplate(type)
+    return this.connection?.launchTemplates?.[type] || this.resolvedDefaultTemplate(type)
+  }
+
   private resolvedDefaultTemplate(type?: LaunchMethod['type']): string {
     switch (type) {
       case 'URL':
@@ -313,6 +317,12 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   app.globalDefaults = globalDefaults?.[typeID || ''] || {}
   app.cloudData = adaptor?.getCloudData(typeID)
 
+  // Handle legacy connection templates
+  if (connection && !connection.launchTemplates) {
+    if (connection.launchTemplate) connection.launchTemplates = { URL: connection.launchTemplate }
+    if (connection.commandTemplate) connection.launchTemplates = { COMMAND: connection.commandTemplate }
+  }
+
   // Handle connect links
   if (app.connection?.connectLink && service?.link?.url) {
     const url = service.link.url
@@ -343,35 +353,35 @@ export function getApplicationType(typeId?: number) {
         use: 'Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication.',
       })
     case 4:
-      return new Application({
-        title: 'VNC',
-        use: 'Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely.',
-        appLaunchType: ios || android || mac ? 'URL' : 'COMMAND',
-        defaultTokenData: windows ? undefined : { app: 'VNC Viewer' },
-        launchMethods: [
-          new UrlLaunchMethod({ template: 'vnc://[username]@[host]:[port]', icon: 'desktop' }),
+      const launchMethods = [new UrlLaunchMethod({ template: 'vnc://[username]@[host]:[port]', icon: 'desktop' })]
+      if (windows || mac)
+        launchMethods.push(
           new CommandLaunchMethod({
             template: windows
               ? '"[path]" -Username "[username]" [host]:[port]'
-              : mac
-              ? 'open -a "[app]" --args -Username [username] [host]:[port]'
-              : 'vnc://[host]:[port]',
-          }),
-        ],
+              : 'open -a "[app]" --args -Username [username] [host]:[port]',
+          })
+        )
+      return new Application({
+        title: 'VNC',
+        use: 'Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely.',
+        appLaunchType: windows ? 'COMMAND' : 'URL',
+        defaultTokenData: windows ? undefined : { app: 'VNC Viewer' },
+        launchMethods,
       })
     case 28:
       return new Application({
         title: 'SSH',
         use: 'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.',
         autoLaunch: !(windows && portal),
-        appLaunchType: (portal && !windows) || ios || android ? 'URL' : 'COMMAND',
+        appLaunchType: (portal && !windows) || ios || android ? 'URL' : 'TERMINAL',
         launchMethods: [
           new UrlLaunchMethod({ template: 'ssh://[username]@[host]:[port]' }),
-          new CommandLaunchMethod({
+          new TerminalLaunchMethod({
             template: sshConfig
               ? 'ssh_config [User]'
               : windows
-              ? 'start cmd /k ssh [username]@[host] -p [port]'
+              ? 'ssh [username]@[host] -p [port]'
               : 'ssh -l [username] [host] -p [port]',
             display: sshConfig ? (windows ? 'start cmd /k ssh [host]' : 'ssh [host]') : undefined,
           }),
@@ -420,7 +430,11 @@ export function getApplicationType(typeId?: number) {
         appLaunchType: 'URL',
         launchMethods: [
           new UrlLaunchMethod({ template: 'smb://[host]:[port]', icon: 'folder' }),
-          new CommandLaunchMethod({ template: windows ? '\\\\[host]:[port]' : '[host]:[port]', icon: 'clipboard' }),
+          new CommandLaunchMethod({
+            template: windows ? '\\\\[host]:[port]' : '[host]:[port]',
+            name: 'Copy command',
+            icon: 'clipboard',
+          }),
         ],
       })
     case 37:
@@ -503,21 +517,22 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
-        defaultTokenData:  windows ? undefined : { app:'Google Chrome' },
-        appLaunchType: 'COMMAND',
+        defaultTokenData: windows ? undefined : { app: 'Google Chrome' },
+        appLaunchType: 'SCRIPT',
         autoClose: true,
         autoLaunch: true,
         launchMethods: [
-          new CommandLaunchMethod({
+          new ScriptLaunchMethod({
             name: 'Chrome Command',
             template: windows
-              ? 'powershell -ExecutionPolicy Bypass -File ".\\scripts\\socks.ps1" -path "[app]" -proxy "socks5://[host]:[port]"'
-              : 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]" --args --proxy-server="socks5://[host]:[port]"',
-            disconnect: windows ?  'powershell -ExecutionPolicy Bypass -File ".\\scripts\\socks.ps1" -path "[app]"'
-            : 'osascript -e \'quit app "[app]"\' && sleep 1 && open -na "[app]"',
+              ? 'socks.ps1 -path "[app]" -proxy "socks5://[host]:[port]"'
+              : 'socks.sh "[app]" "socks5://[host]:[port]"',
+            disconnect: windows
+              ? 'powershell -ExecutionPolicy Bypass -File ".\\scripts\\socks.ps1" -path "[app]"'
+              : 'socks.sh "[app]"',
             disconnectDisplay: 'Restarts Chrome to remove SOCKS Proxy on disconnect',
           }),
-          // new SystemLaunchMethod({
+          // new ScriptLaunchMethod({
           //   template:
           //     'networksetup -setsocksfirewallproxy Wi-Fi [host] [port] && networksetup -setsocksfirewallproxystate Wi-Fi on',
           //   disconnect:
