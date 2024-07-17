@@ -22,7 +22,7 @@ export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT
 
   if (type === 'SCRIPT') {
     const [script, ...rest] = command.split(' ')
-    const scriptPath = path.resolve(__dirname, '../scripts/', script)
+    const scriptPath = path.resolve(environment.isDev ? '../scripts/' : environment.binPath, script) 
     command = rest.join(' ')
     if (environment.isWindows) {
       command = `powershell -ExecutionPolicy Bypass -NoProfile -File "${scriptPath}" ${command}`

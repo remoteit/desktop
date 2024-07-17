@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s copy-* compile",
-    "build-local": "cross-env NODE_ENV=production run-s copy-env build-frontend build-backend clean unlink install-* copy-* compile build-electron",
+    "build-local": "npm run unlink && cross-env NODE_ENV=production run-s copy-env clean build-frontend build-backend copy-* compile build-electron",
     "build-frontend": "cd ../ && npm run build-frontend",
     "build-backend": "cd ../ && npm run build-backend",
     "build-electron": "cross-env NODE_ARCH=$npm_config_arch electron-builder",
@@ -29,7 +29,7 @@
     "install-binaries": "sh ./scripts/binary-installer.sh",
     "start": "npm-run-all -l -n -p link copy-* watch-*",
     "link": "cd ../backend && npm link && cd ../electron && npm link remoteit-headless",
-    "unlink": "cd ../backend && npm unlink && cd - && npm unlink remoteit-headless",
+    "unlink": "npm install remoteit-headless",
     "watch-backend": "cd ../backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
     "watch-build": "tsc --watch",
@@ -129,7 +129,7 @@
         "to": "./"
       },
       {
-        "from": "./scripts/*.ps1",
+        "from": "../backend/scripts",
         "to": "./"
       }
     ],
