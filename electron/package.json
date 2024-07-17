@@ -36,7 +36,7 @@
     "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' '../backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
-    "electron-updater": "^6.1.8",
+    "electron-updater": "^6.3.0",
     "remoteit-headless": "file:../backend/dist/remoteit-headless.tgz"
   },
   "devDependencies": {
