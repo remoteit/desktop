@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import React, { useState, useEffect } from 'react'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
+import { isFileToken } from '../helpers/connectionHelper'
 import { Application } from '@common/applications'
 import browser from '../services/browser'
 
@@ -29,6 +30,12 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
   useEffect(() => {
     setTokens(toLookup())
   }, [open])
+
+  const update = (token: string, value: string) => {
+    let updated: ILookup<string> = { ...tokens, [token]: value }
+    if (!value) delete updated[token]
+    setTokens(updated)
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
@@ -50,7 +57,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
           <Typography variant="h4">{app.preview(tokens)}</Typography>
           <List dense>
             {app.missingTokens.map((token, index) =>
-              token === 'path' && browser.hasBackend ? (
+              isFileToken(token) && browser.hasBackend ? (
                 <InlineFileFieldSetting
                   key={token}
                   token={token}
@@ -58,14 +65,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                   label="Application path"
                   value={app.value(token)}
                   variant="filled"
-                  onSave={value => {
-                    if (value) {
-                      setTokens({ ...tokens, path: value })
-                    } else {
-                      delete tokens.path
-                      setTokens({ ...tokens })
-                    }
-                  }}
+                  onSave={value => update(token, value || '')}
                 />
               ) : (
                 <ListItem key={token} disableGutters>

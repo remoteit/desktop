@@ -1,14 +1,14 @@
 import React from 'react'
 import browser from '../services/browser'
+import { State } from '../store'
 import { useStyles } from './ServiceForm'
 import { useSelector } from 'react-redux'
-import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'
 import { useApplication } from '../hooks/useApplication'
+import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'
+import { validPort, isFileToken } from '../helpers/connectionHelper'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
-import { State } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
-import { validPort } from '../helpers/connectionHelper'
 import { ROUTES } from './RouteSetting'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
@@ -169,7 +169,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           <Quote margin="xs" indent="listItem" noInset>
             <List disablePadding>
               {customTokens.map(token =>
-                token === 'path' && browser.hasBackend ? (
+                isFileToken(token) && browser.hasBackend ? (
                   <InlineFileFieldSetting
                     key="path"
                     token={token}

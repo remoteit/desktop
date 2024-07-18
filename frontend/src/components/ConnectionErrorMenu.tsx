@@ -22,7 +22,7 @@ export const ConnectionErrorMenu: React.FC<Props> = ({ connection }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick} icon="ellipsis-v" color="alwaysWhite" inline />
+      <IconButton onClick={handleClick} icon="ellipsis-v" color="alwaysWhite" sx={{ mr: -1.5 }} />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

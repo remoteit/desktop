@@ -131,7 +131,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
       </Typography>
       <Typography variant="h3" className={css.h3}>
         {secureIcon}
-        <span>{app.displayString}</span>
+        <span>{app.sshConfigString}</span>
       </Typography>
     </div>
   )
@@ -226,7 +226,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                           color="alwaysWhite"
                           icon={app.copyIcon}
                           app={app}
-                          value={app.displayString}
+                          value={app.sshConfigString}
                           onMouseEnter={() => setHover('copy')}
                           onMouseLeave={() => setHover(undefined)}
                         />
