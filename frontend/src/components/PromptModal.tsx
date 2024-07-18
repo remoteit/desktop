@@ -31,6 +31,12 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
     setTokens(toLookup())
   }, [open])
 
+  const update = (token: string, value: string) => {
+    let updated: ILookup<string> = { ...tokens, [token]: value }
+    if (!value) delete updated[token]
+    setTokens(updated)
+  }
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <form
@@ -59,14 +65,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                   label="Application path"
                   value={app.value(token)}
                   variant="filled"
-                  onSave={value => {
-                    if (value) {
-                      setTokens({ ...tokens, path: value })
-                    } else {
-                      delete tokens.path
-                      setTokens({ ...tokens })
-                    }
-                  }}
+                  onSave={value => update(token, value || '')}
                 />
               ) : (
                 <ListItem key={token} disableGutters>
