@@ -1,10 +1,7 @@
 import React from 'react'
-import { Dispatch } from '../store'
 import { Application } from '@common/applications'
 import { Menu, MenuItem, Button, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { setConnection } from '../helpers/connectionHelper'
-import { useDispatch } from 'react-redux'
-import { IconButton } from '../buttons/IconButton'
 import { Icon } from './Icon'
 
 type Props = {
@@ -13,7 +10,6 @@ type Props = {
 }
 
 export const LaunchQuickSelect: React.FC<Props> = ({ app, disabled }) => {
-  const dispatch = useDispatch<Dispatch>()
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
@@ -22,6 +18,13 @@ export const LaunchQuickSelect: React.FC<Props> = ({ app, disabled }) => {
     app.connection && setConnection({ ...app.connection, launchType })
     setAnchorEl(null)
   }
+
+  if (app.launchMethods.length <= 1)
+    return (
+      <Typography variant="h5" sx={{ my: 0.5 }}>
+        Launch
+      </Typography>
+    )
 
   return (
     <>
