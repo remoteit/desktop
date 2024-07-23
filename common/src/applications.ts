@@ -336,7 +336,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
 export function getApplicationType(typeId?: number) {
   const { environment, preferences } = adaptor?.getState() || {}
   const { sshConfig } = preferences || {}
-  const portal = environment?.portal
+  const portal = environment?.portal // includes mobile
   const os = environment?.os
   const windows = os === 'windows'
   const android = os === 'android'
@@ -372,7 +372,7 @@ export function getApplicationType(typeId?: number) {
         title: 'SSH',
         use: 'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.',
         autoLaunch: !(windows && portal),
-        appLaunchType: (portal && !windows) || ios || android ? 'URL' : 'TERMINAL',
+        appLaunchType: portal && !windows ? 'URL' : 'TERMINAL',
         launchMethods: [
           new UrlLaunchMethod({ template: 'ssh://[username]@[host]:[port]' }),
           new TerminalLaunchMethod({
@@ -516,7 +516,7 @@ export function getApplicationType(typeId?: number) {
         title: 'SOCKS Proxy (Alpha)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
         defaultTokenData: windows ? undefined : { app: 'Google Chrome' },
-        appLaunchType: 'SCRIPT',
+        appLaunchType: portal ? 'NONE' : 'SCRIPT',
         autoClose: true,
         autoLaunch: true,
         launchMethods: [
