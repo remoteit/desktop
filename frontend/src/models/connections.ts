@@ -1,3 +1,4 @@
+import sleep from '../helpers/sleep'
 import browser from '../services/browser'
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
@@ -488,6 +489,7 @@ export default createModel<RootModel>()({
       if (connection.launched && connection.autoClose && app.disconnectString) {
         console.log('ON CONNECTION CLOSE', app.disconnectString)
         emit('launch/app', app.disconnectString, app.launchType)
+        await sleep(2000)
       }
       dispatch.connections.updateConnection({ ...connection, launched: false })
     },

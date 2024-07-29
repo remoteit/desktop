@@ -521,12 +521,12 @@ export function getApplicationType(typeId?: number) {
         autoLaunch: true,
         launchMethods: [
           new ScriptLaunchMethod({
-            name: 'Chrome Command',
+            name: 'Browser',
             template: windows
               ? 'socks.ps1 -path "[app]" -proxy "socks5://[host]:[port]"'
               : 'socks.sh "[app]" "socks5://[host]:[port]"',
             disconnect: windows ? 'socks.ps1 -path "[app]"' : 'socks.sh "[app]"',
-            disconnectDisplay: 'Restarts Chrome to remove SOCKS Proxy on disconnect',
+            disconnectDisplay: 'Restarts your browser to remove SOCKS Proxy on disconnect',
           }),
           // new ScriptLaunchMethod({
           //   template:
