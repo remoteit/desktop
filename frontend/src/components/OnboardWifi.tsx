@@ -167,7 +167,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
                 <InputAdornment position="end" sx={{ marginRight: ({ spacing }) => spacing(1) }}>
                   <IconButton
                     onClick={() => setShowPassword(!showPassword)}
-                    icon={showPassword ? 'eye-slash' : 'eye'}
+                    icon={showPassword ? 'eye' : 'eye-slash'}
                   />
                 </InputAdornment>
               ),

@@ -79,7 +79,7 @@ export const DevicePage: React.FC = () => {
                 </Typography>
               }
               subtitle={device.thisDevice ? 'This device' : undefined}
-              icon={<ConnectionStateIcon device={device} connection={connection} size="xl" />}
+              icon={<ConnectionStateIcon device={device} connection={connection} fontSize={30} />}
               onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
               exactMatch
             >

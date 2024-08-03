@@ -7,6 +7,7 @@ import environment from './environment'
 
 export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT' | 'COMMAND' = 'COMMAND') {
   Logger.info('LAUNCH', { type, path: __filename })
+  let scriptPath = ''
 
   if (type === 'TERMINAL') {
     if (environment.isMac) {
@@ -22,9 +23,9 @@ export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT
 
   if (type === 'SCRIPT') {
     const [script, ...rest] = command.split(' ')
-    const scriptPath = environment.isDev
+    scriptPath = environment.isDev
       ? path.resolve(__dirname, '../scripts/', script)
-      : path.resolve(environment.binPath, script) 
+      : path.resolve(environment.binPath, script)
     command = rest.join(' ')
     if (environment.isWindows) {
       command = `powershell -ExecutionPolicy Bypass -NoProfile -File "${scriptPath}" ${command}`
@@ -37,8 +38,11 @@ export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT
   const commands = new Command({ command })
   commands.onError = (e: Error) => {
     Logger.error('LAUNCH APP ERROR', e)
-    if (e.toString().includes('[CATransaction synchronize]')) return
-    EventBus.emit(cli.EVENTS.error, e.toString())
+    let message = e.toString()
+    if (message.includes('[CATransaction synchronize]')) return
+    if (type === 'SCRIPT')
+      message = `SCRIPT FAILED. Please check anti-virus software and file permissions for "${scriptPath}".`
+    EventBus.emit(cli.EVENTS.error, message)
   }
 
   const result = await commands.exec()

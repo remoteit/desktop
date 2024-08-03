@@ -20,19 +20,14 @@ export const SharePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { device, service } = useContext(DeviceContext)
   const { userID = '' } = useParams<{ userID?: string }>()
-  const { contacts, guests, deleting, users } = useSelector((state: State) => {
-    return {
-      device,
-      contacts: state.contacts.all,
-      guests: device ? device.access : (selectOrganization(state).guests as IUserRef[]),
-      deleting: state.shares.deleting,
-      users: state.shares.currentDevice?.users || [],
-    }
-  })
-  const history = useHistory()
-  const css = useStyles()
+  const contacts = useSelector((state: State) => state.contacts.all)
+  const guests = device ? device.access : (useSelector(selectOrganization).guests as IUserRef[])
+  const deleting = useSelector((state: State) => state.shares.deleting)
+  const users = useSelector((state: State) => state.shares.currentDevice?.users || [])
   const guest = guests.find(g => g.id === userID)
   const email = guest?.email || ''
+  const history = useHistory()
+  const css = useStyles()
 
   useEffect(() => {
     ;(async () => {
@@ -45,11 +40,12 @@ export const SharePage: React.FC = () => {
     // set defaults
     if (device?.loaded) {
       const access = getAccess(device, email)
+      if (service && !access.services.length) access.services = [service]
       console.log('ACCESS', access)
       dispatch.shares.setSelectedServices(access.services.map(s => s.id))
       dispatch.shares.setScript(access.scripting)
     }
-  }, [device?.loaded])
+  }, [device?.loaded, service, email, userID])
 
   const handleUnshare = async () => {
     if (device) await dispatch.shares.delete({ deviceId: device.id, email })
