@@ -61,7 +61,7 @@ export default createModel<RootModel>()({
       console.log('CONNECTIONS MIGRATE LAUNCH TEMPLATES')
       const connections = state.connections.all.map(c => {
         const app = selectApplication(state, undefined, c)
-        c = structuredClone(c)
+        c = { ...structuredClone(c) } // clone and spread to avoid "object is not extensible" error
         if (c.launchTemplate || c.commandTemplate) console.log('MIGRATING', c.name, c.id)
         if (!c.launchTemplates) c.launchTemplates = {}
         if (c.launchTemplate) c.launchTemplates.URL = c.launchTemplate
