@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import { FormDisplay, FormDisplayProps } from './FormDisplay'
 import { spacing, fontSizes } from '../styling'
 import { IconButton } from '../buttons/IconButton'
-import { FormDisplay } from './FormDisplay'
 import { makeStyles } from '@mui/styles'
 import { Icon } from './Icon'
 
@@ -22,6 +22,7 @@ type Props = {
   warning?: React.ReactNode
   modified?: boolean
   disableGutters?: boolean
+  DisplayComponent?: React.ReactElement<FormDisplayProps>
   children?: React.ReactNode
   onSubmit: () => void
   onResetClick: () => void
@@ -42,6 +43,7 @@ export const InlineSetting: React.FC<Props> = ({
   hideIcon,
   modified,
   disableGutters,
+  DisplayComponent,
   children,
   ...props
 }) => {
@@ -93,6 +95,7 @@ export const InlineSetting: React.FC<Props> = ({
                 icon="undo"
                 type="solid"
                 size="md"
+                buttonBaseSize="small"
                 onMouseDown={cancelBlur}
                 onClick={() => {
                   onResetClick()
@@ -105,8 +108,9 @@ export const InlineSetting: React.FC<Props> = ({
               icon="times"
               type="solid"
               size="md"
+              buttonBaseSize="small"
               onClick={() => {
-                !fieldRef && setEdit(false)
+                setEdit(false)
                 onCancel()
               }}
             />
@@ -116,6 +120,7 @@ export const InlineSetting: React.FC<Props> = ({
               color="primary"
               type="solid"
               size="md"
+              buttonBaseSize="small"
               onMouseDown={cancelBlur}
               submit
             />
@@ -125,7 +130,13 @@ export const InlineSetting: React.FC<Props> = ({
     </>
   )
 
-  const viewForm = (
+  const viewForm = DisplayComponent ? (
+    React.cloneElement(DisplayComponent, {
+      ...props,
+      icon,
+      onClick: triggerEdit, // or another event handler
+    })
+  ) : (
     <FormDisplay
       {...props}
       icon={icon}

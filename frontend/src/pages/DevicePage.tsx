@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
-import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
+import { DeviceNameLocation } from '../components/DeviceNameLocation'
 import { spacing, fontSizes } from '../styling'
 import { NetworksIndicator } from '../components/NetworksIndicator'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -60,55 +60,7 @@ export const DevicePage: React.FC = () => {
       header={
         <>
           <List>
-            <ListItemLocation
-              sx={{
-                paddingTop: 0.75,
-                paddingBottom: 0.75,
-                marginBottom: 0.75,
-              }}
-              to={`/devices/${device.id}/details`}
-              match={[
-                `/devices/${device.id}/details`,
-                `/devices/${device.id}/edit`,
-                `/devices/${device.id}/users`,
-                `/devices/${device.id}/logs`,
-              ]}
-              title={
-                <Typography variant="h3">
-                  <DeviceName device={device} connection={connection} />
-                </Typography>
-              }
-              subtitle={device.thisDevice ? 'This device' : undefined}
-              icon={<ConnectionStateIcon device={device} connection={connection} fontSize={30} />}
-              onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
-              exactMatch
-            >
-              {editable && (
-                <ListItemSecondaryAction sx={{ marginTop: -0.1 }} className="hidden">
-                  <IconButton
-                    title="Configure"
-                    buttonBaseSize="small"
-                    onClick={event => {
-                      event.stopPropagation()
-                      event.preventDefault()
-                      history.push(`/devices/${device.id}/edit`)
-                    }}
-                    onMouseDown={event => event.stopPropagation()}
-                    icon="sliders"
-                    color="grayDark"
-                    size="sm"
-                    sx={{
-                      zIndex: 6,
-                      bgcolor: 'white.main',
-                      border: '1px solid',
-                      borderColor: 'white.main',
-                      '&:hover': { bgcolor: 'grayLighter.main' },
-                      boxShadow: theme => theme.shadows[2],
-                    }}
-                  />
-                </ListItemSecondaryAction>
-              )}
-            </ListItemLocation>
+            <DeviceNameLocation device={device} connection={connection} editable={editable} />
             <DeviceTagEditor device={device} />
           </List>
           <LinearProgress loading={!device.loaded} />

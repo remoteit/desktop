@@ -5,7 +5,7 @@ import { SxProps, Theme, MenuItem, ListItem, ListItemButton, ListItemIcon, ListI
 import { Color, Sizes } from '../styling'
 import { Icon } from './Icon'
 
-export type Props = {
+export type ListItemLocationProps = {
   key?: React.Key
   to?: string
   title?: React.ReactNode
@@ -31,7 +31,7 @@ export type Props = {
   onClick?: (event: React.MouseEvent) => void
 }
 
-export const ListItemLocation: React.FC<Props> = ({
+export const ListItemLocation: React.FC<ListItemLocationProps> = ({
   to,
   title,
   subtitle,

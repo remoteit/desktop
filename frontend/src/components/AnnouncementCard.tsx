@@ -4,7 +4,6 @@ import { Dispatch } from '../store'
 import { dateOptions } from './Duration/Duration'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, Card, CardContent, CardMedia, CardHeader, CardActions, Button, Typography } from '@mui/material'
-import { spacing } from '../styling'
 
 const types = {
   GENERIC: 'Notice',
@@ -74,13 +73,13 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   )
 }
 
-const useStyles = makeStyles(({ palette, breakpoints }) => ({
+const useStyles = makeStyles(({ palette, breakpoints, spacing }) => ({
   card: {
     width: 500,
     overflow: 'hidden',
-    marginTop: spacing.md,
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
+    marginTop: spacing(2.25),
+    marginLeft: spacing(1.5),
+    marginRight: spacing(1.5),
     backgroundColor: palette.grayLightest.main,
     '& .MuiButtonBase-root': { float: 'right' },
     [breakpoints.down('sm')]: { marginLeft: 0, marginRight: 0, width: '100%' },
