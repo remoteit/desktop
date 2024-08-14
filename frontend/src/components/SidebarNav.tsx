@@ -130,9 +130,9 @@ export const SidebarNav: React.FC = () => {
           <Divider />
         </ResellerLogo>
         <ListItemLocation
-          title="Notifications"
+          title="Announcements"
           to="/announcements"
-          icon="bell"
+          icon="bullhorn"
           badge={counts.unreadAnnouncements}
           dense
         />

@@ -199,6 +199,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     transition: 'border-color 0.5s',
     width: 42,
     height: 42,
+    '&:hover': { borderColor: palette.primaryLight.main },
   },
   active: {
     borderColor: palette.primary.main,
