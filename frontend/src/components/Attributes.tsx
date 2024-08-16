@@ -34,7 +34,7 @@ export class Attribute {
   required: boolean = false
   align?: 'left' | 'right' | 'center'
   defaultWidth: number = 150
-  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' | 'CUSTOMER' = 'MASTER'
+  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' | 'CUSTOMER' | 'SCRIPT' = 'MASTER'
   feature?: string // key to plan limit name - used for tagging visibility
   multiline?: boolean
   details: boolean = true // show on device details page

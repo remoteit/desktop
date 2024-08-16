@@ -26,6 +26,7 @@ const persistConfig: PersistConfig<RootModel> = {
     'networks',
     'organization',
     'plans',
+    'scripting',
     'sessions',
     'tags',
     'user',

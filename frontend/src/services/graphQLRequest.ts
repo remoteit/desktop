@@ -13,6 +13,42 @@ export async function graphQLLogin() {
   )
 }
 
+export async function graphQLFiles(accountId: string) {
+  return await graphQLBasicRequest(
+    ` query Files($accountId: String) {
+        login {
+          account(id: $accountId) {
+            files {
+                id
+                name
+                created
+                updated
+                shortDesc
+                longDesc
+                executable
+                versions(latest: true) {
+                  items {
+                    id
+                    platform {
+                      id
+                    } 
+                    arguments {
+                      name
+                      desc
+                      order
+                      argumentType
+                      options
+                    }
+                  }
+                }
+              }
+            }
+          }
+      }`,
+    { accountId }
+  )
+}
+
 export async function graphQLUser(accountId: string) {
   return await graphQLBasicRequest(
     ` query User($accountId: String) {

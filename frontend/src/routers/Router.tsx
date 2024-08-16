@@ -38,6 +38,7 @@ import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationLicensingPage } from '../pages/OrganizationLicensingPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
+import { ScriptingPage } from '../pages/ScriptingPage'
 import { LicensingPage } from '../pages/LicensingPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
@@ -238,6 +239,21 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <FeedbackPage />
         </Panel>
       </Route>
+      {/* Scripting */}
+      <Route path="/scripting">
+        <Switch>
+          <Route path="/scripting/runs">Jobs</Route>
+          <Route path="/scripting/files">Files</Route>
+          <Route path="/scripting/scripts">
+            <Panel layout={layout}>
+              <ScriptingPage />
+            </Panel>
+          </Route>
+          <Route path="*">
+            <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
+          </Route>
+        </Switch>
+      </Route>
       {/* Settings */}
       <Route path="/settings">
         <DynamicPanel
@@ -247,23 +263,18 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/settings/notifications">
                 <NotificationsPage />
               </Route>
-
               <Route path="/settings/graphs">
                 <GraphsPage />
               </Route>
-
               <Route path="/settings/defaults/:applicationID?">
                 <ConnectionDefaultsPage />
               </Route>
-
               <Route path="/settings/tags">
                 <TagsPage />
               </Route>
-
               <Route path="/settings/test">
                 <TestPage />
               </Route>
-
               <Route path={['/settings/options', '/settings']}>
                 <OptionsPage />
               </Route>

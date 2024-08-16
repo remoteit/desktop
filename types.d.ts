@@ -572,6 +572,37 @@ declare global {
     }
   }
 
+  type IFile = {
+    id: string
+    name: string
+    created: Timestamp
+    updated: Timestamp
+    shortDesc?: string
+    longDesc?: string
+    executable: boolean // if file is a script
+    versions: IFileVersion[]
+  }
+
+  type IFileVersion = {
+    id: string
+    platform: { id: string }
+    arguments: IFileArgument[]
+  }
+
+  type IFileArgument = {
+    name: string
+    desc?: string
+    order: number
+    argumentType: IFileArgumentType
+    options: string[]
+  }
+
+  enum IFileArgumentType {
+    FileSelect = 0,
+    StringSelect = 1,
+    StringEntry = 2,
+  }
+
   type IApplicationType = {
     id: number
     name: string

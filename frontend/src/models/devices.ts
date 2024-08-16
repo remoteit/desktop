@@ -298,7 +298,7 @@ export default createModel<RootModel>()({
         expired.push(accountId)
       }
 
-      console.log('EXPIRE DEVICES', expired)
+      console.log('EXPIRE DEVICES CACHE', expired)
       await dispatch.devices.rootSet(rootState)
     },
 
