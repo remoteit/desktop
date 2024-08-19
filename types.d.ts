@@ -597,11 +597,38 @@ declare global {
     options: string[]
   }
 
-  enum IFileArgumentType {
-    FileSelect = 0,
-    StringSelect = 1,
-    StringEntry = 2,
+  type IFileArgumentType = 'FileSelect' | 'StringSelect' | 'StringEntry'
+
+  type IJob = {
+    id: string
+    status: string
+    created: Timestamp
+    updated: Timestamp
+    owner: IUserRef
+    user: IUserRef
+    tag: ITagFilter
+    file?: {
+      id: string
+      name: string
+    }
+    jobDevices: IJobDevice[]
   }
+
+  type IJobDevice = {
+    id: string
+    status: IJobStatus
+    attributes: IJobDeviceAttribute[]
+    device: {
+      id: string
+    }
+  }
+
+  type IJobDeviceAttribute = {
+    key: string
+    value: string
+  }
+
+  type IJobStatus = 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED' 
 
   type IApplicationType = {
     id: number

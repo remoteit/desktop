@@ -31,7 +31,7 @@ export function LoadingMessage({ message, logo, invert, spinner = true, inline, 
             }}
           />
         ) : (
-          spinner && <CircularProgress size={50} thickness={1.5} />
+          spinner && <CircularProgress size={50} thickness={1.5} color="info" />
         )}
       </Box>
       {message && (

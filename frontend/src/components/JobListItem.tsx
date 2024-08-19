@@ -9,20 +9,20 @@ import { Icon } from './Icon'
 import { Box } from '@mui/material'
 
 type Props = {
-  script: IFile
+  job: IJob
   attributes: Attribute[]
   required?: Attribute
   mobile?: boolean
 }
 
-export const ScriptListItem: React.FC<Props> = ({ script, required, attributes, mobile }) => {
+export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
 
-  if (!script) return null
+  if (!job) return null
 
   const handleClick = () => {
-    history.push(`/scripting/scripts/${script.id}`)
+    history.push(`/scripting/jobs/${job.id}`)
   }
 
   return (
@@ -30,12 +30,12 @@ export const ScriptListItem: React.FC<Props> = ({ script, required, attributes, 
       onClick={handleClick}
       mobile={mobile}
       icon={<Icon name="play" color="primary" type="solid" />}
-      required={<AttributeValue {...{ mobile, script, attribute: required }} />}
+      required={<AttributeValue {...{ mobile, job, attribute: required }} />}
       disableGutters
     >
       {attributes?.map(attribute => (
         <Box key={attribute.id}>
-          <AttributeValue {...{ mobile, script, attribute }} />
+          <AttributeValue {...{ mobile, job, attribute }} />
         </Box>
       ))}
     </GridListItem>

@@ -1,51 +1,54 @@
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
-import { graphQLFiles } from '../services/graphQLRequest'
+import { graphQLJobs } from '../services/graphQLRequest'
 import { AxiosResponse } from 'axios'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
 type ScriptsState = {
+  initialized: boolean
   fetching: boolean
-  files: { [accountId: string]: IFile[] }
+  all: {
+    [accountId: string]: IJob[]
+  }
 }
 
 const defaultState: ScriptsState = {
-  fetching: false,
-  files: {},
+  initialized: false,
+  fetching: true,
+  all: {},
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async fetch(accountId: string | void, state) {
-      dispatch.scripts.set({ fetching: true })
+      dispatch.jobs.set({ fetching: true })
       accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLFiles(accountId)
+      const result = await graphQLJobs(accountId)
       if (result === 'ERROR') return
-      const files = await dispatch.scripts.parse(result)
-      console.log('LOADED FILES', accountId, files)
-      dispatch.scripts.setFiles({ accountId, files })
-      dispatch.scripts.set({ fetching: false })
+      const jobs = await dispatch.jobs.parse(result)
+      console.log('LOADED JOBS', accountId, jobs)
+      dispatch.jobs.setAccount({ accountId, jobs })
+      dispatch.jobs.set({ fetching: false, initialized: true })
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.scripts[accountId]) dispatch.scripts.fetch(accountId)
+      if (!state.jobs[accountId]) dispatch.jobs.fetch(accountId)
     },
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account
-      const parsed = data?.files.map(file => ({
-        ...file,
-        created: new Date(file.created).getTime(),
-        updated: new Date(file.updated).getTime(),
-        versions: file.versions.items,
+      let parsed = data?.jobs.items.map(job => ({
+        ...job,
+        created: new Date(job.created).getTime(),
+        updated: new Date(job.updated).getTime(),
       }))
       return parsed
     },
-    async setFiles(params: { files: IFile[]; accountId: string }, state) {
-      let files = structuredClone(state.scripts.files)
-      files[params.accountId] = params.files
-      dispatch.scripts.set({ files })
+    async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
+      let all = structuredClone(state.jobs.all)
+      all[params.accountId] = params.jobs
+      dispatch.jobs.set({ all })
     },
   }),
   reducers: {

@@ -22,43 +22,53 @@ export const scriptAttributes: ScriptAttribute[] = [
     label: 'Script',
     required: true,
     defaultWidth: 300,
-    value: ({ script }) => script?.name,
+    value: ({ file }) => file?.name,
   }),
   new ScriptAttribute({
     id: 'scriptUpdated',
     label: 'Modified',
-    defaultWidth: 200,
-    value: ({ script }) => script?.updated && <Duration startDate={new Date(script.updated)} />,
-  }),
-  new ScriptAttribute({
-    id: 'scriptDescription',
-    label: 'Description',
-    defaultWidth: 300,
-    value: ({ script }) => script?.shortDesc,
+    defaultWidth: 150,
+    value: ({ file }) =>
+      file?.updated && (
+        <Typography variant="caption" color="grayDarkest.main">
+          <Duration startDate={new Date(file.updated)} />
+        </Typography>
+      ),
   }),
   new ScriptAttribute({
     id: 'scriptArguments',
     label: 'Arguments',
     defaultWidth: 150,
-    value: ({ script }) => (
+    value: ({ file }) => (
       <>
-        {script?.versions?.[0].arguments.map(a => (
-          <>
+        {file?.versions?.[0].arguments.map((a, index) => (
+          <React.Fragment key={index}>
             <Typography variant="body2">
               <Icon name={argumentIconLookup[a.argumentType]} inlineLeft />
               {a.name}
             </Typography>
-            <Typography variant="caption">{a.desc}</Typography>
-          </>
+            {/* <Typography variant="caption">{a.desc}</Typography> */}
+          </React.Fragment>
         ))}
       </>
     ),
-    // value: ({ script }) => <Pre>{script}</Pre>,
+    // value: ({ file }) => <Pre>{script}</Pre>,
   }),
   new ScriptAttribute({
     id: 'scriptCreated',
     label: 'Created',
-    defaultWidth: 200,
-    value: ({ script }) => script?.created && <Timestamp date={new Date(script.created)} />,
+    defaultWidth: 150,
+    value: ({ file }) =>
+      file?.created && (
+        <Typography variant="caption" color="grayDarkest.main">
+          <Timestamp date={new Date(file.created)} />
+        </Typography>
+      ),
+  }),
+  new ScriptAttribute({
+    id: 'scriptDescription',
+    label: 'Description',
+    defaultWidth: 300,
+    value: ({ file }) => file?.shortDesc,
   }),
 ]

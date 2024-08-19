@@ -10,10 +10,11 @@ export const ScriptsTabBar: React.FC = () => {
   const location = useLocation()
   const history = useHistory()
   const active = location.pathname.match(REGEX_LAST_PATH)?.[0] || ''
+  const tabIndex = tabs.indexOf(active)
 
   return (
     <Tabs
-      value={tabs.indexOf(active)}
+      value={tabIndex === -1 ? 0 : tabIndex}
       variant="scrollable"
       TabIndicatorProps={{ sx: { display: 'none' } }}
       sx={{ marginX: 3, marginY: 1 }}

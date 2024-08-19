@@ -5,6 +5,7 @@ import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
+import { ScriptingRouter } from './ScriptingRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
@@ -38,7 +39,6 @@ import { OrganizationSettingsPage } from '../pages/OrganizationSettingsPage'
 import { OrganizationLicensingPage } from '../pages/OrganizationLicensingPage'
 import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { ConnectionDefaultsPage } from '../pages/ConnectionDefaultsPage'
-import { ScriptingPage } from '../pages/ScriptingPage'
 import { LicensingPage } from '../pages/LicensingPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
@@ -241,18 +241,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* Scripting */}
       <Route path="/scripting">
-        <Switch>
-          <Route path="/scripting/runs">Jobs</Route>
-          <Route path="/scripting/files">Files</Route>
-          <Route path="/scripting/scripts">
-            <Panel layout={layout}>
-              <ScriptingPage />
-            </Panel>
-          </Route>
-          <Route path="*">
-            <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
-          </Route>
-        </Switch>
+        <Panel layout={layout}>
+          <ScriptingRouter />
+        </Panel>
       </Route>
       {/* Settings */}
       <Route path="/settings">

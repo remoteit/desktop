@@ -19,31 +19,78 @@ export async function graphQLFiles(accountId: string) {
         login {
           account(id: $accountId) {
             files {
-                id
-                name
-                created
-                updated
-                shortDesc
-                longDesc
-                executable
-                versions(latest: true) {
-                  items {
+              id
+              name
+              created
+              updated
+              shortDesc
+              longDesc
+              executable
+              versions(latest: true) {
+                items {
+                  id
+                  platform {
                     id
-                    platform {
-                      id
-                    } 
-                    arguments {
-                      name
-                      desc
-                      order
-                      argumentType
-                      options
-                    }
+                  } 
+                  arguments {
+                    name
+                    desc
+                    order
+                    argumentType
+                    options
                   }
                 }
               }
             }
           }
+        }
+      }`,
+    { accountId }
+  )
+}
+
+export async function graphQLJobs(accountId: string) {
+  return await graphQLBasicRequest(
+    ` query Jobs($accountId: String) {
+        login {
+          account(id: $accountId) {
+            jobs {
+              items {
+                id
+                status
+                created
+                updated
+                owner {
+                  id
+                  email
+                }
+                user {
+                  id
+                  email
+                }
+                tag {
+                  operator
+                  values
+                }
+                file {
+                  id
+                  name
+                }
+                jobDevices {
+                  id
+                  status
+                  attributes {
+                    key
+                    value
+                  }
+                  device {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
       }`,
     { accountId }
   )

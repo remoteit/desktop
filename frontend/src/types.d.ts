@@ -229,7 +229,8 @@ declare global {
     connections?: IConnection[]
     application?: Application
     customer?: ICustomer
-    script?: IFile
+    file?: IFile
+    job?: IJob
   }
 
   type ICustomer = IUserRef & {
