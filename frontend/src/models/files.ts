@@ -32,7 +32,7 @@ export default createModel<RootModel>()({
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.files[accountId]) dispatch.files.fetch(accountId)
+      if (!state.files.all[accountId]) dispatch.files.fetch(accountId)
     },
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account

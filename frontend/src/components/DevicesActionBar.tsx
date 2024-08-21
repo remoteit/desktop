@@ -17,12 +17,13 @@ import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 
-type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[]; displayOnly?: boolean }
+type Props = { select?: boolean; devices?: IDevice[]; displayOnly?: boolean }
 
-export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devices, displayOnly }) => {
+export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly }) => {
   const accountId = useSelector(selectActiveAccountId)
   const feature = useSelector(selectLimitsLookup)
   const tags = useSelector(selectTags)
+  const selected = useSelector((state: State) => state.ui.selected)
   const adding = useSelector((state: State) => state.tags.adding)
   const removing = useSelector((state: State) => state.tags.removing)
   const destroying = useSelector((state: State) => state.ui.destroying)
@@ -105,18 +106,18 @@ export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devic
               confirm
             />
             <Divider orientation="vertical" color="white" />
-            <IconButton
-              icon="times"
-              title="Clear selection"
-              color="alwaysWhite"
-              placement="bottom"
-              onClick={() => {
-                dispatch.ui.set({ selected: [] })
-                history.push('/devices')
-              }}
-            />
           </>
         )}
+        <IconButton
+          icon="times"
+          title="Clear selection"
+          color="alwaysWhite"
+          placement="bottom"
+          onClick={() => {
+            dispatch.ui.set({ selected: [] })
+            if (!displayOnly) history.push('/devices')
+          }}
+        />
       </Box>
     </Collapse>
   )

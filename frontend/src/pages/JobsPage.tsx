@@ -17,14 +17,11 @@ export const JobsPage: React.FC = () => {
   const jobs = useSelector(selectJobs)
   const accountId = useSelector(selectActiveAccountId)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
-  const initialized = useSelector((state: State) => state.jobs.initialized)
   const fetching = useSelector((state: State) => state.ui.fetching || state.jobs.fetching)
 
   useEffect(() => {
-    if (!initialized) dispatch.jobs.fetch()
+    dispatch.jobs.fetchIfEmpty()
   }, [accountId])
-
-  console.log('JOBS', jobs)
 
   return fetching ? (
     <LoadingMessage />

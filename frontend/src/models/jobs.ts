@@ -34,7 +34,8 @@ export default createModel<RootModel>()({
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.jobs[accountId]) dispatch.jobs.fetch(accountId)
+      console.log('FETCH IF EMPTY JOBS', accountId, state.jobs.all[accountId])
+      if (!state.jobs.all[accountId]) dispatch.jobs.fetch(accountId)
     },
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account

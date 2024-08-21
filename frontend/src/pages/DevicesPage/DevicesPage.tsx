@@ -40,7 +40,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   return (
     <DevicesDrawers>
       <RegisterMenu buttonSize={56} fontSize={22} fab />
-      <DevicesHeader selected={selected} select={select} devices={devices}>
+      <DevicesHeader select={select} devices={devices}>
         {(fetching || shouldRedirect) && !devices.length ? (
           <LoadingMessage />
         ) : !devices.length ? (

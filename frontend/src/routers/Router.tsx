@@ -24,6 +24,7 @@ import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { ResellerPage } from '../pages/ResellerPage'
 import { CustomerPage } from '../pages/CustomerPage'
+import { ScriptAddPage } from '../pages/ScriptAddPage'
 import { PlatformAddPage } from '../pages/PlatformAddPage'
 import { CustomerAddPage } from '../pages/CustomerAddPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
@@ -241,9 +242,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* Scripting */}
       <Route path="/scripting">
-        <Panel layout={layout}>
-          <ScriptingRouter />
-        </Panel>
+        <ScriptingRouter layout={layout} />
       </Route>
       {/* Settings */}
       <Route path="/settings">

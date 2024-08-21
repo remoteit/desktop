@@ -14,7 +14,7 @@ export const DynamicPanel: React.FC<Props> = ({ root, ...props }) => {
   const location = useLocation()
   const match = matchPath(location.pathname, { path: root, exact: true })
 
-  if (props.layout.singlePanel) {
+  if (props.layout.singlePanel || !props.secondary) {
     return <Panel layout={props.layout}>{match ? props.primary : props.secondary}</Panel>
   }
 

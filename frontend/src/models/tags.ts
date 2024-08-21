@@ -154,7 +154,8 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ removing: false })
     },
 
-    async create({ tag, accountId }: { tag: ITag; accountId: string }, state) {
+    async create({ tag, accountId }: { tag: ITag; accountId?: string }, state) {
+      accountId = accountId || selectActiveAccountId(state)
       const tags = selectTags(state)
       dispatch.tags.set({ creating: true })
       tag.color = tag.color || getNextLabel(state)

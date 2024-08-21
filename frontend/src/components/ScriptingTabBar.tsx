@@ -6,7 +6,7 @@ import { Tabs, Tab } from '@mui/material'
 const tabs = ['/scripts', '/runs', '/files']
 const tabTitles = ['Scripts', 'Runs', 'Files']
 
-export const ScriptsTabBar: React.FC = () => {
+export const ScriptingTabBar: React.FC = () => {
   const location = useLocation()
   const history = useHistory()
   const active = location.pathname.match(REGEX_LAST_PATH)?.[0] || ''

@@ -10,7 +10,7 @@ import {
   optionalSecondParam,
 } from './state'
 import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
-import { defaultState, canMemberView } from '../models/organization'
+import { defaultState, canMemberView, DEFAULT_ROLE } from '../models/organization'
 import { selectMembership } from './accounts'
 
 export const selectOrganization = createSelector(
@@ -44,6 +44,10 @@ export const selectCustomer = createSelector(
     return reseller?.customers.find(c => c.id === customerId)
   }
 )
+
+export const selectRole = createSelector([selectOrganization, selectMembership], (organization, membership) => {
+  return organization.roles?.find(r => r.id === membership.roleId) || DEFAULT_ROLE
+})
 
 export const selectMembersWithAccess = createSelector(
   [selectOrganization, optionalSecondParam],

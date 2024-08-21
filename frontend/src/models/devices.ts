@@ -33,7 +33,7 @@ import {
   selectDeviceModelAttributes,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { store, State } from '../store'
+import { State } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
@@ -232,7 +232,7 @@ export default createModel<RootModel>()({
       if (!silent) dispatch.devices.set({ fetching: false, accountId })
     },
 
-    async fetchCount(params: IOrganizationRole, state) {
+    async fetchCount(params: Partial<IOrganizationRole>, state) {
       const options: gqlOptions = {
         size: 0,
         from: 0,

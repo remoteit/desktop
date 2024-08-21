@@ -2,33 +2,19 @@ import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { makeStyles } from '@mui/styles'
-import { selectActiveAccountId } from '../selectors/accounts'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
-import {
-  Stack,
-  Button,
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  MenuItem,
-  TextField,
-} from '@mui/material'
+import { Button, Typography, List, ListItem, ListItemIcon, TextField } from '@mui/material'
 import { Dispatch, State } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { RoleAccessCounts } from '../components/RoleAccessCounts'
 import { PermissionsList } from '../components/PermissionsList'
 import { DeleteButton } from '../buttons/DeleteButton'
-import { selectTags } from '../selectors/tags'
 import { Container } from '../components/Container'
-import { TagEditor } from '../components/TagEditor'
+import { TagFilter } from '../components/TagFilter'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Tags } from '../components/Tags'
 import { Icon } from '../components/Icon'
 
 const NAME_MAX_LENGTH = 64
@@ -36,22 +22,16 @@ const NAME_MAX_LENGTH = 64
 export const OrganizationRolePage: React.FC = () => {
   const { roleID } = useParams<{ roleID?: string }>()
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
   const css = useStyles()
-  const { accountId, disabled, roles, tags } = useSelector((state: State) => ({
-    accountId: selectActiveAccountId(state),
-    disabled: state.organization.updating,
-    roles: selectOrganization(state).roles,
-    tags: selectTags(state, selectActiveAccountId(state)),
-  }))
+  const disabled = useSelector((state: State) => state.organization.updating)
+  const roles = useSelector((state: State) => selectOrganization(state).roles)
   const role = structuredClone(roles?.find(r => r.id === roleID) || DEFAULT_ROLE)
   const [form, setForm] = useState<IOrganizationRole>(role)
   const [saving, setSaving] = useState<boolean>(false)
   const systemRole = !!role.system
-  const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
   const changed = !isEqual(form, role)
 
-  const changeForm = async (changedForm: IOrganizationRole) => setForm(structuredClone(changedForm))
+  const changeForm = async (changedForm: Partial<IOrganizationRole>) => setForm({ ...form, ...changedForm })
   const handlePermissionChange = (toggle, permission) => {
     if (toggle) {
       setForm({ ...form, permissions: form.permissions.filter(fp => fp !== permission) })
@@ -123,87 +103,7 @@ export const OrganizationRolePage: React.FC = () => {
         <Typography variant="subtitle1" gutterBottom>
           Device and Network Permissions
         </Typography>
-        <ListItem>
-          <ListItemIcon>
-            <Icon name={form.access === 'NONE' ? 'ban' : form.access === 'TAG' ? 'tag' : 'key'} size="md" fixedWidth />
-          </ListItemIcon>
-          <TextField
-            select
-            fullWidth
-            disabled={disabled || systemRole}
-            label="Access"
-            value={form.access}
-            variant="filled"
-            onChange={event => {
-              let tag: ITagFilter | undefined
-              const access = event.target.value as IRoleAccess
-              if (access === 'TAG') tag = structuredClone(DEFAULT_ROLE.tag)
-              changeForm({ ...form, access, tag })
-            }}
-          >
-            <MenuItem value="NONE">None</MenuItem>
-            <MenuItem value="ALL">All</MenuItem>
-            <MenuItem value="TAG">Tagged</MenuItem>
-          </TextField>
-          <ListItemSecondaryAction>
-            <RoleAccessCounts role={form} />
-          </ListItemSecondaryAction>
-        </ListItem>
-        {form.access === 'TAG' && (
-          <ListItem>
-            <ListItemIcon />
-            <Stack flexDirection="row" flexWrap="wrap">
-              <Tags
-                tags={filteredTags}
-                onDelete={({ name }) => {
-                  let tag = structuredClone(form.tag || DEFAULT_ROLE.tag) as ITagFilter
-                  if (!tag.values) return
-                  const index = tag.values.indexOf(name)
-                  tag.values.splice(index, 1)
-                  form.tag = tag
-                  changeForm(form)
-                }}
-                onClick={tag => {
-                  dispatch.devices.set({ tag: { values: [tag.name], operator: tag.operator } })
-                  dispatch.devices.fetchList()
-                  history.push('/devices')
-                }}
-              />
-            </Stack>
-            <TagEditor
-              onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
-              onSelect={tag => {
-                form.tag && form.tag.values.push(tag.name)
-                changeForm(form)
-              }}
-              tags={tags}
-              filter={filteredTags}
-            />
-            &nbsp;
-            <ListItemSecondaryAction>
-              <Typography variant="caption">Match: &nbsp;</Typography>
-              <TextField
-                select
-                hiddenLabel
-                size="small"
-                disabled={disabled}
-                value={form.tag?.operator || DEFAULT_ROLE.tag?.operator || 'ALL'}
-                variant="filled"
-                onChange={event => {
-                  form.tag && (form.tag.operator = event.target.value as ITagOperator)
-                  changeForm(form)
-                }}
-              >
-                <MenuItem dense value="ANY">
-                  Any
-                </MenuItem>
-                <MenuItem dense value="ALL">
-                  All
-                </MenuItem>
-              </TextField>
-            </ListItemSecondaryAction>
-          </ListItem>
-        )}
+        <TagFilter form={form} onChange={changeForm} disabled={disabled} systemRole={systemRole} icon />
         {form.access !== 'NONE' && (
           <PermissionsList
             locked={systemRole}

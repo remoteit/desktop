@@ -476,9 +476,9 @@ export function canMemberView(roles: IOrganizationRole[], member: IOrganizationM
   return canRoleView(role, instance)
 }
 
-export function canRoleView(role?: IOrganizationRole, instance?: IInstance) {
+export function canRoleView(role?: Partial<IOrganizationRole>, instance?: IInstance) {
   if (instance?.shared) return false
-  if (!role?.permissions.includes('VIEW')) return false
+  if (!role?.permissions?.includes('VIEW')) return false
   if (role?.tag && instance?.tags) return canViewByTags(role.tag, instance.tags)
   return true
 }
