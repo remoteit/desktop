@@ -78,7 +78,7 @@ export const TagAutocomplete: React.FC<Props> = ({
 
   return (
     <Popover
-      PaperProps={{ className: css.inputContainer }}
+      slotProps={{ paper: { className: css.inputContainer } }}
       elevation={1}
       anchorEl={targetEl}
       open={open}

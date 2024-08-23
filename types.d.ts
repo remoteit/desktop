@@ -599,6 +599,14 @@ declare global {
 
   type IFileArgumentType = 'FileSelect' | 'StringSelect' | 'StringEntry'
 
+  type IFileForm = {
+    name: string
+    description: string
+    tag: ITagFilter
+    access: IRoleAccess
+    file?: File
+  }
+  
   type IJob = {
     id: string
     status: string

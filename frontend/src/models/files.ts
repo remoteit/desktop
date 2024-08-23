@@ -3,6 +3,7 @@ import { createModel } from '@rematch/core'
 import { graphQLFiles } from '../services/graphQLRequest'
 import { AxiosResponse } from 'axios'
 import { selectActiveAccountId } from '../selectors/accounts'
+import { postFile } from '../services/post'
 import { RootModel } from '.'
 
 type FilesState = {
@@ -43,6 +44,21 @@ export default createModel<RootModel>()({
         versions: file.versions.items,
       }))
       return parsed
+    },
+    async save(form: IFileForm, state) {
+      if (!form.file) return
+
+      const data = {
+        name: form.name,
+        description: form.description,
+        tag: form.tag.values,
+        access: form.access,
+      }
+      const result = await postFile(form.file, data, `/file/upload`)
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Error uploading file' })
+        return
+      }
     },
     async setAccount(params: { files: IFile[]; accountId: string }, state) {
       let all = structuredClone(state.files.all)

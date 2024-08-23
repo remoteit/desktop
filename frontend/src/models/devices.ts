@@ -22,7 +22,6 @@ import {
   graphQLPreloadDevices,
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
-import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { selectTimeSeries } from '../selectors/ui'
 import {
   getAllDevices,
@@ -33,10 +32,10 @@ import {
   selectDeviceModelAttributes,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { State } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
+import { State } from '../store'
 
 type IDeviceState = {
   all: IDevice[]
@@ -154,11 +153,10 @@ export default createModel<RootModel>()({
         columns: selectActiveColumns(state, accountId),
         ...selectTimeSeries(state),
       })
-      const error = graphQLGetErrors(gqlResponse)
+
+      if (gqlResponse === 'ERROR') return []
+
       const result = gqlResponse?.data?.data?.login?.account?.device
-
-      if (error) return []
-
       const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden })
       if (devices.length) {
         await dispatch.accounts.mergeDevices({ devices, accountId })
@@ -191,21 +189,15 @@ export default createModel<RootModel>()({
       if (!id) return
 
       accountId = accountId || selectActiveAccountId(state)
-
       let result: IDevice | undefined
-      let errors: Error[] | undefined
 
       if (!silent) dispatch.devices.set({ fetching: true, accountId })
       const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
-      try {
-        const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
-        errors = graphQLGetErrors(gqlResponse)
+      const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
+      if (gqlResponse !== 'ERROR') {
         const gqlData = gqlResponse?.data?.data?.login || {}
-        if (gqlData) result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
-      } catch (error) {
-        await apiError(error)
-        errors = errors?.length ? [...errors, error] : [error]
+        result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
       }
 
       if (result) {
@@ -223,7 +215,7 @@ export default createModel<RootModel>()({
             noticeMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
           })
         if (redirect) dispatch.ui.set({ redirect })
-        if (!errors) {
+        if (gqlResponse !== 'ERROR') {
           if (isService) dispatch.connections.forget(id)
           else dispatch.devices.cleanup([id])
         }
@@ -312,19 +304,16 @@ export default createModel<RootModel>()({
     },
 
     async graphQLListProcessor(options: gqlOptions) {
-      try {
-        const gqlResponse = await graphQLFetchDeviceList(options)
-        const [gqlDevices, total, error] = graphQLMetadata(gqlResponse)
-        const devices = graphQLDeviceAdaptor({
-          gqlDevices,
-          accountId: options.accountId,
-          serviceLoaded: !!options.applicationTypes?.length,
-        })
-        return { devices, total, error }
-      } catch (error) {
-        await apiError(error)
-        return { devices: [], total: 0, error }
-      }
+      const gqlResponse = await graphQLFetchDeviceList(options)
+      if (gqlResponse === 'ERROR') return { devices: [], total: 0, error: true }
+
+      const [gqlDevices, total] = graphQLMetadata(gqlResponse)
+      const devices = graphQLDeviceAdaptor({
+        gqlDevices,
+        accountId: options.accountId,
+        serviceLoaded: !!options.applicationTypes?.length,
+      })
+      return { devices, total }
     },
 
     async rename({ id, name }: { id: string; name: string }) {
@@ -684,11 +673,10 @@ export default createModel<RootModel>()({
 })
 
 function graphQLMetadata(gqlData?: AxiosResponse) {
-  const error = graphQLGetErrors(gqlData)
   const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
   const devices = gqlData?.data?.data?.login?.account?.devices?.items || []
   const id = gqlData?.data?.data?.login?.id
-  return [devices, total, id, error]
+  return [devices, total, id]
 }
 
 export function mergeDevice(overwrite: IDevice, device: IDevice): IDevice {

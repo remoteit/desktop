@@ -60,7 +60,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Switch>
       }
       layout={layout}
-      root="/scripting/:tab"
+      root="/scripting/:tab?"
     />
   )
 }

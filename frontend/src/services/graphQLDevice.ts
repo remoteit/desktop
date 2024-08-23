@@ -1,5 +1,5 @@
 import { selectDeviceColumns } from '../selectors/devices'
-import { graphQLRequest, graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
 import { getTimeZone } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
@@ -163,7 +163,7 @@ const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
@@ -208,7 +208,7 @@ export async function graphQLPreloadDevices(params: {
   serviceTimeSeries?: ITimeSeriesOptions
   deviceTimeSeries?: ITimeSeriesOptions
 }) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query DevicePreload($ids: [String!]!, $accountId: String${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
@@ -235,7 +235,7 @@ export async function graphQLPreloadDevices(params: {
 }
 
 export async function graphQLFetchConnections(params: { ids: string[] }) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
@@ -257,7 +257,7 @@ export async function graphQLFetchFullDevice(
   serviceTimeSeries?: ITimeSeriesOptions,
   deviceTimeSeries?: ITimeSeriesOptions
 ) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query Device($id: [String!]!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
           id

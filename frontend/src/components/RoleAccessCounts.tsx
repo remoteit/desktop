@@ -20,7 +20,7 @@ export const RoleAccessCounts: React.FC<Props> = ({ role }) => {
       setCounts({ devices, networks })
       setLoading(false)
     })()
-  }, [role])
+  }, [role.permissions, role.access, role.tag])
 
   return counts === null ? (
     <Chip size="small" label="Counting..." />
