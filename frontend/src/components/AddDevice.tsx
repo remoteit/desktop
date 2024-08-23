@@ -27,7 +27,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
   const permissions = useSelector(selectPermissions)
   const codeOnly = platform.installation?.command === '[CODE]'
 
-  if (!permissions?.includes('MANAGE')) {
+  if (!permissions.includes('MANAGE')) {
     return (
       <Box>
         <Notice>You must have the register permission to add a device to this organization.</Notice>

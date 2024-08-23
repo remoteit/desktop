@@ -94,7 +94,7 @@ const useStyles = makeStyles(({ palette }) => ({
     background: palette.grayLightest.main,
     padding: `${spacing.lg}px ${spacing.xl}px`,
     borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
-    minWidth: 400,
+    minWidth: 200,
     '&:hover': { background: palette.primaryHighlight.main, borderColor: palette.primaryHighlight.main },
   }),
 }))

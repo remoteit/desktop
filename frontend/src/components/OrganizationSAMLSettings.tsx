@@ -29,7 +29,6 @@ import { Link } from './Link'
 export const OrganizationSAMLSettings: React.FC = () => {
   const organization = useSelector(selectOrganization)
   const updating = useSelector((state: State) => state.organization.updating)
-  const domain = useSelector((state: State) => organization.domain || '')
   const defaultDomain = useSelector((state: State) => state.auth.user?.email.split('@')[1])
   const limits = useSelector(selectLimitsLookup)
   const permissions = useSelector(selectPermissions)
@@ -40,6 +39,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
     type: (organization.identityProvider?.type as IOrganizationProvider) || 'SAML',
   })
 
+  const domain = organization.domain || ''
   const required = !!organization.providers?.includes(form.type)
 
   const incomplete =
@@ -57,7 +57,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
     setForm({ ...form, enabled: !!organization.identityProvider })
   }, [organization])
 
-  if (!permissions?.includes('ADMIN'))
+  if (!permissions.includes('ADMIN'))
     return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   if (!limits.saml) return null

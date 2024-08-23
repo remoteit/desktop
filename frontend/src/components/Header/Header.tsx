@@ -36,7 +36,8 @@ export const Header: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const css = useStyles()
-  const manager = permissions?.includes('MANAGE')
+
+  const manager = permissions.includes('MANAGE')
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
   const isRootMenu = menu === location.pathname
 

@@ -19,7 +19,7 @@ export const NetworksPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const all = [...useSelector(selectNetworks)].sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
   const initialized = useSelector((state: State) => state.networks.initialized)
-  const permissions = useSelector((state: State) => selectPermissions(state))
+  const permissions = useSelector(selectPermissions)
   const loading = useSelector(selectDeviceModelAttributes).fetching
   const networks = all.filter(n => !n.shared)
   const shared = all.filter(n => n.shared)
@@ -33,7 +33,7 @@ export const NetworksPage: React.FC = () => {
         <>
           <Typography variant="subtitle1">
             <Title>Networks</Title>
-            {permissions?.includes('MANAGE') && (
+            {permissions.includes('MANAGE') && (
               <GuideBubble
                 guide="addNetwork"
                 enterDelay={400}

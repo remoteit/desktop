@@ -13,8 +13,8 @@ type Props = ButtonProps & { fab?: boolean; buttonSize: number; sidebar?: boolea
 export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, ...props }) => {
   const location = useLocation()
   const layout = useSelector((state: State) => state.ui.layout)
-  const permissions = useSelector((state: State) => selectPermissions(state))
-  const unauthorized = !permissions?.includes('MANAGE')
+  const permissions = useSelector(selectPermissions)
+  const unauthorized = !permissions.includes('MANAGE')
   const disabled = unauthorized || location.pathname === '/add'
 
   if (unauthorized || (fab && !layout.hideSidebar)) return null

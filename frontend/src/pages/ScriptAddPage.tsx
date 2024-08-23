@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash.isequal'
 import { selectRole } from '../selectors/organizations'
+import { useHistory } from 'react-router-dom'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
 import { List, ListItem, Typography, TextField, Button, Stack } from '@mui/material'
 import { FileUpload } from '../components/FileUpload'
 import { TagFilter } from '../components/TagFilter'
@@ -12,6 +12,7 @@ import { Body } from '../components/Body'
 const initialForm: IFileForm = {
   name: '',
   description: '',
+  executable: true,
   tag: { operator: 'ALL', values: [] },
   access: 'ALL',
 }
@@ -33,7 +34,7 @@ export const ScriptAddPage: React.FC = () => {
   useEffect(() => {
     // dispatch.applicationTypes.fetchAll()
   }, [])
-
+  console.log('FORM', form)
   return (
     <Body inset gutterTop gutterBottom>
       <form
@@ -42,7 +43,8 @@ export const ScriptAddPage: React.FC = () => {
           if (!form.file) return dispatch.ui.set({ errorMessage: 'No file selected' })
           form.file = new File([form.file], form.name, { type: form.file.type })
           setSaving(true)
-          await dispatch.files.save(form)
+          await dispatch.files.upload(form)
+          history.goBack()
           setSaving(false)
         }}
       >

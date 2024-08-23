@@ -21,7 +21,7 @@ export const OrganizationMembersPage: React.FC = () => {
   const userId = useSelector((state: State) => state.user.id)
   const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
 
-  if (!permissions?.includes('ADMIN'))
+  if (!permissions.includes('ADMIN'))
     return <Redirect to={{ pathname: `/organization/account/${userId}`, state: { isRedirect: true } }} />
 
   return (

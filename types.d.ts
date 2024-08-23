@@ -602,6 +602,7 @@ declare global {
   type IFileForm = {
     name: string
     description: string
+    executable: boolean
     tag: ITagFilter
     access: IRoleAccess
     file?: File

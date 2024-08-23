@@ -242,5 +242,5 @@ function removeTag<T extends IInstance>(original: T, tag: ITag): T {
 
 export function canEditTags(state: State, accountId?: string) {
   const permissions = selectPermissions(state, accountId)
-  return !!permissions?.includes('ADMIN')
+  return !!permissions.includes('ADMIN')
 }

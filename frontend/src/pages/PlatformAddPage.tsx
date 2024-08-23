@@ -16,7 +16,7 @@ export const PlatformAddPage: React.FC = () => {
   let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
-  const permissions = useSelector((state: State) => selectPermissions(state))
+  const permissions = useSelector(selectPermissions)
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
@@ -38,7 +38,7 @@ export const PlatformAddPage: React.FC = () => {
           flexDirection={{ xs: 'row', md: 'column' }}
         >
           <Icon name={platform} fontSize={100} inlineLeft={xs} platformIcon />
-          {platformObj.installation?.command && permissions?.includes('MANAGE') && (
+          {platformObj.installation?.command && permissions.includes('MANAGE') && (
             <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
               {!xs && <Divider sx={{ marginTop: 4, width: '80%' }} />}
               <AddPlatformServices

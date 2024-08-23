@@ -18,6 +18,7 @@ export const selectOrganization = createSelector(
   (accountId, organizations, myMembership, user) => {
     const organization = organizations[accountId] || defaultState
     const membership: IOrganizationMember = { ...myMembership, user, organizationId: organization.id }
+    console.log('SELECT ORG', organization, membership)
     return {
       ...organization,
       membership,
@@ -112,8 +113,8 @@ export const selectLicensesWithLimits = createSelector([selectLicenses, selectLi
 
 export const selectPermissions = createSelector(
   [selectMembership, selectOrganization],
-  (membership, organization): IPermission[] | undefined => {
-    return organization.roles.find(r => r.id === membership.roleId)?.permissions
+  (membership, organization): IPermission[] => {
+    return organization.roles.find(r => r.id === membership.roleId)?.permissions || []
   }
 )
 

@@ -18,7 +18,7 @@ export const OrganizationSettingsPage: React.FC = () => {
   const isOrgOwner = useSelector((state: State) => organization.id === state.user.id)
   const dispatch = useDispatch<Dispatch>()
 
-  if (!permissions?.includes('ADMIN'))
+  if (!permissions.includes('ADMIN'))
     return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (

@@ -12,7 +12,7 @@ export const AddQuickPlatform: React.FC = () => {
   const platform = 'linux'
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
-  const permissions = useSelector((state: State) => selectPermissions(state))
+  const permissions = useSelector(selectPermissions)
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export const AddQuickPlatform: React.FC = () => {
         <ListItemIcon>
           <Icon name={platform} size="xxl" platformIcon fixedWidth />
         </ListItemIcon>
-        {permissions?.includes('MANAGE') && (
+        {permissions.includes('MANAGE') && (
           <AddPlatformServices types={applicationTypes} onChange={type => setApplicationTypes(type)} />
         )}
       </Stack>

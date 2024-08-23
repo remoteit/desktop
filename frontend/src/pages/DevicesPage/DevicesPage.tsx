@@ -28,7 +28,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  const shouldRedirect = initLoad && permissions?.includes('MANAGE')
+  const shouldRedirect = initLoad && permissions.includes('MANAGE')
 
   useEffect(() => {
     if (!initialized) setInitLoad(true)

@@ -434,13 +434,7 @@ export function parseOrganization(data: any): IOrganizationState {
         },
       })),
     ],
-    roles: [
-      ...defaultState.roles,
-      ...data.roles.map(r => ({
-        ...r,
-        created: new Date(r.created),
-      })),
-    ],
+    roles: [...defaultState.roles, ...data.roles],
   }
 }
 

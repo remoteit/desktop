@@ -1,5 +1,4 @@
 import React from 'react'
-import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { ScriptingHeader } from '../components/ScriptingHeader'
 import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
@@ -17,7 +16,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const location = useLocation()
   const permissions = useSelector(selectPermissions)
 
-  if (!permissions?.includes('SCRIPTING'))
+  if (!permissions.includes('SCRIPTING'))
     return (
       <Panel layout={layout}>
         <Body center>

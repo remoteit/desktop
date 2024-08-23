@@ -45,15 +45,18 @@ export default createModel<RootModel>()({
       }))
       return parsed
     },
-    async save(form: IFileForm, state) {
+    async upload(form: IFileForm, state) {
       if (!form.file) return
 
       const data = {
+        owner: selectActiveAccountId(state),
+        executable: form.executable,
+        shortDesc: form.description,
         name: form.name,
-        description: form.description,
-        tag: form.tag.values,
-        access: form.access,
       }
+
+      console.log('UPLOAD FILE', form, data)
+
       const result = await postFile(form.file, data, `/file/upload`)
       if (result === 'ERROR') {
         dispatch.ui.set({ errorMessage: 'Error uploading file' })
