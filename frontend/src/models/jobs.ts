@@ -37,14 +37,20 @@ export default createModel<RootModel>()({
       console.log('FETCH IF EMPTY JOBS', accountId, state.jobs.all[accountId])
       if (!state.jobs.all[accountId]) dispatch.jobs.fetch(accountId)
     },
-    async parse(result: AxiosResponse<any> | undefined) {
+    async parse(result: AxiosResponse<any> | undefined): Promise<IJob[]> {
       const data = result?.data?.data?.login?.account
-      let parsed = data?.jobs.items.map(job => ({
-        ...job,
-        created: new Date(job.created).getTime(),
-        updated: new Date(job.updated).getTime(),
-      }))
-      return parsed
+      return data?.jobs.items || []
+      // let parsed = data?.jobs.items.map(job => ({
+      //   ...job,
+      //   created: new Date(job.created).getTime(),
+      //   updated: new Date(job.updated).getTime(),
+      //   jobDevices: job.jobDevices.map(jd => ({
+      //     ...jd,
+      //     created: new Date(jd.created).getTime(),
+      //     updated: new Date(jd.updated).getTime(),
+      //   })),
+      // }))
+      // return parsed
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

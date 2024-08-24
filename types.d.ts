@@ -611,8 +611,8 @@ declare global {
   type IJob = {
     id: string
     status: string
-    created: Timestamp
-    updated: Timestamp
+    created: ISOTimestamp
+    updated: ISOTimestamp
     owner: IUserRef
     user: IUserRef
     tag: ITagFilter
@@ -626,9 +626,12 @@ declare global {
   type IJobDevice = {
     id: string
     status: IJobStatus
+    created: ISOTimestamp
+    updated: ISOTimestamp
     attributes: IJobDeviceAttribute[]
     device: {
       id: string
+      name: string
     }
   }
 
@@ -637,7 +640,7 @@ declare global {
     value: string
   }
 
-  type IJobStatus = 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED' 
+  type IJobStatus = 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED'
 
   type IApplicationType = {
     id: number
@@ -842,6 +845,8 @@ declare global {
   type ipAddress = string // namespace to indicate if expecting an ip address
 
   type Timestamp = number
+
+  type ISOTimestamp = string
 
   type ipClass = 'A' | 'B' | 'C'
 

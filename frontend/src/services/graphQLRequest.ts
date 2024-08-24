@@ -79,12 +79,15 @@ export async function graphQLJobs(accountId: string) {
                 jobDevices {
                   id
                   status
+                  created
+                  updated
                   attributes {
                     key
                     value
                   }
                   device {
                     id
+                    name
                   }
                 }
               }

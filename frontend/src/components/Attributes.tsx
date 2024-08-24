@@ -599,7 +599,3 @@ export const connectionAttributes = attributes.filter(a => a.type === 'CONNECTIO
 export function getAttribute(id: string): Attribute {
   return attributeLookup[id] || new Attribute({ id: 'unknown', label: 'Unknown' })
 }
-
-export function getAttributes(ids: string[]): Attribute[] {
-  return ids.map(id => getAttribute(id))
-}

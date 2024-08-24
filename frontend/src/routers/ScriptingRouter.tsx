@@ -6,6 +6,7 @@ import { selectPermissions } from '../selectors/organizations'
 import { ScriptAddPage } from '../pages/ScriptAddPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { FilesPage } from '../pages/FilesPage'
+import { ScriptPage } from '../pages/ScriptPage'
 import { JobsPage } from '../pages/JobsPage'
 import { Notice } from '../components/Notice'
 import { Panel } from '../components/Panel'
@@ -29,27 +30,34 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Panel>
     )
 
-  if (!location.pathname.includes('new')) layout = { ...layout, singlePanel: true }
+  if (location.pathname.split('/').length <= 3) layout = { ...layout, singlePanel: true }
 
   return (
     <DynamicPanel
       primary={
-        <ScriptingHeader>
-          <Switch>
-            <Route path="/scripting/scripts">
-              <FilesPage scripts />
-            </Route>
-            <Route path="/scripting/runs">
-              <JobsPage />
-            </Route>
-            <Route path="/scripting/files">
-              <FilesPage />
-            </Route>
-            <Route path="*">
-              <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
-            </Route>
-          </Switch>
-        </ScriptingHeader>
+        <Switch>
+          <Route path="/scripting/scripts/:fileID">
+            <ScriptPage />
+          </Route>
+          <Route path="*">
+            <ScriptingHeader>
+              <Switch>
+                <Route path="/scripting/scripts">
+                  <FilesPage scripts />
+                </Route>
+                <Route path="/scripting/runs">
+                  <JobsPage />
+                </Route>
+                <Route path="/scripting/files">
+                  <FilesPage />
+                </Route>
+                <Route path="*">
+                  <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
+                </Route>
+              </Switch>
+            </ScriptingHeader>
+          </Route>
+        </Switch>
       }
       secondary={
         <Switch>
