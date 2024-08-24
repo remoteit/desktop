@@ -18,9 +18,9 @@ export const ScriptPage: React.FC = () => {
   const { fileID } = useParams<{ fileID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID))
   const fetching = useSelector((state: State) => state.files.fetching)
-  const dispatch = useDispatch<Dispatch>()
-  const location = useLocation()
-  const history = useHistory()
+  // const dispatch = useDispatch<Dispatch>()
+  // const location = useLocation()
+  // const history = useHistory()
 
   const successIcon = getJobAttribute('jobDeviceSuccess').label
   const failureIcon = getJobAttribute('jobDeviceFailure').label
