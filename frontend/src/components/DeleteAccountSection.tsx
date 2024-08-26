@@ -108,9 +108,9 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
                   </Box>
                   Why do you want to delete your account?
                   <Typography variant="body2" marginTop={1}>
-                    Please, help us improve by telling us why it didn't work out.
-                    <br />
                     <i>We are sorry to see you go! </i>
+                    <br />
+                    Please help us improve by telling us why it didn't work out.
                   </Typography>
                 </>
               }

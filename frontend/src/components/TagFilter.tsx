@@ -26,6 +26,7 @@ import { Icon } from './Icon'
 
 type Props = ListItemProps & {
   form: Partial<IOrganizationRole>
+  name?: string
   disabled?: boolean
   systemRole?: boolean
   icon?: boolean
@@ -37,6 +38,7 @@ type Props = ListItemProps & {
 
 export const TagFilter: React.FC<Props> = ({
   form,
+  name = 'Access',
   disabled,
   systemRole,
   icon,
@@ -63,7 +65,7 @@ export const TagFilter: React.FC<Props> = ({
           select
           fullWidth
           disabled={disabled || systemRole}
-          label="Access"
+          label={name}
           value={form.access}
           variant="filled"
           onChange={event => {
