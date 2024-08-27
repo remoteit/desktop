@@ -1,6 +1,7 @@
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { graphQLFiles } from '../services/graphQLRequest'
+import { graphQLDeleteFile } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { postFile } from '../services/post'
@@ -49,7 +50,7 @@ export default createModel<RootModel>()({
       if (!form.file) return
 
       const data = {
-        owner: selectActiveAccountId(state),
+        accountId: selectActiveAccountId(state),
         executable: form.executable,
         shortDesc: form.description,
         name: form.name,
@@ -62,6 +63,17 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: 'Error uploading file' })
         return
       }
+    },
+    async delete(fileId: string, state) {
+      console.log('DELETE FILE', fileId)
+
+      const result = await graphQLDeleteFile(fileId)
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Error deleting file' })
+        return
+      }
+
+      await dispatch.files.fetch()
     },
     async setAccount(params: { files: IFile[]; accountId: string }, state) {
       let all = structuredClone(state.files.all)

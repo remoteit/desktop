@@ -27,6 +27,7 @@ export const ScriptAddPage: React.FC = () => {
   }
   const [form, setForm] = useState<IFileForm>(defaultForm)
   const [saving, setSaving] = useState(false)
+  const [script, setScript] = useState<string>('')
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
@@ -34,16 +35,16 @@ export const ScriptAddPage: React.FC = () => {
   useEffect(() => {
     // dispatch.applicationTypes.fetchAll()
   }, [])
-  console.log('FORM', form)
+
   return (
     <Body inset gutterTop gutterBottom>
       <form
         onSubmit={async event => {
           event.preventDefault()
-          if (!form.file) return dispatch.ui.set({ errorMessage: 'No file selected' })
-          form.file = new File([form.file], form.name, { type: form.file.type })
           setSaving(true)
-          await dispatch.files.upload(form)
+          form.file = new File([script || form.file || ''], form.name, { type: form.file?.type || 'text/plain' })
+          await Promise.all([dispatch.files.upload(form), dispatch.jobs.save(form)])
+          await dispatch.files.fetch()
           history.goBack()
           setSaving(false)
         }}
@@ -52,6 +53,8 @@ export const ScriptAddPage: React.FC = () => {
         <List>
           <ListItem disableGutters>
             <FileUpload
+              script={script}
+              onChange={script => setScript(script)}
               onUpload={file => {
                 setForm({ ...form, name: file.name, file })
                 console.log('upload', file.name, file)
@@ -82,6 +85,7 @@ export const ScriptAddPage: React.FC = () => {
           </ListItem>
           <TagFilter
             form={form}
+            name="Devices"
             countsSx={{ marginRight: 3 }}
             onChange={f => setForm({ ...form, ...structuredClone(f) })}
             disableGutters

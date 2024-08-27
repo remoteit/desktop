@@ -4,13 +4,22 @@ import { getJobAttribute } from '../components/JobAttributes'
 import { Dispatch, State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocation, useHistory, useParams } from 'react-router-dom'
-import { Box, Stack, List, ListItem, ListItemText, ListItemIcon, Typography, CircularProgress } from '@mui/material'
+import { Redirect, useLocation, useHistory, useParams } from 'react-router-dom'
+import {
+  Box,
+  Stack,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Typography,
+  CircularProgress,
+} from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { Container } from '../components/Container'
 import { fontSizes } from '../styling'
 import { Duration } from '../components/Duration'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 
@@ -26,14 +35,7 @@ export const ScriptPage: React.FC = () => {
   const failureIcon = getJobAttribute('jobDeviceFailure').label
   const countIcon = getJobAttribute('jobDeviceCount').label
 
-  if (!script)
-    return (
-      <span>
-        <Notice severity="warning" gutterTop>
-          Script not found.
-        </Notice>
-      </span>
-    )
+  if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
 
   return (
     <Container
@@ -42,21 +44,23 @@ export const ScriptPage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
-              to={`/scripting/:type/${fileID}/details`}
-              match={[
-                `/scripting/:type/${fileID}/details`,
-                `/scripting/:type/${fileID}/edit`,
-                `/scripting/:type/${fileID}/users`,
-                `/scripting/:type/${fileID}/logs`,
-              ]}
+              to={`/scripting/scripts/${fileID}/details`}
+              match={[`/scripting/scripts/${fileID}/details`, `/scripting/scripts/${fileID}/edit`]}
               title={<Typography variant="h2">{script.name}</Typography>}
-              subtitle={getJobAttribute('jobUpdated').value({ job: script.job })}
               icon="scripting"
               exactMatch
-            />
-            <Box marginY={1} marginLeft={9} marginRight={3}>
+            ></ListItemLocation>
+            <Typography marginLeft={9.5} variant="caption" component="p">
+              {getJobAttribute('jobUpdated').value({ job: script.job })}
+            </Typography>
+            <Box marginY={2} marginLeft={9} marginRight={3}>
               {getJobAttribute('jobTags').value({ job: script.job })}
             </Box>
+            {script.shortDesc && (
+              <Typography marginLeft={9.5} marginTop={5} marginBottom={3} variant="body2" component="p">
+                {script.shortDesc}
+              </Typography>
+            )}
           </List>
           <LinearProgress loading={fetching} />
         </>

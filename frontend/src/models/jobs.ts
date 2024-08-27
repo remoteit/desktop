@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import { postFile } from '../services/post'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
 import { AxiosResponse } from 'axios'
@@ -51,6 +52,24 @@ export default createModel<RootModel>()({
       //   })),
       // }))
       // return parsed
+    },
+    async save(form: IFileForm, state) {
+      // if (!form.file) return
+
+      // const data = {
+      //   owner: selectActiveAccountId(state),
+      //   executable: form.executable,
+      //   shortDesc: form.description,
+      //   name: form.name,
+      // }
+
+      console.log('SAVE JOB', form)
+
+      // const result = await postFile(form.file, data, `/file/upload`)
+      // if (result === 'ERROR') {
+      //   dispatch.ui.set({ errorMessage: 'Error uploading file' })
+      //   return
+      // }
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

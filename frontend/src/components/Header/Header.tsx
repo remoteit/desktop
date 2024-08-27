@@ -12,6 +12,7 @@ import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
+import { ScriptDeleteButton } from '../ScriptDeleteButton'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -111,6 +112,9 @@ export const Header: React.FC = () => {
             )}
             <Route path="/devices/:deviceID/:serviceID?">
               <HeaderDeviceOptionMenu />
+            </Route>
+            <Route path="/scripting/scripts/:fileID">
+              <ScriptDeleteButton />
             </Route>
           </>
         )}

@@ -36,10 +36,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     <DynamicPanel
       primary={
         <Switch>
-          <Route path="/scripting/scripts/:fileID">
-            <ScriptPage />
-          </Route>
-          <Route path="*">
+          <Route path={['/scripting/:tab?', '/scripting/scripts/new']} exact>
             <ScriptingHeader>
               <Switch>
                 <Route path="/scripting/scripts">
@@ -56,6 +53,9 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 </Route>
               </Switch>
             </ScriptingHeader>
+          </Route>
+          <Route path="/scripting/scripts/:fileID">
+            <ScriptPage />
           </Route>
         </Switch>
       }

@@ -26,6 +26,6 @@ export const selectScript = createSelector(
   (files, jobs, accountId, fileId) => {
     const file = files[accountId]?.find(f => f.id === fileId)
     const job = jobs[accountId]?.find(j => j.file?.id === fileId)
-    return { ...file, job }
+    return file ? { ...file, job } : undefined
   }
 )

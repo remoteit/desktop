@@ -9,10 +9,15 @@ import { Dispatch } from '../store'
 import { Notice } from './Notice'
 import { spacing, radius } from '../styling'
 
-export const FileUpload: React.FC<{ onUpload: (file: File) => void }> = ({ onUpload }) => {
+type Props = {
+  script: string
+  onChange: (script: string) => void
+  onUpload: (file: File) => void
+}
+
+export const FileUpload: React.FC<Props> = ({ script, onChange, onUpload }) => {
   const { ui } = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string>()
-  const [script, setScript] = useState<string>()
   const [isText, setIsText] = useState(true)
 
   const onDrop = useCallback((files: File[]) => {
@@ -29,7 +34,7 @@ export const FileUpload: React.FC<{ onUpload: (file: File) => void }> = ({ onUpl
           const isBinary = containsNonPrintableChars(text)
 
           if (!isBinary) {
-            setScript(text)
+            onChange(text)
             onUpload(file)
             setFilename(file.name)
             setIsText(true)
@@ -53,7 +58,7 @@ export const FileUpload: React.FC<{ onUpload: (file: File) => void }> = ({ onUpl
 
   const clear = () => {
     setFilename(undefined)
-    setScript('')
+    onChange('')
     setIsText(true)
   }
 
@@ -89,7 +94,7 @@ export const FileUpload: React.FC<{ onUpload: (file: File) => void }> = ({ onUpl
                 borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
               }),
             }}
-            onChange={event => setScript(event.target.value)}
+            onChange={event => onChange(event.target.value)}
           />
           {filename && (
             <Box sx={{ position: 'absolute', top: 0, right: 0 }}>
@@ -100,7 +105,7 @@ export const FileUpload: React.FC<{ onUpload: (file: File) => void }> = ({ onUpl
                 size="sm"
                 onClick={() => {
                   setFilename(undefined)
-                  setScript('')
+                  onChange('')
                   setIsText(true)
                 }}
               />

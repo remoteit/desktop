@@ -552,3 +552,12 @@ export async function graphQLLeaveReseller() {
       }`
   )
 }
+
+export async function graphQLDeleteFile(fileId: string) {
+  return await graphQLBasicRequest(
+    ` mutation DeleteFile($fileId: String!) {
+        deleteFile(fileId: $fileId)
+      }`,
+    { fileId }
+  )
+}
