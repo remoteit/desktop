@@ -1,4 +1,4 @@
-import { getFiles, getJobs, optionalSecondParam } from './state'
+import { getFiles, getJobs, optionalSecondParam, optionalThirdParam } from './state'
 import { createSelector } from 'reselect'
 import { selectActiveAccountId } from './accounts'
 
@@ -22,10 +22,10 @@ export const selectFile = createSelector(
 )
 
 export const selectScript = createSelector(
-  [getFiles, getJobs, selectActiveAccountId, optionalSecondParam],
-  (files, jobs, accountId, fileId) => {
+  [getFiles, getJobs, selectActiveAccountId, optionalSecondParam, optionalThirdParam],
+  (files, jobs, accountId, fileId, jobId) => {
     const file = files[accountId]?.find(f => f.id === fileId)
-    const job = jobs[accountId]?.find(j => j.file?.id === fileId)
+    const job = jobs[accountId]?.find(j => (jobId ? j.id === jobId : j.file?.id === fileId))
     return file ? { ...file, job } : undefined
   }
 )

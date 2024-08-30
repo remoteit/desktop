@@ -3,7 +3,6 @@ import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery } from '@mui/material'
 import { JobListItem } from './JobListItem'
 import { Attribute } from './Attributes'
-import { LoadMore } from './LoadMore'
 import { GridList } from './GridList'
 
 export interface ScriptListProps {

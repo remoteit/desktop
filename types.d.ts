@@ -602,9 +602,9 @@ declare global {
     name: string
     description: string
     executable: boolean
-    tag: ITagFilter
-    access: IRoleAccess
     deviceIds: string[]
+    access: IRoleAccess
+    tag?: ITagFilter
     file?: File
   }
   

@@ -57,6 +57,9 @@ export default createModel<RootModel>()({
 
       return result?.data.fileId
     },
+    async download(fileId: string, state) {
+      // const result = await post({}
+    },
     async delete(fileId: string, state) {
       console.log('DELETE FILE', fileId)
 

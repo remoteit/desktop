@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import { JobDeviceDetailPage } from '../pages/JobDeviceDetailPage'
 import { selectPermissions } from '../selectors/organizations'
+import { ScriptEditPage } from '../pages/ScriptEditPage'
 import { ScriptAddPage } from '../pages/ScriptAddPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { FilesPage } from '../pages/FilesPage'
@@ -45,7 +46,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/scripting/files">
             <FilesPage />
           </Route>
-          <Route path="/scripting/:fileID">
+          <Route path="/scripting/:fileID/:jobID">
             <ScriptPage />
           </Route>
           <Route path="*">
@@ -58,7 +59,10 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/scripting/scripts/new">
             <ScriptAddPage />
           </Route>
-          <Route path="/scripting/:fileID/:jobDeviceID">
+          <Route path="/scripting/:fileID/:jobID/edit">
+            <ScriptEditPage />
+          </Route>
+          <Route path="/scripting/:fileID/:jobID/:jobDeviceID">
             <JobDeviceDetailPage />
           </Route>
         </Switch>

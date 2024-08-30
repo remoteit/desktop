@@ -14,8 +14,8 @@ import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 
 export const ScriptPage: React.FC = () => {
-  const { fileID } = useParams<{ fileID?: string }>()
-  const script = useSelector((state: State) => selectScript(state, undefined, fileID))
+  const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
+  const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
   // const dispatch = useDispatch<Dispatch>()
   // const location = useLocation()
@@ -30,20 +30,16 @@ export const ScriptPage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
-              to={`/scripting/scripts/${fileID}/details`}
-              match={[`/scripting/scripts/${fileID}/details`, `/scripting/scripts/${fileID}/edit`]}
+              to={`/scripting/${fileID}/${jobID}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
               icon="scripting"
               exactMatch
             ></ListItemLocation>
-            <Typography marginLeft={9.5} variant="caption" component="p">
-              {getJobAttribute('jobUpdated').value({ job: script.job })}
-            </Typography>
-            <Box marginY={2} marginLeft={9} marginRight={3}>
+            <Box marginLeft={9} marginRight={3}>
               {getJobAttribute('jobTags').value({ job: script.job })}
             </Box>
             {script.shortDesc && (
-              <Typography marginLeft={9.5} marginTop={5} marginBottom={3} variant="body2" component="p">
+              <Typography marginLeft={9.5} marginTop={4} marginBottom={2} variant="caption" component="p">
                 {script.shortDesc}
               </Typography>
             )}
@@ -74,12 +70,12 @@ export const ScriptPage: React.FC = () => {
           {script.job?.jobDevices.map(jd => (
             <ListItemLocation
               key={jd.id}
-              to={`/scripting/${fileID}/${jd.id}`}
+              to={`/scripting/${fileID}/${jobID}/${jd.id}`}
               title={jd.device.name}
               icon={<JobStatusIcon status={jd.status} />}
             >
               <Typography variant="caption" marginRight={2}>
-                <Duration startDate={new Date(jd.updated)} />
+                <Duration startDate={new Date(jd.updated)} humanizeOptions={{ largest: 1 }} ago />
               </Typography>
             </ListItemLocation>
           ))}
