@@ -2,11 +2,11 @@ import React from 'react'
 import { toLookup } from '../helpers/utilHelper'
 import { Chip, Typography } from '@mui/material'
 import { ReactiveTagNames } from './ReactiveTagNames'
+import { JobStatusIcon } from './JobStatusIcon'
 import { Attribute } from './Attributes'
 import { Duration } from './Duration'
-import { Icon } from './Icon'
 
-class JobAttribute extends Attribute {
+export class JobAttribute extends Attribute {
   type: Attribute['type'] = 'SCRIPT'
 }
 
@@ -27,7 +27,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceCount',
-    label: <Icon platform={65535} platformIcon />,
+    label: <JobStatusIcon />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="gray.main">
@@ -37,7 +37,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceSuccess',
-    label: <Icon name="badge-check" type="solid" color="primary" />,
+    label: <JobStatusIcon status="SUCCESS" />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="primary">
@@ -47,7 +47,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceFailure',
-    label: <Icon name="octagon-xmark" type="solid" color="error" />,
+    label: <JobStatusIcon status="FAILED" />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="error">

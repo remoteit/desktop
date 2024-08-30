@@ -38,13 +38,7 @@ export default createModel<RootModel>()({
     },
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account
-      let parsed = data?.files.map(file => ({
-        ...file,
-        created: new Date(file.created).getTime(),
-        updated: new Date(file.updated).getTime(),
-        versions: file.versions.items,
-      }))
-      return parsed
+      return data?.files.map(file => ({ ...file, versions: file.versions.items }))
     },
     async upload(form: IFileForm, state) {
       if (!form.file) return
@@ -56,13 +50,12 @@ export default createModel<RootModel>()({
         name: form.name,
       }
 
-      console.log('UPLOAD FILE', form, data)
-
       const result = await postFile(form.file, data, `/file/upload`)
-      if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Error uploading file' })
-        return
-      }
+      if (result === 'ERROR') return
+
+      console.log('UPLOADED FILE', { form, data, result })
+
+      return result?.data.fileId
     },
     async delete(fileId: string, state) {
       console.log('DELETE FILE', fileId)

@@ -111,7 +111,7 @@ export const SidebarNav: React.FC = () => {
           </ListItemLocation>
         </>
       )}
-      <ListItemLocation title="Scripting" to="/scripting" icon="scripting" dense />
+      <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>

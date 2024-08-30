@@ -4,21 +4,11 @@ import { getJobAttribute } from '../components/JobAttributes'
 import { Dispatch, State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useDispatch, useSelector } from 'react-redux'
-import { Redirect, useLocation, useHistory, useParams } from 'react-router-dom'
-import {
-  Box,
-  Stack,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Typography,
-  CircularProgress,
-} from '@mui/material'
+import { Redirect, useParams } from 'react-router-dom'
+import { Box, Stack, List, Typography } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
+import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
-import { fontSizes } from '../styling'
 import { Duration } from '../components/Duration'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
@@ -30,10 +20,6 @@ export const ScriptPage: React.FC = () => {
   // const dispatch = useDispatch<Dispatch>()
   // const location = useLocation()
   // const history = useHistory()
-
-  const successIcon = getJobAttribute('jobDeviceSuccess').label
-  const failureIcon = getJobAttribute('jobDeviceFailure').label
-  const countIcon = getJobAttribute('jobDeviceCount').label
 
   if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
 
@@ -66,46 +52,39 @@ export const ScriptPage: React.FC = () => {
         </>
       }
     >
-      <Box sx={{ marginRight: 2 }}>
+      <>
         <Typography variant="subtitle1">
           <Title>Devices</Title>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} marginRight={2}>
             <Typography variant="caption" paddingLeft={2}>
               {script.job?.jobDevices.length || '-'}
             </Typography>
-            {countIcon}
+            <JobStatusIcon />
             <Typography variant="caption" paddingLeft={2}>
               {script.job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
             </Typography>
-            {successIcon}
+            <JobStatusIcon status="SUCCESS" />
             <Typography variant="caption" paddingLeft={2}>
               {script.job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
             </Typography>
-            {failureIcon}
+            <JobStatusIcon status="FAILED" />
           </Stack>
         </Typography>
         <List>
-          {script.job?.jobDevices.map((d, i) => (
-            <ListItem key={i}>
-              <ListItemIcon>
-                {d.status === 'SUCCESS' ? (
-                  successIcon
-                ) : d.status === 'FAILED' || d.status === 'CANCELLED' ? (
-                  failureIcon
-                ) : d.status === 'RUNNING' || d.status === 'WAITING' ? (
-                  <CircularProgress color="primary" size={fontSizes.md} />
-                ) : (
-                  countIcon
-                )}
-              </ListItemIcon>
-              <ListItemText primary={d.device.name} />
-              <Typography variant="caption">
-                <Duration startDate={new Date(d.updated)} />
+          {script.job?.jobDevices.map(jd => (
+            <ListItemLocation
+              key={jd.id}
+              to={`/scripting/${fileID}/${jd.id}`}
+              title={jd.device.name}
+              icon={<JobStatusIcon status={jd.status} />}
+            >
+              <Typography variant="caption" marginRight={2}>
+                <Duration startDate={new Date(jd.updated)} />
               </Typography>
-            </ListItem>
+            </ListItemLocation>
           ))}
         </List>
-      </Box>
+      </>
     </Container>
   )
 }

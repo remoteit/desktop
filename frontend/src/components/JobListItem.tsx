@@ -1,6 +1,4 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from './AttributeValue'
 import { GridListItem } from './GridListItem'
@@ -16,13 +14,12 @@ type Props = {
 }
 
 export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile }) => {
-  const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
 
   if (!job) return null
 
   const handleClick = () => {
-    history.push(`/scripting/jobs/${job.id}`)
+    history.push(`/scripting/${job.file?.id}/${job.id}`)
   }
 
   return (

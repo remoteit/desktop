@@ -5,8 +5,9 @@ import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { Typography, Stack } from '@mui/material'
-import { jobAttributes } from '../components/JobAttributes'
+import { ScriptingHeader } from '../components/ScriptingHeader'
 import { LoadingMessage } from '../components/LoadingMessage'
+import { jobAttributes } from '../components/JobAttributes'
 import { JobList } from '../components/JobList'
 import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
@@ -23,18 +24,22 @@ export const JobsPage: React.FC = () => {
     dispatch.jobs.fetchIfEmpty()
   }, [accountId])
 
-  return fetching ? (
-    <LoadingMessage />
-  ) : !jobs.length ? (
-    <Body center>
-      <Stack alignItems="center">
-        <Typography variant="body2" color="gray.main" gutterBottom>
-          No runs found
-        </Typography>
-        <Notice gutterBottom>Run a script to get started</Notice>
-      </Stack>
-    </Body>
-  ) : (
-    <JobList attributes={attributes} {...{ required, jobs, columnWidths, fetching }} />
+  return (
+    <ScriptingHeader>
+      {fetching ? (
+        <LoadingMessage />
+      ) : !jobs.length ? (
+        <Body center>
+          <Stack alignItems="center">
+            <Typography variant="body2" color="gray.main" gutterBottom>
+              No runs found
+            </Typography>
+            <Notice gutterBottom>Run a script to get started</Notice>
+          </Stack>
+        </Body>
+      ) : (
+        <JobList attributes={attributes} {...{ required, jobs, columnWidths, fetching }} />
+      )}
+    </ScriptingHeader>
   )
 }

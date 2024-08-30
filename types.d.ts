@@ -575,8 +575,8 @@ declare global {
   type IFile = {
     id: string
     name: string
-    created: Timestamp
-    updated: Timestamp
+    created: ISOTimestamp
+    updated: ISOTimestamp
     shortDesc?: string
     longDesc?: string
     executable: boolean // if file is a script
@@ -585,7 +585,6 @@ declare global {
 
   type IFileVersion = {
     id: string
-    platform: { id: string }
     arguments: IFileArgument[]
   }
 
@@ -605,6 +604,7 @@ declare global {
     executable: boolean
     tag: ITagFilter
     access: IRoleAccess
+    deviceIds: string[]
     file?: File
   }
   

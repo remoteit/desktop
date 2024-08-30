@@ -561,3 +561,22 @@ export async function graphQLDeleteFile(fileId: string) {
     { fileId }
   )
 }
+
+export async function graphQLSetJob(params: {
+  fileId: string
+  accountId: string
+  jobId?: string
+  arguments?: IFileArgument[]
+  tagFilter?: ITagFilter
+  deviceIds?: string[]
+}) {
+  return await graphQLBasicRequest(
+    ` mutation Job($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+        setJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
+      }`,
+    // ` mutation Job($fileId: String!, $accountId: String, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+    //     setJob(fileId: $fileId, accountId: $accountId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
+    //   }`,
+    params
+  )
+}

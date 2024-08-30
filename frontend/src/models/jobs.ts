@@ -1,9 +1,9 @@
 import structuredClone from '@ungap/structured-clone'
-import { postFile } from '../services/post'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { graphQLSetJob } from '../services/graphQLMutation'
+import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
-import { AxiosResponse } from 'axios'
-import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
 type ScriptsState = {
@@ -40,36 +40,34 @@ export default createModel<RootModel>()({
     },
     async parse(result: AxiosResponse<any> | undefined): Promise<IJob[]> {
       const data = result?.data?.data?.login?.account
-      return data?.jobs.items || []
-      // let parsed = data?.jobs.items.map(job => ({
-      //   ...job,
-      //   created: new Date(job.created).getTime(),
-      //   updated: new Date(job.updated).getTime(),
-      //   jobDevices: job.jobDevices.map(jd => ({
-      //     ...jd,
-      //     created: new Date(jd.created).getTime(),
-      //     updated: new Date(jd.updated).getTime(),
-      //   })),
-      // }))
-      // return parsed
+      return (
+        data?.jobs.items.map(j => ({
+          ...j,
+          jobDevices: j.jobDevices.map(jd => ({
+            ...jd,
+            attributes: jd.attributes.map(a => ({
+              key: a.key.replace('$remoteit.', ''),
+              value: a.value,
+            })),
+          })),
+        })) || []
+      )
     },
-    async save(form: IFileForm, state) {
-      // if (!form.file) return
+    async save(form: IFileForm & { fileId: string }, state) {
+      const data = {
+        fileId: form.fileId,
+        accountId: selectActiveAccountId(state),
+        jobId: undefined, // form.jobId
+        arguments: undefined, // form.arguments to be implemented
+        tagFilter: form.access === 'TAG' ? form.tag : undefined,
+        deviceIds: form.access === 'SELECTED' ? form.deviceIds : undefined,
+        // all: form.access === 'ALL',
+      }
 
-      // const data = {
-      //   owner: selectActiveAccountId(state),
-      //   executable: form.executable,
-      //   shortDesc: form.description,
-      //   name: form.name,
-      // }
+      console.log('SAVE JOB', { data, form })
 
-      console.log('SAVE JOB', form)
-
-      // const result = await postFile(form.file, data, `/file/upload`)
-      // if (result === 'ERROR') {
-      //   dispatch.ui.set({ errorMessage: 'Error uploading file' })
-      //   return
-      // }
+      const result = await graphQLSetJob(data)
+      if (result === 'ERROR') return
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

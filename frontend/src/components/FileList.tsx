@@ -21,7 +21,6 @@ export const FileList: React.FC<ScriptListProps> = ({ attributes, required, file
       {files?.map((file, index) => (
         <FileListItem key={index} {...{ file, required, attributes, mobile }} />
       ))}
-      <LoadMore />
     </GridList>
   )
 }

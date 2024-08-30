@@ -29,9 +29,6 @@ export async function graphQLFiles(accountId: string) {
               versions(latest: true) {
                 items {
                   id
-                  platform {
-                    id
-                  } 
                   arguments {
                     name
                     desc

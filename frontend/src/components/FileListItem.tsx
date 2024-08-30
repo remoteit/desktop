@@ -1,6 +1,4 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from './AttributeValue'
 import { GridListItem } from './GridListItem'
@@ -16,13 +14,12 @@ type Props = {
 }
 
 export const FileListItem: React.FC<Props> = ({ file, required, attributes, mobile }) => {
-  const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
 
   if (!file) return null
 
   const handleClick = () => {
-    history.push(`/scripting/${file.executable ? 'scripts' : 'files'}/${file.id}`)
+    history.push(`/scripting/${file.id}`)
   }
 
   return (

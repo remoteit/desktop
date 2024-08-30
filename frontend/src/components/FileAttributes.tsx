@@ -31,28 +31,9 @@ export const scriptAttributes: ScriptAttribute[] = [
     value: ({ file }) =>
       file?.updated && (
         <Typography variant="caption" color="grayDarkest.main">
-          <Duration startDate={new Date(file.updated)} />
+          <Timestamp date={new Date(file.updated)} />
         </Typography>
       ),
-  }),
-  new ScriptAttribute({
-    id: 'scriptArguments',
-    label: 'Arguments',
-    defaultWidth: 150,
-    value: ({ file }) => (
-      <>
-        {file?.versions?.[0].arguments.map((a, index) => (
-          <React.Fragment key={index}>
-            <Typography variant="body2">
-              <Icon name={argumentIconLookup[a.argumentType]} inlineLeft />
-              {a.name}
-            </Typography>
-            {/* <Typography variant="caption">{a.desc}</Typography> */}
-          </React.Fragment>
-        ))}
-      </>
-    ),
-    // value: ({ file }) => <Pre>{script}</Pre>,
   }),
   new ScriptAttribute({
     id: 'scriptCreated',
@@ -64,6 +45,22 @@ export const scriptAttributes: ScriptAttribute[] = [
           <Timestamp date={new Date(file.created)} />
         </Typography>
       ),
+  }),
+  new ScriptAttribute({
+    id: 'scriptArguments',
+    label: 'Arguments',
+    defaultWidth: 150,
+    value: ({ file }) => (
+      <>
+        {file?.versions?.[0].arguments.map((a, index) => (
+          <Typography key={index} variant="caption" color="grayDarker.main" component="p">
+            <Icon name={argumentIconLookup[a.argumentType]} color="grayDark" inlineLeft fixedWidth />
+            {a.name}
+          </Typography>
+        ))}
+      </>
+    ),
+    // value: ({ file }) => <Pre>{script}</Pre>,
   }),
   new ScriptAttribute({
     id: 'scriptDescription',

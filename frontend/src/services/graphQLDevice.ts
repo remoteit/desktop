@@ -421,7 +421,6 @@ function attributeQuery(attributes: string[]) {
   })
 
   for (const l of lookup) {
-    if (l === 'service') debugger
     if (DeviceSelectLookup[l]) {
       query += DeviceSelectLookup[l]
     } else if (ServiceSelectLookup[l]) {

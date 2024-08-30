@@ -21,7 +21,6 @@ export const JobList: React.FC<ScriptListProps> = ({ attributes, required, jobs 
       {jobs?.map((job, index) => (
         <JobListItem key={index} {...{ job, required, attributes, mobile }} />
       ))}
-      <LoadMore />
     </GridList>
   )
 }

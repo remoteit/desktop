@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import isEqual from 'lodash.isequal'
 import { selectRole } from '../selectors/organizations'
 import { useHistory } from 'react-router-dom'
@@ -14,16 +14,18 @@ const initialForm: IFileForm = {
   description: '',
   executable: true,
   tag: { operator: 'ALL', values: [] },
+  deviceIds: [],
   access: 'ALL',
 }
 
 export const ScriptAddPage: React.FC = () => {
   const role = useSelector(selectRole)
-  const selectedIds = useSelector((state: State) => state.ui.selected)
+  const deviceIds = useSelector((state: State) => state.ui.selected)
   const defaultForm: IFileForm = {
     ...role,
     ...initialForm,
-    access: selectedIds.length ? 'SELECTED' : 'ALL',
+    deviceIds,
+    access: deviceIds.length ? 'SELECTED' : 'ALL',
   }
   const [form, setForm] = useState<IFileForm>(defaultForm)
   const [saving, setSaving] = useState(false)
@@ -32,10 +34,6 @@ export const ScriptAddPage: React.FC = () => {
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
 
-  useEffect(() => {
-    // dispatch.applicationTypes.fetchAll()
-  }, [])
-
   return (
     <Body inset gutterTop gutterBottom>
       <form
@@ -43,9 +41,10 @@ export const ScriptAddPage: React.FC = () => {
           event.preventDefault()
           setSaving(true)
           form.file = new File([script || form.file || ''], form.name, { type: form.file?.type || 'text/plain' })
-          await Promise.all([dispatch.files.upload(form), dispatch.jobs.save(form)])
+          const fileId = await dispatch.files.upload(form)
+          await dispatch.jobs.save({ ...form, fileId })
           await dispatch.files.fetch()
-          history.goBack()
+          history.push('/scripting/scripts')
           setSaving(false)
         }}
       >
@@ -89,7 +88,7 @@ export const ScriptAddPage: React.FC = () => {
             countsSx={{ marginRight: 3 }}
             onChange={f => setForm({ ...form, ...structuredClone(f) })}
             disableGutters
-            selectedIds={selectedIds}
+            selectedIds={deviceIds}
             selected
           />
         </List>
@@ -97,7 +96,7 @@ export const ScriptAddPage: React.FC = () => {
           <Button type="submit" variant="contained" color="primary" disabled={!changed || saving}>
             {saving ? 'Saving' : 'Save'}
           </Button>
-          <Button onClick={() => history.goBack()}>Cancel</Button>
+          <Button onClick={() => history.push('/scripting/scripts')}>Cancel</Button>
         </Stack>
       </form>
     </Body>
