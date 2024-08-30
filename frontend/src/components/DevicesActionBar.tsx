@@ -80,6 +80,14 @@ export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly
                 <Divider orientation="vertical" color="white" />
               </>
             )}
+            <IconButton
+              icon="scripting"
+              title="New Script"
+              color="alwaysWhite"
+              placement="bottom"
+              disabled={!selected.length}
+              to="/scripting/scripts/new"
+            />
             <ConfirmIconButton
               icon="trash"
               title="Delete selected"
