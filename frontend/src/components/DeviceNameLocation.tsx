@@ -22,7 +22,6 @@ type DisplayComponentProps = Props & ListItemLocationProps & { onClick?: () => v
 export const DeviceNameLocation: React.FC<Props> = props => {
   const dispatch = useDispatch<Dispatch>()
   const icon = <ConnectionStateIcon device={props.device} connection={props.connection} size="xl" />
-
   return (
     <Box marginBottom={0.75}>
       <InlineTextFieldSetting
@@ -43,7 +42,14 @@ export const DeviceNameLocation: React.FC<Props> = props => {
   )
 }
 
-const DisplayComponent: React.FC<DisplayComponentProps> = ({ device, connection, editable, onClick, ...props }) => {
+const DisplayComponent: React.FC<DisplayComponentProps> = ({
+  device,
+  connection,
+  editable,
+  onClick,
+  disabled,
+  ...props
+}) => {
   const dispatch = useDispatch<Dispatch>()
   return (
     <ListItemLocation
