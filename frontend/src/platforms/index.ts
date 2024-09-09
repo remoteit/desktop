@@ -27,8 +27,9 @@ class Platforms {
   installed: string[] = [
     'advantech',
     'alpine',
-    'android',
+    'amnimo',
     'android-screenview',
+    'android',
     'arm',
     'aws',
     'axis',
@@ -43,6 +44,7 @@ class Platforms {
     'idy',
     'ios',
     'linux',
+    'liverock',
     'mac',
     'nas',
     'nvidia',
