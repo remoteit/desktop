@@ -1,5 +1,5 @@
 import React from 'react'
-import logo from './embedded-works-logo.png'
+import logo from './embeddedworks.png'
 import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
