@@ -15,7 +15,7 @@ export const jobAttributes: JobAttribute[] = [
     id: 'jobName',
     label: 'Name',
     required: true,
-    defaultWidth: 300,
+    defaultWidth: 350,
     value: ({ job }) =>
       job?.file?.name ? (
         <Typography>{job.file.name}</Typography>

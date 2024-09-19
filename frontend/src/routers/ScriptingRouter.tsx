@@ -46,11 +46,11 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/scripting/files">
             <FilesPage />
           </Route>
-          <Route path="/scripting/:fileID/:jobID">
+          <Route path="/scripting/:fileID/:jobID?">
             <ScriptPage />
           </Route>
           <Route path="*">
-            <Redirect to={{ pathname: '/scripting/jobs', state: { isRedirect: true } }} />
+            <Redirect to={{ pathname: '/scripting/runs', state: { isRedirect: true } }} />
           </Route>
         </Switch>
       }
