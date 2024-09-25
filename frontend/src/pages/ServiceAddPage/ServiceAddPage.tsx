@@ -12,9 +12,9 @@ import { Diagram } from '../../components/Diagram'
 import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
 
-type Props = { device?: IDevice; form?: boolean }
+type Props = { device?: IDevice }
 
-export const ServiceAddPage: React.FC<Props> = ({ device, form }) => {
+export const ServiceAddPage: React.FC<Props> = ({ device }) => {
   const { setupServicesLimit } = useSelector((state: State) => state.ui)
   const [forward, setForward] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()

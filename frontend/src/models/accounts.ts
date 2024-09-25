@@ -7,8 +7,6 @@ import { AxiosResponse } from 'axios'
 import { mergeDevice } from './devices'
 import { RootModel } from '.'
 
-const ACCOUNT_KEY = 'account'
-
 export type IAccountsState = {
   membership: IMembership[]
   activeId?: string // user.id

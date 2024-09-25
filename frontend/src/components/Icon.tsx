@@ -75,6 +75,9 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       name = 'circle'
       scale = 0.8
     }
+    if (name === 'scripting') {
+      name = 'rectangle-terminal'
+    }
 
     const theme = useTheme()
     styles.objectFit = 'contain'

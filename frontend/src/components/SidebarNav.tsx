@@ -27,6 +27,7 @@ import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
+import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
@@ -111,6 +112,9 @@ export const SidebarNav: React.FC = () => {
           </ListItemLocation>
         </>
       )}
+      <TestUI>
+        <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense />
+      </TestUI>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
@@ -120,7 +124,6 @@ export const SidebarNav: React.FC = () => {
         </Typography>
       </ListItemButton>
       <Collapse in={more}>
-        <ListItemLink title="Scripting" href="https://link.remote.it/app/scripting" icon="scroll" dense />
         <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
         <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
@@ -130,9 +133,9 @@ export const SidebarNav: React.FC = () => {
           <Divider />
         </ResellerLogo>
         <ListItemLocation
-          title="Notifications"
+          title="Announcements"
           to="/announcements"
-          icon="bell"
+          icon="bullhorn"
           badge={counts.unreadAnnouncements}
           dense
         />

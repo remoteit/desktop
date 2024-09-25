@@ -1,1 +1,0 @@
-export { DeviceDetailPage } from './DeviceDetailPage'

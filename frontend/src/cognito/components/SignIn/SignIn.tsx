@@ -1,9 +1,20 @@
 import React from 'react'
 import { rememberMe, sanitizeEmail } from '../../../helpers/userHelper'
 import { makeStyles } from '@mui/styles'
-import { Box, Button, TextField, Typography, Divider, Checkbox, Grid, FormControlLabel, Collapse } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Divider,
+  Checkbox,
+  Grid,
+  FormControlLabel,
+  InputAdornment,
+  Collapse,
+} from '@mui/material'
 import { SignInFunc, SamlSignInFunc, UsernameChangeFunc, CheckSamlFunc } from '../../types'
+import { useTranslation } from 'react-i18next'
 import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
 import { AuthLayout } from '../AuthLayout'
@@ -12,6 +23,7 @@ import { AppleSignInButton } from '../AppleSignInButton'
 import { Link } from '../../../components/Link'
 import { spacing } from '../../../styling'
 import { useHistory } from 'react-router-dom'
+import { IconButton } from '../../../buttons/IconButton'
 
 const useStyles = makeStyles({
   or: {
@@ -60,6 +72,7 @@ export function SignIn({
   const [password, setPassword] = React.useState<string>('')
   const [error, setError] = React.useState<Error | null>(externalError)
   const [loading, setLoading] = React.useState<boolean>(false)
+  const [showPassword, setShowPassword] = React.useState<boolean>(false)
   const [emailProcessed, setEmailProcessed] = React.useState<boolean>(rememberMe.emailProcessed)
   const [remember, setRemember] = React.useState<boolean>(rememberMe.checked)
   const passRef = React.useRef<HTMLInputElement>()
@@ -189,11 +202,22 @@ export function SignIn({
               id="sign-in-password"
               label={t('global.user.password')}
               name="password"
-              onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+              onChange={(e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
                 setPassword(e?.currentTarget?.value)
-              }
-              type="password"
+              }}
+              type={showPassword ? 'text' : 'password'}
               variant="filled"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" sx={{ marginRight: ({ spacing }) => spacing(1) }}>
+                    <IconButton
+                      type="solid"
+                      onClick={() => setShowPassword(!showPassword)}
+                      icon={showPassword ? 'eye' : 'eye-slash'}
+                    />
+                  </InputAdornment>
+                ),
+              }}
             />
           </Box>
         </Collapse>

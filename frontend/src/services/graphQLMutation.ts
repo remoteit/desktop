@@ -309,6 +309,30 @@ export async function graphQLRemoveService(id: string) {
   )
 }
 
+export async function graphQLInstallApp(props: { deviceIds: string[]; application: number }) {
+  return await graphQLBasicRequest(
+    ` mutation InstallApp($deviceIds: [String!], $application: Int!) {
+        installApp(
+          deviceIds: $deviceIds,
+          application: $application,
+        )
+      }`,
+    props
+  )
+}
+
+export async function graphQLRemoveApp(props: { deviceIds: string[]; application: number }) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveApp($deviceIds: [String!], $application: Int!) {
+        removeApp(
+          deviceIds: $deviceIds,
+          application: $application,
+        )
+      }`,
+    props
+  )
+}
+
 export async function graphQLReadNotice(id: string) {
   return await graphQLBasicRequest(
     ` mutation ReadNotice($id: String!) {
@@ -550,5 +574,33 @@ export async function graphQLLeaveReseller() {
     ` mutation LeaveReseller {
         leaveReseller
       }`
+  )
+}
+
+export async function graphQLDeleteFile(fileId: string) {
+  return await graphQLBasicRequest(
+    ` mutation DeleteFile($fileId: String!) {
+        deleteFile(fileId: $fileId)
+      }`,
+    { fileId }
+  )
+}
+
+export async function graphQLSetJob(params: {
+  fileId: string
+  accountId: string
+  jobId?: string
+  arguments?: IFileArgument[]
+  tagFilter?: ITagFilter
+  deviceIds?: string[]
+}) {
+  return await graphQLBasicRequest(
+    ` mutation Job($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+        setJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
+      }`,
+    // ` mutation Job($fileId: String!, $accountId: String, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+    //     setJob(fileId: $fileId, accountId: $accountId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
+    //   }`,
+    params
   )
 }

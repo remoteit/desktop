@@ -3,7 +3,6 @@ import { useInterval } from '../../hooks/useInterval'
 import humanize, { HumanizerOptions } from 'humanize-duration'
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
-  weekday: 'long',
   year: 'numeric',
   month: 'long',
   day: 'numeric',

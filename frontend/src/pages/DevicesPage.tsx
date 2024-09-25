@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { State } from '../../store'
+import { State } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../../selectors/devices'
-import { getConnectionsLookup } from '../../selectors/connections'
-import { selectPermissions } from '../../selectors/organizations'
-import { restoreAttributes } from '../../components/Attributes'
-import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { LoadingMessage } from '../../components/LoadingMessage'
-import { DevicesDrawers } from '../../components/DevicesDrawers'
-import { RegisterMenu } from '../../components/RegisterMenu'
-import { DeviceList } from '../../components/DeviceList'
-import { ServiceList } from '../../components/ServiceList'
-import { DevicesHeader } from '../../components/DevicesHeader'
+import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
+import { getConnectionsLookup } from '../selectors/connections'
+import { selectPermissions } from '../selectors/organizations'
+import { restoreAttributes } from '../components/Attributes'
+import { DeviceListEmpty } from '../components/DeviceListEmpty'
+import { LoadingMessage } from '../components/LoadingMessage'
+import { DevicesDrawers } from '../components/DevicesDrawers'
+import { RegisterMenu } from '../components/RegisterMenu'
+import { DeviceList } from '../components/DeviceList'
+import { ServiceList } from '../components/ServiceList'
+import { DevicesHeader } from '../components/DevicesHeader'
 
 type Props = { restore?: boolean; select?: boolean }
 
@@ -28,7 +28,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  const shouldRedirect = initLoad && permissions?.includes('MANAGE')
+  const shouldRedirect = initLoad && permissions.includes('MANAGE')
 
   useEffect(() => {
     if (!initialized) setInitLoad(true)
@@ -40,9 +40,9 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   return (
     <DevicesDrawers>
       <RegisterMenu buttonSize={56} fontSize={22} fab />
-      <DevicesHeader selected={selected} select={select} devices={devices}>
+      <DevicesHeader select={select} devices={devices}>
         {(fetching || shouldRedirect) && !devices.length ? (
-          <LoadingMessage message="Loading..." spinner={false} />
+          <LoadingMessage />
         ) : !devices.length ? (
           <DeviceListEmpty />
         ) : !restore && applicationTypes?.length ? (

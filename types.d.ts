@@ -338,6 +338,7 @@ declare global {
     newDevice?: boolean
     presenceAddress?: string
     timeSeries?: ITimeSeries
+    supportedAppInstalls: number[]
     attributes: ILookup<any> & {
       name?: string
       color?: number
@@ -461,7 +462,7 @@ declare global {
     OLDEST: ISortService
   }
   
-  type IRoleAccess = 'NONE' | 'TAG' | 'ALL'
+  type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED'
 
   type ILabel = {
     id: number
@@ -571,6 +572,76 @@ declare global {
       name: string // combined service + device names
     }
   }
+
+  type IFile = {
+    id: string
+    name: string
+    created: ISOTimestamp
+    updated: ISOTimestamp
+    shortDesc?: string
+    longDesc?: string
+    executable: boolean // if file is a script
+    versions: IFileVersion[]
+  }
+
+  type IFileVersion = {
+    id: string
+    arguments: IFileArgument[]
+  }
+
+  type IFileArgument = {
+    name: string
+    desc?: string
+    order: number
+    argumentType: IFileArgumentType
+    options: string[]
+  }
+
+  type IFileArgumentType = 'FileSelect' | 'StringSelect' | 'StringEntry'
+
+  type IFileForm = {
+    name: string
+    description: string
+    executable: boolean
+    deviceIds: string[]
+    access: IRoleAccess
+    tag?: ITagFilter
+    file?: File
+  }
+  
+  type IJob = {
+    id: string
+    status: string
+    created: ISOTimestamp
+    updated: ISOTimestamp
+    owner: IUserRef
+    user: IUserRef
+    tag: ITagFilter
+    file?: {
+      id: string
+      name: string
+    }
+    jobDevices: IJobDevice[]
+  }
+
+  type IJobDevice = {
+    id: string
+    status: IJobStatus
+    created: ISOTimestamp
+    updated: ISOTimestamp
+    attributes: IJobDeviceAttribute[]
+    device: {
+      id: string
+      name: string
+    }
+  }
+
+  type IJobDeviceAttribute = {
+    key: string
+    value: string
+  }
+
+  type IJobStatus = 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED'
 
   type IApplicationType = {
     id: number
@@ -775,6 +846,8 @@ declare global {
   type ipAddress = string // namespace to indicate if expecting an ip address
 
   type Timestamp = number
+
+  type ISOTimestamp = string
 
   type ipClass = 'A' | 'B' | 'C'
 

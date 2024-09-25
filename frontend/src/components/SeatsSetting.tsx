@@ -48,7 +48,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
     setForm({ ...form, quantity })
   }
 
-  if (!plan || license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
+  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   const display = (
     <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>

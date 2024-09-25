@@ -1,5 +1,5 @@
 import React from 'react'
-import { Chip, Box, BoxProps, Typography } from '@mui/material'
+import { Chip, BoxProps, Typography } from '@mui/material'
 import { Tag } from './Tag'
 
 export type TagProps = BoxProps & {
@@ -12,16 +12,7 @@ export type TagProps = BoxProps & {
   onDelete?: (tag: ITag) => void
 }
 
-export const Tags: React.FC<TagProps> = ({
-  tags,
-  small,
-  max = 1,
-  showEmpty,
-  hideLabels,
-  onClick,
-  onDelete,
-  ...props
-}) => {
+export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hideLabels, onClick, onDelete }) => {
   const dot = tags.length > max && small
 
   const Tags = [...tags]

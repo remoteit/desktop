@@ -10,7 +10,7 @@ import {
   optionalSecondParam,
 } from './state'
 import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
-import { defaultState, canMemberView } from '../models/organization'
+import { defaultState, canMemberView, DEFAULT_ROLE } from '../models/organization'
 import { selectMembership } from './accounts'
 
 export const selectOrganization = createSelector(
@@ -18,6 +18,7 @@ export const selectOrganization = createSelector(
   (accountId, organizations, myMembership, user) => {
     const organization = organizations[accountId] || defaultState
     const membership: IOrganizationMember = { ...myMembership, user, organizationId: organization.id }
+    console.log('SELECT ORG', organization, membership)
     return {
       ...organization,
       membership,
@@ -44,6 +45,10 @@ export const selectCustomer = createSelector(
     return reseller?.customers.find(c => c.id === customerId)
   }
 )
+
+export const selectRole = createSelector([selectOrganization, selectMembership], (organization, membership) => {
+  return organization.roles?.find(r => r.id === membership.roleId) || DEFAULT_ROLE
+})
 
 export const selectMembersWithAccess = createSelector(
   [selectOrganization, optionalSecondParam],
@@ -108,8 +113,8 @@ export const selectLicensesWithLimits = createSelector([selectLicenses, selectLi
 
 export const selectPermissions = createSelector(
   [selectMembership, selectOrganization],
-  (membership, organization): IPermission[] | undefined => {
-    return organization.roles.find(r => r.id === membership.roleId)?.permissions
+  (membership, organization): IPermission[] => {
+    return organization.roles.find(r => r.id === membership.roleId)?.permissions || []
   }
 )
 

@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from '.'
 
 type IBilling = {
@@ -18,9 +18,8 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch() {
       dispatch.billing.set({ loading: true })
-      try {
-        const result: any = await graphQLRequest(
-          ` {
+      const result = await graphQLBasicRequest(
+        ` {
             login {
               invoices {
                 plan {
@@ -40,12 +39,9 @@ export default createModel<RootModel>()({
               }
             }
           }`
-        )
-        graphQLGetErrors(result)
-        dispatch.billing.parse(result)
-      } catch (error) {
-        await apiError(error)
-      }
+      )
+      if (result === 'ERROR') return
+      dispatch.billing.parse(result)
       dispatch.billing.set({ loading: false })
     },
     async parse(result: AxiosResponse<any> | undefined) {

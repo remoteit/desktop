@@ -4,13 +4,14 @@ import { Dispatch } from '../store'
 import { defaultState } from '../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectApplicationTypesGrouped } from '../selectors/applications'
-import { Stack, Divider, Tabs, Tab, TabProps } from '@mui/material'
 import { selectDeviceModelAttributes } from '../selectors/devices'
+import { Stack, Tabs, Tab } from '@mui/material'
+import { MasterTab } from './MasterTab'
 import { Icon } from './Icon'
 
 const SCREEN_VIEW_ID = 48
 
-export const DevicesApplicationsBar: React.FC = () => {
+export const DevicesApplicationsTabs: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const allTypes = [...useSelector(selectApplicationTypesGrouped)]
   const { applicationTypes } = useSelector(selectDeviceModelAttributes)
@@ -51,19 +52,3 @@ export const DevicesApplicationsBar: React.FC = () => {
     </Tabs>
   )
 }
-
-const MasterTab = (props: TabProps) => (
-  <>
-    <Tab {...props} />
-    <Divider
-      orientation="vertical"
-      sx={{
-        height: '1.3em',
-        alignSelf: 'center',
-        bgcolor: 'grayLight.main',
-        marginRight: 1.5,
-        marginLeft: 1.5,
-      }}
-    />
-  </>
-)

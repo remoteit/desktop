@@ -58,8 +58,8 @@ export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
           width: `calc(100% - ${showFrame ? spacing(6) : '0px'})`,
           maxWidth: maxWidth ? APP_MAX_WIDTH : undefined,
           backgroundColor: 'white.main',
-          borderRadius: maxWidth || showFrame ? 3 : undefined,
-          boxShadow: maxWidth || showFrame ? 1 : undefined,
+          borderRadius: maxWidth || showFrame ? 5 : undefined,
+          boxShadow: maxWidth || showFrame ? 3 : undefined,
         })}
       >
         {children}

@@ -21,32 +21,25 @@ export interface SharingAccess {
 }
 
 export function SharingForm({ device, user }: { device: IDevice; user?: IUser }): JSX.Element {
-  const { script, scriptIndeterminate, users, selectedServices, saving } = useSelector((state: State) => ({
-    ...state.shares.currentDevice,
-    script: !!state.shares.currentDevice?.script,
-    selectedServices: state.shares.currentDevice?.selectedServices || [],
-    saving: state.shares.sharing,
-  }))
+  const users = useSelector((state: State) => state.shares.currentDevice?.users)
+  const scriptIndeterminate = useSelector((state: State) => !!state.shares.currentDevice?.scriptIndeterminate)
+  const selectedServices = useSelector((state: State) => state.shares.currentDevice?.selectedServices || [])
+  const script = useSelector((state: State) => !!state.shares.currentDevice?.script)
+  const saving = useSelector((state: State) => state.shares.sharing)
+
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const [allowScript, setAllowScript] = useState<boolean>(script)
 
   const disabled = !users?.length && !user
   const handleChangeServices = (services: string[]) => dispatch.shares.setSelectedServices(services)
-
-  useEffect(() => {
-    setAllowScript(script)
-  }, [script])
-
   const handleChangeScripting = () => dispatch.shares.setScript(!script)
 
   const mapShareData = (share: SharingDetails, isNew: boolean): IShareProps | undefined => {
-    const { access } = share
-    const scripting = access.script
+    const scripting = share.access.script
     const services =
-      device?.services.map((ser: { id: string }) => ({
-        serviceId: ser.id,
-        action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE',
+      device?.services.map((s: { id: string }) => ({
+        serviceId: s.id,
+        action: share.access.services.includes(s.id) ? 'ADD' : 'REMOVE',
       })) || []
     const email = isNew ? share.emails : [share.emails[0]]
 
@@ -97,7 +90,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           label="Allow script execution"
           subLabel="Give the user the ability to run scripts on this device."
           disabled={saving}
-          checked={allowScript}
+          checked={script}
           indeterminate={scriptIndeterminate}
           onClick={handleChangeScripting}
         />

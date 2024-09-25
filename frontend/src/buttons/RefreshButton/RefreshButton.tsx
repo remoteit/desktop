@@ -25,6 +25,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const networkPage = useRouteMatch('/networks')
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
+  const scriptingPage = useRouteMatch('/scripting')
 
   let title = 'Refresh application'
   let methods: Methods = []
@@ -38,6 +39,12 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (networkPage) {
     title = 'Refresh networks'
     methods.push(dispatch.networks.fetchAll)
+
+    // scripting pages
+  } else if (scriptingPage) {
+    title = 'Refresh scripting'
+    methods.push(dispatch.files.fetch)
+    methods.push(dispatch.jobs.fetch)
 
     // log pages
   } else if (logsPage) {

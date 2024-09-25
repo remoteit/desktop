@@ -44,3 +44,5 @@ export const getUpdateStatus = (state: State) => state.backend.updateStatus
 export const getPreferences = (state: State) => state.backend.preferences
 export const getAnnouncements = (state: State) => state.announcements.all
 export const getNotifiedVersion = (state: State) => getLocalStorage(state, NOTICE_VERSION_ID)
+export const getFiles = (state: State) => state.files.all
+export const getJobs = (state: State) => state.jobs.all

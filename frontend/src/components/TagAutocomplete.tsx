@@ -1,7 +1,6 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
-import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import {
   Box,
@@ -79,7 +78,7 @@ export const TagAutocomplete: React.FC<Props> = ({
 
   return (
     <Popover
-      PaperProps={{ className: css.inputContainer }}
+      slotProps={{ paper: { className: css.inputContainer } }}
       elevation={1}
       anchorEl={targetEl}
       open={open}
@@ -117,7 +116,7 @@ export const TagAutocomplete: React.FC<Props> = ({
           if (onChange) onChange(result)
         }}
         renderOption={(props, option) => (
-          <MenuItem {...props}>
+          <MenuItem {...props} key={option.name}>
             {hideIcons ? (
               <> &nbsp; &nbsp; </>
             ) : (

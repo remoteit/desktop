@@ -29,7 +29,7 @@ export const PERMISSION: ILookup<{
 }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
-  SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scroll', hidden: true },
+  SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scripting', hidden: false },
   MANAGE: {
     name: 'Manage',
     description: 'Edit, delete, transfer and share devices and networks',
@@ -434,13 +434,7 @@ export function parseOrganization(data: any): IOrganizationState {
         },
       })),
     ],
-    roles: [
-      ...defaultState.roles,
-      ...data.roles.map(r => ({
-        ...r,
-        created: new Date(r.created),
-      })),
-    ],
+    roles: [...defaultState.roles, ...data.roles],
   }
 }
 
@@ -476,9 +470,9 @@ export function canMemberView(roles: IOrganizationRole[], member: IOrganizationM
   return canRoleView(role, instance)
 }
 
-export function canRoleView(role?: IOrganizationRole, instance?: IInstance) {
+export function canRoleView(role?: Partial<IOrganizationRole>, instance?: IInstance) {
   if (instance?.shared) return false
-  if (!role?.permissions.includes('VIEW')) return false
+  if (!role?.permissions?.includes('VIEW')) return false
   if (role?.tag && instance?.tags) return canViewByTags(role.tag, instance.tags)
   return true
 }

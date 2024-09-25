@@ -10,11 +10,9 @@ import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 
 export const OrganizationGuestsPage: React.FC = () => {
-  const { permissions } = useSelector((state: State) => ({
-    permissions: selectPermissions(state),
-  }))
+  const permissions = useSelector(selectPermissions)
 
-  if (!permissions?.includes('MANAGE'))
+  if (!permissions.includes('MANAGE'))
     return (
       <Body center>
         <Typography variant="body2" color="textSecondary">

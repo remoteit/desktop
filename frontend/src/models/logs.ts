@@ -1,5 +1,4 @@
 import { createModel } from '@rematch/core'
-import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
@@ -50,7 +49,9 @@ export default createModel<RootModel>()({
 
       after ? set({ fetchingMore: true }) : set({ fetching: true })
 
-      let result, response
+      let result
+      let response: Awaited<ReturnType<typeof graphQLGetDeviceUrl>>
+
       if (deviceId) {
         response = await graphQLGetDeviceLogs(deviceId, size, after, minDate, maxDate)
         if (response === 'ERROR') return
@@ -74,23 +75,22 @@ export default createModel<RootModel>()({
 
     async fetchUrl(_: void, state): Promise<string | undefined> {
       const { deviceId, minDate, maxDate } = state.logs
-      try {
-        let result, response
-        if (deviceId) {
-          response = await graphQLGetDeviceUrl(deviceId, minDate, maxDate)
-          graphQLGetErrors(response)
-          result = response?.data?.data?.login?.device[0] || {}
-        } else {
-          response = await graphQLGetUrl(minDate, maxDate)
-          graphQLGetErrors(response)
-          result = response?.data?.data?.login || {}
-        }
-        // const { events, eventsUrl } = result.events
-        console.log('LOG URL', result?.eventsUrl)
-        return result?.eventsUrl
-      } catch (error) {
-        await apiError(error)
+
+      let result
+      let response: Awaited<ReturnType<typeof graphQLGetDeviceUrl>>
+
+      if (deviceId) {
+        response = await graphQLGetDeviceUrl(deviceId, minDate, maxDate)
+        if (response === 'ERROR') return
+        result = response?.data?.data?.login?.device[0] || {}
+      } else {
+        response = await graphQLGetUrl(minDate, maxDate)
+        if (response === 'ERROR') return
+        result = response?.data?.data?.login || {}
       }
+      // const { events, eventsUrl } = result.events
+      console.log('LOG URL', result?.eventsUrl)
+      return result?.eventsUrl
     },
   }),
 

@@ -22,14 +22,14 @@ type Props = {
 
 export const OrganizationMemberDetails: React.FC<Props> = ({ member, organization }) => {
   const dispatch = useDispatch<Dispatch>()
-  const permissions = useSelector((state: State) => selectPermissions(state))
-  const availableUsers = useSelector((state: State) => selectAvailableUsers(state))
+  const license = useSelector(selectRemoteitLicense)
+  const permissions = useSelector(selectPermissions)
+  const availableUsers = useSelector(selectAvailableUsers)
   const accessible = useSelector((state: State) => selectAccessibleNetworks(state, organization, member))
-  const license = useSelector((state: State) => selectRemoteitLicense(state))
 
   const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
   const role = organization.roles.find(r => r.id === member?.roleId)
-  const disabled = !permissions?.includes('ADMIN')
+  const disabled = !permissions.includes('ADMIN')
 
   return (
     <>

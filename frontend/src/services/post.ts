@@ -2,8 +2,16 @@ import axios, { AxiosResponse } from 'axios'
 import { getApiURL, getTestHeader } from '../helpers/apiHelper'
 import { getToken } from './remoteit'
 import { store } from '../store'
+import network from './Network'
+import sleep from '../helpers/sleep'
 
-export async function post(data: ILookup<any, string> = {}, path: string = ''): Promise<undefined | AxiosResponse> {
+let errorCount = 0
+
+export function resetErrorCount() {
+  errorCount = 0
+}
+
+export async function post(data: ILookup<any, string> = {}, path: string = '') {
   if (store.getState().ui.offline) return
 
   const token = await getToken()
@@ -18,5 +26,54 @@ export async function post(data: ILookup<any, string> = {}, path: string = ''): 
     data,
   }
 
-  return await axios.request(request)
+  try {
+    return await axios.request(request)
+  } catch (error) {
+    console.error('POST ERROR', { data, path })
+    await apiError(error)
+    return 'ERROR'
+  }
+}
+
+export async function postFile(file: File, data: ILookup<any, string> = {}, path: string = '') {
+  const form = new FormData()
+
+  form.append('file', file)
+  Object.entries(data).forEach(([key, value]) => form.append(key, value))
+
+  return await post(form, path)
+}
+
+export async function apiError(error: unknown) {
+  const { ui, auth } = store.dispatch
+  console.error('API ERROR:', error)
+  console.trace()
+  errorCount = errorCount + 1
+
+  if (axios.isAxiosError(error)) {
+    console.error('AXIOS ERROR DETAILS:', { ...error })
+
+    if (!navigator.onLine) network.offline()
+
+    if (error.response?.status === 429) {
+      ui.set({
+        errorMessage:
+          'API request failure. Your API usage has been throttled. Check the usage on your account and if issues persist please contact support.',
+      })
+      return
+    }
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      if (errorCount > 10) {
+        auth.signOut()
+      }
+      console.log('Incrementing error count: ', errorCount)
+      await sleep(1000 * errorCount * errorCount)
+      auth.checkSession({ refreshToken: true })
+    }
+  }
+
+  if (error instanceof Error || axios.isAxiosError(error)) {
+    ui.set({ errorMessage: error.message })
+  }
 }

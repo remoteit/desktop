@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+    "jsx": "react",
     "lib": ["esnext"],
     "module": "CommonJS",
     "moduleResolution": "node",

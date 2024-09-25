@@ -13,7 +13,7 @@ import { useStyles } from './InlineSetting'
 import { Title } from './Title'
 import { Icon } from './Icon'
 
-type Props = {
+export type FormDisplayProps = {
   label?: React.ReactNode
   icon?: React.ReactNode
   value?: string | number | React.ReactNode
@@ -32,7 +32,7 @@ type Props = {
   onClick?: () => void
 }
 
-export const FormDisplay: React.FC<Props> = ({
+export const FormDisplay: React.FC<FormDisplayProps> = ({
   label,
   icon,
   value = '',

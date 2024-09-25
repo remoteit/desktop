@@ -1,5 +1,24 @@
 import { graphQLBasicRequest } from './graphQL'
 
+export async function graphQLGetAccessKeys() {
+  return await graphQLBasicRequest(
+    ` query Keys {
+        login {
+          apiKey {
+            key
+            updated
+          }
+          accessKeys {
+            key
+            enabled
+            created
+            lastUsed
+          }          
+        }
+      }`
+  )
+}
+
 export async function graphQLCreateAccessKey() {
   return await graphQLBasicRequest(
     ` mutation {

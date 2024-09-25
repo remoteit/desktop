@@ -2,7 +2,7 @@ import React from 'react'
 import { Icon } from './Icon'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, fontSizes } from '../styling'
-import { alpha, Paper, Box } from '@mui/material'
+import { alpha, SxProps, Theme, Paper, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import classnames from 'classnames'
 
@@ -16,8 +16,10 @@ export type NoticeProps = {
   solid?: boolean
   invert?: boolean
   onClose?: () => void
+  closeTitle?: string
   iconOverride?: React.ReactNode
   className?: string
+  sx?: SxProps<Theme>
   children?: React.ReactNode
 }
 
@@ -31,8 +33,10 @@ export const Notice: React.FC<NoticeProps> = ({
   solid,
   invert,
   onClose,
+  closeTitle = 'Close',
   iconOverride,
   className,
+  sx,
   children,
 }) => {
   const css = useStyles({ fullWidth, gutterBottom, gutterTop })
@@ -60,7 +64,11 @@ export const Notice: React.FC<NoticeProps> = ({
   if (loading) icon = <Icon name="spinner-third" spin size="md" fixedWidth />
 
   return (
-    <Paper elevation={0} className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}>
+    <Paper
+      sx={sx}
+      elevation={0}
+      className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}
+    >
       {icon}
       <Box
         sx={{
@@ -83,7 +91,7 @@ export const Notice: React.FC<NoticeProps> = ({
           onClick={onClose}
           sx={{ marginRight: -1 }}
           color={solid ? 'alwaysWhite' : invert ? 'grayLight' : undefined}
-          title="Close"
+          title={closeTitle}
         />
       )}
     </Paper>

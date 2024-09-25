@@ -15,21 +15,20 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material'
 import { selectPermissions, selectOrganization, selectLimitsLookup } from '../selectors/organizations'
-import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { ListItemSetting } from '../components/ListItemSetting'
-import { SelectSetting } from '../components/SelectSetting'
-import { ListItemCopy } from '../components/ListItemCopy'
-import { FormDisplay } from '../components/FormDisplay'
-import { FileUpload } from '../components/FileUpload'
-import { ColorChip } from '../components/ColorChip'
-import { Notice } from '../components/Notice'
-import { Icon } from '../components/Icon'
-import { Link } from '../components/Link'
+import { InlineTextFieldSetting } from './InlineTextFieldSetting'
+import { OrganizationSAMLUpload } from './OrganizationSAMLUpload'
+import { ListItemSetting } from './ListItemSetting'
+import { SelectSetting } from './SelectSetting'
+import { ListItemCopy } from './ListItemCopy'
+import { FormDisplay } from './FormDisplay'
+import { ColorChip } from './ColorChip'
+import { Notice } from './Notice'
+import { Icon } from './Icon'
+import { Link } from './Link'
 
 export const OrganizationSAMLSettings: React.FC = () => {
   const organization = useSelector(selectOrganization)
   const updating = useSelector((state: State) => state.organization.updating)
-  const domain = useSelector((state: State) => organization.domain || '')
   const defaultDomain = useSelector((state: State) => state.auth.user?.email.split('@')[1])
   const limits = useSelector(selectLimitsLookup)
   const permissions = useSelector(selectPermissions)
@@ -40,6 +39,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
     type: (organization.identityProvider?.type as IOrganizationProvider) || 'SAML',
   })
 
+  const domain = organization.domain || ''
   const required = !!organization.providers?.includes(form.type)
 
   const incomplete =
@@ -57,7 +57,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
     setForm({ ...form, enabled: !!organization.identityProvider })
   }, [organization])
 
-  if (!permissions?.includes('ADMIN'))
+  if (!permissions.includes('ADMIN'))
     return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   if (!limits.saml) return null
@@ -195,7 +195,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
                   </ListItem>
                   <ListItem dense>
                     <ListItemIcon />
-                    <FileUpload onUpload={metadata => setForm({ ...form, metadata })} />
+                    <OrganizationSAMLUpload onUpload={metadata => setForm({ ...form, metadata })} />
                   </ListItem>
                 </>
               ) : (

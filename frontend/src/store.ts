@@ -23,6 +23,8 @@ const persistConfig: PersistConfig<RootModel> = {
     'connections',
     'contacts',
     'devices',
+    'files',
+    'jobs',
     'networks',
     'organization',
     'plans',

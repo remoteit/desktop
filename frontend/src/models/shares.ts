@@ -13,9 +13,9 @@ type CurrentDevice = {
   userSelected: IUserRef | undefined
   selectedServices: string[]
   users: string[]
-  indeterminate: string[]
   script: boolean
   hasChange: boolean
+  indeterminate: string[]
   scriptIndeterminate: boolean
   shareChanged: boolean
 }
@@ -137,17 +137,17 @@ export default createModel<RootModel>()({
     },
 
     async selectContacts(emails: string[], state) {
-      const { set } = dispatch.shares
       if (!state.shares.currentDevice) return
 
+      const currentDevice = structuredClone(state.shares.currentDevice)
+      const { device } = currentDevice
+
+      currentDevice.userSelected = state.contacts.all.find(c => emails.includes(c.email))
+      currentDevice.users = emails
+
       let intersection: string[] = []
-
-      const currentDevice = state.shares.currentDevice
-      const { device, serviceId } = currentDevice
-      const contacts = state.contacts.all
-
       let userSelectedServices: string[][] = emails.map(email => {
-        return device ? getAccess(device, email, true).services.map(s => s.id) : []
+        return device ? getAccess(device, email).services.map(s => s.id) : []
       })
 
       let userSelectedScript: boolean[] = emails.map(email => {
@@ -158,49 +158,36 @@ export default createModel<RootModel>()({
         intersection = index === 0 ? services : intersection.filter(value => services.includes(value))
         return intersection
       })
-      const matchServices = match[match.length - 1]
-      const indeterminateServices = userSelectedServices
+      const matchServices = match[match.length - 1] || []
+
+      currentDevice.indeterminate = userSelectedServices
         .flat()
         .filter((v, i, a) => a.indexOf(v) === i)
         .filter(value => !matchServices.includes(value))
 
       const unique: any = new Set(userSelectedScript)
-      let scriptsValue = {}
-      switch ([...Array.from(unique)].length) {
+      switch (Array.from(unique).length) {
         case 1: {
-          scriptsValue = {
-            scriptIndeterminate: false,
-            script: userSelectedScript[0],
-          }
+          currentDevice.scriptIndeterminate = false
+          currentDevice.script = userSelectedScript[0]
           break
         }
         case 0: {
-          scriptsValue = {
-            scriptIndeterminate: false,
-            script: false,
-          }
+          currentDevice.scriptIndeterminate = false
+          currentDevice.script = false
           break
         }
         default: {
-          scriptsValue = {
-            scriptIndeterminate: true,
-            script: undefined,
-          }
+          currentDevice.scriptIndeterminate = true
+          currentDevice.script = false
         }
       }
 
-      const selectedServices = [...(matchServices ? [...matchServices, serviceId] : [serviceId])].filter(v => v)
+      const uniqueSelectedServices = new Set([...currentDevice.selectedServices, ...matchServices])
+      currentDevice.selectedServices = Array.from(uniqueSelectedServices).filter(v => v)
 
-      set({
-        currentDevice: {
-          ...currentDevice,
-          ...scriptsValue,
-          userSelected: contacts.find(c => emails.includes(c.email)),
-          users: emails,
-          indeterminate: indeterminateServices,
-          selectedServices,
-        },
-      })
+      console.log('SELECT CONTACT', currentDevice)
+      dispatch.shares.set({ currentDevice })
     },
   }),
   reducers: {

@@ -4,10 +4,10 @@ import { State, Dispatch } from '../../store'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { safeHostname, attributeName } from '@common/nameHelper'
-import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
+import { InlineTextFieldSetting, InlineTextFieldSettingProps } from '../InlineTextFieldSetting'
 import { getDevices } from '../../selectors/devices'
 
-export const DeviceNameSetting: React.FC = () => {
+export const DeviceNameSetting: React.FC<InlineTextFieldSettingProps> = props => {
   const { device } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
   const hostname = useSelector((state: State) => state.backend.environment.hostname)
@@ -33,6 +33,7 @@ export const DeviceNameSetting: React.FC = () => {
         dispatch.accounts.setDevice({ id: device.id, device: { ...device, name: name.toString() } })
         dispatch.devices.rename({ id: device.id, name: name.toString() })
       }}
+      {...props}
     />
   )
 }

@@ -2,7 +2,7 @@ import { adaptor } from './adaptor'
 import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
-export const KEY_APPS = new Set([4, 5, 7, 8, 28, 49])
+export const KEY_APPS = new Set([5, 7, 8, 28, 48, 49])
 
 class LaunchMethod {
   type: Exclude<IConnection['launchType'], undefined> = 'NONE'
@@ -506,10 +506,11 @@ export function getApplicationType(typeId?: number) {
     case 48:
       return new Application({
         title: 'ScreenView',
-        use: 'Use for remote screen viewing or control via Remote.It’s Android ScreenView app. Facilitates support, collaboration and remote access.',
+        use: 'Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access.',
         appLaunchType: 'URL',
         autoLaunch: true,
-        visibility: (device?: IDevice) => device?.targetPlatform === 1213,
+        visibility: (device?: IDevice) =>
+          !!(device?.targetPlatform === 1213 || device?.supportedAppInstalls.includes(typeId)),
       })
     case 49:
       return new Application({

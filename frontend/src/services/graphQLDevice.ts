@@ -1,5 +1,5 @@
 import { selectDeviceColumns } from '../selectors/devices'
-import { graphQLRequest, graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
 import { getTimeZone } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
@@ -134,6 +134,12 @@ const DeviceSelectLookup: ILookup<string, string> = {
   presenceAddress
   `,
 
+  installs: `
+  supportedAppInstalls {
+    id
+  }
+  `,
+
   notifications: `
   notificationSettings {
     emailNotifications
@@ -163,7 +169,7 @@ const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
@@ -208,7 +214,7 @@ export async function graphQLPreloadDevices(params: {
   serviceTimeSeries?: ITimeSeriesOptions
   deviceTimeSeries?: ITimeSeriesOptions
 }) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query DevicePreload($ids: [String!]!, $accountId: String${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
@@ -235,7 +241,7 @@ export async function graphQLPreloadDevices(params: {
 }
 
 export async function graphQLFetchConnections(params: { ids: string[] }) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
@@ -257,7 +263,7 @@ export async function graphQLFetchFullDevice(
   serviceTimeSeries?: ITimeSeriesOptions,
   deviceTimeSeries?: ITimeSeriesOptions
 ) {
-  return await graphQLRequest(
+  return await graphQLBasicRequest(
     ` query Device($id: [String!]!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
           id
@@ -350,6 +356,7 @@ export function graphQLDeviceAdaptor({
       services: graphQLServiceAdaptor(d, loaded || serviceLoaded),
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
+      supportedAppInstalls: d.supportedAppInstalls?.map(i => i.id) || [],
       timeSeries: processTimeSeries(d),
       access:
         d.access?.map((a: any) => ({
@@ -421,7 +428,6 @@ function attributeQuery(attributes: string[]) {
   })
 
   for (const l of lookup) {
-    if (l === 'service') debugger
     if (DeviceSelectLookup[l]) {
       query += DeviceSelectLookup[l]
     } else if (ServiceSelectLookup[l]) {

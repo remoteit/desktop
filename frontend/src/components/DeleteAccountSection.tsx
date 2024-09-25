@@ -11,17 +11,17 @@ import { Notice } from '../components/Notice'
 import { spacing } from '../styling'
 
 const REASONS = [
-  "My device isn't supported",
+  'My device isn’t supported',
   'Installation was too difficult',
   'Connection quality or performance issues',
   'Couldn’t get my device online',
   'Couldn’t connect',
   'Cost of service',
+  'Have another account',
   'Too hard to use',
   'Not what I thought it was',
   'Not using it anymore',
   'Using something else',
-  'Have another account',
 ]
 interface DeleteAccountSectionProps {
   user?: IUser
@@ -108,9 +108,9 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
                   </Box>
                   Why do you want to delete your account?
                   <Typography variant="body2" marginTop={1}>
-                    Please, help us improve by telling us why it didn't work out.
-                    <br />
                     <i>We are sorry to see you go! </i>
+                    <br />
+                    Please help us improve by telling us why it didn't work out.
                   </Typography>
                 </>
               }

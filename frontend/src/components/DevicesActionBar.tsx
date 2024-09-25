@@ -13,16 +13,18 @@ import { useHistory } from 'react-router-dom'
 import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Notice } from './Notice'
+import { TestUI } from './TestUI'
 import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 
-type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] }
+type Props = { select?: boolean; devices?: IDevice[]; displayOnly?: boolean }
 
-export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devices }) => {
+export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly }) => {
   const accountId = useSelector(selectActiveAccountId)
   const feature = useSelector(selectLimitsLookup)
   const tags = useSelector(selectTags)
+  const selected = useSelector((state: State) => state.ui.selected)
   const adding = useSelector((state: State) => state.tags.adding)
   const removing = useSelector((state: State) => state.tags.removing)
   const destroying = useSelector((state: State) => state.ui.destroying)
@@ -41,66 +43,82 @@ export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devic
             {selected.length} {mobile ? <Icon name="check" inline /> : 'Selected'}
           </Typography>
         </Title>
-        {feature.tagging && (
+        {!displayOnly && (
           <>
-            {mobile || <InputLabel shrink>tags</InputLabel>}
-            <TagEditor
-              button="plus"
-              tags={tags}
-              buttonProps={{
-                title: 'Add Tag',
-                color: 'alwaysWhite',
-                placement: 'bottom',
-                loading: adding,
-                disabled: adding || !selected.length,
+            {feature.tagging && (
+              <>
+                {mobile || <InputLabel shrink>tags</InputLabel>}
+                <TagEditor
+                  button="plus"
+                  tags={tags}
+                  buttonProps={{
+                    title: 'Add Tag',
+                    color: 'alwaysWhite',
+                    placement: 'bottom',
+                    loading: adding,
+                    disabled: adding || !selected.length,
+                  }}
+                  keyboardShortcut={false}
+                  onCreate={onCreate}
+                  onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
+                />
+                <TagEditor
+                  button="minus"
+                  placeholder="Remove a tag..."
+                  allowAdding={false}
+                  tags={getSelectedTags(devices, selected)}
+                  buttonProps={{
+                    title: 'Remove Tag',
+                    color: 'alwaysWhite',
+                    placement: 'bottom',
+                    loading: removing,
+                    disabled: removing || !selected.length,
+                  }}
+                  keyboardShortcut={false}
+                  onCreate={onCreate}
+                  onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
+                />
+                <Divider orientation="vertical" color="white" />
+              </>
+            )}
+            <TestUI>
+              <IconButton
+                icon="scripting"
+                title="New Script"
+                color="alwaysWhite"
+                placement="bottom"
+                disabled={!selected.length}
+                to="/scripting/scripts/new"
+              />
+            </TestUI>
+            <ConfirmIconButton
+              icon="trash"
+              title="Delete selected"
+              color="alwaysWhite"
+              placement="bottom"
+              disabled={!selected.length}
+              loading={destroying}
+              onClick={async () => await dispatch.devices.destroySelected(selected)}
+              confirmProps={{
+                title: 'Confirm Device Deletion',
+                color: 'error',
+                action: `Delete ${selected.length} device${selected.length === 1 ? '' : 's'}`,
+                children: (
+                  <>
+                    <Notice severity="error" gutterBottom fullWidth>
+                      Deletion is irreversible and may require device access for recovery.
+                    </Notice>
+                    <Typography variant="body2">
+                      Uninstall the Remote.It agent before deletion for best results.
+                    </Typography>
+                  </>
+                ),
               }}
-              keyboardShortcut={false}
-              onCreate={onCreate}
-              onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
-            />
-            <TagEditor
-              button="minus"
-              placeholder="Remove a tag..."
-              allowAdding={false}
-              tags={getSelectedTags(devices, selected)}
-              buttonProps={{
-                title: 'Remove Tag',
-                color: 'alwaysWhite',
-                placement: 'bottom',
-                loading: removing,
-                disabled: removing || !selected.length,
-              }}
-              keyboardShortcut={false}
-              onCreate={onCreate}
-              onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
+              confirm
             />
             <Divider orientation="vertical" color="white" />
           </>
         )}
-        <ConfirmIconButton
-          icon="trash"
-          title="Delete selected"
-          color="alwaysWhite"
-          placement="bottom"
-          disabled={!selected.length}
-          loading={destroying}
-          onClick={async () => await dispatch.devices.destroySelected(selected)}
-          confirmProps={{
-            title: 'Confirm Device Deletion',
-            color: 'error',
-            action: `Delete ${selected.length} device${selected.length === 1 ? '' : 's'}`,
-            children: (
-              <>
-                <Notice severity="error" gutterBottom fullWidth>
-                  Deletion is irreversible and may require device access for recovery.
-                </Notice>
-                <Typography variant="body2">Uninstall the Remote.It agent before deletion for best results.</Typography>
-              </>
-            ),
-          }}
-          confirm
-        />
-        <Divider orientation="vertical" color="white" />
         <IconButton
           icon="times"
           title="Clear selection"
@@ -108,7 +126,7 @@ export const DevicesActionBar: React.FC<Props> = ({ select, selected = [], devic
           placement="bottom"
           onClick={() => {
             dispatch.ui.set({ selected: [] })
-            history.push('/devices')
+            if (!displayOnly) history.push('/devices')
           }}
         />
       </Box>

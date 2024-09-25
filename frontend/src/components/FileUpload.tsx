@@ -1,58 +1,123 @@
 import React, { useCallback, useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { Typography, Box, ButtonBase } from '@mui/material'
+import { containsNonPrintableChars } from '../helpers/utilHelper'
+import { Typography, TextField, Box, ButtonBase, Stack, Divider } from '@mui/material'
 import { useDropzone } from 'react-dropzone'
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Dispatch } from '../store'
+import { Notice } from './Notice'
 import { spacing, radius } from '../styling'
 
-export const FileUpload: React.FC<{ onUpload: (data: any) => void }> = ({ onUpload }) => {
+type Props = {
+  script: string
+  onChange: (script: string) => void
+  onUpload: (file: File) => void
+}
+
+export const FileUpload: React.FC<Props> = ({ script, onChange, onUpload }) => {
   const { ui } = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string>()
-  const onDrop = useCallback(files => {
+  const [isText, setIsText] = useState(true)
+
+  const onDrop = useCallback((files: File[]) => {
     files.forEach(file => {
       const reader = new FileReader()
-      let result = ''
+
       reader.onabort = () => ui.set({ errorMessage: 'File reading was aborted' })
       reader.onerror = () => ui.set({ errorMessage: 'File reading has failed' })
-      reader.onload = () => (result += reader.result)
       reader.onloadend = () => {
-        onUpload(result)
-        setFilename(file.name)
+        const buffer = new Uint8Array(reader.result as ArrayBuffer)
+
+        try {
+          const text = new TextDecoder().decode(buffer)
+          const isBinary = containsNonPrintableChars(text)
+
+          if (!isBinary) {
+            onChange(text)
+            onUpload(file)
+            setFilename(file.name)
+            setIsText(true)
+          } else {
+            setIsText(false)
+          }
+        } catch (e) {
+          console.error('Error decoding text:', e)
+          ui.set({ errorMessage: 'File could not be decoded as text.' })
+          setIsText(false)
+        }
       }
-      reader.readAsText(file)
+
+      reader.readAsArrayBuffer(file) // Read as ArrayBuffer to handle both text and binary files
     })
   }, [])
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
   const css = useStyles({ isDragActive })
+  const showUpload = !filename && isText
 
-  if (filename)
-    return (
-      <Box className={css.paper}>
-        <Typography variant="body2" color="textSecondary">
-          <b>{filename}</b> selected
-        </Typography>
-        <IconButton
-          name="times"
-          title="Clear"
-          color="grayDark"
-          size="sm"
-          onClick={() => {
-            setFilename(undefined)
-            onUpload(undefined)
-          }}
-        />
-      </Box>
-    )
+  const clear = () => {
+    setFilename(undefined)
+    onChange('')
+    setIsText(true)
+  }
+
   return (
-    <ButtonBase className={css.paper} {...getRootProps()}>
-      <input {...getInputProps()} />
-      <Box>
-        <Typography variant="body2">Select SAML metadata file</Typography>
-        <Typography variant="caption">Drag and drop or click </Typography>
-      </Box>
-    </ButtonBase>
+    <Stack width="100%" position="relative">
+      {showUpload && (
+        <>
+          <ButtonBase className={css.paper} {...getRootProps()}>
+            <input {...getInputProps()} />
+            <Box>
+              <Typography variant="body2">Upload</Typography>
+              <Typography variant="caption">Drag and drop or click </Typography>
+            </Box>
+          </ButtonBase>
+          <Divider />
+        </>
+      )}
+      {isText ? (
+        <>
+          <TextField
+            multiline
+            fullWidth
+            required
+            label="Script"
+            value={script}
+            variant="filled"
+            maxRows={20}
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              sx: theme => ({
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: theme.typography.caption.fontSize,
+                borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
+              }),
+            }}
+            onChange={event => onChange(event.target.value)}
+          />
+          {filename && (
+            <Box sx={{ position: 'absolute', top: 0, right: 0 }}>
+              <IconButton
+                name="times"
+                title="Clear"
+                color="grayDark"
+                size="sm"
+                onClick={() => {
+                  setFilename(undefined)
+                  onChange('')
+                  setIsText(true)
+                }}
+              />
+            </Box>
+          )}
+        </>
+      ) : (
+        <Notice onClose={clear} closeTitle="Clear" fullWidth>
+          This script appears to be binary.
+        </Notice>
+      )}
+    </Stack>
   )
 }
 
@@ -66,8 +131,8 @@ const useStyles = makeStyles(({ palette }) => ({
     border: `2px dotted ${isDragActive ? palette.primary.main : palette.grayLightest.main}`,
     background: palette.grayLightest.main,
     padding: `${spacing.lg}px ${spacing.xl}px`,
-    borderRadius: radius.lg,
-    minWidth: 400,
+    borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
+    minWidth: 200,
     '&:hover': { background: palette.primaryHighlight.main, borderColor: palette.primaryHighlight.main },
   }),
 }))

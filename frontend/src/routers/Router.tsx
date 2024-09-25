@@ -5,6 +5,7 @@ import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
+import { ScriptingRouter } from './ScriptingRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
@@ -23,6 +24,7 @@ import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { ResellerPage } from '../pages/ResellerPage'
 import { CustomerPage } from '../pages/CustomerPage'
+import { ScriptAddPage } from '../pages/ScriptAddPage'
 import { PlatformAddPage } from '../pages/PlatformAddPage'
 import { CustomerAddPage } from '../pages/CustomerAddPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
@@ -238,6 +240,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <FeedbackPage />
         </Panel>
       </Route>
+      {/* Scripting */}
+      <Route path="/scripting">
+        <ScriptingRouter layout={layout} />
+      </Route>
       {/* Settings */}
       <Route path="/settings">
         <DynamicPanel
@@ -247,23 +253,18 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/settings/notifications">
                 <NotificationsPage />
               </Route>
-
               <Route path="/settings/graphs">
                 <GraphsPage />
               </Route>
-
               <Route path="/settings/defaults/:applicationID?">
                 <ConnectionDefaultsPage />
               </Route>
-
               <Route path="/settings/tags">
                 <TagsPage />
               </Route>
-
               <Route path="/settings/test">
                 <TestPage />
               </Route>
-
               <Route path={['/settings/options', '/settings']}>
                 <OptionsPage />
               </Route>

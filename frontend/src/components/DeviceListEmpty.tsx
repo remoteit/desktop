@@ -55,9 +55,9 @@ export const DeviceListEmpty: React.FC = () => {
           </Typography>
         </>
       ) : (
-        <Typography variant="body1" color="textSecondary" align="center">
-          This account has no devices
-        </Typography>
+        <Box>
+          <Notice>This account has no devices</Notice>
+        </Box>
       )}
     </Body>
   )

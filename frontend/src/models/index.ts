@@ -11,6 +11,8 @@ import connections from './connections'
 import contacts from './contacts'
 import devices from './devices'
 import feedback from './feedback'
+import files from './files'
+import jobs from './jobs'
 import keys from './keys'
 import labels from './labels'
 import logs from './logs'
@@ -38,6 +40,8 @@ export interface RootModel extends Models<RootModel> {
   contacts: typeof contacts
   devices: typeof devices
   feedback: typeof feedback
+  files: typeof files
+  jobs: typeof jobs
   keys: typeof keys
   labels: typeof labels
   logs: typeof logs
@@ -66,6 +70,8 @@ export const models: RootModel = {
   contacts,
   devices,
   feedback,
+  files,
+  jobs,
   keys,
   labels,
   logs,

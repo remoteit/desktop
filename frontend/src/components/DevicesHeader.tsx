@@ -1,13 +1,13 @@
 import React from 'react'
 import { Container } from './Container'
 import { DevicesActionBar } from './DevicesActionBar'
-import { DevicesApplicationsBar } from './DevicesApplicationsBar'
-import { Route } from 'react-router-dom'
+import { DevicesApplicationsTabs } from './DevicesApplicationsTabs'
 import { Notice } from './Notice'
+import { Route } from 'react-router-dom'
 
-type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[]; children?: React.ReactNode }
+type Props = { select?: boolean; devices?: IDevice[]; children?: React.ReactNode }
 
-export const DevicesHeader: React.FC<Props> = ({ select, selected = [], devices, children }) => {
+export const DevicesHeader: React.FC<Props> = ({ select, devices, children }) => {
   return (
     <Container
       integrated
@@ -15,8 +15,8 @@ export const DevicesHeader: React.FC<Props> = ({ select, selected = [], devices,
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <>
-          <DevicesActionBar select={select} selected={selected} devices={devices} />
-          <DevicesApplicationsBar />
+          <DevicesActionBar select={select} devices={devices} />
+          <DevicesApplicationsTabs />
           <Route path="/devices/restore">
             <Notice>Please select a device to restore.</Notice>
           </Route>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles } from '@mui/styles'
 import { TextField, TextFieldProps, Input, InputProps } from '@mui/material'
+import { FormDisplayProps } from './FormDisplay'
 import { InlineSetting } from './InlineSetting'
 import { spacing } from '../styling'
 
-type Props = {
+export type InlineTextFieldSettingProps = {
   value?: string | number
   label?: React.ReactNode
   icon?: React.ReactNode
@@ -25,22 +25,25 @@ type Props = {
   multiline?: boolean
   type?: InputProps['type']
   debug?: boolean
+  fieldProps?: TextFieldProps
+  DisplayComponent?: React.ReactElement<FormDisplayProps>
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
   onDelete?: () => void
 }
 
-export const InlineTextFieldSetting: React.FC<Props> = ({
+export const InlineTextFieldSetting: React.FC<InlineTextFieldSettingProps> = ({
   label,
   filter,
   required,
   value = '',
-  resetValue = '',
+  resetValue,
   placeholder,
   maxLength,
   autoCorrect,
   multiline,
   type,
+  fieldProps = {},
   onError,
   onSave,
   ...props
@@ -48,18 +51,17 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   const fieldRef = useRef<HTMLInputElement>(null)
   const [editValue, setEditValue] = useState<string | number>('')
   const [error, setError] = useState<string>()
-  const css = useStyles()
 
   useEffect(() => {
     onError && onError(error)
   }, [error])
 
   let Field
-  let FieldProps: TextFieldProps = { type }
+  fieldProps.type = type
 
   if (label) {
     Field = TextField
-    FieldProps.helperText = error
+    fieldProps.helperText = error
   } else {
     Field = Input
   }
@@ -73,13 +75,13 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
       value={value}
       fieldRef={fieldRef}
       resetValue={resetValue}
-      onResetClick={() => onSave && onSave(resetValue)}
+      onResetClick={() => onSave && onSave(resetValue || '')}
       onSubmit={() => onSave && onSave(editValue)}
       onCancel={() => setEditValue(value)}
       onShowEdit={() => setEditValue(value)}
     >
       <Field
-        {...FieldProps}
+        {...fieldProps}
         autoFocus
         multiline={multiline}
         inputRef={fieldRef}
@@ -88,7 +90,13 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         value={editValue || ''}
         variant="filled"
         placeholder={placeholder}
-        className={css.field}
+        sx={{
+          ...fieldProps.sx,
+          flexGrow: 1,
+          margin: `0 ${spacing.md}px -1px -${spacing.sm}px`,
+          '& .MuiFilledInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
+          '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
+        }}
         onChange={event => {
           let value = event.target.value
           if (required && !value.length) {
@@ -113,12 +121,3 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
     </InlineSetting>
   )
 }
-
-const useStyles = makeStyles({
-  field: {
-    flexGrow: 1,
-    margin: `0 ${spacing.md}px -1px -${spacing.sm}px`,
-    '& .MuiFilledInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
-    '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
-  },
-})

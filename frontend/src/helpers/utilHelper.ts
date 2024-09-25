@@ -76,3 +76,19 @@ export function createMemoDebugger(componentName) {
     return Object.keys(prevProps).every(key => prevProps[key] === nextProps[key])
   }
 }
+
+export function containsNonPrintableChars(text: string): boolean {
+  const nonPrintableCharLimit = 0.1 // Allow 10% of non-printable chars max
+  let nonPrintableCount = 0
+
+  for (let i = 0; i < text.length; i++) {
+    const charCode = text.charCodeAt(i)
+    // Consider characters below 32, except common text ones like tab, newline, carriage return as non-printable
+    if (charCode < 32 && ![9, 10, 13].includes(charCode)) {
+      nonPrintableCount++
+    }
+  }
+
+  // Calculate the ratio of non-printable characters in the text
+  return nonPrintableCount / text.length > nonPrintableCharLimit
+}
