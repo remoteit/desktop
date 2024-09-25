@@ -10,6 +10,8 @@ import {
   graphQLAddService,
   graphQLUpdateService,
   graphQLRemoveService,
+  graphQLInstallApp,
+  graphQLRemoveApp,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
   graphQLRemoveLink,
@@ -372,7 +374,7 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async cloudAddService({ form, deviceId }: { form: IService; deviceId: string }) {
+    async cloudAddService({ form, deviceId }: { form: IService; deviceId: string }, state) {
       if (!form.host || !form.port) return
       const result = await graphQLAddService({
         deviceId,
@@ -389,6 +391,14 @@ export default createModel<RootModel>()({
           await graphQLSetAttributes(form.attributes, id)
           dispatch.devices.addService({ deviceId, service: { ...form, id } })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
+        }
+
+        const device = await selectDevice(state, undefined, deviceId)
+        if (device?.supportedAppInstalls.includes(form.typeID)) {
+          await graphQLInstallApp({
+            deviceIds: [deviceId],
+            application: form.typeID,
+          })
         }
       }
     },
@@ -418,7 +428,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
-    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId: string }) {
+    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId: string }, state) {
       console.log('REMOVING SERVICE', serviceId, deviceId)
       dispatch.ui.set({
         setupServiceBusy: serviceId,
@@ -432,6 +442,14 @@ export default createModel<RootModel>()({
         await dispatch.devices.cleanupService(serviceId)
         dispatch.ui.set({
           successMessage: `Service was successfully removed.`,
+        })
+      }
+
+      let [service, device] = selectById(state, undefined, serviceId)
+      if (service && device?.supportedAppInstalls.includes(service.typeID)) {
+        await graphQLRemoveApp({
+          deviceIds: [deviceId],
+          application: service.typeID,
         })
       }
 

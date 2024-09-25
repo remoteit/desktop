@@ -27,6 +27,7 @@ import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
+import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
@@ -111,7 +112,9 @@ export const SidebarNav: React.FC = () => {
           </ListItemLocation>
         </>
       )}
-      <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense />
+      <TestUI>
+        <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense />
+      </TestUI>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>

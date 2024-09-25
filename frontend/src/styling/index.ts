@@ -96,7 +96,7 @@ export const lightColors: { [key in Color]: string } = {
   shadow: 'rgba(0, 16, 26, 0.2)',
   rpi: '#C51A4A',
   guide: '#593098', // '#001247',
-  test: '#fffcf0',
+  test: '#ffcc001d',
 }
 
 export const darkColors: { [key in Color]: string } = {
@@ -131,7 +131,7 @@ export const darkColors: { [key in Color]: string } = {
   shadow: 'rgba(0,0,0,0.3)',
   rpi: '#C51A4A',
   guide: '#ebe985',
-  test: '#2B2926',
+  test: '#ffcc001d',
 }
 
 export const radius = {

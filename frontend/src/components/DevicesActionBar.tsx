@@ -13,6 +13,7 @@ import { useHistory } from 'react-router-dom'
 import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Notice } from './Notice'
+import { TestUI } from './TestUI'
 import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
@@ -80,14 +81,16 @@ export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly
                 <Divider orientation="vertical" color="white" />
               </>
             )}
-            <IconButton
-              icon="scripting"
-              title="New Script"
-              color="alwaysWhite"
-              placement="bottom"
-              disabled={!selected.length}
-              to="/scripting/scripts/new"
-            />
+            <TestUI>
+              <IconButton
+                icon="scripting"
+                title="New Script"
+                color="alwaysWhite"
+                placement="bottom"
+                disabled={!selected.length}
+                to="/scripting/scripts/new"
+              />
+            </TestUI>
             <ConfirmIconButton
               icon="trash"
               title="Delete selected"
