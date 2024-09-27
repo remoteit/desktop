@@ -1,25 +1,32 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { List, ListItem, TextField, Button, Stack } from '@mui/material'
+import { List, ListItem, TextField, Button, Stack, Box } from '@mui/material'
+import { LoadingMessage } from './LoadingMessage'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
 
 type Props = {
   form: IFileForm
   defaultForm: IFileForm
+  defaultScript?: string
   deviceIds: string[]
+  loading?: boolean
   onChange: (form: IFileForm) => void
 }
 
-export const ScriptForm: React.FC<Props> = ({ form, defaultForm, deviceIds, onChange }) => {
+export const ScriptForm: React.FC<Props> = ({ form, defaultForm, defaultScript, deviceIds, loading, onChange }) => {
   const [saving, setSaving] = useState(false)
-  const [script, setScript] = useState<string>('')
+  const [script, setScript] = useState<string>(defaultScript || '')
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
+
+  useEffect(() => {
+    setScript(defaultScript || '')
+  }, [defaultScript])
 
   return (
     <form
@@ -36,15 +43,30 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, deviceIds, onCh
     >
       <List>
         <ListItem disableGutters>
-          <FileUpload
-            script={script}
-            onChange={script => setScript(script)}
-            onUpload={file => {
-              onChange({ ...form, name: file.name, file })
-              console.log('upload', file.name, file)
-            }}
-          />
+          {loading ? (
+            <Stack
+              bgcolor="grayLightest.main"
+              justifyContent="center"
+              alignContent="center"
+              paddingTop={7}
+              borderRadius={2}
+              minWidth={200}
+              width="100%"
+            >
+              <LoadingMessage />
+            </Stack>
+          ) : (
+            <FileUpload
+              script={script}
+              onChange={script => setScript(script)}
+              onUpload={file => {
+                onChange({ ...form, name: file.name, file })
+                console.log('upload', file.name, file)
+              }}
+            />
+          )}
         </ListItem>
+        {form.file?.name}
         <ListItem disableGutters>
           <TextField
             required

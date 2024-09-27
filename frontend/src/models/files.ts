@@ -4,8 +4,9 @@ import { graphQLFiles } from '../services/graphQLRequest'
 import { graphQLDeleteFile } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { postFile } from '../services/post'
 import { RootModel } from '.'
+import { postFile } from '../services/post'
+import { get } from '../services/get'
 
 type FilesState = {
   fetching: boolean
@@ -58,7 +59,12 @@ export default createModel<RootModel>()({
       return result?.data.fileId
     },
     async download(fileId: string, state) {
-      // const result = await post({}
+      const result = await get(`/file/download/${fileId}`)
+      if (result === 'ERROR') return
+
+      console.log('DOWNLOADED FILE', result)
+
+      return result?.data
     },
     async delete(fileId: string, state) {
       console.log('DELETE FILE', fileId)

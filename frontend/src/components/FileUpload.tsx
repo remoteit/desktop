@@ -17,7 +17,7 @@ type Props = {
 
 export const FileUpload: React.FC<Props> = ({ script, onChange, onUpload }) => {
   const { ui } = useDispatch<Dispatch>()
-  const [filename, setFilename] = useState<string>()
+  const [filename, setFilename] = useState<string | undefined>()
   const [isText, setIsText] = useState(true)
 
   const onDrop = useCallback((files: File[]) => {
