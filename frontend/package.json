@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.33.0-beta",
+  "version": "3.33.1-beta",
   "private": true,
   "type": "module",
   "scripts": {
