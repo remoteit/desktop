@@ -10,11 +10,12 @@ import { LinearProgress } from '../components/LinearProgress'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Tags } from '../components/Tags'
+import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
-  const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
+  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
   // const dispatch = useDispatch<Dispatch>()
@@ -23,6 +24,19 @@ export const ScriptPage: React.FC = () => {
 
   if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
 
+  if (!jobDeviceID) {
+    return (
+      <Redirect
+        to={{
+          pathname: `/scripting/${script.id}/${
+            script.job ? `${script.job.id}/${script.job.jobDevices[0].id}` : '-/edit'
+          }`,
+          state: { isRedirect: true },
+        }}
+      />
+    )
+  }
+
   return (
     <Container
       bodyProps={{ verticalOverflow: true }}
@@ -30,11 +44,11 @@ export const ScriptPage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
-              to={`/scripting/${fileID}/${jobID}/edit`}
+              to={`/scripting/${fileID}/${script.job?.id || '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
               icon="scripting"
               exactMatch
-            ></ListItemLocation>
+            />
             <Box marginLeft={9} marginRight={3}>
               {getJobAttribute('jobTags').value({ job: script.job })}
             </Box>
@@ -43,6 +57,12 @@ export const ScriptPage: React.FC = () => {
                 {script.shortDesc}
               </Typography>
             )}
+            {/* <ListItemLocation
+              to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
+              title="History"
+              icon="clock-rotate-left"
+              sx={{ marginTop: 4 }}
+            /> */}
           </List>
           <LinearProgress loading={fetching} />
         </>
@@ -70,7 +90,7 @@ export const ScriptPage: React.FC = () => {
           {script.job?.jobDevices.map(jd => (
             <ListItemLocation
               key={jd.id}
-              to={`/scripting/${fileID}/${jobID}/${jd.id}`}
+              to={`/scripting/${fileID}/${script.job?.id || '-'}/${jd.id}`}
               title={jd.device.name}
               icon={<JobStatusIcon status={jd.status} />}
             >
@@ -80,6 +100,9 @@ export const ScriptPage: React.FC = () => {
             </ListItemLocation>
           ))}
         </List>
+        {(!script.job || !script.job.jobDevices.length) && (
+          <Notice>No devices have been assigned to this script.</Notice>
+        )}
       </>
     </Container>
   )

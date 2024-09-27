@@ -44,7 +44,7 @@ export const OnboardRouter: React.FC = () => {
             <OnboardWifi next={onNext} />
           </Route>
           <Route path="/onboard/:platform/configuring">
-            <OnboardRegistration platformId={platform} />
+            <OnboardRegistration />
           </Route>
         </Switch>
       </Box>

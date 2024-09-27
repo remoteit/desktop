@@ -24,7 +24,6 @@ import {
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
 import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
-import { graphQLGetErrors } from '../services/graphQL'
 import { selectConnection } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
@@ -78,7 +77,7 @@ export default createModel<RootModel>()({
       const accountId = state.auth.user?.id || state.user.id
       const serviceIds = getFetchConnectionIds(state)
       const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
-      if (graphQLGetErrors(gqlResponse)) return
+      if (gqlResponse === 'ERROR') return
 
       const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
@@ -221,8 +220,8 @@ export default createModel<RootModel>()({
             connection = { ...newConnection(service), ...picked }
             setConnection(connection)
           } else if (!connection.port) {
+            console.error('No service or connection port found in connection. Connection cleared.', { connection })
             dispatch.connections.forget(connection.id)
-            console.warn('No service or connection port found in connection. Connection cleared.', { connection })
           } else {
             console.warn(`No service found for connection ${connection.id}`, { connection })
             // @TODO fetch device if trying to restore a non-loaded connection

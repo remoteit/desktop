@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { getApiURL, getTestHeader } from '../helpers/apiHelper'
 import { getToken } from './remoteit'
 import { store } from '../store'

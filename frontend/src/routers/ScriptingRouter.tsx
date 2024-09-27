@@ -31,7 +31,9 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Panel>
     )
 
-  if (['scripts', 'runs', 'files'].includes(location.pathname.split('/')[2])) layout = { ...layout, singlePanel: true }
+  const locationParts = location.pathname.split('/')
+  if (['scripts', 'runs', 'files'].includes(locationParts[2]) && locationParts.length === 3)
+    layout = { ...layout, singlePanel: true }
 
   return (
     <DynamicPanel
@@ -46,7 +48,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/scripting/files">
             <FilesPage />
           </Route>
-          <Route path="/scripting/:fileID/:jobID?">
+          <Route path="/scripting/:fileID/:jobID?/:jobDeviceID?">
             <ScriptPage />
           </Route>
           <Route path="*">

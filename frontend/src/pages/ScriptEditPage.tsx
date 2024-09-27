@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
-import { State } from '../store'
+import sleep from '../helpers/sleep'
+import React, { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { State, Dispatch } from '../store'
 import { useParams } from 'react-router-dom'
 import { selectRole } from '../selectors/organizations'
 import { selectScript } from '../selectors/scripting'
 import { ScriptForm } from '../components/ScriptForm'
-import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
 import { Body } from '../components/Body'
+import { Pre } from '../components/Pre'
 
 const initialForm: IFileForm = {
   name: '',
@@ -18,8 +20,11 @@ const initialForm: IFileForm = {
 }
 
 export const ScriptEditPage: React.FC = () => {
+  const [defaultScript, setDefaultScript] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(true)
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
+  const dispatch = useDispatch<Dispatch>()
   const role = useSelector(selectRole)
 
   if (!script)
@@ -29,7 +34,6 @@ export const ScriptEditPage: React.FC = () => {
       </Body>
     )
 
-  // form.file = new File([script || form.file || ''], form.name, { type: form.file?.type || 'text/plain' })
   const deviceIds = script.job?.jobDevices.map(d => d.id) || []
   const defaultForm: IFileForm = {
     deviceIds,
@@ -38,15 +42,33 @@ export const ScriptEditPage: React.FC = () => {
     executable: script.executable,
     tag: script.job?.tag,
     access: deviceIds.length ? 'SELECTED' : script.job?.tag.values.length ? 'TAG' : 'ALL',
-    file: undefined, //script.versions[0].id, // TODO ask @evan how to get the file
   }
 
   const [form, setForm] = useState<IFileForm>(defaultForm)
 
+  useEffect(() => {
+    if (defaultScript) return
+    else {
+      ;(async () => {
+        setLoading(true)
+        const download = await dispatch.files.download(script.versions[0].id)
+        setDefaultScript(download)
+        setLoading(false)
+      })()
+    }
+  }, [script])
+
   return (
     <Body inset gutterTop gutterBottom>
       <Typography variant="h1">Script Configuration</Typography>
-      <ScriptForm form={form} onChange={setForm} defaultForm={defaultForm} deviceIds={deviceIds} />
+      <ScriptForm
+        form={form}
+        onChange={setForm}
+        defaultForm={defaultForm}
+        defaultScript={defaultScript}
+        deviceIds={deviceIds}
+        loading={loading}
+      />
     </Body>
   )
 }

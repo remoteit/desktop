@@ -6,8 +6,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { selectOrganization } from '../selectors/organizations'
 
 type Props = {
-  platform: IPlatform
   types: number[]
+  platform?: IPlatform
   tags?: string[]
   redirect?: string
 }
@@ -41,16 +41,20 @@ export function useAutoRegistration({ platform, tags, types, redirect }: Props) 
     })
     if (fetching) return
     ;(async () => {
-      const platformType = platforms.findType(platform.id)
-      const code = await dispatch.devices.createRegistration({
+      let options: Parameters<typeof dispatch.devices.createRegistration>[0] = {
         tags,
         accountId,
         services: types.map(type => ({ application: type })),
-        platform: platformType,
-        template: platform.installation?.command,
-      })
+      }
+      if (platform) {
+        options.platform = platforms.findType(platform.id)
+        options.template = platform.installation?.command
+      }
+
+      const code = await dispatch.devices.createRegistration(options)
 
       if (!redirect || redirected) return
+
       try {
         setRedirected(true)
         const url = getRedirect(redirect, code)
