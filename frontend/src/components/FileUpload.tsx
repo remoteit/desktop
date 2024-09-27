@@ -11,11 +11,12 @@ import { spacing, radius } from '../styling'
 
 type Props = {
   script: string
+  loading?: boolean
   onChange: (script: string) => void
   onUpload: (file: File) => void
 }
 
-export const FileUpload: React.FC<Props> = ({ script, onChange, onUpload }) => {
+export const FileUpload: React.FC<Props> = ({ script, loading, onChange, onUpload }) => {
   const { ui } = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string | undefined>()
   const [isText, setIsText] = useState(true)
@@ -48,7 +49,7 @@ export const FileUpload: React.FC<Props> = ({ script, onChange, onUpload }) => {
         }
       }
 
-      reader.readAsArrayBuffer(file) // Read as ArrayBuffer to handle both text and binary files
+      reader.readAsArrayBuffer(file)
     })
   }, [])
 
@@ -82,18 +83,22 @@ export const FileUpload: React.FC<Props> = ({ script, onChange, onUpload }) => {
             multiline
             fullWidth
             required
+            disabled={loading}
             label="Script"
-            value={script}
+            value={loading ? 'loading...' : script}
             variant="filled"
             maxRows={20}
             InputLabelProps={{ shrink: true }}
             InputProps={{
               sx: theme => ({
+                borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
                 fontFamily: "'Roboto Mono', monospace",
                 fontSize: theme.typography.caption.fontSize,
-                borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
+                lineHeight: theme.typography.caption.lineHeight,
+                color: theme.palette.grayDarkest.main,
               }),
             }}
+            inputProps={{ sx: { transition: 'height 1s' } }}
             onChange={event => onChange(event.target.value)}
           />
           {filename && (
@@ -130,7 +135,7 @@ const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'center',
     border: `2px dotted ${isDragActive ? palette.primary.main : palette.grayLightest.main}`,
     background: palette.grayLightest.main,
-    padding: `${spacing.lg}px ${spacing.xl}px`,
+    padding: `${spacing.md}px ${spacing.xl}px`,
     borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
     minWidth: 200,
     '&:hover': { background: palette.primaryHighlight.main, borderColor: palette.primaryHighlight.main },

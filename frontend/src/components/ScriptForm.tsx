@@ -3,8 +3,7 @@ import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { List, ListItem, TextField, Button, Stack, Box } from '@mui/material'
-import { LoadingMessage } from './LoadingMessage'
+import { List, ListItem, TextField, Button, Stack, CircularProgress, Collapse } from '@mui/material'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
 
@@ -43,28 +42,15 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, defaultScript, 
     >
       <List>
         <ListItem disableGutters>
-          {loading ? (
-            <Stack
-              bgcolor="grayLightest.main"
-              justifyContent="center"
-              alignContent="center"
-              paddingTop={7}
-              borderRadius={2}
-              minWidth={200}
-              width="100%"
-            >
-              <LoadingMessage />
-            </Stack>
-          ) : (
-            <FileUpload
-              script={script}
-              onChange={script => setScript(script)}
-              onUpload={file => {
-                onChange({ ...form, name: file.name, file })
-                console.log('upload', file.name, file)
-              }}
-            />
-          )}
+          <FileUpload
+            script={script}
+            loading={loading}
+            onChange={script => setScript(script)}
+            onUpload={file => {
+              onChange({ ...form, name: file.name, file })
+              console.log('upload', file.name, file)
+            }}
+          />
         </ListItem>
         {form.file?.name}
         <ListItem disableGutters>
