@@ -5,17 +5,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Typography, Stack, CircularProgress, Box, Button } from '@mui/material'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
 import { OnboardMessage } from './OnboardMessage'
-import { platforms } from '../platforms'
-import { Icon } from './Icon'
 
-type Props = {
-  platformId: string
-}
-
-export const OnboardRegistration: React.FC<Props> = ({ platformId }) => {
+export const OnboardRegistration: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const platform = platforms.get(platformId)
-  const { registrationCode } = useAutoRegistration({ platform, types: [] })
+  const { registrationCode } = useAutoRegistration({ types: [] })
   const { message, severity, reg, id } = useSelector((state: State) => state.bluetooth)
   const processing = reg === 'REGISTERING' || (reg === 'REGISTERED' && !registrationCode)
 
