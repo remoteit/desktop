@@ -18,6 +18,7 @@ import { OnboardMessage } from './OnboardMessage'
 import { IconButton } from '../buttons/IconButton'
 import { SignalIcon } from '../buttons/SignalIcon'
 import { ColorChip } from './ColorChip'
+import { Link } from './Link'
 
 type Props = {
   next: () => void
@@ -25,7 +26,10 @@ type Props = {
 
 export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { device, message, severity, ssid, scan, wlan, networks } = useSelector((state: State) => state.bluetooth)
+  let { device, message, severity, ssid, scan, wlan, eth, cel, networks } = useSelector(
+    (state: State) => state.bluetooth
+  )
+
   const [showPassword, setShowPassword] = useState(false)
   const [ready, setReady] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
@@ -66,6 +70,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const selectedNetwork = networks.find(network => network.ssid === form.ssid)
   const disabled = scan === 'SCANNING' || wlan === 'CONNECTING'
   const options = networks.map(n => n.ssid)
+  const hasConnection = wlan === 'CONNECTED' || eth === 'CONNECTED' || cel === 'CONNECTED'
 
   if (!options.length) options.push('No networks found')
 
@@ -182,10 +187,10 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             <CircularProgress size={22} thickness={5} sx={{ marginRight: 3 }} />
           ) : (
             <>
-              <Button variant="contained" disabled={!form.pwd || disabled} type="submit">
+              <Button variant="contained" disabled={!form.pwd || disabled} type="submit" sx={{ flexShrink: 0 }}>
                 {wlan === 'CONNECTED' ? 'Update WiFi' : 'Set WiFi'}
               </Button>
-              {wlan === 'CONNECTED' && (
+              {hasConnection && (
                 <Button onClick={next} sx={{ marginLeft: 1 }}>
                   Skip
                 </Button>
@@ -194,17 +199,29 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           )}
           <Box flexGrow={1} textAlign="right">
             <ColorChip
+              size="small"
               color={wlan === 'CONNECTED' ? 'primary' : undefined}
               variant={wlan === 'CONNECTED' ? 'contained' : 'text'}
               label={
                 wlan === 'CONNECTED' ? 'WiFi Connected' : wlan === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
               }
-              size="small"
-              sx={{ textTransform: 'capitalize' }}
             />
+            {eth === 'CONNECTED' && (
+              <ColorChip variant="text" color="primary" label="Ethernet Connected" size="small" sx={{ mt: 0.5 }} />
+            )}
+            {cel === 'CONNECTED' && (
+              <ColorChip variant="text" color="primary" label="Cellular Connected" size="small" sx={{ mt: 0.5 }} />
+            )}
           </Box>
         </Stack>
       </form>
+      <Box paddingTop={6} minHeight={70}>
+        {!hasConnection && (
+          <Link variant="caption" color="gray.main" onClick={next}>
+            My device is connected another way. Skip this step.
+          </Link>
+        )}
+      </Box>
     </Box>
   )
 }
