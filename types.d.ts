@@ -605,6 +605,9 @@ declare global {
     executable: boolean
     deviceIds: string[]
     access: IRoleAccess
+    script: string
+    fileId: string
+    jobId?: string
     tag?: ITagFilter
     file?: File
   }

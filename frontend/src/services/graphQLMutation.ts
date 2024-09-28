@@ -588,7 +588,6 @@ export async function graphQLDeleteFile(fileId: string) {
 
 export async function graphQLSetJob(params: {
   fileId: string
-  accountId: string
   jobId?: string
   arguments?: IFileArgument[]
   tagFilter?: ITagFilter
@@ -598,9 +597,23 @@ export async function graphQLSetJob(params: {
     ` mutation Job($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
         setJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
       }`,
-    // ` mutation Job($fileId: String!, $accountId: String, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
-    //     setJob(fileId: $fileId, accountId: $accountId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
-    //   }`,
     params
+  )
+}
+
+export async function graphQLStartJob(params: {
+  fileId: string
+  jobId?: string
+  arguments?: IFileArgument[]
+  tagFilter?: ITagFilter
+  deviceIds?: string[]
+}) {
+  return await graphQLBasicRequest(
+    ` mutation StartJob($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+        startJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
+      }`,
+    params
+    // fileGroupId: String
+    // fileVersionId: String
   )
 }

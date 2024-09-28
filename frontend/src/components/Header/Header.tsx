@@ -113,7 +113,7 @@ export const Header: React.FC = () => {
             <Route path="/devices/:deviceID/:serviceID?">
               <HeaderDeviceOptionMenu />
             </Route>
-            <Route path="/scripting/scripts/:fileID">
+            <Route path="/scripting/:fileID/:jobID">
               <ScriptDeleteButton />
             </Route>
           </>

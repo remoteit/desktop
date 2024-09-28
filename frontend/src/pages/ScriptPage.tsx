@@ -1,12 +1,13 @@
 import React from 'react'
 import { selectScript } from '../selectors/scripting'
 import { getJobAttribute } from '../components/JobAttributes'
-import { Dispatch, State } from '../store'
+import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Redirect, useParams } from 'react-router-dom'
 import { Box, Stack, List, Typography } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
+import { DevicesActionBar } from '../components/DevicesActionBar'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
@@ -18,9 +19,6 @@ export const ScriptPage: React.FC = () => {
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
-  // const dispatch = useDispatch<Dispatch>()
-  // const location = useLocation()
-  // const history = useHistory()
 
   if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
 
@@ -42,6 +40,7 @@ export const ScriptPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <>
+          <DevicesActionBar displayOnly />
           <List>
             <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/edit`}
@@ -49,20 +48,20 @@ export const ScriptPage: React.FC = () => {
               icon="scripting"
               exactMatch
             />
-            <Box marginLeft={9} marginRight={3}>
-              {getJobAttribute('jobTags').value({ job: script.job })}
-            </Box>
             {script.shortDesc && (
-              <Typography marginLeft={9.5} marginTop={4} marginBottom={2} variant="caption" component="p">
+              <Typography marginLeft={9.5} marginTop={1} marginBottom={2} variant="caption" component="p">
                 {script.shortDesc}
               </Typography>
             )}
-            {/* <ListItemLocation
+            <Box marginLeft={9} marginRight={3} marginTop={1}>
+              {getJobAttribute('jobTags').value({ job: script.job })}
+            </Box>
+            <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
               icon="clock-rotate-left"
-              sx={{ marginTop: 4 }}
-            /> */}
+              sx={{ marginTop: 6 }}
+            />
           </List>
           <LinearProgress loading={fetching} />
         </>

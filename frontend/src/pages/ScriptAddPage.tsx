@@ -1,19 +1,11 @@
 import React, { useState } from 'react'
 import { State } from '../store'
+import { initialForm } from '../models/files'
 import { selectRole } from '../selectors/organizations'
 import { ScriptForm } from '../components/ScriptForm'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
 import { Body } from '../components/Body'
-
-const initialForm: IFileForm = {
-  name: '',
-  description: '',
-  executable: true,
-  tag: { operator: 'ALL', values: [] },
-  deviceIds: [],
-  access: 'ALL',
-}
 
 export const ScriptAddPage: React.FC = () => {
   const role = useSelector(selectRole)

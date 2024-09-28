@@ -12,6 +12,7 @@ import { Duration } from '../components/Duration'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { radius } from '../styling'
 
 export const JobDeviceDetailPage: React.FC = () => {
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
@@ -26,6 +27,7 @@ export const JobDeviceDetailPage: React.FC = () => {
     <Container
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
+      integrated
       header={
         <>
           <Typography variant="h1">
@@ -44,7 +46,9 @@ export const JobDeviceDetailPage: React.FC = () => {
     >
       <Gutters>
         {attributes.length ? (
-          <DataDisplay attributes={attributes} />
+          <Box bgcolor="grayLightest.main" borderRadius={radius.lg + 'px'} paddingY={2} paddingX={4}>
+            <DataDisplay attributes={attributes} />
+          </Box>
         ) : (
           <Notice fullWidth>No return values from this device</Notice>
         )}

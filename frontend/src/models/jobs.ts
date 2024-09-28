@@ -1,6 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { graphQLSetJob } from '../services/graphQLMutation'
+import { graphQLSetJob, graphQLStartJob } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
@@ -52,21 +52,17 @@ export default createModel<RootModel>()({
         })) || []
       )
     },
-    async save(form: IFileForm & { fileId: string }, state) {
-      const data = {
-        fileId: form.fileId,
-        accountId: selectActiveAccountId(state),
-        jobId: undefined, // form.jobId
-        arguments: undefined, // form.arguments to be implemented
-        tagFilter: form.access === 'TAG' ? form.tag : undefined,
-        deviceIds: form.access === 'SELECTED' ? form.deviceIds : undefined,
-        // all: form.access === 'ALL',
-      }
-
-      console.log('SAVE JOB', { data, form })
-
+    async save(form: IFileForm) {
+      const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return
+      console.log('SAVED JOB', { result, data, form })
+    },
+    async run(form: IFileForm) {
+      const data = formAdaptor(form)
+      const result = await graphQLStartJob(data)
+      if (result === 'ERROR') return
+      console.log('STARTED JOB', { result, data })
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)
@@ -85,3 +81,14 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function formAdaptor(form: IFileForm) {
+  return {
+    fileId: form.fileId,
+    jobId: form.jobId,
+    arguments: undefined, // form.arguments to be implemented
+    tagFilter: form.access === 'TAG' ? form.tag : undefined,
+    deviceIds: form.access === 'SELECTED' ? form.deviceIds : undefined,
+    // all: form.access === 'ALL',
+  }
+}

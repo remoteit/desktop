@@ -1,51 +1,46 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { List, ListItem, TextField, Button, Stack, CircularProgress, Collapse } from '@mui/material'
+import { List, ListItem, TextField, Button, Stack } from '@mui/material'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
 
 type Props = {
   form: IFileForm
   defaultForm: IFileForm
-  defaultScript?: string
   deviceIds: string[]
   loading?: boolean
   onChange: (form: IFileForm) => void
 }
 
-export const ScriptForm: React.FC<Props> = ({ form, defaultForm, defaultScript, deviceIds, loading, onChange }) => {
+export const ScriptForm: React.FC<Props> = ({ form, defaultForm, deviceIds, loading, onChange }) => {
   const [saving, setSaving] = useState(false)
-  const [script, setScript] = useState<string>(defaultScript || '')
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
-
-  useEffect(() => {
-    setScript(defaultScript || '')
-  }, [defaultScript])
 
   return (
     <form
       onSubmit={async event => {
         event.preventDefault()
         setSaving(true)
-        form.file = new File([script || form.file || ''], form.name, { type: form.file?.type || 'text/plain' })
+        form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type || 'text/plain' })
         const fileId = await dispatch.files.upload(form)
         await dispatch.jobs.save({ ...form, fileId })
         await dispatch.files.fetch()
+        await dispatch.jobs.fetch()
         history.push('/scripting/scripts')
         setSaving(false)
       }}
     >
-      <List>
+      <List disablePadding>
         <ListItem disableGutters>
           <FileUpload
-            script={script}
+            script={form.script}
             loading={loading}
-            onChange={script => setScript(script)}
+            onChange={script => onChange({ ...form, script })}
             onUpload={file => {
               onChange({ ...form, name: file.name, file })
               console.log('upload', file.name, file)
