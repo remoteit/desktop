@@ -7,7 +7,7 @@ import { spacing } from '../styling'
 import { Color } from '../styling'
 
 export type DynamicButtonProps = {
-  icon?: string
+  icon?: string | React.ReactNode
   iconType?: IconProps['type']
   title?: string
   color?: Color
@@ -62,17 +62,20 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     )
   }
 
-  const IconComponent = icon ? (
-    <Icon
-      name={icon}
-      type={iconType}
-      size={iconSize}
-      color={size === 'icon' ? (disabled ? 'grayLight' : color) : undefined}
-      inlineLeft={size !== 'icon' && !!title}
-      spin={loading}
-      fixedWidth
-    />
-  ) : null
+  const IconComponent =
+    typeof icon === 'string' ? (
+      <Icon
+        name={icon}
+        type={iconType}
+        size={iconSize}
+        color={size === 'icon' ? (disabled ? 'grayLight' : color) : undefined}
+        inlineLeft={size !== 'icon' && !!title}
+        spin={loading}
+        fixedWidth
+      />
+    ) : icon ? (
+      icon
+    ) : null
 
   if (size === 'small' || size === 'medium' || size === 'large') {
     return (

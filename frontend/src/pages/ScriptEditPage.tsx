@@ -4,71 +4,74 @@ import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { useParams } from 'react-router-dom'
 import { selectRole } from '../selectors/organizations'
+import { Typography } from '@mui/material'
+import { initialForm } from '../models/files'
 import { selectScript } from '../selectors/scripting'
 import { ScriptForm } from '../components/ScriptForm'
-import { Typography } from '@mui/material'
-import { Body } from '../components/Body'
-import { Pre } from '../components/Pre'
-
-const initialForm: IFileForm = {
-  name: '',
-  description: '',
-  executable: true,
-  tag: { operator: 'ALL', values: [] },
-  deviceIds: [],
-  access: 'ALL',
-}
+import { Container } from '../components/Container'
 
 export const ScriptEditPage: React.FC = () => {
-  const [defaultScript, setDefaultScript] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
-  const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
-  const dispatch = useDispatch<Dispatch>()
   const role = useSelector(selectRole)
+  const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
+  const selectedIds = useSelector((state: State) => state.ui.selected)
+  const dispatch = useDispatch<Dispatch>()
 
-  if (!script)
-    return (
-      <Body center>
-        <Typography>Script not found</Typography>
-      </Body>
-    )
+  const defaultDeviceIds = script?.job?.jobDevices.map(d => d.id) || []
+  const tagValues = script?.job?.tag?.values || []
 
-  const deviceIds = script.job?.jobDevices.map(d => d.id) || []
-  const defaultForm: IFileForm = {
-    deviceIds,
-    name: script.name,
-    description: script.shortDesc || '',
-    executable: script.executable,
-    tag: script.job?.tag,
-    access: deviceIds.length ? 'SELECTED' : script.job?.tag.values.length ? 'TAG' : 'ALL',
-  }
+  const access = () =>
+    selectedIds.length ? 'SELECTED' : defaultDeviceIds.length ? 'CUSTOM' : tagValues.length ? 'TAG' : 'ALL'
+
+  const [defaultForm, setDefaultForm] = useState<IFileForm>({
+    ...role,
+    ...initialForm,
+    deviceIds: defaultDeviceIds,
+    jobId: script?.job?.id ?? initialForm.jobId,
+    fileId: script?.versions[0].id ?? initialForm.fileId,
+    name: script?.name ?? initialForm.name,
+    description: script?.shortDesc ?? initialForm.description,
+    executable: script?.executable ?? initialForm.executable,
+    tag: script?.job?.tag ?? initialForm.tag,
+    access: access(),
+  })
 
   const [form, setForm] = useState<IFileForm>(defaultForm)
 
   useEffect(() => {
-    if (defaultScript) return
-    else {
-      ;(async () => {
-        setLoading(true)
-        const download = await dispatch.files.download(script.versions[0].id)
-        setDefaultScript(download)
-        setLoading(false)
-      })()
+    if (!script || defaultForm.script) return
+    const download = async () => {
+      setLoading(true)
+      const fileId = script.versions[0].id
+      const result = await dispatch.files.download(fileId)
+      setDefaultForm({ ...defaultForm, fileId, script: result })
+      setForm({ ...form, fileId, script: result })
+      console.log('FORM DEFAULT', { script, form: { ...defaultForm, fileId, script: result } })
+      await sleep(400)
+      setLoading(false)
     }
+    download()
   }, [script])
 
+  useEffect(() => {
+    setForm({ ...form, access: access() })
+    setDefaultForm({ ...form, access: access() })
+  }, [selectedIds])
+
   return (
-    <Body inset gutterTop gutterBottom>
-      <Typography variant="h1">Script Configuration</Typography>
+    <Container
+      integrated
+      bodyProps={{ inset: true, gutterBottom: true }}
+      header={<Typography variant="h1">Script Configuration</Typography>}
+    >
       <ScriptForm
         form={form}
         onChange={setForm}
         defaultForm={defaultForm}
-        defaultScript={defaultScript}
-        deviceIds={deviceIds}
+        selectedIds={selectedIds}
         loading={loading}
       />
-    </Body>
+    </Container>
   )
 }

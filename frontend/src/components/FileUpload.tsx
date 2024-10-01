@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
+import { BINARY_DATA_TOKEN } from '../constants'
 import { makeStyles } from '@mui/styles'
 import { containsNonPrintableChars } from '../helpers/utilHelper'
 import { Typography, TextField, Box, ButtonBase, Stack, Divider } from '@mui/material'
@@ -20,6 +21,10 @@ export const FileUpload: React.FC<Props> = ({ script, loading, onChange, onUploa
   const { ui } = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string | undefined>()
   const [isText, setIsText] = useState(true)
+
+  useEffect(() => {
+    if (script === BINARY_DATA_TOKEN) setIsText(false)
+  }, [script])
 
   const onDrop = useCallback((files: File[]) => {
     files.forEach(file => {
@@ -85,9 +90,9 @@ export const FileUpload: React.FC<Props> = ({ script, loading, onChange, onUploa
             required
             disabled={loading}
             label="Script"
-            value={loading ? 'loading...' : script}
+            value={loading ? 'loading...' : script.toString()}
             variant="filled"
-            maxRows={20}
+            maxRows={30}
             InputLabelProps={{ shrink: true }}
             InputProps={{
               sx: theme => ({
@@ -98,7 +103,7 @@ export const FileUpload: React.FC<Props> = ({ script, loading, onChange, onUploa
                 color: theme.palette.grayDarkest.main,
               }),
             }}
-            inputProps={{ sx: { transition: 'height 1s' } }}
+            inputProps={{ sx: { transition: 'height 600ms' } }}
             onChange={event => onChange(event.target.value)}
           />
           {filename && (

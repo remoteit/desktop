@@ -52,7 +52,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <ScriptPage />
           </Route>
           <Route path="*">
-            <Redirect to={{ pathname: '/scripting/runs', state: { isRedirect: true } }} />
+            <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
           </Route>
         </Switch>
       }

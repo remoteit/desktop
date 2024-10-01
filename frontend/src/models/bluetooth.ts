@@ -20,6 +20,7 @@ interface Notification {
   ssid?: string
   wlan?: 'CONNECTED' | 'CONNECTING' | 'DISCONNECTED' | 'FAILED_START' | 'INVALID_PASSWORD' | 'INVALID_SSID'
   eth?: 'CONNECTED' | 'DISCONNECTED'
+  cel?: 'CONNECTED' | 'DISCONNECTED'
   scan?: 'SCANNING' | 'COMPLETE'
   reg?: 'UNREGISTERED' | 'REGISTERING' | 'REGISTERED'
   id?: string // device id if registered

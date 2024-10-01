@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import { BINARY_DATA_TOKEN } from '../constants'
 import { createModel } from '@rematch/core'
 import { graphQLFiles } from '../services/graphQLRequest'
 import { graphQLDeleteFile } from '../services/graphQLMutation'
@@ -13,6 +14,17 @@ type FilesState = {
   all: {
     [accountId: string]: IFile[]
   }
+}
+
+export const initialForm: IFileForm = {
+  name: '',
+  description: '',
+  executable: true,
+  tag: { operator: 'ALL', values: [] },
+  deviceIds: [],
+  access: 'ALL',
+  fileId: '',
+  script: '',
 }
 
 const defaultState: FilesState = {
@@ -60,11 +72,15 @@ export default createModel<RootModel>()({
     },
     async download(fileId: string, state) {
       const result = await get(`/file/download/${fileId}`)
-      if (result === 'ERROR') return
+      if (!result || result === 'ERROR') return
+
+      const contentType = result.headers['content-type']
+      if (!result.data && contentType === 'application/octet-stream') {
+        result.data = BINARY_DATA_TOKEN
+      }
 
       console.log('DOWNLOADED FILE', result)
-
-      return result?.data
+      return result.data
     },
     async delete(fileId: string, state) {
       console.log('DELETE FILE', fileId)

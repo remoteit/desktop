@@ -31,7 +31,7 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
           </Stack>
         </Body>
       ) : (
-        <FileList attributes={attributes} {...{ required, files, columnWidths, fetching }} />
+        <FileList attributes={attributes} {...{ required, scripts: files, columnWidths, fetching }} />
       )}
     </ScriptingHeader>
   )

@@ -8,10 +8,11 @@ import { JobAttribute } from '../components/JobAttributes'
 import { selectScript } from '../selectors/scripting'
 import { DataDisplay } from '../components/DataDisplay'
 import { Container } from '../components/Container'
-import { Duration } from '../components/Duration'
+import { Timestamp } from '../components/Timestamp'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { radius } from '../styling'
 
 export const JobDeviceDetailPage: React.FC = () => {
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
@@ -26,17 +27,18 @@ export const JobDeviceDetailPage: React.FC = () => {
     <Container
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
+      integrated
       header={
         <>
           <Typography variant="h1">
             <Box marginRight={2}>
-              <JobStatusIcon status={jobDevice?.status} size="xl" />
+              <JobStatusIcon status={jobDevice?.status} size="xl" device />
             </Box>
             <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
           </Typography>
           {jobDevice?.updated && (
-            <Typography marginLeft={9.5} gutterBottom variant="caption" component="p">
-              <Duration startDate={new Date(jobDevice.updated)} ago />
+            <Typography marginLeft={11} marginTop={2} gutterBottom variant="caption" component="p">
+              <Timestamp date={new Date(jobDevice.updated)} />
             </Typography>
           )}
         </>
@@ -44,7 +46,9 @@ export const JobDeviceDetailPage: React.FC = () => {
     >
       <Gutters>
         {attributes.length ? (
-          <DataDisplay attributes={attributes} />
+          <Box bgcolor="grayLightest.main" borderRadius={radius.lg + 'px'} paddingY={2} paddingX={4}>
+            <DataDisplay attributes={attributes} />
+          </Box>
         ) : (
           <Notice fullWidth>No return values from this device</Notice>
         )}

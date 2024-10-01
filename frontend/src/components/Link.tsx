@@ -22,7 +22,6 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ children, 
   attributes.sx = { ...attributes.sx, cursor: 'pointer' }
   if (attributes.to) attributes.component = RouterLink
 
-
   return (
     <MUILink {...attributes} ref={ref}>
       {children || attributes.to || attributes.href}

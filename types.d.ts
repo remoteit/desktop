@@ -462,7 +462,7 @@ declare global {
     OLDEST: ISortService
   }
   
-  type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED'
+  type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED' | 'CUSTOM'
 
   type ILabel = {
     id: number
@@ -605,13 +605,16 @@ declare global {
     executable: boolean
     deviceIds: string[]
     access: IRoleAccess
+    script: string
+    fileId: string
+    jobId?: string
     tag?: ITagFilter
     file?: File
   }
   
   type IJob = {
     id: string
-    status: string
+    status: IJobStatus
     created: ISOTimestamp
     updated: ISOTimestamp
     owner: IUserRef
@@ -641,7 +644,9 @@ declare global {
     value: string
   }
 
-  type IJobStatus = 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED'
+  type IJobStatus = 'READY' | 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED'
+
+  type IScript = IFile & { job?: IJob }
 
   type IApplicationType = {
     id: number
