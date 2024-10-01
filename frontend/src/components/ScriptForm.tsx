@@ -4,18 +4,21 @@ import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { List, ListItem, TextField, Button, Stack } from '@mui/material'
+import { DynamicButton } from '../buttons/DynamicButton'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
+// import { Pre } from './Pre'
 
 type Props = {
   form: IFileForm
   defaultForm: IFileForm
-  deviceIds: string[]
+  selectedIds: string[]
   loading?: boolean
   onChange: (form: IFileForm) => void
 }
 
-export const ScriptForm: React.FC<Props> = ({ form, defaultForm, deviceIds, loading, onChange }) => {
+export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, loading, onChange }) => {
+  const [running, setRunning] = useState(false)
   const [saving, setSaving] = useState(false)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -76,11 +79,23 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, deviceIds, load
           countsSx={{ marginRight: 3 }}
           onChange={f => onChange({ ...form, ...structuredClone(f) })}
           disableGutters
-          selectedIds={deviceIds}
-          selected
+          selectedIds={selectedIds}
         />
       </List>
-      <Stack flexDirection="row" gap={1}>
+      <Stack flexDirection="row" gap={1} mt={2} sx={{ button: { paddingX: 4 } }}>
+        <DynamicButton
+          fullWidth
+          color="primary"
+          title={running ? 'Running' : 'Run'}
+          size="medium"
+          disabled={loading || running}
+          onClick={async () => {
+            setRunning(true)
+            await dispatch.jobs.saveAndRun(form)
+            setRunning(false)
+          }}
+        />
+
         <Button type="submit" variant="contained" color="primary" disabled={!changed || saving}>
           {saving ? 'Saving' : 'Save'}
         </Button>

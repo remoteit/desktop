@@ -462,7 +462,7 @@ declare global {
     OLDEST: ISortService
   }
   
-  type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED'
+  type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED' | 'CUSTOM'
 
   type ILabel = {
     id: number

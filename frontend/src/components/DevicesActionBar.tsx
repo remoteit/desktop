@@ -81,16 +81,30 @@ export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly
                 <Divider orientation="vertical" color="white" />
               </>
             )}
-            <TestUI>
-              <IconButton
-                icon="scripting"
-                title="New Script"
-                color="alwaysWhite"
-                placement="bottom"
-                disabled={!selected.length}
-                to="/scripting/scripts/new"
-              />
-            </TestUI>
+            {mobile || (
+              <TestUI>
+                <InputLabel shrink sx={{ ml: 2 }}>
+                  script
+                </InputLabel>
+                <IconButton
+                  icon="check"
+                  title="Select Script"
+                  color="alwaysWhite"
+                  placement="bottom"
+                  disabled={!selected.length}
+                  to="/scripting/scripts"
+                />
+                <IconButton
+                  icon="plus"
+                  title="New Script"
+                  color="alwaysWhite"
+                  placement="bottom"
+                  disabled={!selected.length}
+                  to="/scripting/scripts/new"
+                />
+              </TestUI>
+            )}
+            <Divider orientation="vertical" color="white" />
             <ConfirmIconButton
               icon="trash"
               title="Delete selected"
@@ -116,7 +130,6 @@ export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly
               }}
               confirm
             />
-            <Divider orientation="vertical" color="white" />
           </>
         )}
         <IconButton

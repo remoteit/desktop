@@ -1,64 +1,48 @@
-import React, { useEffect } from 'react'
-import browser from '../services/browser'
-import { Stack } from '@mui/material'
-import { useSelector, useDispatch } from 'react-redux'
-import { State, Dispatch } from '../store'
+import React from 'react'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../store'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
-import { JobStatusIcon } from '../components/JobStatusIcon'
-import { useHistory } from 'react-router-dom'
 import { Color } from '../styling'
 
 export type RunButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
-  // permissions?: IPermission[]
   job?: IJob
   onClick?: (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => void
 }
 
-export const RunButton: React.FC<RunButtonProps> = ({
-  // permissions,
-  job,
-  disabled,
-  onClick,
-  ...props
-}) => {
+export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ...props }) => {
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
 
   let title = 'Run'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let loading = false
   let color: Color = 'primary'
+  let icon: string | undefined
   let clickAction = () => {}
 
   switch (job?.status) {
     case 'WAITING':
-      color = 'grayDark'
-      loading = true
       title = 'Cancel'
+      color = 'grayDarker'
       clickAction = async () => await dispatch.jobs.cancel(job?.id)
       break
     case 'RUNNING':
-      loading = true
       title = 'Cancel'
       clickAction = async () => await dispatch.jobs.cancel(job?.id)
       break
     case 'FAILED':
-      color = 'danger'
       title = 'Retry'
+      color = 'danger'
       clickAction = async () => await dispatch.jobs.run(job?.id)
       break
     case 'CANCELLED':
-      color = 'grayLight'
-      variant = 'contained'
       title = 'Restart'
       clickAction = async () => await dispatch.jobs.run(job?.id)
       break
     case 'SUCCESS':
     case 'READY':
-      title = 'Run'
-      break
-    default:
+      title = 'Run Script'
       variant = 'contained'
+      break
   }
 
   let clickHandler = async (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
@@ -76,7 +60,8 @@ export const RunButton: React.FC<RunButtonProps> = ({
       title={title}
       variant={variant}
       color={color}
-      icon={<JobStatusIcon status={job?.status} title={false} />}
+      icon={icon}
+      iconType="solid"
       onClick={clickHandler}
       disabled={disabled}
       {...props}

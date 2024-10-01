@@ -1,6 +1,6 @@
 import React from 'react'
 import structuredClone from '@ungap/structured-clone'
-import { State, Dispatch } from '../store'
+import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE } from '../models/organization'
 import {
@@ -23,17 +23,17 @@ import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 import { Icon } from './Icon'
+// import { Pre } from './Pre'
 
 type Props = ListItemProps & {
-  form: Partial<IOrganizationRole>
+  form: Partial<IFileForm>
   name?: string
   disabled?: boolean
   systemRole?: boolean
   icon?: boolean
-  selected?: boolean
   selectedIds?: string[]
   countsSx?: SxProps<Theme>
-  onChange: (form: Partial<IOrganizationRole>) => void
+  onChange: (form: Partial<IFileForm>) => void
 }
 
 export const TagFilter: React.FC<Props> = ({
@@ -42,7 +42,6 @@ export const TagFilter: React.FC<Props> = ({
   disabled,
   systemRole,
   icon,
-  selected,
   selectedIds,
   countsSx,
   onChange,
@@ -53,12 +52,17 @@ export const TagFilter: React.FC<Props> = ({
   const tags = useSelector(selectTags)
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
 
+  // Handle empty states
+  let formAccess = form.access
+  if (formAccess === 'CUSTOM' && !form.deviceIds?.length) formAccess = 'ALL'
+  if (formAccess === 'SELECTED' && !selectedIds?.length) formAccess = 'ALL'
+
   return (
     <>
       <ListItem {...props}>
         {icon && (
           <ListItemIcon>
-            <Icon name={form.access === 'NONE' ? 'ban' : form.access === 'TAG' ? 'tag' : 'key'} size="md" fixedWidth />
+            <Icon name={formAccess === 'NONE' ? 'ban' : formAccess === 'TAG' ? 'tag' : 'key'} size="md" fixedWidth />
           </ListItemIcon>
         )}
         <TextField
@@ -66,7 +70,7 @@ export const TagFilter: React.FC<Props> = ({
           fullWidth
           disabled={disabled || systemRole}
           label={name}
-          value={form.access}
+          value={formAccess}
           variant="filled"
           onChange={event => {
             let tag: ITagFilter | undefined
@@ -78,23 +82,22 @@ export const TagFilter: React.FC<Props> = ({
           <MenuItem value="NONE">None</MenuItem>
           <MenuItem value="ALL">All</MenuItem>
           <MenuItem value="TAG">Tagged</MenuItem>
-          {selected && (
-            <MenuItem value="SELECTED" disabled={!selectedIds?.length}>
-              Selected
-            </MenuItem>
-          )}
+          {form.deviceIds?.length && <MenuItem value="CUSTOM">Saved Devices</MenuItem>}
+          {selectedIds?.length && <MenuItem value="SELECTED">Selected Devices</MenuItem>}
         </TextField>
         <ListItemSecondaryAction sx={countsSx}>
-          {form.access === 'SELECTED' && selectedIds?.length ? (
+          {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
+            <Chip size="small" label={`${form.deviceIds.length} device${form.deviceIds.length > 1 ? 's' : ''}`} />
+          ) : formAccess === 'SELECTED' && selectedIds?.length ? (
             <Chip size="small" label={`${selectedIds.length} device${selectedIds.length > 1 ? 's' : ''}`} />
-          ) : form.access === 'NONE' ? (
+          ) : formAccess === 'NONE' ? (
             <Chip size="small" label="No devices" />
           ) : (
             <RoleAccessCounts role={form} />
           )}
         </ListItemSecondaryAction>
       </ListItem>
-      {form.access === 'TAG' && (
+      {formAccess === 'TAG' && (
         <ListItem {...props}>
           {icon && <ListItemIcon />}
           <Stack flexDirection="row" flexWrap="wrap">

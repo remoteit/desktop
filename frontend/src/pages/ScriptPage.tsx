@@ -14,12 +14,13 @@ import { Timestamp } from '../components/Timestamp'
 import { RunButton } from '../buttons/RunButton'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Pre } from '../components/Pre'
+// import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
+  const noDevices = !script?.job || !script.job.jobDevices.length
 
   if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
 
@@ -42,7 +43,7 @@ export const ScriptPage: React.FC = () => {
       header={
         <>
           <DevicesActionBar displayOnly />
-          <List>
+          <List sx={{ marginBottom: 4 }}>
             <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
@@ -64,9 +65,6 @@ export const ScriptPage: React.FC = () => {
               sx={{ marginTop: 6 }}
             /> */}
           </List>
-          <Box marginLeft={9} marginY={4} marginRight={3}>
-            <RunButton job={script.job} size="small" variant="contained" fullWidth />
-          </Box>
           <LinearProgress loading={fetching} />
         </>
       }
@@ -89,10 +87,21 @@ export const ScriptPage: React.FC = () => {
             <JobStatusIcon status="FAILED" padding={0} />
           </Stack>
         </Typography>
+        {!noDevices && (
+          <Box marginTop={3} marginX={4}>
+            <RunButton job={script.job} size="small" fullWidth />
+          </Box>
+        )}
         {script.job?.jobDevices[0].updated && (
-          <Typography variant="caption" component="p" mx={4.5} my={1}>
-            <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
-          </Typography>
+          <Stack flexDirection="row" justifyContent="space-between" mx={4.5} my={2}>
+            <Typography variant="caption" color="InfoText">
+              Script {script.job?.status.toLowerCase()}
+            </Typography>
+            <Typography variant="caption">
+              Updated&nbsp;
+              <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
+            </Typography>
+          </Stack>
         )}
         <List>
           {script.job?.jobDevices.map(jd => (
@@ -105,9 +114,7 @@ export const ScriptPage: React.FC = () => {
             />
           ))}
         </List>
-        {(!script.job || !script.job.jobDevices.length) && (
-          <Notice>No devices have been assigned to this script.</Notice>
-        )}
+        {noDevices && <Notice>No devices have been assigned to this script.</Notice>}
       </>
     </Container>
   )
