@@ -602,8 +602,8 @@ export async function graphQLSetJob(params: {
 }
 
 export async function graphQLStartJob(params: {
-  fileId: string
-  jobId?: string
+  jobId: string
+  fileId?: string
   arguments?: IFileArgument[]
   tagFilter?: ITagFilter
   deviceIds?: string[]
@@ -615,5 +615,14 @@ export async function graphQLStartJob(params: {
     params
     // fileGroupId: String
     // fileVersionId: String
+  )
+}
+
+export async function graphQLCancelJob(jobId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation CancelJob($jobId: String) {
+        cancelJob(jobId: $jobId)
+      }`,
+    { jobId }
   )
 }

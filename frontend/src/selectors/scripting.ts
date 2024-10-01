@@ -2,8 +2,14 @@ import { getFiles, getJobs, optionalSecondParam, optionalThirdParam } from './st
 import { createSelector } from 'reselect'
 import { selectActiveAccountId } from './accounts'
 
-export const selectScripts = createSelector([getFiles, selectActiveAccountId], (files, accountId) => {
-  return files[accountId]?.filter(f => f.executable) || []
+export const selectScripts = createSelector([getFiles, getJobs, selectActiveAccountId], (files, jobs, accountId) => {
+  const scripts: IScript[] = (files[accountId] || [])
+    .filter(f => f.executable)
+    .map(f => {
+      const job = (jobs[accountId] || []).find(j => j.file?.id === f.id)
+      return { ...f, job }
+    })
+  return scripts
 })
 
 export const selectFiles = createSelector([getFiles, selectActiveAccountId], (files, accountId) => {

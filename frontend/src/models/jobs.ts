@@ -1,6 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { graphQLSetJob, graphQLStartJob } from '../services/graphQLMutation'
+import { graphQLSetJob, graphQLStartJob, graphQLCancelJob } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
@@ -58,11 +58,22 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       console.log('SAVED JOB', { result, data, form })
     },
-    async run(form: IFileForm) {
-      const data = formAdaptor(form)
-      const result = await graphQLStartJob(data)
+    async saveAndRun(form: IFileForm) {
+      const { jobId, ...data } = formAdaptor(form)
+      if (!jobId) return console.error('NO JOB ID')
+      const result = await graphQLStartJob({ ...data, jobId })
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, data })
+    },
+    async run(jobId: string) {
+      const result = await graphQLStartJob({ jobId })
+      if (result === 'ERROR') return
+      console.log('STARTED JOB', { result, jobId })
+    },
+    async cancel(jobId: string) {
+      const result = await graphQLCancelJob(jobId)
+      if (result === 'ERROR') return
+      console.log('CANCELED JOB', { result, jobId })
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

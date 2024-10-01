@@ -27,7 +27,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceCount',
-    label: <JobStatusIcon />,
+    label: <JobStatusIcon padding={0} />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="gray.main">
@@ -37,7 +37,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceSuccess',
-    label: <JobStatusIcon status="SUCCESS" />,
+    label: <JobStatusIcon status="SUCCESS" padding={0} />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="primary">
@@ -47,7 +47,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceFailure',
-    label: <JobStatusIcon status="FAILED" />,
+    label: <JobStatusIcon status="FAILED" padding={0} />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="error">

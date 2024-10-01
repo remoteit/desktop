@@ -1,9 +1,9 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from './AttributeValue'
+import { JobStatusIcon } from './JobStatusIcon'
 import { GridListItem } from './GridListItem'
 import { Attribute } from './Attributes'
-import { Icon } from './Icon'
 import { Box } from '@mui/material'
 
 type Props = {
@@ -26,7 +26,7 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
     <GridListItem
       onClick={handleClick}
       mobile={mobile}
-      icon={<Icon name="play" color="primary" type="solid" />}
+      icon={<JobStatusIcon status={job.status} />}
       required={<AttributeValue {...{ mobile, job, attribute: required }} />}
       disableGutters
     >

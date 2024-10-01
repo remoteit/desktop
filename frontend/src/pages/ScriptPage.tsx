@@ -10,7 +10,8 @@ import { LinearProgress } from '../components/LinearProgress'
 import { DevicesActionBar } from '../components/DevicesActionBar'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
-import { Duration } from '../components/Duration'
+import { Timestamp } from '../components/Timestamp'
+import { RunButton } from '../buttons/RunButton'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Pre } from '../components/Pre'
@@ -45,7 +46,7 @@ export const ScriptPage: React.FC = () => {
             <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
-              icon="scripting"
+              icon={<JobStatusIcon status={script.job?.status} device />}
               exactMatch
             />
             {script.shortDesc && (
@@ -56,13 +57,16 @@ export const ScriptPage: React.FC = () => {
             <Box marginLeft={9} marginRight={3} marginTop={1}>
               {getJobAttribute('jobTags').value({ job: script.job })}
             </Box>
-            <ListItemLocation
+            {/* <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
               icon="clock-rotate-left"
               sx={{ marginTop: 6 }}
-            />
+            /> */}
           </List>
+          <Box marginLeft={9} marginY={4} marginRight={3}>
+            <RunButton job={script.job} size="small" variant="contained" fullWidth />
+          </Box>
           <LinearProgress loading={fetching} />
         </>
       }
@@ -74,29 +78,31 @@ export const ScriptPage: React.FC = () => {
             <Typography variant="caption" paddingLeft={2}>
               {script.job?.jobDevices.length || '-'}
             </Typography>
-            <JobStatusIcon />
+            <JobStatusIcon device padding={0} />
             <Typography variant="caption" paddingLeft={2}>
               {script.job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
             </Typography>
-            <JobStatusIcon status="SUCCESS" />
+            <JobStatusIcon status="SUCCESS" padding={0} />
             <Typography variant="caption" paddingLeft={2}>
               {script.job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
             </Typography>
-            <JobStatusIcon status="FAILED" />
+            <JobStatusIcon status="FAILED" padding={0} />
           </Stack>
         </Typography>
+        {script.job?.jobDevices[0].updated && (
+          <Typography variant="caption" component="p" mx={4.5} my={1}>
+            <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
+          </Typography>
+        )}
         <List>
           {script.job?.jobDevices.map(jd => (
             <ListItemLocation
+              sx={{ paddingRight: 2 }}
               key={jd.id}
               to={`/scripting/${fileID}/${script.job?.id || '-'}/${jd.id}`}
               title={jd.device.name}
-              icon={<JobStatusIcon status={jd.status} />}
-            >
-              <Typography variant="caption" marginRight={2}>
-                <Duration startDate={new Date(jd.updated)} humanizeOptions={{ largest: 1 }} ago />
-              </Typography>
-            </ListItemLocation>
+              icon={<JobStatusIcon status={jd.status} device />}
+            />
           ))}
         </List>
         {(!script.job || !script.job.jobDevices.length) && (

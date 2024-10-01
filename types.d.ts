@@ -614,7 +614,7 @@ declare global {
   
   type IJob = {
     id: string
-    status: string
+    status: IJobStatus
     created: ISOTimestamp
     updated: ISOTimestamp
     owner: IUserRef
@@ -644,7 +644,9 @@ declare global {
     value: string
   }
 
-  type IJobStatus = 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED'
+  type IJobStatus = 'READY' | 'WAITING' | 'RUNNING' | 'FAILED' | 'SUCCESS' | 'CANCELLED'
+
+  type IScript = IFile & { job?: IJob }
 
   type IApplicationType = {
     id: number

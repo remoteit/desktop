@@ -71,7 +71,7 @@ export const ScriptEditPage: React.FC = () => {
               fullWidth
               onClick={async () => {
                 setRunning(true)
-                await dispatch.jobs.run(form)
+                await dispatch.jobs.saveAndRun(form)
                 setRunning(false)
               }}
             />

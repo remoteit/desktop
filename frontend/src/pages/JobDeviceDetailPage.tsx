@@ -8,7 +8,7 @@ import { JobAttribute } from '../components/JobAttributes'
 import { selectScript } from '../selectors/scripting'
 import { DataDisplay } from '../components/DataDisplay'
 import { Container } from '../components/Container'
-import { Duration } from '../components/Duration'
+import { Timestamp } from '../components/Timestamp'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -32,13 +32,13 @@ export const JobDeviceDetailPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Box marginRight={2}>
-              <JobStatusIcon status={jobDevice?.status} size="xl" />
+              <JobStatusIcon status={jobDevice?.status} size="xl" device />
             </Box>
             <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
           </Typography>
           {jobDevice?.updated && (
-            <Typography marginLeft={9.5} gutterBottom variant="caption" component="p">
-              <Duration startDate={new Date(jobDevice.updated)} ago />
+            <Typography marginLeft={11} marginTop={2} gutterBottom variant="caption" component="p">
+              <Timestamp date={new Date(jobDevice.updated)} />
             </Typography>
           )}
         </>
