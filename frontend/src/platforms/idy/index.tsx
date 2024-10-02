@@ -48,4 +48,9 @@ platforms.register({
   name: 'IDY',
   component: Component,
   types: { 1225: 'IDY' },
+  installation: {
+    command: true,
+    qualifier: 'For IDY routers and gateways',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })
