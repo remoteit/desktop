@@ -27,7 +27,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceCount',
-    label: <JobStatusIcon padding={0} />,
+    label: <JobStatusIcon padding={0} device />,
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="gray.main">

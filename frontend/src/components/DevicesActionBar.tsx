@@ -18,9 +18,9 @@ import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 
-type Props = { select?: boolean; devices?: IDevice[]; displayOnly?: boolean }
+type Props = { select?: boolean; devices?: IDevice[]; selectedOnly?: boolean }
 
-export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly }) => {
+export const DevicesActionBar: React.FC<Props> = ({ select, devices, selectedOnly }) => {
   const accountId = useSelector(selectActiveAccountId)
   const feature = useSelector(selectLimitsLookup)
   const tags = useSelector(selectTags)
@@ -40,10 +40,17 @@ export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly
       <Box className={css.actions}>
         <Title>
           <Typography variant="subtitle1">
-            {selected.length} {mobile ? <Icon name="check" inline /> : 'Selected'}
+            {selected.length}&nbsp;
+            {mobile ? (
+              <Icon name="check" inline />
+            ) : selectedOnly ? (
+              `Device${selected.length > 1 ? 's' : ''} selected`
+            ) : (
+              'Selected'
+            )}
           </Typography>
         </Title>
-        {!displayOnly && (
+        {!selectedOnly && (
           <>
             {feature.tagging && (
               <>
@@ -139,7 +146,7 @@ export const DevicesActionBar: React.FC<Props> = ({ select, devices, displayOnly
           placement="bottom"
           onClick={() => {
             dispatch.ui.set({ selected: [] })
-            if (!displayOnly) history.push('/devices')
+            if (!selectedOnly) history.push('/devices')
           }}
         />
       </Box>

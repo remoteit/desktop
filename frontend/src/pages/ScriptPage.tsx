@@ -12,6 +12,7 @@ import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
 import { Timestamp } from '../components/Timestamp'
 import { RunButton } from '../buttons/RunButton'
+import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 // import { Pre } from '../components/Pre'
@@ -20,16 +21,20 @@ export const ScriptPage: React.FC = () => {
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
-  const noDevices = !script?.job || !script.job.jobDevices.length
 
   if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
+
+  const noDevices = !script?.job || !script.job.jobDevices.length
+  const hasRun = script.job && script.job.status !== 'READY'
+
+  console.log('SCRIPT already ran?', script.job && script.job.status !== 'READY', script)
 
   if (!jobDeviceID) {
     return (
       <Redirect
         to={{
           pathname: `/scripting/${script.id}/${
-            script.job ? `${script.job.id}/${script.job.jobDevices[0].id}` : '-/edit'
+            hasRun ? `${script.job?.id}/${script.job?.jobDevices[0]?.id}` : '-/edit'
           }`,
           state: { isRedirect: true },
         }}
@@ -42,22 +47,13 @@ export const ScriptPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <>
-          <DevicesActionBar displayOnly />
-          <List sx={{ marginBottom: 4 }}>
+          <List sx={{ marginBottom: 0 }}>
             <ListItemLocation
-              to={`/scripting/${fileID}/${script.job?.id || '-'}/edit`}
+              to={`/scripting/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
-              icon={<JobStatusIcon status={script.job?.status} device />}
+              icon={<JobStatusIcon status={script.job?.status} size="lg" device />}
               exactMatch
             />
-            {script.shortDesc && (
-              <Typography marginLeft={9.5} marginTop={1} marginBottom={2} variant="caption" component="p">
-                {script.shortDesc}
-              </Typography>
-            )}
-            <Box marginLeft={9} marginRight={3} marginTop={1}>
-              {getJobAttribute('jobTags').value({ job: script.job })}
-            </Box>
             {/* <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
@@ -65,6 +61,20 @@ export const ScriptPage: React.FC = () => {
               sx={{ marginTop: 6 }}
             /> */}
           </List>
+          <Gutters inset="icon" bottom="xl" top={null}>
+            {getJobAttribute('jobTags').value({ job: script.job })}
+            {script.shortDesc && (
+              <Typography variant="caption" marginTop={1} component="p">
+                {script.shortDesc}
+              </Typography>
+            )}
+            {script.job?.jobDevices[0]?.updated && (
+              <Typography variant="caption" color="GrayText" marginTop={6} textTransform="capitalize" component="p">
+                {script.job?.status.toLowerCase()} &nbsp;
+                <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
+              </Typography>
+            )}
+          </Gutters>
           <LinearProgress loading={fetching} />
         </>
       }
@@ -88,20 +98,9 @@ export const ScriptPage: React.FC = () => {
           </Stack>
         </Typography>
         {!noDevices && (
-          <Box marginTop={3} marginX={4}>
+          <Box marginY={3} marginX={4}>
             <RunButton job={script.job} size="small" fullWidth />
           </Box>
-        )}
-        {script.job?.jobDevices[0].updated && (
-          <Stack flexDirection="row" justifyContent="space-between" mx={4.5} my={2}>
-            <Typography variant="caption" color="InfoText">
-              Script {script.job?.status.toLowerCase()}
-            </Typography>
-            <Typography variant="caption">
-              Updated&nbsp;
-              <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
-            </Typography>
-          </Stack>
         )}
         <List>
           {script.job?.jobDevices.map(jd => (

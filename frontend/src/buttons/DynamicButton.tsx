@@ -6,20 +6,14 @@ import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 import { Color } from '../styling'
 
-export type DynamicButtonProps = {
+export type DynamicButtonProps = Omit<ButtonProps, 'color' | 'size'> & {
+  title?: string
   icon?: string | React.ReactNode
   iconType?: IconProps['type']
-  title?: string
   color?: Color
   size?: 'icon' | 'chip' | 'medium' | 'small' | 'large'
   iconSize?: IconProps['size']
-  disabled?: boolean
   loading?: boolean
-  variant?: 'text' | 'outlined' | 'contained'
-  className?: string
-  onClick?: React.MouseEventHandler<HTMLButtonElement>
-  fullWidth?: boolean
-  sx?: ButtonProps['sx']
 }
 
 export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((props, ref) => {
@@ -29,15 +23,12 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     icon,
     iconType = 'regular',
     iconSize,
-    onClick,
     color,
     size = 'icon',
     variant = 'contained',
     className,
-    disabled,
     loading,
-    fullWidth,
-    sx,
+    ...rest
   }: DynamicButtonProps = props
 
   if (icon && loading && size === 'small') {
@@ -47,16 +38,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   if (size === 'chip') {
     return (
-      <Button
-        ref={ref}
-        size="small"
-        variant={variant}
-        onClick={onClick}
-        disabled={disabled}
-        className={classnames(className, css.button)}
-        fullWidth={fullWidth}
-        sx={sx}
-      >
+      <Button ref={ref} size="small" variant={variant} className={classnames(className, css.button)} {...rest}>
         {title}
       </Button>
     )
@@ -68,7 +50,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
         name={icon}
         type={iconType}
         size={iconSize}
-        color={size === 'icon' ? (disabled ? 'grayLight' : color) : undefined}
+        color={size === 'icon' ? (rest.disabled ? 'grayLight' : color) : undefined}
         inlineLeft={size !== 'icon' && !!title}
         spin={loading}
         fixedWidth
@@ -79,16 +61,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   if (size === 'small' || size === 'medium' || size === 'large') {
     return (
-      <Button
-        ref={ref}
-        size={size}
-        variant={variant}
-        onClick={onClick}
-        disabled={disabled}
-        className={classnames(className, css.button)}
-        fullWidth={fullWidth}
-        sx={sx}
-      >
+      <Button ref={ref} size={size} variant={variant} {...rest} className={classnames(className, css.button)}>
         {IconComponent}
         {title}
       </Button>
@@ -98,7 +71,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
   return (
     <Tooltip title={title} className={className} placement="top" enterDelay={400} arrow>
       <span>
-        <IconButton ref={ref} disabled={disabled} onClick={onClick} size="small">
+        <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
           {IconComponent}
         </IconButton>
       </span>

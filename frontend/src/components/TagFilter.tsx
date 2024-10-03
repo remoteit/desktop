@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RoleAccessCounts } from './RoleAccessCounts'
 import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
+import { ColorChip } from './ColorChip'
 import { Tags } from './Tags'
 import { Icon } from './Icon'
 // import { Pre } from './Pre'
@@ -89,7 +90,7 @@ export const TagFilter: React.FC<Props> = ({
           {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
             <Chip size="small" label={`${form.deviceIds.length} device${form.deviceIds.length > 1 ? 's' : ''}`} />
           ) : formAccess === 'SELECTED' && selectedIds?.length ? (
-            <Chip size="small" label={`${selectedIds.length} device${selectedIds.length > 1 ? 's' : ''}`} />
+            <ColorChip size="small" color="primary" variant="contained" label={`${selectedIds.length} selected`} />
           ) : formAccess === 'NONE' ? (
             <Chip size="small" label="No devices" />
           ) : (

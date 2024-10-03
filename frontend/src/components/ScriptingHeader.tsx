@@ -23,7 +23,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <>
-          <DevicesActionBar displayOnly />
+          <DevicesActionBar selectedOnly />
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" width="100%" paddingRight={4}>
             <ScriptingTabBar />
             <Route path="/scripting/scripts">

@@ -24,33 +24,37 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
 
+  const save = async (run?: boolean) => {
+    if (run) setRunning(true)
+    setSaving(true)
+
+    form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type ?? 'text/plain' })
+    const fileId = await dispatch.files.upload(form)
+
+    if (form.access === 'SELECTED') form.deviceIds = selectedIds
+
+    if (run) await dispatch.jobs.saveAndRun({ ...form, fileId })
+    else await dispatch.jobs.save({ ...form, fileId })
+
+    await dispatch.files.fetch()
+    await dispatch.jobs.fetch()
+    history.push('/scripting/scripts')
+
+    setSaving(false)
+    if (run) setRunning(false)
+  }
+
   return (
-    <form
-      onSubmit={async event => {
-        event.preventDefault()
-        setSaving(true)
-        form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type || 'text/plain' })
-        const fileId = await dispatch.files.upload(form)
-        await dispatch.jobs.save({ ...form, fileId })
-        await dispatch.files.fetch()
-        await dispatch.jobs.fetch()
-        history.push('/scripting/scripts')
-        setSaving(false)
-      }}
-    >
+    <form onSubmit={event => (event.preventDefault(), save())}>
       <List disablePadding>
         <ListItem disableGutters>
           <FileUpload
             script={form.script}
             loading={loading}
             onChange={script => onChange({ ...form, script })}
-            onUpload={file => {
-              onChange({ ...form, name: file.name, file })
-              console.log('upload', file.name, file)
-            }}
+            onUpload={file => onChange({ ...form, name: file.name, file })}
           />
         </ListItem>
-        {form.file?.name}
         <ListItem disableGutters>
           <TextField
             required
@@ -86,19 +90,19 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
         <DynamicButton
           fullWidth
           color="primary"
-          title={running ? 'Running' : 'Run'}
+          title={running ? 'Running' : changed ? 'Save and Run' : 'Run'}
           size="medium"
-          disabled={loading || running}
-          onClick={async () => {
-            setRunning(true)
-            await dispatch.jobs.saveAndRun(form)
-            setRunning(false)
-          }}
+          disabled={loading || running || saving}
+          onClick={() => save(true)}
         />
-
-        <Button type="submit" variant="contained" color="primary" disabled={!changed || saving}>
-          {saving ? 'Saving' : 'Save'}
-        </Button>
+        <DynamicButton
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={!changed || saving}
+          size="medium"
+          title={saving ? 'Saving' : 'Save'}
+        />
         <Button onClick={() => history.push('/scripting/scripts')}>Cancel</Button>
       </Stack>
     </form>

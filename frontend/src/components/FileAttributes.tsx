@@ -1,9 +1,7 @@
 import React from 'react'
-import { Sizes } from '../styling'
 import { Typography } from '@mui/material'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
-import { Duration } from './Duration'
 import { Icon, IconProps } from './Icon'
 import { Pre } from './Pre'
 

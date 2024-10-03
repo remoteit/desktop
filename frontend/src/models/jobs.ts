@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import { selectJobs } from '../selectors/scripting'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLSetJob, graphQLStartJob, graphQLCancelJob } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
@@ -56,21 +57,37 @@ export default createModel<RootModel>()({
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return
-      console.log('SAVED JOB', { result, data, form })
+      console.log('SAVED JOB', result?.data)
+      return result?.data.data.setJob
     },
     async saveAndRun(form: IFileForm) {
-      const { jobId, ...data } = formAdaptor(form)
-      if (!jobId) return console.error('NO JOB ID')
-      const result = await graphQLStartJob({ ...data, jobId })
+      const data = formAdaptor(form)
+      const result = await graphQLStartJob(data)
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, data })
     },
-    async run(jobId: string) {
-      const result = await graphQLStartJob({ jobId })
+    async run(jobId: string | undefined, state) {
+      let result
+      const job = selectJobs(state).find(j => j.id === jobId)
+      if (!job) return
+
+      const params = {
+        fileId: job.file?.id,
+        tagFilter: job.tag,
+        deviceIds: job.jobDevices.map(jd => jd.id),
+      }
+
+      console.log('RUNNING JOB', jobId, params)
+
+      // start existing job
+      if (job.status === 'READY') result = await graphQLStartJob({ jobId, ...params })
+      // duplicate for new job
+      else if (job) result = await graphQLStartJob(params)
+
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, jobId })
     },
-    async cancel(jobId: string) {
+    async cancel(jobId: string | undefined) {
       const result = await graphQLCancelJob(jobId)
       if (result === 'ERROR') return
       console.log('CANCELED JOB', { result, jobId })

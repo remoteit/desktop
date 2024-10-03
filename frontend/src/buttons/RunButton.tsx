@@ -1,4 +1,5 @@
 import React from 'react'
+import sleep from '../helpers/sleep'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
@@ -11,13 +12,13 @@ export type RunButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
 
 export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ...props }) => {
   const dispatch = useDispatch<Dispatch>()
+  const [loading, setLoading] = React.useState<boolean>(false)
 
   let title = 'Run'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
-  let loading = false
   let color: Color = 'primary'
   let icon: string | undefined
-  let clickAction = () => {}
+  let clickAction = async () => await dispatch.jobs.run(job?.id)
 
   switch (job?.status) {
     case 'WAITING':
@@ -32,15 +33,16 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ..
     case 'FAILED':
       title = 'Retry'
       color = 'danger'
-      clickAction = async () => await dispatch.jobs.run(job?.id)
       break
     case 'CANCELLED':
       title = 'Restart'
-      clickAction = async () => await dispatch.jobs.run(job?.id)
       break
     case 'SUCCESS':
+      title = 'Run Again'
+      variant = 'contained'
+      break
     case 'READY':
-      title = 'Run Script'
+      title = 'Run'
       variant = 'contained'
       break
   }
@@ -48,7 +50,11 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ..
   let clickHandler = async (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
     event?.stopPropagation()
     event?.preventDefault()
+    setLoading(true)
     await clickAction()
+    await sleep(1000)
+    await dispatch.jobs.fetch()
+    setLoading(false)
     event && onClick?.(event)
   }
 
@@ -63,7 +69,8 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ..
       icon={icon}
       iconType="solid"
       onClick={clickHandler}
-      disabled={disabled}
+      disabled={disabled || loading}
+      loading={loading}
       {...props}
     />
   )
