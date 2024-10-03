@@ -2,7 +2,8 @@ import React from 'react'
 import { List } from '@mui/material'
 import { ListItemCopy } from '../ListItemCopy'
 import { makeStyles } from '@mui/styles'
-import { Box, Button, Typography, Chip } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
+import { ColorChip } from '../ColorChip'
 import { IMfa } from '../../models/mfa'
 import { spacing } from '../../styling'
 
@@ -22,14 +23,14 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
       {/* Authenticator Enabled */}
       {method === 'SOFTWARE_TOKEN_MFA' && (
         <Box className={css.chip}>
-          <Chip label="ON / Authenticator App" color="secondary" />
+          <ColorChip label="ON / Authenticator App" variant="contained" color="success" />
         </Box>
       )}
 
       {/* SMS Enabled */}
       {method === 'SMS_MFA' && (
         <Box className={css.chip}>
-          <Chip label="ON / SMS" color="secondary" />
+          <ColorChip label="ON / SMS" variant="contained" color="success" />
           {verified && (
             <>
               <Typography variant="body2">{phoneNumber}</Typography>
