@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { State, Dispatch } from '../../store'
-import { makeStyles } from '@mui/styles'
-import { Box, Button, Typography, Chip, Divider } from '@mui/material'
+import { Box, Button, Typography, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'
 import { MFAConfigureSms } from './MFAConfigureSms'
+import { ColorChip } from '../ColorChip'
 import { MFAMethod } from './MFAMethod'
 import { Gutters } from '../Gutters'
 
@@ -21,7 +21,6 @@ export const MFAPreference: React.FC = () => {
       backupCode: state.mfa.backupCode,
     })
   )
-  const css = useStyles()
   const { mfa } = useDispatch<Dispatch>()
   const [showEnableSelection, setShowEnableSelection] = useState<boolean>(mfaMethod === 'NO_MFA')
   const [showAuthenticatorConfig, setShowAuthenticatorConfig] = useState<boolean>(false)
@@ -165,8 +164,8 @@ export const MFAPreference: React.FC = () => {
           {/* Show Enable Two-Factor*/}
           {mfaMethod === 'NO_MFA' && showEnableSelection && (
             <Box mt={2}>
-              <Box>
-                <Chip className={css.disabled} label="OFF / Two-factor disabled" />
+              <Box mb={2}>
+                <ColorChip label="OFF / Two-factor disabled" />
               </Box>
               <Button
                 variant="contained"
@@ -227,7 +226,3 @@ export const MFAPreference: React.FC = () => {
 
   return null
 }
-
-const useStyles = makeStyles(theme => ({
-  disabled: { color: theme.palette.text.disabled, marginBottom: theme.spacing(3) },
-}))

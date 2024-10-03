@@ -7,7 +7,8 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Popover,
+  Paper,
+  Popper,
   PopperProps,
   TextField,
   TextFieldProps,
@@ -77,79 +78,105 @@ export const TagAutocomplete: React.FC<Props> = ({
   if (!targetEl) return null
 
   return (
-    <Popover
-      slotProps={{ paper: { className: css.inputContainer } }}
-      elevation={1}
+    <Popper
       anchorEl={targetEl}
       open={open}
-      anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+      placement="bottom-start"
+      modifiers={[
+        {
+          name: 'flip',
+          enabled: true,
+          options: {
+            altBoundary: true,
+            rootBoundary: 'viewport',
+            padding: 8,
+          },
+        },
+        {
+          name: 'preventOverflow',
+          enabled: true,
+          options: {
+            altAxis: true,
+            altBoundary: true,
+            tether: true,
+            rootBoundary: 'viewport',
+            padding: 8,
+          },
+        },
+      ]}
     >
-      <Autocomplete
-        open
-        fullWidth
-        disablePortal
-        autoHighlight
-        handleHomeEndKeys
-        options={options}
-        includeInputInList
-        inputValue={inputValue}
-        classes={{
-          listbox: css.listbox,
-          option: css.option,
-          popper: css.popper,
-          paper: css.popperPaper,
-          noOptions: css.empty,
-        }}
-        onClose={onClose}
-        onChange={(event, value, reason) => {
-          if (!value || !onSelect || disabled) return
-          if (value.created) onSelect('add', value)
-          else onSelect('new', { name: inputValue, color: value.color, created: new Date() })
-        }}
-        isOptionEqualToValue={(option, value) => option.name === value.name || !option.created}
-        PopperComponent={BoxComponent}
-        noOptionsText={false}
-        getOptionLabel={option => option.name || ''}
-        onInputChange={(event, newValue) => {
-          const result = newValue.replace(REGEX_TAG_SAFE, '')
-          setInputValue(result)
-          if (onChange) onChange(result)
-        }}
-        renderOption={(props, option) => (
-          <MenuItem {...props} key={option.name}>
-            {hideIcons ? (
-              <> &nbsp; &nbsp; </>
-            ) : (
-              <ListItemIcon>
-                <Icon
-                  name={!option.name ? 'plus' : indicator || 'circle'}
-                  color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
-                  type="solid"
-                  size="base"
-                />
-              </ListItemIcon>
-            )}
-            <ListItemText
-              primary={reactStringReplace(option.name, new RegExp(`(${escapeRegexp(inputValue)})`, 'i'), (match, i) => (
-                <span key={i} className={css.spanItem}>
-                  {match}
-                </span>
-              ))}
+      <Paper elevation={1} className={css.inputContainer}>
+        <Autocomplete
+          open
+          fullWidth
+          disablePortal
+          autoHighlight
+          handleHomeEndKeys
+          options={options}
+          includeInputInList
+          inputValue={inputValue}
+          classes={{
+            listbox: css.listbox,
+            option: css.option,
+            popper: css.popper,
+            paper: css.popperPaper,
+            noOptions: css.empty,
+          }}
+          onClose={onClose}
+          onChange={(event, value, reason) => {
+            if (!value || !onSelect || disabled) return
+            if (value.created) onSelect('add', value)
+            else onSelect('new', { name: inputValue, color: value.color, created: new Date() })
+          }}
+          isOptionEqualToValue={(option, value) => option.name === value.name || !option.created}
+          PopperComponent={BoxComponent}
+          noOptionsText={false}
+          getOptionLabel={option => option.name || ''}
+          onInputChange={(event, newValue) => {
+            const result = newValue.replace(REGEX_TAG_SAFE, '')
+            setInputValue(result)
+            if (onChange) onChange(result)
+          }}
+          renderOption={(props, option) => (
+            <MenuItem {...props} key={option.name}>
+              {hideIcons ? (
+                <> &nbsp; &nbsp; </>
+              ) : (
+                <ListItemIcon>
+                  <Icon
+                    name={!option.name ? 'plus' : indicator || 'circle'}
+                    color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
+                    type="solid"
+                    size="base"
+                  />
+                </ListItemIcon>
+              )}
+              <ListItemText
+                primary={reactStringReplace(
+                  option.name,
+                  new RegExp(`(${escapeRegexp(inputValue)})`, 'i'),
+                  (match, i) => (
+                    <span key={i} className={css.spanItem}>
+                      {match}
+                    </span>
+                  )
+                )}
+              />
+            </MenuItem>
+          )}
+          renderInput={params => (
+            <TextField
+              {...params}
+              autoFocus
+              variant="filled"
+              className={css.input}
+              InputProps={{ ...params.InputProps, ...InputProps }}
+              placeholder={placeholder}
             />
-          </MenuItem>
-        )}
-        renderInput={params => (
-          <TextField
-            {...params}
-            autoFocus
-            variant="filled"
-            className={css.input}
-            InputProps={{ ...params.InputProps, ...InputProps }}
-            placeholder={placeholder}
-          />
-        )}
-      />
-    </Popover>
+          )}
+        />
+      </Paper>
+    </Popper>
   )
 }
 
@@ -164,10 +191,7 @@ export const BoxComponent: React.FC<BoxProps> = ({ className, children, placemen
 const useStyles = makeStyles(({ palette }) => ({
   inputContainer: {
     minWidth: 200,
-    overflow: 'visible',
     backgroundColor: palette.grayLightest.main,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
     '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
   },
   input: {
@@ -181,10 +205,12 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   popper: {
     width: '100%',
+    position: 'relative',
   },
   popperPaper: {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    boxShadow: 'none',
   },
   listbox: {
     paddingTop: spacing.xxs,

@@ -602,7 +602,7 @@ export async function graphQLSetJob(params: {
 }
 
 export async function graphQLStartJob(params: {
-  jobId: string
+  jobId?: string
   fileId?: string
   arguments?: IFileArgument[]
   tagFilter?: ITagFilter

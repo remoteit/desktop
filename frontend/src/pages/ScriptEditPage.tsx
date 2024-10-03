@@ -28,7 +28,7 @@ export const ScriptEditPage: React.FC = () => {
     ...role,
     ...initialForm,
     deviceIds: defaultDeviceIds,
-    jobId: script?.job?.id ?? initialForm.jobId,
+    jobId: script?.job?.status === 'READY' ? script?.job?.id : initialForm.jobId,
     fileId: script?.versions[0].id ?? initialForm.fileId,
     name: script?.name ?? initialForm.name,
     description: script?.shortDesc ?? initialForm.description,
@@ -48,7 +48,7 @@ export const ScriptEditPage: React.FC = () => {
       setDefaultForm({ ...defaultForm, fileId, script: result })
       setForm({ ...form, fileId, script: result })
       console.log('FORM DEFAULT', { script, form: { ...defaultForm, fileId, script: result } })
-      await sleep(400)
+      await sleep(200)
       setLoading(false)
     }
     download()

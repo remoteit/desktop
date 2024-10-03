@@ -932,7 +932,7 @@ declare global {
 
   type IShareProps = {
     deviceId: string
-    email: !string[]
+    email: string[]
     scripting?: boolean
     services?: {
       serviceId: string

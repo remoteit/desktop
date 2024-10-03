@@ -1,7 +1,7 @@
 import React from 'react'
 import QRCode from 'qrcode.react'
 import { makeStyles } from '@mui/styles'
-import { Box, Button, TextField, Typography, Chip } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import { spacing, radius } from '../../styling'
 
 type Props = {
@@ -39,13 +39,9 @@ export const MFAConfigureApp: React.FC<Props> = ({
           Scan this QR Code with your Authenticator app.
         </Typography>
         <Typography variant="h4">Code: {totpCode}</Typography>
-        <Chip
-          variant="outlined"
-          color="primary"
-          size="small"
-          label="Generate new QR Code"
-          onClick={() => loadTotpCode()}
-        ></Chip>
+        <Button color="primary" variant="contained" size="small" onClick={() => loadTotpCode()}>
+          Generate new QR Code
+        </Button>
         {!totpVerified && (
           <form onSubmit={sendVerifyTotp}>
             <Box mt={3} display="flex" alignItems="center">
