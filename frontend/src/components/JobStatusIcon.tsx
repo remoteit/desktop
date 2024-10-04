@@ -11,17 +11,11 @@ type JobStatusIconProps = {
   padding?: number
 }
 
-export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
-  status,
-  size = 'base',
-  title = true,
-  padding = 0.7,
-  device,
-}) => {
+export const JobStatusIcon: React.FC<JobStatusIconProps> = ({ status, size = 'md', title = true, padding = 0.7, device }) => {
   const icon = (
     <Box padding={padding}>
       {status === 'READY' ? (
-        <Icon name="play" type="solid" color="primary" size={size} />
+        <Icon name="chevron-right" type="solid" color="primary" size={size} />
       ) : status === 'SUCCESS' ? (
         <Icon name="badge-check" type="solid" color="primary" size={size} />
       ) : status === 'FAILED' || status === 'CANCELLED' ? (

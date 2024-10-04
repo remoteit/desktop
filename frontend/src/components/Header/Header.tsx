@@ -84,7 +84,6 @@ export const Header: React.FC = () => {
             <IconButton
               size="md"
               icon="search"
-              className={css.button}
               color="grayDarker"
               onClick={() => {
                 setShowSearch(true)
@@ -110,12 +109,17 @@ export const Header: React.FC = () => {
                 </Route>
               </Switch>
             )}
-            <Route path="/devices/:deviceID/:serviceID?">
-              <HeaderDeviceOptionMenu />
-            </Route>
-            <Route path="/scripting/:fileID/:jobID">
-              <ScriptDeleteButton />
-            </Route>
+            {!showSearch && (
+              <Route path="/devices/:deviceID/:serviceID?">
+                <HeaderDeviceOptionMenu />
+              </Route>
+            )}
+            <Switch>
+              <Route path="/scripting/scripts/:fileId" />
+              <Route path="/scripting/:fileID/:jobID">
+                <ScriptDeleteButton />
+              </Route>
+            </Switch>
           </>
         )}
       </div>
@@ -140,10 +144,8 @@ const useStyles = makeStyles({
     flexGrow: 1,
     zIndex: 1,
   },
-  button: {
+  noDrag: {
     WebkitAppRegion: 'no-drag',
-    justifyContent: 'flex-start',
-    minHeight: spacing.xxl,
   },
   selected: {
     marginRight: spacing.sm,

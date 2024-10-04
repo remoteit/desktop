@@ -26,7 +26,7 @@ export const JobsPage: React.FC = () => {
 
   return (
     <ScriptingHeader>
-      {fetching ? (
+      {fetching && !jobs.length ? (
         <LoadingMessage />
       ) : !jobs.length ? (
         <Body center>

@@ -51,7 +51,7 @@ export const ScriptPage: React.FC = () => {
             <ListItemLocation
               to={`/scripting/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
-              icon={<JobStatusIcon status={script.job?.status} size="lg" device />}
+              icon={<JobStatusIcon status={script.job?.status} size="lg" />}
               exactMatch
             />
             {/* <ListItemLocation
@@ -97,7 +97,9 @@ export const ScriptPage: React.FC = () => {
             <JobStatusIcon status="FAILED" padding={0} />
           </Stack>
         </Typography>
-        {!noDevices && (
+        {noDevices ? (
+          <Notice gutterTop>This script has not been run yet.</Notice>
+        ) : (
           <Box marginY={3} marginX={4}>
             <RunButton job={script.job} size="small" fullWidth />
           </Box>
@@ -113,7 +115,6 @@ export const ScriptPage: React.FC = () => {
             />
           ))}
         </List>
-        {noDevices && <Notice>No devices have been assigned to this script.</Notice>}
       </>
     </Container>
   )

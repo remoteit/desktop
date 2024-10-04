@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { spacing } from '../styling'
 import { usePanelWidth } from '../hooks/usePanelWidth'
 import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
@@ -97,7 +96,7 @@ type StyleProps = {
   layout: ILayout
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   panel: ({ layout }: StyleProps) => ({
     height: '100%',
     display: 'flex',
@@ -114,7 +113,7 @@ const useStyles = makeStyles(({ palette }) => ({
   secondary: ({ layout }: StyleProps) => ({
     flexGrow: 1,
     flexShrink: 10,
-    paddingTop: spacing.md,
+    paddingTop: spacing(3),
     // for iOS mobile
     paddingRight: layout.insets?.rightPx,
   }),
@@ -127,7 +126,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'absolute',
     height: '100%',
     marginLeft: -5,
-    padding: `0 ${spacing.xxs}px`,
+    padding: `0 ${spacing(0.375)}px`,
     WebkitAppRegion: 'no-drag',
     '&:hover': {
       cursor: 'col-resize',

@@ -6,19 +6,17 @@ import { attributeName } from '@common/nameHelper'
 import { useHistory } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
-import { Typography, ButtonBase } from '@mui/material'
+import { Typography, ButtonBase, Box } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 import { ShareButton } from '../buttons/ShareButton'
-import { ListItemCopy } from '../components/ListItemCopy'
 import { Container } from './Container'
 import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
 import { Diagram } from './Diagram'
 import { Notice } from '../components/Notice'
 import { Color } from '../styling'
-import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 
 type Props = {
@@ -51,27 +49,36 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
       header={
         <>
           <OutOfBand />
-          {layout.mobile && (
-            <Gutters bottom={null}>
-              <ButtonBase onClick={() => history.push(`/devices/${device.id}`)}>
-                <Typography variant="caption" onClick={() => history.push(`/devices/${device.id}`)}>
-                  <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
-                  {deviceName}
-                </Typography>
-              </ButtonBase>
-            </Gutters>
-          )}
-          <Typography variant="h1" gutterBottom={!layout.mobile && !!service?.attributes.description}>
-            <Title>{service.name || 'unknown'}</Title>
+          <Box display="flex" alignItems="flex-start" paddingRight={2}>
+            <Box flexGrow={1}>
+              {layout.mobile && (
+                <Box marginLeft={5} marginTop={2}>
+                  <ButtonBase onClick={() => history.push(`/devices/${device.id}`)}>
+                    <Typography variant="caption" onClick={() => history.push(`/devices/${device.id}`)}>
+                      <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
+                      {deviceName}
+                    </Typography>
+                  </ButtonBase>
+                </Box>
+              )}
+              <Typography
+                variant="h1"
+                gutterBottom={!layout.mobile && !!service?.attributes.description}
+                paddingRight="0 !important"
+              >
+                <Title>{service.name || 'unknown'}</Title>
+              </Typography>
+            </Box>
             <MobileUI hide>
               <ShareButton
                 to={`/devices/${device.id}/${service.id}/share`}
                 hide={!device.permissions.includes('MANAGE')}
                 title="Share access"
+                size="md"
               />
             </MobileUI>
             <DeviceOptionMenu device={device} service={service} />
-          </Typography>
+          </Box>
           {service.attributes.description && (
             <MobileUI hide>
               <Gutters top="xs" bottom="xs">
