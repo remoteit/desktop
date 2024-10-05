@@ -667,7 +667,14 @@ declare global {
   interface ICloudEvent {
     sessionId: string
     source: IConnectionSource
-    type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'DEVICE_REFRESH' | 'DEVICE_DELETE' | 'LICENSE_UPDATED'
+    type:
+      | 'DEVICE_STATE'
+      | 'DEVICE_CONNECT'
+      | 'DEVICE_SHARE'
+      | 'DEVICE_JOB'
+      | 'DEVICE_REFRESH'
+      | 'DEVICE_DELETE'
+      | 'LICENSE_UPDATED'
     state: IDevice['state'] | 'connected' | 'disconnected'
     action: 'add' | 'update' | 'remove'
     timestamp: Timestamp
@@ -681,6 +688,9 @@ declare global {
     manufacturer?: number
     manufacturerType: ISession['manufacturer']
     metadata?: INotificationSetting
+    jobId?: string
+    jobDeviceId?: string
+    jobState?: IJobStatus
     target: {
       id: string
       name: string

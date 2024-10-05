@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container } from './Container'
-import { DevicesActionBar } from './DevicesActionBar'
+import { DevicesActionBars } from './DevicesActionBars'
 import { DevicesApplicationsTabs } from './DevicesApplicationsTabs'
 import { Notice } from './Notice'
 import { Route } from 'react-router-dom'
@@ -15,7 +15,7 @@ export const DevicesHeader: React.FC<Props> = ({ select, devices, children }) =>
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <>
-          <DevicesActionBar select={select} devices={devices} />
+          <DevicesActionBars select={select} devices={devices} />
           <DevicesApplicationsTabs />
           <Route path="/devices/restore">
             <Notice>Please select a device to restore.</Notice>

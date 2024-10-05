@@ -18,7 +18,7 @@ import { Title } from '../components/Title'
 // import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
-  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID }>()
+  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
 
@@ -26,8 +26,6 @@ export const ScriptPage: React.FC = () => {
 
   const noDevices = !script?.job || !script.job.jobDevices.length
   const hasRun = script.job && script.job.status !== 'READY'
-
-  console.log('SCRIPT already ran?', script.job && script.job.status !== 'READY', script)
 
   if (!jobDeviceID) {
     return (

@@ -73,7 +73,7 @@ export default createModel<RootModel>()({
 
       const params = {
         fileId: job.file?.id,
-        tagFilter: job.tag,
+        tagFilter: job.tag.values.length ? job.tag : undefined,
         deviceIds: job.jobDevices.map(jd => jd.id),
       }
 

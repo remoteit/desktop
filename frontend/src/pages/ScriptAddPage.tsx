@@ -13,6 +13,7 @@ type Props = { center?: boolean }
 
 export const ScriptAddPage: React.FC<Props> = ({ center }) => {
   const role = useSelector(selectRole)
+  const savedForm = useSelector((state: State) => state.ui.scriptForm)
   const selectedIds = useSelector((state: State) => state.ui.selected)
   const device = useSelector((state: State) =>
     selectedIds.length === 1 ? selectDevice(state, undefined, selectedIds[0]) : undefined
@@ -21,6 +22,7 @@ export const ScriptAddPage: React.FC<Props> = ({ center }) => {
     ...role,
     ...initialForm,
     access: selectedIds.length ? 'SELECTED' : 'ALL',
+    ...savedForm,
   }
   const [form, setForm] = useState<IFileForm>(defaultForm)
 

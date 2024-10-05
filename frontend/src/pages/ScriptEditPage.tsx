@@ -19,6 +19,7 @@ export const ScriptEditPage: React.FC = () => {
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
   const role = useSelector(selectRole)
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
+  const savedForm = useSelector((state: State) => state.ui.scriptForm)
   const selectedIds = useSelector((state: State) => state.ui.selected)
   const dispatch = useDispatch<Dispatch>()
 
@@ -27,8 +28,7 @@ export const ScriptEditPage: React.FC = () => {
   )
   const defaultDeviceIds = script?.job?.jobDevices.map(d => d.id) || []
   const tagValues = script?.job?.tag?.values || []
-  const access = () =>
-    selectedIds.length ? 'SELECTED' : defaultDeviceIds.length ? 'CUSTOM' : tagValues.length ? 'TAG' : 'ALL'
+  const access = () => (defaultDeviceIds.length ? 'CUSTOM' : tagValues.length ? 'TAG' : 'ALL')
 
   useEffect(() => {
     if (!script || !form || !defaultForm || defaultForm.script) return
@@ -38,7 +38,6 @@ export const ScriptEditPage: React.FC = () => {
       const result = await dispatch.files.download(fileId)
       setDefaultForm({ ...defaultForm, fileId, script: result })
       setForm({ ...form, fileId, script: result })
-      console.log('FORM DEFAULT', { script, form: { ...defaultForm, fileId, script: result } })
       await sleep(200)
       setLoading(false)
     }
@@ -47,8 +46,7 @@ export const ScriptEditPage: React.FC = () => {
 
   useEffect(() => {
     if (!form) return
-    setForm({ ...form, access: access() })
-    setDefaultForm({ ...form, access: access() })
+    setForm({ ...form, access: selectedIds.length ? 'SELECTED' : access() })
   }, [selectedIds])
 
   useEffect(() => {
@@ -63,10 +61,11 @@ export const ScriptEditPage: React.FC = () => {
       executable: script?.executable ?? initialForm.executable,
       tag: script?.job?.tag ?? initialForm.tag,
       access: access(),
+      ...savedForm,
     }
     setLoading(true)
     setDefaultForm(setupForm)
-    setForm(setupForm)
+    setForm({ ...setupForm, access: selectedIds.length ? 'SELECTED' : access() })
   }, [fileID])
 
   if (!form || !defaultForm) return null
@@ -76,21 +75,19 @@ export const ScriptEditPage: React.FC = () => {
       integrated
       bodyProps={{ inset: true, gutterBottom: true }}
       header={
-        <>
-          {device && form.access === 'SELECTED' ? (
-            <>
-              <Typography variant="caption" marginLeft={10}>
-                Scripting
-              </Typography>
-              <Typography variant="h1">
-                <TargetPlatform id={device?.targetPlatform} size="xl" inlineLeft />
-                {device.name}
-              </Typography>
-            </>
-          ) : (
-            <Typography variant="h1">Script</Typography>
-          )}
-        </>
+        device && form.access === 'SELECTED' ? (
+          <>
+            <Typography variant="caption" marginLeft={10}>
+              Scripting
+            </Typography>
+            <Typography variant="h1">
+              <TargetPlatform id={device?.targetPlatform} size="xl" inlineLeft />
+              {device.name}
+            </Typography>
+          </>
+        ) : (
+          <Typography variant="h1">Script</Typography>
+        )
       }
     >
       <ScriptForm

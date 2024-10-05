@@ -34,6 +34,8 @@ type Props = ListItemProps & {
   icon?: boolean
   selectedIds?: string[]
   countsSx?: SxProps<Theme>
+  disableAll?: boolean
+  onSelectIds?: () => void
   onChange: (form: Partial<IFileForm>) => void
 }
 
@@ -46,6 +48,8 @@ export const TagFilter: React.FC<Props> = ({
   selectedIds,
   countsSx,
   onChange,
+  disableAll,
+  onSelectIds,
   ...props
 }) => {
   const dispatch = useDispatch<Dispatch>()
@@ -55,8 +59,8 @@ export const TagFilter: React.FC<Props> = ({
 
   // Handle empty states
   let formAccess = form.access
-  if (formAccess === 'CUSTOM' && !form.deviceIds?.length) formAccess = 'ALL'
-  if (formAccess === 'SELECTED' && !selectedIds?.length) formAccess = 'ALL'
+  if (formAccess === 'CUSTOM' && !form.deviceIds?.length) formAccess = 'NONE'
+  if (formAccess === 'ALL' && disableAll) formAccess = 'NONE'
 
   return (
     <>
@@ -81,16 +85,24 @@ export const TagFilter: React.FC<Props> = ({
           }}
         >
           <MenuItem value="NONE">None</MenuItem>
-          <MenuItem value="ALL">All</MenuItem>
+          {!disableAll && <MenuItem value="ALL">All</MenuItem>}
           <MenuItem value="TAG">Tagged</MenuItem>
+          <MenuItem value="SELECTED">{selectedIds?.length ? 'Selected' : 'Select'} Devices</MenuItem>
           {form.deviceIds?.length && <MenuItem value="CUSTOM">Saved Devices</MenuItem>}
-          {selectedIds?.length && <MenuItem value="SELECTED">Selected Devices</MenuItem>}
         </TextField>
         <ListItemSecondaryAction sx={countsSx}>
           {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
             <Chip size="small" label={`${form.deviceIds.length} device${form.deviceIds.length > 1 ? 's' : ''}`} />
           ) : formAccess === 'SELECTED' && selectedIds?.length ? (
             <ColorChip size="small" color="primary" variant="contained" label={`${selectedIds.length} selected`} />
+          ) : formAccess === 'SELECTED' ? (
+            <ColorChip
+              size="small"
+              color="primary"
+              variant="contained"
+              label="Select Devices"
+              onClick={() => onSelectIds?.()}
+            />
           ) : formAccess === 'NONE' ? (
             <Chip size="small" label="No devices" />
           ) : (

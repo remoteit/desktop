@@ -61,7 +61,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       }
       secondary={
         <Switch>
-          <Route path="/scripting/scripts/add">
+          <Route path={['/scripting/scripts/add', '/scripting/runs/add']}>
             <ScriptAddPage />
           </Route>
           <Route path="/scripting/scripts/:fileID">

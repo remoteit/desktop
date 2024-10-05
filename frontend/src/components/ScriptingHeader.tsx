@@ -29,7 +29,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" width="100%" paddingRight={4}>
             <ScriptingTabBar />
             {!selectedIds.length && (
-              <Route path="/scripting/scripts">
+              <Route path={['/scripting/scripts', '/scripting/runs']}>
                 <Tooltip
                   title={permissions.includes('ADMIN') ? '' : 'Admin permissions required to add scripts'}
                   placement="top"
@@ -37,7 +37,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                 >
                   <span>
                     <Button
-                      to="/scripting/scripts/add"
+                      to={location.pathname + '/add'}
                       size="small"
                       variant="contained"
                       color="primary"

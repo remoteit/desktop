@@ -23,6 +23,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
+  const disabled = form.access === 'NONE' || (form.access === 'SELECTED' && !selectedIds.length)
 
   const save = async (run?: boolean) => {
     if (run) setRunning(true)
@@ -38,7 +39,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     await dispatch.files.fetch()
     await dispatch.jobs.fetch()
-    await dispatch.ui.set({ selected: [] })
+    await dispatch.ui.set({ selected: [], scriptForm: undefined })
     history.push('/scripting/scripts')
 
     setSaving(false)
@@ -85,6 +86,11 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           onChange={f => onChange({ ...form, ...structuredClone(f) })}
           disableGutters
           selectedIds={selectedIds}
+          onSelectIds={async () => {
+            await dispatch.ui.set({ scriptForm: form })
+            history.push('/devices/select')
+          }}
+          disableAll
         />
       </List>
       <Stack flexDirection="row" gap={1} mt={2} sx={{ button: { paddingX: 4 } }}>
@@ -93,18 +99,25 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           color="primary"
           title={running ? 'Running' : changed ? 'Save and Run' : 'Run'}
           size="medium"
-          disabled={loading || running || saving}
+          disabled={loading || running || saving || disabled}
           onClick={() => save(true)}
         />
         <DynamicButton
           type="submit"
           variant="contained"
           color="primary"
-          disabled={!changed || saving}
+          disabled={!changed || saving || disabled}
           size="medium"
           title={saving ? 'Saving' : 'Save'}
         />
-        <Button onClick={() => history.push('/scripting/scripts')}>Cancel</Button>
+        <Button
+          onClick={async () => {
+            await dispatch.ui.set({ scriptForm: undefined, selected: [] })
+            history.push('/scripting/scripts')
+          }}
+        >
+          Cancel
+        </Button>
       </Stack>
     </form>
   )

@@ -106,6 +106,7 @@ export type UIState = {
   connectThisDevice: boolean
   mobileWelcome: boolean
   showDesktopNotice: boolean
+  scriptForm?: IFileForm
 }
 
 export const defaultState: UIState = {
@@ -208,6 +209,7 @@ export const defaultState: UIState = {
   connectThisDevice: false,
   mobileWelcome: true,
   showDesktopNotice: true,
+  scriptForm: undefined,
 }
 
 export default createModel<RootModel>()({
