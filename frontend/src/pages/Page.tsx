@@ -96,7 +96,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       />
       <Snackbar
         className={css.snackbar}
-        key={errorMessage || 'error'}
+        key="error"
         open={snackbar === 'error'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         onClose={clearErrorMessage}
@@ -108,7 +108,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       />
       <Snackbar
         className={css.snackbar}
-        key={noticeMessage || 'notice'}
+        key="notice"
         open={snackbar === 'notice'}
         onClose={() => ui.set({ noticeMessage: '' })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
@@ -120,7 +120,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       />
       <Snackbar
         className={css.snackbar}
-        key={successMessage || 'success'}
+        key="success"
         open={snackbar === 'success'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         onClose={clearSuccessMessage}
