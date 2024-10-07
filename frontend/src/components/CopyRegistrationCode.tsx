@@ -16,7 +16,7 @@ export function CopyRegistrationCode(props: CopyCodeBlockProps) {
     dispatch.ui.set({
       noticeMessage: (
         <>
-          The copied code will register devices to the <b>{organization.name} organization.</b>
+          The copied code will register devices to the <b>{organization.name}</b> organization.
         </>
       ),
     })
