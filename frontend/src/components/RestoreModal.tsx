@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { CopyCodeBlock } from './CopyCodeBlock'
+import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { attributeName } from '@common/nameHelper'
 
 type Props = Omit<DialogProps, 'open'> & {
@@ -42,7 +42,7 @@ export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
           If you lost or deleted this device you can restore it by running the <br />
           following command on the device.
         </Typography>
-        <CopyCodeBlock
+        <CopyRegistrationCode
           code={result.restoreCode}
           value={result.restoreCommand ? result.restoreCommand : 'generating command...'}
           label="Restore Code"

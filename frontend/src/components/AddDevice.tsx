@@ -4,8 +4,8 @@ import { List, Box, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { selectPermissions } from '../selectors/organizations'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
+import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
-import { CopyCodeBlock } from './CopyCodeBlock'
 import { Notice } from './Notice'
 import { Link } from './Link'
 
@@ -37,7 +37,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
 
   const codeBlock = (
     <List disablePadding={minimal}>
-      <CopyCodeBlock
+      <CopyRegistrationCode
         value={
           fetching ? 'application loading...' : registrationCommand ? registrationCommand : 'generating command...'
         }

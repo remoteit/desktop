@@ -88,7 +88,7 @@ export type UIState = {
   setupServicesNew: boolean
   setupServicesLimit: number
   successMessage: string
-  noticeMessage: string
+  noticeMessage: React.ReactNode
   errorMessage: string
   panelWidth: ILookup<number>
   guides: ILookup<IGuide>

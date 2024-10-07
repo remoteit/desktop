@@ -1,22 +1,26 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { State } from '../store'
-import { isUserAccount } from '../selectors/accounts'
+import { State, Dispatch } from '../store'
+import { selectOrganization } from '../selectors/organizations'
+import { useSelector, useDispatch } from 'react-redux'
 import { CopyCodeBlock, CopyCodeBlockProps } from './CopyCodeBlock'
 import { Confirm } from './Confirm'
 
 export function CopyRegistrationCode(props: CopyCodeBlockProps) {
-  const hasOrgs = useSelector((state: State) => !!state.accounts.membership.length)
-  const userAccountActive = useSelector(isUserAccount)
+  const dispatch = useDispatch<Dispatch>()
+  const { organization, user } = useSelector((state: State) => ({
+    organization: selectOrganization(state),
+    user: state.user,
+  }))
 
-  const [open, setOpen] = React.useState(false)
+  const setMessage = () => {
+    dispatch.ui.set({
+      noticeMessage: (
+        <>
+          The copied code will register devices to the <b>{organization.name} organization.</b>
+        </>
+      ),
+    })
+  }
 
-  return (
-    <>
-      <CopyCodeBlock {...props} onCopy={hasOrgs && userAccountActive ? () => setOpen(true) : undefined} />
-      <Confirm title="Registering to your personal account" action="Ok" open={open} onConfirm={() => setOpen(false)}>
-        This registration code will register to your personal account instead of an organization.
-      </Confirm>
-    </>
-  )
+  return <CopyCodeBlock {...props} onCopy={organization.id && organization.id !== user.id ? setMessage : undefined} />
 }

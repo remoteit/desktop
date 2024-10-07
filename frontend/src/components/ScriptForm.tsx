@@ -87,8 +87,8 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           onChange={f => onChange({ ...form, ...structuredClone(f) })}
           disableGutters
           selectedIds={selectedIds}
-          onSelectIds={async () => {
-            await dispatch.ui.set({ scriptForm: form })
+          onSelectIds={() => {
+            dispatch.ui.set({ scriptForm: form })
             history.push('/devices/select')
           }}
           disableAll
