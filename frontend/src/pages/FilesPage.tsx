@@ -28,7 +28,7 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
   const handleDemo = async () => {
     setLoading(true)
     const script = await dispatch.files.downloadDemoScript()
-    await dispatch.ui.set({
+    dispatch.ui.set({
       scriptForm: {
         ...role,
         ...initialForm,
@@ -41,8 +41,6 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
     history.push('/scripting/scripts/add')
     setLoading(false)
   }
-
-  console.log('FILES PAGE', fetching, files.length)
 
   return (
     <ScriptingHeader>
@@ -61,12 +59,12 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
                 For more examples and detailed guidance,
                 <Link href="https://link.remote.it/desktop/help/device-scripting">visit our documentation site.</Link>
               </Typography>
-              {/* <Typography variant="body2" align="center" color="grayDark.main" sx={{ maxWidth: 500, paddingX: 3 }}>
+              <Typography variant="body2" align="center" color="grayDark.main" sx={{ maxWidth: 500, paddingX: 3 }}>
                 Need a device to test with?
                 <Link to="/add/docker" noUnderline sx={{ paddingTop: 0, paddingBottom: 0 }}>
                   <Icon name="docker" size="md" platformIcon /> Try a docker container!
                 </Link>
-              </Typography> */}
+              </Typography>
             </>
           ) : (
             <Typography variant="body2" gutterBottom>
