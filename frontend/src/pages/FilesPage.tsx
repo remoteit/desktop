@@ -59,14 +59,14 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
                 See how easy it is to run a script with our demo script.
                 <br />
                 For more examples and detailed guidance,
-                <Link href="https://link.remote.it/docs/device-scriptings">visit our documentation site.</Link>
+                <Link href="https://link.remote.it/desktop/help/device-scripting">visit our documentation site.</Link>
               </Typography>
-              <Typography variant="body2" align="center" color="grayDark.main" sx={{ maxWidth: 500, paddingX: 3 }}>
+              {/* <Typography variant="body2" align="center" color="grayDark.main" sx={{ maxWidth: 500, paddingX: 3 }}>
                 Need a device to test with?
                 <Link to="/add/docker" noUnderline sx={{ paddingTop: 0, paddingBottom: 0 }}>
-                  <Icon name="docker" size="md" platformIcon /> Try our container!
+                  <Icon name="docker" size="md" platformIcon /> Try a docker container!
                 </Link>
-              </Typography>
+              </Typography> */}
             </>
           ) : (
             <Typography variant="body2" gutterBottom>
