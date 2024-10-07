@@ -23,7 +23,8 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
-  const disabled = form.access === 'NONE' || (form.access === 'SELECTED' && !selectedIds.length)
+  const disabled =
+    form.access === 'NONE' || (form.access === 'SELECTED' && !selectedIds.length) || !form.script || !form.name
 
   const save = async (run?: boolean) => {
     if (run) setRunning(true)
@@ -50,14 +51,6 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     <form onSubmit={event => (event.preventDefault(), save())}>
       <List disablePadding>
         <ListItem disableGutters>
-          <FileUpload
-            script={form.script}
-            loading={loading}
-            onChange={script => onChange({ ...form, script })}
-            onUpload={file => onChange({ ...form, name: file.name, file })}
-          />
-        </ListItem>
-        <ListItem disableGutters>
           <TextField
             required
             fullWidth
@@ -66,6 +59,14 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
             variant="filled"
             InputLabelProps={{ shrink: true }}
             onChange={event => onChange({ ...form, name: event.target.value })}
+          />
+        </ListItem>
+        <ListItem disableGutters>
+          <FileUpload
+            script={form.script}
+            loading={loading}
+            onChange={script => onChange({ ...form, script })}
+            onUpload={file => onChange({ ...form, name: file.name, file })}
           />
         </ListItem>
         <ListItem disableGutters>

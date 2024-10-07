@@ -6,9 +6,10 @@ import { Link as MUILink, LinkProps as MuiLinkProps } from '@mui/material'
 export type LinkProps = Omit<RouterLinkProps, 'to'> &
   MuiLinkProps & {
     to?: string
+    noUnderline?: boolean
   }
 
-export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ children, ...props }, ref) => {
+export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ children, noUnderline, ...props }, ref) => {
   const attributes = { ...props }
   if (attributes.href?.startsWith('http')) {
     attributes.target = '_blank'
@@ -23,7 +24,17 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ children, 
   if (attributes.to) attributes.component = RouterLink
 
   return (
-    <MUILink {...attributes} ref={ref}>
+    <MUILink
+      {...attributes}
+      sx={{
+        textDecoration: noUnderline ? 'none' : 'underline',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        ...attributes.sx,
+      }}
+      ref={ref}
+    >
       {children || attributes.to || attributes.href}
     </MUILink>
   )

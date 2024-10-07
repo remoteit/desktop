@@ -11,6 +11,7 @@ import { postFile } from '../services/post'
 import { get } from '../services/get'
 
 type FilesState = {
+  initialized: boolean
   fetching: boolean
   all: {
     [accountId: string]: IFile[]
@@ -29,6 +30,7 @@ export const initialForm: IFileForm = {
 }
 
 const defaultState: FilesState = {
+  initialized: false,
   fetching: true,
   all: {},
 }
@@ -44,7 +46,7 @@ export default createModel<RootModel>()({
       const files = await dispatch.files.parse(result)
       console.log('LOADED FILES', accountId, files)
       dispatch.files.setAccount({ accountId, files })
-      dispatch.files.set({ fetching: false })
+      dispatch.files.set({ fetching: false, initialized: true })
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)

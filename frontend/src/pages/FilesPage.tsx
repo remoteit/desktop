@@ -20,10 +20,10 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
   const history = useHistory()
   const [loading, setLoading] = useState<boolean>(false)
   const [required, attributes] = removeObject(scriptAttributes, a => a.required === true)
-  const role = useSelector(selectRole)
-  const files = useSelector(scripts ? selectScripts : selectFiles)
+  const { fetching, initialized } = useSelector((state: State) => state.files)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
-  const fetching = useSelector((state: State) => state.files.fetching)
+  const files = useSelector(scripts ? selectScripts : selectFiles)
+  const role = useSelector(selectRole)
 
   const handleDemo = async () => {
     setLoading(true)
@@ -42,9 +42,11 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
     setLoading(false)
   }
 
+  console.log('FILES PAGE', fetching, files.length)
+
   return (
     <ScriptingHeader>
-      {fetching && !files.length ? (
+      {!initialized ? (
         <LoadingMessage />
       ) : !files.length ? (
         <Body center>
@@ -53,12 +55,17 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
           </Button>
           {scripts ? (
             <>
-              <Typography variant="body1" align="center" sx={{ maxWidth: 500, padding: 3 }}>
-                See how easy it is to run a script on your devices.
-              </Typography>
-              <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, paddingX: 3 }}>
-                Click the button above to test a BASH script. For more examples and detailed guidance,
+              <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
+                See how easy it is to run a script with our demo script.
+                <br />
+                For more examples and detailed guidance,
                 <Link href="https://link.remote.it/docs/device-scriptings">visit our documentation site.</Link>
+              </Typography>
+              <Typography variant="body2" align="center" color="grayDark.main" sx={{ maxWidth: 500, paddingX: 3 }}>
+                Need a device to test with?
+                <Link to="/add/docker" noUnderline sx={{ paddingTop: 0, paddingBottom: 0 }}>
+                  <Icon name="docker" size="md" platformIcon /> Try our container!
+                </Link>
               </Typography>
             </>
           ) : (

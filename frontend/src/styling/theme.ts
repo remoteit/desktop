@@ -608,7 +608,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiLink: {
         styleOverrides: {
-          root: { padding: `${spacing.xs}px ${spacing.xs}px` },
+          root: { padding: `0px ${spacing.xs}px` },
           underlineHover: {
             '&:hover': {
               backgroundColor: palette.primaryHighlight.main,
