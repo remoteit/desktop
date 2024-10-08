@@ -1,10 +1,9 @@
 import React from 'react'
+import { State } from '../store'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Stack, Typography, Button } from '@mui/material'
-import { State, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { IconButton } from '../buttons/IconButton'
 import { radius } from '../styling'
 import { Icon } from './Icon'
 
@@ -41,7 +40,7 @@ export const DevicesSelectBar: React.FC = () => {
           Cancel
         </Button>
         {!!selected.length && (
-          <Button variant="contained" size="small" onClick={() => history.goBack()}>
+          <Button variant="contained" size="small" onClick={history.goBack}>
             Continue
           </Button>
         )}

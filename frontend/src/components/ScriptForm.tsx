@@ -114,7 +114,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           selectedIds={selectedIds}
           onSelectIds={() => {
             dispatch.ui.set({ scriptForm: form })
-            history.push('/devices/select')
+            history.push('/devices/select/scripting')
           }}
           disableAll
         />

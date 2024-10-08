@@ -31,7 +31,7 @@ export const ScriptEditPage: React.FC = () => {
   const access = () => (defaultDeviceIds.length ? 'CUSTOM' : tagValues.length ? 'TAG' : 'ALL')
 
   useEffect(() => {
-    if (!script || !form || !defaultForm || defaultForm.script) return
+    if (!script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
     const download = async () => {
       setLoading(true)
       const fileId = script.versions[0].id
@@ -61,11 +61,9 @@ export const ScriptEditPage: React.FC = () => {
       executable: script?.executable ?? initialForm.executable,
       tag: script?.job?.tag ?? initialForm.tag,
       access: access(),
-      ...savedForm,
     }
-    setLoading(true)
     setDefaultForm(setupForm)
-    setForm({ ...setupForm, access: selectedIds.length ? 'SELECTED' : access() })
+    setForm({ ...setupForm, ...savedForm, access: selectedIds.length ? 'SELECTED' : access() })
   }, [fileID])
 
   if (!form || !defaultForm) return null
