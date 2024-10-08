@@ -18,13 +18,12 @@ export const ScriptAddPage: React.FC<Props> = ({ center }) => {
   const device = useSelector((state: State) =>
     selectedIds.length === 1 ? selectDevice(state, undefined, selectedIds[0]) : undefined
   )
-  const defaultForm: IFileForm = {
-    ...role,
-    ...initialForm,
-    access: selectedIds.length ? 'SELECTED' : 'ALL',
+  const defaultForm: IFileForm = { ...role, ...initialForm }
+  const [form, setForm] = useState<IFileForm>({
+    ...defaultForm,
     ...savedForm,
-  }
-  const [form, setForm] = useState<IFileForm>(defaultForm)
+    access: selectedIds.length ? 'SELECTED' : 'ALL',
+  })
 
   return (
     <Body center={center} inset gutterTop gutterBottom>

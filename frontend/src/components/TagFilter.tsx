@@ -82,6 +82,7 @@ export const TagFilter: React.FC<Props> = ({
             const access = event.target.value as IRoleAccess
             if (access === 'TAG') tag = structuredClone(DEFAULT_ROLE.tag)
             onChange({ ...form, access, tag })
+            if (access === 'SELECTED') onSelectIds?.()
           }}
         >
           <MenuItem value="NONE">None</MenuItem>
@@ -94,7 +95,13 @@ export const TagFilter: React.FC<Props> = ({
           {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
             <Chip size="small" label={`${form.deviceIds.length} device${form.deviceIds.length > 1 ? 's' : ''}`} />
           ) : formAccess === 'SELECTED' && selectedIds?.length ? (
-            <ColorChip size="small" color="primary" variant="contained" label={`${selectedIds.length} selected`} />
+            <ColorChip
+              size="small"
+              color="primary"
+              variant="contained"
+              label={`${selectedIds.length} selected`}
+              onClick={() => onSelectIds?.()}
+            />
           ) : formAccess === 'SELECTED' ? (
             <ColorChip
               size="small"
@@ -135,7 +142,7 @@ export const TagFilter: React.FC<Props> = ({
             <TagEditor
               onCreate={async tag => await dispatch.tags.create({ tag })}
               onSelect={tag => {
-                form.tag && form.tag.values.push(tag.name)
+                form.tag?.values.push(tag.name)
                 onChange(form)
               }}
               tags={tags}

@@ -1,5 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { selectJobs } from '../selectors/scripting'
+import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLSetJob, graphQLStartJob, graphQLCancelJob } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
@@ -91,6 +92,9 @@ export default createModel<RootModel>()({
       const result = await graphQLCancelJob(jobId)
       if (result === 'ERROR') return
       console.log('CANCELED JOB', { result, jobId })
+    },
+    async unauthorized(deviceIds: string[], state) {
+      return getDevices(state).filter(d => deviceIds.includes(d.id) && !d.permissions.includes('SCRIPTING'))
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

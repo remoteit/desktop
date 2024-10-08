@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { List, ListItem, TextField, Button, Stack } from '@mui/material'
 import { DynamicButton } from '../buttons/DynamicButton'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
+import { Notice } from './Notice'
 // import { Pre } from './Pre'
 
 type Props = {
@@ -18,13 +19,18 @@ type Props = {
 }
 
 export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, loading, onChange }) => {
-  const [running, setRunning] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [unauthorized, setUnauthorized] = useState<IDevice[]>()
+  const [running, setRunning] = useState<boolean>(false)
+  const [saving, setSaving] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
   const disabled =
-    form.access === 'NONE' || (form.access === 'SELECTED' && !selectedIds.length) || !form.script || !form.name
+    !!unauthorized ||
+    form.access === 'NONE' ||
+    (form.access === 'SELECTED' && !selectedIds.length) ||
+    !form.script ||
+    !form.name
 
   const save = async (run?: boolean) => {
     if (run) setRunning(true)
@@ -46,6 +52,25 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     setSaving(false)
     if (run) setRunning(false)
   }
+
+  const clearUnauthorized = () => {
+    unauthorized && dispatch.ui.set({ selected: selectedIds.filter(id => !unauthorized.find(u => u.id === id)) })
+  }
+
+  useEffect(() => {
+    if (!selectedIds.length) return
+
+    async function checkSelected() {
+      const unauthorized = await dispatch.jobs.unauthorized(selectedIds)
+      if (unauthorized.length) {
+        setUnauthorized(unauthorized)
+      } else {
+        setUnauthorized(undefined)
+      }
+    }
+
+    checkSelected()
+  }, [selectedIds])
 
   return (
     <form onSubmit={event => (event.preventDefault(), save())}>
@@ -94,6 +119,21 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           disableAll
         />
       </List>
+      {unauthorized && (
+        <Notice severity="error" solid fullWidth>
+          You are not allow to run scripts on
+          <List disablePadding>
+            {unauthorized.map(d => (
+              <ListItem key={d.id}>
+                <b>{d.name}</b>
+              </ListItem>
+            ))}
+          </List>
+          <Button size="small" onClick={clearUnauthorized} sx={{ color: 'alwaysWhite.main', bgcolor: 'screen.main' }}>
+            Remove Device{unauthorized.length > 1 ? 's' : ''}
+          </Button>
+        </Notice>
+      )}
       <Stack flexDirection="row" gap={1} mt={2} sx={{ button: { paddingX: 4 } }}>
         <DynamicButton
           fullWidth
@@ -112,8 +152,8 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           title={saving ? 'Saving' : 'Save'}
         />
         <Button
-          onClick={async () => {
-            await dispatch.ui.set({ scriptForm: undefined, selected: [] })
+          onClick={() => {
+            dispatch.ui.set({ scriptForm: undefined, selected: [] })
             history.push('/scripting/scripts')
           }}
         >
