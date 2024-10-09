@@ -31,8 +31,8 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ..
       clickAction = async () => await dispatch.jobs.cancel(job?.id)
       break
     case 'FAILED':
-      title = 'Retry'
       color = 'danger'
+      title = 'Retry'
       break
     case 'CANCELLED':
       title = 'Restart'

@@ -10,7 +10,6 @@ import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../selectors/connections'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { LoadingMessage } from './LoadingMessage'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   let { deviceID, serviceID, networkID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()

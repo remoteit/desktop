@@ -32,21 +32,24 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     )
 
   const locationParts = location.pathname.split('/')
-  if (['scripts', 'runs', 'files'].includes(locationParts[2]) && locationParts.length === 3)
+  if (['scripts', 'runs', 'files', 'add'].includes(locationParts[2]) && locationParts.length === 3)
     layout = { ...layout, singlePanel: true }
 
   return (
     <DynamicPanel
       primary={
         <Switch>
-          <Route path="/scripting/scripts">
-            <FilesPage scripts />
+          <Route path="/scripting/add">
+            <ScriptAddPage center />
           </Route>
           <Route path="/scripting/runs">
             <JobsPage />
           </Route>
           <Route path="/scripting/files">
             <FilesPage />
+          </Route>
+          <Route path="/scripting/scripts/:fileID?">
+            <FilesPage scripts />
           </Route>
           <Route path="/scripting/:fileID/:jobID?/:jobDeviceID?">
             <ScriptPage />
@@ -58,8 +61,11 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       }
       secondary={
         <Switch>
-          <Route path="/scripting/scripts/new">
+          <Route path={['/scripting/scripts/add', '/scripting/runs/add']}>
             <ScriptAddPage />
+          </Route>
+          <Route path="/scripting/scripts/:fileID">
+            <ScriptEditPage />
           </Route>
           <Route path="/scripting/:fileID/:jobID/edit">
             <ScriptEditPage />

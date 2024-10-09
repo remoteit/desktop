@@ -71,7 +71,6 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiTypography-h1': {
       display: 'flex',
       padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
-      minHeight: 50,
     },
   }),
   drawer: {

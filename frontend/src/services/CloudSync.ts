@@ -58,6 +58,8 @@ class CloudSync {
     await this.core()
     await dispatch.devices.set({ from: 0 })
     await this.call([
+      dispatch.files.fetch,
+      dispatch.jobs.fetch,
       dispatch.devices.fetchList,
       dispatch.networks.fetch,
       dispatch.connections.fetch,

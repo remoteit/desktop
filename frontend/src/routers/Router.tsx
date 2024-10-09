@@ -197,7 +197,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <DevicesPage restore />
         </Panel>
       </Route>
-      <Route path="/devices/select">
+      <Route path={['/devices/select', '/devices/select/scripting']}>
         <Panel layout={layout}>
           <DevicesPage select />
         </Panel>

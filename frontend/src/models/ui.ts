@@ -87,9 +87,9 @@ export type UIState = {
   setupServicesCount: number
   setupServicesNew: boolean
   setupServicesLimit: number
-  successMessage: string
-  noticeMessage: string
-  errorMessage: string
+  successMessage: React.ReactNode
+  noticeMessage: React.ReactNode
+  errorMessage: React.ReactNode
   panelWidth: ILookup<number>
   guides: ILookup<IGuide>
   poppedBubbles: string[]
@@ -106,6 +106,7 @@ export type UIState = {
   connectThisDevice: boolean
   mobileWelcome: boolean
   showDesktopNotice: boolean
+  scriptForm?: IFileForm
 }
 
 export const defaultState: UIState = {
@@ -208,6 +209,7 @@ export const defaultState: UIState = {
   connectThisDevice: false,
   mobileWelcome: true,
   showDesktopNotice: true,
+  scriptForm: undefined,
 }
 
 export default createModel<RootModel>()({

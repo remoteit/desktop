@@ -1,5 +1,6 @@
+import axios from 'axios'
 import structuredClone from '@ungap/structured-clone'
-import { BINARY_DATA_TOKEN } from '../constants'
+import { DEMO_SCRIPT_URL, BINARY_DATA_TOKEN } from '../constants'
 import { createModel } from '@rematch/core'
 import { graphQLFiles } from '../services/graphQLRequest'
 import { graphQLDeleteFile } from '../services/graphQLMutation'
@@ -10,6 +11,7 @@ import { postFile } from '../services/post'
 import { get } from '../services/get'
 
 type FilesState = {
+  initialized: boolean
   fetching: boolean
   all: {
     [accountId: string]: IFile[]
@@ -22,12 +24,13 @@ export const initialForm: IFileForm = {
   executable: true,
   tag: { operator: 'ALL', values: [] },
   deviceIds: [],
-  access: 'ALL',
+  access: 'NONE',
   fileId: '',
   script: '',
 }
 
 const defaultState: FilesState = {
+  initialized: false,
   fetching: true,
   all: {},
 }
@@ -43,7 +46,7 @@ export default createModel<RootModel>()({
       const files = await dispatch.files.parse(result)
       console.log('LOADED FILES', accountId, files)
       dispatch.files.setAccount({ accountId, files })
-      dispatch.files.set({ fetching: false })
+      dispatch.files.set({ fetching: false, initialized: true })
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
@@ -70,7 +73,7 @@ export default createModel<RootModel>()({
 
       return result?.data.fileId
     },
-    async download(fileId: string, state) {
+    async download(fileId: string) {
       const result = await get(`/file/download/${fileId}`)
       if (!result || result === 'ERROR') return
 
@@ -81,6 +84,15 @@ export default createModel<RootModel>()({
 
       console.log('DOWNLOADED FILE', result)
       return result.data
+    },
+    async downloadDemoScript() {
+      try {
+        const result = await axios.get(DEMO_SCRIPT_URL)
+        return result.data
+      } catch (error) {
+        console.error('Error downloading demo script', error)
+        return
+      }
     },
     async delete(fileId: string, state) {
       console.log('DELETE FILE', fileId)

@@ -11,7 +11,6 @@ import { IconButton, ButtonProps } from '../IconButton'
 import { attributeName } from '@common/nameHelper'
 import { GuideBubble } from '../../components/GuideBubble'
 import { Typography } from '@mui/material'
-import { Icon } from '../../components/Icon'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()

@@ -1,7 +1,6 @@
 // root
 {
   "compilerOptions": {
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "downlevelIteration": true,
@@ -20,5 +19,5 @@
     "target": "es2017",
     "useUnknownInCatchVariables": false
   },
-  "exclude": ["android", "ios", "*/*.js", "*/*/*.js", "*/build", "*/dist"]
+  "exclude": ["node_modules", "android", "ios", "**/build/**", "**/dist/**"]
 }

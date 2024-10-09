@@ -30,32 +30,31 @@ export const scriptAttributes: ScriptAttribute[] = [
         </Typography>
       ),
   }),
-  new ScriptAttribute({
-    id: 'scriptArguments',
-    label: 'Arguments',
-    defaultWidth: 150,
-    value: ({ file }) => (
-      <>
-        {file?.versions?.[0].arguments.map(a => (
-          <Typography
-            key={a.name}
-            variant="caption"
-            color="grayDarkest.main"
-            component="p"
-            sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
-          >
-            <Icon {...argumentIconLookup[a.argumentType]} fixedWidth type="solid" size="xxxs" color="gray" />
-            {a.name}
-          </Typography>
-        ))}
-      </>
-    ),
-    // value: ({ file }) => <Pre>{script}</Pre>,
-  }),
+  // new ScriptAttribute({
+  //   id: 'scriptArguments',
+  //   label: 'Arguments',
+  //   defaultWidth: 150,
+  //   value: ({ file }) => (
+  //     <>
+  //       {file?.versions?.[0].arguments.map(a => (
+  //         <Typography
+  //           key={a.name}
+  //           variant="caption"
+  //           color="grayDarkest.main"
+  //           component="p"
+  //           sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
+  //         >
+  //           <Icon {...argumentIconLookup[a.argumentType]} fixedWidth type="solid" size="xxxs" color="gray" />
+  //           {a.name}
+  //         </Typography>
+  //       ))}
+  //     </>
+  //   ),
+  // }),
   new ScriptAttribute({
     id: 'scriptDescription',
     label: 'Description',
-    defaultWidth: 300,
+    defaultWidth: 400,
     value: ({ file }) => file?.shortDesc,
   }),
   new ScriptAttribute({

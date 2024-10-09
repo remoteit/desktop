@@ -11,15 +11,18 @@ type Props = {
   attributes: Attribute[]
   required?: Attribute
   mobile?: boolean
+  selectedIds?: string[]
+  fileID?: string
 }
 
-export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile }) => {
+export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile, selectedIds, fileID }) => {
   const history = useHistory()
 
   if (!script) return null
 
   const handleClick = () => {
-    history.push(`/scripting/${script.id}`)
+    if (selectedIds?.length) history.push(`/scripting/scripts/${script.id}`)
+    else history.push(`/scripting/${script.id}`)
   }
 
   return (
@@ -28,6 +31,7 @@ export const FileListItem: React.FC<Props> = ({ script, required, attributes, mo
       mobile={mobile}
       icon={<JobStatusIcon status={script.job?.status} />}
       required={<AttributeValue {...{ mobile, file: script, attribute: required }} />}
+      selected={script.id === fileID}
       disableGutters
     >
       {attributes?.map(attribute => (

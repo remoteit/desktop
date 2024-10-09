@@ -11,13 +11,13 @@ import { Notice } from './Notice'
 import { spacing, radius } from '../styling'
 
 type Props = {
-  script: string
+  script?: string
   loading?: boolean
   onChange: (script: string) => void
   onUpload: (file: File) => void
 }
 
-export const FileUpload: React.FC<Props> = ({ script, loading, onChange, onUpload }) => {
+export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, onUpload }) => {
   const { ui } = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string | undefined>()
   const [isText, setIsText] = useState(true)

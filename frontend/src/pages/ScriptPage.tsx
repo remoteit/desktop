@@ -1,13 +1,12 @@
 import React from 'react'
+import { State } from '../store'
+import { useSelector } from 'react-redux'
 import { selectScript } from '../selectors/scripting'
 import { getJobAttribute } from '../components/JobAttributes'
-import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-import { useSelector } from 'react-redux'
 import { Redirect, useParams } from 'react-router-dom'
 import { Box, Stack, List, Typography } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
-import { DevicesActionBar } from '../components/DevicesActionBar'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
 import { Timestamp } from '../components/Timestamp'
@@ -15,10 +14,11 @@ import { RunButton } from '../buttons/RunButton'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 // import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
-  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID }>()
+  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
 
@@ -26,8 +26,6 @@ export const ScriptPage: React.FC = () => {
 
   const noDevices = !script?.job || !script.job.jobDevices.length
   const hasRun = script.job && script.job.status !== 'READY'
-
-  console.log('SCRIPT already ran?', script.job && script.job.status !== 'READY', script)
 
   if (!jobDeviceID) {
     return (
@@ -51,9 +49,13 @@ export const ScriptPage: React.FC = () => {
             <ListItemLocation
               to={`/scripting/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
-              icon={<JobStatusIcon status={script.job?.status} size="lg" device />}
+              icon={<JobStatusIcon status={script.job?.status} size="lg" />}
               exactMatch
-            />
+            >
+              <Box marginRight={2}>
+                <Icon name="chevron-right" color="grayDark" className="hidden" />
+              </Box>
+            </ListItemLocation>
             {/* <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
@@ -97,7 +99,9 @@ export const ScriptPage: React.FC = () => {
             <JobStatusIcon status="FAILED" padding={0} />
           </Stack>
         </Typography>
-        {!noDevices && (
+        {noDevices ? (
+          <Notice gutterTop>This script has not been run yet.</Notice>
+        ) : (
           <Box marginY={3} marginX={4}>
             <RunButton job={script.job} size="small" fullWidth />
           </Box>
@@ -113,7 +117,6 @@ export const ScriptPage: React.FC = () => {
             />
           ))}
         </List>
-        {noDevices && <Notice>No devices have been assigned to this script.</Notice>}
       </>
     </Container>
   )

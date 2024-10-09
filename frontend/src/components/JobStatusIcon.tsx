@@ -1,9 +1,9 @@
 import React from 'react'
 import { Box, Tooltip } from '@mui/material'
 import { Sizes } from '../styling'
-import { Icon } from './Icon'
+import { Icon, IconProps } from './Icon'
 
-type JobStatusIconProps = {
+type JobStatusIconProps = IconProps & {
   status?: IJobStatus
   size?: Sizes
   device?: boolean
@@ -13,27 +13,27 @@ type JobStatusIconProps = {
 
 export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
   status,
-  size = 'base',
   title = true,
   padding = 0.7,
   device,
+  ...props
 }) => {
   const icon = (
     <Box padding={padding}>
       {status === 'READY' ? (
-        <Icon name="play" type="solid" color="primary" size={size} />
+        <Icon name="chevron-right" type="solid" color="primary" {...props} />
       ) : status === 'SUCCESS' ? (
-        <Icon name="badge-check" type="solid" color="primary" size={size} />
+        <Icon name="badge-check" type="solid" color="primary" {...props} />
       ) : status === 'FAILED' || status === 'CANCELLED' ? (
-        <Icon name="octagon-xmark" type="solid" color="error" size={size} />
+        <Icon name="octagon-xmark" type="solid" color="error" {...props} />
       ) : status === 'WAITING' ? (
-        <Icon name="ellipsis" type="solid" color="info" size={size} />
+        <Icon name="ellipsis" type="solid" color="info" {...props} />
       ) : status === 'RUNNING' ? (
-        <Icon name="ellipsis" type="solid" color="primary" size={size} />
+        <Icon name="ellipsis" type="solid" color="primary" {...props} />
       ) : device ? (
-        <Icon platform={65535} platformIcon size={size} />
+        <Icon platform={65535} platformIcon {...props} />
       ) : (
-        <Icon name="circle-small" type="solid" color="grayLight" size={size} />
+        <Icon name="circle-small" type="solid" color="grayLight" {...props} />
       )}
     </Box>
   )

@@ -55,6 +55,8 @@ export const GOOGLE_TAG_MANAGER_IOS_KEY = env.VITE_GOOGLE_TAG_MANAGER_IOS_KEY
 export const CERTIFICATE_DOMAIN = 'at.remote.it'
 export const ANONYMOUS_MANUFACTURER_CODE = 34560
 export const SCREEN_VIEW_APP_LINK = 'https://play.google.com/store/apps/details?id=it.remote.screenview'
+export const DEMO_SCRIPT_URL =
+  'https://raw.githubusercontent.com/remoteit/code_samples/refs/heads/main/scripts/linux/script_demo.sh'
 
 export const REGEX_LAST_PATH = /\/[^/]+$/g
 export const REGEX_FIRST_PATH = /^\/([^\/]+)/g

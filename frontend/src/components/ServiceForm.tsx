@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
-import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
 import { MAX_DESCRIPTION_LENGTH } from '../constants'
+import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
+import { Typography, TextField, List, ListItem, Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useURLForm } from '../hooks/useURLForm'
 import { AddFromNetwork } from './AddFromNetwork'
 import { useApplication } from '../hooks/useApplication'
 import { State, Dispatch } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
-import { Typography, TextField, List, ListItem, Button } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { ServiceFormApplications } from './ServiceFormApplications'
 import { serviceNameValidation } from '@common/nameHelper'
@@ -68,7 +68,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       enabled: !service || service.enabled,
       presenceAddress: service?.presenceAddress,
       name: service?.name || '',
-      attributes: { ...service?.attributes } || {},
+      attributes: service ? { ...service.attributes } : {},
       ...setupAdded,
     }
   }

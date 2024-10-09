@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
-import browser from '../services/browser'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
-import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { Divider, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
+import { DeviceScriptingMenu } from './DeviceScriptingMenu'
 import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
 import { LeaveDevice } from './LeaveDevice'
 import { InfoButton } from '../buttons/InfoButton'
+import { IconButton } from '../buttons/IconButton'
 import { MobileUI } from './MobileUI'
 import { Icon } from './Icon'
 
@@ -29,10 +30,9 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
 
   return (
     <>
+      {deviceOnly && <DeviceScriptingMenu device={device} />}
       <MobileUI hide>{!devicesSection && <InfoButton device={device} service={service} />}</MobileUI>
-      <IconButton onClick={handleClick}>
-        <Icon name="ellipsis-v" size="md" fixedWidth />
-      </IconButton>
+      <IconButton onClick={handleClick} name="ellipsis-v" size="md" fixedWidth />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -87,9 +87,10 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               </ListItemIcon>
               <ListItemText primary="Transfer Device" />
             </MenuItem>,
-            <Divider key="divider" />,
-            <DeleteDevice key="deleteDevice" device={device} menuItem />,
           ]}
+        {device.permissions.includes('MANAGE') &&
+          devicesSection &&
+          deviceOnly && [<Divider key="divider" />, <DeleteDevice key="deleteDevice" device={device} menuItem />]}
         {device.permissions.includes('MANAGE') &&
           service &&
           devicesSection && [

@@ -19,7 +19,7 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
-  const { accounts, devices, files, jobs, tags, networks, logs } = useDispatch<Dispatch>()
+  const { accounts, devices, files, tags, networks, logs } = useDispatch<Dispatch>()
 
   let activeOrg = useSelector(selectOrganization)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
