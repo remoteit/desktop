@@ -14,6 +14,7 @@ import { RunButton } from '../buttons/RunButton'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 // import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
@@ -50,7 +51,11 @@ export const ScriptPage: React.FC = () => {
               title={<Typography variant="h2">{script.name}</Typography>}
               icon={<JobStatusIcon status={script.job?.status} size="lg" />}
               exactMatch
-            />
+            >
+              <Box marginRight={2}>
+                <Icon name="chevron-right" color="grayDark" className="hidden" />
+              </Box>
+            </ListItemLocation>
             {/* <ListItemLocation
               to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
