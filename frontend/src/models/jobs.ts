@@ -54,37 +54,23 @@ export default createModel<RootModel>()({
         })) || []
       )
     },
-    async save(form: IFileForm) {
+    async saveAndRun(form: IFileForm) {
+      console.log('SAVE AND RUN JOB', form)
+      const jobId = await dispatch.jobs.save(form)
+      await dispatch.jobs.run(jobId)
+    },
+    async save(form: IFileForm, state) {
+      const job = selectJobs(state).find(j => j.id === form.jobId)
+      if (job?.status === 'READY') delete form.jobId
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return
       console.log('SAVED JOB', result?.data)
       return result?.data.data.setJob
     },
-    async saveAndRun(form: IFileForm) {
-      const data = formAdaptor(form)
-      const result = await graphQLStartJob(data)
-      if (result === 'ERROR') return
-      console.log('STARTED JOB', { result, data })
-    },
-    async run(jobId: string | undefined, state) {
-      let result
-      const job = selectJobs(state).find(j => j.id === jobId)
-      if (!job) return
-
-      const params = {
-        fileId: job.file?.id,
-        tagFilter: job.tag.values.length ? job.tag : undefined,
-        deviceIds: job.jobDevices.map(jd => jd.id),
-      }
-
-      console.log('RUNNING JOB', jobId, params)
-
-      // start existing job
-      if (job.status === 'READY') result = await graphQLStartJob({ jobId, ...params })
-      // duplicate for new job
-      else if (job) result = await graphQLStartJob(params)
-
+    async run(jobId: string | undefined) {
+      if (!jobId) return
+      const result = await graphQLStartJob(jobId)
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, jobId })
     },
@@ -120,7 +106,7 @@ function formAdaptor(form: IFileForm) {
     jobId: form.jobId,
     arguments: undefined, // form.arguments to be implemented
     tagFilter: form.access === 'TAG' ? form.tag : undefined,
-    deviceIds: form.access === 'SELECTED' ? form.deviceIds : undefined,
+    deviceIds: form.access === 'SELECTED' || form.access === 'CUSTOM' ? form.deviceIds : undefined,
     // all: form.access === 'ALL',
   }
 }

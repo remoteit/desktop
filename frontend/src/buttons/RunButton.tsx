@@ -42,7 +42,6 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ..
       variant = 'contained'
       break
     case 'READY':
-      title = 'Run'
       variant = 'contained'
       break
   }

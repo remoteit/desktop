@@ -594,27 +594,19 @@ export async function graphQLSetJob(params: {
   deviceIds?: string[]
 }) {
   return await graphQLBasicRequest(
-    ` mutation Job($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+    ` mutation SaveJob($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
         setJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
       }`,
     params
   )
 }
 
-export async function graphQLStartJob(params: {
-  jobId?: string
-  fileId?: string
-  arguments?: IFileArgument[]
-  tagFilter?: ITagFilter
-  deviceIds?: string[]
-}) {
+export async function graphQLStartJob(jobId: string) {
   return await graphQLBasicRequest(
-    ` mutation StartJob($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
-        startJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
+    ` mutation StartJob($jobId: String) {
+        startJob(jobId: $jobId)
       }`,
-    params
-    // fileGroupId: String
-    // fileVersionId: String
+    { jobId }
   )
 }
 

@@ -70,18 +70,6 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, on
 
   return (
     <Stack width="100%" position="relative">
-      {showUpload && (
-        <>
-          <ButtonBase className={css.paper} {...getRootProps()}>
-            <input {...getInputProps()} />
-            <Box>
-              <Typography variant="body2">Upload</Typography>
-              <Typography variant="caption">Drag and drop or click </Typography>
-            </Box>
-          </ButtonBase>
-          <Divider />
-        </>
-      )}
       {isText ? (
         <>
           <TextField
@@ -96,7 +84,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, on
             InputLabelProps={{ shrink: true }}
             InputProps={{
               sx: theme => ({
-                borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
+                borderRadius: showUpload ? `${radius.sm}px ${radius.sm}px 0 0` : undefined,
                 fontFamily: "'Roboto Mono', monospace",
                 fontSize: theme.typography.caption.fontSize,
                 lineHeight: theme.typography.caption.lineHeight,
@@ -127,6 +115,18 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, on
           This script appears to be binary.
         </Notice>
       )}
+      {showUpload && (
+        <>
+          <Divider />
+          <ButtonBase className={css.paper} {...getRootProps()}>
+            <input {...getInputProps()} />
+            <Box>
+              <Typography variant="body2">Upload</Typography>
+              <Typography variant="caption">Drag and drop or click </Typography>
+            </Box>
+          </ButtonBase>
+        </>
+      )}
     </Stack>
   )
 }
@@ -141,7 +141,7 @@ const useStyles = makeStyles(({ palette }) => ({
     border: `2px dotted ${isDragActive ? palette.primary.main : palette.grayLightest.main}`,
     background: palette.grayLightest.main,
     padding: `${spacing.md}px ${spacing.xl}px`,
-    borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
+    borderRadius: `0 0 ${radius.sm}px ${radius.sm}px`,
     minWidth: 200,
     '&:hover': { background: palette.primaryHighlight.main, borderColor: palette.primaryHighlight.main },
   }),

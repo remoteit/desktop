@@ -26,7 +26,7 @@ export const ScriptEditPage: React.FC = () => {
   const device = useSelector((state: State) =>
     selectedIds.length === 1 ? selectDevice(state, undefined, selectedIds[0]) : undefined
   )
-  const defaultDeviceIds = script?.job?.jobDevices.map(d => d.id) || []
+  const defaultDeviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
   const tagValues = script?.job?.tag?.values || []
   const access = () => (tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : 'ALL')
 

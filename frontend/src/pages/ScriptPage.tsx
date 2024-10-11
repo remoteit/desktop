@@ -63,17 +63,19 @@ export const ScriptPage: React.FC = () => {
               sx={{ marginTop: 6 }}
             /> */}
           </List>
-          <Gutters inset="icon" bottom="xl" top={null}>
-            {getJobAttribute('jobTags').value({ job: script.job })}
-            {script.shortDesc && (
-              <Typography variant="caption" marginTop={1} component="p">
-                {script.shortDesc}
-              </Typography>
+          <Gutters inset="icon" bottom="lg" top={null}>
+            {script.job?.tag.values.length && (
+              <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job: script.job })}</Box>
             )}
             {script.job?.jobDevices[0]?.updated && (
-              <Typography variant="caption" color="GrayText" marginTop={6} textTransform="capitalize" component="p">
+              <Typography variant="caption" color="GrayText" marginTop={1} textTransform="capitalize" component="p">
                 {script.job?.status.toLowerCase()} &nbsp;
                 <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
+              </Typography>
+            )}
+            {script.shortDesc && (
+              <Typography variant="caption" component="p">
+                {script.shortDesc}
               </Typography>
             )}
           </Gutters>

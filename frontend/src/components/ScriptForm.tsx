@@ -41,7 +41,8 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     if (form.access === 'SELECTED') form.deviceIds = selectedIds
 
-    if (run) await dispatch.jobs.saveAndRun({ ...form, fileId })
+    if (run && changed) await dispatch.jobs.saveAndRun({ ...form, fileId })
+    else if (run) await dispatch.jobs.run(form.jobId)
     else await dispatch.jobs.save({ ...form, fileId })
 
     await dispatch.files.fetch()
