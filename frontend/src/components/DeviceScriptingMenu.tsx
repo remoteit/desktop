@@ -30,7 +30,7 @@ export const DeviceScriptingMenu: React.FC<Props> = ({ device }) => {
         elevation={2}
       >
         <ListSubheader disableGutters sx={{ bgcolor: 'transparent' }}>
-          Device scripting
+          Run script
         </ListSubheader>
         <MenuItem
           dense
@@ -41,13 +41,13 @@ export const DeviceScriptingMenu: React.FC<Props> = ({ device }) => {
           <ListItemIcon>
             <Icon name="chevron-right" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Run Script" />
+          <ListItemText primary="Choose Script" />
         </MenuItem>
         <MenuItem dense to="/scripting/add" onClick={() => dispatch.ui.set({ selected: [device.id] })} component={Link}>
           <ListItemIcon>
             <Icon name="plus" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Add Script" />
+          <ListItemText primary="New Script" />
         </MenuItem>
       </Menu>
     </>

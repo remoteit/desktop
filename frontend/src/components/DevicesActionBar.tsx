@@ -86,7 +86,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           </InputLabel>
           <IconButton
             icon="chevron-right"
-            title="Run Script"
+            title="Choose Script"
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
@@ -94,7 +94,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           />
           <IconButton
             icon="plus"
-            title="Add Script"
+            title="New Script"
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
