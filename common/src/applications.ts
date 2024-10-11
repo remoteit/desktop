@@ -388,7 +388,7 @@ export function getApplicationType(typeId?: number) {
         sshConfig,
       })
     case 5:
-      const rdpCommand = 'rdp://full%20address=s%3A[host]%3A[port]&username=s%3A[username]'
+      const rdpCommand = 'rdp://full%20address=s%3A[host]%3A[port]'
       return new Application({
         title: 'RDP',
         use: 'For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely.',
