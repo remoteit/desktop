@@ -79,8 +79,8 @@ export const TagAutocomplete: React.FC<Props> = ({
 
   return (
     <Popper
-      anchorEl={targetEl}
       open={open}
+      anchorEl={targetEl}
       placement="bottom-start"
       modifiers={[
         {
@@ -98,7 +98,7 @@ export const TagAutocomplete: React.FC<Props> = ({
           options: {
             altAxis: true,
             altBoundary: true,
-            tether: true,
+            tether: false,
             rootBoundary: 'viewport',
             padding: 8,
           },
