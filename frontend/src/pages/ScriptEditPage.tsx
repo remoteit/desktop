@@ -1,9 +1,9 @@
 import sleep from '../helpers/sleep'
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { Typography } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography } from '@mui/material'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { selectDevice } from '../selectors/devices'
 import { selectScript } from '../selectors/scripting'
@@ -28,7 +28,7 @@ export const ScriptEditPage: React.FC = () => {
   )
   const defaultDeviceIds = script?.job?.jobDevices.map(d => d.id) || []
   const tagValues = script?.job?.tag?.values || []
-  const access = () => (defaultDeviceIds.length ? 'CUSTOM' : tagValues.length ? 'TAG' : 'ALL')
+  const access = () => (tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : 'ALL')
 
   useEffect(() => {
     if (!script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
