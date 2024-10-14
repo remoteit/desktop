@@ -26,7 +26,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const devicesPage = useRouteMatch('/devices')
   const scriptingPage = useRouteMatch('/scripting')
   const scriptPage = useRouteMatch('/script')
-  console.log('REFRESH BUTTON', { fileID, jobID, scriptPage, scriptingPage })
 
   let title = 'Refresh application'
   let methods: Methods = []

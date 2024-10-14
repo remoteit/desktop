@@ -2,13 +2,12 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 import structuredClone from '@ungap/structured-clone'
 import CloudTimes from './CloudTimes'
 import network from '../services/Network'
+import { AxiosResponse } from 'axios'
 import { isReverseProxy } from '../models/applicationTypes'
-import { accountFromDevice } from '../models/accounts'
+import { getAccountIds, accountFromDevice } from '../models/accounts'
+import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
-import { AxiosResponse } from 'axios'
-import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
-import { getAccountIds } from '../models/accounts'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -144,16 +143,33 @@ class CloudController {
               id
               name
               created
-              access {
-                user {
-                  id
-                }
-              }
             }
           }
           actor {
             id
             email
+          }
+          ... on DeviceStateEvent {
+            target {
+              id
+              name
+              application
+              platform
+              owner {
+                id
+                email
+              }
+              device {
+                id
+                name
+                created
+                access {
+                  user {
+                    id
+                  }
+                }
+              }
+            }
           }
           ... on DeviceConnectEvent {
             platform
@@ -172,6 +188,38 @@ class CloudController {
             users {
               id
               email
+            }
+          }
+          ... on DeviceJobEvent {
+            job {
+              id
+              status
+              owner {
+                id
+                email
+              }
+              user {
+                id
+                email
+              }
+            }
+            jobDevice {
+              id
+              status
+            }
+          }
+          ... on JobEvent {
+            job {
+              id
+              status
+              owner {
+                id
+                email
+              }
+              user {
+                id
+                email
+              }
             }
           }
           ... on LicenseUpdatedEvent {
@@ -247,6 +295,8 @@ class CloudController {
         manufacturerType: getManufacturerType(event.manufacturer, reverseProxy),
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,
+        job: event.job,
+        jobDevice: event.jobDevice,
         target: event.target.map(t => {
           const [service, device] = selectById(state, undefined, t.id)
           const connection = findLocalConnection(state, t.id, event.session)
@@ -254,7 +304,7 @@ class CloudController {
             id: t.id,
             name: combinedName(t, t.device),
             owner: t.owner,
-            accountId: accountFromDevice(state, t.owner?.id, t.device?.access.map(a => a.user.id) || []),
+            accountId: accountFromDevice(state, t.owner?.id, t.device?.access?.map(a => a.user.id) || []),
             typeID: t.application,
             platform: t.platform,
             deviceId: t.device?.id || device?.id,
@@ -387,6 +437,14 @@ class CloudController {
               dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
           })
         }
+        break
+
+      case 'DEVICE_JOB':
+        // dispatch.jobs.
+        console.log('DEVICE JOB EVENT', event)
+        console.log('DEVICE job', event.job)
+        console.log('DEVICE jobDevice', event.jobDevice)
+        console.log('DEVICE jobState', event.action)
         break
 
       case 'DEVICE_REFRESH':
