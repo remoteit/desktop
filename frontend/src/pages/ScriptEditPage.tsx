@@ -28,7 +28,7 @@ export const ScriptEditPage: React.FC = () => {
   )
   const defaultDeviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
   const tagValues = script?.job?.tag?.values || []
-  const access = () => (tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : 'ALL')
+  const access = () => (tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : 'NONE')
 
   useEffect(() => {
     if (!script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
@@ -55,7 +55,7 @@ export const ScriptEditPage: React.FC = () => {
       ...initialForm,
       deviceIds: defaultDeviceIds,
       jobId: script?.job?.status === 'READY' ? script?.job?.id : initialForm.jobId,
-      fileId: script?.versions[0].id ?? initialForm.fileId,
+      fileId: script?.id /* versions[0].id */ ?? initialForm.fileId,
       name: script?.name ?? initialForm.name,
       description: script?.shortDesc ?? initialForm.description,
       executable: script?.executable ?? initialForm.executable,

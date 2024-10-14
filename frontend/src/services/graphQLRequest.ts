@@ -13,12 +13,12 @@ export async function graphQLLogin() {
   )
 }
 
-export async function graphQLFiles(accountId: string) {
+export async function graphQLFiles(accountId: string, ids?: string[]) {
   return await graphQLBasicRequest(
-    ` query Files($accountId: String) {
+    ` query Files($accountId: String, $ids: [ID!]) {
         login {
           account(id: $accountId) {
-            files {
+            files(ids: $ids) {
               id
               name
               created
@@ -42,7 +42,7 @@ export async function graphQLFiles(accountId: string) {
           }
         }
       }`,
-    { accountId }
+    { accountId, ids }
   )
 }
 

@@ -41,14 +41,12 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     if (form.access === 'SELECTED') form.deviceIds = selectedIds
 
-    if (run && changed) await dispatch.jobs.saveAndRun({ ...form, fileId })
-    else if (run) await dispatch.jobs.run(form.jobId)
+    if (run) await dispatch.jobs.saveRun({ ...form, fileId })
     else await dispatch.jobs.save({ ...form, fileId })
 
-    await dispatch.files.fetch()
-    await dispatch.jobs.fetch()
+    await dispatch.files.fetchSingle({ fileId })
     dispatch.ui.set({ selected: [], scriptForm: undefined })
-    history.push('..')
+    history.push(`/scripting/${fileId}`)
 
     setSaving(false)
     if (run) setRunning(false)

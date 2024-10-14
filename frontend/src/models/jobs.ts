@@ -54,25 +54,39 @@ export default createModel<RootModel>()({
         })) || []
       )
     },
-    async saveAndRun(form: IFileForm) {
+    async saveRun(form: IFileForm) {
       console.log('SAVE AND RUN JOB', form)
       const jobId = await dispatch.jobs.save(form)
       await dispatch.jobs.run(jobId)
     },
     async save(form: IFileForm, state) {
       const job = selectJobs(state).find(j => j.id === form.jobId)
-      if (job?.status === 'READY') delete form.jobId
+      if (job?.status !== 'READY') delete form.jobId
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return
       console.log('SAVED JOB', result?.data)
-      return result?.data.data.setJob
+      return result?.data.data.setJob // jobId
     },
     async run(jobId: string | undefined) {
-      if (!jobId) return
+      if (!jobId) return console.error('NO JOB ID TO RUN')
       const result = await graphQLStartJob(jobId)
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, jobId })
+    },
+    async runAgain(script: IScript) {
+      const deviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
+      const tagValues = script?.job?.tag?.values || []
+      dispatch.jobs.saveRun({
+        deviceIds,
+        jobId: script.job?.id || '',
+        fileId: script.id,
+        name: script.name || '',
+        description: script.shortDesc || '',
+        executable: script.executable,
+        tag: script.job?.tag,
+        access: tagValues.length ? 'TAG' : deviceIds.length ? 'CUSTOM' : 'NONE',
+      })
     },
     async cancel(jobId: string | undefined) {
       const result = await graphQLCancelJob(jobId)

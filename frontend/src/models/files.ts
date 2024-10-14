@@ -47,11 +47,21 @@ export default createModel<RootModel>()({
       dispatch.files.setAccount({ accountId, files })
       dispatch.files.set({ fetching: false, initialized: true })
     },
+    async fetchSingle({ accountId, fileId }: { accountId?: string; fileId: string }, state) {
+      dispatch.files.set({ fetching: true })
+      accountId = accountId || selectActiveAccountId(state)
+      const result = await graphQLFiles(accountId, [fileId])
+      if (result === 'ERROR') return
+      const files = await dispatch.files.parse(result)
+      console.log('LOADED FILE', accountId, files)
+      dispatch.files.setFile({ accountId, file: files[0] })
+      dispatch.files.set({ fetching: false })
+    },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
       if (!state.files.all[accountId]) dispatch.files.fetch(accountId)
     },
-    async parse(result: AxiosResponse<any> | undefined) {
+    async parse(result: AxiosResponse<any> | undefined): Promise<IFile[]> {
       const data = result?.data?.data?.login?.account
       return data?.files.map(file => ({ ...file, versions: file.versions.items }))
     },
@@ -103,6 +113,13 @@ export default createModel<RootModel>()({
       }
 
       await dispatch.files.fetch()
+    },
+    async setFile({ accountId, file }: { accountId: string; file: IFile }, state) {
+      const files = state.files.all[accountId] || []
+      const index = files.findIndex(f => f.id === file.id)
+      if (index === -1) files.push(file)
+      else files[index] = file
+      dispatch.files.setAccount({ accountId, files })
     },
     async setAccount(params: { files: IFile[]; accountId: string }, state) {
       let all = structuredClone(state.files.all)

@@ -1,10 +1,10 @@
 import React from 'react'
-import { State } from '../store'
-import { useSelector } from 'react-redux'
 import { selectScript } from '../selectors/scripting'
+import { State, Dispatch } from '../store'
 import { getJobAttribute } from '../components/JobAttributes'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { Redirect, useParams } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, Typography } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -18,6 +18,7 @@ import { Icon } from '../components/Icon'
 // import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
@@ -64,7 +65,7 @@ export const ScriptPage: React.FC = () => {
             /> */}
           </List>
           <Gutters inset="icon" bottom="lg" top={null}>
-            {script.job?.tag.values.length && (
+            {!!script.job?.tag.values.length && (
               <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job: script.job })}</Box>
             )}
             {script.job?.jobDevices[0]?.updated && (
@@ -105,7 +106,14 @@ export const ScriptPage: React.FC = () => {
           <Notice gutterTop>This script has not been run yet.</Notice>
         ) : (
           <Box marginY={3} marginX={4}>
-            <RunButton job={script.job} size="small" fullWidth />
+            <RunButton
+              job={script.job}
+              size="small"
+              onRun={() => dispatch.jobs.run(script.job?.id)}
+              onRunAgain={() => dispatch.jobs.runAgain(script)}
+              onCancel={() => dispatch.jobs.cancel(script.job?.id)}
+              fullWidth
+            />
           </Box>
         )}
         <List>

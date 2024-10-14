@@ -14,7 +14,7 @@ import { Typography } from '@mui/material'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
-  const { deviceID } = useParams<{ deviceID?: string }>()
+  const { deviceID, fileID } = useParams<{ deviceID?: string; fileID?: string }>()
   const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
   const fetching = useSelector(
     (state: State) =>
@@ -41,8 +41,9 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // scripting pages
   } else if (scriptingPage) {
-    title = 'Refresh scripting'
-    methods.push(dispatch.files.fetch)
+    title = fileID ? 'Refresh script' : 'Refresh scripting'
+    if (fileID) methods.push(async () => await dispatch.files.fetchSingle({ fileId: fileID }))
+    else methods.push(dispatch.files.fetch)
     methods.push(dispatch.jobs.fetch)
 
     // log pages

@@ -1,34 +1,32 @@
 import React from 'react'
-import sleep from '../helpers/sleep'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 import { Color } from '../styling'
 
 export type RunButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
   job?: IJob
-  onClick?: (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => void
+  onRun?: () => void
+  onRunAgain?: () => void
+  onCancel?: () => void
 }
 
-export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ...props }) => {
-  const dispatch = useDispatch<Dispatch>()
+export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onRun, onRunAgain, onCancel, ...props }) => {
   const [loading, setLoading] = React.useState<boolean>(false)
 
   let title = 'Run'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let color: Color = 'primary'
   let icon: string | undefined
-  let clickAction = async () => await dispatch.jobs.run(job?.id)
+  let clickAction = onRunAgain
 
   switch (job?.status) {
     case 'WAITING':
       title = 'Cancel'
       color = 'grayDarker'
-      clickAction = async () => await dispatch.jobs.cancel(job?.id)
+      clickAction = onCancel
       break
     case 'RUNNING':
       title = 'Cancel'
-      clickAction = async () => await dispatch.jobs.cancel(job?.id)
+      clickAction = onCancel
       break
     case 'FAILED':
       color = 'danger'
@@ -43,18 +41,16 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onClick, ..
       break
     case 'READY':
       variant = 'contained'
+      clickAction = onRun
       break
   }
 
-  let clickHandler = async (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
+  let clickHandler = async (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
     event?.stopPropagation()
     event?.preventDefault()
     setLoading(true)
-    await clickAction()
-    await sleep(1000)
-    await dispatch.jobs.fetch()
+    await clickAction?.()
     setLoading(false)
-    event && onClick?.(event)
   }
 
   props.loading = props.loading || loading

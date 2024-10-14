@@ -605,13 +605,13 @@ declare global {
     executable: boolean
     deviceIds: string[]
     access: IRoleAccess
-    script: string
+    script?: string
     fileId: string
     jobId?: string
     tag?: ITagFilter
     file?: File
   }
-  
+
   type IJob = {
     id: string
     status: IJobStatus
@@ -688,9 +688,14 @@ declare global {
     manufacturer?: number
     manufacturerType: ISession['manufacturer']
     metadata?: INotificationSetting
-    jobId?: string
-    jobDeviceId?: string
-    jobState?: IJobStatus
+    job?: {
+      id: string
+      status: IJobStatus
+    }
+    jobDevice?: {
+      id: string
+      status: IJobStatus
+    }
     target: {
       id: string
       name: string

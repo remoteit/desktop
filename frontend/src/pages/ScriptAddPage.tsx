@@ -43,7 +43,6 @@ export const ScriptAddPage: React.FC<Props> = ({ center }) => {
             Add and run a script
           </Typography>
         )}
-
         <ScriptForm form={form} onChange={setForm} selectedIds={selectedIds} defaultForm={defaultForm} />
       </Box>
     </Body>
