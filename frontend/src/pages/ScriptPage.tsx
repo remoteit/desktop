@@ -32,9 +32,7 @@ export const ScriptPage: React.FC = () => {
     return (
       <Redirect
         to={{
-          pathname: `/scripting/${script.id}/${
-            hasRun ? `${script.job?.id}/${script.job?.jobDevices[0]?.id}` : '-/edit'
-          }`,
+          pathname: `/script/${script.id}/${hasRun ? `${script.job?.id}/${script.job?.jobDevices[0]?.id}` : '-/edit'}`,
           state: { isRedirect: true },
         }}
       />
@@ -48,7 +46,7 @@ export const ScriptPage: React.FC = () => {
         <>
           <List sx={{ marginBottom: 0 }}>
             <ListItemLocation
-              to={`/scripting/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
+              to={`/script/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
               icon={<JobStatusIcon status={script.job?.status} size="lg" />}
               exactMatch
@@ -58,7 +56,7 @@ export const ScriptPage: React.FC = () => {
               </Box>
             </ListItemLocation>
             {/* <ListItemLocation
-              to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
+              to={`/script/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
               icon="clock-rotate-left"
               sx={{ marginTop: 6 }}
@@ -121,7 +119,7 @@ export const ScriptPage: React.FC = () => {
             <ListItemLocation
               sx={{ paddingRight: 2 }}
               key={jd.id}
-              to={`/scripting/${fileID}/${script.job?.id || '-'}/${jd.id}`}
+              to={`/script/${fileID}/${script.job?.id || '-'}/${jd.id}`}
               title={jd.device.name}
               icon={<JobStatusIcon status={jd.status} device />}
             />

@@ -46,7 +46,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     await dispatch.files.fetchSingle({ fileId })
     dispatch.ui.set({ selected: [], scriptForm: undefined })
-    history.push(`/scripting/${fileId}`)
+    history.push(`/script/${fileId}`)
 
     setSaving(false)
     if (run) setRunning(false)

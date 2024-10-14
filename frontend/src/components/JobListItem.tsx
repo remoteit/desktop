@@ -19,7 +19,7 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
   if (!job) return null
 
   const handleClick = () => {
-    history.push(`/scripting/${job.file?.id}/${job.id}`)
+    history.push(`/script/${job.file?.id}/${job.id}`)
   }
 
   return (

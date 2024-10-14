@@ -35,6 +35,16 @@ export default createModel<RootModel>()({
       dispatch.jobs.setAccount({ accountId, jobs })
       dispatch.jobs.set({ fetching: false, initialized: true })
     },
+    async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
+      dispatch.jobs.set({ fetching: true })
+      accountId = accountId || selectActiveAccountId(state)
+      const result = await graphQLJobs(accountId, [jobId])
+      if (result === 'ERROR') return
+      const jobs = await dispatch.jobs.parse(result)
+      console.log('LOADED JOB', accountId, jobs)
+      dispatch.jobs.setJob({ accountId, job: jobs[0] })
+      dispatch.jobs.set({ fetching: false })
+    },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
       if (!state.jobs.all[accountId]) dispatch.jobs.fetch(accountId)
@@ -95,6 +105,13 @@ export default createModel<RootModel>()({
     },
     async unauthorized(deviceIds: string[], state) {
       return getDevices(state).filter(d => deviceIds.includes(d.id) && !d.permissions.includes('SCRIPTING'))
+    },
+    async setJob({ accountId, job }: { accountId: string; job: IJob }, state) {
+      const jobs = structuredClone(state.jobs.all[accountId] || [])
+      const index = jobs.findIndex(j => j.id === job.id)
+      if (index === -1) jobs.push(job)
+      else jobs[index] = job
+      dispatch.jobs.setAccount({ accountId, jobs })
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

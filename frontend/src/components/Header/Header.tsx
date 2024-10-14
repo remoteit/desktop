@@ -114,12 +114,9 @@ export const Header: React.FC = () => {
                 <HeaderDeviceOptionMenu />
               </Route>
             )}
-            <Switch>
-              <Route path="/scripting/scripts/:fileId" />
-              <Route path="/scripting/:fileID/:jobID">
-                <ScriptDeleteButton />
-              </Route>
-            </Switch>
+            <Route path="/script/:fileID/:jobID">
+              <ScriptDeleteButton />
+            </Route>
           </>
         )}
       </div>
