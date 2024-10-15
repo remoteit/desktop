@@ -50,7 +50,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (scriptPage) {
     title = 'Refresh script'
     if (fileID) methods.push(async () => await dispatch.files.fetchSingle({ fileId: fileID }))
-    if (jobID) methods.push(async () => await dispatch.jobs.fetchSingle({ jobId: jobID }))
+    if (jobID === '-') methods.push(dispatch.jobs.fetch)
+    else if (jobID) methods.push(async () => await dispatch.jobs.fetchSingle({ jobId: jobID }))
 
     // log pages
   } else if (logsPage) {

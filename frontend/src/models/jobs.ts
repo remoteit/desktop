@@ -64,19 +64,23 @@ export default createModel<RootModel>()({
         })) || []
       )
     },
-    async saveRun(form: IFileForm) {
+    async saveRun(form: IFileForm): Promise<string> {
       console.log('SAVE AND RUN JOB', form)
       const jobId = await dispatch.jobs.save(form)
       await dispatch.jobs.run(jobId)
+      return jobId
     },
-    async save(form: IFileForm, state) {
+    async save(form: IFileForm, state): Promise<string> {
       const job = selectJobs(state).find(j => j.id === form.jobId)
       if (job?.status !== 'READY') delete form.jobId
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') return '-'
       console.log('SAVED JOB', result?.data)
-      return result?.data.data.setJob // jobId
+
+      const jobId: string = result?.data.data.setJob
+      await dispatch.jobs.fetchSingle({ jobId })
+      return jobId
     },
     async run(jobId: string | undefined) {
       if (!jobId) return console.error('NO JOB ID TO RUN')
@@ -120,9 +124,8 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    reset(state) {
-      state = { ...defaultState }
-      return state
+    reset() {
+      return { ...defaultState }
     },
     set(state, params: Partial<ScriptsState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

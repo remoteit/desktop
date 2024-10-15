@@ -668,10 +668,11 @@ declare global {
     sessionId: string
     source: IConnectionSource
     type:
+      | 'JOB'
+      | 'DEVICE_JOB'
       | 'DEVICE_STATE'
       | 'DEVICE_CONNECT'
       | 'DEVICE_SHARE'
-      | 'DEVICE_JOB'
       | 'DEVICE_REFRESH'
       | 'DEVICE_DELETE'
       | 'LICENSE_UPDATED'
@@ -691,10 +692,13 @@ declare global {
     job?: {
       id: string
       status: IJobStatus
-    }
-    jobDevice?: {
-      id: string
-      status: IJobStatus
+      owner: { id: string }
+      jobDevice?: {
+        id: string
+        status: IJobStatus
+        device: { id: string }
+      }
+      target?: IJob
     }
     target: {
       id: string

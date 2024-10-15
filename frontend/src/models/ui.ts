@@ -185,7 +185,8 @@ export const defaultState: UIState = {
     settings: 350,
     account: 300,
     organization: 350,
-    scripting: 650,
+    scripting: 550,
+    script: 450,
   },
   guides: {
     // all multi-step guides disabled while testing the guide bubbles

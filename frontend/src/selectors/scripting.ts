@@ -27,6 +27,13 @@ export const selectFile = createSelector(
   }
 )
 
+export const selectJob = createSelector(
+  [getJobs, selectActiveAccountId, optionalSecondParam],
+  (jobs, accountId, jobId) => {
+    return jobs[accountId]?.find(j => j.id === jobId)
+  }
+)
+
 export const selectScript = createSelector(
   [getFiles, getJobs, selectActiveAccountId, optionalSecondParam, optionalThirdParam],
   (files, jobs, accountId, fileId, jobId) => {
