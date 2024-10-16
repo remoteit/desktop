@@ -26,6 +26,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
+  const scriptChanged = form.script !== defaultForm.script
   const disabled =
     !!unauthorized ||
     form.access === 'NONE' ||
@@ -37,18 +38,20 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     if (run) setRunning(true)
     setSaving(true)
 
-    form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type ?? 'text/plain' })
-    const fileId = await dispatch.files.upload(form)
+    if (scriptChanged) {
+      form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type ?? 'text/plain' })
+      form.fileId = await dispatch.files.upload(form)
+    }
 
     if (form.access === 'SELECTED') form.deviceIds = selectedIds
 
     let jobId: string
-    if (run) jobId = await dispatch.jobs.saveRun({ ...form, fileId })
-    else jobId = await dispatch.jobs.save({ ...form, fileId })
+    if (run) jobId = await dispatch.jobs.saveRun({ ...form })
+    else jobId = await dispatch.jobs.save({ ...form })
 
     dispatch.ui.set({ selected: [], scriptForm: undefined })
     await sleep(600)
-    history.push(`/script/${fileId}/${jobId}`)
+    history.push(`/script/${form.fileId}/${jobId}`)
 
     setSaving(false)
     if (run) setRunning(false)
@@ -139,7 +142,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
         <DynamicButton
           fullWidth
           color="primary"
-          title={running ? 'Running' : changed ? 'Save and Run' : 'Run'}
+          title={running ? 'Running' : scriptChanged ? 'Save and Run' : 'Run'}
           size="medium"
           disabled={loading || running || saving || disabled}
           onClick={() => save(true)}
