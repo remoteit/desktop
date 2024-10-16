@@ -1,10 +1,10 @@
 import React from 'react'
-import { State } from '../store'
-import { useSelector } from 'react-redux'
 import { selectScript } from '../selectors/scripting'
+import { State, Dispatch } from '../store'
 import { getJobAttribute } from '../components/JobAttributes'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { Redirect, useParams } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, Typography } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -18,6 +18,7 @@ import { Icon } from '../components/Icon'
 // import { Pre } from '../components/Pre'
 
 export const ScriptPage: React.FC = () => {
+  const dispatch = useDispatch<Dispatch>()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const fetching = useSelector((state: State) => state.files.fetching)
@@ -31,9 +32,7 @@ export const ScriptPage: React.FC = () => {
     return (
       <Redirect
         to={{
-          pathname: `/scripting/${script.id}/${
-            hasRun ? `${script.job?.id}/${script.job?.jobDevices[0]?.id}` : '-/edit'
-          }`,
+          pathname: `/script/${script.id}/${hasRun ? `${script.job?.id}/${script.job?.jobDevices[0]?.id}` : '-/edit'}`,
           state: { isRedirect: true },
         }}
       />
@@ -47,7 +46,7 @@ export const ScriptPage: React.FC = () => {
         <>
           <List sx={{ marginBottom: 0 }}>
             <ListItemLocation
-              to={`/scripting/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
+              to={`/script/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
               title={<Typography variant="h2">{script.name}</Typography>}
               icon={<JobStatusIcon status={script.job?.status} size="lg" />}
               exactMatch
@@ -57,23 +56,25 @@ export const ScriptPage: React.FC = () => {
               </Box>
             </ListItemLocation>
             {/* <ListItemLocation
-              to={`/scripting/${fileID}/${script.job?.id || '-'}/history`}
+              to={`/script/${fileID}/${script.job?.id || '-'}/history`}
               title="History"
               icon="clock-rotate-left"
               sx={{ marginTop: 6 }}
             /> */}
           </List>
-          <Gutters inset="icon" bottom="xl" top={null}>
-            {getJobAttribute('jobTags').value({ job: script.job })}
-            {script.shortDesc && (
-              <Typography variant="caption" marginTop={1} component="p">
-                {script.shortDesc}
-              </Typography>
+          <Gutters inset="icon" bottom="lg" top={null}>
+            {!!script.job?.tag.values.length && (
+              <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job: script.job })}</Box>
             )}
             {script.job?.jobDevices[0]?.updated && (
-              <Typography variant="caption" color="GrayText" marginTop={6} textTransform="capitalize" component="p">
+              <Typography variant="caption" color="GrayText" marginTop={1} textTransform="capitalize" component="p">
                 {script.job?.status.toLowerCase()} &nbsp;
                 <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
+              </Typography>
+            )}
+            {script.shortDesc && (
+              <Typography variant="caption" component="p">
+                {script.shortDesc}
               </Typography>
             )}
           </Gutters>
@@ -103,7 +104,14 @@ export const ScriptPage: React.FC = () => {
           <Notice gutterTop>This script has not been run yet.</Notice>
         ) : (
           <Box marginY={3} marginX={4}>
-            <RunButton job={script.job} size="small" fullWidth />
+            <RunButton
+              job={script.job}
+              size="small"
+              onRun={() => dispatch.jobs.run(script.job?.id)}
+              onRunAgain={() => dispatch.jobs.runAgain(script)}
+              onCancel={() => dispatch.jobs.cancel(script.job?.id)}
+              fullWidth
+            />
           </Box>
         )}
         <List>
@@ -111,7 +119,7 @@ export const ScriptPage: React.FC = () => {
             <ListItemLocation
               sx={{ paddingRight: 2 }}
               key={jd.id}
-              to={`/scripting/${fileID}/${script.job?.id || '-'}/${jd.id}`}
+              to={`/script/${fileID}/${script.job?.id || '-'}/${jd.id}`}
               title={jd.device.name}
               icon={<JobStatusIcon status={jd.status} device />}
             />

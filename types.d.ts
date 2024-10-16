@@ -605,13 +605,13 @@ declare global {
     executable: boolean
     deviceIds: string[]
     access: IRoleAccess
-    script: string
+    script?: string
     fileId: string
     jobId?: string
     tag?: ITagFilter
     file?: File
   }
-  
+
   type IJob = {
     id: string
     status: IJobStatus
@@ -668,10 +668,11 @@ declare global {
     sessionId: string
     source: IConnectionSource
     type:
+      | 'JOB'
+      | 'DEVICE_JOB'
       | 'DEVICE_STATE'
       | 'DEVICE_CONNECT'
       | 'DEVICE_SHARE'
-      | 'DEVICE_JOB'
       | 'DEVICE_REFRESH'
       | 'DEVICE_DELETE'
       | 'LICENSE_UPDATED'
@@ -688,9 +689,17 @@ declare global {
     manufacturer?: number
     manufacturerType: ISession['manufacturer']
     metadata?: INotificationSetting
-    jobId?: string
-    jobDeviceId?: string
-    jobState?: IJobStatus
+    job?: {
+      id: string
+      status: IJobStatus
+      owner: { id: string }
+      jobDevice?: {
+        id: string
+        status: IJobStatus
+        device: { id: string }
+      }
+      target?: IJob
+    }
     target: {
       id: string
       name: string

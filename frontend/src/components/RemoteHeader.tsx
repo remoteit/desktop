@@ -21,7 +21,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
   }
 
   return (
-    <Box sx={{ top: 0, left: 0, bottom: 0, right: 0, position: 'fixed', backgroundColor: 'primaryLight.main' }}>
+    <Box sx={{ top: 0, left: 0, bottom: 0, right: 0, position: 'fixed', backgroundColor: 'gray.main' }}>
       {showFrame && (
         <Box
           sx={({ spacing }) => ({

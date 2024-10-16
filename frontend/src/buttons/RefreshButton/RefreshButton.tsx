@@ -14,7 +14,7 @@ import { Typography } from '@mui/material'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
-  const { deviceID } = useParams<{ deviceID?: string }>()
+  const { deviceID, fileID, jobID } = useParams<{ deviceID?: string; fileID?: string; jobID?: string }>()
   const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
   const fetching = useSelector(
     (state: State) =>
@@ -25,6 +25,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
   const scriptingPage = useRouteMatch('/scripting')
+  const scriptPage = useRouteMatch('/script')
 
   let title = 'Refresh application'
   let methods: Methods = []
@@ -41,9 +42,16 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // scripting pages
   } else if (scriptingPage) {
-    title = 'Refresh scripting'
+    title = fileID ? 'Refresh script' : 'Refresh scripting'
     methods.push(dispatch.files.fetch)
     methods.push(dispatch.jobs.fetch)
+
+    // script pages
+  } else if (scriptPage) {
+    title = 'Refresh script'
+    if (fileID) methods.push(async () => await dispatch.files.fetchSingle({ fileId: fileID }))
+    if (jobID === '-') methods.push(dispatch.jobs.fetch)
+    else if (jobID) methods.push(async () => await dispatch.jobs.fetchSingle({ jobId: jobID }))
 
     // log pages
   } else if (logsPage) {

@@ -1,9 +1,9 @@
 import sleep from '../helpers/sleep'
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { Typography } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography } from '@mui/material'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { selectDevice } from '../selectors/devices'
 import { selectScript } from '../selectors/scripting'
@@ -26,9 +26,9 @@ export const ScriptEditPage: React.FC = () => {
   const device = useSelector((state: State) =>
     selectedIds.length === 1 ? selectDevice(state, undefined, selectedIds[0]) : undefined
   )
-  const defaultDeviceIds = script?.job?.jobDevices.map(d => d.id) || []
+  const defaultDeviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
   const tagValues = script?.job?.tag?.values || []
-  const access = () => (defaultDeviceIds.length ? 'CUSTOM' : tagValues.length ? 'TAG' : 'ALL')
+  const access = () => (tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : 'NONE')
 
   useEffect(() => {
     if (!script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
@@ -55,7 +55,7 @@ export const ScriptEditPage: React.FC = () => {
       ...initialForm,
       deviceIds: defaultDeviceIds,
       jobId: script?.job?.status === 'READY' ? script?.job?.id : initialForm.jobId,
-      fileId: script?.versions[0].id ?? initialForm.fileId,
+      fileId: script?.id /* versions[0].id */ ?? initialForm.fileId,
       name: script?.name ?? initialForm.name,
       description: script?.shortDesc ?? initialForm.description,
       executable: script?.executable ?? initialForm.executable,

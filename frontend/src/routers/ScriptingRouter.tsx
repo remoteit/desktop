@@ -51,7 +51,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/scripting/scripts/:fileID?">
             <FilesPage scripts />
           </Route>
-          <Route path="/scripting/:fileID/:jobID?/:jobDeviceID?">
+          <Route path="/script/:fileID/:jobID?/:jobDeviceID?">
             <ScriptPage />
           </Route>
           <Route path="*">
@@ -61,16 +61,16 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       }
       secondary={
         <Switch>
-          <Route path={['/scripting/scripts/add', '/scripting/runs/add']}>
+          <Route path="/scripting/scripts/add">
             <ScriptAddPage />
           </Route>
           <Route path="/scripting/scripts/:fileID">
             <ScriptEditPage />
           </Route>
-          <Route path="/scripting/:fileID/:jobID/edit">
+          <Route path="/script/:fileID/:jobID/edit">
             <ScriptEditPage />
           </Route>
-          <Route path="/scripting/:fileID/:jobID/:jobDeviceID">
+          <Route path="/script/:fileID/:jobID/:jobDeviceID">
             <JobDeviceDetailPage />
           </Route>
         </Switch>

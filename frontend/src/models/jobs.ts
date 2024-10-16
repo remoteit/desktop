@@ -35,6 +35,16 @@ export default createModel<RootModel>()({
       dispatch.jobs.setAccount({ accountId, jobs })
       dispatch.jobs.set({ fetching: false, initialized: true })
     },
+    async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
+      dispatch.jobs.set({ fetching: true })
+      accountId = accountId || selectActiveAccountId(state)
+      const result = await graphQLJobs(accountId, [jobId])
+      if (result === 'ERROR') return
+      const jobs = await dispatch.jobs.parse(result)
+      console.log('LOADED JOB', accountId, jobs)
+      dispatch.jobs.setJob({ accountId, job: jobs[0] })
+      dispatch.jobs.set({ fetching: false })
+    },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
       if (!state.jobs.all[accountId]) dispatch.jobs.fetch(accountId)
@@ -54,39 +64,43 @@ export default createModel<RootModel>()({
         })) || []
       )
     },
-    async save(form: IFileForm) {
+    async saveRun(form: IFileForm): Promise<string> {
+      console.log('SAVE AND RUN JOB', form)
+      const jobId = await dispatch.jobs.save(form)
+      await dispatch.jobs.run(jobId)
+      return jobId
+    },
+    async save(form: IFileForm, state): Promise<string> {
+      const job = selectJobs(state).find(j => j.id === form.jobId)
+      if (job?.status !== 'READY') delete form.jobId
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') return '-'
       console.log('SAVED JOB', result?.data)
-      return result?.data.data.setJob
+
+      const jobId: string = result?.data.data.setJob
+      await dispatch.jobs.fetchSingle({ jobId })
+      return jobId
     },
-    async saveAndRun(form: IFileForm) {
-      const data = formAdaptor(form)
-      const result = await graphQLStartJob(data)
-      if (result === 'ERROR') return
-      console.log('STARTED JOB', { result, data })
-    },
-    async run(jobId: string | undefined, state) {
-      let result
-      const job = selectJobs(state).find(j => j.id === jobId)
-      if (!job) return
-
-      const params = {
-        fileId: job.file?.id,
-        tagFilter: job.tag.values.length ? job.tag : undefined,
-        deviceIds: job.jobDevices.map(jd => jd.id),
-      }
-
-      console.log('RUNNING JOB', jobId, params)
-
-      // start existing job
-      if (job.status === 'READY') result = await graphQLStartJob({ jobId, ...params })
-      // duplicate for new job
-      else if (job) result = await graphQLStartJob(params)
-
+    async run(jobId: string | undefined) {
+      if (!jobId) return console.error('NO JOB ID TO RUN')
+      const result = await graphQLStartJob(jobId)
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, jobId })
+    },
+    async runAgain(script: IScript) {
+      const deviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
+      const tagValues = script?.job?.tag?.values || []
+      dispatch.jobs.saveRun({
+        deviceIds,
+        jobId: script.job?.id || '',
+        fileId: script.id,
+        name: script.name || '',
+        description: script.shortDesc || '',
+        executable: script.executable,
+        tag: script.job?.tag,
+        access: tagValues.length ? 'TAG' : deviceIds.length ? 'CUSTOM' : 'NONE',
+      })
     },
     async cancel(jobId: string | undefined) {
       const result = await graphQLCancelJob(jobId)
@@ -96,6 +110,13 @@ export default createModel<RootModel>()({
     async unauthorized(deviceIds: string[], state) {
       return getDevices(state).filter(d => deviceIds.includes(d.id) && !d.permissions.includes('SCRIPTING'))
     },
+    async setJob({ accountId, job }: { accountId: string; job: IJob }, state) {
+      const jobs = structuredClone(state.jobs.all[accountId] || [])
+      const index = jobs.findIndex(j => j.id === job.id)
+      if (index === -1) jobs.push(job)
+      else jobs[index] = job
+      dispatch.jobs.setAccount({ accountId, jobs })
+    },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)
       all[params.accountId] = params.jobs
@@ -103,9 +124,8 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    reset(state) {
-      state = { ...defaultState }
-      return state
+    reset() {
+      return { ...defaultState }
     },
     set(state, params: Partial<ScriptsState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
@@ -120,7 +140,7 @@ function formAdaptor(form: IFileForm) {
     jobId: form.jobId,
     arguments: undefined, // form.arguments to be implemented
     tagFilter: form.access === 'TAG' ? form.tag : undefined,
-    deviceIds: form.access === 'SELECTED' ? form.deviceIds : undefined,
+    deviceIds: form.access === 'SELECTED' || form.access === 'CUSTOM' ? form.deviceIds : undefined,
     // all: form.access === 'ALL',
   }
 }

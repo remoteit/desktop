@@ -7,6 +7,7 @@ import { Box, Typography } from '@mui/material'
 import { JobAttribute } from '../components/JobAttributes'
 import { selectScript } from '../selectors/scripting'
 import { DataDisplay } from '../components/DataDisplay'
+import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Timestamp } from '../components/Timestamp'
 import { Gutters } from '../components/Gutters'
@@ -35,6 +36,7 @@ export const JobDeviceDetailPage: React.FC = () => {
               <JobStatusIcon status={jobDevice?.status} size="xl" device />
             </Box>
             <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
+            <IconButton name="router" to={`/devices/${jobDevice?.device.id}`} title="Device details" />
           </Typography>
           {jobDevice?.updated && (
             <Typography marginLeft={11} marginTop={2} gutterBottom variant="caption" component="p">

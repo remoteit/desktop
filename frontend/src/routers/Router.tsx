@@ -241,7 +241,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Panel>
       </Route>
       {/* Scripting */}
-      <Route path="/scripting">
+      <Route path={['/scripting', '/script/:fileID?/:jobID?']}>
         <ScriptingRouter layout={layout} />
       </Route>
       {/* Settings */}

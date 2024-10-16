@@ -1,10 +1,9 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import structuredClone from '@ungap/structured-clone'
 import { DEMO_SCRIPT_URL, BINARY_DATA_TOKEN } from '../constants'
 import { createModel } from '@rematch/core'
 import { graphQLFiles } from '../services/graphQLRequest'
 import { graphQLDeleteFile } from '../services/graphQLMutation'
-import { AxiosResponse } from 'axios'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
@@ -48,16 +47,26 @@ export default createModel<RootModel>()({
       dispatch.files.setAccount({ accountId, files })
       dispatch.files.set({ fetching: false, initialized: true })
     },
+    async fetchSingle({ accountId, fileId }: { accountId?: string; fileId: string }, state) {
+      dispatch.files.set({ fetching: true })
+      accountId = accountId || selectActiveAccountId(state)
+      const result = await graphQLFiles(accountId, [fileId])
+      if (result === 'ERROR') return
+      const files = await dispatch.files.parse(result)
+      console.log('LOADED FILE', accountId, files)
+      dispatch.files.setFile({ accountId, file: files[0] })
+      dispatch.files.set({ fetching: false })
+    },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
       if (!state.files.all[accountId]) dispatch.files.fetch(accountId)
     },
-    async parse(result: AxiosResponse<any> | undefined) {
+    async parse(result: AxiosResponse<any> | undefined): Promise<IFile[]> {
       const data = result?.data?.data?.login?.account
       return data?.files.map(file => ({ ...file, versions: file.versions.items }))
     },
-    async upload(form: IFileForm, state) {
-      if (!form.file) return
+    async upload(form: IFileForm, state): Promise<string> {
+      if (!form.file) return ''
 
       const data = {
         accountId: selectActiveAccountId(state),
@@ -67,11 +76,13 @@ export default createModel<RootModel>()({
       }
 
       const result = await postFile(form.file, data, `/file/upload`)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') return ''
 
       console.log('UPLOADED FILE', { form, data, result })
 
-      return result?.data.fileId
+      const fileId: string = result?.data.fileId
+      await dispatch.files.fetchSingle({ fileId })
+      return fileId
     },
     async download(fileId: string) {
       const result = await get(`/file/download/${fileId}`)
@@ -104,6 +115,13 @@ export default createModel<RootModel>()({
       }
 
       await dispatch.files.fetch()
+    },
+    async setFile({ accountId, file }: { accountId: string; file: IFile }, state) {
+      const files = structuredClone(state.files.all[accountId] || [])
+      const index = files.findIndex(f => f.id === file.id)
+      if (index === -1) files.push(file)
+      else files[index] = file
+      dispatch.files.setAccount({ accountId, files })
     },
     async setAccount(params: { files: IFile[]; accountId: string }, state) {
       let all = structuredClone(state.files.all)

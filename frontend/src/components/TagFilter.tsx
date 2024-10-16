@@ -142,8 +142,9 @@ export const TagFilter: React.FC<Props> = ({
             <TagEditor
               onCreate={async tag => await dispatch.tags.create({ tag })}
               onSelect={tag => {
-                form.tag?.values.push(tag.name)
-                onChange(form)
+                const formTag = structuredClone(form.tag || DEFAULT_ROLE.tag)
+                formTag.values.push(tag.name)
+                onChange({ ...form, tag: formTag })
               }}
               tags={tags}
               filter={filteredTags}

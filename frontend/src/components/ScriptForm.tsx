@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import sleep from '../helpers/sleep'
 import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -41,13 +42,13 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     if (form.access === 'SELECTED') form.deviceIds = selectedIds
 
-    if (run) await dispatch.jobs.saveAndRun({ ...form, fileId })
-    else await dispatch.jobs.save({ ...form, fileId })
+    let jobId: string
+    if (run) jobId = await dispatch.jobs.saveRun({ ...form, fileId })
+    else jobId = await dispatch.jobs.save({ ...form, fileId })
 
-    await dispatch.files.fetch()
-    await dispatch.jobs.fetch()
-    await dispatch.ui.set({ selected: [], scriptForm: undefined })
-    history.push('/scripting/scripts')
+    dispatch.ui.set({ selected: [], scriptForm: undefined })
+    await sleep(600)
+    history.push(`/script/${fileId}/${jobId}`)
 
     setSaving(false)
     if (run) setRunning(false)
