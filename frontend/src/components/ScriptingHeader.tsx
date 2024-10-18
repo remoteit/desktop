@@ -37,7 +37,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
               <Route path={['/scripting/scripts', '/scripting/runs']}>
                 <Stack flexDirection="row" alignItems="center">
                   <ColorChip
-                    label="BETA Feedback"
+                    label="Feedback"
                     size="small"
                     color="grayLightest"
                     variant="contained"
