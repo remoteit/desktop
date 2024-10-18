@@ -1,13 +1,14 @@
 import React from 'react'
-import { State } from '../store'
-import { useSelector } from 'react-redux'
+import { State, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { Stack, Button, Tooltip } from '@mui/material'
-import { Link as RouteLink, Route, useLocation } from 'react-router-dom'
+import { Link as RouteLink, Route, useLocation, useHistory } from 'react-router-dom'
 import { selectPermissions } from '../selectors/organizations'
 import { ScriptingActionBar } from './ScriptingActionBar'
 import { ScriptingTabBar } from './ScriptingTabBar'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from './Container'
+import { ColorChip } from './ColorChip'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
@@ -16,6 +17,8 @@ type Props = {
 }
 
 export const ScriptingHeader: React.FC<Props> = ({ children }) => {
+  const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
   const location = useLocation()
   const permissions = useSelector(selectPermissions)
   const selectedIds = useSelector((state: State) => state.ui.selected)
@@ -33,6 +36,17 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
             {!selectedIds.length && (
               <Route path={['/scripting/scripts', '/scripting/runs']}>
                 <Stack flexDirection="row" alignItems="center">
+                  <ColorChip
+                    label="BETA Feedback"
+                    size="small"
+                    color="grayLightest"
+                    variant="contained"
+                    sx={{ marginRight: -0.5 }}
+                    onClick={() => {
+                      dispatch.feedback.set({ subject: 'Beta Scripting Feedback' })
+                      history.push('/feedback')
+                    }}
+                  />
                   <Link href="https://link.remote.it/desktop/help/device-scripting">
                     <IconButton color="grayDark" icon="question-circle" />
                   </Link>
