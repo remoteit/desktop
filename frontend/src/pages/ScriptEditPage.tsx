@@ -30,25 +30,28 @@ export const ScriptEditPage: React.FC = () => {
   const tagValues = script?.job?.tag?.values || []
   const access = () => (tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : 'NONE')
 
+  // Download script
   useEffect(() => {
     if (!script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
     const download = async () => {
       setLoading(true)
-      const fileId = script.versions[0].id
-      const result = await dispatch.files.download(fileId)
-      setDefaultForm({ ...defaultForm, fileId, script: result })
-      setForm({ ...form, fileId, script: result })
+      const fileVersionId = script.versions[0].id
+      const result = await dispatch.files.download(fileVersionId)
+      setDefaultForm({ ...defaultForm, script: result })
+      setForm({ ...form, script: result })
       await sleep(200)
       setLoading(false)
     }
     download()
   }, [script, form, defaultForm])
 
+  // Selected devices
   useEffect(() => {
     if (!form) return
     setForm({ ...form, access: selectedIds.length ? 'SELECTED' : access() })
   }, [selectedIds])
 
+  // Initialize form
   useEffect(() => {
     const setupForm: IFileForm = {
       ...role,
