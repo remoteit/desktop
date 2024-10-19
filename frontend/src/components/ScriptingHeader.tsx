@@ -39,9 +39,8 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                   <ColorChip
                     label="Feedback"
                     size="small"
-                    color="grayLightest"
-                    variant="contained"
-                    sx={{ marginRight: -0.5 }}
+                    color="gray"
+                    variant="text"
                     onClick={() => {
                       dispatch.feedback.set({ subject: 'Beta Scripting Feedback' })
                       history.push('/feedback')

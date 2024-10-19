@@ -323,6 +323,7 @@ declare global {
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version?: number // daemon version
     configurable: boolean // cloud shift device
+    scriptable: boolean
     accountId: string // organization id
     thisDevice?: boolean
     license: ILicenseTypes

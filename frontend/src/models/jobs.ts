@@ -108,7 +108,9 @@ export default createModel<RootModel>()({
       console.log('CANCELED JOB', { result, jobId })
     },
     async unauthorized(deviceIds: string[], state) {
-      return getDevices(state).filter(d => deviceIds.includes(d.id) && !d.permissions.includes('SCRIPTING'))
+      return getDevices(state).filter(
+        d => deviceIds.includes(d.id) && (!d.permissions.includes('SCRIPTING') || !d.scriptable)
+      )
     },
     async setJob({ accountId, job }: { accountId: string; job: IJob }, state) {
       const jobs = structuredClone(state.jobs.all[accountId] || [])

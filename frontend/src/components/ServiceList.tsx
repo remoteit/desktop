@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { MOBILE_WIDTH } from '../constants'
 import { getSortOptions } from './SortServices'
@@ -36,6 +37,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   selected = [],
 }) => {
   const { sortService } = getSortOptions(useSelector(selectDeviceModelAttributes).sortServiceOption)
+  const location = useLocation()
   const previousName = useRef<string>('')
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
 
@@ -60,6 +62,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
       headerContextProvider={DeviceListContext.Provider}
     >
       {rows.map(([service, device]) => {
+        const disabled = select && !device.scriptable && location.pathname.includes('scripting')
         const duplicateName = device.id === previousName.current
         const divider = !duplicateName && !!previousName.current
         previousName.current = device.id
@@ -69,7 +72,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
             value={{ device, service, connections: connections[device.id], required, attributes }}
           >
             {divider && <Divider variant="inset" />}
-            <DeviceListItem {...{ mobile, duplicateName, select, selected }} />
+            <DeviceListItem {...{ mobile, duplicateName, select, selected, disabled }} />
           </DeviceListContext.Provider>
         )
       })}
