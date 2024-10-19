@@ -9,7 +9,6 @@ import { DynamicButton } from '../buttons/DynamicButton'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
 import { Notice } from './Notice'
-// import { Pre } from './Pre'
 
 type Props = {
   form: IFileForm

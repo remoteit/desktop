@@ -58,7 +58,7 @@ export const ScriptEditPage: React.FC = () => {
       ...initialForm,
       deviceIds: defaultDeviceIds,
       jobId: script?.job?.status === 'READY' ? script?.job?.id : initialForm.jobId,
-      fileId: script?.id /* versions[0].id */ ?? initialForm.fileId,
+      fileId: script?.id ?? initialForm.fileId,
       name: script?.name ?? initialForm.name,
       description: script?.shortDesc ?? initialForm.description,
       executable: script?.executable ?? initialForm.executable,
