@@ -115,13 +115,7 @@ export const SidebarNav: React.FC = () => {
       )}
       <TestUI>
         <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense>
-          <ColorChip
-            label="BETA"
-            size="small"
-            color="grayLightest"
-            variant="contained"
-            sx={{ marginRight: 2, fontSize: 9 }}
-          />
+          <Chip size="small" label="BETA" sx={{ marginRight: 2, fontSize: 9 }} />
         </ListItemLocation>
       </TestUI>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />

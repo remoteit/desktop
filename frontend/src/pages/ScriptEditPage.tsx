@@ -32,7 +32,7 @@ export const ScriptEditPage: React.FC = () => {
 
   // Download script
   useEffect(() => {
-    if (!script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
+    if (loading || !script || !form || !defaultForm || defaultForm.script || savedForm?.script) return
     const download = async () => {
       setLoading(true)
       const fileVersionId = script.versions[0].id

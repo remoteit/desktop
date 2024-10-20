@@ -1,5 +1,6 @@
-import React from 'react'
-import { selectScript } from '../selectors/scripting'
+import React, { useEffect } from 'react'
+import { VALID_JOB_ID_LENGTH } from '../constants'
+import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { getJobAttribute } from '../components/JobAttributes'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -20,19 +21,28 @@ import { Icon } from '../components/Icon'
 export const ScriptPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
-  const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
+  const file = useSelector((state: State) => selectFile(state, undefined, fileID))
+  const jobs = useSelector(selectJobs).filter(j => j.file?.id === fileID)
+  const job: IJob | undefined = jobs.find(j => j.id === jobID) || jobs[0]
   const fetching = useSelector((state: State) => state.files.fetching)
+  const noDevices = !job || !job?.jobDevices.length
+  const validJobID = jobID && jobID.length >= VALID_JOB_ID_LENGTH
 
-  if (!script) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
+  // load jobs if not already loaded
+  useEffect(() => {
+    if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
+  }, [file])
 
-  const noDevices = !script?.job || !script.job.jobDevices.length
-  const hasRun = script.job && script.job.status !== 'READY'
+  if (!file) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
 
-  if (!jobDeviceID) {
+  if (
+    jobDeviceID !== 'edit' &&
+    (!jobDeviceID || (jobID === 'latest' && !job?.jobDevices.some(jd => jd.id === jobDeviceID)))
+  ) {
     return (
       <Redirect
         to={{
-          pathname: `/script/${script.id}/${hasRun ? `${script.job?.id}/${script.job?.jobDevices[0]?.id}` : '-/edit'}`,
+          pathname: `/script/${file.id}/${validJobID ? jobID : 'latest'}/${noDevices ? 'edit' : job?.jobDevices[0].id}`,
           state: { isRedirect: true },
         }}
       />
@@ -46,9 +56,9 @@ export const ScriptPage: React.FC = () => {
         <>
           <List sx={{ marginBottom: 0 }}>
             <ListItemLocation
-              to={`/script/${fileID}/${hasRun ? script.job?.id : '-'}/edit`}
-              title={<Typography variant="h2">{script.name}</Typography>}
-              icon={<JobStatusIcon status={script.job?.status} size="lg" />}
+              to={`/script/${fileID}/${jobID}/edit`}
+              title={<Typography variant="h2">{file.name}</Typography>}
+              icon={<JobStatusIcon status={job?.status} size="lg" />}
               exactMatch
             >
               <Box marginRight={2}>
@@ -56,25 +66,23 @@ export const ScriptPage: React.FC = () => {
               </Box>
             </ListItemLocation>
             {/* <ListItemLocation
-              to={`/script/${fileID}/${script.job?.id || '-'}/history`}
+              to={`/script/${fileID}/${jobID}/history`}
               title="History"
               icon="clock-rotate-left"
               sx={{ marginTop: 6 }}
             /> */}
           </List>
           <Gutters inset="icon" bottom="lg" top={null}>
-            {!!script.job?.tag.values.length && (
-              <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job: script.job })}</Box>
-            )}
-            {script.job?.jobDevices[0]?.updated && (
+            {!!job?.tag.values.length && <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job })}</Box>}
+            {job?.jobDevices[0]?.updated && (
               <Typography variant="caption" color="GrayText" marginTop={1} textTransform="capitalize" component="p">
-                {script.job?.status.toLowerCase()} &nbsp;
-                <Timestamp date={new Date(script.job.jobDevices[0].updated)} />
+                {job?.status.toLowerCase()} &nbsp;
+                <Timestamp date={new Date(job?.jobDevices[0].updated)} />
               </Typography>
             )}
-            {script.shortDesc && (
-              <Typography variant="caption" component="p">
-                {script.shortDesc}
+            {file.shortDesc && (
+              <Typography color="grayDarkest.main" variant="caption" component="p" marginTop={1}>
+                {file.shortDesc}
               </Typography>
             )}
           </Gutters>
@@ -87,15 +95,15 @@ export const ScriptPage: React.FC = () => {
           <Title>Devices</Title>
           <Stack direction="row" spacing={1} marginRight={2}>
             <Typography variant="caption" paddingLeft={2}>
-              {script.job?.jobDevices.length || '-'}
+              {job?.jobDevices.length || '-'}
             </Typography>
             <JobStatusIcon device padding={0} />
             <Typography variant="caption" paddingLeft={2}>
-              {script.job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
+              {job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
             </Typography>
             <JobStatusIcon status="SUCCESS" padding={0} />
             <Typography variant="caption" paddingLeft={2}>
-              {script.job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
+              {job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
             </Typography>
             <JobStatusIcon status="FAILED" padding={0} />
           </Stack>
@@ -105,21 +113,21 @@ export const ScriptPage: React.FC = () => {
         ) : (
           <Box marginY={3} marginX={4}>
             <RunButton
-              job={script.job}
+              job={job}
               size="small"
-              onRun={() => dispatch.jobs.run(script.job?.id)}
-              onRunAgain={() => dispatch.jobs.runAgain(script)}
-              onCancel={() => dispatch.jobs.cancel(script.job?.id)}
+              onRun={async () => await dispatch.jobs.run({ jobId: job?.id, fileId: file.id })}
+              onRunAgain={async () => await dispatch.jobs.runAgain({ ...file, job })}
+              onCancel={async () => await dispatch.jobs.cancel(job?.id)}
               fullWidth
             />
           </Box>
         )}
         <List>
-          {script.job?.jobDevices.map(jd => (
+          {job?.jobDevices.map(jd => (
             <ListItemLocation
               sx={{ paddingRight: 2 }}
               key={jd.id}
-              to={`/script/${fileID}/${script.job?.id || '-'}/${jd.id}`}
+              to={`/script/${fileID}/${validJobID ? jobID : 'latest'}/${jd.id}`}
               title={jd.device.name}
               icon={<JobStatusIcon status={jd.status} device />}
             />

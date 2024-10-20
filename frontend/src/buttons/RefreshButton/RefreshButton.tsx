@@ -4,6 +4,7 @@ import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
 import { emit } from '../../services/Controller'
 import { Dispatch, State } from '../../store'
+import { VALID_JOB_ID_LENGTH } from '../../constants'
 import { useParams, useRouteMatch } from 'react-router-dom'
 import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
 import { useDispatch, useSelector } from 'react-redux'
@@ -50,8 +51,9 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (scriptPage) {
     title = 'Refresh script'
     if (fileID) methods.push(async () => await dispatch.files.fetchSingle({ fileId: fileID }))
-    if (jobID === '-') methods.push(dispatch.jobs.fetch)
-    else if (jobID) methods.push(async () => await dispatch.jobs.fetchSingle({ jobId: jobID }))
+    if (jobID && jobID.length >= VALID_JOB_ID_LENGTH)
+      methods.push(async () => await dispatch.jobs.fetchSingle({ jobId: jobID }))
+    else if (fileID) methods.push(async () => await dispatch.jobs.fetchByFileIds({ fileIds: [fileID] }))
 
     // log pages
   } else if (logsPage) {

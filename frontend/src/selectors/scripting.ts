@@ -36,10 +36,10 @@ export const selectJob = createSelector(
 
 export const selectScript = createSelector(
   [getFiles, getJobs, selectActiveAccountId, optionalSecondParam, optionalThirdParam],
-  (files, jobs, accountId, fileId, jobId) => {
-    jobId = jobId === '-' ? undefined : jobId
+  (files, allJobs, accountId, fileId, jobId) => {
     const file = files[accountId]?.find(f => f.id === fileId)
-    const job = jobs[accountId]?.find(j => (jobId ? j.id === jobId : j.file?.id === fileId))
-    return file ? { ...file, job } : undefined
+    const jobs = allJobs[accountId]?.filter(j => j.file?.id === fileId)
+    const job = jobs.find(j => j.id === jobId) || jobs[0]
+    return file ? { ...file, job, jobs } : undefined
   }
 )
