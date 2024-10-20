@@ -43,7 +43,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // scripting pages
   } else if (scriptingPage) {
-    title = fileID ? 'Refresh script' : 'Refresh scripting'
+    title = 'Refresh scripts'
     methods.push(dispatch.files.fetch)
     methods.push(dispatch.jobs.fetch)
 

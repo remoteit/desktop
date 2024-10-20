@@ -58,7 +58,7 @@ export default createModel<RootModel>()({
       dispatch.jobs.set({ fetching: true })
       accountId = accountId || selectActiveAccountId(state)
 
-      const result = await graphQLJobs(accountId, fileIds, undefined, true)
+      const result = await graphQLJobs(accountId, fileIds, undefined)
       if (result === 'ERROR') return
 
       const jobs = await dispatch.jobs.parse(result)
@@ -98,7 +98,7 @@ export default createModel<RootModel>()({
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return '-'
-      console.log('SAVED JOB', result?.data)
+      console.log('SAVED JOB', form, result?.data)
       const jobId: string = result?.data.data.setJob
       // await dispatch.jobs.fetchSingle({ jobId })
       dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
