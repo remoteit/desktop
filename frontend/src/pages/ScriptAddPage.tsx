@@ -22,12 +22,12 @@ export const ScriptAddPage: React.FC<Props> = ({ center }) => {
   const [form, setForm] = useState<IFileForm>({
     ...defaultForm,
     ...savedForm,
-    access: selectedIds.length ? 'SELECTED' : 'ALL',
+    access: selectedIds.length ? 'SELECTED' : defaultForm.access,
   })
 
   return (
     <Body center={center} inset gutterTop gutterBottom>
-      <Box>
+      <Box width="100%" maxWidth={600}>
         {device && form.access === 'SELECTED' ? (
           <>
             <Typography variant="body2" color="grayDark.main" component="p" marginBottom={1}>

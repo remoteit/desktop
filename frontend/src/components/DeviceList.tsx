@@ -1,10 +1,10 @@
 import React from 'react'
 import browser from '../services/browser'
+import { useLocation } from 'react-router-dom'
 import { MOBILE_WIDTH } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { GridListHeader } from './GridListHeader'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
 import { Typography, useMediaQuery } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
@@ -37,6 +37,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   select,
   selected = [],
 }) => {
+  const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
 
@@ -50,6 +51,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       {devices?.map((device, index) => {
         const canRestore = isOffline(device) && !device.shared
         if (restore && !canRestore) return null
+        const disabled = select && !device.scriptable && location.pathname.includes('scripting')
         return (
           <DeviceListContext.Provider
             key={device.id}
@@ -61,6 +63,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               selected={selected}
               mobile={mobile}
               onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
+              disabled={disabled}
             />
             {!index && (
               <GuideBubble

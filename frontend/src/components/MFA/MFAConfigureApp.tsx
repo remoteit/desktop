@@ -1,5 +1,5 @@
 import React from 'react'
-import QRCode from 'qrcode.react'
+import { QRCodeSVG } from 'qrcode.react'
 import { makeStyles } from '@mui/styles'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { spacing, radius } from '../../styling'
@@ -32,7 +32,7 @@ export const MFAConfigureApp: React.FC<Props> = ({
   return (
     <Box mt={3} display="flex" alignItems="end">
       <Box className={css.qrcode}>
-        <QRCode value={`otpauth://totp/remoteit:${email}?secret=${totpCode}&issuer=remote.it`} />
+        <QRCodeSVG value={`otpauth://totp/remoteit:${email}?secret=${totpCode}&issuer=remote.it`} />
       </Box>
       <Box ml={3}>
         <Typography variant="body1" gutterBottom>

@@ -91,6 +91,8 @@ export const HIDE_TWO_PANEL_WIDTH = 750
 export const APP_MAX_WIDTH = 1800
 export const MOBILE_WIDTH = 500
 export const BINARY_DATA_TOKEN = '!BINARY-DATA'
+export const VALID_JOB_ID_LENGTH = 36
+
 
 export const LANGUAGES: ILookup<string> = {
   en: 'English',

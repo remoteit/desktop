@@ -66,6 +66,7 @@ const DeviceSelectLookup: ILookup<string, string> = {
   deviceName: `
   name
   configurable
+  scriptable
   platform
   state`,
 
@@ -334,6 +335,7 @@ export function graphQLDeviceAdaptor({
       state: d.state,
       loaded: !!loaded,
       configurable: d.configurable,
+      scriptable: d.scriptable,
       hardwareId: d.hardwareId,
       createdAt: d.created ? new Date(d.created) : undefined,
       contactedAt: d.endpoint?.timestamp ? new Date(d.endpoint?.timestamp) : undefined,

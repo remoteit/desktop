@@ -4,9 +4,9 @@ import { Color } from '../styling'
 
 export type RunButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
   job?: IJob
-  onRun?: () => void
-  onRunAgain?: () => void
-  onCancel?: () => void
+  onRun?: () => Promise<void>
+  onRunAgain?: () => Promise<void>
+  onCancel?: () => Promise<void>
 }
 
 export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onRun, onRunAgain, onCancel, ...props }) => {
@@ -58,7 +58,7 @@ export const RunButton: React.FC<RunButtonProps> = ({ job, disabled, onRun, onRu
 
   return (
     <DynamicButton
-      title={title}
+      title={loading ? 'Starting...' : title}
       variant={variant}
       color={color}
       icon={icon}

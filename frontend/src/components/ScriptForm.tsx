@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import sleep from '../helpers/sleep'
 import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -9,7 +8,6 @@ import { DynamicButton } from '../buttons/DynamicButton'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
 import { Notice } from './Notice'
-// import { Pre } from './Pre'
 
 type Props = {
   form: IFileForm
@@ -26,11 +24,13 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
-  const scriptChanged = form.script !== defaultForm.script
+  const scriptChanged =
+    form.script !== defaultForm.script || form.description !== defaultForm.description || form.name !== defaultForm.name
   const disabled =
     !!unauthorized ||
     form.access === 'NONE' ||
     (form.access === 'SELECTED' && !selectedIds.length) ||
+    (form.access === 'TAG' && !form.tag?.values.length) ||
     !form.script ||
     !form.name
 
@@ -45,13 +45,10 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     if (form.access === 'SELECTED') form.deviceIds = selectedIds
 
-    let jobId: string
-    if (run) jobId = await dispatch.jobs.saveRun({ ...form })
-    else jobId = await dispatch.jobs.save({ ...form })
+    if (run) await dispatch.jobs.saveRun({ ...form })
+    else await dispatch.jobs.save({ ...form })
 
     dispatch.ui.set({ selected: [], scriptForm: undefined })
-    await sleep(600)
-    history.push(`/script/${form.fileId}/${jobId}`)
 
     setSaving(false)
     if (run) setRunning(false)

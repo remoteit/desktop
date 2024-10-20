@@ -4,6 +4,7 @@ import { AttributeValue } from './AttributeValue'
 import { JobStatusIcon } from './JobStatusIcon'
 import { GridListItem } from './GridListItem'
 import { Attribute } from './Attributes'
+import { Icon } from './Icon'
 import { Box } from '@mui/material'
 
 type Props = {
@@ -29,7 +30,13 @@ export const FileListItem: React.FC<Props> = ({ script, required, attributes, mo
     <GridListItem
       onClick={handleClick}
       mobile={mobile}
-      icon={<JobStatusIcon status={script.job?.status} />}
+      icon={
+        script.job ? (
+          <JobStatusIcon status={script.job?.status} />
+        ) : (
+          <Icon name="file" size="sm" color="grayLight" type="solid" />
+        )
+      }
       required={<AttributeValue {...{ mobile, file: script, attribute: required }} />}
       selected={script.id === fileID}
       disableGutters

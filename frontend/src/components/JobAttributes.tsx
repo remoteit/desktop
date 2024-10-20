@@ -58,11 +58,11 @@ export const jobAttributes: JobAttribute[] = [
   new JobAttribute({
     id: 'jobUpdated',
     label: 'Time',
-    defaultWidth: 200,
+    defaultWidth: 160,
     value: ({ job }) =>
       job?.updated && (
         <Typography variant="caption" color="grayDarkest.main">
-          <Duration startDate={new Date(job.updated)} />
+          <Duration startDate={new Date(job.updated)} humanizeOptions={{ largest: 1 }} ago />
         </Typography>
       ),
   }),

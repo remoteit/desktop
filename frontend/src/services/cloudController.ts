@@ -438,25 +438,34 @@ class CloudController {
 
       case 'JOB':
       case 'DEVICE_JOB':
+        if (!event.job) break
         console.log('JOB EVENT', event.job)
 
-        if (!event.job?.target) break
+        if (!event.job.target) {
+          const state = store.getState()
+          if (!state.jobs.fetching) dispatch.jobs.fetchSingle({ accountId: event.job.owner.id, jobId: event.job.id })
+          break
+        }
 
         const jobDevice = event.job.jobDevice
         const jobDevices = event.job.target.jobDevices
 
-        dispatch.jobs.setJob({
+        dispatch.jobs.setJobs({
           accountId: event.job.owner.id,
-          job: {
-            ...event.job.target,
-            status: event.job.status,
-            jobDevices: jobDevice
-              ? jobDevices.map(jd => (jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd))
-              : jobDevices,
-          },
+          jobs: [
+            {
+              ...event.job.target,
+              status: event.job.status,
+              jobDevices: jobDevice
+                ? jobDevices.map(jd =>
+                    jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
+                  )
+                : jobDevices,
+            },
+          ],
         })
 
-        if (event.job?.status === 'SUCCESS') {
+        if (event.type === 'JOB' && event.job?.status === 'SUCCESS') {
           dispatch.jobs.fetchSingle({ accountId: event.job.owner.id, jobId: event.job.id })
         }
 

@@ -25,6 +25,7 @@ import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { ColorChip } from './ColorChip'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
 import { TestUI } from './TestUI'
@@ -113,7 +114,9 @@ export const SidebarNav: React.FC = () => {
         </>
       )}
       <TestUI>
-        <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense />
+        <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense>
+          <Chip size="small" label="BETA" sx={{ marginRight: 2, fontSize: 9 }} />
+        </ListItemLocation>
       </TestUI>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />

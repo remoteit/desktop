@@ -1,4 +1,6 @@
+// import sleep from '../helpers/sleep'
 import structuredClone from '@ungap/structured-clone'
+import { VALID_JOB_ID_LENGTH } from '../constants'
 import { selectJobs } from '../selectors/scripting'
 import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -37,12 +39,32 @@ export default createModel<RootModel>()({
     },
     async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
       dispatch.jobs.set({ fetching: true })
+
+      // // Find latest job by fileId if jobId is not valid
+      // if (jobId.length < VALID_JOB_ID_LENGTH) {
+      //   alert('Invalid job ID: ' + jobId)
+      //   jobId = selectJobs(state).find(j => j.file?.id === fileId)?.id || jobId
+      // }
+
       accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLJobs(accountId, [jobId])
+      const result = await graphQLJobs(accountId, undefined, [jobId])
       if (result === 'ERROR') return
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOB', accountId, jobs)
-      dispatch.jobs.setJob({ accountId, job: jobs[0] })
+      dispatch.jobs.setJobs({ accountId, jobs })
+      dispatch.jobs.set({ fetching: false })
+    },
+    async fetchByFileIds({ accountId, fileIds }: { accountId?: string; fileIds: string[] }, state) {
+      dispatch.jobs.set({ fetching: true })
+      accountId = accountId || selectActiveAccountId(state)
+
+      const result = await graphQLJobs(accountId, fileIds, undefined)
+      if (result === 'ERROR') return
+
+      const jobs = await dispatch.jobs.parse(result)
+      console.log('LOADED FILE JOBS', accountId, jobs)
+
+      dispatch.jobs.setJobs({ accountId, jobs })
       dispatch.jobs.set({ fetching: false })
     },
     async fetchIfEmpty(accountId: string | void, state) {
@@ -67,7 +89,7 @@ export default createModel<RootModel>()({
     async saveRun(form: IFileForm): Promise<string> {
       console.log('SAVE AND RUN JOB', form)
       const jobId = await dispatch.jobs.save(form)
-      await dispatch.jobs.run(jobId)
+      await dispatch.jobs.run({ jobId, fileId: form.fileId })
       return jobId
     },
     async save(form: IFileForm, state): Promise<string> {
@@ -76,22 +98,23 @@ export default createModel<RootModel>()({
       const data = formAdaptor(form)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return '-'
-      console.log('SAVED JOB', result?.data)
-
+      console.log('SAVED JOB', form, result?.data)
       const jobId: string = result?.data.data.setJob
-      await dispatch.jobs.fetchSingle({ jobId })
+      // await dispatch.jobs.fetchSingle({ jobId })
+      dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
       return jobId
     },
-    async run(jobId: string | undefined) {
+    async run({ jobId, fileId }: { jobId?: string; fileId: string }, state) {
       if (!jobId) return console.error('NO JOB ID TO RUN')
       const result = await graphQLStartJob(jobId)
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, jobId })
+      dispatch.ui.set({ redirect: `/script/${fileId}/latest` })
     },
     async runAgain(script: IScript) {
       const deviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
       const tagValues = script?.job?.tag?.values || []
-      dispatch.jobs.saveRun({
+      await dispatch.jobs.saveRun({
         deviceIds,
         jobId: script.job?.id || '',
         fileId: script.id,
@@ -108,14 +131,20 @@ export default createModel<RootModel>()({
       console.log('CANCELED JOB', { result, jobId })
     },
     async unauthorized(deviceIds: string[], state) {
-      return getDevices(state).filter(d => deviceIds.includes(d.id) && !d.permissions.includes('SCRIPTING'))
+      return getDevices(state).filter(
+        d => deviceIds.includes(d.id) && (!d.permissions.includes('SCRIPTING') || !d.scriptable)
+      )
     },
-    async setJob({ accountId, job }: { accountId: string; job: IJob }, state) {
-      const jobs = structuredClone(state.jobs.all[accountId] || [])
-      const index = jobs.findIndex(j => j.id === job.id)
-      if (index === -1) jobs.push(job)
-      else jobs[index] = job
-      dispatch.jobs.setAccount({ accountId, jobs })
+    async setJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
+      const updated = structuredClone(state.jobs.all[accountId] || [])
+
+      jobs.forEach(job => {
+        const index = updated.findIndex(j => j.id === job.id)
+        if (index === -1) updated.unshift(job)
+        else updated[index] = job
+      })
+
+      dispatch.jobs.setAccount({ accountId, jobs: updated })
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)

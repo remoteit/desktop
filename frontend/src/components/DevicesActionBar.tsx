@@ -4,7 +4,7 @@ import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Divider, Typography, InputLabel, Collapse } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectLimitsLookup } from '../selectors/organizations'
+import { selectLimitsLookup, selectPermissions } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
@@ -28,6 +28,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const adding = useSelector((state: State) => state.tags.adding)
   const removing = useSelector((state: State) => state.tags.removing)
   const destroying = useSelector((state: State) => state.ui.destroying)
+  const permissions = useSelector(selectPermissions)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -79,8 +80,8 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           <Divider orientation="vertical" color="white" />
         </>
       )}
-      {mobile || (
-        <TestUI>
+      {permissions.includes('SCRIPTING') && !mobile && (
+        <>
           <InputLabel shrink sx={{ ml: 2 }}>
             script
           </InputLabel>
@@ -100,9 +101,9 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
             disabled={!selected.length}
             to="/scripting/add"
           />
-        </TestUI>
+          <Divider orientation="vertical" color="white" />
+        </>
       )}
-      <Divider orientation="vertical" color="white" />
       <ConfirmIconButton
         icon="trash"
         title="Delete selected"

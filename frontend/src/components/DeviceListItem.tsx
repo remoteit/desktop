@@ -16,11 +16,20 @@ type Props = {
   select?: boolean
   selected: string[]
   mobile?: boolean
+  disabled?: boolean
   duplicateName?: boolean
   onClick?: () => void
 }
 
-export const DeviceListItem: React.FC<Props> = ({ restore, select, selected, mobile, duplicateName, onClick }) => {
+export const DeviceListItem: React.FC<Props> = ({
+  restore,
+  select,
+  selected,
+  mobile,
+  disabled,
+  duplicateName,
+  onClick,
+}) => {
   const [startRestore, setStartRestore] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
   const { connections, device, service, attributes, required } = useContext(DeviceListContext)
@@ -55,6 +64,7 @@ export const DeviceListItem: React.FC<Props> = ({ restore, select, selected, mob
       <GridListItem
         onClick={handleClick}
         selected={isSelected}
+        disabled={disabled}
         mobile={mobile}
         icon={
           duplicateName ? null : select ? (

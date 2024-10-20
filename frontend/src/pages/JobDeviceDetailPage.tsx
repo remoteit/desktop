@@ -17,8 +17,9 @@ import { radius } from '../styling'
 
 export const JobDeviceDetailPage: React.FC = () => {
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
-  const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
-  const jobDevice = script?.job?.jobDevices.find(jd => jd.id === jobDeviceID)
+  const script = useSelector((state: State) => selectScript(state, undefined, fileID))
+  const job = script?.jobs.find(j => j.id === jobID) || script?.jobs[0]
+  const jobDevice = job?.jobDevices.find(jd => jd.id === jobDeviceID)
   const attributes =
     jobDevice?.attributes.map(
       a => new JobAttribute({ id: `attribute-${a.key}`, label: a.key, value: () => a.value })

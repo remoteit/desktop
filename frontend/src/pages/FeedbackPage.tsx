@@ -43,6 +43,7 @@ export const FeedbackPage: React.FC<{}> = () => {
           label="Subject"
           variant="filled"
           value={subject}
+          disabled={!!presets.subject}
           onChange={e => setSubject(e.target.value)}
         />
       </Gutters>
