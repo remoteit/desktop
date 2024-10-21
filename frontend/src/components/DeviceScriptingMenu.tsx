@@ -18,7 +18,7 @@ export const DeviceScriptingMenu: React.FC<Props> = ({ device }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick} name="scripting" size="md" fixedWidth />
+      <IconButton onClick={handleClick} name="scripting" color="grayDarker" size="md" type="light" fixedWidth />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

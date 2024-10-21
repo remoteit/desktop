@@ -46,12 +46,12 @@ export async function graphQLFiles(accountId: string, ids?: string[]) {
   )
 }
 
-export async function graphQLJobs(accountId: string, ids?: string[]) {
+export async function graphQLJobs(accountId: string, fileIds?: string[], ids?: string[]) {
   return await graphQLBasicRequest(
-    ` query Jobs($accountId: String, $ids: [ID!]) {
+    ` query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!]) {
         login {
           account(id: $accountId) {
-            jobs(ids: $ids) {
+            jobs(ids: $ids, fileIds: $fileIds, size: 50) {
               items {
                 id
                 status
@@ -92,7 +92,7 @@ export async function graphQLJobs(accountId: string, ids?: string[]) {
           }
         }
       }`,
-    { accountId, ids }
+    { accountId, fileIds, ids }
   )
 }
 

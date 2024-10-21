@@ -70,7 +70,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/script/:fileID/:jobID/edit">
             <ScriptEditPage />
           </Route>
-          <Route path="/script/:fileID/:jobID/:jobDeviceID">
+          <Route path="/script/:fileID/:jobID/:jobDeviceID?">
             <JobDeviceDetailPage />
           </Route>
         </Switch>
