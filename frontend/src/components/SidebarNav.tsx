@@ -114,7 +114,13 @@ export const SidebarNav: React.FC = () => {
         </>
       )}
       <TestUI>
-        <ListItemLocation title="Scripting" to={pathname('/scripting')} icon="scripting" dense>
+        <ListItemLocation
+          title="Scripting"
+          to={pathname('/scripting')}
+          icon="scripting"
+          match={['/scripting', '/script']}
+          dense
+        >
           <Chip size="small" label="BETA" sx={{ marginRight: 2, fontSize: 9 }} />
         </ListItemLocation>
       </TestUI>
@@ -167,16 +173,15 @@ type StyleProps = {
 const useStyles = makeStyles(({ palette }) => ({
   list: {
     position: 'static',
-    '& .MuiListItemText-primary': { color: palette.grayDark.main },
+    '& .MuiListItemIcon-root': { color: palette.grayDark.main },
+    '& .MuiListItemText-primary': { color: palette.grayDarkest.main },
     '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
-    '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
-    '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
+    '& .MuiListItemButton-root:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: palette.grayLight.main },
-    '& .Mui-selected': {
-      backgroundColor: palette.white.main,
-      '& .MuiListItemText-primary': {
-        color: palette.black.main,
-      },
+    '& .Mui-selected, & .Mui-selected:hover': {
+      backgroundColor: palette.primaryLighter.main,
+      '& .MuiListItemIcon-root': { color: palette.grayDarker.main },
+      '& .MuiListItemText-primary': { color: palette.black.main, fontWeight: 500 },
     },
   },
   active: {

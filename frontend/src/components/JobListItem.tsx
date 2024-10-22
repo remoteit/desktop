@@ -15,6 +15,7 @@ type Props = {
 
 export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile }) => {
   const history = useHistory()
+  const disabled = !job.file
 
   if (!job) return null
 
@@ -26,6 +27,7 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
     <GridListItem
       onClick={handleClick}
       mobile={mobile}
+      disabled={disabled}
       icon={<JobStatusIcon status={job.status} />}
       required={<AttributeValue {...{ mobile, job, attribute: required }} />}
       disableGutters

@@ -36,7 +36,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
   const save = async (run?: boolean) => {
     if (run) setRunning(true)
-    setSaving(true)
+    if (changed) setSaving(true)
 
     if (scriptChanged) {
       form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type ?? 'text/plain' })
@@ -46,11 +46,11 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     if (form.access === 'SELECTED') form.deviceIds = selectedIds
 
     if (run) await dispatch.jobs.saveRun({ ...form })
-    else await dispatch.jobs.save({ ...form })
+    else if (changed) await dispatch.jobs.save({ ...form })
 
     dispatch.ui.set({ selected: [], scriptForm: undefined })
 
-    setSaving(false)
+    if (changed) setSaving(false)
     if (run) setRunning(false)
   }
 

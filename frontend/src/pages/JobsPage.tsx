@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import { selectJobs } from '../selectors/scripting'
 import { removeObject } from '../helpers/utilHelper'
 import { State, Dispatch } from '../store'
@@ -14,8 +15,9 @@ import { Body } from '../components/Body'
 
 export const JobsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
+  const { fileID } = useParams<{ fileID?: string }>()
   const [required, attributes] = removeObject(jobAttributes, a => a.required === true)
-  const jobs = useSelector(selectJobs)
+  const jobs = useSelector((state: State) => selectJobs(state, undefined, fileID))
   const accountId = useSelector(selectActiveAccountId)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const fetching = useSelector((state: State) => state.ui.fetching || state.jobs.fetching)
