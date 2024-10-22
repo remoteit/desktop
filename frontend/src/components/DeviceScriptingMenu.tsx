@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { Chip, Menu, MenuItem, ListSubheader, ListItemIcon, ListItemText } from '@mui/material'
 import { Link } from 'react-router-dom'
-import { Menu, MenuItem, ListSubheader, ListItemIcon, ListItemText } from '@mui/material'
-import { IconButton } from '../buttons/IconButton'
 import { Icon } from './Icon'
 
 type Props = { device?: IDevice }
@@ -18,7 +17,18 @@ export const DeviceScriptingMenu: React.FC<Props> = ({ device }) => {
 
   return (
     <>
-      <IconButton onClick={handleClick} name="scripting" color="grayDarker" size="md" type="light" fixedWidth />
+      <Chip
+        label={
+          <>
+            <Icon name="chevron-right" size="sm" inlineLeft />
+            SCRIPT
+          </>
+        }
+        sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
+        size="small"
+        onClick={handleClick}
+      />
+      {/* <IconButton onClick={handleClick} name="scripting" color="grayDarker" size="md" type="light" fixedWidth /> */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

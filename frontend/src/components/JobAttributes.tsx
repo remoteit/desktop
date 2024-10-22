@@ -20,7 +20,7 @@ export const jobAttributes: JobAttribute[] = [
       job?.file?.name ? (
         <Typography>{job.file.name}</Typography>
       ) : (
-        <Typography variant="body2" color="gray.main" fontStyle="italic">
+        <Typography variant="body2" fontStyle="italic">
           File Deleted&nbsp;
         </Typography>
       ),

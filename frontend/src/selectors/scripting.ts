@@ -16,9 +16,10 @@ export const selectFiles = createSelector([getFiles, selectActiveAccountId], (fi
   return files[accountId]?.filter(f => !f.executable) || []
 })
 
-export const selectJobs = createSelector([getJobs, selectActiveAccountId], (jobs, accountId) => {
-  return jobs[accountId] || []
-})
+export const selectJobs = createSelector(
+  [getJobs, selectActiveAccountId, optionalSecondParam],
+  (jobs, accountId, fileId) => (fileId ? jobs[accountId].filter(f => f.file?.id === fileId) : jobs[accountId] || [])
+)
 
 export const selectFile = createSelector(
   [getFiles, selectActiveAccountId, optionalSecondParam],

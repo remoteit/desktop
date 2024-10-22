@@ -65,12 +65,6 @@ export const ScriptPage: React.FC = () => {
                 <Icon name="chevron-right" color="grayDark" className="hidden" />
               </Box>
             </ListItemLocation>
-            {/* <ListItemLocation
-              to={`/script/${fileID}/${jobID}/history`}
-              title="History"
-              icon="clock-rotate-left"
-              sx={{ marginTop: 6 }}
-            /> */}
           </List>
           <Gutters inset="icon" bottom="lg" top={null}>
             {!!job?.tag.values.length && <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job })}</Box>}
@@ -86,6 +80,9 @@ export const ScriptPage: React.FC = () => {
               </Typography>
             )}
           </Gutters>
+          <List>
+            <ListItemLocation title="Run History" to={`/scripting/runs/${fileID}`} icon="clock-rotate-left" />
+          </List>
           <LinearProgress loading={fetching} />
         </>
       }
