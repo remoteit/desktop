@@ -68,7 +68,7 @@ export const lightColors: { [key in Color]: string } = {
   primary: '#0096e7',
   primaryDark: '#034b9d',
   primaryLight: '#9ed3f0',
-  primaryLighter: '#e3f4ff',
+  primaryLighter: '#daf0ff',
   primaryHighlight: '#edf8ff',
   primaryBackground: '#EAF4FA',
   // secondary: '#75bd00', - can become the reseller logo color
