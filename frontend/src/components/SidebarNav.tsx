@@ -179,14 +179,9 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemButton-root:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: palette.grayLight.main },
     '& .Mui-selected, & .Mui-selected:hover': {
-      backgroundColor: palette.primary.main,
-      '& .MuiListItemIcon-root': { color: palette.alwaysWhite.main, opacity: 0.7 },
-      '& .MuiListItemText-primary': { color: palette.alwaysWhite.main, fontWeight: 500 },
-      '& .MuiChip-root': {
-        backgroundColor: palette.alwaysWhite.main,
-        color: palette.primary.main,
-        fontWeight: 900,
-      },
+      backgroundColor: palette.primaryLighter.main,
+      '& .MuiListItemIcon-root': { color: palette.grayDarker.main },
+      '& .MuiListItemText-primary': { color: palette.black.main, fontWeight: 500 },
     },
   },
   active: {
