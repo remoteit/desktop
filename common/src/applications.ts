@@ -505,7 +505,7 @@ export function getApplicationType(typeId?: number) {
       })
     case 48:
       return new Application({
-        title: 'ScreenView',
+        title: 'ScreenView (Beta)',
         use: 'Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access.',
         appLaunchType: 'URL',
         autoLaunch: true,
@@ -514,7 +514,7 @@ export function getApplicationType(typeId?: number) {
       })
     case 49:
       return new Application({
-        title: 'SOCKS Proxy (Alpha)',
+        title: 'SOCKS Proxy (Beta)',
         use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
         defaultTokenData: windows ? undefined : { app: 'Google Chrome' },
         appLaunchType: portal ? 'NONE' : 'SCRIPT',

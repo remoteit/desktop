@@ -21,7 +21,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
   if (!device) return null
 
   return (
-    <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
+    <>
       <Tags
         showEmpty={!canEdit}
         tags={device.tags}
@@ -41,6 +41,6 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
           button={button}
         />
       )}
-    </Stack>
+    </>
   )
 }

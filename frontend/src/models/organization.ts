@@ -29,7 +29,7 @@ export const PERMISSION: ILookup<{
 }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
-  SCRIPTING: { name: 'Script', description: 'Run device scripts', icon: 'scripting', hidden: false },
+  SCRIPTING: { name: 'Script', description: 'View and run device scripts', icon: 'scripting', hidden: false },
   MANAGE: {
     name: 'Manage',
     description: 'Edit, delete, transfer and share devices and networks',

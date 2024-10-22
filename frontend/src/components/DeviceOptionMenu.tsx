@@ -30,7 +30,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
 
   return (
     <>
-      {deviceOnly && <DeviceScriptingMenu device={device} />}
       <MobileUI hide>{!devicesSection && <InfoButton device={device} service={service} />}</MobileUI>
       <IconButton onClick={handleClick} name="ellipsis-v" size="md" color="grayDarker" fixedWidth />
       <Menu

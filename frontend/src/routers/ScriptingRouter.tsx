@@ -32,7 +32,10 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     )
 
   const locationParts = location.pathname.split('/')
-  if (['scripts', 'runs', 'files', 'add'].includes(locationParts[2]) && locationParts.length === 3)
+  if (
+    'runs' === locationParts[2] ||
+    (['scripts', 'files', 'add'].includes(locationParts[2]) && locationParts.length === 3)
+  )
     layout = { ...layout, singlePanel: true }
 
   return (
@@ -42,11 +45,11 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/scripting/add">
             <ScriptAddPage center />
           </Route>
-          <Route path="/scripting/runs">
-            <JobsPage />
-          </Route>
           <Route path="/scripting/files">
             <FilesPage />
+          </Route>
+          <Route path="/scripting/runs/:fileID?">
+            <JobsPage />
           </Route>
           <Route path="/scripting/scripts/:fileID?">
             <FilesPage scripts />
@@ -76,7 +79,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Switch>
       }
       layout={layout}
-      root="/scripting/:tab?"
+      root="/scripting/:tab?/:filter?"
     />
   )
 }

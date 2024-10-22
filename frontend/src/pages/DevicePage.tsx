@@ -9,8 +9,9 @@ import { ServiceMiniState } from '../components/ServiceMiniState'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { Typography, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
+import { Typography, Stack, List, ListItemText, ListItemSecondaryAction, CircularProgress } from '@mui/material'
 import { getSortOptions, SortServices } from '../components/SortServices'
+import { DeviceScriptingMenu } from '../components/DeviceScriptingMenu'
 import { DeviceNameLocation } from '../components/DeviceNameLocation'
 import { spacing, fontSizes } from '../styling'
 import { NetworksIndicator } from '../components/NetworksIndicator'
@@ -61,7 +62,10 @@ export const DevicePage: React.FC = () => {
         <>
           <List>
             <DeviceNameLocation device={device} connection={connection} editable={editable} />
-            <DeviceTagEditor device={device} />
+            <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
+              <DeviceTagEditor device={device} />
+              <DeviceScriptingMenu device={device} />
+            </Stack>
           </List>
           <LinearProgress loading={!device.loaded} />
         </>
