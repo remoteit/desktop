@@ -510,7 +510,7 @@ export function getApplicationType(typeId?: number) {
         appLaunchType: 'URL',
         autoLaunch: true,
         visibility: (device?: IDevice) =>
-          !!((device?.targetPlatform === 1213) /* || device?.supportedAppInstalls.includes(typeId) */),
+          !!(device?.targetPlatform === 1213 || device?.supportedAppInstalls.includes(typeId)),
       })
     case 49:
       return new Application({
