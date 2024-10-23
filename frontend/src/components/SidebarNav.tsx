@@ -113,17 +113,15 @@ export const SidebarNav: React.FC = () => {
           </ListItemLocation>
         </>
       )}
-      <TestUI>
-        <ListItemLocation
-          title="Scripting"
-          to={pathname('/scripting')}
-          icon="scripting"
-          match={['/scripting', '/script']}
-          dense
-        >
-          <Chip size="small" label="BETA" sx={{ marginRight: 2, fontSize: 9 }} />
-        </ListItemLocation>
-      </TestUI>
+      <ListItemLocation
+        title="Scripting"
+        to={pathname('/scripting')}
+        icon="scripting"
+        match={['/scripting', '/script']}
+        dense
+      >
+        <Chip size="small" label="BETA" sx={{ marginRight: 2, fontSize: 9 }} />
+      </ListItemLocation>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
