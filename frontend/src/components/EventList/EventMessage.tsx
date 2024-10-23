@@ -1,5 +1,6 @@
 import React from 'react'
 import { combinedName } from '@common/nameHelper'
+import { Pre } from '../Pre'
 
 export const EventActions = ['add', 'update']
 
@@ -140,9 +141,50 @@ export function EventMessage({
     case 'LICENSE_UPDATED':
       message = <b>Your license was updated</b>
       break
+
+    case 'JOB':
+      message = (
+        <>
+          Script <b>{item.job?.file?.name}</b> {statusDisplay(item.action.toUpperCase() as IJobStatus)} on{' '}
+          <i>{item.devices?.length} devices</i>
+        </>
+      )
+      break
+
+    case 'DEVICE_JOB':
+      message = (
+        <>
+          Script <b>{item.job?.file?.name}</b> {statusDisplay(item.action.toUpperCase() as IJobStatus)} on{' '}
+          <i>{item.devices?.[0].name}</i>
+          {/* <b>
+            <Pre>{item}</Pre>
+          </b> */}
+        </>
+      )
+      break
+
     default:
       message = <>Unknown event type {item.type} occurred</>
   }
 
   return <div>{message}</div>
+}
+
+function statusDisplay(status?: IJobStatus): string {
+  switch (status) {
+    case 'READY':
+      return 'was ready to run'
+    case 'WAITING':
+      return 'waited to run'
+    case 'RUNNING':
+      return 'ran'
+    case 'FAILED':
+      return 'failed'
+    case 'SUCCESS':
+      return 'ran successfully'
+    case 'CANCELLED':
+      return 'was cancelled'
+    default:
+      return 'did something strange'
+  }
 }
