@@ -80,18 +80,23 @@ export const Header: React.FC = () => {
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         <Title className={css.search}>
-          {!showSearch && !searched && (
-            <IconButton
-              size="md"
-              icon="search"
-              color="grayDarker"
-              onClick={() => {
-                setShowSearch(true)
-                setTimeout(() => inputRef.current?.focus(), 20)
-              }}
-            />
-          )}
-          {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
+          <Switch>
+            <Route path={['/scripting', '/script']} />
+            <Route path="*">
+              {!showSearch && !searched && (
+                <IconButton
+                  size="md"
+                  icon="search"
+                  color="grayDarker"
+                  onClick={() => {
+                    setShowSearch(true)
+                    setTimeout(() => inputRef.current?.focus(), 20)
+                  }}
+                />
+              )}
+              {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
+            </Route>
+          </Switch>
         </Title>
         {!(showSearch && mobile) && (
           <>
