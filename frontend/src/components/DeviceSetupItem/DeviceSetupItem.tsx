@@ -6,6 +6,7 @@ import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { State } from '../../store'
 import {
+  Box,
   List,
   ListItemButton,
   ListItemText,
@@ -16,9 +17,11 @@ import {
   ChipProps,
   Divider,
   Typography,
+  Tooltip,
 } from '@mui/material'
 import { getAllDevices } from '../../selectors/devices'
 import { GuideBubble } from '../../components/GuideBubble'
+import { IconButton } from '../../buttons/IconButton'
 import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
@@ -74,7 +77,20 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   return (
     <DesktopUI>
       <List className={className} dense disablePadding>
-        <ListSubheader disableGutters>This system</ListSubheader>
+        <ListSubheader disableGutters>
+          This system
+          {registered && !ownDevice && (
+            <Tooltip
+              title="This system is already registered to another user. You'll need to log in as the device's owner to manage it."
+              placement="bottom"
+              arrow
+            >
+              <Box position="absolute" right={0} top={0} paddingX={1}>
+                <Icon name="circle-info" size="xs" />
+              </Box>
+            </Tooltip>
+          )}
+        </ListSubheader>
         <Divider />
         <GuideBubble
           enterDelay={400}

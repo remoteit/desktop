@@ -25,10 +25,8 @@ import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
 import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { ColorChip } from './ColorChip'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
-import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
@@ -63,67 +61,59 @@ export const SidebarNav: React.FC = () => {
             match="/connections"
             dense
           >
-            <ListItemSecondaryAction>
-              {!!counts.active && !counts.memberships ? (
-                <Tooltip
-                  title={`${counts.connections.toLocaleString()} Connections - ${counts.active.toLocaleString()} Connected`}
-                  placement="top"
-                  arrow
+            {!!counts.active && !counts.memberships ? (
+              <Tooltip
+                title={`${counts.connections.toLocaleString()} Connections - ${counts.active.toLocaleString()} Connected`}
+                placement="top"
+                arrow
+              >
+                <Chip
+                  size="small"
+                  label={counts.active.toLocaleString()}
+                  className={css.active}
+                  variant="filled"
+                  color="primary"
+                />
+              </Tooltip>
+            ) : (
+              !!counts.connections && (
+                <Badge
+                  variant={counts.active && counts.memberships ? 'dot' : undefined}
+                  color="primary"
+                  overlap="circular"
                 >
-                  <Chip
-                    size="small"
-                    label={counts.active.toLocaleString()}
-                    className={css.active}
-                    variant="filled"
-                    color="primary"
-                  />
-                </Tooltip>
-              ) : (
-                !!counts.connections && (
-                  <Badge
-                    variant={counts.active && counts.memberships ? 'dot' : undefined}
-                    color="primary"
-                    overlap="circular"
-                  >
-                    <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
-                      <Chip size="small" label={counts.connections.toLocaleString()} />
-                    </Tooltip>
-                  </Badge>
-                )
-              )}
-            </ListItemSecondaryAction>
+                  <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
+                    <Chip size="small" label={counts.connections.toLocaleString()} />
+                  </Tooltip>
+                </Badge>
+              )
+            )}
           </ListItemLocation>
           <ListItemLocation title="Devices" icon="router" to="/devices" match="/devices" dense>
             {!!counts.devices && (
-              <ListItemSecondaryAction>
-                <Tooltip title="Total Devices" placement="top" arrow>
-                  <Chip size="small" label={counts.devices.toLocaleString()} />
-                </Tooltip>
-              </ListItemSecondaryAction>
+              <Tooltip title="Total Devices" placement="top" arrow>
+                <Chip size="small" label={counts.devices.toLocaleString()} />
+              </Tooltip>
             )}
           </ListItemLocation>
           <ListItemLocation title="Networks" icon="chart-network" to={pathname('/networks')} match="/networks" dense>
-            <ListItemSecondaryAction>
-              {!!counts.networks && (
-                <Tooltip title="Total Networks" placement="top" arrow>
-                  <Chip size="small" label={counts.networks.toLocaleString()} />
-                </Tooltip>
-              )}
-            </ListItemSecondaryAction>
+            {!!counts.networks && (
+              <Tooltip title="Total Networks" placement="top" arrow>
+                <Chip size="small" label={counts.networks.toLocaleString()} />
+              </Tooltip>
+            )}
           </ListItemLocation>
         </>
       )}
-      <TestUI>
-        <ListItemLocation
-          title="Scripting"
-          to={pathname('/scripting')}
-          icon="scripting"
-          match={['/scripting', '/script']}
-          dense
-        >
-          <Chip size="small" label="BETA" sx={{ marginRight: 2, fontSize: 9 }} />
-        </ListItemLocation>
-      </TestUI>
+      <ListItemLocation
+        title="Scripting"
+        to={pathname('/scripting')}
+        icon="scripting"
+        match={['/scripting', '/script']}
+        dense
+      >
+        <Chip size="small" label="BETA" sx={{ fontSize: 9 }} />
+      </ListItemLocation>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
@@ -175,7 +165,7 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'static',
     '& .MuiListItemIcon-root': { color: palette.grayDark.main },
     '& .MuiListItemText-primary': { color: palette.grayDarkest.main },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
+    '& .MuiChip-root': { marginRight: spacing.sm },
     '& .MuiListItemButton-root:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: palette.grayLight.main },
     '& .Mui-selected, & .Mui-selected:hover': {

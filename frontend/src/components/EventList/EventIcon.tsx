@@ -2,6 +2,7 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { Color } from '../../styling'
 import { EventState, EventActions } from './EventMessage'
+import { JobStatusIcon } from '../JobStatusIcon'
 
 type Props = {
   item: IEvent
@@ -92,6 +93,10 @@ export function EventIcon({ item, loggedInUser }: Props): JSX.Element {
       color = 'danger'
       title = 'Device deleted'
       break
+
+    case 'JOB':
+    case 'DEVICE_JOB':
+      return <JobStatusIcon status={item.action.toUpperCase() as IJobStatus} padding={0} />
 
     case 'LICENSE_UPDATED':
       icon = 'info-circle'

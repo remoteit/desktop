@@ -31,6 +31,20 @@ const EVENTS = `
         ... on DeviceShareEvent {
           scripting
         }
+        ... on DeviceJobEvent {
+          job {
+            file {
+              name
+            }
+          }
+        }
+        ... on JobEvent {
+          job {
+            file {
+              name
+            }
+          }
+        }
       }
     }`
 
