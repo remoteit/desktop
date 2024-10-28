@@ -263,7 +263,7 @@ export default createModel<RootModel>()({
       const id = selectActiveAccountId(state)
       const response = await graphQLDeleteNetwork(params.id)
       if (response === 'ERROR') return
-      let networks = [...state.networks.all[id]] || []
+      let networks = [...state.networks.all[id]]
       const index = networks.findIndex(network => network.id === params.id)
       networks.splice(index, 1)
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
