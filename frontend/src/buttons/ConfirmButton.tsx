@@ -24,7 +24,7 @@ export const ConfirmButton = forwardRef<HTMLButtonElement, Props>(
     return (
       <>
         <DynamicButton ref={ref} {...props} onClick={handleClick} />
-        {confirm && onClick && (
+        {confirm && (onClick || props.type === 'submit') && (
           <Confirm {...confirmProps} open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)}>
             {confirmProps?.children}
           </Confirm>

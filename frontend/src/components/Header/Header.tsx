@@ -79,12 +79,15 @@ export const Header: React.FC = () => {
           </>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
-        <Title className={css.search}>
+        <Route path="/devices">
           {!showSearch && !searched && (
             <IconButton
               size="md"
               icon="search"
               color="grayDarker"
+              title="Device Search"
+              placement="bottom"
+              fixedWidth
               onClick={() => {
                 setShowSearch(true)
                 setTimeout(() => inputRef.current?.focus(), 20)
@@ -92,7 +95,8 @@ export const Header: React.FC = () => {
             />
           )}
           {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
-        </Title>
+        </Route>
+        <Title />
         {!(showSearch && mobile) && (
           <>
             <Route path={['/devices', '/devices/select']} exact>
@@ -138,7 +142,7 @@ const useStyles = makeStyles({
     zIndex: 14,
   },
   search: {
-    flexGrow: 1,
+    // flexGrow: 1,
     zIndex: 1,
   },
   noDrag: {

@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Button, TextField, Typography } from '@mui/material'
 import { useDispatch } from 'react-redux'
+import { ConfirmButton } from '../../buttons/ConfirmButton'
 import { Dispatch } from '../../store'
 import { Gutters } from '../Gutters'
 import { spacing } from '../../styling'
@@ -45,9 +46,28 @@ export const ChangePassword = () => {
           />
         </Gutters>
         <Gutters bottom="xl">
-          <Button variant="contained" color="primary" type="submit" size="small" disabled={!isValid}>
-            Save
-          </Button>
+          <ConfirmButton
+            confirm
+            title="Save"
+            variant="contained"
+            color="primary"
+            type="submit"
+            size="small"
+            disabled={!isValid}
+            confirmProps={{
+              title: 'Notice',
+              children: (
+                <>
+                  <Typography variant="body2" gutterBottom>
+                    Changing your password will <b>NOT</b> automatically sign you out of other sessions.
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    You can manually sign out from all sessions below.
+                  </Typography>
+                </>
+              ),
+            }}
+          />
           <Button size="small" onClick={() => history.goBack()}>
             Cancel
           </Button>

@@ -763,6 +763,7 @@ declare global {
     users?: IUser[]
     action: string
     devices?: { id: string; name: string }[]
+    job?: { file?: { name: string } }
   }
 
   type IEventType =
@@ -781,6 +782,8 @@ declare global {
     | 'DEVICE_SHARE'
     | 'DEVICE_REFRESH'
     | 'DEVICE_TRANSFER'
+    | 'DEVICE_JOB'
+    | 'JOB'
 
   interface IEventList {
     total: number
