@@ -17,12 +17,12 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
   if (!props) return null
   return (
     <List className={css.list} disablePadding={disablePadding}>
-      {attributes.map(attribute => {
+      {attributes.map((attribute, index) => {
         if (limits && !attribute.show(limits)) return null
         const value = attribute.value(props)
         return (
           value != null && (
-            <ListItem key={attribute.id} disableGutters>
+            <ListItem key={index} disableGutters>
               <span className={css.label}>
                 {attribute.label}:
                 {attribute.help && (
