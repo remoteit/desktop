@@ -39,7 +39,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     if (changed) setSaving(true)
 
     if (scriptChanged) {
-      form.file = new File([form.script || form.file || ''], form.name, { type: form.file?.type ?? 'text/plain' })
+      form.file = new File([form.script ?? form.file ?? ''], form.name, { type: form.file?.type ?? 'text/plain' })
       form.fileId = await dispatch.files.upload(form)
     }
 
@@ -91,8 +91,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           <FileUpload
             script={form.script}
             loading={loading}
-            onChange={script => onChange({ ...form, script })}
-            onUpload={file => onChange({ ...form, name: file.name, file })}
+            onChange={(script, file) => onChange({ ...form, script, ...(file && { name: file.name, file }) })}
           />
         </ListItem>
         <ListItem disableGutters>

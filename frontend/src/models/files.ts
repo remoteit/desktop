@@ -119,7 +119,7 @@ export default createModel<RootModel>()({
     async setFile({ accountId, file }: { accountId: string; file: IFile }, state) {
       const files = structuredClone(state.files.all[accountId] || [])
       const index = files.findIndex(f => f.id === file.id)
-      if (index === -1) files.push(file)
+      if (index === -1) files.unshift(file)
       else files[index] = file
       dispatch.files.setAccount({ accountId, files })
     },

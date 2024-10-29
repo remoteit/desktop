@@ -100,7 +100,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return '-'
       console.log('SAVED JOB', form, result?.data)
       const jobId: string = result?.data.data.setJob
-      // await dispatch.jobs.fetchSingle({ jobId })
+      await dispatch.jobs.fetchSingle({ jobId })
       dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
       return jobId
     },

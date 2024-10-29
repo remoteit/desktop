@@ -13,11 +13,10 @@ import { spacing, radius } from '../styling'
 type Props = {
   script?: string
   loading?: boolean
-  onChange: (script: string) => void
-  onUpload: (file: File) => void
+  onChange: (script: string, file?: File) => void
 }
 
-export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, onUpload }) => {
+export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange }) => {
   const { ui } = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string | undefined>()
   const [isText, setIsText] = useState(true)
@@ -40,10 +39,9 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, on
           const isBinary = containsNonPrintableChars(text)
 
           if (!isBinary) {
-            onChange(text)
-            onUpload(file)
-            setFilename(file.name)
             setIsText(true)
+            setFilename(file.name)
+            onChange(text, file)
           } else {
             setIsText(false)
           }
@@ -96,17 +94,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange, on
           />
           {filename && (
             <Box sx={{ position: 'absolute', top: 0, right: 0 }}>
-              <IconButton
-                name="times"
-                title="Clear"
-                color="grayDark"
-                size="sm"
-                onClick={() => {
-                  setFilename(undefined)
-                  onChange('')
-                  setIsText(true)
-                }}
-              />
+              <IconButton name="times" title="Clear" color="grayDark" size="sm" onClick={clear} />
             </Box>
           )}
         </>
