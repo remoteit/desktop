@@ -24,15 +24,13 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const changed = !isEqual(form, defaultForm)
+  const canSave = !unauthorized && !!form.script && !!form.name
   const scriptChanged =
     form.script !== defaultForm.script || form.description !== defaultForm.description || form.name !== defaultForm.name
-  const disabled =
-    !!unauthorized ||
-    form.access === 'NONE' ||
-    (form.access === 'SELECTED' && !selectedIds.length) ||
-    (form.access === 'TAG' && !form.tag?.values.length) ||
-    !form.script ||
-    !form.name
+  const canRun =
+    (form.access === 'SELECTED' && selectedIds.length) ||
+    (form.access === 'TAG' && form.tag?.values.length) ||
+    (form.access === 'CUSTOM' && form.deviceIds.length)
 
   const save = async (run?: boolean) => {
     if (run) setRunning(true)
@@ -72,7 +70,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     checkSelected()
   }, [selectedIds])
-
+  console.log({ loading, running, saving, canSave, canRun, form })
   return (
     <form onSubmit={event => (event.preventDefault(), save())}>
       <List disablePadding>
@@ -140,14 +138,14 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           color="primary"
           title={running ? 'Running' : scriptChanged ? 'Save and Run' : 'Run'}
           size="medium"
-          disabled={loading || running || saving || disabled}
+          disabled={loading || running || saving || !canSave || !canRun}
           onClick={() => save(true)}
         />
         <DynamicButton
           type="submit"
           variant="contained"
           color="primary"
-          disabled={!changed || saving || disabled}
+          disabled={!changed || saving || !canSave}
           size="medium"
           title={saving ? 'Saving' : 'Save'}
         />
