@@ -11,7 +11,7 @@ type OptionProps = LinkProps & {
 
 export const MegaButton: React.FC<OptionProps> = ({ icon, title, description, width = 250, ...props }) => {
   return (
-    <Link color="inherit" {...props}>
+    <Link color="inherit" {...props} noUnderline>
       <ButtonBase
         sx={{
           padding: 3,
