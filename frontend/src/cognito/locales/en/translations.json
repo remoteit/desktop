@@ -40,7 +40,7 @@
     },
     "auth-mfa-totp": {
       "invalid-code": "Invalid Code",
-      "title": "TOTP Two-Factor Authentication"
+      "title": "Two-Factor Authentication"
     },
     "auth-mfa": {
       "errors": {

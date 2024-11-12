@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, Container, TextField, Typography } from '@mui/material'
+import { Box, Button, Container, TextField, Typography, Divider } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { Link } from '../../../components/Link'
 import {
@@ -135,18 +135,19 @@ export function MFACode({
             {t('global.actions.cancel')}
           </Button>
           <Box ml="auto">
-            <Button disabled={loading || code.length < 6} type="submit">
+            <Button variant="contained" disabled={loading || code.length < 6} type="submit">
               {t('global.actions.submit')}
               <Icon inline name="arrow-right" />
             </Button>
           </Box>
         </Box>
-        <Box>
-          <strong>{t('pages.auth-mfa.having-problems')}</strong>
-        </Box>
-        <Link style={{ display: 'block' }} to="/account-recovery">
-          {t('pages.auth-mfa.no-device-access')}
-        </Link>
+        <Divider sx={{ mb: 2 }} />
+        <Typography variant="caption">
+          {t('pages.auth-mfa.having-problems')}
+          <Link to="/account-recovery" noUnderline>
+            {t('pages.auth-mfa.no-device-access')}
+          </Link>
+        </Typography>
       </form>
     </AuthLayout>
   )
