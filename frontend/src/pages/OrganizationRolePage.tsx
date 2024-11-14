@@ -103,7 +103,7 @@ export const OrganizationRolePage: React.FC = () => {
         <Typography variant="subtitle1" gutterBottom>
           Device and Network Permissions
         </Typography>
-        <TagFilter form={form} onChange={changeForm} disabled={disabled} systemRole={systemRole} icon />
+        <TagFilter icon form={form} onChange={changeForm} disabled={disabled} systemRole={systemRole} selectAll />
         {form.access !== 'NONE' && (
           <PermissionsList
             locked={systemRole}
