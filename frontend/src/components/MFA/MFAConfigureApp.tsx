@@ -30,7 +30,7 @@ export const MFAConfigureApp: React.FC<Props> = ({
   const css = useStyles()
 
   return (
-    <Box mt={3} display="flex" alignItems="end">
+    <Box mt={3} display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'start', sm: 'end' }}>
       <Box className={css.qrcode}>
         <QRCodeSVG value={`otpauth://totp/remoteit:${email}?secret=${totpCode}&issuer=remote.it`} />
       </Box>

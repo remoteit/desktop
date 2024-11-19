@@ -106,15 +106,15 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
         <TagFilter
           form={form}
           name="Devices"
+          selectDevices
+          disableGutters
           countsSx={{ marginRight: 3 }}
           onChange={f => onChange({ ...form, ...structuredClone(f) })}
-          disableGutters
           selectedIds={selectedIds}
           onSelectIds={() => {
             dispatch.ui.set({ scriptForm: form })
             history.push('/devices/select/scripting')
           }}
-          disableAll
         />
       </List>
       {unauthorized && (

@@ -34,7 +34,8 @@ type Props = ListItemProps & {
   icon?: boolean
   selectedIds?: string[]
   countsSx?: SxProps<Theme>
-  disableAll?: boolean
+  selectAll?: boolean
+  selectDevices?: boolean
   onSelectIds?: () => void
   onChange: (form: Partial<IFileForm>) => void
 }
@@ -48,7 +49,8 @@ export const TagFilter: React.FC<Props> = ({
   selectedIds,
   countsSx,
   onChange,
-  disableAll,
+  selectAll,
+  selectDevices,
   onSelectIds,
   ...props
 }) => {
@@ -60,7 +62,7 @@ export const TagFilter: React.FC<Props> = ({
   // Handle empty states
   let formAccess = form.access
   if (formAccess === 'CUSTOM' && !form.deviceIds?.length) formAccess = 'NONE'
-  if (formAccess === 'ALL' && disableAll) formAccess = 'NONE'
+  if (formAccess === 'ALL' && !selectAll) formAccess = 'NONE'
 
   return (
     <>
@@ -86,9 +88,9 @@ export const TagFilter: React.FC<Props> = ({
           }}
         >
           <MenuItem value="NONE">None</MenuItem>
-          {!disableAll && <MenuItem value="ALL">All</MenuItem>}
+          {selectAll && <MenuItem value="ALL">All</MenuItem>}
           <MenuItem value="TAG">Tagged</MenuItem>
-          <MenuItem value="SELECTED">{selectedIds?.length ? 'Selected' : 'Select'} Devices</MenuItem>
+          {selectDevices && <MenuItem value="SELECTED">{selectedIds?.length ? 'Selected' : 'Select'} Devices</MenuItem>}
           {form.deviceIds?.length && <MenuItem value="CUSTOM">Saved Devices</MenuItem>}
         </TextField>
         <ListItemSecondaryAction sx={countsSx}>
