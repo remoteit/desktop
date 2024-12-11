@@ -49,7 +49,8 @@ platforms.register({
   component: Component,
   types: { 1225: 'IDY' },
   installation: {
-    command: true,
+    command:
+      'config net-remoteit-agent=enable; config net-remoteit-registration_code=[CODE]; /etc/init.d/remoteit-refresh start',
     qualifier: 'For IDY routers and gateways',
     link: 'https://link.remote.it/support/streamline-install',
   },
