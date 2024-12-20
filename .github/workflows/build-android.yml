@@ -76,6 +76,17 @@ jobs:
           echo -n "$ANDROID_KEY_PROPERTIES" | base64 --decode -o $KEY_PROPERTIES_FILE
           echo -n "$ANDROID_UPLOAD_KEY_JKS" | base64 --decode -o $UPLOAD_KEY_JKS_FILE
 
+      - name: Update Version Code in Android build
+        working-directory: ./android
+        run: |
+          # Get curent version from build.gradle
+          VERSION_CODE=$(grep versionCode ./build.gradle | awk '{print $2}') || error "Failed to read Android versionCode"
+          # Tack on the date including the hour and min
+          VERSION_CODE="$VERSION_CODE_$(date '+%Y%m%d%H%M')""
+          
+          # Update capacitor.config.json version code
+          sed -i "" "s/versionCode .*/versionCode $VERSION_CODE/" ./build.gradle || error "Failed to update Android versionCode"
+          
       - name: npm build-mobile
         run: npm run build-mobile
 
@@ -102,12 +113,12 @@ jobs:
         working-directory: ./android
         run: ./gradlew bundleRelease
 
-      # # Upload Bundle AAB Release
-      # - name: Upload AAB (App Bundle) Release
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
-      #     path: ${{ env.main_project_module }}/build/outputs/bundle/release/
+      # Upload Bundle AAB Release
+      - name: Upload AAB (App Bundle) Release
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
+          path: ${{ env.main_project_module }}/build/outputs/bundle/release/
 
       # - name: Create Release
       #   id: create_release
