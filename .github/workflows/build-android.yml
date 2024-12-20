@@ -85,9 +85,10 @@ jobs:
           VERSION_CODE=$(grep versionCode $GRADLE_FILE | awk '{print $2}') || error "Failed to read Android versionCode"
           # Tack on the date including the hour and min
           DATE_CODE=$(date '+%Y%m%d%H%M')
-          
+          VERSION_CODE="${VERSION_CODE}.${DATE_CODE}"
+
           # Update capacitor.config.json version code
-          sed -i "" "s/versionCode .*/versionCode ${VERSION_CODE}.${DATE_CODE}/" $GRADLE_FILE || error "Failed to update Android versionCode"
+          sed -i "" "s/versionCode .*/versionCode ${VERSION_CODE}/" $GRADLE_FILE || error "Failed to update Android versionCode"
           
       - name: npm build-mobile
         run: npm run build-mobile
