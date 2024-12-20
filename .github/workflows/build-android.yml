@@ -90,10 +90,9 @@ jobs:
       - name: npm build-mobile
         run: npm run build-mobile
 
-        # outputs to:
-        # ./app/build/outputs/apk/release/app-release.apk
-        # ./app/build/outputs/apk/debug/app-debug.apk
-
+      # outputs to:
+      # ./app/build/outputs/apk/release/app-release.apk
+      # ./app/build/outputs/apk/debug/app-debug.apk
       - name: Build Project
         working-directory: ./android
         run: ./gradlew build
