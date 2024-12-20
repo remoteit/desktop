@@ -79,7 +79,7 @@ jobs:
       - name: Update Version Code in Android build
         working-directory: ./android
         run: |
-          GRADLE_FILE=./app/build/.gradle
+          GRADLE_FILE=./app/build.gradle
 
           # Get curent version from build.gradle
           VERSION_CODE=$(grep versionCode $GRADLE_FILE | awk '{print $2}') || error "Failed to read Android versionCode"
