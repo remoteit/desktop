@@ -1,6 +1,6 @@
 {
   "name": "remoteit-capacitor",
-  "version": "3.35.4",
+  "version": "3.36.0-beta",
   "private": true,
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "workspaces": [
