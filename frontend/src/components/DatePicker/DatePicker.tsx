@@ -20,7 +20,7 @@ export const DatePicker: React.FC<Props> = ({ onChange, minDay, selectedDate }) 
         closeOnSelect
         open={open}
         inputFormat={getDateFormatString()}
-        renderInput={props => <TextField {...props} label="From" variant="filled" onClick={() => setOpen(true)} />}
+        renderInput={props => <TextField {...props} label="Ending" variant="filled" onClick={() => setOpen(true)} />}
         value={selectedDate ? DateTime.fromJSDate(selectedDate) : DateTime.now()} // Convert Date to DateTime
         onChange={(date: DateTime | null) => onChange(date?.toJSDate() || null)}
         onClose={() => setOpen(false)}
