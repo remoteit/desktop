@@ -1,4 +1,4 @@
-import { EVENTS, PROTOCOL, branding, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import { EVENTS, PROTOCOL, theme, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import electron, { Menu, dialog } from 'electron'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
@@ -186,7 +186,7 @@ export default class ElectronApp {
       ...windowState,
       minWidth: 525,
       minHeight: 325,
-      backgroundColor: branding.colors.light.primaryDark,
+      backgroundColor: theme.colors.light.primaryDark,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,

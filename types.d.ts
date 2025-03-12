@@ -1,3 +1,5 @@
+import { Color } from 'frontend/src/styling'
+
 declare global {
   type SocketAction =
     //socket auth
@@ -1008,6 +1010,11 @@ declare global {
       light: BrandColors
       dark: BrandColors
     }
+  }
+
+  interface BrandLogo {
+    color?: Color
+    darkMode?: boolean
   }
 }
 

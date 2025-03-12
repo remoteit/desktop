@@ -34,5 +34,5 @@ electron/bin/*
 logs/code_signing_tool.log
 
 # branding
-/common/src/branding/current.*
+/common/src/brand
 /frontend/public/brand.css

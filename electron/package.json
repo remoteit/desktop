@@ -32,6 +32,7 @@
     "unlink": "npm install remoteit-headless",
     "watch-backend": "cd ../backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
+    "watch-brand": "onchange -i -k 'common/brands/**/*' -- npm run brand",
     "watch-build": "tsc --watch",
     "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' '../backend/build/**/*' -- npm run electron"
   },

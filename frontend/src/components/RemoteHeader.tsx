@@ -3,7 +3,6 @@ import { APP_MAX_WIDTH } from '../constants'
 import { Tooltip, IconButton, Box, Stack, useMediaQuery } from '@mui/material'
 import { TargetPlatform } from './TargetPlatform'
 import { Icon } from './Icon'
-import { Logo } from './Logo'
 import screenfull from 'screenfull'
 import browser from '../services/browser'
 
@@ -43,7 +42,6 @@ export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
           <Box sx={({ spacing }) => ({ position: 'absolute', height: 3, right: spacing(2.25), top: spacing(0.75) })}>
             <TargetPlatform id={device?.targetPlatform} size="lg" tooltip />
           </Box>
-          <Logo width={80} margin="auto" color="gray" />
         </Box>
       )}
       <Stack

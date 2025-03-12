@@ -26,7 +26,7 @@ import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
-import { Logo } from './Logo'
+import { Logo } from '@common/brand/Logo'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()

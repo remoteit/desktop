@@ -1,11 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 import { version } from './package.json'
-import branding from './common/src/branding/current'
+import theme from './common/src/brand/theme'
 
 const config: CapacitorConfig = {
   appName: 'Remote.It',
   webDir: 'frontend/build',
-  backgroundColor: branding.colors.light.primary,
+  backgroundColor: theme.colors.light.primary,
   ios: {
     scheme: 'Remote.It',
   },
@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchAutoHide: false,
-      backgroundColor: branding.colors.light.primary,
+      backgroundColor: theme.colors.light.primary,
       androidScaleType: 'CENTER_CROP',
     },
     BluetoothLe: {

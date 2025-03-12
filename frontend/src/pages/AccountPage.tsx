@@ -7,7 +7,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
 import { windowOpen } from '../services/browser'
 import { Container } from '../components/Container'
-import { Logo } from '../components/Logo'
+import { Logo } from '@common/brand/Logo'
 import { Icon } from '../components/Icon'
 
 export const AccountPage: React.FC = () => {
@@ -22,7 +22,7 @@ export const AccountPage: React.FC = () => {
       gutterBottom
       header={
         <>
-          <Typography variant="h1">
+          <Typography variant="h1" gutterBottom>
             <Tooltip title="Visit Remote.It on the web">
               <ButtonBase onClick={() => windowOpen('https://remote.it')}>
                 <Logo width={110} />

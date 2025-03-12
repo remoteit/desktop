@@ -11,7 +11,6 @@
   ],
   "scripts": {
     "brand": "./scripts/brand.sh",
-    "build-common": "tsc -b common/tsconfig.json",
     "build-backend": "npm run build -w=backend",
     "build-frontend": "npm run brand && npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
@@ -29,11 +28,7 @@
     "start": "npm run brand && npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",
-    "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version",
-    "watch-backend": "npm run watch -w=backend",
-    "watch-build": "tsc --watch",
-    "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron",
-    "watch-images": "onchange 'src/images/**/*' -- npm run copy-images"
+    "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^6.0.1",

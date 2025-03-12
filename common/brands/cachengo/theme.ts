@@ -1,6 +1,6 @@
 const branding: BrandingTheme = {
   name: 'cachengo',
-  displayName: 'Cachengo',
+  displayName: 'Telepath',
   logoAsset: 'R3gray.tsx',
   colors: {
     light: {

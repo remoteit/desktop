@@ -2,7 +2,7 @@ import React from 'react'
 import { Box } from '@mui/material'
 import { CoBrandingLogo } from '../CoBrandingLogo'
 import { spacing } from '../../../styling'
-import { Logo } from '../../../components/Logo'
+import { Logo } from '@common/brand/Logo'
 
 export function SplashScreen(): JSX.Element {
   return (
