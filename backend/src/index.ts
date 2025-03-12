@@ -14,6 +14,7 @@ import Logger from './Logger'
 import LAN from './LAN'
 import cli from './cliInterface'
 import user, { User } from './User'
+import branding from '@common/branding/current'
 import { hostName } from '@common/nameHelper'
 import { IP_PRIVATE } from '@common/constants'
 import { getApplication } from '@common/applications'
@@ -57,6 +58,7 @@ export default new Application()
 // To support Electron wrapper
 export { EVENTS } from './electronInterface'
 export {
+  branding,
   getApplication,
   ConnectionPool,
   environment,

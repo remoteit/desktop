@@ -462,7 +462,7 @@ declare global {
     NEWEST: ISortService
     OLDEST: ISortService
   }
-  
+
   type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED' | 'CUSTOM'
 
   type ILabel = {
@@ -989,6 +989,25 @@ declare global {
     chipPrimary?: boolean
     Menu?: React.FC
     divider?: boolean
+  }
+
+  interface BrandColors {
+    primary: string
+    primaryDark: string
+    primaryLight: string
+    primaryLighter: string
+    primaryHighlight: string
+    primaryBackground: string
+  }
+
+  interface BrandingTheme {
+    name: string
+    displayName: string
+    logoAsset: string
+    colors: {
+      light: BrandColors
+      dark: BrandColors
+    }
   }
 }
 

@@ -64,7 +64,9 @@ export type Color =
   | 'guide'
   | 'test'
 
-export const lightColors: { [key in Color]: string } = {
+export type Colors = { [key in Color]: string }
+
+export const lightColors: Colors = {
   primary: '#0096e7',
   primaryDark: '#034b9d',
   primaryLight: '#9ed3f0',
@@ -99,7 +101,7 @@ export const lightColors: { [key in Color]: string } = {
   test: '#ffcc001d',
 }
 
-export const darkColors: { [key in Color]: string } = {
+export const darkColors: Colors = {
   primary: '#0096e7',
   primaryDark: '#034b9d',
   primaryLight: '#1C72AD', // 70%

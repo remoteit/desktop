@@ -55,7 +55,6 @@ export const DEFAULT_RESELLER: IReseller = {
   name: '',
   email: '',
   logoUrl: '',
-  // color: '#0096e7', // not used
   plans: [],
   customers: [],
 }

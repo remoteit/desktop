@@ -2,6 +2,7 @@
   "name": "remoteit-capacitor",
   "version": "3.36.0-beta",
   "private": true,
+  "type": "module",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "workspaces": [
     "backend",
@@ -9,9 +10,10 @@
     "common"
   ],
   "scripts": {
+    "brand": "./scripts/brand.sh",
     "build-common": "tsc -b common/tsconfig.json",
     "build-backend": "npm run build -w=backend",
-    "build-frontend": "npm run build -w=frontend",
+    "build-frontend": "npm run brand && npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
     "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
@@ -24,7 +26,7 @@
     "open-ios": "npx cap open ios",
     "postinstall": "npm run copy-env",
     "install-electron": "npm run build-frontend && npm run build-backend && cd electron && npm install",
-    "start": "npm start -w=frontend",
+    "start": "npm run brand && npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",
     "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version",
@@ -49,6 +51,7 @@
     "capacitor-plugin-safe-area": "^3.0.3"
   },
   "devDependencies": {
+    "color": "^5.0.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "npm-run-all": "4.1.5",
