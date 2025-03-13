@@ -26,14 +26,6 @@ PRIMARY_LIGHTER_COLOR=$(get_color "primaryLighter")
 PRIMARY_HIGHLIGHT_COLOR=$(get_color "primaryHighlight")
 PRIMARY_BACKGROUND_COLOR=$(get_color "primaryBackground")
 
-# Log extracted colors
-echo "Extracted colors from current brand:"
-for color in "Primary:$PRIMARY_COLOR" "Primary Dark:$PRIMARY_DARK_COLOR" "Primary Light:$PRIMARY_LIGHT_COLOR" \
-            "Primary Lighter:$PRIMARY_LIGHTER_COLOR" "Primary Highlight:$PRIMARY_HIGHLIGHT_COLOR" \
-            "Primary Background:$PRIMARY_BACKGROUND_COLOR"; do
-  echo "  ${color%%:*}: ${color#*:}"
-done
-
 # Create brand directory if it doesn't exist
 mkdir -p $PUBLIC_DIR
 
@@ -69,5 +61,3 @@ if [ -f "$LOGO_SOURCE" ]; then
 else
   echo "Warning: logo.svg not found at $LOGO_SOURCE"
 fi
-
-echo "CSS generation complete"

@@ -10,7 +10,7 @@ BRAND=${BRAND:-remoteit}
 # Get directory paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-SOURCE_PATH="$PROJECT_ROOT/common/brands/$BRAND"
+SOURCE_PATH="$PROJECT_ROOT/brands/$BRAND"
 ANDROID_PATH="$PROJECT_ROOT/android"
 
 # Check if the brand directory exists

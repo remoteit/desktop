@@ -8,7 +8,7 @@
 # Get directory paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-BRANDS_DIR="$PROJECT_ROOT/common/brands"
+BRANDS_DIR="$PROJECT_ROOT/brands"
 
 # Check if brands directory exists
 if [ ! -d "$BRANDS_DIR" ]; then

@@ -4,7 +4,7 @@ This document explains how to use the multi-brand build system to create builds 
 
 ## Overview
 
-The application supports building for multiple brands based on the directories in `common/brands/`. The default brand is `remoteit` if no brand is specified.
+The application supports building for multiple brands based on the directories in `brands/`. The default brand is `remoteit` if no brand is specified.
 
 The system supports branding for multiple platforms:
 - **web** - Standard web application
@@ -17,7 +17,7 @@ The system supports branding for multiple platforms:
 Each brand should have its assets organized in the following structure:
 
 ```
-common/brands/
+brands/
 ├── brand1/
 │   ├── theme.ts           # Brand theme configuration
 │   ├── logo.svg           # Brand logo
@@ -152,7 +152,7 @@ The branding system is now fully integrated with the existing build scripts:
 
 To add a new brand:
 
-1. Create a new directory in `common/brands/` with the brand name
+1. Create a new directory in `brands/` with the brand name
 2. Add the required assets (theme.ts, logo.svg, etc.)
 3. Create a `brand-config.json` file (copy from template)
 4. Add platform-specific assets in subdirectories (electron, android, ios)

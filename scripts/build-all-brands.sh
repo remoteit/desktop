@@ -7,7 +7,7 @@
 # Get directory paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-BRANDS_DIR="$PROJECT_ROOT/common/brands"
+BRANDS_DIR="$PROJECT_ROOT/brands"
 
 # Get the platform from argument or build all
 PLATFORM=${1:-all}

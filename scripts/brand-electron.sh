@@ -10,7 +10,7 @@ BRAND=${BRAND:-remoteit}
 # Get directory paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-SOURCE_PATH="$PROJECT_ROOT/common/brands/$BRAND"
+SOURCE_PATH="$PROJECT_ROOT/brands/$BRAND"
 
 # Check if the brand directory exists
 if [ ! -d "$SOURCE_PATH" ]; then
@@ -56,7 +56,6 @@ node -e "
   pkg.productName = '$APP_NAME';
   pkg.description = '$APP_NAME cross platform desktop application';
   pkg.build.appId = '$APP_ID';
-  pkg.build.productName = '$APP_NAME';
   
   fs.writeFileSync(electronPackagePath, JSON.stringify(pkg, null, 2));
 "
