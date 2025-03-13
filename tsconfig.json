@@ -17,7 +17,10 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "paths": {
+      "@common/*": ["common/src/*"]
+    }
   },
   "exclude": ["node_modules", "android", "ios", "**/build/**", "**/dist/**"]
 }
