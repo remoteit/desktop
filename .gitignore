@@ -35,4 +35,4 @@ logs/code_signing_tool.log
 
 # branding
 /common/src/brand
-/frontend/public/brand.css
+/frontend/public/brand

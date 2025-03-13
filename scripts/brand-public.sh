@@ -5,7 +5,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
 BRAND_DIR="$PROJECT_ROOT/common/src/brand"
-PUBLIC_DIR="$PROJECT_ROOT/frontend/public"
+PUBLIC_DIR="$PROJECT_ROOT/frontend/public/brand"
 THEME_PATH="$BRAND_DIR/theme.ts"
 
 # Function to extract color value, checking both single and double quotes
@@ -34,8 +34,11 @@ for color in "Primary:$PRIMARY_COLOR" "Primary Dark:$PRIMARY_DARK_COLOR" "Primar
   echo "  ${color%%:*}: ${color#*:}"
 done
 
+# Create brand directory if it doesn't exist
+mkdir -p $PUBLIC_DIR
+
 # Generate CSS variables file
-CSS_VARS_PATH="$PUBLIC_DIR/brand.css"
+CSS_VARS_PATH="$PUBLIC_DIR/theme.css"
 
 cat > "$CSS_VARS_PATH" << EOF
 /**
