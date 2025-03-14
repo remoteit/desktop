@@ -24,16 +24,32 @@ echo "Setting up $BRAND for Electron platform..."
 "$SCRIPT_DIR/brand-web.sh"
 
 # Load brand configuration if it exists
-CONFIG_FILE="$SOURCE_PATH/config.json"
-if [ -f "$CONFIG_FILE" ]; then
+CONFIG_TS_FILE="$SOURCE_PATH/config.ts"
+CONFIG_JSON_FILE="$SOURCE_PATH/config.json"
+
+# First try to extract from TypeScript file
+if [ -f "$CONFIG_TS_FILE" ]; then
+  # Extract values from TypeScript using grep/sed
+  APP_NAME=$(grep -o "appName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appName: '\\([^']*\\)'/\\1/")
+  APP_ID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appId: '\\([^']*\\)'/\\1/")
+  
+  # If double quotes are used instead of single quotes
+  if [ -z "$APP_NAME" ]; then
+    APP_NAME=$(grep -o 'appName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appName: "\\([^"]*\\)"/\\1/')
+  fi
+  if [ -z "$APP_ID" ]; then
+    APP_ID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appId: "\\([^"]*\\)"/\\1/')
+  fi
+# Fallback to JSON file if TypeScript file doesn't exist
+elif [ -f "$CONFIG_JSON_FILE" ]; then
   # Extract values from JSON using jq if available, otherwise use grep/sed
   if command -v jq &> /dev/null; then
-    APP_NAME=$(jq -r '.appName' "$CONFIG_FILE")
-    APP_ID=$(jq -r '.appId' "$CONFIG_FILE")
+    APP_NAME=$(jq -r '.appName' "$CONFIG_JSON_FILE")
+    APP_ID=$(jq -r '.appId' "$CONFIG_JSON_FILE")
   else
     # Fallback to grep/sed for basic extraction
-    APP_NAME=$(grep -o '"appName":[^,}]*' "$CONFIG_FILE" | sed 's/"appName":[[:space:]]*"\([^"]*\)"/\1/')
-    APP_ID=$(grep -o '"appId":[^,}]*' "$CONFIG_FILE" | sed 's/"appId":[[:space:]]*"\([^"]*\)"/\1/')
+    APP_NAME=$(grep -o '"appName":[^,}]*' "$CONFIG_JSON_FILE" | sed 's/"appName":[[:space:]]*"\([^"]*\)"/\1/')
+    APP_ID=$(grep -o '"appId":[^,}]*' "$CONFIG_JSON_FILE" | sed 's/"appId":[[:space:]]*"\([^"]*\)"/\1/')
   fi
 else
   # If no config file exists, derive values from the brand name
@@ -44,8 +60,8 @@ fi
 
 # Update electron package.json with brand-specific values
 echo "Updating Electron configuration for $BRAND..."
-echo "App name $APP_NAME"
-echo "App ID $APP_ID"
+echo "App name: $APP_NAME"
+echo "App ID: $APP_ID"
 
 # Use node to update the package.json
 node -e "

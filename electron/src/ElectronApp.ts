@@ -41,6 +41,8 @@ export default class ElectronApp {
       Logger.info('SET AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
     }
 
+    Logger.info('BRAND', { brand })
+
     // Windows event
     this.app.on('ready', this.handleAppReady)
     this.app.on('activate', this.handleActivate)

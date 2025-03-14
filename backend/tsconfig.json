@@ -5,7 +5,9 @@
     "outDir": "./build",
     "rootDir": "src",
     "declaration": true,
-    "composite": true
+    "paths": {
+      "@common/*": ["common/build/*"]
+    }
   },
   "references": [{ "path": "../common" }],
   "include": ["src/**/*", "../types.d.ts", "src/**/*.json"]

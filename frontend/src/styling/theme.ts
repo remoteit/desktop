@@ -1,5 +1,5 @@
 import browser from '../services/browser'
-import brand from '@common/brand/config.json'
+import brand from '@common/brand/config'
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'

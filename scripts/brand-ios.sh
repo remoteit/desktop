@@ -24,9 +24,28 @@ echo "Setting up $BRAND for iOS platform..."
 # First, apply web branding as a base
 "$SCRIPT_DIR/brand-web.sh"
 
-# Load brand configuration from the theme file if it exists
+# Load brand configuration from the config files
+CONFIG_TS_FILE="$SOURCE_PATH/config.ts"
 THEME_FILE="$SOURCE_PATH/brand-config.json"
-if [ -f "$THEME_FILE" ]; then
+
+# First try to extract from TypeScript file
+if [ -f "$CONFIG_TS_FILE" ]; then
+  # Extract values from TypeScript using grep/sed
+  APP_NAME=$(grep -o "appName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appName: '\\([^']*\\)'/\\1/")
+  APP_ID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appId: '\\([^']*\\)'/\\1/")
+  
+  # If double quotes are used instead of single quotes
+  if [ -z "$APP_NAME" ]; then
+    APP_NAME=$(grep -o 'appName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appName: "\\([^"]*\\)"/\\1/')
+  fi
+  if [ -z "$APP_ID" ]; then
+    APP_ID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appId: "\\([^"]*\\)"/\\1/')
+  fi
+  
+  # Default bundle ID to APP_ID if not specified
+  BUNDLE_ID=$APP_ID
+# Fallback to brand-config.json if TypeScript file doesn't exist
+elif [ -f "$THEME_FILE" ]; then
   # Extract values from JSON using jq if available, otherwise use grep/sed
   if command -v jq &> /dev/null; then
     APP_NAME=$(jq -r '.appName' "$THEME_FILE")

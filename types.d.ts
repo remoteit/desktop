@@ -1033,7 +1033,7 @@ declare global {
     primaryBackground: string
   }
 
-  interface BrandingTheme {
+  interface BrandingConfig {
     name: string
     appName: string
     appId: string
