@@ -1,5 +1,5 @@
 import browser from '../services/browser'
-import brandTheme from '@common/brand/theme'
+import brand from '@common/brand/config.json'
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'
@@ -748,6 +748,6 @@ export function isDarkMode(themeMode?: State['ui']['themeMode']) {
 }
 
 export function addBrandColors(colors: any, isDark: boolean) {
-  const brandColors = isDark ? brandTheme.colors.dark : brandTheme.colors.light
+  const brandColors = isDark ? brand.colors.dark : brand.colors.light
   return { ...colors, ...brandColors }
 }

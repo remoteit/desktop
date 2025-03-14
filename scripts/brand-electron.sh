@@ -23,17 +23,17 @@ echo "Setting up $BRAND for Electron platform..."
 # First, apply web branding as a base
 "$SCRIPT_DIR/brand-web.sh"
 
-# Load brand configuration from the theme file if it exists
-THEME_FILE="$SOURCE_PATH/brand-config.json"
-if [ -f "$THEME_FILE" ]; then
+# Load brand configuration if it exists
+CONFIG_FILE="$SOURCE_PATH/config.json"
+if [ -f "$CONFIG_FILE" ]; then
   # Extract values from JSON using jq if available, otherwise use grep/sed
   if command -v jq &> /dev/null; then
-    APP_NAME=$(jq -r '.appName' "$THEME_FILE")
-    APP_ID=$(jq -r '.appId' "$THEME_FILE")
+    APP_NAME=$(jq -r '.appName' "$CONFIG_FILE")
+    APP_ID=$(jq -r '.appId' "$CONFIG_FILE")
   else
     # Fallback to grep/sed for basic extraction
-    APP_NAME=$(grep -o '"appName":[^,}]*' "$THEME_FILE" | sed 's/"appName":[[:space:]]*"\([^"]*\)"/\1/')
-    APP_ID=$(grep -o '"appId":[^,}]*' "$THEME_FILE" | sed 's/"appId":[[:space:]]*"\([^"]*\)"/\1/')
+    APP_NAME=$(grep -o '"appName":[^,}]*' "$CONFIG_FILE" | sed 's/"appName":[[:space:]]*"\([^"]*\)"/\1/')
+    APP_ID=$(grep -o '"appId":[^,}]*' "$CONFIG_FILE" | sed 's/"appId":[[:space:]]*"\([^"]*\)"/\1/')
   fi
 else
   # If no config file exists, derive values from the brand name
@@ -44,6 +44,8 @@ fi
 
 # Update electron package.json with brand-specific values
 echo "Updating Electron configuration for $BRAND..."
+echo "App name $APP_NAME"
+echo "App ID $APP_ID"
 
 # Use node to update the package.json
 node -e "
@@ -54,7 +56,7 @@ node -e "
   
   pkg.name = '$BRAND';
   pkg.productName = '$APP_NAME';
-  pkg.description = '$APP_NAME cross platform desktop application';
+  pkg.description = '$APP_NAME cross platform desktop application for creating and hosting connections';
   pkg.build.appId = '$APP_ID';
   
   fs.writeFileSync(electronPackagePath, JSON.stringify(pkg, null, 2));

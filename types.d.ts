@@ -1004,8 +1004,8 @@ declare global {
 
   interface BrandingTheme {
     name: string
-    displayName: string
-    logoAsset: string
+    appName: string
+    appId: string
     colors: {
       light: BrandColors
       dark: BrandColors

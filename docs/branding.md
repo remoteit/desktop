@@ -19,7 +19,7 @@ Each brand should have its assets organized in the following structure:
 ```
 brands/
 ├── brand1/
-│   ├── theme.ts           # Brand theme configuration
+│   ├── config.json   # Brand theme configuration
 │   ├── logo.svg           # Brand logo
 │   ├── brand-config.json  # Brand configuration
 │   ├── electron/          # Electron-specific assets
@@ -33,7 +33,7 @@ brands/
 │       ├── AppIcon.appiconset/
 │       └── ...
 └── brand2/
-    ├── theme.ts
+    ├── config.json
     ├── logo.svg
     ├── brand-config.json
     └── ...
@@ -153,7 +153,7 @@ The branding system is now fully integrated with the existing build scripts:
 To add a new brand:
 
 1. Create a new directory in `brands/` with the brand name
-2. Add the required assets (theme.ts, logo.svg, etc.)
+2. Add the required assets (config.json, logo.svg, etc.)
 3. Create a `brand-config.json` file (copy from template)
 4. Add platform-specific assets in subdirectories (electron, android, ios)
 

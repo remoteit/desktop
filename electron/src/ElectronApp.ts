@@ -1,4 +1,4 @@
-import { EVENTS, PROTOCOL, theme, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import electron, { Menu, dialog } from 'electron'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
@@ -180,13 +180,13 @@ export default class ElectronApp {
 
   private createMainWindow = () => {
     if (this.window) return
-    this.app.setAppUserModelId('it.remote.desktop')
+    this.app.setAppUserModelId(brand.appId)
     const { windowState } = preferences.get()
     this.window = new electron.BrowserWindow({
       ...windowState,
       minWidth: 525,
       minHeight: 325,
-      backgroundColor: theme.colors.light.primaryDark,
+      backgroundColor: brand.colors.light.primaryDark,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,

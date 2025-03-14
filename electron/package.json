@@ -3,7 +3,7 @@
   "version": "3.36.0-beta",
   "private": true,
   "main": "build/index.js",
-  "description": "Remote.It cross platform desktop application for creating and hosting connections",
+  "description": "remoteit cross platform desktop application for creating and hosting connections",
   "homepage": "https://app.remote.it",
   "license": "MIT",
   "author": {
@@ -32,7 +32,7 @@
     "unlink": "npm install remoteit-headless",
     "watch-backend": "cd ../backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
-    "watch-brand": "onchange -i -k 'common/brands/**/*' -- npm run brand",
+    "watch-brand": "onchange -i -k 'brands/**/*' -- npm run brand",
     "watch-build": "tsc --watch",
     "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' '../backend/build/**/*' -- npm run electron"
   },
@@ -56,7 +56,7 @@
     "type": "git"
   },
   "build": {
-    "appId": "it.remote.desktop",
+    "appId": "com.remoteit.desktop",
     "copyright": "remot3.it, Inc",
     "productName": "Remote.It",
     "artifactName": "${productName}-Installer-${arch}.${ext}",
@@ -137,5 +137,6 @@
     "files": [
       "build/**/*"
     ]
-  }
+  },
+  "productName": "remoteit"
 }

@@ -4,27 +4,23 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-BRAND_DIR="$PROJECT_ROOT/common/src/brand"
+BRAND_DIR="$PROJECT_ROOT/common/src"
 PUBLIC_DIR="$PROJECT_ROOT/frontend/public/brand"
-THEME_PATH="$BRAND_DIR/theme.ts"
+CONFIG_PATH="$BRAND_DIR/config.json"
 
-# Function to extract color value, checking both single and double quotes
-get_color() {
-  local color_name=$1
-  local value=$(grep -A 10 'light: {' $THEME_PATH | grep -o "$color_name: '[^']*'" | head -1 | sed "s/$color_name: '\([^']*\)'/\1/")
-  if [ -z "$value" ]; then
-    value=$(grep -A 10 'light: {' $THEME_PATH | grep -o "$color_name: \"[^\"]*\"" | head -1 | sed "s/$color_name: \"\([^\"]*\)\"/\1/")
-  fi
-  echo "$value"
-}
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+  echo "Error: jq is required but not installed. Please install jq."
+  exit 1
+fi
 
-# Extract colors
-PRIMARY_COLOR=$(get_color "primary")
-PRIMARY_DARK_COLOR=$(get_color "primaryDark") 
-PRIMARY_LIGHT_COLOR=$(get_color "primaryLight")
-PRIMARY_LIGHTER_COLOR=$(get_color "primaryLighter")
-PRIMARY_HIGHLIGHT_COLOR=$(get_color "primaryHighlight")
-PRIMARY_BACKGROUND_COLOR=$(get_color "primaryBackground")
+# Extract colors using jq
+PRIMARY_COLOR=$(jq -r '.light.primary' $CONFIG_PATH)
+PRIMARY_DARK_COLOR=$(jq -r '.light.primaryDark' $CONFIG_PATH)
+PRIMARY_LIGHT_COLOR=$(jq -r '.light.primaryLight' $CONFIG_PATH)
+PRIMARY_LIGHTER_COLOR=$(jq -r '.light.primaryLighter' $CONFIG_PATH)
+PRIMARY_HIGHLIGHT_COLOR=$(jq -r '.light.primaryHighlight' $CONFIG_PATH)
+PRIMARY_BACKGROUND_COLOR=$(jq -r '.light.primaryBackground' $CONFIG_PATH)
 
 # Create brand directory if it doesn't exist
 mkdir -p $PUBLIC_DIR
