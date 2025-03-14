@@ -1,18 +1,33 @@
 #!/bin/bash
 
-# This script applies branding for all available brands for a specific platform
-# Usage: ./scripts/build-all-brands.sh [platform]
-# If platform is not specified, it will brand for all platforms
+# This script runs branding for all available brands across all platforms
+# Usage: ./scripts/brand-all.sh [platform]
+# Example: ./scripts/brand-all.sh web
+# If no platform is specified, it will brand for all platforms
 
 # Get directory paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
 BRANDS_DIR="$PROJECT_ROOT/brands"
 
-# Get the platform from argument or brand all
+# Check if brands directory exists
+if [ ! -d "$BRANDS_DIR" ]; then
+  echo "Error: Brands directory does not exist at $BRANDS_DIR"
+  exit 1
+fi
+
+# Get the platform from command line argument or default to "all"
 PLATFORM=${1:-all}
 
-# Discover available brands from the brands directory
+# Validate platform
+if [[ "$PLATFORM" != "all" && "$PLATFORM" != "web" && "$PLATFORM" != "electron" && "$PLATFORM" != "android" && "$PLATFORM" != "ios" ]]; then
+  echo "Error: Invalid platform '$PLATFORM'"
+  echo "Usage: $0 [platform]"
+  echo "Valid platforms: all, web, electron, android, ios"
+  exit 1
+fi
+
+# Get list of all brand directories
 BRANDS=()
 for brand_dir in "$BRANDS_DIR"/*; do
   if [ -d "$brand_dir" ]; then
@@ -21,50 +36,51 @@ for brand_dir in "$BRANDS_DIR"/*; do
   fi
 done
 
-# If no brands found, exit with error
 if [ ${#BRANDS[@]} -eq 0 ]; then
-  echo "Error: No brand directories found in $BRANDS_DIR"
+  echo "Error: No brands found in $BRANDS_DIR"
   exit 1
 fi
 
-echo "Discovered brands: ${BRANDS[*]}"
+echo "Found ${#BRANDS[@]} brands: ${BRANDS[*]}"
 
-# Define available platforms
-PLATFORMS=("web" "electron" "android" "ios")
-
-# Function to brand for a specific brand and platform
+# Function to brand a specific platform for all brands
 brand_platform() {
-  local brand=$1
-  local platform=$2
+  local platform=$1
+  local script="$SCRIPT_DIR/brand-$platform.sh"
   
-  echo "========================================================"
-  echo "Setting up $brand for $platform..."
-  echo "========================================================"
+  if [ ! -f "$script" ]; then
+    echo "Error: Branding script for platform '$platform' not found at $script"
+    return 1
+  fi
   
-  # Set the brand environment variable and call the brand script
-  BRAND="$brand" "$SCRIPT_DIR/brand-platform.sh" "$platform"
+  echo "===== Branding all brands for $platform platform ====="
   
-  echo "Completed branding $brand for $platform"
-  echo "========================================================"
-  echo ""
+  for brand in "${BRANDS[@]}"; do
+    echo "Processing $brand for $platform..."
+    BRAND="$brand" "$script"
+    
+    if [ $? -ne 0 ]; then
+      echo "Warning: Failed to brand $brand for $platform"
+    else
+      echo "Successfully branded $brand for $platform"
+    fi
+    
+    echo "-----------------------------------"
+  done
+  
+  echo "===== Completed branding for $platform platform ====="
 }
 
-# Brand based on specified platform
+# Main execution
 if [ "$PLATFORM" = "all" ]; then
-  # Brand all brands for all platforms
-  for brand in "${BRANDS[@]}"; do
-    for platform in "${PLATFORMS[@]}"; do
-      brand_platform "$brand" "$platform"
-    done
-  done
-elif [[ " ${PLATFORMS[@]} " =~ " ${PLATFORM} " ]]; then
-  # Brand all brands for the specified platform
-  for brand in "${BRANDS[@]}"; do
-    brand_platform "$brand" "$PLATFORM"
-  done
+  # Brand all platforms
+  brand_platform "web"
+  brand_platform "electron"
+  brand_platform "android"
+  brand_platform "ios"
 else
-  echo "Error: Invalid platform '$PLATFORM'. Must be 'web', 'electron', 'android', 'ios', or 'all'."
-  exit 1
+  # Brand specific platform
+  brand_platform "$PLATFORM"
 fi
 
-echo "All branding completed!" 
+echo "All branding operations completed." 

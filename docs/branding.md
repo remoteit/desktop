@@ -117,8 +117,7 @@ The branding system consists of several platform-specific scripts:
 2. `brand-electron.sh` - Handles Electron-specific branding
 3. `brand-android.sh` - Handles Android-specific branding
 4. `brand-ios.sh` - Handles iOS-specific branding
-5. `brand-all.sh` - Applies branding for a single brand across all platforms
-6. `brand-all-brands.sh` - Applies branding for all brands for a specific platform or all platforms
+5. `brand-all.sh` - Applies branding for all brands for a specific platform or all platforms
 
 The workflow is:
 1. Set the `BRAND` environment variable (defaults to "remoteit" if not set)

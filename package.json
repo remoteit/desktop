@@ -15,7 +15,6 @@
     "brand-android": "./scripts/brand-android.sh",
     "brand-ios": "./scripts/brand-ios.sh",
     "brand-all": "./scripts/brand-all.sh",
-    "brand-all-brands": "./scripts/brand-all-brands.sh",
     "build-backend": "npm run brand-electron && npm run build -w=backend",
     "build-frontend": "npm run brand-web && npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",

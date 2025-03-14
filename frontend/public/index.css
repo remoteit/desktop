@@ -71,6 +71,7 @@ body::before {
   height: 0;
 }
 
-body > svg {
-  margin-bottom: 40px;
+.logo {
+  margin-bottom: 46px;
+  color: #FFFFFF;
 }

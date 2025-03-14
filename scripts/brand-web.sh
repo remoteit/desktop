@@ -12,6 +12,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
 SOURCE_PATH="$PROJECT_ROOT/brands/$BRAND"
 TARGET_PATH="$PROJECT_ROOT/common/src/brand"
+FRONTEND_PUBLIC_DIR="$PROJECT_ROOT/frontend/public/brand"
 
 # Check if the brand directory exists
 if [ ! -d "$SOURCE_PATH" ]; then
@@ -27,7 +28,10 @@ if [ -d "$TARGET_PATH" ]; then
 fi
 cp -R "$SOURCE_PATH" "$TARGET_PATH"
 
-# Run the CSS generator
-"$SCRIPT_DIR/brand-public.sh"
+# Copy public assets to frontend
+if [ -d "$FRONTEND_PUBLIC_DIR" ]; then
+  rm -rf "$FRONTEND_PUBLIC_DIR"
+fi
+cp -R "$SOURCE_PATH/public" "$FRONTEND_PUBLIC_DIR"
 
-echo "Web branding complete for $BRAND." 
+echo "Web branding complete for $BRAND."

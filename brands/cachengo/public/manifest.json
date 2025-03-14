@@ -1,9 +1,9 @@
 {
-  "short_name": "remote.it",
-  "name": "remote.it",
+  "short_name": "Telepath",
+  "name": "Cachengo Telepath",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "brand/icon.svg",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     }
