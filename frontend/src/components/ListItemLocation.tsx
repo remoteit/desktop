@@ -2,7 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useMatches } from '../hooks/useMatches'
 import { SxProps, Theme, MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
-import { Color, Sizes } from '../styling'
+import { Sizes } from '../styling'
 import { Icon } from './Icon'
 
 export type ListItemLocationProps = {

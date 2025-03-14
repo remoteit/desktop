@@ -31,39 +31,6 @@ export const spacing: { [key in Sizes]: number } = {
   max: 96, //   64   12
 }
 
-export type Color =
-  | 'primary'
-  | 'primaryLight'
-  | 'primaryLighter'
-  | 'primaryHighlight'
-  | 'primaryBackground'
-  | 'primaryDark'
-  | 'successLight'
-  | 'success'
-  | 'successDark'
-  | 'dangerLight'
-  | 'danger'
-  | 'warning'
-  | 'warningLightest'
-  | 'warningHighlight'
-  | 'gray'
-  | 'grayLightest'
-  | 'grayLighter'
-  | 'grayLight'
-  | 'grayDark'
-  | 'grayDarker'
-  | 'grayDarkest'
-  | 'white'
-  | 'alwaysWhite'
-  | 'black'
-  | 'darken'
-  | 'hover'
-  | 'screen'
-  | 'shadow'
-  | 'rpi'
-  | 'guide'
-  | 'test'
-
 export type Colors = { [key in Color]: string }
 
 export const lightColors: Colors = {

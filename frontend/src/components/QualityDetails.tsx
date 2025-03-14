@@ -1,7 +1,6 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { Quote } from './Quote'
-import { Color } from '../styling'
 import { Percent } from './Percent'
 import { Round } from './Round'
 import { Typography, Divider, Box } from '@mui/material'

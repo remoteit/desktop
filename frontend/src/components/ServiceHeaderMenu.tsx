@@ -16,7 +16,6 @@ import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
 import { Diagram } from './Diagram'
 import { Notice } from '../components/Notice'
-import { Color } from '../styling'
 import { Icon } from '../components/Icon'
 
 type Props = {

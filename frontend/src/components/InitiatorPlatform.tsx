@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip } from '@mui/material'
-import { Color, Sizes } from '../styling'
+import { Sizes } from '../styling'
 import { Icon } from './Icon'
 
 export const INITIATOR_PLATFORMS = [

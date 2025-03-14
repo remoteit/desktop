@@ -1,6 +1,5 @@
 import React from 'react'
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
-import { Color } from '../styling'
 
 export type RunButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
   job?: IJob

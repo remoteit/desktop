@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useTheme, makeStyles } from '@mui/styles'
-import { Color } from '../styling'
 import * as d3 from 'd3'
 
 export type BarGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {

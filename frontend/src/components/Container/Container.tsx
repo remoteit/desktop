@@ -2,7 +2,7 @@ import React from 'react'
 import classnames from 'classnames'
 import { Divider } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { spacing, Color, radius } from '../../styling'
+import { spacing, radius } from '../../styling'
 import { Body, BodyProps } from '../Body'
 
 type Props = {

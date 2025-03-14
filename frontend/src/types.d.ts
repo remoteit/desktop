@@ -2,7 +2,6 @@ import { Color as ColorType, ColorPartial } from '@mui/material/styles/createPal
 import { SafeAreaInsets } from 'capacitor-plugin-safe-area'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
-import { Color } from './styling'
 
 declare global {
   interface Window {

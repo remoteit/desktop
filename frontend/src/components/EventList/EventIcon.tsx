@@ -1,6 +1,5 @@
 import React from 'react'
 import { Icon } from '../Icon'
-import { Color } from '../../styling'
 import { EventState, EventActions } from './EventMessage'
 import { JobStatusIcon } from '../JobStatusIcon'
 
