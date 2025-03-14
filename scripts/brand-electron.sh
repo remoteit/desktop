@@ -55,9 +55,9 @@ node -e "
   const pkg = JSON.parse(fs.readFileSync(electronPackagePath, 'utf8'));
   
   pkg.name = '$BRAND';
-  pkg.productName = '$APP_NAME';
   pkg.description = '$APP_NAME cross platform desktop application for creating and hosting connections';
   pkg.build.appId = '$APP_ID';
+  pkg.build.productName = '$APP_NAME';
   
   fs.writeFileSync(electronPackagePath, JSON.stringify(pkg, null, 2));
 "

@@ -3,7 +3,7 @@
   "version": "3.36.0-beta",
   "private": true,
   "main": "build/index.js",
-  "description": "remoteit cross platform desktop application for creating and hosting connections",
+  "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "homepage": "https://app.remote.it",
   "license": "MIT",
   "author": {
@@ -56,7 +56,7 @@
     "type": "git"
   },
   "build": {
-    "appId": "com.remoteit.desktop",
+    "appId": "it.remote.desktop",
     "copyright": "remot3.it, Inc",
     "productName": "Remote.It",
     "artifactName": "${productName}-Installer-${arch}.${ext}",
@@ -137,6 +137,5 @@
     "files": [
       "build/**/*"
     ]
-  },
-  "productName": "remoteit"
+  }
 }
