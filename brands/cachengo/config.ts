@@ -1,7 +1,19 @@
 const config: BrandingConfig = {
   name: 'telepath',
   appName: 'Telepath',
-  appId: 'com.telepath.desktop',
+  package: {
+    homepage: 'https://telepath.cachengo.com',
+    description: 'Telepath cross platform desktop application for creating and hosting connections',
+    author: {
+      name: 'Cachengo',
+      email: 'support@cachengo.com',
+    },
+    build: {
+      appId: 'com.telepath.desktop',
+      copyright: 'remot3.it, Inc',
+      productName: 'Telepath',
+    },
+  },
   colors: {
     light: {
       primary: '#F05323',

@@ -1036,7 +1036,19 @@ declare global {
   interface BrandingConfig {
     name: string
     appName: string
-    appId: string
+    package?: {
+      homepage?: string
+      description?: string
+      author?: {
+        name?: string
+        email?: string
+      }
+      build?: {
+        appId?: string
+        copyright?: string
+        productName?: string
+      }
+    }
     colors: {
       light: BrandColors
       dark: BrandColors

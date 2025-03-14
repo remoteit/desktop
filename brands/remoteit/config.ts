@@ -1,7 +1,19 @@
 const config: BrandingConfig = {
   name: 'remoteit',
   appName: 'Remote.It',
-  appId: 'it.remote.desktop',
+  package: {
+    homepage: 'https://app.remote.it',
+    description: 'Remote.It cross platform desktop application for creating and hosting connections',
+    author: {
+      name: 'Remote.It',
+      email: 'support@remote.it',
+    },
+    build: {
+      appId: 'it.remote.desktop',
+      copyright: 'remot3.it, Inc',
+      productName: 'Remote.It',
+    },
+  },
   colors: {
     light: {
       primary: '#0096e7',

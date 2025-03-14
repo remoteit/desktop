@@ -161,6 +161,12 @@ and for Android you need you will need a key.properties file in the android dire
 npm run android
 ```
 
+## Branding
+
+The build is set up to be able to handle a `BRAND` environment variable.
+
+the `/brand` directory contains possible brand options. See `/brand/remoteit` as and example of what brand files are needed if you want to create a new brand.
+
 ## Testing
 
 Tests are written using Jest.

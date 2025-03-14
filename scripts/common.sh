@@ -57,12 +57,42 @@ extract_config() {
     APP_NAME=$(grep -o "appName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appName: '\\([^']*\\)'/\\1/")
     APP_ID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appId: '\\([^']*\\)'/\\1/")
     
+    # Extract package information if available
+    PACKAGE_HOMEPAGE=$(grep -o "homepage: '[^']*'" "$CONFIG_TS_FILE" | sed "s/homepage: '\\([^']*\\)'/\\1/")
+    PACKAGE_DESCRIPTION=$(grep -o "description: '[^']*'" "$CONFIG_TS_FILE" | sed "s/description: '\\([^']*\\)'/\\1/")
+    PACKAGE_AUTHOR_NAME=$(grep -o "name: '[^']*'" "$CONFIG_TS_FILE" | grep -A2 "author" | sed "s/name: '\\([^']*\\)'/\\1/" | head -1)
+    PACKAGE_AUTHOR_EMAIL=$(grep -o "email: '[^']*'" "$CONFIG_TS_FILE" | sed "s/email: '\\([^']*\\)'/\\1/")
+    PACKAGE_BUILD_APPID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | grep -A3 "build" | sed "s/appId: '\\([^']*\\)'/\\1/" | head -1)
+    PACKAGE_BUILD_COPYRIGHT=$(grep -o "copyright: '[^']*'" "$CONFIG_TS_FILE" | sed "s/copyright: '\\([^']*\\)'/\\1/")
+    PACKAGE_BUILD_PRODUCTNAME=$(grep -o "productName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/productName: '\\([^']*\\)'/\\1/")
+    
     # If double quotes are used instead of single quotes
     if [ -z "$APP_NAME" ]; then
       APP_NAME=$(grep -o 'appName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appName: "\\([^"]*\\)"/\\1/')
     fi
     if [ -z "$APP_ID" ]; then
       APP_ID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appId: "\\([^"]*\\)"/\\1/')
+    fi
+    if [ -z "$PACKAGE_HOMEPAGE" ]; then
+      PACKAGE_HOMEPAGE=$(grep -o 'homepage: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/homepage: "\\([^"]*\\)"/\\1/')
+    fi
+    if [ -z "$PACKAGE_DESCRIPTION" ]; then
+      PACKAGE_DESCRIPTION=$(grep -o 'description: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/description: "\\([^"]*\\)"/\\1/')
+    fi
+    if [ -z "$PACKAGE_AUTHOR_NAME" ]; then
+      PACKAGE_AUTHOR_NAME=$(grep -o 'name: "[^"]*"' "$CONFIG_TS_FILE" | grep -A2 "author" | sed 's/name: "\\([^"]*\\)"/\\1/' | head -1)
+    fi
+    if [ -z "$PACKAGE_AUTHOR_EMAIL" ]; then
+      PACKAGE_AUTHOR_EMAIL=$(grep -o 'email: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/email: "\\([^"]*\\)"/\\1/')
+    fi
+    if [ -z "$PACKAGE_BUILD_APPID" ]; then
+      PACKAGE_BUILD_APPID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | grep -A3 "build" | sed 's/appId: "\\([^"]*\\)"/\\1/' | head -1)
+    fi
+    if [ -z "$PACKAGE_BUILD_COPYRIGHT" ]; then
+      PACKAGE_BUILD_COPYRIGHT=$(grep -o 'copyright: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/copyright: "\\([^"]*\\)"/\\1/')
+    fi
+    if [ -z "$PACKAGE_BUILD_PRODUCTNAME" ]; then
+      PACKAGE_BUILD_PRODUCTNAME=$(grep -o 'productName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/productName: "\\([^"]*\\)"/\\1/')
     fi
     
     # Extract platform-specific IDs based on platform parameter
@@ -138,6 +168,24 @@ extract_config() {
   echo "Configuration values:"
   echo "  App Name: $APP_NAME"
   echo "  App ID: $APP_ID"
+  if [ -n "$PACKAGE_HOMEPAGE" ]; then
+    echo "  Package Homepage: $PACKAGE_HOMEPAGE"
+  fi
+  if [ -n "$PACKAGE_DESCRIPTION" ]; then
+    echo "  Package Description: $PACKAGE_DESCRIPTION"
+  fi
+  if [ -n "$PACKAGE_AUTHOR_NAME" ] || [ -n "$PACKAGE_AUTHOR_EMAIL" ]; then
+    echo "  Package Author: $PACKAGE_AUTHOR_NAME <$PACKAGE_AUTHOR_EMAIL>"
+  fi
+  if [ -n "$PACKAGE_BUILD_APPID" ]; then
+    echo "  Package Build AppID: $PACKAGE_BUILD_APPID"
+  fi
+  if [ -n "$PACKAGE_BUILD_COPYRIGHT" ]; then
+    echo "  Package Build Copyright: $PACKAGE_BUILD_COPYRIGHT"
+  fi
+  if [ -n "$PACKAGE_BUILD_PRODUCTNAME" ]; then
+    echo "  Package Build Product Name: $PACKAGE_BUILD_PRODUCTNAME"
+  fi
   if [ "$PLATFORM" = "android" ]; then
     echo "  Android Package Name: $PACKAGE_NAME"
   elif [ "$PLATFORM" = "ios" ]; then
