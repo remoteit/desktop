@@ -4,68 +4,21 @@
 # Usage: BRAND=brandname ./scripts/brand-android.sh
 # Example: BRAND=remoteit ./scripts/brand-android.sh
 
-# Get the brand from environment variable or use default
-BRAND=${BRAND:-remoteit}
-
-# Get directory paths
+# Source common functions
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-SOURCE_PATH="$PROJECT_ROOT/brands/$BRAND"
+source "$SCRIPT_DIR/common.sh"
+
+# Initialize branding with platform name
+init_branding "android"
+
+# Set Android-specific path
 ANDROID_PATH="$PROJECT_ROOT/android"
-
-# Check if the brand directory exists
-if [ ! -d "$SOURCE_PATH" ]; then
-  echo "Error: Brand directory for '$BRAND' does not exist."
-  exit 1
-fi
-
-echo "Setting up $BRAND for Android platform..."
 
 # First, apply web branding as a base
 "$SCRIPT_DIR/brand-web.sh"
 
-# Load brand configuration from the config files
-CONFIG_TS_FILE="$SOURCE_PATH/config.ts"
-THEME_FILE="$SOURCE_PATH/brand-config.json"
-
-# First try to extract from TypeScript file
-if [ -f "$CONFIG_TS_FILE" ]; then
-  # Extract values from TypeScript using grep/sed
-  APP_NAME=$(grep -o "appName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appName: '\\([^']*\\)'/\\1/")
-  APP_ID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appId: '\\([^']*\\)'/\\1/")
-  
-  # If double quotes are used instead of single quotes
-  if [ -z "$APP_NAME" ]; then
-    APP_NAME=$(grep -o 'appName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appName: "\\([^"]*\\)"/\\1/')
-  fi
-  if [ -z "$APP_ID" ]; then
-    APP_ID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appId: "\\([^"]*\\)"/\\1/')
-  fi
-  
-  # Default package name to APP_ID if not specified
-  PACKAGE_NAME=$APP_ID
-# Fallback to brand-config.json if TypeScript file doesn't exist
-elif [ -f "$THEME_FILE" ]; then
-  # Extract values from JSON using jq if available, otherwise use grep/sed
-  if command -v jq &> /dev/null; then
-    APP_NAME=$(jq -r '.appName' "$THEME_FILE")
-    APP_ID=$(jq -r '.appId' "$THEME_FILE")
-    PACKAGE_NAME=$(jq -r '.androidPackageName // .appId' "$THEME_FILE")
-  else
-    # Fallback to grep/sed for basic extraction
-    APP_NAME=$(grep -o '"appName":[^,}]*' "$THEME_FILE" | sed 's/"appName":[[:space:]]*"\([^"]*\)"/\1/')
-    APP_ID=$(grep -o '"appId":[^,}]*' "$THEME_FILE" | sed 's/"appId":[[:space:]]*"\([^"]*\)"/\1/')
-    PACKAGE_NAME=$(grep -o '"androidPackageName":[^,}]*' "$THEME_FILE" | sed 's/"androidPackageName":[[:space:]]*"\([^"]*\)"/\1/')
-    # If androidPackageName is not found, use appId
-    if [ -z "$PACKAGE_NAME" ]; then
-      PACKAGE_NAME=$APP_ID
-    fi
-  fi
-else
-  # If no config file exists, derive values from the brand name
-  APP_NAME=${APP_NAME:-$(echo "$BRAND" | sed 's/\b\(.\)/\u\1/g')}  # Capitalize first letter
-  PACKAGE_NAME=${PACKAGE_NAME:-"com.$BRAND.app"}
-fi
+# Extract config values
+extract_config "android"
 
 # Copy Android-specific assets if they exist
 if [ -d "$SOURCE_PATH/android" ]; then

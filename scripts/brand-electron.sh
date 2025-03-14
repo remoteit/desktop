@@ -4,59 +4,18 @@
 # Usage: BRAND=brandname ./scripts/brand-electron.sh
 # Example: BRAND=remoteit ./scripts/brand-electron.sh
 
-# Get the brand from environment variable or use default
-BRAND=${BRAND:-remoteit}
-
-# Get directory paths
+# Source common functions
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
-SOURCE_PATH="$PROJECT_ROOT/brands/$BRAND"
+source "$SCRIPT_DIR/common.sh"
 
-# Check if the brand directory exists
-if [ ! -d "$SOURCE_PATH" ]; then
-  echo "Error: Brand directory for '$BRAND' does not exist."
-  exit 1
-fi
-
-echo "Setting up $BRAND for Electron platform..."
+# Initialize branding with platform name
+init_branding "electron"
 
 # First, apply web branding as a base
 "$SCRIPT_DIR/brand-web.sh"
 
-# Load brand configuration if it exists
-CONFIG_TS_FILE="$SOURCE_PATH/config.ts"
-CONFIG_JSON_FILE="$SOURCE_PATH/config.json"
-
-# First try to extract from TypeScript file
-if [ -f "$CONFIG_TS_FILE" ]; then
-  # Extract values from TypeScript using grep/sed
-  APP_NAME=$(grep -o "appName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appName: '\\([^']*\\)'/\\1/")
-  APP_ID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appId: '\\([^']*\\)'/\\1/")
-  
-  # If double quotes are used instead of single quotes
-  if [ -z "$APP_NAME" ]; then
-    APP_NAME=$(grep -o 'appName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appName: "\\([^"]*\\)"/\\1/')
-  fi
-  if [ -z "$APP_ID" ]; then
-    APP_ID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appId: "\\([^"]*\\)"/\\1/')
-  fi
-# Fallback to JSON file if TypeScript file doesn't exist
-elif [ -f "$CONFIG_JSON_FILE" ]; then
-  # Extract values from JSON using jq if available, otherwise use grep/sed
-  if command -v jq &> /dev/null; then
-    APP_NAME=$(jq -r '.appName' "$CONFIG_JSON_FILE")
-    APP_ID=$(jq -r '.appId' "$CONFIG_JSON_FILE")
-  else
-    # Fallback to grep/sed for basic extraction
-    APP_NAME=$(grep -o '"appName":[^,}]*' "$CONFIG_JSON_FILE" | sed 's/"appName":[[:space:]]*"\([^"]*\)"/\1/')
-    APP_ID=$(grep -o '"appId":[^,}]*' "$CONFIG_JSON_FILE" | sed 's/"appId":[[:space:]]*"\([^"]*\)"/\1/')
-  fi
-else
-  # If no config file exists, derive values from the brand name
-  # This is a fallback mechanism
-  APP_NAME=${APP_NAME:-$(echo "$BRAND" | sed 's/\b\(.\)/\u\1/g')}  # Capitalize first letter
-  APP_ID=${APP_ID:-"com.$BRAND.desktop"}
-fi
+# Extract config values
+extract_config "electron"
 
 # Update electron package.json with brand-specific values
 echo "Updating Electron configuration for $BRAND..."
