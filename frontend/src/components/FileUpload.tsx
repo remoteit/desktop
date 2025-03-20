@@ -12,10 +12,11 @@ import { radius } from '../styling'
 type Props = {
   script?: string
   loading?: boolean
+  disabled?: boolean
   onChange: (script: string, file?: File) => void
 }
 
-export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange }) => {
+export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, onChange }) => {
   const dispatch = useDispatch<Dispatch>()
   const [filename, setFilename] = useState<string | undefined>()
   const [isText, setIsText] = useState(true)
@@ -77,7 +78,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange }) 
             multiline
             fullWidth
             required
-            disabled={loading}
+            disabled={disabled || loading}
             label="Script"
             value={loading ? 'loading...' : script.toString()}
             variant="filled"
@@ -113,6 +114,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange }) 
           <Divider sx={{ borderColor: 'grayLight.main' }} />
           <ButtonBase
             {...getRootProps()}
+            disabled={disabled}
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -128,10 +130,8 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, onChange }) 
             }}
           >
             <input {...getInputProps()} />
-            {/* <Box> */}
             <Typography variant="body2">Upload</Typography>
             <Typography variant="caption">Drag and drop or click </Typography>
-            {/* </Box> */}
           </ButtonBase>
         </>
       )}

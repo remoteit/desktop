@@ -13,6 +13,7 @@ type Props = { center?: boolean }
 
 export const ScriptAddPage: React.FC<Props> = ({ center }) => {
   const role = useSelector(selectRole)
+  const manager = role.permissions.includes('MANAGE')
   const savedForm = useSelector((state: State) => state.ui.scriptForm)
   const selectedIds = useSelector((state: State) => state.ui.selected)
   const device = useSelector((state: State) =>
@@ -43,7 +44,13 @@ export const ScriptAddPage: React.FC<Props> = ({ center }) => {
             Add and run a script
           </Typography>
         )}
-        <ScriptForm form={form} onChange={setForm} selectedIds={selectedIds} defaultForm={defaultForm} />
+        <ScriptForm
+          form={form}
+          onChange={setForm}
+          selectedIds={selectedIds}
+          defaultForm={defaultForm}
+          manager={manager}
+        />
       </Box>
     </Body>
   )

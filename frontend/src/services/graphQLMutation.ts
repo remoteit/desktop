@@ -594,7 +594,7 @@ export async function graphQLSetJob(params: {
   deviceIds?: string[]
 }) {
   return await graphQLBasicRequest(
-    ` mutation SaveJob($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
+    ` mutation SetJob($fileId: String!, $jobId: String, $arguments: [ArgumentInput!], $tagFilter: ListFilter, $deviceIds: [String!]) {
         setJob(fileId: $fileId, jobId: $jobId, arguments: $arguments, tagFilter: $tagFilter, deviceIds: $deviceIds)
       }`,
     params

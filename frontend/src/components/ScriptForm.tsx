@@ -14,10 +14,11 @@ type Props = {
   defaultForm: IFileForm
   selectedIds: string[]
   loading?: boolean
+  manager?: boolean
   onChange: (form: IFileForm) => void
 }
 
-export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, loading, onChange }) => {
+export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, loading, manager, onChange }) => {
   const [unauthorized, setUnauthorized] = useState<IDevice[]>()
   const [running, setRunning] = useState<boolean>(false)
   const [saving, setSaving] = useState<boolean>(false)
@@ -36,7 +37,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     if (run) setRunning(true)
     if (changed) setSaving(true)
 
-    if (scriptChanged) {
+    if (manager && scriptChanged) {
       form.file = new File([form.script ?? form.file ?? ''], form.name, { type: form.file?.type ?? 'text/plain' })
       form.fileId = await dispatch.files.upload(form)
     }
@@ -70,7 +71,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
 
     checkSelected()
   }, [selectedIds])
-  console.log({ loading, running, saving, canSave, canRun, form })
+
   return (
     <form onSubmit={event => (event.preventDefault(), save())}>
       <List disablePadding>
@@ -79,6 +80,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
             required
             fullWidth
             label="Name"
+            disabled={!manager}
             value={form.name}
             variant="filled"
             InputLabelProps={{ shrink: true }}
@@ -87,6 +89,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
         </ListItem>
         <ListItem disableGutters>
           <FileUpload
+            disabled={!manager}
             script={form.script}
             loading={loading}
             onChange={(script, file) => onChange({ ...form, script, ...(file && { name: file.name, file }) })}
@@ -96,6 +99,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           <TextField
             multiline
             fullWidth
+            disabled={!manager}
             label="Description"
             value={form.description}
             variant="filled"
