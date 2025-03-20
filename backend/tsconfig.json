@@ -10,5 +10,5 @@
     }
   },
   "references": [{ "path": "../common" }],
-  "include": ["src/**/*", "../types.d.ts", "src/**/*.json"]
+  "include": ["src/**/*", "../types.d.ts"]
 }
