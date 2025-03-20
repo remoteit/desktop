@@ -19,6 +19,9 @@ jobs: # a collection of steps
           name: install-npm
           command: npm install
       - run:
+          name: brand-app
+          command: npm run brand-web
+      - run:
           name: compile-backend
           command: cd backend && npm run compile
       - save_cache: # special step to save the dependency cache
