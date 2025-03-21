@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script handles branding for the Electron platform
+# This script handles branding for the electron platform
 # Usage: ./scripts/brand-electron.sh brandname
 # Example: ./scripts/brand-electron.sh remoteit
 # Or: BRAND=remoteit ./scripts/brand-electron.sh
@@ -35,6 +35,8 @@ fi
 
 # Set common paths
 SOURCE_PATH="$PROJECT_ROOT/brands/$BRAND"
+TARGET_PATH="$PROJECT_ROOT/electron/build"
+ELECTRON_SRC_DIR="$PROJECT_ROOT/electron/src"
 
 # Check if the brand directory exists
 if [ ! -d "$SOURCE_PATH" ]; then
@@ -135,29 +137,21 @@ node -e "
   fs.writeFileSync(electronPackagePath, JSON.stringify(pkg, null, 2));
 "
 
-# Create electron source directories if they don't exist
-ELECTRON_SRC_DIR="$PROJECT_ROOT/electron/src"
-echo "Setting up directories at $ELECTRON_SRC_DIR..."
-mkdir -p "$ELECTRON_SRC_DIR/icons" "$ELECTRON_SRC_DIR/images"
+# Check for brand-specific electron assets
+BRAND_ELECTRON_PATH="$SOURCE_PATH/electron"
 
-# Copy brand-specific assets to electron source directory
-if [ -d "$SOURCE_PATH/electron" ]; then
+# Create target directory if it doesn't exist
+mkdir -p "$TARGET_PATH"
+
+# Check if brand-specific electron directory exists
+if [ -d "$BRAND_ELECTRON_PATH" ]; then
   echo "Copying $BRAND electron assets..."
-  
-  # Copy icon assets if they exist
-  if [ -d "$SOURCE_PATH/electron/icons" ]; then
-    echo "Copying $BRAND icons to $ELECTRON_SRC_DIR/icons..."
-    cp -R "$SOURCE_PATH/electron/icons/"* "$ELECTRON_SRC_DIR/icons/"
-  fi
-  
-  # Copy image assets if they exist
-  if [ -d "$SOURCE_PATH/electron/images" ]; then
-    echo "Copying $BRAND images to $ELECTRON_SRC_DIR/images..."
-    cp -R "$SOURCE_PATH/electron/images/"* "$ELECTRON_SRC_DIR/images/"
-  fi
-  
-  # Copy other electron assets if they exist (directly to src directory)
-  find "$SOURCE_PATH/electron" -maxdepth 1 -type f -exec cp {} "$ELECTRON_SRC_DIR/" \;
+  cp -R "$BRAND_ELECTRON_PATH/"* "$TARGET_PATH/" 2>/dev/null || :
+else
+  echo "No brand-specific electron assets found, using defaults..."
+  # Copy default assets from source directory
+  cp -R "$ELECTRON_SRC_DIR/icons" "$TARGET_PATH/"
+  cp -R "$ELECTRON_SRC_DIR/images" "$TARGET_PATH/"
 fi
 
 echo "Electron branding complete for $BRAND." 
