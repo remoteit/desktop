@@ -10,7 +10,7 @@ const config: BrandingConfig = {
     },
     build: {
       appId: 'com.telepath.desktop',
-      copyright: 'remot3.it, Inc',
+      copyright: 'Cachengo, Inc',
       productName: 'Telepath',
     },
   },

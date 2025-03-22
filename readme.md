@@ -209,6 +209,31 @@ mv -f iconbuilder.icns ./electron/src/icons/icon.icns
 rm -rf iconbuilder.iconset
 ```
 
+### Generating Electron Assets for a New Brand
+
+To create electron assets for a new brand (e.g., cachengo):
+
+1. Create the required directory structure:
+```shell
+mkdir -p brands/[brand-name]/electron/icons
+mkdir -p brands/[brand-name]/electron/images
+```
+
+2. Generate all the icon sizes using the icns-creator script:
+```shell
+./electron/scripts/icns-creator path/to/brand-icon.png
+mv -f ./iconbuilder.iconset/* ./brands/[brand-name]/electron/icons/
+mv -f iconbuilder.icns ./brands/[brand-name]/electron/icons/icon.icns
+rm -rf iconbuilder.iconset
+```
+
+3. Create the system tray icons and other specific assets for the images directory.
+   You can copy and modify existing ones from another brand as a starting point:
+```shell
+cp -R brands/remoteit/electron/images/* ./brands/[brand-name]/electron/images/
+```
+   Then replace these images with your own custom versions while keeping the same filenames.
+
 ### Release iOS
 
 ```shell
