@@ -27,7 +27,7 @@
     "mobile-sync-dev": "cross-env NODE_ENV=development npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
-    "postinstall": "npm run copy-env && npm run brand-web",
+    "postinstall": "npm run copy-env && npm run brand-web && echo 'Install done - npm run install-electron to build electron app'",
     "install-electron": "npm run build-frontend && npm run build-backend && cd electron && npm install",
     "start": "npm run brand-web && npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
