@@ -291,6 +291,8 @@ declare module '@mui/material/styles' {
     rpi: ColorType
     guide: ColorType
     test: ColorType
+    brandPrimary: ColorType
+    brandSecondary: ColorType
   }
   interface PaletteOptions {
     primaryLight?: ColorPartial
@@ -321,6 +323,8 @@ declare module '@mui/material/styles' {
     rpi?: ColorPartial
     guide?: ColorPartial
     test?: ColorPartial
+    brandPrimary?: ColorPartial
+    brandSecondary?: ColorPartial
   }
 }
 

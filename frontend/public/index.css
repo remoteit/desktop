@@ -41,7 +41,7 @@ header {
 
 a {
   text-decoration: none;
-  color: var(--primary-color);
+  color: var(--brand-primary);
 }
 
 /* Layout of loading screen */
@@ -54,7 +54,7 @@ body {
   padding: 18px 18px 36px;
   height: 100%;
   width: 100%;
-  background-color: var(--primary-dark-color);
+  background-color: var(--brand-secondary);
 }
 
 body::before {

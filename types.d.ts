@@ -31,6 +31,8 @@ declare global {
     | 'rpi'
     | 'guide'
     | 'test'
+    | 'brandPrimary'
+    | 'brandSecondary'
 
   type SocketAction =
     //socket auth
@@ -1025,12 +1027,8 @@ declare global {
   }
 
   interface BrandColors {
-    primary: string
-    primaryDark: string
-    primaryLight: string
-    primaryLighter: string
-    primaryHighlight: string
-    primaryBackground: string
+    brandPrimary?: string
+    brandSecondary?: string
   }
 
   interface BrandingConfig {
