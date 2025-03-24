@@ -1,6 +1,6 @@
 {
   "name": "cachengo",
-  "version": "3.36.0-beta",
+  "version": "3.36.1",
   "private": true,
   "main": "build/index.js",
   "description": "Telepath cross platform desktop application for creating and hosting connections",
