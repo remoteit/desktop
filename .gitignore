@@ -32,3 +32,9 @@ yarn-error.log*
 
 electron/bin/*
 logs/code_signing_tool.log
+
+# branding
+/common/src/brand
+/frontend/public/brand
+/electron/src/images
+/electron/src/icons

@@ -5,7 +5,7 @@ import { updateConnection, launchDisabled } from '../../helpers/connectionHelper
 import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton, ButtonProps } from '../../buttons/IconButton'
-import { Color, Sizes } from '../../styling'
+import { Sizes } from '../../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../../components/PromptModal'
 import { windowOpen } from '../../services/browser'

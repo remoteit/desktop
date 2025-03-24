@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { Box, alpha, useTheme } from '@mui/material'
-import { spacing, fontSizes, Color, radius } from '../styling'
+import { spacing, fontSizes, radius } from '../styling'
 import { ServiceLinkIcon } from './ServiceLinkIcon'
 import { getLicenseChip } from './LicenseChip'
 import classnames from 'classnames'

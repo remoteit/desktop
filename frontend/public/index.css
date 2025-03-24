@@ -41,7 +41,7 @@ header {
 
 a {
   text-decoration: none;
-  color: #0096e7;
+  color: var(--brand-primary);
 }
 
 /* Layout of loading screen */
@@ -54,7 +54,7 @@ body {
   padding: 18px 18px 36px;
   height: 100%;
   width: 100%;
-  background-color: #034b9d;
+  background-color: var(--brand-secondary);
 }
 
 body::before {
@@ -71,6 +71,7 @@ body::before {
   height: 0;
 }
 
-body > svg {
-  margin-bottom: 40px;
+.logo {
+  margin-bottom: 46px;
+  color: #FFFFFF;
 }

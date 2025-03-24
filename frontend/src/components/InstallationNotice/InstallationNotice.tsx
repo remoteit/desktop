@@ -8,7 +8,7 @@ import { spacing } from '../../styling'
 import { Notice } from '../Notice'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
-import { Logo } from '../Logo'
+import { Logo } from '@common/brand/Logo'
 
 export const InstallationNotice: React.FC = () => {
   const { connected, error, installing, reason } = useSelector((state: State) => ({

@@ -2,15 +2,15 @@ import React from 'react'
 import { Box } from '@mui/material'
 import { CoBrandingLogo } from '../CoBrandingLogo'
 import { spacing } from '../../../styling'
-import { Logo } from '../../../components/Logo'
+import { Logo } from '@common/brand/Logo'
 
 export function SplashScreen(): JSX.Element {
   return (
     <>
-      <Box width={140} position="absolute" top={spacing.lg}>
+      <Box width={160} position="absolute" top={spacing.lg}>
         <CoBrandingLogo />
       </Box>
-      <Logo width={140} />
+      <Logo width={160} />
     </>
   )
 }

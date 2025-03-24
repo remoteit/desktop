@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react'
 import { makeStyles } from '@mui/styles'
 import { Chip, ChipProps, alpha, darken } from '@mui/material'
-import { Color, spacing } from '../styling'
+import { spacing } from '../styling'
 import classnames from 'classnames'
 
 export type Props = Omit<ChipProps, 'variant' | 'color'> & {

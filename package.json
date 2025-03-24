@@ -1,7 +1,8 @@
 {
   "name": "remoteit-capacitor",
-  "version": "3.35.4",
+  "version": "3.36.1",
   "private": true,
+  "type": "module",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "workspaces": [
     "backend",
@@ -9,29 +10,29 @@
     "common"
   ],
   "scripts": {
-    "build-common": "tsc -b common/tsconfig.json",
-    "build-backend": "npm run build -w=backend",
-    "build-frontend": "npm run build -w=frontend",
+    "brand-web": "./scripts/brand-web.sh",
+    "brand-electron": "./scripts/brand-electron.sh",
+    "brand-android": "./scripts/brand-android.sh",
+    "brand-ios": "./scripts/brand-ios.sh",
+    "brand-all": "./scripts/brand-all.sh",
+    "build-backend": "npm run brand-electron && npm run build -w=backend",
+    "build-frontend": "npm run brand-web && npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
-    "build-mobile": "cross-env NODE_ENV=production run-s build-frontend mobile-sync",
+    "build-mobile": "npm run brand-android && npm run brand-ios && cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
-    "electron": "cd electron && npm start",
-    "android": "cross-env NODE_ENV=development npx cap run android",
-    "ios": "cross-env NODE_ENV=development npx cap run ios",
+    "electron": "npm run brand-electron && cd electron && npm start",
+    "android": "npm run brand-android && cross-env NODE_ENV=development npx cap run android",
+    "ios": "npm run brand-ios && cross-env NODE_ENV=development npx cap run ios",
     "mobile-sync": "npx cap sync",
     "mobile-sync-dev": "cross-env NODE_ENV=development npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
-    "postinstall": "npm run copy-env",
+    "postinstall": "npm run copy-env && npm run brand-web && echo 'Install done - npm run install-electron to build electron app'",
     "install-electron": "npm run build-frontend && npm run build-backend && cd electron && npm install",
-    "start": "npm start -w=frontend",
+    "start": "npm run brand-web && npm start -w=frontend",
     "test-watch": "npm run test-watch -w=backend",
     "test": "npm run test -w=backend",
-    "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version",
-    "watch-backend": "npm run watch -w=backend",
-    "watch-build": "tsc --watch",
-    "watch-electron": "sleep 6 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron",
-    "watch-images": "onchange 'src/images/**/*' -- npm run copy-images"
+    "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^6.0.1",
@@ -49,6 +50,7 @@
     "capacitor-plugin-safe-area": "^3.0.3"
   },
   "devDependencies": {
+    "color": "^5.0.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "npm-run-all": "4.1.5",

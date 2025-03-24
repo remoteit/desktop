@@ -45,7 +45,7 @@ export function LoadingMessage({ message, logo, invert, spinner = true, inline, 
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  invert: { backgroundColor: palette.primary.dark },
+  invert: { backgroundColor: palette.brandSecondary.main },
   fadeIn: { animation: '$fadeIn 600ms ease-in' },
   '@keyframes fadeIn': {
     '0%': { opacity: 0 },

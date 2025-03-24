@@ -1,4 +1,39 @@
 declare global {
+  type Color =
+    | 'primary'
+    | 'primaryLight'
+    | 'primaryLighter'
+    | 'primaryHighlight'
+    | 'primaryBackground'
+    | 'primaryDark'
+    | 'successLight'
+    | 'success'
+    | 'successDark'
+    | 'dangerLight'
+    | 'danger'
+    | 'warning'
+    | 'warningLightest'
+    | 'warningHighlight'
+    | 'gray'
+    | 'grayLightest'
+    | 'grayLighter'
+    | 'grayLight'
+    | 'grayDark'
+    | 'grayDarker'
+    | 'grayDarkest'
+    | 'white'
+    | 'alwaysWhite'
+    | 'black'
+    | 'darken'
+    | 'hover'
+    | 'screen'
+    | 'shadow'
+    | 'rpi'
+    | 'guide'
+    | 'test'
+    | 'brandPrimary'
+    | 'brandSecondary'
+
   type SocketAction =
     //socket auth
     | 'authentication'
@@ -462,7 +497,7 @@ declare global {
     NEWEST: ISortService
     OLDEST: ISortService
   }
-  
+
   type IRoleAccess = 'NONE' | 'TAG' | 'ALL' | 'SELECTED' | 'CUSTOM'
 
   type ILabel = {
@@ -989,6 +1024,38 @@ declare global {
     chipPrimary?: boolean
     Menu?: React.FC
     divider?: boolean
+  }
+
+  interface BrandColors {
+    brandPrimary?: string
+    brandSecondary?: string
+  }
+
+  interface BrandingConfig {
+    name: string
+    appName: string
+    package?: {
+      homepage?: string
+      description?: string
+      author?: {
+        name?: string
+        email?: string
+      }
+      build?: {
+        appId?: string
+        copyright?: string
+        productName?: string
+      }
+    }
+    colors: {
+      light: BrandColors
+      dark: BrandColors
+    }
+  }
+
+  interface BrandLogo {
+    color?: Color
+    darkMode?: boolean
   }
 }
 

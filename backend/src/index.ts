@@ -14,6 +14,7 @@ import Logger from './Logger'
 import LAN from './LAN'
 import cli from './cliInterface'
 import user, { User } from './User'
+import brand from '@common/brand/config'
 import { hostName } from '@common/nameHelper'
 import { IP_PRIVATE } from '@common/constants'
 import { getApplication } from '@common/applications'
@@ -64,6 +65,7 @@ export {
   hostName,
   preferences,
   Logger,
+  brand,
   User,
   user,
   cli,

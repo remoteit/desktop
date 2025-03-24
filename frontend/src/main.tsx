@@ -2,6 +2,7 @@ import './polyfills'
 import React from 'react'
 import Controller from './services/Controller'
 import browser from './services/browser'
+import brand from '@common/brand/config'
 import { App } from './components/App'
 import { store } from './store'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -16,6 +17,7 @@ import './initializeCommon'
 import './services/Controller'
 
 if (browser.environment() !== 'development') analytics.initialize()
+document.title = `${brand.appName} Application`
 
 const root = createRoot(document.getElementById('root')!)
 root.render(

@@ -93,7 +93,6 @@ export const MOBILE_WIDTH = 500
 export const BINARY_DATA_TOKEN = '!BINARY-DATA'
 export const VALID_JOB_ID_LENGTH = 36
 
-
 export const LANGUAGES: ILookup<string> = {
   en: 'English',
   ja: 'Japanese',

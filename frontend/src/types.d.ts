@@ -2,7 +2,6 @@ import { Color as ColorType, ColorPartial } from '@mui/material/styles/createPal
 import { SafeAreaInsets } from 'capacitor-plugin-safe-area'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
-import { Color } from './styling'
 
 declare global {
   interface Window {
@@ -292,6 +291,8 @@ declare module '@mui/material/styles' {
     rpi: ColorType
     guide: ColorType
     test: ColorType
+    brandPrimary: ColorType
+    brandSecondary: ColorType
   }
   interface PaletteOptions {
     primaryLight?: ColorPartial
@@ -322,6 +323,8 @@ declare module '@mui/material/styles' {
     rpi?: ColorPartial
     guide?: ColorPartial
     test?: ColorPartial
+    brandPrimary?: ColorPartial
+    brandSecondary?: ColorPartial
   }
 }
 

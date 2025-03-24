@@ -18,6 +18,7 @@ export const ScriptEditPage: React.FC = () => {
   const [form, setForm] = useState<IFileForm | undefined>()
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
   const role = useSelector(selectRole)
+  const manager = role.permissions.includes('MANAGE')
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const savedForm = useSelector((state: State) => state.ui.scriptForm)
   const selectedIds = useSelector((state: State) => state.ui.selected)
@@ -97,6 +98,7 @@ export const ScriptEditPage: React.FC = () => {
         defaultForm={defaultForm}
         selectedIds={selectedIds}
         loading={loading}
+        manager={manager}
       />
     </Container>
   )

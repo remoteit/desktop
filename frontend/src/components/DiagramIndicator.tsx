@@ -1,6 +1,5 @@
 import React from 'react'
 import { Paper } from '@mui/material'
-import { Color } from '../styling'
 import { Icon } from './Icon'
 
 export type IndicatorProps = {

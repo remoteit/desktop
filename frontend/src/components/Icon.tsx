@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTheme, Badge } from '@mui/material'
 import { PlatformIcon } from './PlatformIcon'
-import { fontSizes, spacing, Color, Sizes } from '../styling'
+import { fontSizes, spacing, Sizes } from '../styling'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { library, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'

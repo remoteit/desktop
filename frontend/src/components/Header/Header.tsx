@@ -79,7 +79,7 @@ export const Header: React.FC = () => {
           </>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
-        <Route path="/devices">
+        <Route path={['/devices', '/connections', '/networks']}>
           {!showSearch && !searched && (
             <IconButton
               size="md"

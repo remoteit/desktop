@@ -31,46 +31,17 @@ export const spacing: { [key in Sizes]: number } = {
   max: 96, //   64   12
 }
 
-export type Color =
-  | 'primary'
-  | 'primaryLight'
-  | 'primaryLighter'
-  | 'primaryHighlight'
-  | 'primaryBackground'
-  | 'primaryDark'
-  | 'successLight'
-  | 'success'
-  | 'successDark'
-  | 'dangerLight'
-  | 'danger'
-  | 'warning'
-  | 'warningLightest'
-  | 'warningHighlight'
-  | 'gray'
-  | 'grayLightest'
-  | 'grayLighter'
-  | 'grayLight'
-  | 'grayDark'
-  | 'grayDarker'
-  | 'grayDarkest'
-  | 'white'
-  | 'alwaysWhite'
-  | 'black'
-  | 'darken'
-  | 'hover'
-  | 'screen'
-  | 'shadow'
-  | 'rpi'
-  | 'guide'
-  | 'test'
+export type Colors = { [key in Color]: string }
 
-export const lightColors: { [key in Color]: string } = {
+export const lightColors: Colors = {
   primary: '#0096e7',
   primaryDark: '#034b9d',
   primaryLight: '#9ed3f0',
   primaryLighter: '#daf0ff',
   primaryHighlight: '#edf8ff',
   primaryBackground: '#EAF4FA',
+  brandPrimary: '#0096e7', // Default to primary, will be overridden by brand config
+  brandSecondary: '#034b9d', // Default secondary color
   // secondary: '#75bd00', - can become the reseller logo color
   successLight: '#a4db4c',
   success: '#75bd00',
@@ -99,13 +70,15 @@ export const lightColors: { [key in Color]: string } = {
   test: '#ffcc001d',
 }
 
-export const darkColors: { [key in Color]: string } = {
+export const darkColors: Colors = {
   primary: '#0096e7',
   primaryDark: '#034b9d',
   primaryLight: '#1C72AD', // 70%
   primaryLighter: '#21435B', // 20%
   primaryHighlight: '#1f3042', //'#222D38', // 10%
   primaryBackground: '#212a35',
+  brandPrimary: '#0096e7', // Default to primary, will be overridden by brand config
+  brandSecondary: '#034b9d', // Default secondary color
   // secondary: '#75bd00',
   successLight: '#436807',
   success: '#75bd00',

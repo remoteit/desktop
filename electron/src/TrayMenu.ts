@@ -8,6 +8,7 @@ import headless, {
   hostName,
   getApplication,
   Logger,
+  brand,
 } from 'remoteit-headless'
 import electron from 'electron'
 import path from 'path'
@@ -58,7 +59,7 @@ export default class TrayMenu {
   private remoteitMenu() {
     return [
       {
-        label: 'Open Remote.It...',
+        label: `Open ${brand.appName}...`,
         type: 'normal',
         click: () => this.handleOpen(),
       },
@@ -125,7 +126,7 @@ export default class TrayMenu {
 
   private signInMenu() {
     return [
-      { label: 'remote.it', enabled: false },
+      { label: brand.appName, enabled: false },
       {
         label: 'Sign in...',
         type: 'normal',

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import browser from '../services/browser'
 import classnames from 'classnames'
-import { spacing, Color } from '../styling'
 import { makeStyles } from '@mui/styles'
+import { spacing } from '../styling'
 
 export type BodyProps = {
   inset?: boolean

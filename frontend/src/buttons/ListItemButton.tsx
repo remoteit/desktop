@@ -8,7 +8,7 @@ import {
   Tooltip,
   alpha,
 } from '@mui/material'
-import { spacing, fontSizes, Color } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { Icon } from '../components/Icon'
 
 export type DataButtonProps = {

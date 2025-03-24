@@ -1,4 +1,5 @@
 import browser from '../services/browser'
+import brand from '@common/brand/config'
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'
@@ -9,13 +10,15 @@ declare module '@mui/styles' {
 }
 
 export const jssTheme = (isDark: boolean): ThemeOptions => {
-  const colors = isDark ? darkColors : lightColors
   const LIST_ITEM_ICON_WIDTH = 56
+  let colors = isDark ? darkColors : lightColors
 
   if (!browser.isApple) {
     radius.sm = 2
     radius.lg = 3
   }
+
+  colors = addBrandColors(colors, isDark)
 
   const palette = {
     mode: isDark ? 'dark' : 'light',
@@ -28,6 +31,8 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     primaryLighter: { main: colors.primaryLighter },
     primaryHighlight: { main: colors.primaryHighlight },
     primaryBackground: { main: colors.primaryBackground },
+    brandPrimary: { main: colors.brandPrimary },
+    brandSecondary: { main: colors.brandSecondary },
     successLight: { main: colors.successLight },
     success: { main: colors.success },
     successDark: { main: colors.successDark },
@@ -742,4 +747,9 @@ export function isDarkMode(themeMode?: State['ui']['themeMode']) {
   if (themeMode === 'dark') darkMode = true
   if (themeMode === 'light') darkMode = false
   return darkMode
+}
+
+export function addBrandColors(colors: any, isDark: boolean) {
+  const brandColors = isDark ? brand.colors.dark : brand.colors.light
+  return { ...colors, ...brandColors }
 }
