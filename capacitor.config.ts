@@ -1,11 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 import { version } from './package.json'
-import brand from './common/src/brand/config.json'
+import brand from './common/src/brand/config'
 
 const config: CapacitorConfig = {
-  appName: brand.colors.appName,
+  appName: brand.appName,
   webDir: 'frontend/build',
-  backgroundColor: brand.colors.light.primary,
+  backgroundColor: brand.colors.light.brandSecondary,
   ios: {
     scheme: brand.appName,
   },
@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchAutoHide: false,
-      backgroundColor: brand.colors.light.primary,
+      backgroundColor: brand.colors.light.brandSecondary,
       androidScaleType: 'CENTER_CROP',
     },
     BluetoothLe: {
