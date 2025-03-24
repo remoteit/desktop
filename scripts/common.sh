@@ -7,6 +7,12 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "$SCRIPT_DIR/..")"
 
+# Generate Capacitor assets for the current brand
+generate_capacitor_assets() {
+  echo "Generating Capacitor assets for $BRAND..."
+  npx @capacitor/assets generate --assetPath="./brands/$BRAND/assets" --iconBackgroundColor '#034b9d' --splashBackgroundColor '#034b9d' --android --ios
+}
+
 # Load environment variables from .env file
 load_env_vars() {
   local ENV_FILE="$PROJECT_ROOT/.env"

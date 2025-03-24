@@ -20,6 +20,9 @@ ANDROID_PATH="$PROJECT_ROOT/android"
 # Extract config values
 extract_config "android"
 
+# Generate Capacitor assets
+generate_capacitor_assets
+
 # Copy Android-specific assets if they exist
 if [ -d "$SOURCE_PATH/android" ]; then
   echo "Copying $BRAND Android assets..."

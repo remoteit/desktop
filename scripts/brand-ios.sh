@@ -20,6 +20,9 @@ IOS_PATH="$PROJECT_ROOT/ios"
 # Extract config values
 extract_config "ios"
 
+# Generate Capacitor assets
+generate_capacitor_assets
+
 # Copy iOS-specific assets if they exist
 if [ -d "$SOURCE_PATH/ios" ]; then
   echo "Copying $BRAND iOS assets..."
