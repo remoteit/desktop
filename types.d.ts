@@ -1052,6 +1052,10 @@ declare global {
         copyright?: string
         productName?: string
       }
+      repository?: {
+        type: string
+        url: string
+      }
     }
     colors: {
       light: BrandColors

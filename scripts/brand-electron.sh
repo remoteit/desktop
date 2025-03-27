@@ -54,87 +54,45 @@ CONFIG_TS_FILE="$SOURCE_PATH/config.ts"
 if [ -f "$CONFIG_TS_FILE" ]; then
   echo "Extracting configuration from TypeScript file..."
   
-  # Extract values from TypeScript using grep/sed
-  APP_NAME=$(grep -o "appName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appName: '\\([^']*\\)'/\\1/")
-  APP_ID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | sed "s/appId: '\\([^']*\\)'/\\1/")
-  
-  # Extract package information if available
-  PACKAGE_HOMEPAGE=$(grep -o "homepage: '[^']*'" "$CONFIG_TS_FILE" | sed "s/homepage: '\\([^']*\\)'/\\1/")
-  PACKAGE_DESCRIPTION=$(grep -o "description: '[^']*'" "$CONFIG_TS_FILE" | sed "s/description: '\\([^']*\\)'/\\1/")
-  PACKAGE_AUTHOR_NAME=$(grep -o "name: '[^']*'" "$CONFIG_TS_FILE" | grep -A2 "author" | sed "s/name: '\\([^']*\\)'/\\1/" | head -1)
-  PACKAGE_AUTHOR_EMAIL=$(grep -o "email: '[^']*'" "$CONFIG_TS_FILE" | sed "s/email: '\\([^']*\\)'/\\1/")
-  PACKAGE_BUILD_APPID=$(grep -o "appId: '[^']*'" "$CONFIG_TS_FILE" | grep -A3 "build" | sed "s/appId: '\\([^']*\\)'/\\1/" | head -1)
-  PACKAGE_BUILD_COPYRIGHT=$(grep -o "copyright: '[^']*'" "$CONFIG_TS_FILE" | sed "s/copyright: '\\([^']*\\)'/\\1/")
-  PACKAGE_BUILD_PRODUCTNAME=$(grep -o "productName: '[^']*'" "$CONFIG_TS_FILE" | sed "s/productName: '\\([^']*\\)'/\\1/")
-  
-  # If double quotes are used instead of single quotes
-  if [ -z "$APP_NAME" ]; then
-    APP_NAME=$(grep -o 'appName: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appName: "\\([^"]*\\)"/\\1/')
-  fi
-  if [ -z "$APP_ID" ]; then
-    APP_ID=$(grep -o 'appId: "[^"]*"' "$CONFIG_TS_FILE" | sed 's/appId: "\\([^"]*\\)"/\\1/')
-  fi
+  # Extract the package config using ts-node
+  PACKAGE_CONFIG=$(node -e "
+    require('ts-node').register();
+    const config = require('$CONFIG_TS_FILE').default;
+    console.log(JSON.stringify(config.package || {}));
+  ")
   
   # Output the extracted configuration
-  echo "Configuration values:"
-  echo "  App Name: $APP_NAME"
-  echo "  App ID: $APP_ID"
-  if [ -n "$PACKAGE_HOMEPAGE" ]; then
-    echo "  Package Homepage: $PACKAGE_HOMEPAGE"
-  fi
-  if [ -n "$PACKAGE_DESCRIPTION" ]; then
-    echo "  Package Description: $PACKAGE_DESCRIPTION"
-  fi
-  if [ -n "$PACKAGE_AUTHOR_NAME" ] || [ -n "$PACKAGE_AUTHOR_EMAIL" ]; then
-    echo "  Package Author: $PACKAGE_AUTHOR_NAME <$PACKAGE_AUTHOR_EMAIL>"
-  fi
-  if [ -n "$PACKAGE_BUILD_COPYRIGHT" ]; then
-    echo "  Package Build Copyright: $PACKAGE_BUILD_COPYRIGHT"
-  fi
-  if [ -n "$PACKAGE_BUILD_PRODUCTNAME" ]; then
-    echo "  Package Build Product Name: $PACKAGE_BUILD_PRODUCTNAME"
-  fi
+  echo "Package Config: $PACKAGE_CONFIG"
 else
-  # If no config file exists, derive values from the brand name
   echo "No configuration file found, using defaults based on brand name..."
-  APP_NAME=$(echo "$BRAND" | sed 's/\b\(.\)/\u\1/g')  # Capitalize first letter
-  APP_ID="com.$BRAND.app"
+  PACKAGE_CONFIG='{}'
 fi
 
 # Update electron package.json with brand-specific values
 echo "Updating Electron configuration for $BRAND..."
-echo "App name: $APP_NAME"
-echo "App ID: $APP_ID"
 
 # Use node to update the package.json
 node -e "
   const fs = require('fs');
   const path = require('path');
   const electronPackagePath = path.join('$PROJECT_ROOT', 'electron', 'package.json');
+  const devAppUpdatePath = path.join('$PROJECT_ROOT', 'electron', 'dev-app-update.yml');
   const pkg = JSON.parse(fs.readFileSync(electronPackagePath, 'utf8'));
   
+  // Update name and merge in all package config
   pkg.name = '$BRAND';
-  pkg.description = '$PACKAGE_DESCRIPTION' || '$APP_NAME cross platform desktop application for creating and hosting connections';
-  pkg.homepage = '$PACKAGE_HOMEPAGE' || 'https://app.remote.it';
-  
-  if ('$PACKAGE_AUTHOR_NAME' !== '') {
-    pkg.author = pkg.author || {};
-    pkg.author.name = '$PACKAGE_AUTHOR_NAME';
-  }
-  
-  if ('$PACKAGE_AUTHOR_EMAIL' !== '') {
-    pkg.author = pkg.author || {};
-    pkg.author.email = '$PACKAGE_AUTHOR_EMAIL';
-  }
-  
-  pkg.build.appId = '$PACKAGE_BUILD_APPID' || '$APP_ID';
-  pkg.build.productName = '$PACKAGE_BUILD_PRODUCTNAME' || '$APP_NAME';
-  
-  if ('$PACKAGE_BUILD_COPYRIGHT' !== '') {
-    pkg.build.copyright = '$PACKAGE_BUILD_COPYRIGHT';
-  }
+  Object.assign(pkg, $PACKAGE_CONFIG);
   
   fs.writeFileSync(electronPackagePath, JSON.stringify(pkg, null, 2));
+
+  // Update electron-updater configuration
+  const devAppUpdate = {
+    provider: 'github',
+    owner: '$BRAND',
+    repo: 'desktop'
+  };
+  
+  fs.writeFileSync(devAppUpdatePath, JSON.stringify(devAppUpdate, null, 2));
 "
 
 # Check for brand-specific electron assets

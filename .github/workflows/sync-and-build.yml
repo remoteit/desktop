@@ -1,0 +1,25 @@
+name: Sync from remoteit/desktop
+
+on:
+  repository_dispatch:
+    types: [build-from-cachengo-branch]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out cachengo/desktop
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Add remoteit/desktop as remote
+        run: |
+          git remote add remoteit git@github.com:remoteit/desktop.git
+          git fetch remoteit
+
+      - name: Sync cachengo branch
+        run: |
+          git checkout cachengo
+          git reset --hard remoteit/cachengo
+          git push origin cachengo --force 

@@ -13,6 +13,10 @@ const config: BrandingConfig = {
       copyright: 'Cachengo, Inc',
       productName: 'Telepath',
     },
+    repository: {
+      type: 'git',
+      url: 'git+ssh://git@github.com/cachengo/desktop.git',
+    },
   },
   colors: {
     light: {
