@@ -162,6 +162,7 @@ type StyleProps = {
 const useStyles = makeStyles(({ palette }) => ({
   list: {
     position: 'static',
+    '& .MuiBadge-badge': { right: 12 },
     '& .MuiListItemIcon-root': { color: palette.grayDark.main },
     '& .MuiListItemText-primary': { color: palette.grayDarkest.main },
     '& .MuiChip-root': { marginRight: spacing.sm },

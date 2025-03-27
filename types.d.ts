@@ -1027,6 +1027,12 @@ declare global {
   }
 
   interface BrandColors {
+    primary?: string
+    primaryDark?: string
+    primaryLight?: string
+    primaryLighter?: string
+    primaryHighlight?: string
+    primaryBackground?: string
     brandPrimary?: string
     brandSecondary?: string
   }

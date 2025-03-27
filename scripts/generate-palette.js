@@ -14,8 +14,8 @@ export default function generatePalette(primaryColor) {
     primaryDark: color.darken(0.6).saturate(1.3).hex(),
     primaryLight: color.lightness(78).desaturate(0.3).hex(),
     primaryLighter: color.lightness(93).desaturate(0.2).hex(),
-    primaryHighlight: color.lightness(96).desaturate(0.5).hex(),
-    primaryBackground: color.lightness(95).desaturate(0.6).hex(),
+    primaryHighlight: color.lightness(95).desaturate(0.2).hex(),
+    primaryBackground: color.lightness(96).desaturate(0.3).hex(),
   }
 
   // Generate dark palette
