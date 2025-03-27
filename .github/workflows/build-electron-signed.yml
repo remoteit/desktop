@@ -1,6 +1,16 @@
 name: Build / Electron Signed
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+      brand:
+        description: 'Brand to build (remoteit or cachengo)'
+        required: false
+        type: choice
+        default: 'remoteit'
+        options:
+          - remoteit
+          - cachengo
 
 defaults:
   run:
@@ -9,6 +19,7 @@ defaults:
 env:
   CI: ''
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
+  BRAND: ${{ inputs.brand || 'remoteit' }}
 
 jobs:
   release:
