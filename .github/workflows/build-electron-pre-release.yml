@@ -34,6 +34,12 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
 
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
@@ -69,9 +75,9 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
 
       - name: Upload release artifacts
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
           files: electron/dist/**
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
