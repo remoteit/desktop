@@ -1,14 +1,14 @@
 {
-  "name": "cachengo",
+  "name": "remoteit",
   "version": "3.36.1",
   "private": true,
   "main": "build/index.js",
-  "description": "Telepath cross platform desktop application for creating and hosting connections",
-  "homepage": "https://telepath.cachengo.com",
+  "description": "Remote.It cross platform desktop application for creating and hosting connections",
+  "homepage": "https://app.remote.it",
   "license": "MIT",
   "author": {
     "name": "Remote.It",
-    "email": "support@cachengo.com"
+    "email": "support@remote.it"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s brand copy-install copy-entitlements compile",
@@ -50,13 +50,13 @@
     "typescript": "^5.6.3"
   },
   "repository": {
-    "url": "git+ssh://git@github.com/remoteit/desktop.git",
-    "type": "git"
+    "type": "git",
+    "url": "git+ssh://git@github.com/remoteit/desktop.git"
   },
   "build": {
-    "appId": "com.telepath.desktop",
-    "copyright": "Cachengo, Inc",
-    "productName": "Telepath",
+    "appId": "it.remote.desktop",
+    "copyright": "remot3.it, Inc",
+    "productName": "Remote.It",
     "artifactName": "${productName}-Installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,

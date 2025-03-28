@@ -8,6 +8,10 @@ const config: BrandingConfig = {
       name: 'Remote.It',
       email: 'support@remote.it',
     },
+    repository: {
+      type: 'git',
+      url: 'git+ssh://git@github.com/remoteit/desktop.git',
+    },
     build: {
       appId: 'it.remote.desktop',
       copyright: 'remot3.it, Inc',

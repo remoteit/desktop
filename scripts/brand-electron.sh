@@ -49,51 +49,17 @@ echo "Setting up $BRAND for electron platform..."
 # First, apply web branding as a base
 "$SCRIPT_DIR/brand-web.sh" "$BRAND"
 
-# Extract config values
-CONFIG_TS_FILE="$SOURCE_PATH/config.ts"
-if [ -f "$CONFIG_TS_FILE" ]; then
-  echo "Extracting configuration from TypeScript file..."
-  
-  # Extract the package config using ts-node
-  PACKAGE_CONFIG=$(node -e "
-    require('ts-node').register();
-    const config = require('$CONFIG_TS_FILE').default;
-    console.log(JSON.stringify(config.package || {}));
-  ")
-  
-  # Output the extracted configuration
-  echo "Package Config: $PACKAGE_CONFIG"
-else
-  echo "No configuration file found, using defaults based on brand name..."
-  PACKAGE_CONFIG='{}'
-fi
-
-# Update electron package.json with brand-specific values
+# Update electron configuration
 echo "Updating Electron configuration for $BRAND..."
+npx ts-node "$SCRIPT_DIR/brand-electron.ts"
 
-# Use node to update the package.json
-node -e "
-  const fs = require('fs');
-  const path = require('path');
-  const electronPackagePath = path.join('$PROJECT_ROOT', 'electron', 'package.json');
-  const devAppUpdatePath = path.join('$PROJECT_ROOT', 'electron', 'dev-app-update.yml');
-  const pkg = JSON.parse(fs.readFileSync(electronPackagePath, 'utf8'));
-  
-  // Update name and merge in all package config
-  pkg.name = '$BRAND';
-  Object.assign(pkg, $PACKAGE_CONFIG);
-  
-  fs.writeFileSync(electronPackagePath, JSON.stringify(pkg, null, 2));
-
-  // Update electron-updater configuration
-  const devAppUpdate = {
-    provider: 'github',
-    owner: '$BRAND',
-    repo: 'desktop'
-  };
-  
-  fs.writeFileSync(devAppUpdatePath, JSON.stringify(devAppUpdate, null, 2));
-"
+# Create dev-app-update.yml
+echo "Creating dev-app-update.yml..."
+cat > "$PROJECT_ROOT/electron/dev-app-update.yml" << EOL
+provider: github
+owner: $BRAND
+repo: desktop
+EOL
 
 # Check for brand-specific electron assets
 BRAND_ELECTRON_PATH="$SOURCE_PATH/electron"
