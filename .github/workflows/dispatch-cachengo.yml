@@ -1,8 +1,9 @@
 name: Trigger Cachengo Build
 
 on:
-  repository_dispatch:
-    types: [build-from-remoteit]
+  push:
+    branches:
+      - cachengo
 
 jobs:
   dispatch:
