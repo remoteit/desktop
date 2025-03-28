@@ -3,7 +3,7 @@ name: Sync from remoteit/desktop
 
 on:
   repository_dispatch:
-    types: [build-from-remoteit]
+    types: [sync-from-remoteit]
 
 jobs:
   sync:
@@ -20,7 +20,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git remote add remoteit https://oauth2:${{ secrets.DISPATCH_TOKEN }}@github.com/remoteit/desktop.git
-          git fetch remoteit
+          git fetch remoteit --tags
 
       - name: Sync cachengo branch
         run: |
