@@ -27,7 +27,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-13, windows-latest]
 
@@ -45,7 +44,6 @@ jobs:
 
       - name: Authenticate with fontawesome NPM repo
         run: |
-          echo "pwd=${PWD}"
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
           npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
 
@@ -60,17 +58,19 @@ jobs:
           cd electron
           npm install ../backend/dist/remoteit-headless.tgz
 
-      - name: Build/release Electron app
-        uses: mebays/action-electron-builder@node-16
+      - name: Build Electron app
+        run: |
+          cd electron
+          npm run build
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+          CSC_LINK: ${{ secrets.mac_certs }}
+          CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+
+      - name: Upload release artifacts
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
         with:
-          package_root: electron
-          mac_certs: ${{ secrets.mac_certs }}
-          mac_certs_password: ${{ secrets.mac_certs_password }}
-
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
-
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          files: electron/dist/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
