@@ -9,11 +9,11 @@
     "common"
   ],
   "scripts": {
-    "brand-web": "./scripts/brand-web.sh",
-    "brand-electron": "./scripts/brand-electron.sh",
-    "brand-android": "./scripts/brand-android.sh",
-    "brand-ios": "./scripts/brand-ios.sh",
-    "brand-all": "./scripts/brand-all.sh",
+    "brand-web": "bash ./scripts/brand-web.sh",
+    "brand-electron": "bash ./scripts/brand-electron.sh",
+    "brand-android": "bash ./scripts/brand-android.sh",
+    "brand-ios": "bash ./scripts/brand-ios.sh",
+    "brand-all": "bash ./scripts/brand-all.sh",
     "build-backend": "npm run brand-electron && npm run build -w=backend",
     "build-frontend": "npm run brand-web && npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
