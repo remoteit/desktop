@@ -2,7 +2,7 @@ name: Sync from remoteit/desktop
 
 on:
   repository_dispatch:
-    types: [build-from-cachengo-branch]
+    types: [build-from-remoteit]
 
 jobs:
   sync:
@@ -12,14 +12,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
 
       - name: Add remoteit/desktop as remote
         run: |
-          git remote add remoteit git@github.com:remoteit/desktop.git
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git remote add remoteit https://oauth2:${{ secrets.DISPATCH_TOKEN }}@github.com/remoteit/desktop.git
           git fetch remoteit
 
       - name: Sync cachengo branch
         run: |
-          git checkout cachengo
+          git checkout cachengo || git checkout -b cachengo
           git reset --hard remoteit/cachengo
           git push origin cachengo --force 
