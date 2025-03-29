@@ -73,11 +73,22 @@ jobs:
           GH_TOKEN: ${{ secrets.github_token }}
           CSC_LINK: ${{ secrets.mac_certs }}
           CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+          
+      - name: Debug - List all files in dist directory
+        run: |
+          echo "Listing all files in electron/dist directory:"
+          find electron/dist -type f | sort
 
+      - name: Debug - Verify files from electron directory
+        run: |
+          cd electron
+          echo "Working from electron directory, listing files in dist:"
+          find dist -type f | sort
+        
       - name: Upload release artifacts
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
-          files: electron/dist/**
+          files: 'dist/**/*'
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
