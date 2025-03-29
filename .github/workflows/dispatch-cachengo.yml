@@ -6,8 +6,17 @@ on:
       - cachengo
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print repository name
+        run: echo "Current repository is ${{ github.repository }}"
+
   dispatch:
     runs-on: ubuntu-latest
+    needs: debug
+    # Skip this job if running in the cachengo/desktop repository
+    if: github.repository == 'remoteit/desktop'
     steps:
       - name: Dispatch to cachengo/desktop
         run: |
