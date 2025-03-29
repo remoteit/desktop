@@ -11,7 +11,7 @@
     "email": "support@remote.it"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s copy-install copy-entitlements compile",
+    "build": "cross-env NODE_ENV=production run-s copy-install copy-entitlements compile build-electron",
     "build-local": "npm run unlink && cross-env NODE_ENV=production run-s copy-env clean build-frontend build-backend brand copy-install copy-entitlements compile build-electron",
     "build-frontend": "cd ../ && npm run build-frontend",
     "build-backend": "cd ../ && npm run build-backend",
