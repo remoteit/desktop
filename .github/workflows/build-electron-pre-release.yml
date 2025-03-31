@@ -74,6 +74,9 @@ jobs:
           CSC_LINK: ${{ secrets.mac_certs }}
           CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
 
+      - name: Remove builder-debug.yml
+        run: rm electron/dist/builder-debug.yml
+        
       - name: Upload release artifacts
         uses: softprops/action-gh-release@v1
         with:
