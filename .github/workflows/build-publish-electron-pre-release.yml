@@ -1,4 +1,4 @@
-name: Build / Electron Pre-Release
+name: Build / Publish Electron Pre-Release
 
 on: 
   workflow_dispatch:
