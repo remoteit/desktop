@@ -22,8 +22,8 @@ jobs:
           git remote add remoteit https://oauth2:${{ secrets.DISPATCH_TOKEN }}@github.com/remoteit/desktop.git
           git fetch remoteit --tags
 
-      - name: Sync cachengo branch
+      - name: Sync cachengo branch and tags
         run: |
           git checkout cachengo || git checkout -b cachengo
           git reset --hard remoteit/cachengo
-          git push origin cachengo --force 
+          git push origin cachengo --tags --force 
