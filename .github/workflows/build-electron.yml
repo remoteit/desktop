@@ -1,4 +1,4 @@
-name: Build / Electron Pre-Release
+name: Build / Electron
 
 on: 
   workflow_dispatch:
@@ -11,6 +11,11 @@ on:
         options:
           - remoteit
           - cachengo
+      skip_signing:
+        description: 'Skip code signing (for pre-release builds)'
+        required: false
+        type: boolean
+        default: true
 
 defaults:
   run:
@@ -19,7 +24,7 @@ defaults:
 env:
   CI: ''
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
-  SKIP_SIGNING: true
+  SKIP_SIGNING: ${{ inputs.skip_signing }}
   BRAND: ${{ inputs.brand || 'remoteit' }}
 
 jobs:
@@ -56,6 +61,13 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
+      - name: Install SSL.com Sign Tool on Windows
+        shell: bash
+        if: matrix.os == 'windows-latest' && !inputs.skip_signing
+        run: |
+          curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/CodeSignTool.zip
+          unzip ~/Downloads/CodeSignTool.zip -d ~/CodeSignTool
+
       - name: Build and install dependencies
         run: |
           npm install
@@ -73,21 +85,3 @@ jobs:
           GH_TOKEN: ${{ secrets.github_token }}
           CSC_LINK: ${{ secrets.mac_certs }}
           CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
-
-      - name: Remove builder-debug.yml
-        run: rm electron/dist/builder-debug.yml
-        
-      - name: Upload release artifacts
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          files: |
-            electron/dist/*.blockmap
-            electron/dist/*.deb
-            electron/dist/*.dmg
-            electron/dist/*.exe
-            electron/dist/*.rpm
-            electron/dist/*.yml
-            electron/dist/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
