@@ -78,6 +78,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
-          files: electron/dist/**/*
+          files: |
+            electron/dist/*.blockmap
+            electron/dist/*.deb
+            electron/dist/*.dmg
+            electron/dist/*.exe
+            electron/dist/*.rpm
+            electron/dist/*.yml
+            electron/dist/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
