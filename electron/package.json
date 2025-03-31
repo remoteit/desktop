@@ -59,7 +59,6 @@
     "productName": "Remote.It",
     "artifactName": "${productName}-Installer-${arch}.${ext}",
     "afterSign": "scripts/notarize.js",
-    "publish": "never",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
       "sign": "./scripts/sign.js",
