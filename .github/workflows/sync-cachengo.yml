@@ -1,4 +1,4 @@
-# This workflow is used to sync the cachengo branch from the remoteit/desktop repository.
+# This workflow is used to sync the cachengo branch and tags from the remoteit/desktop repository.
 name: Sync from remoteit/desktop
 
 on:
