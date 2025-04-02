@@ -93,7 +93,8 @@ export default class AppUpdater {
 
     try {
       if (force || this.nextCheck < Date.now()) {
-        Logger.info('CHECK FOR UPDATE')
+        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL() })
+        Logger.info('Checking for update')
         this.nextCheck =
           Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
         await autoUpdater.checkForUpdatesAndNotify()
