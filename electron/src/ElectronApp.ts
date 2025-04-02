@@ -182,7 +182,7 @@ export default class ElectronApp {
 
   private createMainWindow = () => {
     if (this.window) return
-    this.app.setAppUserModelId(brand.appId)
+    this.app.setAppUserModelId(brand.name)
     const { windowState } = preferences.get()
     this.window = new electron.BrowserWindow({
       ...windowState,
