@@ -201,7 +201,7 @@ export default class ElectronApp {
 
     this.window.on('close', event => {
       this.saveWindowState()
-      if (!this.quitSelected) {
+      if (!this.quitSelected && environment.isMac) {
         event.preventDefault()
         this.closeWindow()
       }
