@@ -1,4 +1,6 @@
+import brand from '@common/brand/config'
 const env = import.meta.env
+
 export const MODE = env.MODE || 'development'
 export const CLIENT_ID = env.VITE_CLIENT_ID
 export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID
@@ -11,7 +13,7 @@ export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
-export const PROTOCOL = env.PROTOCOL || 'remoteit://'
+export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
 export const REDIRECT_URL = env.VITE_REDIRECT_URL || PROTOCOL + 'authCallback'
 export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
 export const CALLBACK_URL =

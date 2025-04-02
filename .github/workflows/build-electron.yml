@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       brand:
-        description: 'Brand to build (remoteit or cachengo)'
+        description: 'Brand to build'
         required: false
         type: choice
         default: 'remoteit'
@@ -12,7 +12,7 @@ on:
           - remoteit
           - cachengo
       skip_signing:
-        description: 'Skip code signing (for pre-release builds)'
+        description: 'Skip code signing'
         required: false
         type: boolean
         default: true
