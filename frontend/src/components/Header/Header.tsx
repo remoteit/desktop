@@ -5,7 +5,6 @@ import browser from '../../services/browser'
 import { emit } from '../../services/Controller'
 import { State } from '../../store'
 import { Dispatch } from '../../store'
-import { makeStyles } from '@mui/styles'
 import { useMediaQuery } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
@@ -21,13 +20,14 @@ import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
 import { Title } from '../Title'
-import { Pre } from '../Pre'
+import { Box } from '@mui/material'
 
 export const Header: React.FC = () => {
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
   const canNavigate = useSelector((state: State) => state.backend.canNavigate)
   const layout = useSelector((state: State) => state.ui.layout)
+  const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
   const mobileGoBack = useMobileBack()
   const [showSearch, setShowSearch] = useState<boolean>(false)
@@ -36,7 +36,6 @@ export const Header: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
-  const css = useStyles()
 
   const manager = permissions.includes('MANAGE')
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
@@ -44,7 +43,19 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <div className={css.header}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          height: 45,
+          maxHeight: 45,
+          width: '100%',
+          zIndex: 14,
+          paddingX: 2.25,
+          marginTop: overlapHeader ? 3.5 : 1.5,
+        }}
+      >
         {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
@@ -123,33 +134,8 @@ export const Header: React.FC = () => {
             </Route>
           </>
         )}
-      </div>
+      </Box>
       <UpgradeNotice />
     </>
   )
 }
-
-const useStyles = makeStyles({
-  header: {
-    display: 'flex',
-    margin: `${spacing.sm}px 0 0`,
-    padding: `0 ${spacing.md}px`,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    height: 45,
-    maxHeight: 45,
-    width: '100%',
-    zIndex: 14,
-  },
-  search: {
-    // flexGrow: 1,
-    zIndex: 1,
-  },
-  noDrag: {
-    WebkitAppRegion: 'no-drag',
-  },
-  selected: {
-    marginRight: spacing.sm,
-    marginLeft: spacing.sm,
-  },
-})
