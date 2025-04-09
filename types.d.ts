@@ -6,6 +6,7 @@ declare global {
     | 'primaryHighlight'
     | 'primaryBackground'
     | 'primaryDark'
+    | 'calm'
     | 'successLight'
     | 'success'
     | 'successDark'
