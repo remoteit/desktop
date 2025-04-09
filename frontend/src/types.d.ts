@@ -293,6 +293,7 @@ declare module '@mui/material/styles' {
     test: ColorType
     brandPrimary: ColorType
     brandSecondary: ColorType
+    calm: ColorType
   }
   interface PaletteOptions {
     primaryLight?: ColorPartial
@@ -325,6 +326,16 @@ declare module '@mui/material/styles' {
     test?: ColorPartial
     brandPrimary?: ColorPartial
     brandSecondary?: ColorPartial
+    calm?: ColorPartial
+  }
+}
+
+declare module '@mui/material/Badge' {
+  interface BadgePropsColorOverrides {
+    calm: true
+  }
+  interface BadgeClasses {
+    colorCalm: string
   }
 }
 

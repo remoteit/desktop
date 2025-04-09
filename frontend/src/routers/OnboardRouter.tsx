@@ -35,7 +35,7 @@ export const OnboardRouter: React.FC = () => {
   return (
     <Body verticalOverflow center gutterBottom gutterTop>
       <Box maxWidth={{ xs: 325, sm: 370 }} width={370} height="auto" paddingTop={4} paddingBottom={25}>
-        <Icon name="bluetooth" fontSize={80} color="primary" inline />
+        <Icon name="bluetooth" fontSize={80} color="calm" inline />
         <Switch>
           <Route path={['/onboard/:platform', '/onboard/:platform/scanning']} exact>
             <OnboardScanning next={onNext} />

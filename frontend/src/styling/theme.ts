@@ -25,7 +25,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     info: { main: colors.grayDark },
     action: { hover: colors.hover },
     primary: { main: colors.primary, dark: colors.primaryDark },
-    // secondary: { main: '#F0F', contrastText: colors.white }, // this can later become the reseller editable color
+    calm: { main: colors.calm },
     error: { main: colors.danger },
     primaryLight: { main: colors.primaryLight },
     primaryLighter: { main: colors.primaryLighter },
@@ -367,6 +367,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             padding: 0,
             height: 8,
             minWidth: 8,
+          },
+          colorCalm: {
+            backgroundColor: palette.calm.main,
           },
         },
       },

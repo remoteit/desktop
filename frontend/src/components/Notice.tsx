@@ -46,7 +46,7 @@ export const Notice: React.FC<NoticeProps> = ({
   switch (severity) {
     case 'info':
       iconName = 'info-circle'
-      iconColor = 'primary'
+      iconColor = 'calm'
       break
     case 'error':
       iconName = 'exclamation-triangle'
@@ -99,11 +99,11 @@ export const Notice: React.FC<NoticeProps> = ({
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  info: { color: palette.primary.main, backgroundColor: alpha(palette.primary.main, 0.1) },
+  info: { color: palette.info.main, backgroundColor: alpha(palette.info.main, 0.1) },
   error: { color: palette.error.main, backgroundColor: alpha(palette.error.main, 0.1) },
   warning: { color: palette.warning.main, backgroundColor: alpha(palette.warning.main, 0.1) },
   success: { color: palette.success.main, backgroundColor: alpha(palette.success.main, 0.1) },
-  infoSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.primary.main },
+  infoSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.info.main },
   errorSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.error.main },
   warningSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.warning.main },
   successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
