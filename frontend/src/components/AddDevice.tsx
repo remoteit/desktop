@@ -1,12 +1,9 @@
 import React from 'react'
 import { IPlatform } from '../platforms'
-import { List, Box, Typography } from '@mui/material'
-import { useSelector } from 'react-redux'
-import { selectPermissions } from '../selectors/organizations'
+import { List, Typography } from '@mui/material'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
-import { Notice } from './Notice'
 import { Link } from './Link'
 
 type Props = {
@@ -24,16 +21,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, mi
     types,
     redirect,
   })
-  const permissions = useSelector(selectPermissions)
   const codeOnly = platform.installation?.command === '[CODE]'
-
-  if (!permissions.includes('MANAGE')) {
-    return (
-      <Box>
-        <Notice>You must have the register permission to add a device to this organization.</Notice>
-      </Box>
-    )
-  }
 
   const codeBlock = (
     <List disablePadding={minimal}>

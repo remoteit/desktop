@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider } from '@mui/material'
+import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 
@@ -9,15 +9,14 @@ export const BluetoothScan: React.FC<Props> = ({ className }) => {
   return (
     <List className={className} dense disablePadding>
       <ListSubheader disableGutters>Onboard</ListSubheader>
-      <Divider />
       <ListItemButton disableGutters component={Link} to="/onboard/raspberrypi">
         <ListItemIcon
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', '& > *': { marginRight: 0.5 } }}
         >
-          <Icon name="bluetooth" type="regular" fontSize={32} color="calm" />
+          <Icon name="bluetooth" size="xxl" color="calm" />
         </ListItemIcon>
         <ListItemText
-          primary={<>Setup WiFi &nbsp;</>}
+          primary="Setup WiFi"
           secondary={
             <>
               Connect your Pi to Wifi

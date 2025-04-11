@@ -1,7 +1,7 @@
 import React from 'react'
 import browser, { getOs } from '../../services/browser'
 import { safeHostname } from '@common/nameHelper'
-import { selectDeviceModelAttributes } from '../../selectors/devices'
+import { getAllDevices, selectDeviceModelAttributes } from '../../selectors/devices'
 import { Link, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { State } from '../../store'
@@ -19,9 +19,7 @@ import {
   Typography,
   Tooltip,
 } from '@mui/material'
-import { getAllDevices } from '../../selectors/devices'
 import { GuideBubble } from '../../components/GuideBubble'
-import { IconButton } from '../../buttons/IconButton'
 import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'

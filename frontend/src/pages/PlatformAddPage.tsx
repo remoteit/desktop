@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { State } from '../store'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useMediaQuery, Typography, Box, Stack, Divider, Theme } from '@mui/material'
@@ -9,6 +8,7 @@ import { AddPlatformTags } from '../components/AddPlatformTags'
 import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
 import { platforms } from '../platforms'
+import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
@@ -26,13 +26,14 @@ export const PlatformAddPage: React.FC = () => {
       <Stack
         flexDirection={{ xs: 'column', md: 'row' }}
         justifyContent={{ xs: 'center', md: 'left' }}
-        alignItems={{ xs: 'left', md: 'center' }}
+        alignItems={{ xs: 'left', md: 'top' }}
         paddingX={{ xs: 3, md: 0 }}
         paddingBottom={5}
         flexWrap="wrap"
       >
         <Stack
           maxWidth={{ md: 130 }}
+          marginTop={{ xs: 0, md: 2 }}
           marginRight={{ md: 3 }}
           marginBottom={{ xs: 3, md: 0 }}
           flexDirection={{ xs: 'row', md: 'column' }}
@@ -64,12 +65,18 @@ export const PlatformAddPage: React.FC = () => {
             paddingTop: 2.25,
             paddingBottom: 2.25,
             maxWidth: 650,
-            width: xs ? '100%' : 650,
+            width: xs ? '100%' : 'auto',
             '& .MuiAvatar-root': { marginTop: 0.375 },
-            '& .MuiTypography-body2': { marginBottom: 0.75 },
+            '& > .MuiTypography-body2': { marginBottom: 0.75 },
           }}
         >
-          {platformObj.installation?.command && !platformObj.installation?.download ? (
+          {!permissions.includes('MANAGE') ? (
+            <Box>
+              <Notice>You must have the register permission to add a device to this organization.</Notice>
+            </Box>
+          ) : platformObj.override ? (
+            <platformObj.override platform={platformObj} tags={platformTags} types={applicationTypes} />
+          ) : platformObj.installation?.command && !platformObj.installation?.download ? (
             <AddDevice platform={platformObj} tags={platformTags} types={applicationTypes} redirect={redirect} />
           ) : (
             <>

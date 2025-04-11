@@ -1,5 +1,6 @@
 import React from 'react'
 import logo from './cachengo.png'
+import { RentANodeRequest } from '../../components/RentANodeRequest'
 import { platforms } from '..'
 
 const Component = ({ darkMode, ...props }) => {
@@ -10,5 +11,7 @@ platforms.register({
   id: 'cachengo',
   name: 'Cachengo',
   component: Component,
-  types: { 1224: 'Cachengo' },
+  types: { 1227: 'Rent-A-Node', 1224: 'Cachengo' },
+  installation: { command: true },
+  override: RentANodeRequest,
 })

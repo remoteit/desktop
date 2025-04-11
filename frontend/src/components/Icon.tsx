@@ -83,13 +83,13 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     styles.objectFit = 'contain'
 
     if (color) styles.color = theme.palette[color]?.main || color
-    if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
-    if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) {
       styles.fontSize = fontSizes[size]
       styles.height = fontSizes[size]
       styles.maxWidth = `calc(${fontSizes[size]} + ${spacing.sm}px)`
     }
+    if (inline) styles.marginLeft = size ? `calc(${styles.height} * 0.7)` : spacing.md
+    if (inlineLeft) styles.marginRight = size ? `calc(${styles.height} * 0.7)` : spacing.md
     if (fontSize) {
       styles.fontSize = fontSize
       styles.height = fontSize
