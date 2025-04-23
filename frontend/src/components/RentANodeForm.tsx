@@ -1,17 +1,27 @@
 import React, { useState } from 'react'
-import { Typography, List, ListItem, TextField, Button, Collapse, FormHelperText, ListSubheader } from '@mui/material'
+import { State } from '../store'
+import { useHistory } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { selectOrganization } from '../selectors/organizations'
+import { Typography, List, ListItem, TextField, Button, Collapse, FormHelperText } from '@mui/material'
 import { serviceNameValidation } from '@common/nameHelper'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { CopyCodeBlock } from './CopyCodeBlock'
 import { sanitizeUrl } from '../helpers/connectionHelper'
-import { windowOpen } from '../services/browser'
+import { rentANode } from '../helpers/apiHelper'
 import { Quote } from './Quote'
 import { Body } from './Body'
+
 type Props = {
   registrationCode?: string
 }
 
 export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
+  const history = useHistory()
+  const user = useSelector((state: State) => state.user)
+  const organization = useSelector(selectOrganization)
+  const { AWSUser } = useSelector((state: State) => state.auth)
+  const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     deviceName: '',
     sshPublicKey: '',
@@ -21,21 +31,31 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
   })
   const [nameError, setNameError] = useState<string>()
 
-  const formId = '1FAIpQLSfYourGoogleFormIdHere' // Replace with actual Google Form ID
-
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
+    setSubmitting(true)
 
-    // Construct Google Form URL with prefilled values
-    const formUrl =
-      `https://docs.google.com/forms/d/e/${formId}/viewform?usp=pp_url` +
-      `&entry.1=${encodeURIComponent(form.deviceName)}` +
-      `&entry.2=${encodeURIComponent(form.sshPublicKey)}` +
-      `&entry.3=${encodeURIComponent(form.useIpv6 ? form.openPorts : '')}` +
-      `&entry.4=${encodeURIComponent(registrationCode || '')}` +
-      `&entry.5=${encodeURIComponent(form.useDns ? 'yes' : 'no')}`
+    await rentANode([
+      new Date().toISOString(), // timestamp
+      AWSUser.given_name + ' ' + AWSUser.family_name, // name
+      user.email, // email
+      AWSUser.phone_number ?? '', // phone
+      organization.name, // org-name
+      user.email, // remoteit-email
+      form.deviceName, // name
+      'Public SSH Key', // public ssh-key-name
+      form.sshPublicKey, // public ssh-key
+      form.useIpv6 ? form.openPorts || 'All' : 'None', // ipv6-ports
+      form.useDns ? getDnsWebAccess() : 'None', // dns-name
+      '', // sales-rep
+      registrationCode ?? '', // reg-code
+      organization.id, // remoteit-org-id
+      organization.name, // remoteit-org-name
+      user.id, // remoteit-user-id
+    ])
 
-    windowOpen(formUrl)
+    setSubmitting(false)
+    history.push('/')
   }
 
   const getDnsWebAccess = () => {
@@ -62,11 +82,8 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
               InputLabelProps={{ shrink: true }}
               onChange={event => {
                 const validation = serviceNameValidation(event.target.value)
-                if (validation.error) {
-                  setNameError(validation.error)
-                } else {
-                  setNameError(undefined)
-                }
+                if (validation.error) setNameError(validation.error)
+                else setNameError(undefined)
                 setForm({ ...form, deviceName: validation.value })
               }}
             />
@@ -133,7 +150,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
         color="primary"
         disabled={!!nameError || !form.deviceName || !form.sshPublicKey}
       >
-        Submit Request
+        {submitting ? 'Submitting...' : 'Submit Request'}
       </Button>
     </form>
   )

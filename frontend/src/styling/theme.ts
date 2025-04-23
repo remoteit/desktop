@@ -658,7 +658,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             textTransform: 'uppercase',
           },
           subtitle1: {
-            fontFamily: "'Roboto Mono', Roboto",
             fontSize: fontSizes.xxs,
             color: palette.grayDarkest.main,
             display: 'flex',
@@ -671,7 +670,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontWeight: 500,
           },
           subtitle2: {
-            fontFamily: "'Roboto Mono', Roboto",
             fontSize: fontSizes.xxs,
             color: palette.grayDarkest.main,
             display: 'flex',
