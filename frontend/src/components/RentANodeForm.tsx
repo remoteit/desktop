@@ -36,7 +36,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
     setSubmitting(true)
 
     await rentANode([
-      new Date().toISOString(), // timestamp
+      new Date().toISOString().slice(0, -1), // timestamp
       AWSUser.given_name + ' ' + AWSUser.family_name, // name
       user.email, // email
       AWSUser.phone_number ?? '', // phone
