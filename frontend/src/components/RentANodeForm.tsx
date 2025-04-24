@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { State } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { MuiTelInput, matchIsValidTel } from 'mui-tel-input'
 import { selectOrganization } from '../selectors/organizations'
 import { Typography, List, ListItem, TextField, Button, Collapse, FormHelperText } from '@mui/material'
 import { serviceNameValidation } from '@common/nameHelper'
@@ -24,12 +25,13 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     deviceName: '',
+    phone: '',
     sshPublicKey: '',
     useIpv6: false,
     openPorts: '',
     useDns: false,
   })
-  const [nameError, setNameError] = useState<string>()
+  const [error, setError] = useState<Record<string, string | undefined>>({})
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -37,9 +39,9 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
 
     await rentANode([
       new Date().toISOString().slice(0, -1), // timestamp
-      AWSUser.given_name + ' ' + AWSUser.family_name, // name
+      AWSUser.given_name ? AWSUser.given_name + ' ' + AWSUser.family_name : 'Unknown', // name
       user.email, // email
-      AWSUser.phone_number ?? '', // phone
+      "'" + (form.phone ?? AWSUser.phone_number ?? ''), // phone
       organization.name, // org-name
       user.email, // remoteit-email
       form.deviceName, // name
@@ -77,14 +79,32 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
               label="Device Name"
               value={form.deviceName}
               variant="filled"
-              error={!!nameError}
-              helperText={nameError}
+              error={!!error.deviceName}
+              helperText={error.deviceName}
               InputLabelProps={{ shrink: true }}
               onChange={event => {
                 const validation = serviceNameValidation(event.target.value)
-                if (validation.error) setNameError(validation.error)
-                else setNameError(undefined)
+                if (validation.error) setError({ ...error, deviceName: validation.error })
+                else setError({ ...error, deviceName: undefined })
                 setForm({ ...form, deviceName: validation.value })
+              }}
+            />
+          </ListItem>
+          <ListItem disableGutters>
+            <MuiTelInput
+              required
+              fullWidth
+              label="Phone"
+              variant="filled"
+              value={form.phone}
+              defaultCountry="US"
+              error={!!error.phone}
+              helperText={error.phone}
+              InputLabelProps={{ shrink: true }}
+              sx={{ '& .MuiInputBase-input': { paddingLeft: 0 } }}
+              onChange={phone => {
+                setError({ ...error, phone: matchIsValidTel(phone) ? undefined : 'Invalid phone number' })
+                setForm({ ...form, phone })
               }}
             />
           </ListItem>
@@ -148,7 +168,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
         type="submit"
         variant="contained"
         color="primary"
-        disabled={!!nameError || !form.deviceName || !form.sshPublicKey}
+        disabled={!!error.deviceName || !!error.phone || !form.deviceName || !form.sshPublicKey}
       >
         {submitting ? 'Submitting...' : 'Submit Request'}
       </Button>

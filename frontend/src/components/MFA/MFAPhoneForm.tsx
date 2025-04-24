@@ -1,10 +1,8 @@
-import 'react-phone-input-2/lib/material.css'
-import PhoneInput from 'react-phone-input-2'
+import { MuiTelInput, matchIsValidTel } from 'mui-tel-input'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { Typography, Button, Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { Notice } from '../Notice'
 
 export interface Props {
@@ -13,7 +11,6 @@ export interface Props {
 }
 
 export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
-  const css = useStyles()
   const { AWSPhone, AWSUser, mfaMethod } = useSelector((state: State) => ({
     AWSPhone: state.auth.AWSUser.phone_number || '',
     AWSUser: state.auth.AWSUser,
@@ -22,30 +19,16 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   const { mfa } = useDispatch<Dispatch>()
   const originalPhone = AWSUser.phone_number
   const [phone, setPhone] = useState<string>(AWSPhone)
-  const [validPhone, setValidPhone] = React.useState<boolean>(!!AWSPhone)
   const [error, setError] = React.useState<string | null>(null)
   const [message, setMessage] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState<boolean>(false)
-  const country = 'us'
-  const handleOnChange = (value: string, data) => {
-    const newValue = value.replace(/[^0-9]+/g, '')
 
-    if (newValue !== '' && newValue.startsWith(data.dialCode)) {
-      setValidPhone(true)
-    } else {
-      setValidPhone(false)
-    }
-    if (phone !== newValue) {
-      setPhone('+' + newValue)
-    }
-  }
   const updateUsersPhone = event => {
     event.preventDefault()
     if (AWSUser.phone_number !== phone) {
       setError(null)
       setMessage(null)
       setLoading(true)
-      // console.log('Update phone number')
       mfa
         .updatePhone(phone)
         .then(() => {
@@ -97,17 +80,17 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
         </Notice>
       )}
       <form onSubmit={updateUsersPhone}>
-        <Box mt={3} className={css.phone}>
-          <PhoneInput
+        <Box mt={3}>
+          <MuiTelInput
+            required
+            label="Phone"
+            variant="filled"
             value={phone}
-            enableSearch
-            country={country}
-            preserveOrder={['preferredCountries', 'onlyCountries']}
-            preferredCountries={['us', 'jp']}
-            searchPlaceholder="Search"
-            placeholder="Enter your mobile number"
-            onChange={handleOnChange}
-            inputProps={{ required: true }}
+            defaultCountry="US"
+            error={!!error}
+            InputLabelProps={{ shrink: true }}
+            sx={{ '& .MuiInputBase-input': { paddingLeft: 0 } }}
+            onChange={value => setPhone(value)}
           />
         </Box>
         <Box mt={1}>
@@ -116,7 +99,7 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
           </Typography>
         </Box>
         <Box mt={3}>
-          <Button disabled={phone === '' || !validPhone} variant="contained" type="submit" color="primary">
+          <Button disabled={!matchIsValidTel(phone)} variant="contained" type="submit" color="primary">
             {loading ? 'Sending...' : 'Submit'}
           </Button>
           <Button onClick={onClose}>Cancel</Button>
@@ -125,35 +108,3 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  phone: {
-    '& .react-tel-input .form-control': {
-      backgroundColor: palette.white.main,
-      color: palette.grayDarkest.main,
-      borderColor: palette.grayLight.main,
-    },
-    '& .react-tel-input .form-control:hover': { borderColor: palette.primary.main },
-    '& .react-tel-input .special-label': { backgroundColor: palette.white.main, color: palette.grayDarkest.main },
-    '& .react-tel-input .country-list': {
-      backgroundColor: palette.grayLightest.main,
-      color: palette.grayDarkest.main,
-      maxHeight: 400,
-    },
-    '& .react-tel-input .country-list .search': { backgroundColor: palette.grayLightest.main },
-    '& .react-tel-input .country-list .search-box': {
-      color: palette.grayDarkest.main,
-      borderColor: palette.grayLight.main,
-      backgroundColor: palette.grayLightest.main,
-    },
-    '& .react-tel-input .country-list .divider': { borderBottomColor: palette.grayLight.main },
-    '& .react-tel-input .country-list .country.highlight': {
-      backgroundColor: palette.primaryHighlight.main,
-      color: palette.grayDarkest.main,
-    },
-    '& .react-tel-input .country-list .country:hover': {
-      backgroundColor: palette.primaryHighlight.main,
-      color: palette.grayDarkest.main,
-    },
-  },
-}))
