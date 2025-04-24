@@ -2,7 +2,7 @@ import React from 'react'
 import { windowOpen } from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
-import { spacing, fontSizes, Sizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 

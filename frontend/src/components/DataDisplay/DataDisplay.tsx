@@ -1,5 +1,6 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@mui/material'
+import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { fontSizes } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Attribute } from '../Attributes'
@@ -34,6 +35,15 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
                 )}
               </span>
               <span className={css.attribute}>{value}</span>
+              {attribute.copyable && (
+                <CopyIconButton
+                  sx={{ marginY: -1 }}
+                  size="sm"
+                  color="gray"
+                  title={`Copy ${attribute.label}`}
+                  value={value}
+                />
+              )}
             </ListItem>
           )
         )

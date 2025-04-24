@@ -42,7 +42,7 @@ export const lightColors: Colors = {
   primaryBackground: '#EAF4FA',
   brandPrimary: '#0096e7', // Default to primary, will be overridden by brand config
   brandSecondary: '#034b9d', // Default secondary color
-  // secondary: '#75bd00', - can become the reseller logo color
+  calm: '#0082FC',
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',
@@ -79,7 +79,7 @@ export const darkColors: Colors = {
   primaryBackground: '#212a35',
   brandPrimary: '#0096e7', // Default to primary, will be overridden by brand config
   brandSecondary: '#034b9d', // Default secondary color
-  // secondary: '#75bd00',
+  calm: '#0096e7',
   successLight: '#436807',
   success: '#75bd00',
   successDark: '#a4db4c',

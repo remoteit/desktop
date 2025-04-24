@@ -37,6 +37,7 @@ export class Attribute {
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'INSTANCE' | 'CONNECTION' | 'RESTORE' | 'CUSTOMER' | 'SCRIPT' = 'MASTER'
   feature?: string // key to plan limit name - used for tagging visibility
   multiline?: boolean
+  copyable?: boolean // show copy icon on DataDisplay
   details: boolean = true // show on device details page
   column: boolean = true // show as device list column
   query?: string // key to device query - fall back to id
@@ -53,6 +54,7 @@ export class Attribute {
     defaultWidth?: Attribute['defaultWidth']
     feature?: Attribute['feature']
     multiline?: Attribute['multiline']
+    copyable?: Attribute['copyable']
     details?: Attribute['details']
     query?: Attribute['query']
     type?: Attribute['type']
@@ -379,12 +381,14 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'id',
     label: 'Device ID',
+    copyable: true,
     defaultWidth: 180,
     value: ({ device }) => device?.id,
   }),
   new DeviceAttribute({
     id: 'hardwareId',
     label: 'Hardware ID',
+    copyable: true,
     defaultWidth: 190,
     value: ({ device }) => device?.hardwareId,
   }),
@@ -470,6 +474,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceDockerId',
     label: 'Docker ID',
+    copyable: true,
     value: ({ service }) => service?.attributes.docker?.id,
   }),
   new ServiceAttribute({
@@ -490,11 +495,13 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceId',
     label: 'Service ID',
+    copyable: true,
     value: ({ service }) => service?.id,
   }),
   new ServiceAttribute({
     id: 'serviceDeviceId',
     label: 'Device ID',
+    copyable: true,
     defaultWidth: 180,
     value: ({ device }) => device?.id,
   }),

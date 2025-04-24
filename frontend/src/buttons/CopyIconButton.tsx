@@ -9,7 +9,7 @@ import { PromptModal } from '../components/PromptModal'
 import useClipboard from '../hooks/useClipboard'
 
 export type CopyButtonProps = ButtonProps & {
-  icon: string
+  icon?: string
   app?: Application
   title?: string
   value?: string | number
@@ -26,7 +26,7 @@ export type CopyButtonProps = ButtonProps & {
 const COPY_TIMEOUT = 800
 
 export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  ({ icon, app, value, title, size = 'lg', colorCopied = 'success', onClick, onCopy, ...props }, ref) => {
+  ({ icon = 'copy', app, value, title, size = 'lg', colorCopied = 'success', onClick, onCopy, ...props }, ref) => {
     const [open, setOpen] = useState<boolean>(false)
     const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
     const autoCopy = useSelector((state: State) => state.ui.autoCopy)

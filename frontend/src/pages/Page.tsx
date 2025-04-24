@@ -7,7 +7,7 @@ import { State, Dispatch } from '../store'
 import { spacing } from '../styling'
 import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
-import { DragAppRegion } from '../components/DragAppRegion'
+import { MaximizeAppRegion } from '../components/MaximizeAppRegion'
 import { ConnectionNotice } from '../components/ConnectionNotice'
 import { GlobalConfirm } from '../components/GlobalConfirm'
 import { UpdateNotice } from '../components/UpdateNotice'
@@ -21,7 +21,7 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  
+
   const device = useSelector(selectDevice)
   const connected = useSelector((state: State) => state.ui.connected)
   const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
@@ -48,7 +48,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   return (
     <RemoteHeader device={device}>
-      <DragAppRegion />
+      <MaximizeAppRegion />
       {children}
       {offline && (
         <Dialog open maxWidth="xs" fullWidth>

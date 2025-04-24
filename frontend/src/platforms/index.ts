@@ -9,15 +9,22 @@ export interface IPlatform {
   listItemTitle?: React.ReactNode
   route?: string
   hasScreenView?: boolean
+  override?: React.FC<IPlatformOverrideProps>
   installation?: {
     label?: string
     download?: boolean
     command?: boolean | string
     instructions?: string | React.ReactNode
-    qualifier: string
+    qualifier?: string
     link?: string
     altLink?: string
   }
+}
+
+export interface IPlatformOverrideProps {
+  platform: IPlatform
+  types: number[]
+  tags?: string[]
 }
 
 class Platforms {

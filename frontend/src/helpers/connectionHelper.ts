@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { ANONYMOUS_MANUFACTURER_CODE } from '../constants'
+import { ANONYMOUS_MANUFACTURER_CODE, REGEX_CONNECTION_NAME, REGEX_CONNECTION_TRIM } from '../constants'
 import { IP_PRIVATE, DEFAULT_CONNECTION } from '@common/constants'
 import { Application, getApplicationType } from '@common/applications'
 import { State, store } from '../store'
@@ -208,6 +208,10 @@ export function getEndpoint(name?: string, port?: number) {
   }
 
   return name + (port ? ':' + port : '')
+}
+
+export function sanitizeUrl(name: string) {
+  return name?.toLowerCase().replace(REGEX_CONNECTION_NAME, '-').replace(REGEX_CONNECTION_TRIM, '')
 }
 
 export function cleanOrphanConnections(expectedIds?: IService['id'][]) {

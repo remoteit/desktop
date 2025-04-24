@@ -57,21 +57,31 @@ body {
   background-color: var(--brand-secondary);
 }
 
-body::before {
+/* 
+Drag region
+  ::before so overlapping buttons still function 
+  ::after so the drag region is below on top of overflowed content
+*/
+body::before, .drag-region::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 48px; 
+  height: 48px;
   -webkit-app-region: drag;
+  /* background-color: rgba(0, 255, 0, 0.2); */
+}
+
+.drag-region::after {
+  height: 24px;
 }
 
 .body-no-drag::before {
   height: 0;
+  -webkit-app-region: no-drag;
 }
 
 .logo {
   margin-bottom: 46px;
-  color: #FFFFFF;
 }

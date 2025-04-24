@@ -1,6 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
+import { useHistory } from 'react-router-dom'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
 import { Stack, List, ListItemButton, ListSubheader, ListItemIcon, ListItemText, Typography } from '@mui/material'
@@ -11,6 +12,7 @@ import { DeviceSetupItem } from '../components/DeviceSetupItem'
 import { BluetoothScan } from '../components/BluetoothScan'
 import { AndroidSetup } from '../components/AndroidSetup'
 import { ClaimDevice } from '../components/ClaimDevice'
+import { RentANodeAdd } from '../components/RentANodeAdd'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { spacing } from '../styling'
@@ -22,6 +24,7 @@ export const AddPage: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const claiming = useSelector((state: State) => state.ui.claiming)
   const hasDemo = useSelector((state: State) => selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined)
+  const history = useHistory()
 
   return (
     <Container
@@ -35,13 +38,15 @@ export const AddPage: React.FC = () => {
       }
     >
       <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" width="100%" paddingX={{ xs: 1, sm: 4 }}>
+        <RentANodeAdd className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.smallList)} dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <ListItemButton
             disableGutters
-            disabled={hasDemo || claiming}
+            disabled={claiming}
             onClick={() => {
-              devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
+              if (hasDemo) history.push(`/devices/${DEMO_DEVICE_ID}`)
+              else devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
             }}
           >
             <ListItemIcon>
@@ -52,7 +57,6 @@ export const AddPage: React.FC = () => {
         </List>
         <AndroidSetup className={classnames(css.list, css.smallList)} />
         <DeviceSetupItem className={classnames(css.list, css.smallList)} />
-        <ClaimDevice className={classnames(css.list, css.smallList)} />
         <BluetoothScan className={classnames(css.list, css.smallList)} />
         <List className={classnames(css.list, css.icons)} dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
@@ -108,6 +112,7 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
+        <ClaimDevice className={classnames(css.list, css.smallList)} />
       </Stack>
     </Container>
   )

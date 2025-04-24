@@ -22,7 +22,6 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
     <MobileUI android>
       <List className={className} dense disablePadding>
         <ListSubheader disableGutters>This system</ListSubheader>
-        <Divider />
         <GuideBubble
           enterDelay={400}
           guide="registerMenu"

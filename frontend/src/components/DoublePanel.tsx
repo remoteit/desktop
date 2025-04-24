@@ -83,7 +83,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
         </div>
       </div>
       <div
-        className={classnames(css.panel, css.secondary)}
+        className={classnames(css.panel, css.secondary, 'drag-region')}
         style={{ minWidth: parentWidth ? parentWidth - width : undefined }}
       >
         {secondary}

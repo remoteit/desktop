@@ -1,4 +1,5 @@
 import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER } from '../constants'
+import { graphQLRentANode } from '../services/graphQLMutation'
 import { version } from './versionHelper'
 import { store } from '../store'
 
@@ -48,4 +49,28 @@ export async function apiError(error: unknown) {
   if (error instanceof Error) {
     ui.set({ errorMessage: error.message })
   }
+}
+
+export async function rentANode(data: string[]) {
+  const { ui } = store.dispatch
+  console.log('SUBMIT GOOGLE FORM', data)
+  const result = await graphQLRentANode(data)
+  if (result === 'ERROR') ui.set({ errorMessage: 'Node rental failed. Please contact customer support.' })
+  else
+    ui.set({
+      successMessage:
+        'Node rental form submitted. Please allow up to two business days for your request to be processed',
+    })
+}
+
+export async function submitGoogleForm(formId: string, entries: Record<string | number, any>) {
+  const params = Object.entries(entries)
+    .filter(([_, value]) => value !== undefined && value !== null)
+    .map(([key, value]) => `entry.${key}=${encodeURIComponent(value.toString())}`)
+    .join('&')
+
+  const formUrl = `https://docs.google.com/forms/d/e/${formId}/viewform?usp=pp_url&${params}`
+
+  console.log('SUBMIT GOOGLE FORM', params)
+  window.open(formUrl, '_blank')
 }

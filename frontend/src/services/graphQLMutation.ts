@@ -618,3 +618,12 @@ export async function graphQLCancelJob(jobId?: string) {
     { jobId }
   )
 }
+
+export async function graphQLRentANode(data: string[]) {
+  return await graphQLBasicRequest(
+    ` mutation RentANode($data: [String!]!) {
+        rentANode(data: $data)
+      }`,
+    { data }
+  )
+}
