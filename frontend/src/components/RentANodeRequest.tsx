@@ -14,7 +14,7 @@ const NodeAttribute = ({ label, ...props }: IconProps & { label: string }) => (
 )
 
 export const RentANodeRequest: React.FC<IPlatformOverrideProps> = ({ platform, tags }) => {
-  const { registrationCode, fetching } = useAutoRegistration({ platform, tags, types: [1227] })
+  const { registrationCode } = useAutoRegistration({ platform, tags, types: [1227] })
   return (
     <>
       <OrganizationIndicator avatarSize={42} marginBottom={3} display="inline-flex" />
