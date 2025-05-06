@@ -16,18 +16,21 @@ export default class ElectronApp {
   private isMaximized: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
+  private errorShown: boolean
   private protocol: string
   private bluetoothCallback?: (deviceId: string) => void
 
   constructor() {
     this.app = electron.app
     this.quitSelected = false
+    this.errorShown = false
     this.isMaximized = false
     this.autoUpdater = new AutoUpdater()
     this.protocol = PROTOCOL.substring(0, PROTOCOL.length - 3)
 
     if (!this.app.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
+      this.quitSelected = true
       this.app.quit()
     }
 
@@ -62,6 +65,19 @@ export default class ElectronApp {
   get url() {
     if (!this.window) return
     return this.window.webContents.getURL()
+  }
+
+  quitDuplicateInstance = () => {
+    if (!this.quitSelected && !this.errorShown) {
+      this.errorShown = true
+      dialog.showErrorBox(
+        `${brand.appName} Failed to Start`,
+        `The app could not start because another instance is already running. Please close any other ${brand.appName} processes, or restart your computer.`
+      )
+    }
+
+    Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
+    this.app.quit()
   }
 
   /**
