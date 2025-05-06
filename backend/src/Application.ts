@@ -26,6 +26,10 @@ export default class Application {
     this.electron && this.electron.app.quit()
   }
 
+  quitDuplicateInstance() {
+    this.electron && this.electron.quitDuplicateInstance()
+  }
+
   recapitate(head: any) {
     this.electron = head
     environment.recapitate()

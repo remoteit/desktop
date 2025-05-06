@@ -59,7 +59,7 @@ class Server {
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
-        app.quit()
+        app.quitDuplicateInstance()
       })
       .listen(WEB_PORT, HOST, () => {
         d(`Listening on port ${WEB_PORT}`)
@@ -72,7 +72,7 @@ class Server {
       .createServer({ key, cert }, this.app)
       .on('error', error => {
         Logger.warn('HTTPS SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
-        app.quit()
+        app.quitDuplicateInstance()
       })
       .listen(SSL_PORT, HOST, () => {
         Logger.info('HTTPS SERVER STARTED', { port: SSL_PORT, directory: WEB_DIR })
