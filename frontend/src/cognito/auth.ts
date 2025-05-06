@@ -14,6 +14,7 @@ import {
 } from './types'
 import { CognitoUserSession } from 'amazon-cognito-identity-js'
 import axios from 'axios'
+import brand from '@common/brand/config'
 
 export interface ConfigInterface {
   cognitoAuthDomain: string
@@ -252,6 +253,7 @@ export class AuthService {
       const resp: ISignUpResult = await this.cognitoAuth.signUp({
         username,
         password,
+        attributes: { 'custom:brand': brand.name },
       })
 
       this.cognitoUser = {
