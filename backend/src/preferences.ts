@@ -5,6 +5,7 @@ import Logger from './Logger'
 import path from 'path'
 
 export class Preferences {
+  windowDefaultState: IPreferences['windowState'] = { width: 1280, height: 800 }
   data: IPreferences = {
     version: '',
     cliVersion: '',
@@ -19,7 +20,7 @@ export class Preferences {
     switchApi: false,
     apiURL: '',
     apiGraphqlURL: '',
-    windowState: { width: 1280, height: 800 },
+    windowState: structuredClone(this.windowDefaultState),
     sshConfig: false,
   }
 
