@@ -123,15 +123,15 @@ export default class ElectronApp {
   private handleNavigate = (action: 'BACK' | 'FORWARD' | 'STATUS') => {
     if (!this.window) return
     const canNavigate = {
-      canGoBack: this.window.webContents.canGoBack(),
-      canGoForward: this.window.webContents.canGoForward(),
+      canGoBack: this.window.webContents.navigationHistory.canGoBack,
+      canGoForward: this.window.webContents.navigationHistory.canGoForward,
     }
     switch (action) {
       case 'BACK':
-        this.window.webContents.goBack()
+        this.window.webContents.navigationHistory.goBack()
         break
       case 'FORWARD':
-        this.window.webContents.goForward()
+        this.window.webContents.navigationHistory.goForward()
         break
     }
     EventBus.emit(EVENTS.canNavigate, canNavigate)
@@ -200,8 +200,10 @@ export default class ElectronApp {
     if (this.window) return
     this.app.setAppUserModelId(brand.name)
     const { windowState } = preferences.get()
+    const validatedWindow = this.validateWindowState(windowState)
+
     this.window = new electron.BrowserWindow({
-      ...windowState,
+      ...validatedWindow,
       minWidth: 525,
       minHeight: 325,
       backgroundColor: brand.colors.light.primaryDark,
@@ -257,6 +259,36 @@ export default class ElectronApp {
     })
 
     this.logWebErrors()
+  }
+
+  private validateWindowState(state?: IPreferences['windowState']): IPreferences['windowState'] {
+    const defaults = preferences.windowDefaultState ?? { width: 1280, height: 800 }
+
+    if (!state || state.x === undefined || state.y === undefined) return { ...defaults }
+
+    const displays = electron.screen.getAllDisplays()
+    Logger.info('VALIDATE WINDOW STATE', { displays: displays.map(d => d.workArea), state })
+
+    const inBounds = displays.some(({ workArea }) => {
+      const minX = workArea.x
+      const minY = workArea.y
+      const maxX = workArea.x + workArea.width
+      const maxY = workArea.y + workArea.height
+
+      return (
+        state.width <= workArea.width &&
+        state.height <= workArea.height &&
+        state.x! >= minX &&
+        state.y! >= minY &&
+        state.x! + state.width <= maxX &&
+        state.y! + state.height <= maxY
+      )
+    })
+
+    if (inBounds) return state
+
+    Logger.info('WINDOW STATE OUT OF BOUNDS')
+    return { ...defaults }
   }
 
   private saveWindowState = () => {
