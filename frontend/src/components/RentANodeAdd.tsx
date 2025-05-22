@@ -7,7 +7,7 @@ import { Icon } from './Icon'
 type Props = { className?: string }
 
 export const RentANodeAdd: React.FC<Props> = ({ className }) => {
-  if (brand.name !== 'cachengo') return null
+  if (brand.name !== 'telepath') return null
   return (
     <List className={className} dense disablePadding>
       <ListSubheader disableGutters>Rent-A-Node</ListSubheader>
