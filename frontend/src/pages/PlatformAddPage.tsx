@@ -18,7 +18,7 @@ export const PlatformAddPage: React.FC = () => {
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
   const permissions = useSelector(selectPermissions)
   const [platformTags, setPlatformTags] = useState<string[]>([])
-  const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
+  const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
   return (
@@ -43,8 +43,8 @@ export const PlatformAddPage: React.FC = () => {
             <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
               {!xs && <Divider sx={{ marginTop: 4, width: '80%' }} />}
               <AddPlatformServices
-                types={serviceTypes}
-                onChange={type => setServiceTypes(type)}
+                types={applicationTypes}
+                onChange={type => setApplicationTypes(type)}
                 alignItems={{ xs: 'flex-start', md: 'flex-end' }}
               />
               <AddPlatformTags
@@ -75,9 +75,9 @@ export const PlatformAddPage: React.FC = () => {
               <Notice>You must have the register permission to add a device to this organization.</Notice>
             </Box>
           ) : platformObj.override ? (
-            <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} />
+            <platformObj.override platform={platformObj} tags={platformTags} types={applicationTypes} />
           ) : platformObj.installation?.command && !platformObj.installation?.download ? (
-            <AddDevice platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} redirect={redirect} />
+            <AddDevice platform={platformObj} tags={platformTags} types={applicationTypes} redirect={redirect} />
           ) : (
             <>
               <AddDownload platform={platformObj} />
@@ -89,7 +89,7 @@ export const PlatformAddPage: React.FC = () => {
                   <AddDevice
                     platform={platformObj}
                     tags={platformTags}
-                    serviceTypes={serviceTypes}
+                    types={applicationTypes}
                     redirect={redirect}
                     minimal
                   />

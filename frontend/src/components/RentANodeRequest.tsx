@@ -13,8 +13,8 @@ const NodeAttribute = ({ label, ...props }: IconProps & { label: string }) => (
   </Typography>
 )
 
-export const RentANodeRequest: React.FC<IPlatformOverrideProps> = ({ platform, tags, serviceTypes }) => {
-  const { registrationCode } = useAutoRegistration({ platform, tags, serviceTypes })
+export const RentANodeRequest: React.FC<IPlatformOverrideProps> = ({ platform, tags }) => {
+  const { registrationCode } = useAutoRegistration({ platform, tags, types: [1227] })
   return (
     <>
       <OrganizationIndicator avatarSize={42} marginBottom={3} display="inline-flex" />

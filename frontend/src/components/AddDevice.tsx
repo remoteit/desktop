@@ -8,17 +8,17 @@ import { Link } from './Link'
 
 type Props = {
   platform: IPlatform
-  serviceTypes: number[]
+  types: number[]
   tags?: string[]
   redirect?: string
   minimal?: boolean
 }
 
-export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redirect, minimal }) => {
+export const AddDevice: React.FC<Props> = ({ platform, tags, types, redirect, minimal }) => {
   const { registrationCode, registrationCommand, redirectUrl, fetching } = useAutoRegistration({
     platform,
     tags,
-    serviceTypes,
+    types,
     redirect,
   })
   const codeOnly = platform.installation?.command === '[CODE]'

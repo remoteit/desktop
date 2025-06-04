@@ -8,7 +8,7 @@ import { OnboardMessage } from './OnboardMessage'
 
 export const OnboardRegistration: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { registrationCode } = useAutoRegistration({ serviceTypes: [] })
+  const { registrationCode } = useAutoRegistration({ types: [] })
   const { message, severity, reg, id } = useSelector((state: State) => state.bluetooth)
   const processing = reg === 'REGISTERING' || (reg === 'REGISTERED' && !registrationCode)
 

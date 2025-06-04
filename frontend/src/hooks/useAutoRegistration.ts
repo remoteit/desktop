@@ -6,13 +6,13 @@ import { useSelector, useDispatch } from 'react-redux'
 import { selectOrganization } from '../selectors/organizations'
 
 type Props = {
-  serviceTypes: number[]
+  types: number[]
   platform?: IPlatform
   tags?: string[]
   redirect?: string
 }
 
-export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: Props) {
+export function useAutoRegistration({ platform, tags, types, redirect }: Props) {
   const organization = useSelector((state: State) => selectOrganization(state))
   const registrationCommand = useSelector((state: State) => state.ui.registrationCommand)
   const registrationCode = useSelector((state: State) => state.ui.registrationCode)
@@ -35,7 +35,7 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: 
     console.log('AUTO REGISTRATION EFFECT', {
       platform,
       tags,
-      serviceTypes,
+      types,
       fetching,
       accountId,
     })
@@ -44,7 +44,7 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: 
       let options: Parameters<typeof dispatch.devices.createRegistration>[0] = {
         tags,
         accountId,
-        services: serviceTypes.map(type => ({ application: type })),
+        services: types.map(type => ({ application: type })),
       }
       if (platform) {
         options.platform = platforms.findType(platform.id)
@@ -68,7 +68,7 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: 
     return function cleanup() {
       dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
     }
-  }, [accountId, platform, tags?.length, serviceTypes.length, fetching])
+  }, [accountId, platform, tags?.length, types.length, fetching])
 
   return { registrationCommand, registrationCode, redirectUrl: getRedirect(redirect, registrationCode), fetching }
 }

@@ -23,7 +23,7 @@ export interface IPlatform {
 
 export interface IPlatformOverrideProps {
   platform: IPlatform
-  serviceTypes: number[]
+  types: number[]
   tags?: string[]
 }
 

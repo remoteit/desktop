@@ -325,7 +325,7 @@ export default class ElectronApp {
   }
 
   private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development' ? `http://${IP_PRIVATE}:3003` : `http://${IP_PRIVATE}:29999`
+    return process.env.NODE_ENV === 'development' ? `http://${IP_PRIVATE}:3000` : `http://${IP_PRIVATE}:29999`
   }
 
   private createSystemTray() {

@@ -16,7 +16,7 @@ class Controller extends EventEmitter {
 
   init() {
     const { protocol, host } = window.location
-    const isDev = host === `${IP_PRIVATE}:3003`
+    const isDev = host === `${IP_PRIVATE}:3000`
     this.url = protocol === 'file:' || isDev ? `http://${IP_PRIVATE}:${PORT}` : '/'
     this.onNetworkConnect()
     if (!navigator.onLine) network.offline()
