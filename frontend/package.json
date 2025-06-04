@@ -1,10 +1,10 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.37.4",
+  "version": "3.37.5",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "vite --port 3000 --host 0.0.0.0 --open",
+    "start": "vite --port 3003 --host 0.0.0.0 --open",
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' vite build"
   },
   "dependencies": {

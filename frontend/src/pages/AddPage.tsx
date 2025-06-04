@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
@@ -21,10 +21,15 @@ import { Icon } from '../components/Icon'
 
 export const AddPage: React.FC = () => {
   const css = useStyles()
-  const { devices } = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
+  const allApplicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const claiming = useSelector((state: State) => state.ui.claiming)
   const hasDemo = useSelector((state: State) => selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined)
   const history = useHistory()
+
+  useEffect(() => {
+    if (!allApplicationTypes.length) dispatch.applicationTypes.fetchAll()
+  }, [])
 
   return (
     <Container
@@ -46,7 +51,7 @@ export const AddPage: React.FC = () => {
             disabled={claiming}
             onClick={() => {
               if (hasDemo) history.push(`/devices/${DEMO_DEVICE_ID}`)
-              else devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
+              else dispatch.devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE, redirect: true })
             }}
           >
             <ListItemIcon>

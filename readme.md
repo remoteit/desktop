@@ -146,7 +146,7 @@ Command+option+I to open with dev tools.
 To use the live reloading you will have to set your development app's network IP Address in an environment variable in your profile:
 
 ```shell
-export CAPACITOR_DESKTOP_LIVE_RELOAD="http://192.168.0.154:3000/"
+export CAPACITOR_DESKTOP_LIVE_RELOAD="http://192.168.0.154:3003/"
 ```
 
 Then you can run the web app and mobile app at the same time. Start mobile app.

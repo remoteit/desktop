@@ -69,7 +69,7 @@ export default browser
 startLog()
 
 function isPortal() {
-  return PORTAL || (!isElectron() && !isMobile() && window.location.port === '3000')
+  return PORTAL || (!isElectron() && !isMobile() && window.location.port === '3003')
 }
 
 function isMobile() {
