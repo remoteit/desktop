@@ -1,13 +1,12 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
 import { ClearButton } from '../buttons/ClearButton'
-import { NetworkListItem } from './NetworkListItem'
 import { NetworkListTitle } from './NetworkListTitle'
+import { NetworkServicesList } from './NetworkServicesList'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { selectConnectionSessions, selectConnections } from '../selectors/connections'
-import { Typography, Collapse, List, ListItem, ListItemIcon } from '@mui/material'
+import { Collapse, List } from '@mui/material'
 import { spacing, radius, fontSizes } from '../styling'
 import { makeStyles } from '@mui/styles'
 import { Tags } from './Tags'
@@ -65,27 +64,15 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
         />
       </NetworkListTitle>
       <Collapse in={expanded}>
-        {network?.serviceIds.map(id => (
-          <NetworkListItem
-            key={id}
-            serviceId={id}
-            network={network}
-            enabled={networkConnected || networkEnabled}
-            session={connectionsPage ? undefined : sessions.find(s => s.target.id === id)}
-            fallbackName={network.connectionNames[id]}
-            connectionsPage={connectionsPage}
-          >
-            {onClear && <ClearButton id={id} onClick={() => onClear(id)} className="hidden" />}
-          </NetworkListItem>
-        ))}
-        {!network?.serviceIds.length && (
-          <ListItem>
-            <ListItemIcon />
-            <Typography variant="caption">
-              Add services through the <Link to="/devices">device list</Link>
-            </Typography>
-          </ListItem>
-        )}
+        <NetworkServicesList
+          serviceIds={network?.serviceIds || []}
+          network={network}
+          networkConnected={networkConnected}
+          networkEnabled={networkEnabled}
+          sessions={sessions}
+          connectionsPage={connectionsPage}
+          onClear={onClear}
+        />
       </Collapse>
     </List>
   )
