@@ -136,7 +136,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
                 autoComplete="off"
                 InputProps={{
                   ...params.InputProps,
-                  endAdornment: !disabled && (
+                  endAdornment: (
                     <>
                       {params.InputProps.endAdornment}
                       <InputAdornment
