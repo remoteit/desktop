@@ -42,7 +42,7 @@ export const lightColors: Colors = {
   primaryBackground: '#EAF4FA',
   brandPrimary: '#0096e7', // Default to primary, will be overridden by brand config
   brandSecondary: '#034b9d', // Default secondary color
-  calm: '#0082FC',
+  calm: '#0096e7', //'#0082FC',
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',

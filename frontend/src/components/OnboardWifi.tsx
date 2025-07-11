@@ -51,13 +51,16 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
     }
   }, [wlan, ready])
 
+  useEffect(() => {
+    if (networks.length && !form.ssid) {
+      setForm({ ...form, ssid: networks[0]?.ssid || '' })
+    }
+  }, [networks])
+
   const onScan = async event => {
     event.stopPropagation()
     await dispatch.bluetooth.scanSSIDs()
     await dispatch.bluetooth.readSSIDs()
-    setTimeout(() => {
-      if (!form.ssid) setForm({ ...form, ssid: networks[0]?.ssid || '' })
-    }, 500)
   }
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

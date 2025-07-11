@@ -33,6 +33,7 @@ function useCapacitor() {
     if (state.isActive) {
       network.focus()
       setTimeout(() => dispatch.ui.setTheme(undefined), 1000)
+      if (state.isActive) dispatch.bluetooth.restartNotifications()
     }
   }
 

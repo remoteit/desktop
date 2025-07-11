@@ -15,15 +15,7 @@ export const BluetoothScan: React.FC<Props> = ({ className }) => {
         >
           <Icon name="bluetooth" size="xxl" color="calm" />
         </ListItemIcon>
-        <ListItemText
-          primary="Setup WiFi"
-          secondary={
-            <>
-              Connect your Pi to Wifi
-              <br /> and Remote.It
-            </>
-          }
-        />
+        <ListItemText primary="Setup WiFi" secondary={<>Connect your Pi to Wifi&nbsp;and&nbsp;Remote.It</>} />
       </ListItemButton>
     </List>
   )

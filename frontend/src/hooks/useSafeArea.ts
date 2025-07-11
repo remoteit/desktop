@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { SafeArea } from 'capacitor-plugin-safe-area'
 import { spacing } from '../styling'
 import browser from '../services/browser'
+import isEqual from 'lodash.isequal'
 
 type UseSafeAreaResult = {
   insets: ILayout['insets']
@@ -28,8 +29,11 @@ const useSafeArea = (): UseSafeAreaResult => {
     })
 
     SafeArea.addListener('safeAreaChanged', data => {
-      console.log('SAFE-AREA CHANGED', data)
-      setInsets(adjustInsets(data.insets))
+      const adjustedInsets = adjustInsets(data.insets)
+      if (!isEqual(insets, adjustedInsets)) {
+        console.log('SAFE-AREA CHANGED', data)
+        setInsets(adjustedInsets)
+      }
     })
 
     const fetchInsets = async () => {

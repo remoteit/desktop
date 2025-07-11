@@ -180,11 +180,6 @@ export default createModel<RootModel>()({
       }
     },
 
-    async reconnect(_: void) {
-      await dispatch.bluetooth.disconnect()
-      await dispatch.bluetooth.connect()
-    },
-
     async notify(characteristic: string, state) {
       const notify = new Set(state.bluetooth.notify)
       const device = state.bluetooth.device
@@ -193,7 +188,7 @@ export default createModel<RootModel>()({
       try {
         if (notify.has(characteristic)) await dispatch.bluetooth.stopNotify(characteristic)
         notify.add(characteristic)
-        console.log('SETUP NOTIFY ON', characteristic)
+        console.log('START NOTIFY', CHARACTERISTIC_NAMES[characteristic])
 
         await BleClient.startNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic, async value => {
           try {
@@ -285,13 +280,13 @@ export default createModel<RootModel>()({
       const device = state.bluetooth.device
       if (!device) return
       try {
-        console.log('STOP NOTIFY', characteristic)
+        console.log('STOP NOTIFY', CHARACTERISTIC_NAMES[characteristic])
         await BleClient.stopNotifications(device.deviceId, BT_UUIDS.SERVICE, characteristic)
         notify.delete(characteristic)
         await dispatch.bluetooth.set({ notify })
       } catch (error) {
         console.error('STOP NOTIFY ERROR', error)
-      } 
+      }
     },
 
     async startNotifications(_: void, state) {
@@ -500,6 +495,18 @@ export default createModel<RootModel>()({
       console.log('WIFI LIST', networks)
       event('BLE_DEVICE_WIFI_LIST', { count: networks.length })
       dispatch.bluetooth.set({ networks, scan: 'COMPLETE' })
+    },
+
+    async restartNotifications(_: void, state) {
+      if (!state.bluetooth.connected || !state.bluetooth.device) return
+
+      console.log('RE-ESTABLISHING NOTIFICATIONS')
+      try {
+        await dispatch.bluetooth.stopNotifications()
+        await dispatch.bluetooth.startNotifications()
+      } catch (error) {
+        console.error('ERROR RE-ESTABLISHING NOTIFICATIONS', error)
+      }
     },
   }),
   reducers: {
