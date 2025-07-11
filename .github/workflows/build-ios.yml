@@ -16,11 +16,14 @@ jobs:
         os: [macos-14]
 
     steps:
-      - name: check Xcode version
-        run: /usr/bin/xcodebuild -version
-
       - name: Check out Git repository
         uses: actions/checkout@v3
+
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app
+
+      - name: Confirm Xcode version
+        run: xcodebuild -version
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
