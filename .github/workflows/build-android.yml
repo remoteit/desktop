@@ -104,7 +104,7 @@ jobs:
 
       # Upload Bundle AAB Release
       - name: Upload AAB (App Bundle) Release
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
           path: ${{ env.main_project_module }}/build/outputs/bundle/release/
