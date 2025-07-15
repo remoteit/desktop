@@ -98,16 +98,17 @@ jobs:
       # outputs to:
       # ./app/build/intermediates/intermediary_bundle/release/intermediary-bundle.aab
       # ./app/build/outputs/bundle/release/app-release.aab
+
       - name: Build App Bundle
         working-directory: ./android
         run: ./gradlew bundleRelease
 
       # Upload Bundle AAB Release
-      - name: Upload AAB (App Bundle) Release
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
-          path: ${{ env.main_project_module }}/build/outputs/bundle/release/
+      # - name: Upload AAB (App Bundle) Release
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
+      #     path: ${{ env.main_project_module }}/build/outputs/bundle/release/
 
       # - name: Create Release
       #   id: create_release

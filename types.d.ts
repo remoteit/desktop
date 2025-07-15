@@ -1041,6 +1041,7 @@ declare global {
   interface BrandingConfig {
     name: string
     appName: string
+    androidPackageName: string
     package?: {
       homepage?: string
       description?: string

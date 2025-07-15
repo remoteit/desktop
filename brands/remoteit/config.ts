@@ -1,6 +1,7 @@
 const config: BrandingConfig = {
   name: 'remoteit',
   appName: 'Remote.It',
+  androidPackageName: 'com.remoteit',
   package: {
     homepage: 'https://app.remote.it',
     description: 'Remote.It cross platform desktop application for creating and hosting connections',
