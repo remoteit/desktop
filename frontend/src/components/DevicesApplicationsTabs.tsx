@@ -1,5 +1,5 @@
 import React from 'react'
-import isEqual from 'lodash/isEqual'
+import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { defaultState } from '../models/devices'
 import { useSelector, useDispatch } from 'react-redux'

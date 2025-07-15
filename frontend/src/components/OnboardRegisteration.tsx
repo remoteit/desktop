@@ -45,7 +45,7 @@ export const OnboardRegistration: React.FC = () => {
         {reg === 'REGISTERING' ? (
           <CircularProgress size={29.5} thickness={3} />
         ) : reg !== 'REGISTERED' ? (
-          <>
+          <Stack direction="row">
             <Button variant="contained" onClick={register} disabled={processing}>
               Register
             </Button>
@@ -55,7 +55,7 @@ export const OnboardRegistration: React.FC = () => {
             <Button to={id ? `/devices/${id}` : '/devices'} component={Link}>
               skip
             </Button>
-          </>
+          </Stack>
         ) : (
           <Button variant="contained" to={id ? `/devices/${id}` : '/devices'} component={Link} disabled={processing}>
             Done

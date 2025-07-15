@@ -31,6 +31,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const offline = useSelector((state: State) => state.ui.offline)
   const layout = useSelector((state: State) => state.ui.layout)
 
+  const clearNoticeMessage = () => ui.set({ noticeMessage: undefined })
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
@@ -100,6 +101,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         open={snackbar === 'error'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         onClose={clearErrorMessage}
+        onClick={layout.mobile ? clearErrorMessage : undefined}
         message={
           <Notice severity="error" invert fullWidth>
             {errorMessage}
@@ -110,7 +112,8 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         className={css.snackbar}
         key="notice"
         open={snackbar === 'notice'}
-        onClose={() => ui.set({ noticeMessage: '' })}
+        onClose={clearNoticeMessage}
+        onClick={layout.mobile ? clearNoticeMessage : undefined}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message={
           <Notice severity="info" invert fullWidth>
@@ -124,6 +127,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         open={snackbar === 'success'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         onClose={clearSuccessMessage}
+        onClick={layout.mobile ? clearSuccessMessage : undefined}
         message={
           <Notice severity="success" invert fullWidth>
             {successMessage}
