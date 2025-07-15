@@ -1,6 +1,7 @@
 const config: BrandingConfig = {
   name: 'telepath',
   appName: 'Telepath',
+  androidPackageName: 'com.telepath',
   package: {
     homepage: 'https://telepath.cachengo.com',
     description: 'Telepath cross platform desktop application for creating and hosting connections',
