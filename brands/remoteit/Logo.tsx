@@ -1,7 +1,7 @@
 import React from 'react'
-import { Box, useTheme } from '@mui/material'
+import { Box, BoxProps, useTheme } from '@mui/material'
 
-export const Logo: React.FC<BrandLogo> = ({ color = 'primary', ...props }) => {
+export const Logo: React.FC<BrandLogo & BoxProps> = ({ color = 'primary', ...props }) => {
   const { palette } = useTheme()
   let fill
 

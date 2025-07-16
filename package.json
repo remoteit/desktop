@@ -34,27 +34,31 @@
     "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version"
   },
   "dependencies": {
-    "@capacitor-community/bluetooth-le": "^6.0.1",
-    "@capacitor/android": "^6.1.2",
-    "@capacitor/app": "^6.0.1",
-    "@capacitor/app-launcher": "^6.0.2",
+    "@capacitor-community/bluetooth-le": "^7.1.1",
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/app-launcher": "^7.0.1",
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/browser": "^6.0.3",
-    "@capacitor/cli": "^6.1.2",
-    "@capacitor/clipboard": "^6.0.1",
-    "@capacitor/core": "^6.1.2",
-    "@capacitor/ios": "^6.1.2",
-    "@capacitor/splash-screen": "^6.0.2",
-    "@capacitor/status-bar": "^6.0.1",
-    "capacitor-plugin-safe-area": "^3.0.3"
+    "@capacitor/browser": "^7.0.1",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/clipboard": "^7.0.1",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/ios": "^7.4.2",
+    "@capacitor/splash-screen": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1",
+    "capacitor-plugin-safe-area": "^4.0.0"
   },
   "devDependencies": {
     "color": "^5.0.0",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.0",
     "npm-run-all": "4.1.5",
     "onchange": "^7.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.3"
+  },
+  "resolutions": {
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1"
   }
 }
