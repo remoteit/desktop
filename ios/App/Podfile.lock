@@ -1,22 +1,22 @@
 PODS:
-  - Capacitor (6.2.0):
+  - Capacitor (7.4.2):
     - CapacitorCordova
-  - CapacitorApp (6.0.2):
+  - CapacitorApp (7.0.1):
     - Capacitor
-  - CapacitorAppLauncher (6.0.3):
+  - CapacitorAppLauncher (7.0.1):
     - Capacitor
-  - CapacitorBrowser (6.0.5):
+  - CapacitorBrowser (7.0.1):
     - Capacitor
-  - CapacitorClipboard (6.0.2):
+  - CapacitorClipboard (7.0.1):
     - Capacitor
-  - CapacitorCommunityBluetoothLe (6.1.0):
+  - CapacitorCommunityBluetoothLe (7.1.1):
     - Capacitor
-  - CapacitorCordova (6.2.0)
-  - CapacitorPluginSafeArea (3.0.4):
+  - CapacitorCordova (7.4.2)
+  - CapacitorPluginSafeArea (4.0.0):
     - Capacitor
-  - CapacitorSplashScreen (6.0.3):
+  - CapacitorSplashScreen (7.0.1):
     - Capacitor
-  - CapacitorStatusBar (6.0.2):
+  - CapacitorStatusBar (7.0.1):
     - Capacitor
 
 DEPENDENCIES:
@@ -54,16 +54,16 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
 
 SPEC CHECKSUMS:
-  Capacitor: 05d35014f4425b0740fc8776481f6a369ad071bf
-  CapacitorApp: e1e6b7d05e444d593ca16fd6d76f2b7c48b5aea7
-  CapacitorAppLauncher: 7c8dfa7797c7817e770d14a526fae62901e5f347
-  CapacitorBrowser: b468ac2db928e594b4d319727f3874743f9bcf96
-  CapacitorClipboard: 4443c3cdb7c77b1533dfe3ff0f9f7756aa8579df
-  CapacitorCommunityBluetoothLe: 0d4d197e0d0eadb84d4c3a6683768088253419d9
-  CapacitorCordova: b33e7f4aa4ed105dd43283acdd940964374a87d9
-  CapacitorPluginSafeArea: f096bc36693251a7e55fc3571487dd337c0ddb6a
-  CapacitorSplashScreen: fd8bf1bf9081d9aa8817b7cd37d740d1bdaf2fb2
-  CapacitorStatusBar: b16799a26320ffa52f6c8b01737d5a95bbb8f3eb
+  Capacitor: 9d9e481b79ffaeacaf7a85d6a11adec32bd33b59
+  CapacitorApp: febecbb9582cb353aed037e18ec765141f880fe9
+  CapacitorAppLauncher: bab4ca931a308252d2bafcb78ca6a364bd1d4c4e
+  CapacitorBrowser: 6299776d496e968505464884d565992faa20444a
+  CapacitorClipboard: 70bfdb42b877b320a6e511ab94fa7a6a55d57ecb
+  CapacitorCommunityBluetoothLe: 3a65ed12464f16189772c1a8c247cb0b91186114
+  CapacitorCordova: 5e58d04631bc5094894ac106e2bf1da18a9e6151
+  CapacitorPluginSafeArea: 22031c3436269ca80fac90ec2c94bc7c1e59a81d
+  CapacitorSplashScreen: 1d67815a422a9b61539c94f283c08ed56667c0fc
+  CapacitorStatusBar: 6e7af040d8fc4dd655999819625cae9c2d74c36f
 
 PODFILE CHECKSUM: e6bb4690dd8321387a19f62a1512c05eee5345ec
 

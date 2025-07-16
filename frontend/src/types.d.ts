@@ -263,10 +263,12 @@ declare global {
 
 declare module '@mui/material/styles' {
   interface Palette {
+    primary: ColorType
     primaryLight: ColorType
     primaryLighter: ColorType
     primaryHighlight: ColorType
     primaryBackground: ColorType
+    primaryDark: ColorType
     successLight: ColorType
     success: ColorType
     successDark: ColorType
@@ -286,6 +288,7 @@ declare module '@mui/material/styles' {
     black: ColorType
     alwaysWhite: ColorType
     darken: ColorType
+    hover: ColorType
     screen: ColorType
     shadow: ColorType
     rpi: ColorType
@@ -294,12 +297,15 @@ declare module '@mui/material/styles' {
     brandPrimary: ColorType
     brandSecondary: ColorType
     calm: ColorType
+    [key: string]: ColorType
   }
   interface PaletteOptions {
+    primary?: ColorPartial
     primaryLight?: ColorPartial
     primaryLighter?: ColorPartial
     primaryHighlight?: ColorPartial
     primaryBackground?: ColorPartial
+    primaryDark?: ColorPartial
     successLight?: ColorPartial
     success?: ColorPartial
     successDark?: ColorPartial
@@ -319,6 +325,7 @@ declare module '@mui/material/styles' {
     black?: ColorPartial
     alwaysWhite?: ColorPartial
     darken?: ColorPartial
+    hover?: ColorPartial
     screen?: ColorPartial
     shadow?: ColorPartial
     rpi?: ColorPartial
@@ -327,6 +334,7 @@ declare module '@mui/material/styles' {
     brandPrimary?: ColorPartial
     brandSecondary?: ColorPartial
     calm?: ColorPartial
+    [key: string]: ColorPartial
   }
 }
 

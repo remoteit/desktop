@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { State } from '../store'
 import { Stack, ListItemIcon, Box } from '@mui/material'
 import { AddPlatformServices } from './AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
@@ -30,7 +29,7 @@ export const AddQuickPlatform: React.FC = () => {
         )}
       </Stack>
       <Box paddingTop={2}>
-        <AddDevice platform={platformObj} types={applicationTypes} minimal />
+        <AddDevice platform={platformObj} serviceTypes={applicationTypes} minimal />
       </Box>
     </Stack>
   )
