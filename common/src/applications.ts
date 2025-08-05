@@ -453,8 +453,8 @@ export function getApplicationType(typeId?: number) {
       })
     case 39:
       return new Application({
-        title: 'OpenVPN',
-        use: 'Choose for secure VPN access to networks, allowing for remote work or access to network resources with encryption.',
+        title: 'OpenVPN (TCP)',
+        use: 'Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP.',
       })
     case 41:
       return new Application({
@@ -543,6 +543,11 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'UDP',
         use: 'Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting.',
+      })
+    case 32772:
+      return new Application({
+        title: 'OpenVPN (UDP)',
+        use: 'Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable.',
       })
     case 32770:
       return new Application({
