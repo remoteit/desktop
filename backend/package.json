@@ -19,7 +19,7 @@
   "dependencies": {
     "@airbrake/node": "^2.1.8",
     "@vscode/sudo-prompt": "^9.3.1",
-    "axios": "^1.7.7",
+    "axios": "^1.11.0",
     "cors": "^2.8.5",
     "debug": "^4.3.7",
     "detect-rpi": "^1.5.0",
