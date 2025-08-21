@@ -75,20 +75,21 @@ export default createModel<RootModel>()({
 
     async fetchUrl(_: void, state): Promise<string | undefined> {
       const { deviceId, minDate, maxDate } = state.logs
+      const accountId = selectActiveAccountId(state)
 
       let result
-      let response: Awaited<ReturnType<typeof graphQLGetDeviceUrl>>
+      let response: Awaited<ReturnType<typeof graphQLGetUrl>>
 
       if (deviceId) {
         response = await graphQLGetDeviceUrl(deviceId, minDate, maxDate)
         if (response === 'ERROR') return
         result = response?.data?.data?.login?.device[0] || {}
       } else {
-        response = await graphQLGetUrl(minDate, maxDate)
+        response = await graphQLGetUrl(accountId, minDate, maxDate)
         if (response === 'ERROR') return
-        result = response?.data?.data?.login || {}
+        result = response?.data?.data?.login?.account || {}
       }
-      // const { events, eventsUrl } = result.events
+
       console.log('LOG URL', result?.eventsUrl)
       return result?.eventsUrl
     },
