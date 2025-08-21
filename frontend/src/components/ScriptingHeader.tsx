@@ -47,7 +47,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                     }}
                   />
                   <Link href="https://link.remote.it/desktop/help/device-scripting">
-                    <IconButton color="grayDark" icon="question-circle" />
+                    <IconButton color="grayDark" icon="question-circle" sx={{ paddingLeft: 0.5 }} />
                   </Link>
                   <Route path="/scripts">
                     <Tooltip
