@@ -32,42 +32,33 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     )
 
   const locationParts = location.pathname.split('/')
-  if (
-    'runs' === locationParts[2] ||
-    (['scripts', 'files', 'add'].includes(locationParts[2]) && locationParts.length === 3)
-  )
+  if (['scripts', 'runs'].includes(locationParts[1]) && locationParts.length === 2)
     layout = { ...layout, singlePanel: true }
 
   return (
     <DynamicPanel
       primary={
         <Switch>
-          <Route path="/scripting/add">
+          <Route path="scripts/add">
             <ScriptAddPage center />
           </Route>
-          <Route path="/scripting/files">
-            <FilesPage />
-          </Route>
-          <Route path="/scripting/runs/:fileID?">
+          <Route path="/runs/:fileID?">
             <JobsPage />
           </Route>
-          <Route path="/scripting/scripts/:fileID?">
+          <Route path="/scripts/:fileID?">
             <FilesPage scripts />
           </Route>
           <Route path="/script/:fileID/:jobID?/:jobDeviceID?">
-            <ScriptPage />
-          </Route>
-          <Route path="*">
-            <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
+            <ScriptPage layout={layout} />
           </Route>
         </Switch>
       }
       secondary={
         <Switch>
-          <Route path="/scripting/scripts/add">
+          <Route path="/scripts/add">
             <ScriptAddPage />
           </Route>
-          <Route path="/scripting/scripts/:fileID">
+          <Route path="/scripts/:fileID">
             <ScriptEditPage />
           </Route>
           <Route path="/script/:fileID/:jobID/edit">
@@ -79,7 +70,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Switch>
       }
       layout={layout}
-      root="/scripting/:tab?/:filter?"
+      root={['/script/:fileID?/:jobID?', '/scripts/:fileID?', '/runs/:jobID?']}
     />
   )
 }

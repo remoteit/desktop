@@ -7,6 +7,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { Redirect, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, Typography } from '@mui/material'
+import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 import { LinearProgress } from '../components/LinearProgress'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Container } from '../components/Container'
@@ -18,7 +19,7 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 // import { Pre } from '../components/Pre'
 
-export const ScriptPage: React.FC = () => {
+export const ScriptPage: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const dispatch = useDispatch<Dispatch>()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const file = useSelector((state: State) => selectFile(state, undefined, fileID))
@@ -33,9 +34,10 @@ export const ScriptPage: React.FC = () => {
     if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
   }, [file])
 
-  if (!file) return <Redirect to={{ pathname: '/scripting/scripts', state: { isRedirect: true } }} />
+  if (!file) return <Redirect to={{ pathname: '/scripts', state: { isRedirect: true } }} />
 
   if (
+    !layout.singlePanel &&
     jobDeviceID !== 'edit' &&
     (!jobDeviceID || (jobID === 'latest' && !job?.jobDevices.some(jd => jd.id === jobDeviceID)))
   ) {
@@ -81,7 +83,7 @@ export const ScriptPage: React.FC = () => {
             )}
           </Gutters>
           <List>
-            <ListItemLocation title="Run History" to={`/scripting/runs/${fileID}`} icon="clock-rotate-left" />
+            <ListItemLocation title="Run History" to={`/runs/${fileID}`} icon="clock-rotate-left" />
           </List>
           <LinearProgress loading={fetching} />
         </>
