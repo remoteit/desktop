@@ -39,7 +39,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     <DynamicPanel
       primary={
         <Switch>
-          <Route path="scripts/add">
+          <Route path="/scripts/add">
             <ScriptAddPage center />
           </Route>
           <Route path="/runs/:fileID?">
