@@ -22,7 +22,7 @@ export const FileListItem: React.FC<Props> = ({ script, required, attributes, mo
   if (!script) return null
 
   const handleClick = () => {
-    if (selectedIds?.length) history.push(`/scripting/scripts/${script.id}`)
+    if (selectedIds?.length) history.push(`/scripts/${script.id}`)
     else history.push(`/script/${script.id}`)
   }
 

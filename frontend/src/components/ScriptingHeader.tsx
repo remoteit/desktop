@@ -34,7 +34,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" width="100%" paddingRight={4}>
             <ScriptingTabBar />
             {!selectedIds.length && (
-              <Route path={['/scripting/scripts', '/scripting/runs']}>
+              <Route path={['/scripts', '/runs']}>
                 <Stack flexDirection="row" alignItems="center">
                   <ColorChip
                     label="Feedback"
@@ -47,27 +47,29 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                     }}
                   />
                   <Link href="https://link.remote.it/desktop/help/device-scripting">
-                    <IconButton color="grayDark" icon="question-circle" />
+                    <IconButton color="grayDark" icon="question-circle" sx={{ paddingLeft: 0.5 }} />
                   </Link>
-                  <Tooltip
-                    title={permissions.includes('ADMIN') ? '' : 'Admin permissions required to add scripts'}
-                    placement="top"
-                    arrow
-                  >
-                    <span>
-                      <Button
-                        to={location.pathname + '/add'}
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        disabled={location.pathname.includes('new') || !permissions.includes('ADMIN')}
-                        startIcon={<Icon name="plus" />}
-                        component={RouteLink}
-                      >
-                        Add
-                      </Button>
-                    </span>
-                  </Tooltip>
+                  <Route path="/scripts">
+                    <Tooltip
+                      title={permissions.includes('ADMIN') ? '' : 'Admin permissions required to add scripts'}
+                      placement="top"
+                      arrow
+                    >
+                      <span>
+                        <Button
+                          to={location.pathname + '/add'}
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          disabled={location.pathname.includes('new') || !permissions.includes('ADMIN')}
+                          startIcon={<Icon name="plus" />}
+                          component={RouteLink}
+                        >
+                          Add
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  </Route>
                 </Stack>
               </Route>
             )}

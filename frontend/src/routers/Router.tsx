@@ -196,7 +196,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <DevicesPage restore />
         </Panel>
       </Route>
-      <Route path={['/devices/select', '/devices/select/scripting']}>
+      <Route path={['/devices/select', '/devices/select/scripts']}>
         <Panel layout={layout}>
           <DevicesPage select />
         </Panel>
@@ -240,7 +240,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Panel>
       </Route>
       {/* Scripting */}
-      <Route path={['/scripting', '/script/:fileID?/:jobID?']}>
+      <Route path={['/scripts', '/runs/:jobID?', '/script/:fileID?/:jobID?']}>
         <ScriptingRouter layout={layout} />
       </Route>
       {/* Settings */}
@@ -346,37 +346,39 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* Account */}
       <Route path="/account">
-        <DynamicPanel
-          primary={<AccountPage />}
-          secondary={
-            <Switch>
-              <Route path="/account/security">
-                <SecurityPage />
-              </Route>
-              <Route path="/account/plans">
-                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
-                  <PlansPage />
-                </RedirectOffsite>
-              </Route>
-              <Route path="/account/billing">
-                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
-                  <BillingPage />
-                </RedirectOffsite>
-              </Route>
-              <Route path="/account/license">
-                <LicensingPage />
-              </Route>
-              <Route path="/account/accessKey">
-                <AccessKeyPage />
-              </Route>
-              <Route path={['/account', '/account/overview']}>
-                <ProfilePage />
-              </Route>
-            </Switch>
-          }
-          layout={layout}
-          root="/account"
-        />
+        <RedirectOffsite to={browser.isMobile ? 'https://link.remote.it/portal/account' : undefined}>
+          <DynamicPanel
+            primary={<AccountPage />}
+            secondary={
+              <Switch>
+                <Route path="/account/security">
+                  <SecurityPage />
+                </Route>
+                <Route path="/account/plans">
+                  <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
+                    <PlansPage />
+                  </RedirectOffsite>
+                </Route>
+                <Route path="/account/billing">
+                  <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
+                    <BillingPage />
+                  </RedirectOffsite>
+                </Route>
+                <Route path="/account/license">
+                  <LicensingPage />
+                </Route>
+                <Route path="/account/accessKey">
+                  <AccessKeyPage />
+                </Route>
+                <Route path={['/account', '/account/overview']}>
+                  <ProfilePage />
+                </Route>
+              </Switch>
+            }
+            layout={layout}
+            root="/account"
+          />
+        </RedirectOffsite>
       </Route>
       {/* Not found */}
       <Redirect from="*" to={{ pathname: '/devices', state: { isRedirect: true } }} exact />

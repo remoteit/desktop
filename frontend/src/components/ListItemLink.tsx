@@ -1,7 +1,7 @@
 import React from 'react'
 import { ListItemButton, ListItemButtonProps, ListItemIcon, ListItemText } from '@mui/material'
-import { windowOpen } from '../services/browser'
 import { Icon, IconProps } from './Icon'
+import { windowOpen } from '../services/browser'
 
 export type Props = ListItemButtonProps & {
   href: string

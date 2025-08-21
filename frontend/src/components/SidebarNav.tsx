@@ -106,9 +106,9 @@ export const SidebarNav: React.FC = () => {
       )}
       <ListItemLocation
         title="Scripting"
-        to={pathname('/scripting')}
+        to={pathname('/scripts')}
         icon="scripting"
-        match={['/scripting', '/script']}
+        match={['/script', '/scripts', '/runs']}
         dense
       >
         <Chip size="small" label="BETA" sx={{ fontSize: 9 }} />

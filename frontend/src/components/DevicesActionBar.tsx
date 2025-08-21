@@ -91,7 +91,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
-            to="/scripting/scripts"
+            to="/scripts"
           />
           <IconButton
             icon="plus"
@@ -99,7 +99,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
-            to="/scripting/add"
+            to="/scripts/add"
           />
           <Divider orientation="vertical" color="white" />
         </>

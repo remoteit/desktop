@@ -51,7 +51,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       {devices?.map((device, index) => {
         const canRestore = isOffline(device) && !device.shared
         if (restore && !canRestore) return null
-        const disabled = select && !device.scriptable && location.pathname.includes('scripting')
+        const disabled = select && !device.scriptable && location.pathname.includes('scripts')
         return (
           <DeviceListContext.Provider
             key={device.id}
