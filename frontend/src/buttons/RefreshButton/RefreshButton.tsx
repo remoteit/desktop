@@ -25,7 +25,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const networkPage = useRouteMatch('/networks')
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
-  const scriptingPage = useRouteMatch('/scripting')
+  const scriptingPage = useRouteMatch(['/script', '/scripts', '/runs'])
   const scriptPage = useRouteMatch('/script')
 
   let title = 'Refresh application'

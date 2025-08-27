@@ -1,9 +1,8 @@
 import React from 'react'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
 import { spacing, Sizes } from '../styling'
+import { Box, BoxProps } from '@mui/material'
 
-export type GuttersProps = React.HTMLAttributes<HTMLDivElement> & {
+export type GuttersProps = Omit<BoxProps, 'inset' | 'size' | 'bottom' | 'top' | 'center'> & {
   inset?: Sizes | 'icon' | null
   size?: Sizes | null
   bottom?: Sizes | null
@@ -15,26 +14,27 @@ export type GuttersProps = React.HTMLAttributes<HTMLDivElement> & {
 
 export const Gutters: React.FC<GuttersProps> = ({
   inset,
-  size,
+  size = 'xl',
   center,
   className,
-  bottom,
-  top,
+  bottom = 'md',
+  top = 'md',
   children,
   ...props
 }) => {
-  const css = useStyles({ inset, size, bottom, top, center })
+  const { sx, ...rest } = props
   return (
-    <div className={classnames(css.gutters, className)} {...props}>
+    <Box
+      className={className}
+      sx={{
+        margin: `${top ? spacing[top] : 0}px ${size ? spacing[size] : 0}px ${bottom ? spacing[bottom] : 0}px`,
+        paddingLeft: `${inset ? (inset === 'icon' ? 44 : spacing[inset]) : 0}px`,
+        textAlign: center ? 'center' : undefined,
+        ...sx,
+      }}
+      {...rest}
+    >
       {children}
-    </div>
+    </Box>
   )
 }
-
-const useStyles = makeStyles({
-  gutters: ({ inset, size = 'xl', bottom = 'md', top = 'md', center }: GuttersProps) => ({
-    margin: `${top ? spacing[top] : 0}px ${size ? spacing[size] : 0}px ${bottom ? spacing[bottom] : 0}px`,
-    paddingLeft: inset ? (inset === 'icon' ? 44 : spacing[inset]) : 0,
-    textAlign: center ? 'center' : undefined,
-  }),
-})

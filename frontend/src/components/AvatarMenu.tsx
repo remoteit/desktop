@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react'
+import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { State, Dispatch } from '../store'
@@ -14,6 +15,7 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
+import { Icon } from './Icon'
 
 const ENTER_DELAY = 300
 const LEAVE_DELAY = 400 // must be longer than transition duration
@@ -80,7 +82,7 @@ export const AvatarMenu: React.FC = () => {
         anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
-        PaperProps={{ onMouseEnter: handleEnter, onMouseLeave: handleLeave }}
+        slotProps={{ paper: { onMouseEnter: handleEnter, onMouseLeave: handleLeave } }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         transitionDuration={TRANSITION_DURATION}
@@ -96,7 +98,16 @@ export const AvatarMenu: React.FC = () => {
           to="/account"
           badge={licenseIndicator}
           onClick={handleClose}
+        >
+          {browser.isAndroid && <Icon name="launch" size="sm" color="grayDark" inlineLeft fixedWidth />}
+        </ListItemLocation>
+        <ListItemLink
+          title="Support"
+          icon="life-ring"
+          href="https://link.remote.it/documentation-desktop/overview"
+          dense
         />
+        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />
         <ListItemLocation
           title="Bug Report"
           icon="spider"
@@ -111,13 +122,6 @@ export const AvatarMenu: React.FC = () => {
           }}
           dense
         />
-        <ListItemLink
-          title="Support"
-          icon="life-ring"
-          href="https://link.remote.it/documentation-desktop/overview"
-          dense
-        />
-        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />
         {(altMenu || testUI) && (
           <ListItemSetting
             confirm={!testUI}

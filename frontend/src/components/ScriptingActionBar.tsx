@@ -43,7 +43,7 @@ export const ScriptingActionBar: React.FC = () => {
           placement="bottom"
           onClick={() => {
             dispatch.ui.set({ selected: [] })
-            history.push('/scripting/scripts')
+            history.push('/scripts')
           }}
         />
       </Stack>

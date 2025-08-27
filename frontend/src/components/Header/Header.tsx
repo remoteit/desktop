@@ -18,7 +18,6 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
-import { spacing } from '../../styling'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
 
@@ -129,7 +128,7 @@ export const Header: React.FC = () => {
                 <HeaderDeviceOptionMenu />
               </Route>
             )}
-            <Route path="/script/:fileID/:jobID">
+            <Route path={layout.singlePanel ? '/script/:fileID' : '/script/:fileID/:jobID?/:jobDeviceID?'} exact>
               <ScriptDeleteButton />
             </Route>
           </>

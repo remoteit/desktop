@@ -13,7 +13,7 @@ export const DevicesActionBars: React.FC<Props> = ({ select, devices }) => {
 
   return (
     <Switch>
-      <Route path="/devices/select/scripting">
+      <Route path="/devices/select/scripts">
         <DevicesSelectBar />
       </Route>
       <Route>

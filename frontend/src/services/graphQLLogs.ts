@@ -113,16 +113,19 @@ export async function graphQLGetDeviceUrl(id: string, minDate?: Date, maxDate?: 
   )
 }
 
-export async function graphQLGetUrl(minDate?: Date, maxDate?: Date) {
+export async function graphQLGetUrl(account: string, minDate?: Date, maxDate?: Date) {
   return await graphQLBasicRequest(
-    `   query LogsUrl($minDate: DateTime, $maxDate: DateTime) {
+    `   query LogsUrl($account: String!, $minDate: DateTime, $maxDate: DateTime) {
           login {
-            id
+            account(id: $account) {
+              id
             ${EVENTS_URL}
+            }
           }
         }
       `,
     {
+      account,
       minDate: minDate?.toISOString(),
       maxDate: maxDate?.toISOString(),
     }

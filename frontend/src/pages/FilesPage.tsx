@@ -38,7 +38,7 @@ export const FilesPage: React.FC<{ scripts?: boolean }> = ({ scripts }) => {
         script,
       },
     })
-    history.push('/scripting/add')
+    history.push('/scripts/add')
     setLoading(false)
   }
 

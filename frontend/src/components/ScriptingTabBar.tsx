@@ -11,7 +11,7 @@ export const ScriptingTabBar: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  const active = location.pathname.split('/')[2]
+  const active = location.pathname.split('/')[1]
   const tabIndex = tabs.indexOf(active)
 
   return (
@@ -26,8 +26,8 @@ export const ScriptingTabBar: React.FC = () => {
           key={tab}
           label={tabTitles[index]}
           onClick={() => {
-            const to = `/scripting/${tab}`
-            dispatch.ui.setDefaultSelected({ key: '/scripting', value: to })
+            const to = `/${tab}`
+            dispatch.ui.setDefaultSelected({ key: '/scripts', value: to })
             history.push(to)
           }}
         />

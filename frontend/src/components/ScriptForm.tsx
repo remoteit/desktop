@@ -33,6 +33,11 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
     (form.access === 'TAG' && form.tag?.values.length) ||
     (form.access === 'CUSTOM' && form.deviceIds.length)
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    save()
+  }
+
   const save = async (run?: boolean) => {
     if (run) setRunning(true)
     if (changed) setSaving(true)
@@ -73,7 +78,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   }, [selectedIds])
 
   return (
-    <form onSubmit={event => (event.preventDefault(), save())}>
+    <form onSubmit={handleSubmit}>
       <List disablePadding>
         <ListItem disableGutters>
           <TextField
@@ -117,7 +122,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
           selectedIds={selectedIds}
           onSelectIds={() => {
             dispatch.ui.set({ scriptForm: form })
-            history.push('/devices/select/scripting')
+            history.push('/devices/select/scripts')
           }}
         />
       </List>
@@ -156,7 +161,7 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
         <Button
           onClick={() => {
             dispatch.ui.set({ scriptForm: undefined, selected: [] })
-            history.push('/scripting/scripts')
+            history.push('/scripts')
           }}
         >
           Cancel

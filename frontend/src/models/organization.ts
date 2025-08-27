@@ -37,7 +37,7 @@ export const PERMISSION: ILookup<{
   },
   ADMIN: {
     name: 'Administer',
-    description: 'Manage organization tags, scripts, members and device registrations',
+    description: 'Manage organization tags, scripts, members and device registrations. View logs.',
     icon: 'user-pen',
     user: true,
   },

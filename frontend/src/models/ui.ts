@@ -185,7 +185,7 @@ export const defaultState: UIState = {
     settings: 350,
     account: 300,
     organization: 350,
-    scripting: 550,
+    scripts: 550,
     script: 450,
   },
   guides: {
