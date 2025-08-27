@@ -346,7 +346,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* Account */}
       <Route path="/account">
-        <RedirectOffsite to={browser.isMobile ? 'https://link.remote.it/portal/account' : undefined}>
+        <RedirectOffsite to={browser.isAndroid ? 'https://link.remote.it/portal/account' : undefined}>
           <DynamicPanel
             primary={<AccountPage />}
             secondary={

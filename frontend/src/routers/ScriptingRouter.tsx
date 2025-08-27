@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
+import { Switch, Route, useLocation } from 'react-router-dom'
 import { JobDeviceDetailPage } from '../pages/JobDeviceDetailPage'
 import { selectPermissions } from '../selectors/organizations'
 import { ScriptEditPage } from '../pages/ScriptEditPage'
