@@ -59,7 +59,7 @@ export function newConnection(service?: IService | null): IConnection {
   const state = store.getState()
   const user = selectActiveUser(state)
   const cd: ILookup<any> = state.user.attributes?.connectionDefaults?.[service?.typeID || '']
-  let routeType: IRouteType = service?.attributes.route || cd?.route || 'failover'
+  let routeType: IRouteType = service?.attributes.route || cd?.route || browser.hasBackend ? 'failover' : 'public'
   if (!browser.hasBackend && routeType === 'failover') routeType = 'public'
 
   let connection: IConnection = {
