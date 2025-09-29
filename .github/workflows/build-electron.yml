@@ -68,13 +68,10 @@ jobs:
           curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/CodeSignTool.zip
           unzip ~/Downloads/CodeSignTool.zip -d ~/CodeSignTool
 
-      - name: Build and install dependencies
+      - name: Install dependencies and build web assets
         run: |
           npm install
           npm run build-frontend
-          npm run build-backend
-          cd electron
-          npm install ../backend/dist/remoteit-headless.tgz
 
       - name: Build Electron app
         run: |

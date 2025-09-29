@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSIONS_FILE="../backend/src/binary-versions.json"
+VERSIONS_FILE="./src/backend/binary-versions.json"
 
 URL_CLI=$( (cat $VERSIONS_FILE | grep -Eo '"cliUrl"[^,]*' | grep -Eo '[^:]*$') | sed -e 's/^.//' -e 's/.$//' -e 's/^.//')
 URL_MUXER=$( (cat $VERSIONS_FILE | grep -Eo '"muxerUrl"[^,]*' | grep -Eo '[^:]*$') | sed -e 's/^.//' -e 's/.$//' -e 's/^.//')

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
   "workspaces": [
-    "backend",
+    "electron",
     "frontend",
     "common"
   ],
@@ -14,12 +14,11 @@
     "brand-android": "bash ./scripts/brand-android.sh",
     "brand-ios": "bash ./scripts/brand-ios.sh",
     "brand-all": "bash ./scripts/brand-all.sh",
-    "build-backend": "npm run brand-electron && npm run build -w=backend",
     "build-frontend": "npm run brand-web && npm run build -w=frontend",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
     "build-mobile": "npm run brand-android && npm run brand-ios && cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
-    "electron": "npm run brand-electron && cd electron && npm start",
+    "electron": "npm run brand-electron && npm run start -w=electron",
     "android": "npm run brand-android && cross-env NODE_ENV=development npx cap run android",
     "ios": "npm run brand-ios && cross-env NODE_ENV=development npx cap run ios",
     "mobile-sync": "npx cap sync",
@@ -27,10 +26,10 @@
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
     "postinstall": "npm run copy-env && npm run brand-web && echo 'Install done - npm run install-electron to build electron app'",
-    "install-electron": "npm run build-frontend && npm run build-backend && cd electron && npm install",
+    "install-electron": "npm run build-frontend && npm install --workspace=electron",
     "start": "npm run brand-web && npm start -w=frontend",
-    "test-watch": "npm run test-watch -w=backend",
-    "test": "npm run test -w=backend",
+    "test-watch": "npm run test-watch -w=electron",
+    "test": "npm run test -w=electron",
     "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version"
   },
   "dependencies": {

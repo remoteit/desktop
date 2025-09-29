@@ -153,7 +153,16 @@ export class Environment {
   }
 
   getAppVersion() {
-    const content = fs.readFileSync(path.join(__dirname, '../package.json'))
+    const candidates = [
+      path.resolve(__dirname, '../package.json'),
+      path.resolve(__dirname, '..', '..', 'package.json'),
+      path.resolve(__dirname, '..', '..', '..', 'package.json'),
+    ]
+
+    const pkgPath = candidates.find(fs.existsSync)
+    if (!pkgPath) return '0.0.0'
+
+    const content = fs.readFileSync(pkgPath)
     const json = JSON.parse(content.toString())
     return json.version
   }

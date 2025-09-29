@@ -1,8 +1,16 @@
-import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import electron, { Menu, dialog } from 'electron'
+import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
-import path from 'path'
+import {
+  EVENTS,
+  PROTOCOL,
+  brand,
+  environment,
+  preferences,
+  EventBus,
+  Logger,
+} from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
 const IP_PRIVATE = '127.0.0.1'

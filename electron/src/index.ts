@@ -1,4 +1,4 @@
-import headless from 'remoteit-headless'
 import ElectronApp from './ElectronApp'
+import headless from './backend'
 
 headless.recapitate(new ElectronApp())

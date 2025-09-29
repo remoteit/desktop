@@ -42,8 +42,12 @@ export const PLATFORM_CODES = {
 }
 
 // Asset directories
-export const WEB_DIR = path.resolve(__dirname, '../build')
-export const SSL_DIR = path.resolve(__dirname, '../ssl')
+export const WEB_DIR = path.resolve(__dirname)
+export const SSL_DIR = path.resolve(__dirname, 'ssl')
+
+const APP_ROOT = path.resolve(__dirname, '../..')
+const DEV_BIN_DIR = path.resolve(APP_ROOT, 'bin', os.arch())
+const PROD_BIN_DIR = path.resolve(process.resourcesPath || APP_ROOT)
 
 // Port for the Socket.io websocket server
 export const WEB_PORT = Number(process.env.PORT || 29999)
@@ -54,25 +58,25 @@ export const PATHS = {
   SSH_CONFIG: path.resolve(os.homedir(), '.ssh/config'),
 
   LINUX_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
-  LINUX_BINARIES: path.resolve(__dirname, '../../../../'),
-  LINUX_BINARIES_DEV: path.resolve('./bin/', os.arch()),
+  LINUX_BINARIES: PROD_BIN_DIR,
+  LINUX_BINARIES_DEV: DEV_BIN_DIR,
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: [],
   LINUX_SYMLINKS: '/usr/bin/',
 
   MAC_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
-  MAC_BINARIES: path.resolve(__dirname, '../../../../'),
-  MAC_BINARIES_DEV: path.resolve('./bin/', os.arch()),
+  MAC_BINARIES: PROD_BIN_DIR,
+  MAC_BINARIES_DEV: DEV_BIN_DIR,
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
   MAC_SYMLINKS: '/usr/local/bin/',
 
   WIN_USER_SETTINGS: path.resolve(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_BINARIES: path.resolve(__dirname, '../../../../'),
-  WIN_BINARIES_DEV: path.resolve('./bin/', os.arch()),
+  WIN_BINARIES: PROD_BIN_DIR,
+  WIN_BINARIES_DEV: DEV_BIN_DIR,
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
-    path.resolve(__dirname, '../../../../', os.arch(), '/remoteit.exe'),
+    path.resolve(PROD_BIN_DIR, 'remoteit.exe'),
     path.resolve('C:/Program Files/remoteit-bin/remoteit.exe'),
     path.resolve('C:/Program Files/remoteit/remoteit.exe'),
     path.resolve('C:/Windows/remoteit.exe'),

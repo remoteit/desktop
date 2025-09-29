@@ -43,7 +43,7 @@ jest.mock(
 
 // Mock AirBrake to prevent open handles during tests
 jest.mock(
-  './src/AirBrake',
+  './AirBrake',
   () => ({
     __esModule: true,
     default: {
