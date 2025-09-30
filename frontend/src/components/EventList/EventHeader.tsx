@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { isToday } from '../../helpers/dateHelper'
 import { DateTime } from 'luxon'
 import { limitDays } from '../../models/plans'
@@ -12,43 +12,57 @@ import { DatePicker } from '../DatePicker'
 
 const DAY = 1000 * 60 * 60 * 24
 
+const endOfToday = () => DateTime.now().endOf('day')
+
+const retentionSpanDays = (allowedDays: number, device?: IDevice): number => {
+  if (!device?.createdAt) return allowedDays
+  const createdAt = new Date(device.createdAt)
+  const lifetime = Math.max(Math.floor((Date.now() - createdAt.getTime()) / DAY), 0)
+  return lifetime ? Math.min(lifetime, allowedDays) : allowedDays
+}
+
+const retentionStartDate = (allowedDays: number, device?: IDevice): Date | undefined => {
+  if (!allowedDays) return undefined
+  return endOfToday().minus({ days: retentionSpanDays(allowedDays, device) }).toJSDate()
+}
+
+const hasDateChanged = (lhs?: Date, rhs?: Date) => lhs?.getTime() !== rhs?.getTime()
+
 export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const dispatch = useDispatch<Dispatch>()
   const { fetch, set } = dispatch.logs
 
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const activeAccount = useSelector(selectActiveAccountId)
-  const { events, deviceId, minDate, selectedDate } = useSelector((state: State) => state.logs)
+  const { events, deviceId, minDate, selectedDate, daysAllowed } = useSelector((state: State) => state.logs)
 
-  let allowed = limitDays(logLimit?.value)
-
-  const getMinDays = () => {
-    let lifetimeDays = 0
-    if (device) {
-      const createdAt = device?.createdAt ? new Date(device.createdAt) : new Date()
-      lifetimeDays = Math.floor((new Date().getTime() - createdAt.getTime()) / DAY)
-    }
-    let limit = allowed
-    if (lifetimeDays > 0) {
-      if (lifetimeDays > allowed) {
-        set({ planUpgrade: true })
-      } else {
-        set({ planUpgrade: false })
-        limit = lifetimeDays
-      }
-    } else {
-      set({ planUpgrade: true })
-    }
-    return DateTime.now().endOf('day').minus({ days: limit }).toJSDate()
-  }
+  const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
+  const minDateValue = useMemo(() => retentionStartDate(allowedDays, device), [allowedDays, device?.createdAt])
 
   useEffect(() => {
-    set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: undefined, selectedDate: undefined })
-    if (!events.items.length || device?.id !== deviceId) {
-      set({ deviceId: device?.id, after: undefined, events: { ...events, items: [] } })
-      fetch()
+    const contextChanged = device?.id !== deviceId || daysAllowed !== allowedDays
+    const isInitialLoad = !events.items.length && !deviceId && !device?.id
+
+    const updates: Partial<State['logs']> = {}
+
+    if (daysAllowed !== allowedDays) updates.daysAllowed = allowedDays
+
+    if (hasDateChanged(minDate, minDateValue)) updates.minDate = minDateValue
+
+    if (contextChanged) {
+      Object.assign(updates, {
+        after: undefined,
+        events: { ...events, items: [] },
+        maxDate: undefined,
+        selectedDate: undefined,
+        planUpgrade: false,
+      })
     }
-  }, [activeAccount])
+
+    if (Object.keys(updates).length) set(updates)
+
+    if (contextChanged || isInitialLoad) fetch()
+  }, [activeAccount, allowedDays, daysAllowed, device?.id, deviceId, minDate, minDateValue])
 
   const handleChangeDate = (date: Date | null | undefined) => {
     // set to end of day
@@ -60,6 +74,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       minDate,
       maxDate: date && isToday(date) ? undefined : date,
       events: { ...events, items: [] },
+      planUpgrade: false,
     })
     fetch()
   }

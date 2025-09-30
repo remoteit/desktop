@@ -9,7 +9,6 @@ import { fontSizes, spacing } from '../../styling'
 import { humanizeDays } from '../../models/plans'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
-import { Pre } from '../Pre'
 
 export interface LogListProps {
   device?: IDevice
@@ -27,6 +26,8 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
     await dispatch.logs.fetch()
   }
 
+  const showPlanUpgradeNotice = Boolean(planUpgrade && !fetching && !fetchingMore)
+
   return (
     <>
       <List className={css.item}>
@@ -34,7 +35,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
           <EventItem item={item} device={device} user={user} key={index} />
         ))}
       </List>
-      {!events?.hasMore && !fetching && planUpgrade ? (
+      {showPlanUpgradeNotice ? (
         <Notice
           severity="warning"
           button={
@@ -56,8 +57,8 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
               Load More
             </Button>
           ) : (
-            <Typography variant="body2" align="center" color="textSecondary">
-              End of Logs
+            <Typography variant="caption" align="center" sx={{ opacity: 0.5 }}>
+              End of logs
             </Typography>
           )}
         </Box>
@@ -73,8 +74,6 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
     alignItems: 'center',
     flexDirection: 'column',
     padding: spacing.lg,
-    paddingBottom: spacing.xl,
-    height: 100,
   },
   item: {
     '& li': {

@@ -7,6 +7,7 @@ import { Container } from '../components/Container'
 export const LogsPage: React.FC = () => (
   <Container
     bodyProps={{ verticalOverflow: true }}
+    gutterBottom
     header={
       <>
         <Typography variant="h1">Logs</Typography>

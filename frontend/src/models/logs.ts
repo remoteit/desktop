@@ -3,6 +3,35 @@ import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUr
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
+const toTimestamp = (value?: Date | string) => (value ? new Date(value).getTime() : undefined)
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+
+const evaluateRetention = ({
+  items,
+  minDate,
+  hasMore,
+  allowedDays,
+}: {
+  items: IEvent[]
+  minDate?: Date
+  hasMore?: boolean
+  allowedDays: number
+}) => {
+  const minDateMs = toTimestamp(minDate)
+  const oldestMs = toTimestamp(items[items.length - 1]?.timestamp)
+  const boundaryReady = Boolean(items.length && !hasMore && minDateMs !== undefined && oldestMs !== undefined)
+  if (!boundaryReady) return { reached: false, near: false }
+
+  const reached = oldestMs! <= minDateMs!
+  const thresholdDays = clamp(allowedDays > 0 ? allowedDays * 0.1 : 1, 0.25, 1)
+  const near = !reached && oldestMs! - minDateMs! <= thresholdDays * DAY_MS
+
+  return { reached, near }
+}
+
 type ILogState = {
   size: number
   after?: string
@@ -43,9 +72,9 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const { set } = dispatch.logs
-      const { deviceId, size, after, maxDate, minDate, events } = state.logs
+      const { deviceId, size, after, maxDate, minDate, events, daysAllowed } = state.logs
       const accountId = selectActiveAccountId(state)
-      let items = after ? events.items : []
+      const existingItems = after ? events.items : []
 
       after ? set({ fetchingMore: true }) : set({ fetching: true })
 
@@ -62,15 +91,26 @@ export default createModel<RootModel>()({
         result = response?.data?.data?.login?.account || {}
       }
 
-      set({
-        events: {
-          ...result.events,
-          items: items.concat(result?.events?.items || []),
-          deviceId,
-        },
+      const mergedItems = existingItems.concat(result?.events?.items || [])
+      const nextEvents = {
+        ...result.events,
+        items: mergedItems,
+        deviceId,
+      }
+
+      const { reached, near } = evaluateRetention({
+        items: mergedItems,
+        minDate,
+        hasMore: nextEvents.hasMore,
+        allowedDays: daysAllowed,
       })
 
-      set({ fetching: false, fetchingMore: false })
+      set({
+        events: nextEvents,
+        fetching: false,
+        fetchingMore: false,
+        planUpgrade: reached || near,
+      })
     },
 
     async fetchUrl(_: void, state): Promise<string | undefined> {
@@ -90,7 +130,6 @@ export default createModel<RootModel>()({
         result = response?.data?.data?.login?.account || {}
       }
 
-      console.log('LOG URL', result?.eventsUrl)
       return result?.eventsUrl
     },
   }),
