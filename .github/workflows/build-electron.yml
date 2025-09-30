@@ -71,7 +71,6 @@ jobs:
       - name: Install dependencies and build web assets
         run: |
           npm install
-          npm run build-frontend
 
       - name: Build Electron app
         run: |

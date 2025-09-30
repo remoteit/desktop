@@ -216,7 +216,7 @@ export default class ElectronApp {
       minHeight: 325,
       backgroundColor: brand.colors.light.primaryDark,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
-      titleBarStyle: 'hiddenInset',
+      titleBarStyle: environment.isMac ? 'hidden' : 'hiddenInset',
       frame: !environment.isMac,
       autoHideMenuBar: true,
     })
