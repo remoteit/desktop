@@ -9,6 +9,7 @@ import { fontSizes, spacing } from '../../styling'
 import { humanizeDays } from '../../models/plans'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
+import browser from '../../services/browser'
 
 export interface LogListProps {
   device?: IDevice
@@ -26,7 +27,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
     await dispatch.logs.fetch()
   }
 
-  const showPlanUpgradeNotice = Boolean(planUpgrade && !fetching && !fetchingMore)
+  const showPlanUpgradeNotice = Boolean(planUpgrade && !fetching && !fetchingMore && !browser.isAndroid)
 
   return (
     <>
