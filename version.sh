@@ -40,11 +40,6 @@ update_android_version() {
 }
 
 # Start script execution
-cd electron
-npm version $1 --no-git-tag-version || error "Failed to update Electron version"
-cd ../
-echo "Updated Electron version to $1"
-
 update_ios_version $1
 update_android_version $1
 
