@@ -132,6 +132,7 @@ jobs:
           status: inProgress
           inAppUpdatePriority: 0
           userFraction: 0.2
+          changesNotSentForReview: true
           # whatsNewDirectory: distribution/whatsnew
           # mappingFile: app/build/outputs/mapping/release/mapping.txt
           # debugSymbols: app/build/intermediates/merged_native_libs/release/out/lib/
