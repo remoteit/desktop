@@ -1,5 +1,5 @@
-import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
+import { EventBus, Logger, EVENTS, preferences, environment } from './backend'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes

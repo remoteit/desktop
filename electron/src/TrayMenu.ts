@@ -1,3 +1,5 @@
+import electron from 'electron'
+import path from 'path'
 import headless, {
   EVENTS,
   environment,
@@ -9,9 +11,7 @@ import headless, {
   getApplication,
   Logger,
   brand,
-} from 'remoteit-headless'
-import electron from 'electron'
-import path from 'path'
+} from './backend'
 
 const MAX_MENU_SIZE = 10
 const MAX_UPDATE_CHECKS = 16

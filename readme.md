@@ -278,7 +278,7 @@ In order to be able to build on your local machine:
 
 - Sign into apple id site: `https://appleid.apple.com` with `appledeveloper@remote.it`
 - In the Security section, click the 'Generate password...' button to generate an in app password.
-- Add the in app password to your `backend/.env` file:
+- Add the in app password to your `electron/src/backend/.env` file:
   `APPLE_ID_PASSWORD=<inapp-password>`
   You may or may not have to also add it to your keychain.
 

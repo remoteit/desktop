@@ -5,6 +5,7 @@ import { fontSizes } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Attribute } from '../Attributes'
 import { Icon } from '../Icon'
+import { AttributeValue } from '../AttributeValue'
 
 type Props = IDataOptions & {
   attributes: Attribute[]
@@ -34,7 +35,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
                   </Tooltip>
                 )}
               </span>
-              <span className={css.attribute}>{value}</span>
+              <AttributeValue className={css.attribute} attribute={attribute} {...props} />
               {attribute.copyable && (
                 <CopyIconButton
                   sx={{ marginY: -1 }}
@@ -66,9 +67,6 @@ const useStyles = minWidth =>
       minWidth,
     },
     attribute: {
-      fontSize: fontSizes.sm,
-      fontFamily: 'Roboto Mono',
-      color: palette.grayDarker.main,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
     },

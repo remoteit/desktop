@@ -18,25 +18,24 @@ type Props = Omit<BarGraphProps, 'data'> & {
 }
 
 export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'small', ...props }) => {
-  const color = connectionTypes.includes(timeSeries?.type || '') ? 'primary' : online ? 'success' : 'gray'
   const [display, setDisplay] = React.useState<[Date, number]>()
 
   if (!timeSeries) return null
 
-  const max = Math.max(d3.max(timeSeries?.data), 0.1)
-  const min = 0 // Math.max(d3.min(timeSeries?.data), 0)
+  const color = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
+  const max = Math.max(d3.max(timeSeries.data) ?? 0, 0.1)
+  const min = 0
 
   if (variant === 'small') return <BarGraph {...props} data={timeSeries} color={color} max={max} />
 
   return (
     <Stack direction="row" flexWrap="nowrap">
       <Stack width={60} minWidth={60} marginBottom={3} marginRight={1} height={45} justifyContent="space-between">
-        <Typography variant="caption" textAlign="right">
-          {yAxisDisplay(timeSeries, max)}
-        </Typography>
-        <Typography variant="caption" textAlign="right">
-          {min}
-        </Typography>
+        {[max, min].map((value, i) => (
+          <Typography key={i} variant="caption" textAlign="right">
+            {formatValue(timeSeries.type, value, true)}
+          </Typography>
+        ))}
       </Stack>
       <Stack direction="row" flexWrap="wrap">
         <Stack spacing={0.5} marginRight={2}>
@@ -48,7 +47,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
             width={200}
             max={max}
             min={min}
-            onHover={(value?: [Date, number]) => setDisplay(value)}
+            onHover={setDisplay}
           />
           <Typography variant="caption" textAlign="center">
             Last&nbsp;
@@ -68,7 +67,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
               />
             </Typography>
             <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
-              {barDisplay(timeSeries.type, display[1])}
+              {formatValue(timeSeries.type, display[1])}
             </Typography>
           </Box>
         )}
@@ -77,26 +76,15 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, variant = 'sma
   )
 }
 
-function barDisplay(type: ITimeSeriesType, value: number) {
+const formatValue = (type: ITimeSeriesType, value: number, isYAxis = false) => {
   const scale = TimeSeriesTypeScale[type]
+
   switch (scale.unit) {
     case '%':
       return Math.round(value) + '%'
     case 'time':
-      return humanize(value * 1000, { largest: 2 })
+      return humanize(value * 1000, { largest: isYAxis ? 1 : 2, round: isYAxis })
     case 'events':
-      return value === 0 ? 'No events' : value === 1 ? '1 event' : value + ' events'
-  }
-}
-
-function yAxisDisplay(timeSeries: ITimeSeries, max: number) {
-  const scale = TimeSeriesTypeScale[timeSeries.type]
-  switch (scale.unit) {
-    case '%':
-      return Math.round(max) + '%'
-    case 'time':
-      return humanize(max * 1000, { largest: 1, round: true })
-    case 'events':
-      return max === 0 ? 'No Events' : max === 1 ? '1 Event' : max + ' Events'
+      return value === 0 ? 'No events' : value === 1 ? '1 event' : `${value} events`
   }
 }

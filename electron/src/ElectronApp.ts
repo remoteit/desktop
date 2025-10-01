@@ -1,8 +1,16 @@
-import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import electron, { Menu, dialog } from 'electron'
+import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
-import path from 'path'
+import {
+  EVENTS,
+  PROTOCOL,
+  brand,
+  environment,
+  preferences,
+  EventBus,
+  Logger,
+} from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
 const IP_PRIVATE = '127.0.0.1'
@@ -208,7 +216,7 @@ export default class ElectronApp {
       minHeight: 325,
       backgroundColor: brand.colors.light.primaryDark,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
-      titleBarStyle: 'hiddenInset',
+      titleBarStyle: environment.isMac ? 'hidden' : 'hiddenInset',
       frame: !environment.isMac,
       autoHideMenuBar: true,
     })
