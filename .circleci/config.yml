@@ -19,6 +19,9 @@ jobs: # a collection of steps
           name: install-npm
           command: npm install
       - run:
+          name: build-common
+          command: npx tsc -p common/tsconfig.json
+      - run:
           name: compile-electron
           command: cd electron && npm run compile
       - save_cache: # special step to save the dependency cache
