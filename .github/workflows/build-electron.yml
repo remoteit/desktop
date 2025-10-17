@@ -72,7 +72,8 @@ jobs:
         run: |
           npm install
 
-      - name: Build Electron app
+      - name: Build Electron app (macOS)
+        if: matrix.os == 'macos-14'
         run: |
           cd electron
           npm run build
@@ -80,3 +81,11 @@ jobs:
           GH_TOKEN: ${{ secrets.github_token }}
           CSC_LINK: ${{ secrets.mac_certs }}
           CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+
+      - name: Build Electron app
+        if: matrix.os != 'macos-14'
+        run: |
+          cd electron
+          npm run build
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
