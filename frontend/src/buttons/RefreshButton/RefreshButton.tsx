@@ -7,16 +7,19 @@ import { Dispatch, State } from '../../store'
 import { VALID_JOB_ID_LENGTH } from '../../constants'
 import { useParams, useRouteMatch } from 'react-router-dom'
 import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
+import { selectLimit } from '../../selectors/organizations'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
 import { attributeName } from '@common/nameHelper'
 import { GuideBubble } from '../../components/GuideBubble'
 import { Typography } from '@mui/material'
+import { limitDays } from '../../models/plans'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
   const { deviceID, fileID, jobID } = useParams<{ deviceID?: string; fileID?: string; jobID?: string }>()
   const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
+  const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const fetching = useSelector(
     (state: State) =>
       selectDeviceModelAttributes(state).fetching || (deviceID && state.logs.fetching) || state.ui.fetching
@@ -59,9 +62,10 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (logsPage) {
     title = device ? `Refresh ${attributeName(device)} logs` : 'Refresh logs'
     methods.push(async () => {
+      const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
       if (device) await dispatch.devices.fetchSingleFull({ id: device.id })
       await dispatch.logs.set({ after: undefined, maxDate: undefined })
-      await dispatch.logs.fetch()
+      await dispatch.logs.fetch({ allowedDays, deviceId: device?.id })
     })
 
     // device pages

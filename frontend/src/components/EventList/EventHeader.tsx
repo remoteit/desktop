@@ -34,35 +34,30 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const activeAccount = useSelector(selectActiveAccountId)
-  const { events, deviceId, minDate, selectedDate, daysAllowed } = useSelector((state: State) => state.logs)
+  const { events, minDate, selectedDate } = useSelector((state: State) => state.logs)
 
   const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
   const minDateValue = useMemo(() => retentionStartDate(allowedDays, device), [allowedDays, device?.createdAt])
 
+  // Clear logs and fetch whenever device or account changes
   useEffect(() => {
-    const contextChanged = device?.id !== deviceId || daysAllowed !== allowedDays
-    const isInitialLoad = !events.items.length && !deviceId && !device?.id
+    set({
+      after: undefined,
+      events: { ...events, items: [] },
+      maxDate: undefined,
+      selectedDate: undefined,
+      planUpgrade: false,
+      minDate: minDateValue,
+    })
+    fetch({ allowedDays, deviceId: device?.id })
+  }, [activeAccount, device?.id])
 
-    const updates: Partial<State['logs']> = {}
-
-    if (daysAllowed !== allowedDays) updates.daysAllowed = allowedDays
-
-    if (hasDateChanged(minDate, minDateValue)) updates.minDate = minDateValue
-
-    if (contextChanged) {
-      Object.assign(updates, {
-        after: undefined,
-        events: { ...events, items: [] },
-        maxDate: undefined,
-        selectedDate: undefined,
-        planUpgrade: false,
-      })
+  // Update minDate when allowedDays or device creation date changes
+  useEffect(() => {
+    if (hasDateChanged(minDate, minDateValue)) {
+      set({ minDate: minDateValue })
     }
-
-    if (Object.keys(updates).length) set(updates)
-
-    if (contextChanged || isInitialLoad) fetch()
-  }, [activeAccount, allowedDays, daysAllowed, device?.id, deviceId, minDate, minDateValue])
+  }, [minDateValue])
 
   const handleChangeDate = (date: Date | null | undefined) => {
     // set to end of day
@@ -76,15 +71,17 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       events: { ...events, items: [] },
       planUpgrade: false,
     })
-    fetch()
+    fetch({ allowedDays, deviceId: device?.id })
   }
+
+  const fetchCsvUrl = () => dispatch.logs.fetchUrl(device?.id)
 
   return (
     <List disablePadding>
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
-          <CSVDownloadButton fetchUrl={dispatch.logs.fetchUrl} />
+          <CSVDownloadButton fetchUrl={fetchCsvUrl} />
         </ListItemSecondaryAction>
       </ListItem>
     </List>

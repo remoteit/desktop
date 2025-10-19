@@ -37,13 +37,11 @@ type ILogState = {
   after?: string
   maxDate?: Date
   minDate?: Date
-  deviceId?: string
   fetching: boolean
   fetchingMore: boolean
   eventsUrl: string
   selectedDate?: Date
   planUpgrade: boolean
-  daysAllowed: number
   events: IEventList
 }
 
@@ -52,13 +50,11 @@ const defaultState: ILogState = {
   size: 100,
   maxDate: undefined,
   minDate: undefined,
-  deviceId: undefined,
   fetching: false,
   fetchingMore: false,
   eventsUrl: '',
   selectedDate: undefined,
   planUpgrade: false,
-  daysAllowed: 0,
   events: {
     total: 0,
     last: '',
@@ -70,9 +66,9 @@ const defaultState: ILogState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_: void, state) {
+    async fetch({ allowedDays, deviceId }: { allowedDays: number; deviceId?: string }, state) {
       const { set } = dispatch.logs
-      const { deviceId, size, after, maxDate, minDate, events, daysAllowed } = state.logs
+      const { size, after, maxDate, minDate, events } = state.logs
       const accountId = selectActiveAccountId(state)
       const existingItems = after ? events.items : []
 
@@ -95,14 +91,13 @@ export default createModel<RootModel>()({
       const nextEvents = {
         ...result.events,
         items: mergedItems,
-        deviceId,
       }
 
       const { reached, near } = evaluateRetention({
         items: mergedItems,
         minDate,
         hasMore: nextEvents.hasMore,
-        allowedDays: daysAllowed,
+        allowedDays,
       })
 
       set({
@@ -113,8 +108,8 @@ export default createModel<RootModel>()({
       })
     },
 
-    async fetchUrl(_: void, state): Promise<string | undefined> {
-      const { deviceId, minDate, maxDate } = state.logs
+    async fetchUrl(deviceId: string | undefined, state): Promise<string | undefined> {
+      const { minDate, maxDate } = state.logs
       const accountId = selectActiveAccountId(state)
 
       let result
