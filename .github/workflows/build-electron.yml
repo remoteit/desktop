@@ -26,6 +26,7 @@ env:
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
   SKIP_SIGNING: ${{ inputs.skip_signing }}
   BRAND: ${{ inputs.brand || 'remoteit' }}
+  GH_TOKEN: ${{ secrets.github_token }}
 
 jobs:
   release:
@@ -72,20 +73,10 @@ jobs:
         run: |
           npm install
 
-      - name: Build Electron app (macOS)
-        if: matrix.os == 'macos-14'
-        run: |
-          cd electron
-          npm run build
-        env:
-          GH_TOKEN: ${{ secrets.github_token }}
-          CSC_LINK: ${{ secrets.mac_certs }}
-          CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
-
       - name: Build Electron app
-        if: matrix.os != 'macos-14'
+        env:
+          CSC_LINK: ${{ matrix.os == 'macos-14' && secrets.mac_certs || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.os == 'macos-14' && secrets.mac_certs_password || '' }}
         run: |
           cd electron
           npm run build
-        env:
-          GH_TOKEN: ${{ secrets.github_token }}
