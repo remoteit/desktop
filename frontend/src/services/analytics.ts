@@ -30,9 +30,22 @@ const analytics = {
 
   signedIn(user?: IUser) {
     if (user) {
-      TagManager.dataLayer({ dataLayer: { user_id: user.id } })
-      if (window.clarity) window.clarity('identify', user.id)
+      TagManager.dataLayer({
+        dataLayer: {
+          user_id: user.id,
+        },
+      })
     }
+  },
+
+  pageView(path: string) {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'page_view',
+        page_path: path,
+        page_title: document.title,
+      },
+    })
   },
 }
 

@@ -4,10 +4,6 @@ import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
 
 declare global {
-  interface Window {
-    clarity?: any
-  }
-
   type DiagramGroupType =
     | 'target'
     | 'initiator'
