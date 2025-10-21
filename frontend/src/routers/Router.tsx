@@ -57,6 +57,7 @@ import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import browser, { getOs } from '../services/browser'
+import analytics from '../services/analytics'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   useMobileNavigation()
@@ -85,8 +86,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       history.push(redirect)
       ui.set({ redirect: undefined })
     }
-    // track what page is viewed
-    if (window.clarity) window.clarity('set', 'page', location.pathname.match(REGEX_FIRST_PATH)?.[0])
+    analytics.pageView(location.pathname)
     // update navigation state
     emit('navigate', 'STATUS')
   }, [history.location, ui, redirect])

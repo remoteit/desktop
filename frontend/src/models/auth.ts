@@ -3,6 +3,7 @@ import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
 import browser from '../services/browser'
+import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
   CLIENT_ID,
@@ -225,6 +226,7 @@ export default createModel<RootModel>()({
     async signedIn(_: void, state) {
       dispatch.ui.init()
       zendesk.initChat(state.auth.user)
+      analytics.signedIn(state.auth.user)
       cloudController.init()
       cloudSync.init()
       network.tick()
