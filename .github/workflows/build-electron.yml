@@ -73,10 +73,26 @@ jobs:
         run: |
           npm install
 
-      - name: Build Electron app
+      # Linux build
+      - name: Build Electron app (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd electron
+          npm run build
+
+      # macOS build
+      - name: Build Electron app (macOS)
+        if: matrix.os == 'macos-14'
         env:
-          CSC_LINK: ${{ matrix.os == 'macos-14' && secrets.mac_certs || '' }}
-          CSC_KEY_PASSWORD: ${{ matrix.os == 'macos-14' && secrets.mac_certs_password || '' }}
+          CSC_LINK: ${{ secrets.mac_certs }}
+          CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+        run: |
+          cd electron
+          npm run build
+
+      # Windows build
+      - name: Build Electron app (Windows)
+        if: matrix.os == 'windows-latest'
         run: |
           cd electron
           npm run build
