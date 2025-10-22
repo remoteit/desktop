@@ -98,9 +98,7 @@ export const AvatarMenu: React.FC = () => {
           to="/account"
           badge={licenseIndicator}
           onClick={handleClose}
-        >
-          {browser.isAndroid && <Icon name="launch" size="sm" color="grayDark" inlineLeft fixedWidth />}
-        </ListItemLocation>
+        />
         <ListItemLink
           title="Support"
           icon="life-ring"
