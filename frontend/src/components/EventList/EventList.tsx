@@ -8,8 +8,8 @@ import { List, Box, Button, Typography } from '@mui/material'
 import { fontSizes, spacing } from '../../styling'
 import { humanizeDays, limitDays } from '../../models/plans'
 import { EventItem } from './EventItem'
+import { MobileUI } from '../MobileUI'
 import { Notice } from '../Notice'
-import browser from '../../services/browser'
 
 export interface LogListProps {
   device?: IDevice
@@ -28,7 +28,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
     await dispatch.logs.fetch({ allowedDays, deviceId: device?.id })
   }
 
-  const showPlanUpgradeNotice = Boolean(planUpgrade && !fetching && !fetchingMore && !browser.isAndroid)
+  const showPlanUpgradeNotice = Boolean(planUpgrade && !fetching && !fetchingMore)
 
   return (
     <>
@@ -41,9 +41,11 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
         <Notice
           severity="warning"
           button={
-            <Button to="/account/plans" variant="contained" color="warning" size="small" component={Link}>
-              Upgrade
-            </Button>
+            <MobileUI android hide>
+              <Button to="/account/plans" variant="contained" color="warning" size="small" component={Link}>
+                Upgrade
+              </Button>
+            </MobileUI>
           }
         >
           Plan upgrade required to view logs past {humanizeDays(logLimit?.value)}.

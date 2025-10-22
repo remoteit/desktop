@@ -5,33 +5,6 @@ import { RootModel } from '.'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-const toTimestamp = (value?: Date | string) => (value ? new Date(value).getTime() : undefined)
-
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
-
-const evaluateRetention = ({
-  items,
-  minDate,
-  hasMore,
-  allowedDays,
-}: {
-  items: IEvent[]
-  minDate?: Date
-  hasMore?: boolean
-  allowedDays: number
-}) => {
-  const minDateMs = toTimestamp(minDate)
-  const oldestMs = toTimestamp(items[items.length - 1]?.timestamp)
-  const boundaryReady = Boolean(items.length && !hasMore && minDateMs !== undefined && oldestMs !== undefined)
-  if (!boundaryReady) return { reached: false, near: false }
-
-  const reached = oldestMs! <= minDateMs!
-  const thresholdDays = clamp(allowedDays > 0 ? allowedDays * 0.1 : 1, 0.25, 1)
-  const near = !reached && oldestMs! - minDateMs! <= thresholdDays * DAY_MS
-
-  return { reached, near }
-}
-
 type ILogState = {
   size: number
   after?: string
@@ -93,18 +66,16 @@ export default createModel<RootModel>()({
         items: mergedItems,
       }
 
-      const { reached, near } = evaluateRetention({
-        items: mergedItems,
-        minDate,
-        hasMore: nextEvents.hasMore,
-        allowedDays,
-      })
+      const hasReachedLimit = !nextEvents.hasMore && allowedDays > 0
+      const firstLogMs = state.user.created?.getTime() || 0
+      const logLimitMs = Date.now() - allowedDays * DAY_MS
+      const planUpgrade = hasReachedLimit && firstLogMs < logLimitMs
 
       set({
         events: nextEvents,
         fetching: false,
         fetchingMore: false,
-        planUpgrade: reached || near,
+        planUpgrade,
       })
     },
 

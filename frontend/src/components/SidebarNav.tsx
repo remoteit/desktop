@@ -110,9 +110,7 @@ export const SidebarNav: React.FC = () => {
         icon="scripting"
         match={['/script', '/scripts', '/runs']}
         dense
-      >
-        <Chip size="small" label="BETA" sx={{ fontSize: 9 }} />
-      </ListItemLocation>
+      />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>

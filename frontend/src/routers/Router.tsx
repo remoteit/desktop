@@ -346,39 +346,37 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* Account */}
       <Route path="/account">
-        <RedirectOffsite to={browser.isAndroid ? 'https://link.remote.it/portal/account' : undefined}>
-          <DynamicPanel
-            primary={<AccountPage />}
-            secondary={
-              <Switch>
-                <Route path="/account/security">
-                  <SecurityPage />
-                </Route>
-                <Route path="/account/plans">
-                  <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
-                    <PlansPage />
-                  </RedirectOffsite>
-                </Route>
-                <Route path="/account/billing">
-                  <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
-                    <BillingPage />
-                  </RedirectOffsite>
-                </Route>
-                <Route path="/account/license">
-                  <LicensingPage />
-                </Route>
-                <Route path="/account/accessKey">
-                  <AccessKeyPage />
-                </Route>
-                <Route path={['/account', '/account/overview']}>
-                  <ProfilePage />
-                </Route>
-              </Switch>
-            }
-            layout={layout}
-            root="/account"
-          />
-        </RedirectOffsite>
+        <DynamicPanel
+          primary={<AccountPage />}
+          secondary={
+            <Switch>
+              <Route path="/account/security">
+                <SecurityPage />
+              </Route>
+              <Route path="/account/plans">
+                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/subscriptions'}>
+                  <PlansPage />
+                </RedirectOffsite>
+              </Route>
+              <Route path="/account/billing">
+                <RedirectOffsite to={browser.hasBilling ? undefined : 'https://link.remote.it/account/billing'}>
+                  <BillingPage />
+                </RedirectOffsite>
+              </Route>
+              <Route path="/account/license">
+                <LicensingPage />
+              </Route>
+              <Route path="/account/accessKey">
+                <AccessKeyPage />
+              </Route>
+              <Route path={['/account', '/account/overview']}>
+                <ProfilePage />
+              </Route>
+            </Switch>
+          }
+          layout={layout}
+          root="/account"
+        />
       </Route>
       {/* Not found */}
       <Redirect from="*" to={{ pathname: '/devices', state: { isRedirect: true } }} exact />
