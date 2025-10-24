@@ -10,10 +10,10 @@ import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
 import { Container } from '../components/Container'
 import { ColorChip } from '../components/ColorChip'
+import { BillingUI } from '../components/BillingUI'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { MobileUI } from '../components/MobileUI'
 
 export const OrganizationAddPage = () => {
   const organization = useSelector(selectOrganization)
@@ -75,7 +75,7 @@ export const OrganizationAddPage = () => {
             <Notice
               severity="warning"
               button={
-                <MobileUI android hide>
+                <BillingUI>
                   <Link to="/account/plans">
                     <ColorChip
                       sx={{ marginTop: 1.4 }}
@@ -85,7 +85,7 @@ export const OrganizationAddPage = () => {
                       label="Upgrade"
                     />
                   </Link>
-                </MobileUI>
+                </BillingUI>
               }
               fullWidth
             >

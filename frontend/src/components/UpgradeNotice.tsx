@@ -6,8 +6,8 @@ import { makeStyles } from '@mui/styles'
 import { selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
+import { BillingUI } from './BillingUI'
 import { Pre } from './Pre'
-import { MobileUI } from './MobileUI'
 
 const oneWeek = 1000 * 60 * 60 * 24 * 7
 
@@ -33,13 +33,13 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () 
         severity="warning"
         onClose={() => dispatch.ui.setPersistent({ updateNoticeCleared: Date.now() })}
         button={
-          <MobileUI android hide>
+          <BillingUI>
             <Link to="/account/plans">
               <Button variant="contained" color="warning" size="small">
                 Upgrade
               </Button>
             </Link>
-          </MobileUI>
+          </BillingUI>
         }
       >
         {message}

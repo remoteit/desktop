@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { ListItemBack } from '../components/ListItemBack'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
+import { BillingUI } from '../components/BillingUI'
 import { MobileUI } from '../components/MobileUI'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -43,7 +44,7 @@ export const OrganizationRolesPage: React.FC = () => {
       {!limits.roles && (
         <Notice severity="info" gutterTop>
           Upgrade your plan to Business to add custom roles.
-          <MobileUI android hide>
+          <BillingUI>
             <Button
               variant="contained"
               size="small"
@@ -52,7 +53,7 @@ export const OrganizationRolesPage: React.FC = () => {
             >
               Upgrade
             </Button>
-          </MobileUI>
+          </BillingUI>
         </Notice>
       )}
       <Typography variant="subtitle1">

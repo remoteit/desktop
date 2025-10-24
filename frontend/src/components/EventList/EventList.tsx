@@ -8,7 +8,7 @@ import { List, Box, Button, Typography } from '@mui/material'
 import { fontSizes, spacing } from '../../styling'
 import { humanizeDays, limitDays } from '../../models/plans'
 import { EventItem } from './EventItem'
-import { MobileUI } from '../MobileUI'
+import { BillingUI } from '../BillingUI'
 import { Notice } from '../Notice'
 
 export interface LogListProps {
@@ -41,11 +41,11 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
         <Notice
           severity="warning"
           button={
-            <MobileUI android hide>
+            <BillingUI>
               <Button to="/account/plans" variant="contained" color="warning" size="small" component={Link}>
                 Upgrade
               </Button>
-            </MobileUI>
+            </BillingUI>
           }
         >
           Plan upgrade required to view logs past {humanizeDays(logLimit?.value)}.

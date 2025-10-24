@@ -4,9 +4,9 @@ import { selectPlan } from '../selectors/organizations'
 import { PERSONAL_PLAN_ID } from '../models/plans'
 import { useSelector } from 'react-redux'
 import { ColorChip } from './ColorChip'
+import { BillingUI } from './BillingUI'
 import { Notice } from './Notice'
 import { Box } from '@mui/material'
-import { MobileUI } from './MobileUI'
 
 export const UpgradeBanner: React.FC = () => {
   const plan = useSelector(selectPlan)
@@ -15,11 +15,11 @@ export const UpgradeBanner: React.FC = () => {
     <Notice gutterBottom>
       Access premium features & support
       <Box marginTop={1.4}>
-        <MobileUI android hide>
+        <BillingUI>
           <Link to="/account/plans">
             <ColorChip size="small" variant="contained" color="primary" label="Upgrade Plan" />
           </Link>
-        </MobileUI>
+        </BillingUI>
       </Box>
     </Notice>
   )
