@@ -8,6 +8,7 @@ import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
 import { Link } from './Link'
 import { Icon } from './Icon'
+import { MobileUI } from './MobileUI'
 
 type Props = {
   noticeType: string
@@ -29,11 +30,13 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
 
   const UpgradeButton = (
     <>
-      <Link to="/account/plans">
-        <Button color="primary" variant="contained" size="small">
-          Upgrade
-        </Button>
-      </Link>
+      <MobileUI android hide>
+        <Link to="/account/plans">
+          <Button color="primary" variant="contained" size="small">
+            Upgrade
+          </Button>
+        </Link>
+      </MobileUI>
       <Tooltip title="Close">
         <IconButton onClick={onClose}>
           <Icon name="times" size="md" color="primary" />
@@ -49,7 +52,10 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
         <Notice severity="warning" button={UpgradeButton}>
           {title} has expired.
           <em>
-            Please upgrade your license. <Link to="/account/plans">Learn more.</Link>
+            Please upgrade your license.{' '}
+            <MobileUI android hide>
+              <Link to="/account/plans">Learn more.</Link>
+            </MobileUI>
           </em>
         </Notice>
       )
@@ -59,7 +65,10 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
         <Notice severity="error">
           {title} is past due.
           <em>
-            Please update your payment method. <Link to="/account/plans">Learn more.</Link>
+            Please update your payment method.{' '}
+            <MobileUI android hide>
+              <Link to="/account/plans">Learn more.</Link>
+            </MobileUI>
           </em>
         </Notice>
       )
@@ -70,7 +79,11 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
         <Notice severity="warning">
           {title} is incomplete.
           <em>
-            Please <Link to="/account/plans">update your payment information </Link> to continue service.
+            Please{' '}
+            <MobileUI android hide>
+              <Link to="/account/plans">update your payment information </Link>
+            </MobileUI>{' '}
+            to continue service.
           </em>
         </Notice>
       )
@@ -80,7 +93,10 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
         <Notice severity="warning" button={UpgradeButton}>
           {title} has been canceled.
           <em>
-            Please please check. <Link to="/account/plans">Learn more.</Link>
+            Please please check.{' '}
+            <MobileUI android hide>
+              <Link to="/account/plans">Learn more.</Link>
+            </MobileUI>
           </em>
         </Notice>
       )
@@ -91,7 +107,9 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
           {title} <LicensingTitle count={serviceLimit?.value} />
           <em>
             You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{' '}
-            <Link to="/account/plans">Learn more.</Link>
+            <MobileUI android hide>
+              <Link to="/account/plans">Learn more.</Link>
+            </MobileUI>
           </em>
         </Notice>
       )

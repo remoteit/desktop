@@ -11,6 +11,7 @@ import { selectRemoteitLicense } from '../selectors/organizations'
 import { State } from '../store'
 import { ColorChip, Props as ChipProps } from './ColorChip'
 import { useHistory } from 'react-router-dom'
+import { MobileUI } from './MobileUI'
 
 export const PlanActionChip: React.FC<ChipProps> = ({ ...props }) => {
   const license = useSelector((state: State) => selectRemoteitLicense(state))
@@ -36,5 +37,9 @@ export const PlanActionChip: React.FC<ChipProps> = ({ ...props }) => {
       return null
   }
 
-  return <ColorChip {...props} size="small" onClick={() => history.push('/account/plans')} />
+  return (
+    <MobileUI android hide>
+      <ColorChip {...props} size="small" onClick={() => history.push('/account/plans')} />
+    </MobileUI>
+  )
 }

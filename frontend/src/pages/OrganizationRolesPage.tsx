@@ -43,14 +43,16 @@ export const OrganizationRolesPage: React.FC = () => {
       {!limits.roles && (
         <Notice severity="info" gutterTop>
           Upgrade your plan to Business to add custom roles.
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => history.push('/account/plans')}
-            sx={{ display: 'block', marginTop: 1, marginBottom: 1 }}
-          >
-            Upgrade
-          </Button>
+          <MobileUI android hide>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => history.push('/account/plans')}
+              sx={{ display: 'block', marginTop: 1, marginBottom: 1 }}
+            >
+              Upgrade
+            </Button>
+          </MobileUI>
         </Notice>
       )}
       <Typography variant="subtitle1">

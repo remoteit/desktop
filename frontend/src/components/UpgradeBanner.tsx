@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { ColorChip } from './ColorChip'
 import { Notice } from './Notice'
 import { Box } from '@mui/material'
+import { MobileUI } from './MobileUI'
 
 export const UpgradeBanner: React.FC = () => {
   const plan = useSelector(selectPlan)
@@ -14,9 +15,11 @@ export const UpgradeBanner: React.FC = () => {
     <Notice gutterBottom>
       Access premium features & support
       <Box marginTop={1.4}>
-        <Link to="/account/plans">
-          <ColorChip size="small" variant="contained" color="primary" label="Upgrade Plan" />
-        </Link>
+        <MobileUI android hide>
+          <Link to="/account/plans">
+            <ColorChip size="small" variant="contained" color="primary" label="Upgrade Plan" />
+          </Link>
+        </MobileUI>
       </Box>
     </Notice>
   )

@@ -13,6 +13,7 @@ import { ColorChip } from '../components/ColorChip'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { MobileUI } from '../components/MobileUI'
 
 export const OrganizationAddPage = () => {
   const organization = useSelector(selectOrganization)
@@ -74,9 +75,17 @@ export const OrganizationAddPage = () => {
             <Notice
               severity="warning"
               button={
-                <Link to="/account/plans">
-                  <ColorChip sx={{ marginTop: 1.4 }} size="small" variant="contained" color="warning" label="Upgrade" />
-                </Link>
+                <MobileUI android hide>
+                  <Link to="/account/plans">
+                    <ColorChip
+                      sx={{ marginTop: 1.4 }}
+                      size="small"
+                      variant="contained"
+                      color="warning"
+                      label="Upgrade"
+                    />
+                  </Link>
+                </MobileUI>
               }
               fullWidth
             >

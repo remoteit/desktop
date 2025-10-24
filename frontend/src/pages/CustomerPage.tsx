@@ -10,6 +10,7 @@ import { FormDisplay } from '../components/FormDisplay'
 import { Container } from '../components/Container'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
+import { MobileUI } from '../components/MobileUI'
 
 export const CustomerPage: React.FC = () => {
   const { userID = '' } = useParams<{ userID: string }>()
@@ -44,9 +45,11 @@ export const CustomerPage: React.FC = () => {
     >
       <Typography variant="subtitle1" marginRight={3}>
         <Title>License</Title>
-        <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
-          Update Plan
-        </Button>
+        <MobileUI android hide>
+          <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
+            Update Plan
+          </Button>
+        </MobileUI>
       </Typography>
       <LicensingSetting licenses={license ? [{ ...license, limits }] : []} />
       <FormDisplay
