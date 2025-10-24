@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { Button } from '@mui/material'
 import { Notice } from './Notice'
 import { Link } from './Link'
+import { BillingUI } from './BillingUI'
 
 type Props = { device?: IDevice; license?: ILicense }
 
@@ -25,17 +26,21 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
       <Notice
         severity="warning"
         button={
-          <Link to="/account/plans">
-            <Button color="primary" variant="contained" size="small">
-              Upgrade
-            </Button>
-          </Link>
+          <BillingUI>
+            <Link to="/account/plans">
+              <Button color="primary" variant="contained" size="small">
+                Upgrade
+              </Button>
+            </Link>
+          </BillingUI>
         }
       >
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
           This service will be accessible for {humanizeDays(evaluationLimit?.value)}, unless you upgrade your license.
-          <Link to="/account/plans">Learn more.</Link>
+          <BillingUI>
+            <Link to="/account/plans">Learn more.</Link>
+          </BillingUI>
         </em>
       </Notice>
     )

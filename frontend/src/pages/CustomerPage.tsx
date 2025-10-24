@@ -7,6 +7,7 @@ import { Typography, Button } from '@mui/material'
 import { LicensingSetting } from '../components/LicensingSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { FormDisplay } from '../components/FormDisplay'
+import { BillingUI } from '../components/BillingUI'
 import { Container } from '../components/Container'
 import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
@@ -44,9 +45,11 @@ export const CustomerPage: React.FC = () => {
     >
       <Typography variant="subtitle1" marginRight={3}>
         <Title>License</Title>
-        <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
-          Update Plan
-        </Button>
+        <BillingUI>
+          <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
+            Update Plan
+          </Button>
+        </BillingUI>
       </Typography>
       <LicensingSetting licenses={license ? [{ ...license, limits }] : []} />
       <FormDisplay

@@ -10,6 +10,7 @@ import { ContactSelector } from '../components/ContactSelector'
 import { RoleSelect } from '../components/RoleSelect'
 import { Container } from '../components/Container'
 import { ColorChip } from '../components/ColorChip'
+import { BillingUI } from '../components/BillingUI'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -74,9 +75,17 @@ export const OrganizationAddPage = () => {
             <Notice
               severity="warning"
               button={
-                <Link to="/account/plans">
-                  <ColorChip sx={{ marginTop: 1.4 }} size="small" variant="contained" color="warning" label="Upgrade" />
-                </Link>
+                <BillingUI>
+                  <Link to="/account/plans">
+                    <ColorChip
+                      sx={{ marginTop: 1.4 }}
+                      size="small"
+                      variant="contained"
+                      color="warning"
+                      label="Upgrade"
+                    />
+                  </Link>
+                </BillingUI>
               }
               fullWidth
             >
