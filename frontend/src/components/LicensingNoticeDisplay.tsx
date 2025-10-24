@@ -93,7 +93,7 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
         <Notice severity="warning" button={UpgradeButton}>
           {title} has been canceled.
           <em>
-            Please please check.{' '}
+            Please check.{' '}
             <MobileUI android hide>
               <Link to="/account/plans">Learn more.</Link>
             </MobileUI>
