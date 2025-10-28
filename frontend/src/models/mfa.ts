@@ -83,7 +83,7 @@ export default createModel<RootModel>()({
 
     async updatePhone(phone: string, state) {
       try {
-        await state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
+        await state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone.replace(/\s+/g, '') })
         await dispatch.mfa.getAWSUser()
         await state.auth.authService?.verifyCurrentUserAttribute('phone_number')
         await dispatch.mfa.setMFAPreference('NO_MFA')
