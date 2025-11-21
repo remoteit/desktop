@@ -35,6 +35,10 @@ export async function notify(event: ICloudEvent) {
 
     case 'DEVICE_SHARE':
       shareNotification(event)
+      break
+
+    case 'DEVICE_TRANSFER':
+      transferNotification(event)
   }
 }
 
@@ -97,6 +101,21 @@ function shareNotification(event: ICloudEvent) {
       }
     })
   }
+}
+
+function transferNotification(event: ICloudEvent) {
+  event.target.forEach(target => {
+    if (target.typeID === DEVICE_TYPE) {
+      const isReceiving = target.owner?.id === event.authUserId
+      
+      if (isReceiving) {
+        const title = `${target.name} was transferred to you`
+        const body = `from ${event.actor.email}`
+        createNotification(title, `/devices/${target.deviceId}`, { body })
+      }
+      // Don't notify sender or people losing access
+    }
+  })
 }
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {
