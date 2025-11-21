@@ -8,9 +8,11 @@ import { Icon } from '../components/Icon'
 type Props = {
   device?: IDevice
   service?: IService
+  onClick?: () => void
+  onCancel?: () => void
 }
 
-export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
+export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service, onClick, onCancel }) => {
   const [open, setOpen] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
   const setupBusy = useSelector((state: State) => state.ui.setupBusy)
@@ -48,8 +50,12 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service }) => {
         onConfirm={() => {
           if (device && service) devices.cloudRemoveService({ serviceId: service.id, deviceId: device.id })
           setOpen(false)
+          onClick?.()
         }}
-        onDeny={() => setOpen(false)}
+        onDeny={() => {
+          setOpen(false)
+          onCancel?.()
+        }}
         title="Are you sure?"
         color="error"
         action="Delete"

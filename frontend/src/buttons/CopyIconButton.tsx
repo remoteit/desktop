@@ -28,7 +28,7 @@ const COPY_TIMEOUT = 800
 export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
   ({ icon = 'copy', app, value, title, size = 'lg', colorCopied = 'success', onClick, onCopy, ...props }, ref) => {
     const [open, setOpen] = useState<boolean>(false)
-    const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT })
+    const clipboard = useClipboard({ copiedTimeout: COPY_TIMEOUT, onCopied: onCopy })
     const autoCopy = useSelector((state: State) => state.ui.autoCopy)
     const { ui } = useDispatch<Dispatch>()
 
@@ -46,9 +46,6 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
 
     const copy = () => {
       clipboard.copy(value || app?.commandString || '')
-      setTimeout(() => {
-        onCopy?.()
-      }, COPY_TIMEOUT)
     }
 
     const onSubmit = (tokens: ILookup<string>) => {

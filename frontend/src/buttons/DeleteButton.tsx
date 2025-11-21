@@ -11,6 +11,7 @@ type Props = {
   destroying?: boolean
   menuItem?: boolean
   onDelete: () => void
+  onCancel?: () => void
 }
 
 export const DeleteButton: React.FC<Props> = ({
@@ -21,6 +22,7 @@ export const DeleteButton: React.FC<Props> = ({
   destroying,
   menuItem,
   onDelete,
+  onCancel,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
@@ -58,7 +60,10 @@ export const DeleteButton: React.FC<Props> = ({
           await onDelete()
           setDeleting(false)
         }}
-        onDeny={() => setOpen(false)}
+        onDeny={() => {
+          setOpen(false)
+          onCancel?.()
+        }}
         title="Are you sure?"
         action={title}
         color="error"
