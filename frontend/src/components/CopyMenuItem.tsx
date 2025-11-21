@@ -9,6 +9,7 @@ export type CopyMenuItemProps = {
   value?: string | number
   disabled?: boolean
   awaitCopy?: () => Promise<void>
+  onCopied?: () => void
   iconProps?: IconProps
   className?: string
 }
@@ -19,6 +20,7 @@ export const CopyMenuItem: React.FC<CopyMenuItemProps> = ({
   title,
   disabled,
   awaitCopy,
+  onCopied,
   iconProps,
   className,
 }) => {
@@ -29,6 +31,9 @@ export const CopyMenuItem: React.FC<CopyMenuItemProps> = ({
       onClick={async () => {
         await awaitCopy?.()
         clipboard.copy(value)
+        if (onCopied) {
+          setTimeout(onCopied, 900)
+        }
       }}
       disabled={disabled}
       className={className}

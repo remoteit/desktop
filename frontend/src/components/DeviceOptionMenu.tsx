@@ -66,21 +66,35 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             icon="link"
             title="Service Link"
             value={`${PROTOCOL}devices/${device.id}/${service.id}`}
+            onCopied={handleClose}
           />
         )}
         {devicesSection && deviceOnly && (
-          <CopyMenuItem key="link" icon="link" title="Device Link" value={`${PROTOCOL}devices/${device.id}`} />
+          <CopyMenuItem
+            key="link"
+            icon="link"
+            title="Device Link"
+            value={`${PROTOCOL}devices/${device.id}`}
+            onCopied={handleClose}
+          />
         )}
         {device.permissions.includes('MANAGE') &&
           devicesSection &&
           deviceOnly && [
-            <MenuItem dense key="restore" onClick={() => dispatch.ui.set({ showRestoreModal: true })}>
+            <MenuItem
+              dense
+              key="restore"
+              onClick={() => {
+                handleClose()
+                dispatch.ui.set({ showRestoreModal: true })
+              }}
+            >
               <ListItemIcon>
                 <Icon name="wave-pulse" size="md" />
               </ListItemIcon>
               <ListItemText primary="Restore Device" />
             </MenuItem>,
-            <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link}>
+            <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link} onClick={handleClose}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
@@ -89,7 +103,10 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           ]}
         {device.permissions.includes('MANAGE') &&
           devicesSection &&
-          deviceOnly && [<Divider key="divider" />, <DeleteDevice key="deleteDevice" device={device} menuItem />]}
+          deviceOnly && [
+            <Divider key="divider" />,
+            <DeleteDevice key="deleteDevice" device={device} menuItem onClick={handleClose} onCancel={handleClose} />,
+          ]}
         {device.permissions.includes('MANAGE') &&
           service &&
           devicesSection && [
