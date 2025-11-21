@@ -710,6 +710,7 @@ declare global {
       | 'DEVICE_STATE'
       | 'DEVICE_CONNECT'
       | 'DEVICE_SHARE'
+      | 'DEVICE_TRANSFER'
       | 'DEVICE_REFRESH'
       | 'DEVICE_DELETE'
       | 'LICENSE_UPDATED'

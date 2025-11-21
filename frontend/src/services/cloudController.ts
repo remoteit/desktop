@@ -464,8 +464,8 @@ class CloudController {
               status: event.job.status,
               jobDevices: jobDevice
                 ? jobDevices.map(jd =>
-                    jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
-                  )
+                  jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
+                )
                 : jobDevices,
             },
           ],
@@ -511,13 +511,13 @@ class CloudController {
         event.target.forEach(async target => {
           const newOwnerId = target.owner?.id
           const isReceiving = newOwnerId === event.authUserId
-          
+
           this.log('DEVICE TRANSFER EVENT', { isReceiving, newOwnerId, authUserId: event.authUserId }, event)
-          
+
           if (isReceiving) {
             // NEW OWNER: Refresh device list to show transferred device
             dispatch.ui.set({ successMessage: `${target.name} was transferred to you!` })
-            await dispatch.devices.fetchList()
+            dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
           } else {
             // OLD OWNER or ORG MEMBER: Remove from local list
             if (target.device) {
