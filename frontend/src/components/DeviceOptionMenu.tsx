@@ -111,7 +111,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           service &&
           devicesSection && [
             <Divider key="divider" />,
-            <DeleteServiceMenuItem key="deleteService" device={device} service={service} />,
+            <DeleteServiceMenuItem key="deleteService" device={device} service={service} onClick={handleClose} onCancel={handleClose} />,
           ]}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>

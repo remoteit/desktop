@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import useClipboard from '../hooks/useClipboard'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon, IconProps } from './Icon'
@@ -24,29 +24,28 @@ export const CopyMenuItem: React.FC<CopyMenuItemProps> = ({
   iconProps,
   className,
 }) => {
-  const clipboard = useClipboard({ copiedTimeout: 1000 })
+  const [copiedClicked, setCopiedClicked] = useState(false)
+  const clipboard = useClipboard({ copiedTimeout: 1000, onCopied })
   return (
     <MenuItem
       dense
       onClick={async () => {
         await awaitCopy?.()
         clipboard.copy(value)
-        if (onCopied) {
-          setTimeout(onCopied, 900)
-        }
+        setCopiedClicked(true)
       }}
       disabled={disabled}
       className={className}
     >
       <ListItemIcon>
         <Icon
-          name={clipboard.copied ? 'check' : icon}
-          color={clipboard.copied ? 'success' : undefined}
+          name={copiedClicked ? 'check' : icon}
+          color={copiedClicked ? 'success' : undefined}
           size="md"
           {...iconProps}
         />
       </ListItemIcon>
-      <ListItemText primary={clipboard.copied ? 'Copied!' : title} />
+      <ListItemText primary={copiedClicked ? 'Copied!' : title} />
     </MenuItem>
   )
 }
