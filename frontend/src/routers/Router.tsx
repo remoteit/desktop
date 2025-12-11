@@ -48,6 +48,7 @@ import { SharePage } from '../pages/SharePage'
 import { TagsPage } from '../pages/TagsPage'
 import { Panel } from '../components/Panel'
 import { LogsPage } from '../pages/LogsPage'
+import { ProductsPage, ProductDetailPage, ProductAddPage } from '../pages/ProductsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { GraphsPage } from '../pages/GraphsPage'
 import { ProfilePage } from '../pages/ProfilePage'
@@ -225,6 +226,22 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/logs">
         <Panel layout={layout}>
           <LogsPage />
+        </Panel>
+      </Route>
+      {/* Products */}
+      <Route path="/products/add">
+        <Panel layout={layout}>
+          <ProductAddPage />
+        </Panel>
+      </Route>
+      <Route path="/products/:productId">
+        <Panel layout={layout}>
+          <ProductDetailPage />
+        </Panel>
+      </Route>
+      <Route path="/products">
+        <Panel layout={layout}>
+          <ProductsPage />
         </Panel>
       </Route>
       {/* Announcements */}

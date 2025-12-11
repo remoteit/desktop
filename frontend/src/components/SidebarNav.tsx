@@ -112,6 +112,7 @@ export const SidebarNav: React.FC = () => {
         dense
       />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
+      <ListItemLocation title="Products" to="/products" match="/products" icon="box" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
         <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
@@ -121,7 +122,6 @@ export const SidebarNav: React.FC = () => {
       </ListItemButton>
       <Collapse in={more}>
         <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
-        <ListItemLink title="Products" href="https://link.remote.it/app/products" icon="server" dense />
       </Collapse>
       <Box className={css.footer}>
         <UpgradeBanner />
