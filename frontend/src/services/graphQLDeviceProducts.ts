@@ -23,7 +23,7 @@ export async function graphQLDeviceProducts(options?: {
           items {
             id
             name
-            platform
+            platform { id name }
             scope
             status
             hidden
@@ -53,7 +53,7 @@ export async function graphQLDeviceProduct(id: string) {
         deviceProduct(id: $id) {
           id
           name
-          platform
+          platform { id name }
           scope
           status
           hidden
@@ -82,7 +82,7 @@ export async function graphQLCreateDeviceProduct(input: {
         createDeviceProduct(name: $name, platform: $platform) {
           id
           name
-          platform
+          platform { id name }
           scope
           status
           hidden
@@ -120,7 +120,7 @@ export async function graphQLUpdateDeviceProductSettings(
         updateDeviceProductSettings(id: $id, input: $input) {
           id
           name
-          platform
+          platform { id name }
           scope
           status
           hidden

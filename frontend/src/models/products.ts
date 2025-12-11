@@ -22,7 +22,7 @@ export interface IProductService {
 export interface IDeviceProduct {
   id: string
   name: string
-  platform: string
+  platform: { id: number; name: string | null } | null
   scope: 'PUBLIC' | 'PRIVATE' | 'UNLISTED'
   status: 'NEW' | 'LOCKED'
   hidden: boolean

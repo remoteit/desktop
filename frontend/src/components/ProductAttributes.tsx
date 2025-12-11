@@ -30,7 +30,7 @@ export const productAttributes: ProductAttribute[] = [
     defaultWidth: 100,
     value: ({ product }: IProductOptions) => (
       <Typography variant="body2" color="grayDarker.main">
-        {product?.platform}
+        {product?.platform?.name || product?.platform?.id}
       </Typography>
     ),
   }),
@@ -44,18 +44,6 @@ export const productAttributes: ProductAttribute[] = [
         label={product?.status === 'LOCKED' ? 'Locked' : 'Draft'}
         color={product?.status === 'LOCKED' ? 'primary' : 'default'}
         variant={product?.status === 'LOCKED' ? 'filled' : 'outlined'}
-      />
-    ),
-  }),
-  new ProductAttribute({
-    id: 'productScope',
-    label: 'Scope',
-    defaultWidth: 90,
-    value: ({ product }: IProductOptions) => (
-      <Chip
-        size="small"
-        label={product?.scope.toLowerCase()}
-        color={product?.scope === 'PRIVATE' ? 'secondary' : 'default'}
       />
     ),
   }),
@@ -77,6 +65,13 @@ export const productAttributes: ProductAttribute[] = [
       product?.hidden ? (
         <Chip size="small" label="Hidden" variant="outlined" />
       ) : null,
+  }),
+  new ProductAttribute({
+    id: 'productCreated',
+    label: 'Created',
+    defaultWidth: 150,
+    value: ({ product }: IProductOptions) =>
+      product?.created && <Timestamp date={new Date(product.created)} />,
   }),
   new ProductAttribute({
     id: 'productUpdated',

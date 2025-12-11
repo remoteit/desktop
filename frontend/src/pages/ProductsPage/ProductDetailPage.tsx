@@ -153,8 +153,7 @@ export const ProductDetailPage: React.FC = () => {
               Services ({product.services.length})
             </Typography>
             {!isLocked && (
-              <Button size="small" onClick={() => setAddServiceOpen(true)}>
-                <Icon name="plus" size="sm" inline />
+              <Button size="small" onClick={() => setAddServiceOpen(true)} startIcon={<Icon name="plus" />}>
                 Add Service
               </Button>
             )}
@@ -197,7 +196,7 @@ export const ProductDetailPage: React.FC = () => {
           </Typography>
           <List dense>
             <ListItem>
-              <ListItemText primary="Platform" secondary={product.platform} />
+              <ListItemText primary="Platform" secondary={product.platform?.name || product.platform?.id} />
             </ListItem>
             <ListItem>
               <ListItemText primary="Scope" secondary={product.scope.toLowerCase()} />
