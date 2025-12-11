@@ -20,6 +20,7 @@ import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
+import { ProductsHeaderButtons } from './ProductsHeaderButtons'
 
 export const Header: React.FC = () => {
   const { searched } = useSelector(selectDeviceModelAttributes)
@@ -123,6 +124,7 @@ export const Header: React.FC = () => {
                 </Route>
               </Switch>
             )}
+            <ProductsHeaderButtons />
             {!showSearch && (
               <Route path="/devices/:deviceID/:serviceID?">
                 <HeaderDeviceOptionMenu />

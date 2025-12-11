@@ -17,7 +17,7 @@ export const GridListItem: React.FC<Props> = ({ required, icon, mobile, children
     <ListItemButton className={css.row} {...props}>
       <Box className={css.sticky}>
         <Box>
-          <ListItemIcon>{icon}</ListItemIcon>
+          {icon && <ListItemIcon>{icon}</ListItemIcon>}
           {required}
         </Box>
       </Box>

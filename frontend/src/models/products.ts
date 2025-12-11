@@ -35,12 +35,16 @@ type ProductsState = {
   initialized: boolean
   fetching: boolean
   all: IDeviceProduct[]
+  selected: string[]
+  showHidden: boolean
 }
 
 const defaultState: ProductsState = {
   initialized: false,
   fetching: false,
   all: [],
+  selected: [],
+  showHidden: false,
 }
 
 export default createModel<RootModel>()({
@@ -82,9 +86,54 @@ export default createModel<RootModel>()({
       if (!graphQLGetErrors(response)) {
         dispatch.products.set({
           all: state.products.all.filter(p => p.id !== id),
+          selected: state.products.selected.filter(s => s !== id),
         })
       }
       return !graphQLGetErrors(response)
+    },
+
+    async deleteSelected(_: void, state) {
+      const { selected, all } = state.products
+      if (!selected.length) return
+
+      const results = await Promise.all(
+        selected.map(id => graphQLDeleteDeviceProduct(id))
+      )
+
+      const successIds = selected.filter((id, i) => !graphQLGetErrors(results[i]))
+      
+      dispatch.products.set({
+        all: all.filter(p => !successIds.includes(p.id)),
+        selected: [],
+      })
+    },
+
+    select(id: string, state) {
+      const { selected } = state.products
+      if (selected.includes(id)) {
+        dispatch.products.set({ selected: selected.filter(s => s !== id) })
+      } else {
+        dispatch.products.set({ selected: [...selected, id] })
+      }
+    },
+
+    selectAll(checked: boolean, state) {
+      const { all, showHidden } = state.products
+      const visibleProducts = showHidden ? all : all.filter(p => !p.hidden)
+      dispatch.products.set({
+        selected: checked ? visibleProducts.map(p => p.id) : [],
+      })
+    },
+
+    clearSelection() {
+      dispatch.products.set({ selected: [] })
+    },
+
+    toggleShowHidden(_: void, state) {
+      dispatch.products.set({
+        showHidden: !state.products.showHidden,
+        selected: [],
+      })
     },
 
     async updateSettings({ id, input }: { id: string; input: { lock?: boolean; hidden?: boolean } }, state) {

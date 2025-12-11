@@ -49,6 +49,7 @@ const useStyles = makeStyles(({ palette }) => ({
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     display: 'flex',
+    alignItems: 'center',
     '& .hoverHide': { opacity: 0, transition: 'opacity 200ms' },
     '&:hover .hoverHide': { opacity: 1, transition: 'opacity 200ms' },
   },

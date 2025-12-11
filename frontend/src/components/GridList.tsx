@@ -98,8 +98,9 @@ const useStyles = makeStyles(({ palette }) => ({
       minHeight: rowHeight - 6 - rowShrink,
     },
     '& .attribute': {
-      display: 'block',
-      minHeight: 0,
+      display: 'flex',
+      alignItems: 'center',
+      minHeight: rowHeight - 6 - rowShrink,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',

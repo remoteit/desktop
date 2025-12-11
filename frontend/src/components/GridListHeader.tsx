@@ -64,7 +64,7 @@ export const GridListHeader: React.FC<Props> = ({
       />
       {required && (
         <GridListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
-          <ListItemIcon>{icon}</ListItemIcon>
+          {icon && <ListItemIcon>{icon}</ListItemIcon>}
         </GridListHeaderTitle>
       )}
       {!mobile &&

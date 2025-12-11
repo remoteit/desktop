@@ -234,12 +234,17 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <ProductAddPage />
         </Panel>
       </Route>
+      <Route path="/products/select">
+        <Panel layout={layout}>
+          <ProductsPage />
+        </Panel>
+      </Route>
       <Route path="/products/:productId">
         <Panel layout={layout}>
           <ProductDetailPage />
         </Panel>
       </Route>
-      <Route path="/products">
+      <Route path="/products" exact>
         <Panel layout={layout}>
           <ProductsPage />
         </Panel>
