@@ -20,6 +20,7 @@ import mfa from './mfa'
 import networks from './networks'
 import organization from './organization'
 import plans from './plans'
+import products from './products'
 import search from './search'
 import sessions from './sessions'
 import shares from './shares'
@@ -49,6 +50,7 @@ export interface RootModel extends Models<RootModel> {
   networks: typeof networks
   organization: typeof organization
   plans: typeof plans
+  products: typeof products
   search: typeof search
   sessions: typeof sessions
   shares: typeof shares
@@ -79,6 +81,7 @@ export const models: RootModel = {
   networks,
   organization,
   plans,
+  products,
   search,
   sessions,
   shares,

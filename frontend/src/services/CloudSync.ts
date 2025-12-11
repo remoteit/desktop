@@ -64,6 +64,7 @@ class CloudSync {
       dispatch.networks.fetch,
       dispatch.connections.fetch,
       dispatch.files.fetch,
+      dispatch.products.fetch,
     ])
   }
 }

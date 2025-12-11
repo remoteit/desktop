@@ -16,7 +16,8 @@ import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { Notice } from '../../components/Notice'
 import { spacing } from '../../styling'
-import { graphQLCreateDeviceProduct, graphQLPlatformTypes } from '../../services/graphQLDeviceProducts'
+import { dispatch } from '../../store'
+import { graphQLPlatformTypes } from '../../services/graphQLDeviceProducts'
 import { graphQLGetErrors } from '../../services/graphQL'
 
 interface IPlatformType {
@@ -29,7 +30,7 @@ export const ProductAddPage: React.FC = () => {
   const css = useStyles()
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState('')
-  const [platforms, setPlatforms] = useState<IPlatformType[]>([])
+  const [platformTypes, setPlatformTypes] = useState<IPlatformType[]>([])
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,7 +38,7 @@ export const ProductAddPage: React.FC = () => {
     const fetchPlatforms = async () => {
       const response = await graphQLPlatformTypes()
       if (!graphQLGetErrors(response)) {
-        setPlatforms(response?.data?.data?.platformTypes || [])
+        setPlatformTypes(response?.data?.data?.platformTypes || [])
       }
     }
     fetchPlatforms()
@@ -56,18 +57,11 @@ export const ProductAddPage: React.FC = () => {
     setError(null)
     setCreating(true)
 
-    const response = await graphQLCreateDeviceProduct({
+    const product = await dispatch.products.create({
       name: name.trim(),
       platform,
     })
 
-    if (graphQLGetErrors(response)) {
-      setError('Failed to create product')
-      setCreating(false)
-      return
-    }
-
-    const product = response?.data?.data?.createDeviceProduct
     if (product) {
       history.push(`/products/${product.id}`)
     } else {
@@ -112,9 +106,9 @@ export const ProductAddPage: React.FC = () => {
             value={platform}
             onChange={e => setPlatform(e.target.value)}
             label="Platform"
-            disabled={creating || platforms.length === 0}
+            disabled={creating || platformTypes.length === 0}
           >
-            {platforms.map(p => (
+            {platformTypes.map(p => (
               <MenuItem key={p.id} value={String(p.id)}>
                 {p.name}
               </MenuItem>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
 import {
   Dialog,
   DialogTitle,
@@ -15,30 +16,8 @@ import {
 } from '@mui/material'
 import { Icon } from '../../components/Icon'
 import { Notice } from '../../components/Notice'
-import { graphQLAddDeviceProductService } from '../../services/graphQLDeviceProducts'
-import { graphQLGetErrors } from '../../services/graphQL'
-
-// Common service types
-const SERVICE_TYPES = [
-  { value: '1', label: 'TCP (1)' },
-  { value: '4', label: 'SSH (4)' },
-  { value: '5', label: 'Web/HTTP (5)' },
-  { value: '7', label: 'VNC (7)' },
-  { value: '8', label: 'HTTPS (8)' },
-  { value: '28', label: 'RDP (28)' },
-  { value: '33', label: 'Samba (33)' },
-  { value: '34', label: 'Bulk Service (34)' },
-  { value: '35', label: 'Bulk Identification (35)' },
-]
-
-interface IProductService {
-  id: string
-  name: string
-  type: string
-  port: number
-  enabled: boolean
-  platformCode: string
-}
+import { dispatch, State } from '../../store'
+import { IProductService } from '../../models/products'
 
 interface Props {
   open: boolean
@@ -53,6 +32,7 @@ export const AddProductServiceDialog: React.FC<Props> = ({
   onClose,
   onServiceAdded,
 }) => {
+  const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const [name, setName] = useState('')
   const [type, setType] = useState('')
   const [port, setPort] = useState('')
@@ -91,27 +71,23 @@ export const AddProductServiceDialog: React.FC<Props> = ({
     setError(null)
     setCreating(true)
 
-    const response = await graphQLAddDeviceProductService(productId, {
-      name: name.trim(),
-      type,
-      port: portNum,
-      enabled,
+    const service = await dispatch.products.addService({
+      productId,
+      input: {
+        name: name.trim(),
+        type,
+        port: portNum,
+        enabled,
+      },
     })
 
-    if (graphQLGetErrors(response)) {
-      setError('Failed to add service')
-      setCreating(false)
-      return
-    }
-
-    const service = response?.data?.data?.addDeviceProductService
     if (service) {
       onServiceAdded(service)
       handleClose()
     } else {
       setError('Failed to add service')
-      setCreating(false)
     }
+    setCreating(false)
   }
 
   return (
@@ -143,9 +119,9 @@ export const AddProductServiceDialog: React.FC<Props> = ({
             label="Service Type"
             disabled={creating}
           >
-            {SERVICE_TYPES.map(t => (
-              <MenuItem key={t.value} value={t.value}>
-                {t.label}
+            {applicationTypes.map(t => (
+              <MenuItem key={t.id} value={String(t.id)}>
+                {t.name}
               </MenuItem>
             ))}
           </Select>

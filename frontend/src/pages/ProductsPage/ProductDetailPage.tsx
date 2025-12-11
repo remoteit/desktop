@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import {
   Typography,
   Button,
@@ -20,110 +21,60 @@ import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { Confirm } from '../../components/Confirm'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
 import { spacing } from '../../styling'
-import {
-  graphQLDeviceProduct,
-  graphQLUpdateDeviceProductSettings,
-  graphQLRemoveDeviceProductService,
-} from '../../services/graphQLDeviceProducts'
-import { graphQLGetErrors } from '../../services/graphQL'
+import { dispatch, State } from '../../store'
+import { IProductService } from '../../models/products'
 import { AddProductServiceDialog } from './AddProductServiceDialog'
-
-interface IDeveloperProduct {
-  id: string
-  name: string
-  platform: string
-  scope: 'PUBLIC' | 'PRIVATE' | 'UNLISTED'
-  status: 'NEW' | 'LOCKED'
-  hidden: boolean
-  created: string
-  updated: string
-  services: IProductService[]
-}
-
-interface IProductService {
-  id: string
-  name: string
-  type: { id: number; name: string } | null
-  port: number
-  enabled: boolean
-  platformCode: string
-}
 
 export const ProductDetailPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const css = useStyles()
-  const [product, setProduct] = useState<IDeveloperProduct | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { all: products, fetching, initialized } = useSelector((state: State) => state.products)
+  const product = products.find(p => p.id === productId)
   const [updating, setUpdating] = useState(false)
   const [addServiceOpen, setAddServiceOpen] = useState(false)
   const [deleteService, setDeleteService] = useState<IProductService | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  const fetchProduct = async () => {
-    setLoading(true)
-    const response = await graphQLDeviceProduct(productId)
-    if (!graphQLGetErrors(response)) {
-      setProduct(response?.data?.data?.deviceProduct || null)
-    }
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    fetchProduct()
-  }, [productId])
-
   const handleLockToggle = async () => {
     if (!product) return
     setUpdating(true)
-    const response = await graphQLUpdateDeviceProductSettings(product.id, {
-      lock: product.status !== 'LOCKED',
+    await dispatch.products.updateSettings({
+      id: product.id,
+      input: { lock: product.status !== 'LOCKED' },
     })
-    if (!graphQLGetErrors(response)) {
-      setProduct(response?.data?.data?.updateDeviceProductSettings || product)
-    }
     setUpdating(false)
   }
 
   const handleHiddenToggle = async () => {
     if (!product) return
     setUpdating(true)
-    const response = await graphQLUpdateDeviceProductSettings(product.id, {
-      hidden: !product.hidden,
+    await dispatch.products.updateSettings({
+      id: product.id,
+      input: { hidden: !product.hidden },
     })
-    if (!graphQLGetErrors(response)) {
-      setProduct(response?.data?.data?.updateDeviceProductSettings || product)
-    }
     setUpdating(false)
   }
 
   const handleDeleteService = async () => {
     if (!deleteService || !product) return
     setDeleting(true)
-    const response = await graphQLRemoveDeviceProductService(deleteService.id)
-    if (!graphQLGetErrors(response)) {
-      setProduct({
-        ...product,
-        services: product.services.filter(s => s.id !== deleteService.id),
-      })
-    }
+    await dispatch.products.removeService({
+      productId: product.id,
+      serviceId: deleteService.id,
+    })
     setDeleting(false)
     setDeleteService(null)
   }
 
   const handleServiceAdded = (service: IProductService) => {
-    if (!product) return
-    setProduct({
-      ...product,
-      services: [...product.services, service],
-    })
+    // Service is already added to store by AddProductServiceDialog
   }
 
   const isLocked = product?.status === 'LOCKED'
 
-  if (loading) {
+  if (fetching && !initialized) {
     return (
       <Container gutterBottom>
         <LoadingMessage message="Loading product..." />

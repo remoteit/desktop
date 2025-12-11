@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { Typography, Button, IconButton, Chip, FormControlLabel, Switch } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
@@ -10,62 +11,29 @@ import { Confirm } from '../../components/Confirm'
 import { Notice } from '../../components/Notice'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { spacing } from '../../styling'
-import {
-  graphQLDeviceProducts,
-  graphQLDeleteDeviceProduct,
-} from '../../services/graphQLDeviceProducts'
-import { graphQLGetErrors } from '../../services/graphQL'
-
-interface IDeveloperProduct {
-  id: string
-  name: string
-  platform: string
-  scope: 'PUBLIC' | 'PRIVATE' | 'UNLISTED'
-  status: 'NEW' | 'LOCKED'
-  hidden: boolean
-  created: string
-  updated: string
-  services: IProductService[]
-}
-
-interface IProductService {
-  id: string
-  name: string
-  type: { id: number; name: string } | null
-  port: number
-  enabled: boolean
-  platformCode: string
-}
+import { dispatch, State } from '../../store'
+import { IDeviceProduct } from '../../models/products'
 
 export const ProductsPage: React.FC = () => {
   const history = useHistory()
   const css = useStyles()
-  const [products, setProducts] = useState<IDeveloperProduct[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showHidden, setShowHidden] = useState(false)
-  const [deleteProduct, setDeleteProduct] = useState<IDeveloperProduct | null>(null)
-  const [deleting, setDeleting] = useState(false)
-
-  const fetchProducts = async (includeHidden: boolean) => {
-    setLoading(true)
-    const response = await graphQLDeviceProducts({ includeHidden })
-    if (!graphQLGetErrors(response)) {
-      setProducts(response?.data?.data?.deviceProducts?.items || [])
-    }
-    setLoading(false)
-  }
+  const { all: allProducts, fetching, initialized } = useSelector((state: State) => state.products)
 
   useEffect(() => {
-    fetchProducts(showHidden)
-  }, [showHidden])
+    dispatch.products.fetchIfEmpty()
+  }, [])
+  const [showHidden, setShowHidden] = useState(false)
+  const [deleteProduct, setDeleteProduct] = useState<IDeviceProduct | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  const products = useMemo(() => {
+    return showHidden ? allProducts : allProducts.filter(p => !p.hidden)
+  }, [allProducts, showHidden])
 
   const handleDelete = async () => {
     if (!deleteProduct) return
     setDeleting(true)
-    const response = await graphQLDeleteDeviceProduct(deleteProduct.id)
-    if (!graphQLGetErrors(response)) {
-      setProducts(products.filter(p => p.id !== deleteProduct.id))
-    }
+    await dispatch.products.delete(deleteProduct.id)
     setDeleting(false)
     setDeleteProduct(null)
   }
@@ -112,7 +80,7 @@ export const ProductsPage: React.FC = () => {
         </>
       }
     >
-      {loading ? (
+      {fetching && !initialized ? (
         <LoadingMessage message="Loading products..." />
       ) : products.length === 0 ? (
         <Body center>
