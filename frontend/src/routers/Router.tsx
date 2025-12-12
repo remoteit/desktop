@@ -6,6 +6,7 @@ import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
 import { ScriptingRouter } from './ScriptingRouter'
+import { ProductsRouter } from './ProductsRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
@@ -48,7 +49,6 @@ import { SharePage } from '../pages/SharePage'
 import { TagsPage } from '../pages/TagsPage'
 import { Panel } from '../components/Panel'
 import { LogsPage } from '../pages/LogsPage'
-import { ProductsPage, ProductDetailPage, ProductAddPage } from '../pages/ProductsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { GraphsPage } from '../pages/GraphsPage'
 import { ProfilePage } from '../pages/ProfilePage'
@@ -229,25 +229,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Panel>
       </Route>
       {/* Products */}
-      <Route path="/products/add">
-        <Panel layout={layout}>
-          <ProductAddPage />
-        </Panel>
-      </Route>
-      <Route path="/products/select">
-        <Panel layout={layout}>
-          <ProductsPage />
-        </Panel>
-      </Route>
-      <Route path="/products/:productId">
-        <Panel layout={layout}>
-          <ProductDetailPage />
-        </Panel>
-      </Route>
-      <Route path="/products" exact>
-        <Panel layout={layout}>
-          <ProductsPage />
-        </Panel>
+      <Route path="/products">
+        <ProductsRouter layout={layout} />
       </Route>
       {/* Announcements */}
       <Route path="/announcements">
