@@ -89,6 +89,9 @@ export const Header: React.FC = () => {
             />
           </>
         )}
+        <Route path="/products/:productId">
+          <IconButton to="/products" icon="chevron-left" size="md" color="grayDarker" title="Back to Products" />
+        </Route>
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         <Route path={['/devices', '/connections', '/networks']}>
           {!showSearch && !searched && (
