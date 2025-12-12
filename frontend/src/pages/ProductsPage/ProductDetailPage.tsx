@@ -127,13 +127,17 @@ export const ProductDetailPage: React.FC = () => {
             <ListItem>
               <ListItemText
                 primary="Lock Product"
-                secondary="Lock the product to enable bulk registration. Once locked, services cannot be modified."
+                secondary={
+                  isLocked
+                    ? 'This product is locked and cannot be unlocked.'
+                    : 'Lock the product to enable bulk registration. Once locked, it cannot be unlocked.'
+                }
               />
               <ListItemSecondaryAction>
                 <Switch
                   checked={isLocked}
                   onChange={handleLockToggle}
-                  disabled={updating || (isLocked && product.services.length === 0)}
+                  disabled={updating || isLocked}
                 />
               </ListItemSecondaryAction>
             </ListItem>
@@ -198,9 +202,11 @@ export const ProductDetailPage: React.FC = () => {
             <ListItem>
               <ListItemText primary="Platform" secondary={product.platform?.name || product.platform?.id} />
             </ListItem>
-            <ListItem>
-              <ListItemText primary="Scope" secondary={product.scope.toLowerCase()} />
-            </ListItem>
+            {product.scope === 'PUBLIC' && (
+              <ListItem>
+                <ListItemText primary="Scope" secondary={product.scope.toLowerCase()} />
+              </ListItem>
+            )}
             <ListItem>
               <ListItemText primary="Created" secondary={new Date(product.created).toLocaleString()} />
             </ListItem>
