@@ -4,15 +4,18 @@ import { version } from './versionHelper'
 import { store } from '../store'
 
 export function getApiURL(): string | undefined {
-  if (!store) return GRAPHQL_API
+  // TEMPORARY: Hardcoded for testing
+  return 'https://api.remote.it/graphql/evan'
 
-  const { apiGraphqlURL, switchApi } = store.getState().ui.apis
-  const { overrides } = store.getState().backend.environment
-  const defaultURL =
-    version.includes('alpha') || version.includes('beta')
-      ? overrides?.betaApiURL || GRAPHQL_BETA_API
-      : overrides?.apiURL || GRAPHQL_API
-  return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
+  // if (!store) return GRAPHQL_API
+
+  // const { apiGraphqlURL, switchApi } = store.getState().ui.apis
+  // const { overrides } = store.getState().backend.environment
+  // const defaultURL =
+  //   version.includes('alpha') || version.includes('beta')
+  //     ? overrides?.betaApiURL || GRAPHQL_BETA_API
+  //     : overrides?.apiURL || GRAPHQL_API
+  // return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
 }
 
 export function getRestApi(): string | undefined {

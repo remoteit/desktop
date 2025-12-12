@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
-import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
@@ -12,14 +11,14 @@ import { Notice } from './Notice'
 import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
+import { getProductsSelected } from '../selectors/products'
 
 type Props = {
   select?: boolean
 }
 
 export const ProductsActionBar: React.FC<Props> = ({ select }) => {
-  const productsState = useSelector((state: State) => state.products)
-  const selected = productsState?.selected || []
+  const selected = useSelector(getProductsSelected)
   const [deleting, setDeleting] = useState(false)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()

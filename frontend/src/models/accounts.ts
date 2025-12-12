@@ -69,6 +69,7 @@ export default createModel<RootModel>()({
       await dispatch.accounts.set({ activeId: accountId })
       dispatch.devices.fetchIfEmpty()
       dispatch.tags.fetchIfEmpty()
+      dispatch.products.fetchIfEmpty()
     },
     async leaveMembership(id: string, state) {
       const { membership } = state.accounts

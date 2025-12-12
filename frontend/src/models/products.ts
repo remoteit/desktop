@@ -9,6 +9,8 @@ import {
   graphQLRemoveDeviceProductService,
 } from '../services/graphQLDeviceProducts'
 import { graphQLGetErrors } from '../services/graphQL'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { State } from '../store'
 
 export interface IProductService {
   id: string
@@ -31,7 +33,7 @@ export interface IDeviceProduct {
   services: IProductService[]
 }
 
-type ProductsState = {
+export type ProductsState = {
   initialized: boolean
   fetching: boolean
   all: IDeviceProduct[]
@@ -39,7 +41,7 @@ type ProductsState = {
   showHidden: boolean
 }
 
-const defaultState: ProductsState = {
+export const defaultState: ProductsState = {
   initialized: false,
   fetching: false,
   all: [],
@@ -47,33 +49,54 @@ const defaultState: ProductsState = {
   showHidden: false,
 }
 
+type ProductsAccountState = {
+  [accountId: string]: ProductsState
+}
+
+const defaultAccountState: ProductsAccountState = {
+  default: { ...defaultState },
+}
+
+// Helper to get product model for a specific account
+export function getProductModel(state: State, accountId?: string): ProductsState {
+  const activeAccountId = selectActiveAccountId(state)
+  return state.products[accountId || activeAccountId] || state.products.default || defaultState
+}
+
 export default createModel<RootModel>()({
-  state: { ...defaultState },
+  state: { ...defaultAccountState },
   effects: dispatch => ({
     async fetch(_: void, state) {
-      dispatch.products.set({ fetching: true })
-      const response = await graphQLDeviceProducts({ includeHidden: true })
+      const accountId = selectActiveAccountId(state)
+      dispatch.products.set({ fetching: true, accountId })
+      const response = await graphQLDeviceProducts({ accountId, includeHidden: true })
       if (!graphQLGetErrors(response)) {
-        const products = response?.data?.data?.deviceProducts?.items || []
+        const products = response?.data?.data?.login?.account?.deviceProducts?.items || []
         console.log('LOADED PRODUCTS', products)
-        dispatch.products.set({ all: products, initialized: true })
+        dispatch.products.set({ all: products, initialized: true, accountId })
       }
-      dispatch.products.set({ fetching: false })
+      dispatch.products.set({ fetching: false, accountId })
     },
 
     async fetchIfEmpty(_: void, state) {
-      if (!state.products.initialized) {
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
+      // Only fetch if not initialized for this account
+      if (!productModel.initialized) {
         await dispatch.products.fetch()
       }
     },
 
     async create(input: { name: string; platform: string }, state) {
-      const response = await graphQLCreateDeviceProduct(input)
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLCreateDeviceProduct({ ...input, accountId })
       if (!graphQLGetErrors(response)) {
         const newProduct = response?.data?.data?.createDeviceProduct
         if (newProduct) {
+          const productModel = getProductModel(state, accountId)
           dispatch.products.set({
-            all: [...state.products.all, newProduct],
+            all: [...productModel.all, newProduct],
+            accountId,
           })
           return newProduct
         }
@@ -82,18 +105,23 @@ export default createModel<RootModel>()({
     },
 
     async delete(id: string, state) {
+      const accountId = selectActiveAccountId(state)
       const response = await graphQLDeleteDeviceProduct(id)
       if (!graphQLGetErrors(response)) {
+        const productModel = getProductModel(state, accountId)
         dispatch.products.set({
-          all: state.products.all.filter(p => p.id !== id),
-          selected: state.products.selected.filter(s => s !== id),
+          all: productModel.all.filter(p => p.id !== id),
+          selected: productModel.selected.filter(s => s !== id),
+          accountId,
         })
       }
       return !graphQLGetErrors(response)
     },
 
     async deleteSelected(_: void, state) {
-      const { selected, all } = state.products
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
+      const { selected, all } = productModel
       if (!selected.length) return
 
       const results = await Promise.all(
@@ -105,44 +133,57 @@ export default createModel<RootModel>()({
       dispatch.products.set({
         all: all.filter(p => !successIds.includes(p.id)),
         selected: [],
+        accountId,
       })
     },
 
     select(id: string, state) {
-      const { selected } = state.products
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
+      const { selected } = productModel
       if (selected.includes(id)) {
-        dispatch.products.set({ selected: selected.filter(s => s !== id) })
+        dispatch.products.set({ selected: selected.filter(s => s !== id), accountId })
       } else {
-        dispatch.products.set({ selected: [...selected, id] })
+        dispatch.products.set({ selected: [...selected, id], accountId })
       }
     },
 
     selectAll(checked: boolean, state) {
-      const { all, showHidden } = state.products
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
+      const { all, showHidden } = productModel
       const visibleProducts = showHidden ? all : all.filter(p => !p.hidden)
       dispatch.products.set({
         selected: checked ? visibleProducts.map(p => p.id) : [],
+        accountId,
       })
     },
 
-    clearSelection() {
-      dispatch.products.set({ selected: [] })
+    clearSelection(_: void, state) {
+      const accountId = selectActiveAccountId(state)
+      dispatch.products.set({ selected: [], accountId })
     },
 
     toggleShowHidden(_: void, state) {
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
       dispatch.products.set({
-        showHidden: !state.products.showHidden,
+        showHidden: !productModel.showHidden,
         selected: [],
+        accountId,
       })
     },
 
     async updateSettings({ id, input }: { id: string; input: { lock?: boolean; hidden?: boolean } }, state) {
+      const accountId = selectActiveAccountId(state)
       const response = await graphQLUpdateDeviceProductSettings(id, input)
       if (!graphQLGetErrors(response)) {
         const updatedProduct = response?.data?.data?.updateDeviceProductSettings
         if (updatedProduct) {
+          const productModel = getProductModel(state, accountId)
           dispatch.products.set({
-            all: state.products.all.map(p => (p.id === id ? updatedProduct : p)),
+            all: productModel.all.map(p => (p.id === id ? updatedProduct : p)),
+            accountId,
           })
         }
         return updatedProduct
@@ -154,14 +195,17 @@ export default createModel<RootModel>()({
       { productId, input }: { productId: string; input: { name: string; type: string; port: number; enabled: boolean } },
       state
     ) {
+      const accountId = selectActiveAccountId(state)
       const response = await graphQLAddDeviceProductService(productId, input)
       if (!graphQLGetErrors(response)) {
         const newService = response?.data?.data?.addDeviceProductService
         if (newService) {
+          const productModel = getProductModel(state, accountId)
           dispatch.products.set({
-            all: state.products.all.map(p =>
+            all: productModel.all.map(p =>
               p.id === productId ? { ...p, services: [...p.services, newService] } : p
             ),
+            accountId,
           })
         }
         return newService
@@ -170,27 +214,43 @@ export default createModel<RootModel>()({
     },
 
     async removeService({ productId, serviceId }: { productId: string; serviceId: string }, state) {
+      const accountId = selectActiveAccountId(state)
       const response = await graphQLRemoveDeviceProductService(serviceId)
       if (!graphQLGetErrors(response)) {
+        const productModel = getProductModel(state, accountId)
         dispatch.products.set({
-          all: state.products.all.map(p =>
+          all: productModel.all.map(p =>
             p.id === productId ? { ...p, services: p.services.filter(s => s.id !== serviceId) } : p
           ),
+          accountId,
         })
         return true
       }
       return false
     },
+
+    // Set effect that updates state for a specific account
+    async set(params: Partial<ProductsState> & { accountId?: string }, state) {
+      const accountId = params.accountId || selectActiveAccountId(state)
+      const productState = { ...getProductModel(state, accountId) }
+
+      Object.keys(params).forEach(key => {
+        if (key !== 'accountId') {
+          productState[key] = params[key]
+        }
+      })
+
+      await dispatch.products.rootSet({ [accountId]: productState })
+    },
   }),
   reducers: {
-    reset(state) {
-      state = { ...defaultState }
+    reset(state: ProductsAccountState) {
+      state = { ...defaultAccountState }
       return state
     },
-    set(state, params: Partial<ProductsState>) {
+    rootSet(state: ProductsAccountState, params: ProductsAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },
 })
-

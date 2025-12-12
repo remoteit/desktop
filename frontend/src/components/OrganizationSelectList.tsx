@@ -12,7 +12,7 @@ const AVATAR_SIZE = 28
 
 export const OrganizationSelectList: React.FC = () => {
   const history = useHistory()
-  const { accounts, devices, tags, networks, logs } = useDispatch<Dispatch>()
+  const { accounts, devices, tags, networks, logs, products } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, user } = useSelector((state: State) => ({
     activeOrg: selectOrganization(state),
     options: state.accounts.membership.map(m => {
@@ -38,6 +38,7 @@ export const OrganizationSelectList: React.FC = () => {
       networks.fetchIfEmpty()
       devices.fetchIfEmpty()
       tags.fetchIfEmpty()
+      products.fetchIfEmpty()
       history.push('/devices')
     }
   }

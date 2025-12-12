@@ -11,17 +11,18 @@ import { ProductsActionBar } from '../../components/ProductsActionBar'
 import { productAttributes } from '../../components/ProductAttributes'
 import { removeObject } from '../../helpers/utilHelper'
 import { dispatch, State } from '../../store'
+import { getProductModel } from '../../selectors/products'
 
 export const ProductsPage: React.FC = () => {
   const history = useHistory()
   const selectMatch = useRouteMatch('/products/select')
   const select = !!selectMatch
-  const productsState = useSelector((state: State) => state.products)
-  const allProducts = productsState?.all || []
-  const fetching = productsState?.fetching || false
-  const initialized = productsState?.initialized || false
-  const selected = productsState?.selected || []
-  const showHidden = productsState?.showHidden || false
+  const productModel = useSelector(getProductModel)
+  const allProducts = productModel.all || []
+  const fetching = productModel.fetching || false
+  const initialized = productModel.initialized || false
+  const selected = productModel.selected || []
+  const showHidden = productModel.showHidden || false
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(productAttributes, a => a.required === true)
 

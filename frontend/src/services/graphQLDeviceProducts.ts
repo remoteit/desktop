@@ -12,35 +12,40 @@ export async function graphQLPlatformTypes() {
 }
 
 export async function graphQLDeviceProducts(options?: {
+  accountId?: string
   includeHidden?: boolean
   size?: number
   from?: number
   after?: string
 }) {
   return await graphQLBasicRequest(
-    ` query DeviceProducts($includeHidden: Boolean, $size: Int, $from: Int, $after: ID) {
-        deviceProducts(includeHidden: $includeHidden, size: $size, from: $from, after: $after) {
-          items {
-            id
-            name
-            platform { id name }
-            scope
-            status
-            hidden
-            created
-            updated
-            services {
-              id
-              name
-              type { id name }
-              port
-              enabled
-              platformCode
+    ` query DeviceProducts($accountId: String, $includeHidden: Boolean, $size: Int, $from: Int, $after: ID) {
+        login {
+          account(id: $accountId) {
+            deviceProducts(includeHidden: $includeHidden, size: $size, from: $from, after: $after) {
+              items {
+                id
+                name
+                platform { id name }
+                scope
+                status
+                hidden
+                created
+                updated
+                services {
+                  id
+                  name
+                  type { id name }
+                  port
+                  enabled
+                  platformCode
+                }
+              }
+              total
+              hasMore
+              last
             }
           }
-          total
-          hasMore
-          last
         }
       }`,
     options || {}
@@ -76,10 +81,11 @@ export async function graphQLDeviceProduct(id: string) {
 export async function graphQLCreateDeviceProduct(input: {
   name: string
   platform: string
+  accountId?: string
 }) {
   return await graphQLBasicRequest(
-    ` mutation CreateDeviceProduct($name: String!, $platform: String!) {
-        createDeviceProduct(name: $name, platform: $platform) {
+    ` mutation CreateDeviceProduct($accountId: String, $name: String!, $platform: String!) {
+        createDeviceProduct(accountId: $accountId, name: $name, platform: $platform) {
           id
           name
           platform { id name }

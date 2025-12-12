@@ -3,13 +3,14 @@ import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Switch, Route } from 'react-router-dom'
 import { Button } from '@mui/material'
-import { State, dispatch } from '../../store'
+import { dispatch } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
+import { getProductsShowHidden } from '../../selectors/products'
 
 export const ProductsHeaderButtons: React.FC = () => {
   const history = useHistory()
-  const showHidden = useSelector((state: State) => state.products?.showHidden) || false
+  const showHidden = useSelector(getProductsShowHidden)
 
   return (
     <Route path={['/products', '/products/select']} exact>

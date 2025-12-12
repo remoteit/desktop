@@ -22,15 +22,16 @@ import { Notice } from '../../components/Notice'
 import { Confirm } from '../../components/Confirm'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { spacing } from '../../styling'
-import { dispatch, State } from '../../store'
+import { dispatch } from '../../store'
 import { IProductService } from '../../models/products'
 import { AddProductServiceDialog } from './AddProductServiceDialog'
+import { getProductModel } from '../../selectors/products'
 
 export const ProductDetailPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const css = useStyles()
-  const { all: products, fetching, initialized } = useSelector((state: State) => state.products)
+  const { all: products, fetching, initialized } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
   const [updating, setUpdating] = useState(false)
   const [addServiceOpen, setAddServiceOpen] = useState(false)
