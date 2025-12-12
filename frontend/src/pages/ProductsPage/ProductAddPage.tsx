@@ -8,7 +8,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  IconButton,
+  Box,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
@@ -76,80 +76,82 @@ export const ProductAddPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <IconButton onClick={() => history.push('/products')} sx={{ marginRight: 1 }}>
-            <Icon name="chevron-left" size="md" />
-          </IconButton>
           <Title>Create Product</Title>
         </Typography>
       }
     >
-      <div className={css.form}>
+      <div className={css.content}>
         {error && (
           <Notice severity="error" fullWidth gutterBottom>
             {error}
           </Notice>
         )}
 
-        <TextField
-          label="Product Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          fullWidth
-          required
-          autoFocus
-          margin="normal"
-          disabled={creating}
-        />
+        <Box className={css.form}>
+          <TextField
+            label="Product Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            fullWidth
+            required
+            autoFocus
+            margin="normal"
+            disabled={creating}
+          />
 
-        <FormControl fullWidth margin="normal" required>
-          <InputLabel>Platform</InputLabel>
-          <Select
-            value={platform}
-            onChange={e => setPlatform(e.target.value)}
-            label="Platform"
-            disabled={creating || platformTypes.length === 0}
-          >
-            {platformTypes
-              .filter(p => p.visible)
-              .map(p => (
-                <MenuItem key={p.id} value={String(p.id)}>
-                  {p.name}
-                </MenuItem>
-              ))}
-          </Select>
-        </FormControl>
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel>Platform</InputLabel>
+            <Select
+              value={platform}
+              onChange={e => setPlatform(e.target.value)}
+              label="Platform"
+              disabled={creating || platformTypes.length === 0}
+            >
+              {platformTypes
+                .filter(p => p.visible)
+                .map(p => (
+                  <MenuItem key={p.id} value={String(p.id)}>
+                    {p.name}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
 
-        <div className={css.actions}>
-          <Button variant="outlined" onClick={() => history.push('/products')} disabled={creating}>
-            Cancel
-          </Button>
-          <Button variant="contained" color="primary" onClick={handleCreate} disabled={creating}>
-            {creating ? (
-              <>
-                <Icon name="spinner-third" spin size="sm" inline />
-                Creating...
-              </>
-            ) : (
-              'Create Product'
-            )}
-          </Button>
-        </div>
+          <Box className={css.actions}>
+            <Button onClick={() => history.push('/products')} disabled={creating}>
+              Cancel
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleCreate} disabled={creating}>
+              {creating ? (
+                <>
+                  <Icon name="spinner-third" spin size="sm" inline />
+                  Creating...
+                </>
+              ) : (
+                'Create Product'
+              )}
+            </Button>
+          </Box>
+        </Box>
       </div>
     </Container>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  content: {
+    padding: spacing.md,
+  },
   form: {
-    maxWidth: 500,
-    margin: '0 auto',
-    padding: spacing.lg,
+    backgroundColor: palette.white.main,
+    borderRadius: 8,
+    border: `1px solid ${palette.grayLighter.main}`,
+    padding: spacing.md,
   },
   actions: {
     display: 'flex',
     justifyContent: 'flex-end',
-    gap: spacing.md,
+    gap: spacing.sm,
     marginTop: spacing.lg,
   },
 }))
-

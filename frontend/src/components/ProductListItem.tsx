@@ -31,7 +31,7 @@ export const ProductListItem: React.FC<Props> = ({
     if (select && onSelect) {
       onSelect(product.id)
     } else {
-      history.push(`/products/${product.id}`)
+      history.push(`/products/${product.id}/details`)
     }
   }
 

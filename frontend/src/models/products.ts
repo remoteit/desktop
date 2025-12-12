@@ -18,7 +18,6 @@ export interface IProductService {
   type: { id: number; name: string } | null
   port: number
   enabled: boolean
-  platformCode: string
 }
 
 export interface IDeviceProduct {

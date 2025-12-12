@@ -36,7 +36,6 @@ export async function graphQLDeviceProducts(options?: {
                   type { id name }
                   port
                   enabled
-                  platformCode
                 }
               }
               total
@@ -66,7 +65,6 @@ export async function graphQLDeviceProduct(id: string) {
             type { id name }
             port
             enabled
-            platformCode
           }
         }
       }`,
@@ -94,7 +92,6 @@ export async function graphQLCreateDeviceProduct(input: {
             type { id name }
             port
             enabled
-            platformCode
           }
         }
       }`,
@@ -130,7 +127,6 @@ export async function graphQLUpdateDeviceProductSettings(
             type { id name }
             port
             enabled
-            platformCode
           }
         }
       }`,
@@ -150,7 +146,6 @@ export async function graphQLAddDeviceProductService(
           type { id name }
           port
           enabled
-          platformCode
         }
       }`,
     { productId, ...input }
