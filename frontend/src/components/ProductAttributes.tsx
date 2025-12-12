@@ -19,9 +19,7 @@ export const productAttributes: ProductAttribute[] = [
     required: true,
     defaultWidth: 300,
     value: ({ product }: IProductOptions) => (
-      <Typography sx={{ opacity: product?.hidden ? 0.5 : 1 }}>
-        {product?.name}
-      </Typography>
+      <Typography>{product?.name}</Typography>
     ),
   }),
   new ProductAttribute({
@@ -56,15 +54,6 @@ export const productAttributes: ProductAttribute[] = [
         {product?.services?.length || 0}
       </Typography>
     ),
-  }),
-  new ProductAttribute({
-    id: 'productHidden',
-    label: 'Hidden',
-    defaultWidth: 80,
-    value: ({ product }: IProductOptions) =>
-      product?.hidden ? (
-        <Chip size="small" label="Hidden" variant="outlined" />
-      ) : null,
   }),
   new ProductAttribute({
     id: 'productCreated',

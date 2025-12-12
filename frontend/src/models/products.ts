@@ -25,9 +25,7 @@ export interface IDeviceProduct {
   id: string
   name: string
   platform: { id: number; name: string | null } | null
-  scope: 'PUBLIC' | 'PRIVATE' | 'UNLISTED'
   status: 'NEW' | 'LOCKED'
-  hidden: boolean
   created: string
   updated: string
   services: IProductService[]
@@ -38,7 +36,6 @@ export type ProductsState = {
   fetching: boolean
   all: IDeviceProduct[]
   selected: string[]
-  showHidden: boolean
 }
 
 export const defaultState: ProductsState = {
@@ -46,7 +43,6 @@ export const defaultState: ProductsState = {
   fetching: false,
   all: [],
   selected: [],
-  showHidden: false,
 }
 
 type ProductsAccountState = {
@@ -69,7 +65,7 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = selectActiveAccountId(state)
       dispatch.products.set({ fetching: true, accountId })
-      const response = await graphQLDeviceProducts({ accountId, includeHidden: true })
+      const response = await graphQLDeviceProducts({ accountId })
       if (!graphQLGetErrors(response)) {
         const products = response?.data?.data?.login?.account?.deviceProducts?.items || []
         console.log('LOADED PRODUCTS', products)
@@ -151,10 +147,8 @@ export default createModel<RootModel>()({
     selectAll(checked: boolean, state) {
       const accountId = selectActiveAccountId(state)
       const productModel = getProductModel(state, accountId)
-      const { all, showHidden } = productModel
-      const visibleProducts = showHidden ? all : all.filter(p => !p.hidden)
       dispatch.products.set({
-        selected: checked ? visibleProducts.map(p => p.id) : [],
+        selected: checked ? productModel.all.map(p => p.id) : [],
         accountId,
       })
     },
@@ -164,17 +158,7 @@ export default createModel<RootModel>()({
       dispatch.products.set({ selected: [], accountId })
     },
 
-    toggleShowHidden(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      const productModel = getProductModel(state, accountId)
-      dispatch.products.set({
-        showHidden: !productModel.showHidden,
-        selected: [],
-        accountId,
-      })
-    },
-
-    async updateSettings({ id, input }: { id: string; input: { lock?: boolean; hidden?: boolean } }, state) {
+    async updateSettings({ id, input }: { id: string; input: { lock?: boolean } }, state) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLUpdateDeviceProductSettings(id, input)
       if (!graphQLGetErrors(response)) {

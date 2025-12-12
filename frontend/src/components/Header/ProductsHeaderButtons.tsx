@@ -1,26 +1,15 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Switch, Route } from 'react-router-dom'
 import { Button } from '@mui/material'
-import { dispatch } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
-import { getProductsShowHidden } from '../../selectors/products'
 
 export const ProductsHeaderButtons: React.FC = () => {
   const history = useHistory()
-  const showHidden = useSelector(getProductsShowHidden)
 
   return (
     <Route path={['/products', '/products/select']} exact>
-      <IconButton
-        icon={showHidden ? 'eye' : 'eye-slash'}
-        title={showHidden ? 'Hide hidden products' : 'Show hidden products'}
-        type={showHidden ? 'solid' : 'regular'}
-        color={showHidden ? 'primary' : undefined}
-        onClick={() => dispatch.products.toggleShowHidden()}
-      />
       <Switch>
         <Route path="/products" exact>
           <IconButton to="/products/select" icon="check-square" title="Show Select" />

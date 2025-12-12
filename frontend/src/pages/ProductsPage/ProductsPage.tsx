@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography, Button } from '@mui/material'
@@ -18,17 +18,12 @@ export const ProductsPage: React.FC = () => {
   const selectMatch = useRouteMatch('/products/select')
   const select = !!selectMatch
   const productModel = useSelector(getProductModel)
-  const allProducts = productModel.all || []
+  const products = productModel.all || []
   const fetching = productModel.fetching || false
   const initialized = productModel.initialized || false
   const selected = productModel.selected || []
-  const showHidden = productModel.showHidden || false
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(productAttributes, a => a.required === true)
-
-  const products = useMemo(() => {
-    return showHidden ? allProducts : allProducts.filter(p => !p.hidden)
-  }, [allProducts, showHidden])
 
   useEffect(() => {
     dispatch.products.fetchIfEmpty()
@@ -62,33 +57,20 @@ export const ProductsPage: React.FC = () => {
         <Body center>
           <Icon name="box-open" size="xxl" color="grayLight" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {showHidden ? 'No products' : 'No visible products'}
+            No products
           </Typography>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            {showHidden
-              ? 'Products are used for bulk device registration and management.'
-              : 'All products may be hidden. Click the eye icon to show hidden products.'}
+            Products are used for bulk device registration and management.
           </Typography>
-          {!showHidden && allProducts.length > 0 ? (
-            <Button
-              variant="outlined"
-              sx={{ marginTop: 2 }}
-              onClick={() => dispatch.products.toggleShowHidden()}
-            >
-              <Icon name="eye" size="sm" inline />
-              Show hidden products
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ marginTop: 2 }}
-              onClick={() => history.push('/products/add')}
-            >
-              <Icon name="plus" size="sm" inline />
-              Create your first product
-            </Button>
-          )}
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: 2 }}
+            onClick={() => history.push('/products/add')}
+          >
+            <Icon name="plus" size="sm" inline />
+            Create your first product
+          </Button>
         </Body>
       ) : (
         <ProductList

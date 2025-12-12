@@ -23,14 +23,6 @@ export const getProducts = createSelector(
   (products, activeAccountId): IDeviceProduct[] => getProductModelFn(products, activeAccountId).all || []
 )
 
-export const getVisibleProducts = createSelector(
-  [getProductModel],
-  productModel => {
-    const { all, showHidden } = productModel
-    return showHidden ? all : all.filter(p => !p.hidden)
-  }
-)
-
 export const getProductsFetching = createSelector(
   [getProductModel],
   productModel => productModel.fetching
@@ -44,10 +36,5 @@ export const getProductsInitialized = createSelector(
 export const getProductsSelected = createSelector(
   [getProductModel],
   productModel => productModel.selected
-)
-
-export const getProductsShowHidden = createSelector(
-  [getProductModel],
-  productModel => productModel.showHidden
 )
 

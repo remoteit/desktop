@@ -48,16 +48,6 @@ export const ProductDetailPage: React.FC = () => {
     setUpdating(false)
   }
 
-  const handleHiddenToggle = async () => {
-    if (!product) return
-    setUpdating(true)
-    await dispatch.products.updateSettings({
-      id: product.id,
-      input: { hidden: !product.hidden },
-    })
-    setUpdating(false)
-  }
-
   const handleDeleteService = async () => {
     if (!deleteService || !product) return
     setDeleting(true)
@@ -142,13 +132,6 @@ export const ProductDetailPage: React.FC = () => {
                 />
               </ListItemSecondaryAction>
             </ListItem>
-            <Divider variant="inset" component="li" />
-            <ListItem>
-              <ListItemText primary="Hidden" secondary="Hide this product from the products list" />
-              <ListItemSecondaryAction>
-                <Switch checked={product.hidden} onChange={handleHiddenToggle} disabled={updating} />
-              </ListItemSecondaryAction>
-            </ListItem>
           </List>
         </section>
 
@@ -203,11 +186,6 @@ export const ProductDetailPage: React.FC = () => {
             <ListItem>
               <ListItemText primary="Platform" secondary={product.platform?.name || product.platform?.id} />
             </ListItem>
-            {product.scope === 'PUBLIC' && (
-              <ListItem>
-                <ListItemText primary="Scope" secondary={product.scope.toLowerCase()} />
-              </ListItem>
-            )}
             <ListItem>
               <ListItemText primary="Created" secondary={new Date(product.created).toLocaleString()} />
             </ListItem>

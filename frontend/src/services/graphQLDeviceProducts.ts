@@ -13,23 +13,20 @@ export async function graphQLPlatformTypes() {
 
 export async function graphQLDeviceProducts(options?: {
   accountId?: string
-  includeHidden?: boolean
   size?: number
   from?: number
   after?: string
 }) {
   return await graphQLBasicRequest(
-    ` query DeviceProducts($accountId: String, $includeHidden: Boolean, $size: Int, $from: Int, $after: ID) {
+    ` query DeviceProducts($accountId: String, $size: Int, $from: Int, $after: ID) {
         login {
           account(id: $accountId) {
-            deviceProducts(includeHidden: $includeHidden, size: $size, from: $from, after: $after) {
+            deviceProducts(size: $size, from: $from, after: $after) {
               items {
                 id
                 name
                 platform { id name }
-                scope
                 status
-                hidden
                 created
                 updated
                 services {
@@ -59,9 +56,7 @@ export async function graphQLDeviceProduct(id: string) {
           id
           name
           platform { id name }
-          scope
           status
-          hidden
           created
           updated
           services {
@@ -89,9 +84,7 @@ export async function graphQLCreateDeviceProduct(input: {
           id
           name
           platform { id name }
-          scope
           status
-          hidden
           created
           updated
           services {
@@ -119,7 +112,7 @@ export async function graphQLDeleteDeviceProduct(id: string) {
 
 export async function graphQLUpdateDeviceProductSettings(
   id: string,
-  input: { lock?: boolean; hidden?: boolean }
+  input: { lock?: boolean }
 ) {
   return await graphQLBasicRequest(
     ` mutation UpdateDeviceProductSettings($id: ID!, $input: DeviceProductSettingsInput!) {
@@ -127,9 +120,7 @@ export async function graphQLUpdateDeviceProductSettings(
           id
           name
           platform { id name }
-          scope
           status
-          hidden
           created
           updated
           services {
