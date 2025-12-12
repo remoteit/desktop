@@ -37,6 +37,8 @@ export const ProductDetailPage: React.FC = () => {
   const [addServiceOpen, setAddServiceOpen] = useState(false)
   const [deleteService, setDeleteService] = useState<IProductService | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [deleteProductOpen, setDeleteProductOpen] = useState(false)
+  const [deletingProduct, setDeletingProduct] = useState(false)
 
   const handleLockToggle = async () => {
     if (!product) return
@@ -61,6 +63,16 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleServiceAdded = (service: IProductService) => {
     // Service is already added to store by AddProductServiceDialog
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!product) return
+    setDeletingProduct(true)
+    const success = await dispatch.products.delete(product.id)
+    setDeletingProduct(false)
+    if (success) {
+      history.push('/products')
+    }
   }
 
   const isLocked = product?.status === 'LOCKED'
@@ -194,6 +206,31 @@ export const ProductDetailPage: React.FC = () => {
             </ListItem>
           </List>
         </section>
+
+        <section className={css.section}>
+          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+            Danger Zone
+          </Typography>
+          <List>
+            <ListItem>
+              <ListItemText
+                primary="Delete Product"
+                secondary="Permanently delete this product and all its services."
+              />
+              <ListItemSecondaryAction>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={() => setDeleteProductOpen(true)}
+                  startIcon={<Icon name="trash" />}
+                >
+                  Delete
+                </Button>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </List>
+        </section>
       </div>
 
       <AddProductServiceDialog
@@ -216,6 +253,23 @@ export const ProductDetailPage: React.FC = () => {
         </Notice>
         <Typography variant="body2">
           Are you sure you want to remove the service <b>{deleteService?.name}</b>?
+        </Typography>
+      </Confirm>
+
+      <Confirm
+        open={deleteProductOpen}
+        onConfirm={handleDeleteProduct}
+        onDeny={() => setDeleteProductOpen(false)}
+        title="Delete Product"
+        action={deletingProduct ? 'Deleting...' : 'Delete'}
+        disabled={deletingProduct}
+        color="error"
+      >
+        <Notice severity="error" gutterBottom fullWidth>
+          This action cannot be undone.
+        </Notice>
+        <Typography variant="body2">
+          Are you sure you want to permanently delete the product <b>{product.name}</b> and all its services?
         </Typography>
       </Confirm>
     </Container>

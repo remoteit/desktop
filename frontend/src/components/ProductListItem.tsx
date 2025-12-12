@@ -49,7 +49,7 @@ export const ProductListItem: React.FC<Props> = ({
             <Icon name="square" size="md" />
           )
         ) : (
-          <Icon name="box" size="md" color="grayDark" />
+          <Icon platform={product.platform?.id} platformIcon size="md" />
         )
       }
       required={required?.value({ product })}

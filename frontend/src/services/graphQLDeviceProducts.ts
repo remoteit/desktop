@@ -6,6 +6,7 @@ export async function graphQLPlatformTypes() {
         platformTypes {
           id
           name
+          visible
         }
       }`
   )

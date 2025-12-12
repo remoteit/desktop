@@ -23,6 +23,7 @@ import { graphQLGetErrors } from '../../services/graphQL'
 interface IPlatformType {
   id: number
   name: string
+  visible: boolean
 }
 
 export const ProductAddPage: React.FC = () => {
@@ -108,11 +109,13 @@ export const ProductAddPage: React.FC = () => {
             label="Platform"
             disabled={creating || platformTypes.length === 0}
           >
-            {platformTypes.map(p => (
-              <MenuItem key={p.id} value={String(p.id)}>
-                {p.name}
-              </MenuItem>
-            ))}
+            {platformTypes
+              .filter(p => p.visible)
+              .map(p => (
+                <MenuItem key={p.id} value={String(p.id)}>
+                  {p.name}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
 

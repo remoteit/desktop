@@ -19,7 +19,7 @@ export const productAttributes: ProductAttribute[] = [
     required: true,
     defaultWidth: 300,
     value: ({ product }: IProductOptions) => (
-      <Typography>{product?.name}</Typography>
+      <Typography noWrap>{product?.name}</Typography>
     ),
   }),
   new ProductAttribute({
@@ -27,7 +27,7 @@ export const productAttributes: ProductAttribute[] = [
     label: 'Platform',
     defaultWidth: 100,
     value: ({ product }: IProductOptions) => (
-      <Typography variant="body2" color="grayDarker.main">
+      <Typography variant="body2" color="grayDarker.main" noWrap>
         {product?.platform?.name || product?.platform?.id}
       </Typography>
     ),
@@ -50,7 +50,7 @@ export const productAttributes: ProductAttribute[] = [
     label: 'Services',
     defaultWidth: 80,
     value: ({ product }: IProductOptions) => (
-      <Typography variant="body2" color="grayDarker.main">
+      <Typography variant="body2" color="grayDarker.main" noWrap>
         {product?.services?.length || 0}
       </Typography>
     ),
@@ -60,14 +60,22 @@ export const productAttributes: ProductAttribute[] = [
     label: 'Created',
     defaultWidth: 150,
     value: ({ product }: IProductOptions) =>
-      product?.created && <Timestamp date={new Date(product.created)} />,
+      product?.created && (
+        <Typography variant="body2" color="grayDarker.main" noWrap>
+          <Timestamp date={new Date(product.created)} />
+        </Typography>
+      ),
   }),
   new ProductAttribute({
     id: 'productUpdated',
     label: 'Updated',
     defaultWidth: 150,
     value: ({ product }: IProductOptions) =>
-      product?.updated && <Timestamp date={new Date(product.updated)} />,
+      product?.updated && (
+        <Typography variant="body2" color="grayDarker.main" noWrap>
+          <Timestamp date={new Date(product.updated)} />
+        </Typography>
+      ),
   }),
 ]
 
