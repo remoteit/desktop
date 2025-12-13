@@ -1,22 +1,31 @@
 import React, { useEffect } from 'react'
-import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, Button } from '@mui/material'
+import { Typography, Button, Box } from '@mui/material'
 import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { ProductList } from '../../components/ProductList'
 import { ProductsActionBar } from '../../components/ProductsActionBar'
+import { ProductsListHeader } from './ProductsListHeader'
 import { productAttributes } from '../../components/ProductAttributes'
 import { removeObject } from '../../helpers/utilHelper'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-export const ProductsPage: React.FC = () => {
+type Props = {
+  showHeader?: boolean
+  showBack?: boolean
+  onBack?: () => void
+}
+
+export const ProductsPage: React.FC<Props> = ({ showHeader = false, showBack, onBack }) => {
   const history = useHistory()
-  const selectMatch = useRouteMatch('/products/select')
-  const select = !!selectMatch
+  const location = useLocation()
+  const { productId } = useParams<{ productId?: string }>()
+  const searchParams = new URLSearchParams(location.search)
+  const select = searchParams.get('select') === 'true'
   const productModel = useSelector(getProductModel)
   const products = productModel.all || []
   const fetching = productModel.fetching || false
@@ -45,12 +54,14 @@ export const ProductsPage: React.FC = () => {
   }
 
   return (
-    <Container
-      integrated
-      gutterBottom
-      bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
-      header={<ProductsActionBar select={select} />}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {showHeader && <ProductsListHeader showBack={showBack} onBack={onBack} />}
+      <ProductsActionBar select={select} />
+      <Container
+        integrated
+        gutterBottom
+        bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
+      >
       {fetching && !initialized ? (
         <LoadingMessage message="Loading products..." />
       ) : products.length === 0 ? (
@@ -81,10 +92,12 @@ export const ProductsPage: React.FC = () => {
           fetching={fetching}
           select={select}
           selected={selected}
+          activeProductId={productId}
           onSelect={handleSelect}
           onSelectAll={handleSelectAll}
         />
       )}
-    </Container>
+      </Container>
+    </Box>
   )
 }

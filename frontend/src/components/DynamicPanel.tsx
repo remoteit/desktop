@@ -8,15 +8,16 @@ type Props = {
   secondary?: React.ReactNode
   layout: ILayout
   root?: string | string[]
+  header?: boolean
 }
 
-export const DynamicPanel: React.FC<Props> = ({ root, ...props }) => {
+export const DynamicPanel: React.FC<Props> = ({ root, header = true, ...props }) => {
   const location = useLocation()
   const match = matchPath(location.pathname, { path: root, exact: true })
 
   if (props.layout.singlePanel || !props.secondary) {
-    return <Panel layout={props.layout}>{match ? props.primary : props.secondary}</Panel>
+    return <Panel layout={props.layout} header={header}>{match ? props.primary : props.secondary}</Panel>
   }
 
-  return <DoublePanel {...props} />
+  return <DoublePanel header={header} {...props} />
 }

@@ -13,6 +13,7 @@ interface Props {
   mobile?: boolean
   select?: boolean
   selected?: boolean
+  active?: boolean
   onSelect?: (id: string) => void
 }
 
@@ -23,6 +24,7 @@ export const ProductListItem: React.FC<Props> = ({
   mobile,
   select,
   selected,
+  active,
   onSelect,
 }) => {
   const history = useHistory()
@@ -31,14 +33,14 @@ export const ProductListItem: React.FC<Props> = ({
     if (select && onSelect) {
       onSelect(product.id)
     } else {
-      history.push(`/products/${product.id}/details`)
+      history.push(`/products/${product.id}`)
     }
   }
 
   return (
     <GridListItem
       onClick={handleClick}
-      selected={selected}
+      selected={selected || active}
       mobile={mobile}
       disableGutters
       icon={

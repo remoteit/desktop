@@ -15,6 +15,7 @@ export interface ProductListProps {
   products?: IDeviceProduct[]
   select?: boolean
   selected?: string[]
+  activeProductId?: string
   onSelect?: (id: string) => void
   onSelectAll?: (checked: boolean) => void
 }
@@ -27,6 +28,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   fetching,
   select,
   selected = [],
+  activeProductId,
   onSelect,
   onSelectAll,
 }) => {
@@ -60,6 +62,7 @@ export const ProductList: React.FC<ProductListProps> = ({
           mobile={mobile}
           select={select}
           selected={selected.includes(product.id)}
+          active={product.id === activeProductId}
           onSelect={onSelect}
         />
       ))}

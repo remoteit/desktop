@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { dispatch } from '../store'
@@ -22,13 +22,21 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const [deleting, setDeleting] = useState(false)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
+  const location = useLocation()
   const css = useStyles()
+
+  const clearSelectMode = () => {
+    const newParams = new URLSearchParams(location.search)
+    newParams.delete('select')
+    const search = newParams.toString()
+    history.push(`${location.pathname}${search ? `?${search}` : ''}`)
+  }
 
   const handleDelete = async () => {
     setDeleting(true)
     await dispatch.products.deleteSelected()
     setDeleting(false)
-    history.push('/products')
+    clearSelectMode()
   }
 
   return (
@@ -74,7 +82,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
             placement="bottom"
             onClick={() => {
               dispatch.products.clearSelection()
-              history.push('/products')
+              clearSelectMode()
             }}
           />
         </Box>

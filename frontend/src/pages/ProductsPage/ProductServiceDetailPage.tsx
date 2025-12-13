@@ -8,11 +8,12 @@ import {
   ListItemText,
   Divider,
   Button,
+  Box,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
-import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
+import { IconButton } from '../../buttons/IconButton'
 import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { Confirm } from '../../components/Confirm'
@@ -20,13 +21,21 @@ import { spacing } from '../../styling'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-export const ProductServiceDetailPage: React.FC = () => {
+type Props = {
+  showBack?: boolean
+}
+
+export const ProductServiceDetailPage: React.FC<Props> = ({ showBack = true }) => {
   const { productId, serviceId } = useParams<{ productId: string; serviceId: string }>()
   const history = useHistory()
   const css = useStyles()
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
   const service = product?.services.find(s => s.id === serviceId)
+  
+  const handleBack = () => {
+    history.push(`/products/${productId}`)
+  }
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -75,12 +84,19 @@ export const ProductServiceDetailPage: React.FC = () => {
   }
 
   return (
-    <Container
+    <Container 
       gutterBottom
       header={
-        <Typography variant="h1">
-          <Title>{service.name}</Title>
-        </Typography>
+        showBack ? (
+          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
+            <IconButton
+              icon="chevron-left"
+              title="Back to Product"
+              onClick={handleBack}
+              size="md"
+            />
+          </Box>
+        ) : undefined
       }
     >
       <div className={css.content}>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, List, ListItemText, Stack, Chip, Divider } from '@mui/material'
+import { Typography, List, ListItemText, Stack, Chip, Divider, Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -17,6 +17,10 @@ import { getProductModel } from '../../selectors/products'
 export const ProductPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
+  
+  const handleBack = () => {
+    history.push('/products')
+  }
   const css = useStyles()
   const { all: products, fetching, initialized } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
@@ -51,29 +55,39 @@ export const ProductPage: React.FC = () => {
     <Container
       bodyProps={{ verticalOverflow: true }}
       header={
-        <List>
-          <ListItemLocation
-            to={`/products/${product.id}/details`}
-            match={`/products/${product.id}`}
-            icon={<Icon platform={product.platform?.id} platformIcon size="lg" color="grayDark" />}
-            title={
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Title>{product.name}</Title>
-                <Chip
-                  size="small"
-                  label={isLocked ? 'Locked' : 'Draft'}
-                  color={isLocked ? 'primary' : 'default'}
-                  icon={<Icon name={isLocked ? 'lock' : 'pencil'} size="xs" />}
-                />
-              </Stack>
-            }
-          />
-          <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
-            <Typography variant="caption" color="grayDarker.main">
-              {product.platform?.name || `Platform ${product.platform?.id}`}
-            </Typography>
-          </Stack>
-        </List>
+        <Box>
+          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
+            <IconButton
+              icon="chevron-left"
+              title="Back to Products"
+              onClick={handleBack}
+              size="md"
+            />
+          </Box>
+          <List>
+            <ListItemLocation
+              to={`/products/${product.id}/details`}
+              match={`/products/${product.id}/`}
+              icon={<Icon platform={product.platform?.id} platformIcon size="lg" color="grayDark" />}
+              title={
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ marginRight: 1 }}>
+                  <Title>{product.name}</Title>
+                  <Chip
+                    size="small"
+                    label={isLocked ? 'Locked' : 'Draft'}
+                    color={isLocked ? 'primary' : 'default'}
+                    icon={<Icon name={isLocked ? 'lock' : 'pencil'} size="xs" />}
+                  />
+                </Stack>
+              }
+            />
+            <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
+              <Typography variant="caption" color="grayDarker.main">
+                {product.platform?.name || `Platform ${product.platform?.id}`}
+              </Typography>
+            </Stack>
+          </List>
+        </Box>
       }
     >
       <Typography variant="subtitle1">
