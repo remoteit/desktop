@@ -12,7 +12,7 @@ import { getProductModel } from '../../selectors/products'
 import { State } from '../../store'
 
 const MIN_WIDTH = 250
-const THREE_PANEL_WIDTH = 900 // Width threshold for showing 3 panels
+const THREE_PANEL_WIDTH = 800 // Width threshold for showing 3 panels
 const DEFAULT_LEFT_WIDTH = 350
 const DEFAULT_RIGHT_WIDTH = 350
 
