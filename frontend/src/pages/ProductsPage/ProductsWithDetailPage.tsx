@@ -152,7 +152,7 @@ export const ProductsWithDetailPage: React.FC = () => {
         {showMiddle && (
           <>
             <Box className={css.middlePanel}>
-              <ProductPage />
+              <ProductPage showRefresh={!showLeft} />
             </Box>
             
             {/* Right Divider */}
@@ -185,7 +185,7 @@ export const ProductsWithDetailPage: React.FC = () => {
                 {showMiddle ? (
                   <Redirect to={`/products/${productId}/details`} />
                 ) : (
-                  <ProductPage />
+                  <ProductPage showRefresh />
                 )}
               </Route>
             </Switch>

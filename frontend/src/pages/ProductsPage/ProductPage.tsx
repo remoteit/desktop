@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography, List, ListItemText, Stack, Chip, Divider, Box } from '@mui/material'
@@ -12,9 +12,14 @@ import { Notice } from '../../components/Notice'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { spacing } from '../../styling'
+import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-export const ProductPage: React.FC = () => {
+type Props = {
+  showRefresh?: boolean
+}
+
+export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   
@@ -26,6 +31,13 @@ export const ProductPage: React.FC = () => {
   const product = products.find(p => p.id === productId)
 
   const isLocked = product?.status === 'LOCKED'
+
+  // Refresh product data when loading
+  useEffect(() => {
+    if (productId) {
+      dispatch.products.fetchSingle(productId)
+    }
+  }, [productId])
 
   if (fetching && !initialized) {
     return (
@@ -63,6 +75,15 @@ export const ProductPage: React.FC = () => {
               onClick={handleBack}
               size="md"
             />
+            {showRefresh && (
+              <IconButton
+                icon="sync"
+                title="Refresh product"
+                onClick={() => dispatch.products.fetchSingle(productId)}
+                spin={fetching}
+                size="md"
+              />
+            )}
           </Box>
           <List>
             <ListItemLocation

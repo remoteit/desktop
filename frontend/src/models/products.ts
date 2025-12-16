@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import {
   graphQLDeviceProducts,
+  graphQLDeviceProduct,
   graphQLCreateDeviceProduct,
   graphQLDeleteDeviceProduct,
   graphQLUpdateDeviceProductSettings,
@@ -81,6 +82,29 @@ export default createModel<RootModel>()({
       if (!productModel.initialized) {
         await dispatch.products.fetch()
       }
+    },
+
+    async fetchSingle(id: string, state) {
+      const accountId = selectActiveAccountId(state)
+      dispatch.products.set({ fetching: true, accountId })
+      const response = await graphQLDeviceProduct(id)
+      if (!graphQLGetErrors(response)) {
+        const product = response?.data?.data?.deviceProduct
+        if (product) {
+          const productModel = getProductModel(state, accountId)
+          const exists = productModel.all.some(p => p.id === id)
+          dispatch.products.set({
+            all: exists
+              ? productModel.all.map(p => (p.id === id ? product : p))
+              : [...productModel.all, product],
+            accountId,
+          })
+          dispatch.products.set({ fetching: false, accountId })
+          return product
+        }
+      }
+      dispatch.products.set({ fetching: false, accountId })
+      return null
     },
 
     async create(input: { name: string; platform: string }, state) {
