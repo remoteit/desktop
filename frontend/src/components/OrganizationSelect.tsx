@@ -19,7 +19,7 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
-  const { accounts, devices, files, tags, networks, logs } = useDispatch<Dispatch>()
+  const { accounts, devices, files, tags, networks, logs, products } = useDispatch<Dispatch>()
 
   let activeOrg = useSelector(selectOrganization)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
@@ -57,7 +57,8 @@ export const OrganizationSelect: React.FC = () => {
     devices.fetchIfEmpty()
     files.fetchIfEmpty()
     tags.fetchIfEmpty()
-    if (!mobile && ['/devices', '/networks', '/connections'].includes(menu)) {
+    products.fetchIfEmpty()
+    if (!mobile && ['/devices', '/networks', '/connections', '/products'].includes(menu)) {
       history.push(defaultSelection[id]?.[menu] || menu)
     }
   }

@@ -6,6 +6,7 @@ import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
 import { ScriptingRouter } from './ScriptingRouter'
+import { ProductsRouter } from './ProductsRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../constants'
@@ -226,6 +227,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <Panel layout={layout}>
           <LogsPage />
         </Panel>
+      </Route>
+      {/* Products */}
+      <Route path="/products">
+        <ProductsRouter layout={layout} />
       </Route>
       {/* Announcements */}
       <Route path="/announcements">

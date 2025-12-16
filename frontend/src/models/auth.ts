@@ -264,6 +264,7 @@ export default createModel<RootModel>()({
       dispatch.tags.reset()
       dispatch.mfa.reset()
       dispatch.ui.reset()
+      dispatch.products.reset()
 
       cloudSync.reset()
       dispatch.accounts.set({ activeId: undefined })

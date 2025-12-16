@@ -5,12 +5,13 @@ import browser from '../../services/browser'
 import { emit } from '../../services/Controller'
 import { State } from '../../store'
 import { Dispatch } from '../../store'
-import { useMediaQuery } from '@mui/material'
+import { useMediaQuery, Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
+import { ProductsHeaderButtons } from './ProductsHeaderButtons'
 import { ScriptDeleteButton } from '../ScriptDeleteButton'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -89,6 +90,13 @@ export const Header: React.FC = () => {
           </>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
+        {sidebarHidden && (
+          <Route path={['/products', '/products/add']} exact>
+            <Typography variant="h2">
+              <Title>Products</Title>
+            </Typography>
+          </Route>
+        )}
         <Route path={['/devices', '/connections', '/networks']}>
           {!showSearch && !searched && (
             <IconButton
@@ -128,6 +136,9 @@ export const Header: React.FC = () => {
                 <HeaderDeviceOptionMenu />
               </Route>
             )}
+            <Route path={['/products', '/products/add']} exact>
+              <ProductsHeaderButtons />
+            </Route>
             <Route path={layout.singlePanel ? '/script/:fileID' : '/script/:fileID/:jobID?/:jobDeviceID?'} exact>
               <ScriptDeleteButton />
             </Route>

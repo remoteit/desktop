@@ -8,12 +8,13 @@ type Props = {
   primary: React.ReactNode
   secondary?: React.ReactNode
   layout: ILayout
+  header?: boolean
 }
 
 const MIN_WIDTH = 250
 const PADDING = 9
 
-export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => {
+export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout, header = true }) => {
   const [panelWidth, setPanelWidth] = usePanelWidth()
   const handleRef = useRef<number>(panelWidth)
   const primaryRef = useRef<HTMLDivElement>(null)
@@ -74,7 +75,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout }) => 
   return (
     <>
       <div className={classnames(css.panel, css.primary)} style={{ minWidth: width, width }} ref={primaryRef}>
-        <Header />
+        {header && <Header />}
         {primary}
       </div>
       <div className={css.anchor}>
