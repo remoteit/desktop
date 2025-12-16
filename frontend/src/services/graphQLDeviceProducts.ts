@@ -28,6 +28,7 @@ export async function graphQLDeviceProducts(options?: {
                 name
                 platform { id name }
                 status
+                registrationCode
                 created
                 updated
                 services {
@@ -57,6 +58,7 @@ export async function graphQLDeviceProduct(id: string) {
           name
           platform { id name }
           status
+          registrationCode
           created
           updated
           services {
@@ -84,6 +86,7 @@ export async function graphQLCreateDeviceProduct(input: {
           name
           platform { id name }
           status
+          registrationCode
           created
           updated
           services {
@@ -119,6 +122,7 @@ export async function graphQLUpdateDeviceProductSettings(
           name
           platform { id name }
           status
+          registrationCode
           created
           updated
           services {

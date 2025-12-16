@@ -1,10 +1,12 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
 import { GridListItem } from './GridListItem'
 import { Attribute } from './Attributes'
 import { Icon } from './Icon'
 import { IDeviceProduct } from '../models/products'
+import { Dispatch } from '../store'
 
 interface Props {
   product: IDeviceProduct
@@ -28,12 +30,15 @@ export const ProductListItem: React.FC<Props> = ({
   onSelect,
 }) => {
   const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
 
   const handleClick = () => {
     if (select && onSelect) {
       onSelect(product.id)
     } else {
-      history.push(`/products/${product.id}`)
+      const to = `/products/${product.id}`
+      dispatch.ui.setDefaultSelected({ key: '/products', value: to })
+      history.push(to)
     }
   }
 

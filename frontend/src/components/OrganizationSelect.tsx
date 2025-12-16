@@ -58,7 +58,7 @@ export const OrganizationSelect: React.FC = () => {
     files.fetchIfEmpty()
     tags.fetchIfEmpty()
     products.fetchIfEmpty()
-    if (!mobile && ['/devices', '/networks', '/connections'].includes(menu)) {
+    if (!mobile && ['/devices', '/networks', '/connections', '/products'].includes(menu)) {
       history.push(defaultSelection[id]?.[menu] || menu)
     }
   }

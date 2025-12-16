@@ -25,6 +25,7 @@ export interface IDeviceProduct {
   name: string
   platform: { id: number; name: string | null } | null
   status: 'NEW' | 'LOCKED'
+  registrationCode?: string
   created: string
   updated: string
   services: IProductService[]

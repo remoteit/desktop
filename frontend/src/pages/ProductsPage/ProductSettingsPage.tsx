@@ -16,6 +16,7 @@ import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
 import { IconButton } from '../../buttons/IconButton'
+import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { Confirm } from '../../components/Confirm'
@@ -98,6 +99,20 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
             Product Details
           </Typography>
           <List dense>
+            {isLocked && product.registrationCode && (
+              <>
+                <ListItem>
+                  <ListItemText
+                    primary="Registration Code"
+                    secondary={product.registrationCode}
+                  />
+                  <ListItemSecondaryAction>
+                    <CopyIconButton value={product.registrationCode} title="Copy Registration Code" size="md" />
+                  </ListItemSecondaryAction>
+                </ListItem>
+                <Divider component="li" />
+              </>
+            )}
             <ListItem>
               <ListItemText
                 primary="Platform"
@@ -124,6 +139,16 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
                 primary="Updated"
                 secondary={new Date(product.updated).toLocaleString()}
               />
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemText
+                primary="Product ID"
+                secondary={product.id}
+              />
+              <ListItemSecondaryAction>
+                <CopyIconButton value={product.id} title="Copy Product ID" size="md" />
+              </ListItemSecondaryAction>
             </ListItem>
           </List>
         </section>
