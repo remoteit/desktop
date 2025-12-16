@@ -176,7 +176,7 @@ declare global {
     id: string
     type: INoticeType
     title: string
-    link: string
+    link?: string
     image: string
     body: string | React.ReactNode
     modified?: Date
