@@ -300,7 +300,8 @@ export default class ElectronApp {
   }
 
   private saveWindowState = () => {
-    const bounds = this.window?.getBounds()
+    if (!this.window || this.window.isDestroyed()) return
+    const bounds = this.window.getBounds()
     preferences.update({ windowState: bounds })
   }
 
