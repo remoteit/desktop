@@ -6,23 +6,27 @@ import { OrganizationSidebar } from './OrganizationSidebar'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterMenu } from './RegisterMenu'
 import { SidebarNav } from './SidebarNav'
+import { AdminSidebarNav } from './AdminSidebarNav'
 import { AvatarMenu } from './AvatarMenu'
 import { spacing } from '../styling'
 import { Body } from './Body'
+import { useSelector } from 'react-redux'
+import { State } from '../store'
 
 export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const addSpace = browser.isMac && browser.isElectron && !layout.showOrgs
+  const adminMode = useSelector((state: State) => state.ui.adminMode)
   const css = useStyles({ insets: layout.insets, addSpace })
 
   return (
-    <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs}>
+    <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs || adminMode}>
       <Body className={css.sidebar} scrollbarBackground="grayLighter">
         <section className={css.header}>
           <AvatarMenu />
-          <RegisterMenu buttonSize={38} sidebar type="solid" />
+          {!adminMode && <RegisterMenu buttonSize={38} sidebar type="solid" />}
         </section>
-        <SidebarNav />
-        <RemoteManagement />
+        {adminMode ? <AdminSidebarNav /> : <SidebarNav />}
+        {!adminMode && <RemoteManagement />}
       </Body>
     </OrganizationSidebar>
   )
