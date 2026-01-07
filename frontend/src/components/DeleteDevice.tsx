@@ -12,9 +12,10 @@ type Props = {
   menuItem?: boolean
   hide?: boolean
   onClick?: () => void
+  onCancel?: () => void
 }
 
-export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick }) => {
+export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick, onCancel }) => {
   const { devices, ui } = useDispatch<Dispatch>()
   const userId = useSelector((state: State) => state.auth.user?.id)
   const destroying = useSelector((state: State) => state.ui.destroying)
@@ -70,6 +71,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick 
       disabled={disabled || setupBusy}
       destroying={destroying || setupDeletingDevice}
       onDelete={destroy}
+      onCancel={onCancel}
     />
   )
 
