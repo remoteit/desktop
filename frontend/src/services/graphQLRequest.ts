@@ -8,6 +8,7 @@ export async function graphQLLogin() {
           email
           authhash
           yoicsId
+          admin
         }
       }`
   )
@@ -118,6 +119,13 @@ export async function graphQLUser(accountId: string) {
               notificationUrl
             }
             attributes
+            info {
+              devices {
+                total
+                online
+                offline
+              }
+            }
           }
         }
       }`,
@@ -391,6 +399,72 @@ export async function graphQLFetchOrganizations(ids: string[]) {
   )
 }
 
+export async function graphQLAdminUsers(
+  options: { from?: number; size?: number },
+  filters?: { search?: string; email?: string; accountId?: string },
+  sort?: string
+) {
+  return await graphQLBasicRequest(
+    ` query AdminUsers($from: Int, $size: Int, $search: String, $email: String, $accountId: String, $sort: String) {
+        admin {
+          users(from: $from, size: $size, search: $search, email: $email, accountId: $accountId, sort: $sort) {
+            items {
+              id
+              email
+              created
+              info {
+                devices {
+                  total
+                }
+              }
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    {
+      from: options.from,
+      size: options.size,
+      search: filters?.search,
+      email: filters?.email,
+      accountId: filters?.accountId,
+      sort,
+    }
+  )
+}
+
+export async function graphQLAdminUser(accountId: string) {
+  return await graphQLBasicRequest(
+    ` query AdminUser($accountId: String) {
+        admin {
+          users(from: 0, size: 1, accountId: $accountId) {
+            items {
+              id
+              email
+              created
+              lastLogin
+              info {
+                devices {
+                  total
+                  online
+                  offline
+                }
+              }
+              organization {
+                name
+              }
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    { accountId }
+  )
+}
+
+
 export async function graphQLFetchGuests(accountId: string) {
   return await graphQLBasicRequest(
     ` query Guests($accountId: String) {
@@ -477,5 +551,115 @@ export async function graphQLGetResellerReportUrl(accountId: string) {
         }
       }`,
     { accountId }
+  )
+}
+
+export async function graphQLAdminUserDevices(
+  accountId: string,
+  options: { from?: number; size?: number } = {}
+) {
+  return await graphQLBasicRequest(
+    ` query AdminUserDevices($accountId: String!, $from: Int, $size: Int) {
+        login {
+          account(id: $accountId) {
+            devices(from: $from, size: $size) {
+              total
+              items {
+                id
+                name
+                state
+                platform
+                license
+                lastReported
+                created
+                endpoint {
+                  externalAddress
+                }
+                owner {
+                  id
+                  email
+                }
+                services {
+                  id
+                  name
+                  state
+                }
+              }
+            }
+          }
+        }
+      }`,
+    { accountId, from: options.from || 0, size: options.size || 100 }
+  )
+}
+
+export async function graphQLAdminPartners() {
+  return await graphQLBasicRequest(
+    ` query AdminPartners {
+        admin {
+          partners {
+            id
+            name
+            parent {
+              id
+              name
+              deviceCount
+              online
+              active
+              activated
+            }
+            deviceCount
+            online
+            active
+            activated
+            updated
+          }
+        }
+      }`
+  )
+}
+
+export async function graphQLAdminPartner(id: string) {
+  return await graphQLBasicRequest(
+    ` query AdminPartner($id: String!) {
+        admin {
+          partners(id: $id) {
+            id
+            name
+            parent {
+              id
+              name
+              deviceCount
+              online
+              active
+              activated
+            }
+            deviceCount
+            online
+            active
+            activated
+            updated
+            users {
+              id
+              email
+              role
+              deviceCount
+              online
+              active
+              activated
+              updated
+            }
+            children {
+              id
+              name
+              deviceCount
+              online
+              active
+              activated
+            }
+          }
+        }
+      }`,
+    { id }
   )
 }

@@ -107,6 +107,7 @@ export type UIState = {
   mobileWelcome: boolean
   showDesktopNotice: boolean
   scriptForm?: IFileForm
+  adminMode: boolean
 }
 
 export const defaultState: UIState = {
@@ -211,6 +212,7 @@ export const defaultState: UIState = {
   mobileWelcome: true,
   showDesktopNotice: true,
   scriptForm: undefined,
+  adminMode: false,
 }
 
 export default createModel<RootModel>()({
