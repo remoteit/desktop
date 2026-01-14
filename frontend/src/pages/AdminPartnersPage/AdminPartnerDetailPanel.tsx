@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
-import { Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Chip } from '@mui/material'
+import { 
+  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Chip, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
+  IconButton as MuiIconButton
+} from '@mui/material'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -8,7 +12,17 @@ import { Body } from '../../components/Body'
 import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLAdminPartner } from '../../services/graphQLRequest'
+import { 
+  graphQLAdminPartner, 
+  graphQLAdminPartners,
+  graphQLAddPartnerAdmin, 
+  graphQLRemovePartnerAdmin,
+  graphQLAddPartnerChild,
+  graphQLRemovePartnerChild,
+  graphQLDeletePartner,
+  graphQLExportPartnerDevices
+} from '../../services/graphQLRequest'
+import { windowOpen } from '../../services/browser'
 import { spacing } from '../../styling'
 
 export const AdminPartnerDetailPanel: React.FC = () => {
@@ -16,6 +30,18 @@ export const AdminPartnerDetailPanel: React.FC = () => {
   const history = useHistory()
   const [partner, setPartner] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [addAdminDialogOpen, setAddAdminDialogOpen] = useState(false)
+  const [newAdminEmail, setNewAdminEmail] = useState('')
+  const [newAdminRole, setNewAdminRole] = useState('admin')
+  const [addingAdmin, setAddingAdmin] = useState(false)
+  const [removingAdmin, setRemovingAdmin] = useState<string | null>(null)
+  const [addChildDialogOpen, setAddChildDialogOpen] = useState(false)
+  const [availablePartners, setAvailablePartners] = useState<any[]>([])
+  const [selectedChildId, setSelectedChildId] = useState('')
+  const [addingChild, setAddingChild] = useState(false)
+  const [removingChild, setRemovingChild] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     if (partnerId) {
@@ -25,6 +51,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const fetchPartner = async () => {
     setLoading(true)
+    setPartner(null) // Clear stale data
     const result = await graphQLAdminPartner(partnerId)
     if (result !== 'ERROR' && result?.data?.data?.admin?.partners?.[0]) {
       setPartner(result.data.data.admin.partners[0])
@@ -42,6 +69,115 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleNavigateToUser = (userId: string) => {
     history.push(`/admin/users/${userId}`)
+  }
+
+  const handleAddAdmin = async () => {
+    if (!newAdminEmail) return
+    
+    setAddingAdmin(true)
+    const result = await graphQLAddPartnerAdmin(partnerId, newAdminEmail, newAdminRole)
+    setAddingAdmin(false)
+    
+    if (result !== 'ERROR') {
+      setAddAdminDialogOpen(false)
+      setNewAdminEmail('')
+      setNewAdminRole('admin')
+      fetchPartner()
+    } else {
+      alert('Failed to add admin. They may already have access to this entity.')
+    }
+  }
+
+  const handleRemoveAdmin = async (userId: string) => {
+    if (!confirm('Are you sure you want to remove this admin?')) return
+    
+    setRemovingAdmin(userId)
+    const result = await graphQLRemovePartnerAdmin(partnerId, userId)
+    setRemovingAdmin(null)
+    
+    if (result !== 'ERROR') {
+      fetchPartner()
+    } else {
+      alert('Failed to remove admin.')
+    }
+  }
+
+  const handleOpenAddChildDialog = async () => {
+    setAddChildDialogOpen(true)
+    // Fetch all partners to show as options
+    const result = await graphQLAdminPartners()
+    if (result !== 'ERROR' && result?.data?.data?.admin?.partners) {
+      // Filter out current partner, its children, and its parent
+      const childIds = children.map((c: any) => c.id)
+      const filtered = result.data.data.admin.partners.filter((p: any) => 
+        p.id !== partnerId && 
+        !childIds.includes(p.id) &&
+        p.id !== partner.parent?.id
+      )
+      setAvailablePartners(filtered)
+    }
+  }
+
+  const handleAddChild = async () => {
+    if (!selectedChildId) return
+    
+    setAddingChild(true)
+    const result = await graphQLAddPartnerChild(partnerId, selectedChildId)
+    setAddingChild(false)
+    
+    if (result !== 'ERROR') {
+      setAddChildDialogOpen(false)
+      setSelectedChildId('')
+      fetchPartner()
+    } else {
+      alert('Failed to add child partner.')
+    }
+  }
+
+  const handleRemoveChild = async (childId: string) => {
+    if (!confirm('Remove this child partner? It will become a top-level partner.')) return
+    
+    setRemovingChild(childId)
+    const result = await graphQLRemovePartnerChild(childId)
+    setRemovingChild(null)
+    
+    if (result !== 'ERROR') {
+      fetchPartner()
+    } else {
+      alert('Failed to remove child partner.')
+    }
+  }
+
+  const handleDeletePartner = async () => {
+    const childCount = children.length
+    const message = childCount > 0 
+      ? `Delete this partner? Its ${childCount} child partner(s) will become top-level partners.`
+      : 'Delete this partner? This action cannot be undone.'
+    
+    if (!confirm(message)) return
+    
+    setDeleting(true)
+    const result = await graphQLDeletePartner(partnerId)
+    setDeleting(false)
+    
+    if (result !== 'ERROR') {
+      history.push('/admin/partners')
+    } else {
+      alert('Failed to delete partner.')
+    }
+  }
+
+  const handleExportDevices = async () => {
+    setExporting(true)
+    const result = await graphQLExportPartnerDevices(partnerId)
+    setExporting(false)
+    
+    if (result !== 'ERROR' && result?.data?.data?.exportPartnerDevices) {
+      const url = result.data.data.exportPartnerDevices
+      windowOpen(url)
+    } else {
+      alert('Failed to export devices.')
+    }
   }
 
   if (loading) {
@@ -78,20 +214,41 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Box>
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <IconButton
-              icon="chevron-left"
-              title="Back to Partners"
-              onClick={handleBack}
-              size="md"
-            />
-            <IconButton
-              icon="sync"
-              title="Refresh partner"
-              onClick={fetchPartner}
-              spin={loading}
-              size="md"
-            />
+          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton
+                icon="chevron-left"
+                title="Back to Partners"
+                onClick={handleBack}
+                size="md"
+              />
+              <IconButton
+                icon="sync"
+                title="Refresh partner"
+                onClick={fetchPartner}
+                spin={loading}
+                size="md"
+              />
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                icon="arrow-to-bottom"
+                title="Export devices to CSV"
+                onClick={handleExportDevices}
+                disabled={exporting}
+                spin={exporting}
+                size="md"
+              />
+              <IconButton
+                icon="trash"
+                title="Delete partner"
+                onClick={handleDeletePartner}
+                disabled={deleting}
+                spin={deleting}
+                size="md"
+                color="danger"
+              />
+            </Box>
           </Box>
           <Box sx={{ paddingX: `${spacing.md}px`, paddingBottom: `${spacing.md}px` }}>
             <Typography variant="h2">
@@ -164,30 +321,51 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       </List>
 
       {/* Children Partners */}
-      {children.length > 0 && (
-        <>
-          <Typography variant="subtitle1" sx={{ marginTop: 3 }}>
+      <>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
+          <Typography variant="subtitle1">
             <Title>Child Partners ({children.length})</Title>
           </Typography>
+          <Button
+            onClick={handleOpenAddChildDialog}
+            size="small"
+            children="Add Child"
+          />
+        </Box>
+        {children.length > 0 && (
           <List disablePadding>
             {children.map((child: any, index: number) => (
               <React.Fragment key={child.id}>
                 {index > 0 && <Divider />}
-                <ListItemButton onClick={() => handleNavigateToPartner(child.id)}>
-                  <ListItemIcon>
-                    <Icon name="building" size="md" color="grayDark" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={child.name}
-                    secondary={`${child.deviceCount || 0} total • ${child.online || 0} online • ${child.active || 0} active`}
-                  />
-                  <Icon name="chevron-right" size="md" color="grayLight" />
-                </ListItemButton>
+                <ListItem
+                  secondaryAction={
+                    <MuiIconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemoveChild(child.id)
+                      }}
+                      disabled={removingChild === child.id}
+                    >
+                      <Icon name={removingChild === child.id ? 'spinner-third' : 'unlink'} size="sm" spin={removingChild === child.id} />
+                    </MuiIconButton>
+                  }
+                >
+                  <ListItemButton onClick={() => handleNavigateToPartner(child.id)}>
+                    <ListItemIcon>
+                      <Icon name="building" size="md" color="grayDark" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={child.name}
+                      secondary={`${child.deviceCount || 0} total • ${child.online || 0} online • ${child.active || 0} active`}
+                    />
+                  </ListItemButton>
+                </ListItem>
               </React.Fragment>
             ))}
           </List>
-        </>
-      )}
+        )}
+      </>
 
       {/* Registrants in this Partner */}
       {registrants.length > 0 && (
@@ -221,34 +399,114 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       )}
 
       {/* Admins in this Partner */}
-      {admins.length > 0 && (
-        <>
-          <Typography variant="subtitle1" sx={{ marginTop: 3 }}>
+      <>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
+          <Typography variant="subtitle1">
             <Title>Admins ({admins.length})</Title>
           </Typography>
+          <Button
+            onClick={() => setAddAdminDialogOpen(true)}
+            size="small"
+            children="Add Admin"
+          />
+        </Box>
+        {admins.length > 0 && (
           <List disablePadding>
             {admins.map((user: any, index: number) => (
               <React.Fragment key={user.id}>
                 {index > 0 && <Divider />}
-                <ListItemButton onClick={() => handleNavigateToUser(user.id)}>
-                  <ListItemIcon>
-                    <Icon name="user-shield" size="md" color="grayDark" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {user.email}
-                        <Chip label={user.role} size="small" variant="outlined" />
-                      </Box>
-                    }
-                  />
-                  <Icon name="chevron-right" size="md" color="grayLight" />
-                </ListItemButton>
+                <ListItem
+                  secondaryAction={
+                    <MuiIconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemoveAdmin(user.id)
+                      }}
+                      disabled={removingAdmin === user.id}
+                    >
+                      <Icon name={removingAdmin === user.id ? 'spinner-third' : 'trash'} size="sm" spin={removingAdmin === user.id} />
+                    </MuiIconButton>
+                  }
+                >
+                  <ListItemButton onClick={() => handleNavigateToUser(user.id)}>
+                    <ListItemIcon>
+                      <Icon name="user-shield" size="md" color="grayDark" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {user.email}
+                          <Chip label={user.role} size="small" variant="outlined" />
+                        </Box>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
               </React.Fragment>
             ))}
           </List>
-        </>
-      )}
+        )}
+      </>
+
+      {/* Add Admin Dialog */}
+      <Dialog open={addAdminDialogOpen} onClose={() => setAddAdminDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Admin to Partner</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Email"
+            type="email"
+            fullWidth
+            value={newAdminEmail}
+            onChange={(e) => setNewAdminEmail(e.target.value)}
+            sx={{ marginTop: 2 }}
+          />
+          <FormControl fullWidth sx={{ marginTop: 2 }}>
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={newAdminRole}
+              label="Role"
+              onChange={(e) => setNewAdminRole(e.target.value)}
+            >
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="admin_registrant">Admin + Registrant</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddAdminDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={handleAddAdmin} disabled={!newAdminEmail || addingAdmin}>
+            {addingAdmin ? 'Adding...' : 'Add Admin'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Child Dialog */}
+      <Dialog open={addChildDialogOpen} onClose={() => setAddChildDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Child Partner</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth sx={{ marginTop: 2 }}>
+            <InputLabel>Select Partner</InputLabel>
+            <Select
+              value={selectedChildId}
+              label="Select Partner"
+              onChange={(e) => setSelectedChildId(e.target.value)}
+            >
+              {availablePartners.map((p: any) => (
+                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddChildDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={handleAddChild} disabled={!selectedChildId || addingChild}>
+            {addingChild ? 'Adding...' : 'Add Child'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

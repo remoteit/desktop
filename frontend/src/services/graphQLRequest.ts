@@ -663,3 +663,119 @@ export async function graphQLAdminPartner(id: string) {
     { id }
   )
 }
+
+export async function graphQLCreatePartner(name: string, parentId?: string) {
+  return await graphQLBasicRequest(
+    `mutation CreatePartner($name: String!, $parentId: String) {
+      createPartner(name: $name, parentId: $parentId) {
+        id
+        name
+        deviceCount
+        online
+        active
+        activated
+        updated
+      }
+    }`,
+    { name, parentId }
+  )
+}
+
+export async function graphQLDeletePartner(id: string) {
+  return await graphQLBasicRequest(
+    `mutation DeletePartner($id: String!) {
+      deletePartner(id: $id)
+    }`,
+    { id }
+  )
+}
+
+export async function graphQLAddPartnerChild(parentId: string, childId: string) {
+  return await graphQLBasicRequest(
+    `mutation AddPartnerChild($parentId: String!, $childId: String!) {
+      addPartnerChild(parentId: $parentId, childId: $childId)
+    }`,
+    { parentId, childId }
+  )
+}
+
+export async function graphQLRemovePartnerChild(childId: string) {
+  return await graphQLBasicRequest(
+    `mutation RemovePartnerChild($childId: String!) {
+      removePartnerChild(childId: $childId)
+    }`,
+    { childId }
+  )
+}
+
+export async function graphQLAddPartnerAdmin(entityId: string, email: string, role: string = 'admin') {
+  return await graphQLBasicRequest(
+    `mutation AddPartnerAdmin($entityId: String!, $email: String!, $role: String!) {
+      addPartnerAdmin(entityId: $entityId, email: $email, role: $role)
+    }`,
+    { entityId, email, role }
+  )
+}
+
+export async function graphQLRemovePartnerAdmin(entityId: string, userId: string) {
+  return await graphQLBasicRequest(
+    `mutation RemovePartnerAdmin($entityId: String!, $userId: String!) {
+      removePartnerAdmin(entityId: $entityId, userId: $userId)
+    }`,
+    { entityId, userId }
+  )
+}
+
+export async function graphQLExportPartnerDevices(entityId: string) {
+  return await graphQLBasicRequest(
+    `query ExportPartnerDevices($entityId: String!) {
+      exportPartnerDevices(entityId: $entityId)
+    }`,
+    { entityId }
+  )
+}
+
+export async function graphQLPartnerEntities(accountId?: string) {
+  return await graphQLBasicRequest(
+    `query PartnerEntities($accountId: String) {
+      login {
+        account(id: $accountId) {
+          partnerEntities {
+            id
+            name
+            parent {
+              id
+              name
+              deviceCount
+              online
+              active
+              activated
+            }
+            deviceCount
+            online
+            active
+            activated
+            updated
+            children {
+              id
+              name
+              deviceCount
+              online
+              active
+              activated
+              children {
+                id
+                name
+                deviceCount
+                online
+                active
+                activated
+              }
+            }
+          }
+        }
+      }
+    }`,
+    { accountId }
+  )
+}

@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, Box, TextField, InputAdornment, Stack } from '@mui/material'
+import { 
+  Typography, Box, TextField, InputAdornment, Stack, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
+} from '@mui/material'
 import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLAdminPartners } from '../../services/graphQLRequest'
+import { graphQLAdminPartners, graphQLCreatePartner } from '../../services/graphQLRequest'
 import { Gutters } from '../../components/Gutters'
 import { GridList } from '../../components/GridList'
 import { GridListItem } from '../../components/GridListItem'
@@ -62,9 +65,21 @@ export const AdminPartnersListPage: React.FC = () => {
   const [searchValue, setSearchValue] = useState('')
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminPartnerAttributes, a => a.required === true)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [newPartnerName, setNewPartnerName] = useState('')
+  const [newPartnerParentId, setNewPartnerParentId] = useState('')
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     fetchPartners()
+  }, [])
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchPartners()
+    }
+    window.addEventListener('refreshAdminData', handleRefresh)
+    return () => window.removeEventListener('refreshAdminData', handleRefresh)
   }, [])
 
   const fetchPartners = async () => {
@@ -89,6 +104,25 @@ export const AdminPartnersListPage: React.FC = () => {
     history.push(`/admin/partners/${partnerId}`)
   }
 
+  const handleCreatePartner = async () => {
+    if (!newPartnerName.trim()) return
+    
+    setCreating(true)
+    const result = await graphQLCreatePartner(newPartnerName, newPartnerParentId || undefined)
+    setCreating(false)
+    
+    if (result !== 'ERROR' && result?.data?.data?.createPartner) {
+      setCreateDialogOpen(false)
+      setNewPartnerName('')
+      setNewPartnerParentId('')
+      fetchPartners()
+      // Navigate to new partner
+      history.push(`/admin/partners/${result.data.data.createPartner.id}`)
+    } else {
+      alert('Failed to create partner.')
+    }
+  }
+
   return (
     <Container
       integrated
@@ -97,12 +131,10 @@ export const AdminPartnersListPage: React.FC = () => {
       header={
         <Gutters>
           <Stack direction="row" spacing={1} alignItems="center">
-            <IconButton
-              icon="sync"
-              title="Refresh"
-              onClick={fetchPartners}
-              spin={loading}
-              size="md"
+            <Button
+              onClick={() => setCreateDialogOpen(true)}
+              size="small"
+              children="Create Partner"
             />
             <TextField
               fullWidth
@@ -158,6 +190,41 @@ export const AdminPartnersListPage: React.FC = () => {
           ))}
         </GridList>
       )}
+
+      {/* Create Partner Dialog */}
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Partner</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Partner Name"
+            fullWidth
+            value={newPartnerName}
+            onChange={(e) => setNewPartnerName(e.target.value)}
+            sx={{ marginTop: 2 }}
+          />
+          <FormControl fullWidth sx={{ marginTop: 2 }}>
+            <InputLabel>Parent Partner (Optional)</InputLabel>
+            <Select
+              value={newPartnerParentId}
+              label="Parent Partner (Optional)"
+              onChange={(e) => setNewPartnerParentId(e.target.value)}
+            >
+              <MenuItem value="">None (Top-level)</MenuItem>
+              {partners.map((p: any) => (
+                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={handleCreatePartner} disabled={!newPartnerName.trim() || creating}>
+            {creating ? 'Creating...' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

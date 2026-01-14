@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { Switch, Route, useParams, Redirect } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Switch, Route, useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
@@ -8,6 +8,8 @@ import { AdminUserDetailPage } from './AdminUserDetailPage'
 import { AdminUserAccountPanel } from './AdminUserAccountPanel'
 import { AdminUserDevicesPanel } from './AdminUserDevicesPanel'
 import { State } from '../../store'
+import { useContainerWidth } from '../../hooks/useContainerWidth'
+import { useResizablePanel } from '../../hooks/useResizablePanel'
 
 const MIN_WIDTH = 250
 const THREE_PANEL_WIDTH = 961
@@ -16,92 +18,26 @@ const DEFAULT_RIGHT_WIDTH = 350
 
 export const AdminUsersWithDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>()
+  const history = useHistory()
   const css = useStyles()
-  const containerRef = useRef<HTMLDivElement>(null)
-  
   const layout = useSelector((state: State) => state.ui.layout)
   
-  const [containerWidth, setContainerWidth] = useState<number>(1000)
-  
-  const leftPrimaryRef = useRef<HTMLDivElement>(null)
-  const leftHandleRef = useRef<number>(DEFAULT_LEFT_WIDTH)
-  const leftMoveRef = useRef<number>(0)
-  const [leftWidth, setLeftWidth] = useState<number>(DEFAULT_LEFT_WIDTH)
-  const [leftGrab, setLeftGrab] = useState<boolean>(false)
-
-  const rightHandleRef = useRef<number>(DEFAULT_RIGHT_WIDTH)
-  const rightMoveRef = useRef<number>(0)
-  const [rightWidth, setRightWidth] = useState<number>(DEFAULT_RIGHT_WIDTH)
-  const [rightGrab, setRightGrab] = useState<boolean>(false)
+  const { containerRef, containerWidth } = useContainerWidth()
+  const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
+    minWidth: MIN_WIDTH,
+  })
+  const rightPanel = useResizablePanel(DEFAULT_RIGHT_WIDTH, containerRef, {
+    minWidth: MIN_WIDTH,
+  })
 
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= THREE_PANEL_WIDTH ? 3 : 2)
 
+  // Redirect to /account tab without adding to history
   useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth)
-      }
+    if (userId && window.location.pathname === `/admin/users/${userId}`) {
+      history.replace(`/admin/users/${userId}/account`)
     }
-    
-    updateWidth()
-    
-    const resizeObserver = new ResizeObserver(updateWidth)
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current)
-    }
-    
-    return () => resizeObserver.disconnect()
-  }, [])
-
-  const onLeftMove = useCallback((event: MouseEvent) => {
-    const fullWidth = containerRef.current?.offsetWidth || 1000
-    leftHandleRef.current += event.clientX - leftMoveRef.current
-    leftMoveRef.current = event.clientX
-    if (leftHandleRef.current > MIN_WIDTH && leftHandleRef.current < fullWidth - MIN_WIDTH - rightWidth) {
-      setLeftWidth(leftHandleRef.current)
-    }
-  }, [rightWidth])
-
-  const onLeftUp = useCallback((event: MouseEvent) => {
-    setLeftGrab(false)
-    event.preventDefault()
-    window.removeEventListener('mousemove', onLeftMove)
-    window.removeEventListener('mouseup', onLeftUp)
-  }, [onLeftMove])
-
-  const onLeftDown = (event: React.MouseEvent) => {
-    setLeftGrab(true)
-    leftMoveRef.current = event.clientX
-    leftHandleRef.current = leftPrimaryRef.current?.offsetWidth || leftWidth
-    event.preventDefault()
-    window.addEventListener('mousemove', onLeftMove)
-    window.addEventListener('mouseup', onLeftUp)
-  }
-
-  const onRightMove = useCallback((event: MouseEvent) => {
-    const fullWidth = containerRef.current?.offsetWidth || 1000
-    rightHandleRef.current -= event.clientX - rightMoveRef.current
-    rightMoveRef.current = event.clientX
-    if (rightHandleRef.current > MIN_WIDTH && rightHandleRef.current < fullWidth - MIN_WIDTH - leftWidth) {
-      setRightWidth(rightHandleRef.current)
-    }
-  }, [leftWidth])
-
-  const onRightUp = useCallback((event: MouseEvent) => {
-    setRightGrab(false)
-    event.preventDefault()
-    window.removeEventListener('mousemove', onRightMove)
-    window.removeEventListener('mouseup', onRightUp)
-  }, [onRightMove])
-
-  const onRightDown = (event: React.MouseEvent) => {
-    setRightGrab(true)
-    rightMoveRef.current = event.clientX
-    rightHandleRef.current = rightWidth
-    event.preventDefault()
-    window.addEventListener('mousemove', onRightMove)
-    window.addEventListener('mouseup', onRightUp)
-  }
+  }, [userId, history])
 
   // Only show detail panels when a user is selected
   const hasUserSelected = !!userId
@@ -120,19 +56,19 @@ export const AdminUsersWithDetailPage: React.FC = () => {
             <Box 
               className={css.panel} 
               style={{ 
-                width: hasUserSelected ? leftWidth : undefined,
-                minWidth: hasUserSelected ? leftWidth : undefined,
+                width: hasUserSelected ? leftPanel.width : undefined,
+                minWidth: hasUserSelected ? leftPanel.width : undefined,
                 flex: hasUserSelected ? undefined : 1
               }} 
-              ref={leftPrimaryRef}
+              ref={leftPanel.panelRef}
             >
               <AdminUsersListPage />
             </Box>
             
             {hasUserSelected && (
               <Box className={css.anchor}>
-                <Box className={css.handle} onMouseDown={onLeftDown}>
-                  <Box className={leftGrab ? 'active' : undefined} />
+                <Box className={css.handle} onMouseDown={leftPanel.onDown}>
+                  <Box className={leftPanel.grab ? 'active' : undefined} />
                 </Box>
               </Box>
             )}
@@ -146,8 +82,8 @@ export const AdminUsersWithDetailPage: React.FC = () => {
             </Box>
             
             <Box className={css.anchor}>
-              <Box className={css.handle} onMouseDown={onRightDown}>
-                <Box className={rightGrab ? 'active' : undefined} />
+              <Box className={css.handle} onMouseDown={rightPanel.onDown}>
+                <Box className={rightPanel.grab ? 'active' : undefined} />
               </Box>
             </Box>
           </>
@@ -156,7 +92,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
         {showRight && (
           <Box 
             className={css.rightPanel} 
-            style={showMiddle ? { width: rightWidth, minWidth: rightWidth } : undefined}
+            style={showMiddle ? { width: rightPanel.width, minWidth: rightPanel.width } : undefined}
           >
             <Switch>
               <Route path="/admin/users/:userId/account">
@@ -166,11 +102,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
                 <AdminUserDevicesPanel />
               </Route>
               <Route path="/admin/users/:userId" exact>
-                {showMiddle ? (
-                  <Redirect to={`/admin/users/${userId}/account`} />
-                ) : (
-                  <AdminUserDetailPage showRefresh />
-                )}
+                {!showMiddle && <AdminUserDetailPage showRefresh />}
               </Route>
             </Switch>
           </Box>

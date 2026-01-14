@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
@@ -6,6 +6,8 @@ import { makeStyles } from '@mui/styles'
 import { AdminPartnersListPage } from './AdminPartnersListPage'
 import { AdminPartnerDetailPanel } from './AdminPartnerDetailPanel'
 import { State } from '../../store'
+import { useContainerWidth } from '../../hooks/useContainerWidth'
+import { useResizablePanel } from '../../hooks/useResizablePanel'
 
 const MIN_WIDTH = 250
 const TWO_PANEL_WIDTH = 700
@@ -14,61 +16,15 @@ const DEFAULT_LEFT_WIDTH = 350
 export const AdminPartnersPage: React.FC = () => {
   const { partnerId } = useParams<{ partnerId?: string }>()
   const css = useStyles()
-  const containerRef = useRef<HTMLDivElement>(null)
-  
   const layout = useSelector((state: State) => state.ui.layout)
   
-  const [containerWidth, setContainerWidth] = useState<number>(1000)
-  
-  const leftPrimaryRef = useRef<HTMLDivElement>(null)
-  const leftHandleRef = useRef<number>(DEFAULT_LEFT_WIDTH)
-  const leftMoveRef = useRef<number>(0)
-  const [leftWidth, setLeftWidth] = useState<number>(DEFAULT_LEFT_WIDTH)
-  const [leftGrab, setLeftGrab] = useState<boolean>(false)
+  const { containerRef, containerWidth } = useContainerWidth()
+  const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
+    minWidth: MIN_WIDTH,
+    maxWidthConstraint: containerWidth - MIN_WIDTH,
+  })
 
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= TWO_PANEL_WIDTH ? 2 : 1)
-
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth)
-      }
-    }
-    
-    updateWidth()
-    
-    const resizeObserver = new ResizeObserver(updateWidth)
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current)
-    }
-    
-    return () => resizeObserver.disconnect()
-  }, [])
-
-  const onLeftMove = useCallback((event: MouseEvent) => {
-    const fullWidth = containerRef.current?.offsetWidth || 1000
-    leftHandleRef.current += event.clientX - leftMoveRef.current
-    leftMoveRef.current = event.clientX
-    if (leftHandleRef.current > MIN_WIDTH && leftHandleRef.current < fullWidth - MIN_WIDTH) {
-      setLeftWidth(leftHandleRef.current)
-    }
-  }, [])
-
-  const onLeftUp = useCallback((event: MouseEvent) => {
-    setLeftGrab(false)
-    event.preventDefault()
-    window.removeEventListener('mousemove', onLeftMove)
-    window.removeEventListener('mouseup', onLeftUp)
-  }, [onLeftMove])
-
-  const onLeftDown = (event: React.MouseEvent) => {
-    setLeftGrab(true)
-    leftMoveRef.current = event.clientX
-    leftHandleRef.current = leftPrimaryRef.current?.offsetWidth || leftWidth
-    event.preventDefault()
-    window.addEventListener('mousemove', onLeftMove)
-    window.addEventListener('mouseup', onLeftUp)
-  }
 
   const hasPartnerSelected = !!partnerId
   const showLeft = !hasPartnerSelected || maxPanels >= 2
@@ -82,19 +38,19 @@ export const AdminPartnersPage: React.FC = () => {
             <Box 
               className={css.panel} 
               style={{ 
-                width: hasPartnerSelected ? leftWidth : undefined,
-                minWidth: hasPartnerSelected ? leftWidth : undefined,
+                width: hasPartnerSelected ? leftPanel.width : undefined,
+                minWidth: hasPartnerSelected ? leftPanel.width : undefined,
                 flex: hasPartnerSelected ? undefined : 1
               }} 
-              ref={leftPrimaryRef}
+              ref={leftPanel.panelRef}
             >
               <AdminPartnersListPage />
             </Box>
             
             {hasPartnerSelected && (
               <Box className={css.anchor}>
-                <Box className={css.handle} onMouseDown={onLeftDown}>
-                  <Box className={leftGrab ? 'active' : undefined} />
+                <Box className={css.handle} onMouseDown={leftPanel.onDown}>
+                  <Box className={leftPanel.grab ? 'active' : undefined} />
                 </Box>
               </Box>
             )}

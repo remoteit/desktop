@@ -29,6 +29,7 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
 
   const fetchUser = async () => {
     setLoading(true)
+    setUser(null) // Clear stale data
     const result = await graphQLAdminUser(userId)
     if (result !== 'ERROR' && result?.data?.data?.admin?.users?.items?.[0]) {
       setUser(result.data.data.admin.users.items[0])

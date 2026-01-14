@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React from 'react'
 import { Switch, Route, useParams, Redirect } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
@@ -10,6 +10,8 @@ import { ProductServiceDetailPage } from './ProductServiceDetailPage'
 import { ProductServiceAddPage } from './ProductServiceAddPage'
 import { getProductModel } from '../../selectors/products'
 import { State } from '../../store'
+import { useContainerWidth } from '../../hooks/useContainerWidth'
+import { useResizablePanel } from '../../hooks/useResizablePanel'
 
 const MIN_WIDTH = 250
 const THREE_PANEL_WIDTH = 961 // Width threshold for showing 3 panels
@@ -19,26 +21,17 @@ const DEFAULT_RIGHT_WIDTH = 350
 export const ProductsWithDetailPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const css = useStyles()
-  const containerRef = useRef<HTMLDivElement>(null)
   
   // Get layout from Redux for singlePanel breakpoint (750px)
   const layout = useSelector((state: State) => state.ui.layout)
   
-  // Container width for 3-panel vs 2-panel transition
-  const [containerWidth, setContainerWidth] = useState<number>(1000)
-  
-  // Left divider state
-  const leftPrimaryRef = useRef<HTMLDivElement>(null)
-  const leftHandleRef = useRef<number>(DEFAULT_LEFT_WIDTH)
-  const leftMoveRef = useRef<number>(0)
-  const [leftWidth, setLeftWidth] = useState<number>(DEFAULT_LEFT_WIDTH)
-  const [leftGrab, setLeftGrab] = useState<boolean>(false)
-
-  // Right divider state
-  const rightHandleRef = useRef<number>(DEFAULT_RIGHT_WIDTH)
-  const rightMoveRef = useRef<number>(0)
-  const [rightWidth, setRightWidth] = useState<number>(DEFAULT_RIGHT_WIDTH)
-  const [rightGrab, setRightGrab] = useState<boolean>(false)
+  const { containerRef, containerWidth } = useContainerWidth()
+  const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
+    minWidth: MIN_WIDTH,
+  })
+  const rightPanel = useResizablePanel(DEFAULT_RIGHT_WIDTH, containerRef, {
+    minWidth: MIN_WIDTH,
+  })
 
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
@@ -48,76 +41,6 @@ export const ProductsWithDetailPage: React.FC = () => {
   // - !singlePanel + wide container (>=900px): 3 panels
   // - !singlePanel + narrow container: 2 panels
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= THREE_PANEL_WIDTH ? 3 : 2)
-
-  // Track container width for 3-panel threshold
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth)
-      }
-    }
-    
-    updateWidth()
-    
-    const resizeObserver = new ResizeObserver(updateWidth)
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current)
-    }
-    
-    return () => resizeObserver.disconnect()
-  }, [])
-
-  // Left divider handlers
-  const onLeftMove = useCallback((event: MouseEvent) => {
-    const fullWidth = containerRef.current?.offsetWidth || 1000
-    leftHandleRef.current += event.clientX - leftMoveRef.current
-    leftMoveRef.current = event.clientX
-    if (leftHandleRef.current > MIN_WIDTH && leftHandleRef.current < fullWidth - MIN_WIDTH - rightWidth) {
-      setLeftWidth(leftHandleRef.current)
-    }
-  }, [rightWidth])
-
-  const onLeftUp = useCallback((event: MouseEvent) => {
-    setLeftGrab(false)
-    event.preventDefault()
-    window.removeEventListener('mousemove', onLeftMove)
-    window.removeEventListener('mouseup', onLeftUp)
-  }, [onLeftMove])
-
-  const onLeftDown = (event: React.MouseEvent) => {
-    setLeftGrab(true)
-    leftMoveRef.current = event.clientX
-    leftHandleRef.current = leftPrimaryRef.current?.offsetWidth || leftWidth
-    event.preventDefault()
-    window.addEventListener('mousemove', onLeftMove)
-    window.addEventListener('mouseup', onLeftUp)
-  }
-
-  // Right divider handlers
-  const onRightMove = useCallback((event: MouseEvent) => {
-    const fullWidth = containerRef.current?.offsetWidth || 1000
-    rightHandleRef.current -= event.clientX - rightMoveRef.current
-    rightMoveRef.current = event.clientX
-    if (rightHandleRef.current > MIN_WIDTH && rightHandleRef.current < fullWidth - MIN_WIDTH - leftWidth) {
-      setRightWidth(rightHandleRef.current)
-    }
-  }, [leftWidth])
-
-  const onRightUp = useCallback((event: MouseEvent) => {
-    setRightGrab(false)
-    event.preventDefault()
-    window.removeEventListener('mousemove', onRightMove)
-    window.removeEventListener('mouseup', onRightUp)
-  }, [onRightMove])
-
-  const onRightDown = (event: React.MouseEvent) => {
-    setRightGrab(true)
-    rightMoveRef.current = event.clientX
-    rightHandleRef.current = rightWidth
-    event.preventDefault()
-    window.addEventListener('mousemove', onRightMove)
-    window.addEventListener('mouseup', onRightUp)
-  }
 
   // Determine which panels to show based on available space
   // Priority: right panel > middle panel > left panel
@@ -133,16 +56,16 @@ export const ProductsWithDetailPage: React.FC = () => {
           <>
             <Box 
               className={css.panel} 
-              style={{ width: leftWidth, minWidth: leftWidth }} 
-              ref={leftPrimaryRef}
+              style={{ width: leftPanel.width, minWidth: leftPanel.width }} 
+              ref={leftPanel.panelRef}
             >
               <ProductsPage showHeader />
             </Box>
             
             {/* Left Divider */}
             <Box className={css.anchor}>
-              <Box className={css.handle} onMouseDown={onLeftDown}>
-                <Box className={leftGrab ? 'active' : undefined} />
+              <Box className={css.handle} onMouseDown={leftPanel.onDown}>
+                <Box className={leftPanel.grab ? 'active' : undefined} />
               </Box>
             </Box>
           </>
@@ -157,8 +80,8 @@ export const ProductsWithDetailPage: React.FC = () => {
             
             {/* Right Divider */}
             <Box className={css.anchor}>
-              <Box className={css.handle} onMouseDown={onRightDown}>
-                <Box className={rightGrab ? 'active' : undefined} />
+              <Box className={css.handle} onMouseDown={rightPanel.onDown}>
+                <Box className={rightPanel.grab ? 'active' : undefined} />
               </Box>
             </Box>
           </>
@@ -168,7 +91,7 @@ export const ProductsWithDetailPage: React.FC = () => {
         {showRight && (
           <Box 
             className={css.rightPanel} 
-            style={showMiddle ? { width: rightWidth, minWidth: rightWidth } : undefined}
+            style={showMiddle ? { width: rightPanel.width, minWidth: rightPanel.width } : undefined}
           >
             <Switch>
               <Route path="/products/:productId/add">

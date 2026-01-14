@@ -35,6 +35,14 @@ export const AdminUsersListPage: React.FC = () => {
     fetchUsers()
   }, [page, searchValue, searchType])
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchUsers()
+    }
+    window.addEventListener('refreshAdminData', handleRefresh)
+    return () => window.removeEventListener('refreshAdminData', handleRefresh)
+  }, [page, searchValue, searchType])
+
   const fetchUsers = async () => {
     setLoading(true)
     
@@ -112,13 +120,6 @@ export const AdminUsersListPage: React.FC = () => {
       header={
         <Gutters>
             <Stack direction="row" spacing={1} alignItems="center">
-              <IconButton
-                icon="sync"
-                title="Refresh"
-                onClick={fetchUsers}
-                spin={loading}
-                size="md"
-              />
               <ToggleButtonGroup
                 value={searchType}
                 exclusive
