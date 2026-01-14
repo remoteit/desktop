@@ -50,27 +50,33 @@ export async function graphQLDeviceProducts(options?: {
   )
 }
 
-export async function graphQLDeviceProduct(id: string) {
+export async function graphQLDeviceProduct(id: string, accountId?: string) {
   return await graphQLBasicRequest(
-    ` query DeviceProduct($id: ID!) {
-        deviceProduct(id: $id) {
-          id
-          name
-          platform { id name }
-          status
-          registrationCode
-          created
-          updated
-          services {
-            id
-            name
-            type { id name }
-            port
-            enabled
+    ` query DeviceProduct($id: String!, $accountId: String) {
+        login {
+          account(id: $accountId) {
+            deviceProducts(id: [$id]) {
+              items {
+                id
+                name
+                platform { id name }
+                status
+                registrationCode
+                created
+                updated
+                services {
+                  id
+                  name
+                  type { id name }
+                  port
+                  enabled
+                }
+              }
+            }
           }
         }
       }`,
-    { id }
+    { id, accountId }
   )
 }
 

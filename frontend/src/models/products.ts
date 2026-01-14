@@ -87,9 +87,10 @@ export default createModel<RootModel>()({
     async fetchSingle(id: string, state) {
       const accountId = selectActiveAccountId(state)
       dispatch.products.set({ fetching: true, accountId })
-      const response = await graphQLDeviceProduct(id)
+      const response = await graphQLDeviceProduct(id, accountId)
       if (!graphQLGetErrors(response)) {
-        const product = response?.data?.data?.deviceProduct
+        const items = response?.data?.data?.login?.account?.deviceProducts?.items || []
+        const product = items[0]
         if (product) {
           const productModel = getProductModel(state, accountId)
           const exists = productModel.all.some(p => p.id === id)

@@ -19,6 +19,7 @@ import logs from './logs'
 import mfa from './mfa'
 import networks from './networks'
 import organization from './organization'
+import partnerStats from './partnerStats'
 import plans from './plans'
 import products from './products'
 import search from './search'
@@ -49,6 +50,7 @@ export interface RootModel extends Models<RootModel> {
   mfa: typeof mfa
   networks: typeof networks
   organization: typeof organization
+  partnerStats: typeof partnerStats
   plans: typeof plans
   products: typeof products
   search: typeof search
@@ -80,6 +82,7 @@ export const models: RootModel = {
   mfa,
   networks,
   organization,
+  partnerStats,
   plans,
   products,
   search,
