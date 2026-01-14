@@ -708,12 +708,12 @@ export async function graphQLRemovePartnerChild(childId: string) {
   )
 }
 
-export async function graphQLAddPartnerAdmin(entityId: string, email: string, role: string = 'admin') {
+export async function graphQLAddPartnerAdmin(entityId: string, email: string) {
   return await graphQLBasicRequest(
-    `mutation AddPartnerAdmin($entityId: String!, $email: String!, $role: String!) {
-      addPartnerAdmin(entityId: $entityId, email: $email, role: $role)
+    `mutation AddPartnerAdmin($entityId: String!, $email: String!) {
+      addPartnerAdmin(entityId: $entityId, email: $email)
     }`,
-    { entityId, email, role }
+    { entityId, email }
   )
 }
 
@@ -721,6 +721,24 @@ export async function graphQLRemovePartnerAdmin(entityId: string, userId: string
   return await graphQLBasicRequest(
     `mutation RemovePartnerAdmin($entityId: String!, $userId: String!) {
       removePartnerAdmin(entityId: $entityId, userId: $userId)
+    }`,
+    { entityId, userId }
+  )
+}
+
+export async function graphQLAddPartnerRegistrant(entityId: string, email: string) {
+  return await graphQLBasicRequest(
+    `mutation AddPartnerRegistrant($entityId: String!, $email: String!) {
+      addPartnerRegistrant(entityId: $entityId, email: $email)
+    }`,
+    { entityId, email }
+  )
+}
+
+export async function graphQLRemovePartnerRegistrant(entityId: string, userId: string) {
+  return await graphQLBasicRequest(
+    `mutation RemovePartnerRegistrant($entityId: String!, $userId: String!) {
+      removePartnerRegistrant(entityId: $entityId, userId: $userId)
     }`,
     { entityId, userId }
   )
@@ -756,6 +774,16 @@ export async function graphQLPartnerEntities(accountId?: string) {
             active
             activated
             updated
+            users {
+              id
+              email
+              role
+              deviceCount
+              online
+              active
+              activated
+              updated
+            }
             children {
               id
               name

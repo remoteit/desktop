@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { 
-  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Chip, Button,
+  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Button,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
   IconButton as MuiIconButton
 } from '@mui/material'
@@ -17,6 +17,8 @@ import {
   graphQLAdminPartners,
   graphQLAddPartnerAdmin, 
   graphQLRemovePartnerAdmin,
+  graphQLAddPartnerRegistrant,
+  graphQLRemovePartnerRegistrant,
   graphQLAddPartnerChild,
   graphQLRemovePartnerChild,
   graphQLDeletePartner,
@@ -32,7 +34,6 @@ export const AdminPartnerDetailPanel: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [addAdminDialogOpen, setAddAdminDialogOpen] = useState(false)
   const [newAdminEmail, setNewAdminEmail] = useState('')
-  const [newAdminRole, setNewAdminRole] = useState('admin')
   const [addingAdmin, setAddingAdmin] = useState(false)
   const [removingAdmin, setRemovingAdmin] = useState<string | null>(null)
   const [addChildDialogOpen, setAddChildDialogOpen] = useState(false)
@@ -42,6 +43,10 @@ export const AdminPartnerDetailPanel: React.FC = () => {
   const [removingChild, setRemovingChild] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [addRegistrantDialogOpen, setAddRegistrantDialogOpen] = useState(false)
+  const [newRegistrantEmail, setNewRegistrantEmail] = useState('')
+  const [addingRegistrant, setAddingRegistrant] = useState(false)
+  const [removingRegistrant, setRemovingRegistrant] = useState<string | null>(null)
 
   useEffect(() => {
     if (partnerId) {
@@ -75,16 +80,15 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (!newAdminEmail) return
     
     setAddingAdmin(true)
-    const result = await graphQLAddPartnerAdmin(partnerId, newAdminEmail, newAdminRole)
+    const result = await graphQLAddPartnerAdmin(partnerId, newAdminEmail)
     setAddingAdmin(false)
     
     if (result !== 'ERROR') {
       setAddAdminDialogOpen(false)
       setNewAdminEmail('')
-      setNewAdminRole('admin')
       fetchPartner()
     } else {
-      alert('Failed to add admin. They may already have access to this entity.')
+      alert('Failed to add admin.')
     }
   }
 
@@ -99,6 +103,36 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       fetchPartner()
     } else {
       alert('Failed to remove admin.')
+    }
+  }
+
+  const handleAddRegistrant = async () => {
+    if (!newRegistrantEmail) return
+    
+    setAddingRegistrant(true)
+    const result = await graphQLAddPartnerRegistrant(partnerId, newRegistrantEmail)
+    setAddingRegistrant(false)
+    
+    if (result !== 'ERROR') {
+      setAddRegistrantDialogOpen(false)
+      setNewRegistrantEmail('')
+      fetchPartner()
+    } else {
+      alert('Failed to add registrant. They may already have access to this entity.')
+    }
+  }
+
+  const handleRemoveRegistrant = async (userId: string) => {
+    if (!confirm('Are you sure you want to remove this registrant?')) return
+    
+    setRemovingRegistrant(userId)
+    const result = await graphQLRemovePartnerRegistrant(partnerId, userId)
+    setRemovingRegistrant(null)
+    
+    if (result !== 'ERROR') {
+      fetchPartner()
+    } else {
+      alert('Failed to remove registrant.')
     }
   }
 
@@ -204,9 +238,9 @@ export const AdminPartnerDetailPanel: React.FC = () => {
   const users = partner.users || []
   const children = partner.children || []
   
-  // Split users into admins and registrants
+  // Split users into admins and registrants (admin_registrant users show in both lists)
   const admins = users.filter((u: any) => u.role === 'admin' || u.role === 'admin_registrant')
-  const registrants = users.filter((u: any) => u.role === 'admin_registrant' || u.role === 'device_registrant')
+  const registrants = users.filter((u: any) => u.role === 'device_registrant' || u.role === 'admin_registrant')
 
   return (
     <Container
@@ -368,35 +402,51 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       </>
 
       {/* Registrants in this Partner */}
-      {registrants.length > 0 && (
-        <>
-          <Typography variant="subtitle1" sx={{ marginTop: 3 }}>
+      <>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
+          <Typography variant="subtitle1">
             <Title>Registrants ({registrants.length})</Title>
           </Typography>
+          <Button
+            onClick={() => setAddRegistrantDialogOpen(true)}
+            size="small"
+            children="Add Registrant"
+          />
+        </Box>
+        {registrants.length > 0 && (
           <List disablePadding>
             {registrants.map((user: any, index: number) => (
-              <React.Fragment key={`registrant-${user.id}`}>
+              <React.Fragment key={user.id}>
                 {index > 0 && <Divider />}
-                <ListItemButton onClick={() => handleNavigateToUser(user.id)}>
-                  <ListItemIcon>
-                    <Icon name="user" size="md" color="grayDark" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {user.email}
-                        <Chip label={user.role} size="small" variant="outlined" />
-                      </Box>
-                    }
-                    secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
-                  />
-                  <Icon name="chevron-right" size="md" color="grayLight" />
-                </ListItemButton>
+                <ListItem
+                  secondaryAction={
+                    <MuiIconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemoveRegistrant(user.id)
+                      }}
+                      disabled={removingRegistrant === user.id}
+                    >
+                      <Icon name={removingRegistrant === user.id ? 'spinner-third' : 'trash'} size="sm" spin={removingRegistrant === user.id} />
+                    </MuiIconButton>
+                  }
+                >
+                  <ListItemButton onClick={() => handleNavigateToUser(user.id)}>
+                    <ListItemIcon>
+                      <Icon name="user" size="md" color="grayDark" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={user.email}
+                      secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
+                    />
+                  </ListItemButton>
+                </ListItem>
               </React.Fragment>
             ))}
           </List>
-        </>
-      )}
+        )}
+      </>
 
       {/* Admins in this Partner */}
       <>
@@ -433,13 +483,9 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                     <ListItemIcon>
                       <Icon name="user-shield" size="md" color="grayDark" />
                     </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {user.email}
-                          <Chip label={user.role} size="small" variant="outlined" />
-                        </Box>
-                      }
+                    <ListItemText 
+                      primary={user.email}
+                      secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -463,22 +509,34 @@ export const AdminPartnerDetailPanel: React.FC = () => {
             onChange={(e) => setNewAdminEmail(e.target.value)}
             sx={{ marginTop: 2 }}
           />
-          <FormControl fullWidth sx={{ marginTop: 2 }}>
-            <InputLabel>Role</InputLabel>
-            <Select
-              value={newAdminRole}
-              label="Role"
-              onChange={(e) => setNewAdminRole(e.target.value)}
-            >
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="admin_registrant">Admin + Registrant</MenuItem>
-            </Select>
-          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddAdminDialogOpen(false)} color="grayDark">Cancel</Button>
           <Button onClick={handleAddAdmin} disabled={!newAdminEmail || addingAdmin}>
             {addingAdmin ? 'Adding...' : 'Add Admin'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Registrant Dialog */}
+      <Dialog open={addRegistrantDialogOpen} onClose={() => setAddRegistrantDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Registrant to Partner</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Email"
+            type="email"
+            fullWidth
+            value={newRegistrantEmail}
+            onChange={(e) => setNewRegistrantEmail(e.target.value)}
+            sx={{ marginTop: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddRegistrantDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={handleAddRegistrant} disabled={!newRegistrantEmail || addingRegistrant}>
+            {addingRegistrant ? 'Adding...' : 'Add Registrant'}
           </Button>
         </DialogActions>
       </Dialog>
