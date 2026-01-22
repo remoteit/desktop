@@ -107,6 +107,7 @@ export type UIState = {
   mobileWelcome: boolean
   showDesktopNotice: boolean
   scriptForm?: IFileForm
+  adminMode: boolean
 }
 
 export const defaultState: UIState = {
@@ -211,6 +212,7 @@ export const defaultState: UIState = {
   mobileWelcome: true,
   showDesktopNotice: true,
   scriptForm: undefined,
+  adminMode: false,
 }
 
 export default createModel<RootModel>()({
@@ -296,11 +298,11 @@ export default createModel<RootModel>()({
       all[deviceId] = serviceId
       dispatch.ui.setPersistent({ defaultService: all })
     },
-    async setDefaultSelected({ key, value }: { key: string; value?: string }, state) {
-      const accountId = selectActiveAccountId(state)
+    async setDefaultSelected({ key, value, accountId }: { key: string; value?: string; accountId?: string }, state) {
+      const id = accountId || selectActiveAccountId(state)
       let defaultSelection = structuredClone(state.ui.defaultSelection)
-      defaultSelection[accountId] = defaultSelection[accountId] || {}
-      defaultSelection[accountId][key] = value
+      defaultSelection[id] = defaultSelection[id] || {}
+      defaultSelection[id][key] = value
       dispatch.ui.set({ defaultSelection })
     },
     async setPersistent(params: ILookup<any>, state) {

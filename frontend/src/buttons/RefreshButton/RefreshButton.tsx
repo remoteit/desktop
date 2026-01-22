@@ -29,6 +29,9 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
   const productsPage = useRouteMatch('/products')
+  const partnerStatsPage = useRouteMatch('/partner-stats')
+  const adminUsersPage = useRouteMatch('/admin/users')
+  const adminPartnersPage = useRouteMatch('/admin/partners')
   const scriptingPage = useRouteMatch(['/script', '/scripts', '/runs'])
   const scriptPage = useRouteMatch('/script')
 
@@ -85,6 +88,25 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (productsPage) {
     title = 'Refresh products'
     methods.push(dispatch.products.fetch)
+
+    // partner stats pages
+  } else if (partnerStatsPage) {
+    title = 'Refresh partner stats'
+    methods.push(dispatch.partnerStats.fetch)
+
+    // admin users pages
+  } else if (adminUsersPage) {
+    title = 'Refresh users'
+    methods.push(async () => {
+      window.dispatchEvent(new CustomEvent('refreshAdminData'))
+    })
+
+    // admin partners pages
+  } else if (adminPartnersPage) {
+    title = 'Refresh partners'
+    methods.push(async () => {
+      window.dispatchEvent(new CustomEvent('refreshAdminData'))
+    })
   }
 
   const refresh = async () => {

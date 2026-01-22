@@ -112,6 +112,13 @@ export const SidebarNav: React.FC = () => {
         dense
       />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
+      <ListItemLocation 
+        title="Partner Stats" 
+        to="/partner-stats" 
+        icon="chart-pie" 
+        dense 
+        onClick={() => dispatch.partnerStats.fetchIfEmpty()}
+      />
       <ListItemLocation title="Products" to="/products" match="/products" icon="box" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
