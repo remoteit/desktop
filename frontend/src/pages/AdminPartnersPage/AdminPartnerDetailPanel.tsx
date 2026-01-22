@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { 
   Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Button,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
@@ -13,7 +14,6 @@ import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { 
-  graphQLAdminPartner, 
   graphQLAdminPartners,
   graphQLAddPartnerAdmin, 
   graphQLRemovePartnerAdmin,
@@ -26,10 +26,12 @@ import {
 } from '../../services/graphQLRequest'
 import { windowOpen } from '../../services/browser'
 import { spacing } from '../../styling'
+import { Dispatch } from '../../store'
 
 export const AdminPartnerDetailPanel: React.FC = () => {
   const { partnerId } = useParams<{ partnerId: string }>()
   const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
   const [partner, setPartner] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [addAdminDialogOpen, setAddAdminDialogOpen] = useState(false)
@@ -54,13 +56,13 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     }
   }, [partnerId])
 
-  const fetchPartner = async () => {
+  const fetchPartner = async (forceRefresh = false) => {
     setLoading(true)
-    setPartner(null) // Clear stale data
-    const result = await graphQLAdminPartner(partnerId)
-    if (result !== 'ERROR' && result?.data?.data?.admin?.partners?.[0]) {
-      setPartner(result.data.data.admin.partners[0])
+    if (forceRefresh) {
+      dispatch.adminPartners.invalidatePartnerDetail(partnerId)
     }
+    const partnerData = await dispatch.adminPartners.fetchPartnerDetail(partnerId)
+    setPartner(partnerData)
     setLoading(false)
   }
 
@@ -86,7 +88,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       setAddAdminDialogOpen(false)
       setNewAdminEmail('')
-      fetchPartner()
+      fetchPartner(true)
     } else {
       alert('Failed to add admin.')
     }
@@ -100,7 +102,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     setRemovingAdmin(null)
     
     if (result !== 'ERROR') {
-      fetchPartner()
+      fetchPartner(true)
     } else {
       alert('Failed to remove admin.')
     }
@@ -116,7 +118,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       setAddRegistrantDialogOpen(false)
       setNewRegistrantEmail('')
-      fetchPartner()
+      fetchPartner(true)
     } else {
       alert('Failed to add registrant. They may already have access to this entity.')
     }
@@ -130,7 +132,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     setRemovingRegistrant(null)
     
     if (result !== 'ERROR') {
-      fetchPartner()
+      fetchPartner(true)
     } else {
       alert('Failed to remove registrant.')
     }
@@ -162,7 +164,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       setAddChildDialogOpen(false)
       setSelectedChildId('')
-      fetchPartner()
+      fetchPartner(true)
     } else {
       alert('Failed to add child partner.')
     }
@@ -176,7 +178,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     setRemovingChild(null)
     
     if (result !== 'ERROR') {
-      fetchPartner()
+      fetchPartner(true)
     } else {
       alert('Failed to remove child partner.')
     }
@@ -259,7 +261,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
               <IconButton
                 icon="sync"
                 title="Refresh partner"
-                onClick={fetchPartner}
+                onClick={() => fetchPartner(true)}
                 spin={loading}
                 size="md"
               />

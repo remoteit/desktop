@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { 
   Typography, Box, TextField, InputAdornment, Stack, Button,
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
@@ -9,12 +9,12 @@ import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLAdminPartners, graphQLCreatePartner } from '../../services/graphQLRequest'
+import { graphQLCreatePartner } from '../../services/graphQLRequest'
 import { Gutters } from '../../components/Gutters'
 import { GridList } from '../../components/GridList'
 import { GridListItem } from '../../components/GridListItem'
 import { Attribute } from '../../components/Attributes'
-import { State } from '../../store'
+import { State, Dispatch } from '../../store'
 import { makeStyles } from '@mui/styles'
 import { removeObject } from '../../helpers/utilHelper'
 
@@ -59,10 +59,8 @@ const adminPartnerAttributes: Attribute[] = [
 export const AdminPartnersListPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
-  const [partners, setPartners] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchValue, setSearchValue] = useState('')
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminPartnerAttributes, a => a.required === true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -70,26 +68,22 @@ export const AdminPartnersListPage: React.FC = () => {
   const [newPartnerParentId, setNewPartnerParentId] = useState('')
   const [creating, setCreating] = useState(false)
 
+  // Get state from Redux
+  const partners = useSelector((state: State) => state.adminPartners.partners)
+  const loading = useSelector((state: State) => state.adminPartners.loading)
+  const searchValue = useSelector((state: State) => state.adminPartners.searchValue)
+
   useEffect(() => {
-    fetchPartners()
+    dispatch.adminPartners.fetchIfEmpty()
   }, [])
 
   useEffect(() => {
     const handleRefresh = () => {
-      fetchPartners()
+      dispatch.adminPartners.fetch()
     }
     window.addEventListener('refreshAdminData', handleRefresh)
     return () => window.removeEventListener('refreshAdminData', handleRefresh)
   }, [])
-
-  const fetchPartners = async () => {
-    setLoading(true)
-    const result = await graphQLAdminPartners()
-    if (result !== 'ERROR' && result?.data?.data?.admin?.partners) {
-      setPartners(result.data.data.admin.partners || [])
-    }
-    setLoading(false)
-  }
 
   const filteredPartners = useMemo(() => {
     if (!searchValue.trim()) return partners
@@ -101,6 +95,7 @@ export const AdminPartnersListPage: React.FC = () => {
   }, [partners, searchValue])
 
   const handlePartnerClick = (partnerId: string) => {
+    dispatch.ui.setDefaultSelected({ key: '/admin/partners', value: `/admin/partners/${partnerId}`, accountId: 'admin' })
     history.push(`/admin/partners/${partnerId}`)
   }
 
@@ -115,7 +110,7 @@ export const AdminPartnersListPage: React.FC = () => {
       setCreateDialogOpen(false)
       setNewPartnerName('')
       setNewPartnerParentId('')
-      fetchPartners()
+      dispatch.adminPartners.fetch()
       // Navigate to new partner
       history.push(`/admin/partners/${result.data.data.createPartner.id}`)
     } else {
@@ -141,7 +136,7 @@ export const AdminPartnersListPage: React.FC = () => {
               size="small"
               placeholder="Search partners..."
               value={searchValue}
-              onChange={e => setSearchValue(e.target.value)}
+              onChange={e => dispatch.adminPartners.setSearchValue(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

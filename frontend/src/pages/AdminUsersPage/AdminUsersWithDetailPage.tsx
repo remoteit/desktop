@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Switch, Route, useParams, useHistory } from 'react-router-dom'
+import { Switch, Route, useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
@@ -19,8 +19,10 @@ const DEFAULT_RIGHT_WIDTH = 350
 export const AdminUsersWithDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>()
   const history = useHistory()
+  const location = useLocation()
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
+  const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   
   const { containerRef, containerWidth } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
@@ -32,12 +34,21 @@ export const AdminUsersWithDetailPage: React.FC = () => {
 
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= THREE_PANEL_WIDTH ? 3 : 2)
 
-  // Redirect to /account tab without adding to history
+  // Restore previously selected user if navigating to /admin/users without a userId
   useEffect(() => {
-    if (userId && window.location.pathname === `/admin/users/${userId}`) {
+    const adminSelection = defaultSelection['admin']
+    const savedRoute = adminSelection?.['/admin/users']
+    if (location.pathname === '/admin/users' && savedRoute) {
+      history.replace(savedRoute)
+    }
+  }, [location.pathname, defaultSelection])
+
+  // Redirect to /account tab if navigating directly to user without a sub-route
+  useEffect(() => {
+    if (userId && location.pathname === `/admin/users/${userId}`) {
       history.replace(`/admin/users/${userId}/account`)
     }
-  }, [userId, history])
+  }, [userId, location.pathname, history])
 
   // Only show detail panels when a user is selected
   const hasUserSelected = !!userId

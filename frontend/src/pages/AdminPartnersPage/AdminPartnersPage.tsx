@@ -1,5 +1,5 @@
-import React from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
@@ -15,8 +15,11 @@ const DEFAULT_LEFT_WIDTH = 350
 
 export const AdminPartnersPage: React.FC = () => {
   const { partnerId } = useParams<{ partnerId?: string }>()
+  const history = useHistory()
+  const location = useLocation()
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
+  const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   
   const { containerRef, containerWidth } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
@@ -25,6 +28,15 @@ export const AdminPartnersPage: React.FC = () => {
   })
 
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= TWO_PANEL_WIDTH ? 2 : 1)
+
+  // Restore previously selected partner if navigating to /admin/partners without a partnerId
+  useEffect(() => {
+    const adminSelection = defaultSelection['admin']
+    const savedRoute = adminSelection?.['/admin/partners']
+    if (location.pathname === '/admin/partners' && savedRoute) {
+      history.replace(savedRoute)
+    }
+  }, [location.pathname, defaultSelection])
 
   const hasPartnerSelected = !!partnerId
   const showLeft = !hasPartnerSelected || maxPanels >= 2

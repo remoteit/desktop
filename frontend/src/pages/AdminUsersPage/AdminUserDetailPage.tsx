@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { Typography, List, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -9,7 +10,7 @@ import { Body } from '../../components/Body'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { spacing } from '../../styling'
-import { graphQLAdminUser } from '../../services/graphQLRequest'
+import { Dispatch } from '../../store'
 
 type Props = {
   showRefresh?: boolean
@@ -18,6 +19,7 @@ type Props = {
 export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => {
   const { userId } = useParams<{ userId: string }>()
   const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -27,13 +29,13 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
     }
   }, [userId])
 
-  const fetchUser = async () => {
+  const fetchUser = async (forceRefresh = false) => {
     setLoading(true)
-    setUser(null) // Clear stale data
-    const result = await graphQLAdminUser(userId)
-    if (result !== 'ERROR' && result?.data?.data?.admin?.users?.items?.[0]) {
-      setUser(result.data.data.admin.users.items[0])
+    if (forceRefresh) {
+      dispatch.adminUsers.invalidateUserDetail(userId)
     }
+    const userData = await dispatch.adminUsers.fetchUserDetail(userId)
+    setUser(userData)
     setLoading(false)
   }
 
@@ -81,7 +83,7 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
               <IconButton
                 icon="sync"
                 title="Refresh user"
-                onClick={fetchUser}
+                onClick={() => fetchUser(true)}
                 spin={loading}
                 size="md"
               />

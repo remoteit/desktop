@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { Typography, List, ListItem, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
@@ -7,10 +8,11 @@ import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLAdminUser } from '../../services/graphQLRequest'
+import { Dispatch } from '../../store'
 
 export const AdminUserAccountPanel: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
+  const dispatch = useDispatch<Dispatch>()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -22,10 +24,8 @@ export const AdminUserAccountPanel: React.FC = () => {
 
   const fetchUser = async () => {
     setLoading(true)
-    const result = await graphQLAdminUser(userId)
-    if (result !== 'ERROR' && result?.data?.data?.admin?.users?.items?.[0]) {
-      setUser(result.data.data.admin.users.items[0])
-    }
+    const userData = await dispatch.adminUsers.fetchUserDetail(userId)
+    setUser(userData)
     setLoading(false)
   }
 

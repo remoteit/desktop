@@ -322,8 +322,8 @@ export async function graphQLFetchOrganizations(ids: string[]) {
     ` query Organizations {
         login {
           ${ids
-            .map(
-              (id, index) => `
+      .map(
+        (id, index) => `
             _${index}: account(id: "${id}") {
               organization {
                 id
@@ -392,8 +392,8 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                 ${LIMITS_QUERY}
               }
             }`
-            )
-            .join('\n')}
+      )
+      .join('\n')}
         }
       }`
   )
@@ -494,8 +494,8 @@ export async function graphQLFetchSessions(ids: string[]) {
     ` query Sessions {
         login {
           ${ids
-            .map(
-              (id, index) => `
+      .map(
+        (id, index) => `
             _${index}: account(id: "${id}") {
               sessions {
                 id
@@ -530,8 +530,8 @@ export async function graphQLFetchSessions(ids: string[]) {
                 }
               }
             }`
-            )
-            .join('\n')}
+      )
+      .join('\n')}
         }
       }`
   )
@@ -613,6 +613,24 @@ export async function graphQLAdminPartners() {
             active
             activated
             updated
+            users {
+              id
+              email
+              role
+              deviceCount
+              online
+              active
+              activated
+              updated
+            }
+            children {
+              id
+              name
+              deviceCount
+              online
+              active
+              activated
+            }
           }
         }
       }`

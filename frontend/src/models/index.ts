@@ -1,5 +1,7 @@
 import { Models } from '@rematch/core'
 import accounts from './accounts'
+import { adminPartners } from './adminPartners'
+import { adminUsers } from './adminUsers'
 import announcements from './announcements'
 import applicationTypes from './applicationTypes'
 import auth from './auth'
@@ -31,6 +33,8 @@ import user from './user'
 
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
+  adminPartners: typeof adminPartners
+  adminUsers: typeof adminUsers
   announcements: typeof announcements
   applicationTypes: typeof applicationTypes
   auth: typeof auth
@@ -63,6 +67,8 @@ export interface RootModel extends Models<RootModel> {
 
 export const models: RootModel = {
   accounts,
+  adminPartners,
+  adminUsers,
   announcements,
   applicationTypes,
   auth,

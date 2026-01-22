@@ -74,8 +74,8 @@ const authServiceConfig = (): ConfigInterface => ({
   signoutCallbackURL: browser.isPortal
     ? window.origin
     : browser.isElectron || browser.isMobile
-    ? SIGNOUT_REDIRECT_URL
-    : CALLBACK_URL,
+      ? SIGNOUT_REDIRECT_URL
+      : CALLBACK_URL,
 })
 
 export default createModel<RootModel>()({
@@ -266,6 +266,8 @@ export default createModel<RootModel>()({
       dispatch.ui.reset()
       dispatch.products.reset()
       dispatch.partnerStats.reset()
+      dispatch.adminUsers.reset()
+      dispatch.adminPartners.reset()
 
       cloudSync.reset()
       dispatch.accounts.set({ activeId: undefined })

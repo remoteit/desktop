@@ -20,63 +20,46 @@ export const AdminUsersListPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const [users, setUsers] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchInput, setSearchInput] = useState('')
-  const [searchValue, setSearchValue] = useState('')
-  const [searchType, setSearchType] = useState<SearchType>('email')
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const pageSize = 50
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminUserAttributes, a => a.required === true)
 
+  // Get state from Redux
+  const users = useSelector((state: State) => state.adminUsers.users)
+  const loading = useSelector((state: State) => state.adminUsers.loading)
+  const total = useSelector((state: State) => state.adminUsers.total)
+  const page = useSelector((state: State) => state.adminUsers.page)
+  const pageSize = useSelector((state: State) => state.adminUsers.pageSize)
+  const searchValue = useSelector((state: State) => state.adminUsers.searchValue)
+  const searchType = useSelector((state: State) => state.adminUsers.searchType)
+
+  // Initialize search input from Redux state
   useEffect(() => {
-    fetchUsers()
+    setSearchInput(searchValue)
+  }, [])
+
+  // Fetch on mount if empty
+  useEffect(() => {
+    dispatch.adminUsers.fetchIfEmpty()
+  }, [])
+
+  // Fetch when page/search changes (but not on initial mount)
+  const isInitialMount = React.useRef(true)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    dispatch.adminUsers.fetch()
   }, [page, searchValue, searchType])
 
   useEffect(() => {
     const handleRefresh = () => {
-      fetchUsers()
+      dispatch.adminUsers.fetch()
     }
     window.addEventListener('refreshAdminData', handleRefresh)
     return () => window.removeEventListener('refreshAdminData', handleRefresh)
-  }, [page, searchValue, searchType])
-
-  const fetchUsers = async () => {
-    setLoading(true)
-    
-    // Build filters based on search type
-    const filters: { search?: string; email?: string; accountId?: string } = {}
-    const trimmedValue = searchValue.trim()
-    
-    if (trimmedValue) {
-      switch (searchType) {
-        case 'email':
-          filters.email = trimmedValue
-          break
-        case 'userId':
-          filters.accountId = trimmedValue
-          break
-        case 'all':
-        default:
-          filters.search = trimmedValue
-          break
-      }
-    }
-    
-    const result = await graphQLAdminUsers(
-      { from: (page - 1) * pageSize, size: pageSize },
-      Object.keys(filters).length > 0 ? filters : undefined,
-      'email'
-    )
-    if (result !== 'ERROR' && result?.data?.data?.admin?.users) {
-      const data = result.data.data.admin.users
-      setUsers(data.items || [])
-      setTotal(data.total || 0)
-    }
-    setLoading(false)
-  }
+  }, [])
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value)
@@ -84,14 +67,13 @@ export const AdminUsersListPage: React.FC = () => {
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      setSearchValue(searchInput)
-      setPage(1)
+      dispatch.adminUsers.setSearch({ searchValue: searchInput, searchType })
     }
   }
 
   const handleSearchTypeChange = (_: React.MouseEvent<HTMLElement>, newType: SearchType | null) => {
     if (newType !== null) {
-      setSearchType(newType)
+      dispatch.adminUsers.setSearch({ searchValue, searchType: newType })
     }
   }
 
@@ -108,8 +90,9 @@ export const AdminUsersListPage: React.FC = () => {
   }
 
   const handleUserClick = (userId: string) => {
-    dispatch.ui.setDefaultSelected({ key: '/admin/users', value: `/admin/users/${userId}` })
-    history.push(`/admin/users/${userId}`)
+    const route = `/admin/users/${userId}/account`
+    dispatch.ui.setDefaultSelected({ key: '/admin/users', value: route, accountId: 'admin' })
+    history.push(route)
   }
 
   return (
