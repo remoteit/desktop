@@ -130,16 +130,18 @@ export default class ElectronApp {
 
   private handleNavigate = (action: 'BACK' | 'FORWARD' | 'STATUS') => {
     if (!this.window) return
+    const { navigationHistory } = this.window.webContents
+
     const canNavigate = {
-      canGoBack: this.window.webContents.navigationHistory.canGoBack,
-      canGoForward: this.window.webContents.navigationHistory.canGoForward,
+      canGoBack: navigationHistory.canGoBack(),
+      canGoForward: navigationHistory.canGoForward(),
     }
     switch (action) {
       case 'BACK':
-        this.window.webContents.navigationHistory.goBack()
+        navigationHistory.goBack()
         break
       case 'FORWARD':
-        this.window.webContents.navigationHistory.goForward()
+        navigationHistory.goForward()
         break
     }
     EventBus.emit(EVENTS.canNavigate, canNavigate)
