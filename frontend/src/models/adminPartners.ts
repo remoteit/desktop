@@ -2,15 +2,46 @@ import { createModel } from '@rematch/core'
 import { graphQLAdminPartners, graphQLAdminPartner } from '../services/graphQLRequest'
 import type { RootModel } from '.'
 
-interface AdminPartner {
+interface AdminPartnerUser {
+  id: string
+  email: string
+  deviceCount: number
+  online: number
+  active: number
+  activated: number
+  updated?: Date
+}
+
+interface AdminPartnerChild {
   id: string
   name: string
   deviceCount: number
   online: number
   active: number
   activated: number
-  updated: string
-  [key: string]: any
+  admins?: AdminPartnerUser[]
+  registrants?: AdminPartnerUser[]
+}
+
+interface AdminPartner {
+  id: string
+  name: string
+  parent?: {
+    id: string
+    name: string
+    deviceCount: number
+    online: number
+    active: number
+    activated: number
+  }
+  deviceCount: number
+  online: number
+  active: number
+  activated: number
+  updated?: Date
+  admins?: AdminPartnerUser[]
+  registrants?: AdminPartnerUser[]
+  children?: AdminPartnerChild[]
 }
 
 interface AdminPartnersState {

@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import {
@@ -26,6 +27,7 @@ import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
+import { getPartnerStatsModel } from '../models/partnerStats'
 
 export const SidebarNav: React.FC = () => {
   const [more, setMore] = useState<boolean>()
@@ -40,6 +42,10 @@ export const SidebarNav: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active: counts.active, insets })
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
+  
+  // Check if user has admin access to any partner entities
+  const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
+  const hasPartnerAdminAccess = partnerStatsModel.initialized && partnerStatsModel.all.length > 0
 
   if (remoteUI)
     return (
@@ -112,13 +118,15 @@ export const SidebarNav: React.FC = () => {
         dense
       />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
-      <ListItemLocation 
-        title="Partner Stats" 
-        to="/partner-stats" 
-        icon="chart-pie" 
-        dense 
-        onClick={() => dispatch.partnerStats.fetchIfEmpty()}
-      />
+      {hasPartnerAdminAccess && (
+        <ListItemLocation 
+          title="Partner Stats" 
+          to="/partner-stats" 
+          icon="chart-pie" 
+          dense 
+          onClick={() => dispatch.partnerStats.fetchIfEmpty()}
+        />
+      )}
       <ListItemLocation title="Products" to="/products" match="/products" icon="box" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>

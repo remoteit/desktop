@@ -5,6 +5,16 @@ import { graphQLGetErrors } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
 
+export interface IPartnerEntityUser {
+  id: string
+  email: string
+  deviceCount: number
+  online: number
+  active: number
+  activated: number
+  updated?: Date
+}
+
 export interface IPartnerEntity {
   id: string
   name: string
@@ -20,7 +30,9 @@ export interface IPartnerEntity {
   online: number
   active: number
   activated: number
-  updated: string
+  updated?: Date
+  admins?: IPartnerEntityUser[]
+  registrants?: IPartnerEntityUser[]
   children?: IPartnerEntity[]
 }
 

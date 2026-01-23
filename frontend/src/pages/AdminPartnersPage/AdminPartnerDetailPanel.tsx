@@ -237,12 +237,9 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     )
   }
 
-  const users = partner.users || []
+  const admins = partner.admins || []
+  const registrants = partner.registrants || []
   const children = partner.children || []
-  
-  // Split users into admins and registrants (admin_registrant users show in both lists)
-  const admins = users.filter((u: any) => u.role === 'admin' || u.role === 'admin_registrant')
-  const registrants = users.filter((u: any) => u.role === 'device_registrant' || u.role === 'admin_registrant')
 
   return (
     <Container

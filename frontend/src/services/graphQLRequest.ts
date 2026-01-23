@@ -613,10 +613,18 @@ export async function graphQLAdminPartners() {
             active
             activated
             updated
-            users {
+            admins {
               id
               email
-              role
+              deviceCount
+              online
+              active
+              activated
+              updated
+            }
+            registrants {
+              id
+              email
               deviceCount
               online
               active
@@ -630,6 +638,24 @@ export async function graphQLAdminPartners() {
               online
               active
               activated
+              admins {
+                id
+                email
+                deviceCount
+                online
+                active
+                activated
+                updated
+              }
+              registrants {
+                id
+                email
+                deviceCount
+                online
+                active
+                activated
+                updated
+              }
             }
           }
         }
@@ -657,10 +683,18 @@ export async function graphQLAdminPartner(id: string) {
             active
             activated
             updated
-            users {
+            admins {
               id
               email
-              role
+              deviceCount
+              online
+              active
+              activated
+              updated
+            }
+            registrants {
+              id
+              email
               deviceCount
               online
               active
@@ -674,6 +708,24 @@ export async function graphQLAdminPartner(id: string) {
               online
               active
               activated
+              admins {
+                id
+                email
+                deviceCount
+                online
+                active
+                activated
+                updated
+              }
+              registrants {
+                id
+                email
+                deviceCount
+                online
+                active
+                activated
+                updated
+              }
             }
           }
         }
@@ -792,10 +844,18 @@ export async function graphQLPartnerEntities(accountId?: string) {
             active
             activated
             updated
-            users {
+            admins {
               id
               email
-              role
+              deviceCount
+              online
+              active
+              activated
+              updated
+            }
+            registrants {
+              id
+              email
               deviceCount
               online
               active
@@ -809,6 +869,24 @@ export async function graphQLPartnerEntities(accountId?: string) {
               online
               active
               activated
+              admins {
+                id
+                email
+                deviceCount
+                online
+                active
+                activated
+                updated
+              }
+              registrants {
+                id
+                email
+                deviceCount
+                online
+                active
+                activated
+                updated
+              }
               children {
                 id
                 name

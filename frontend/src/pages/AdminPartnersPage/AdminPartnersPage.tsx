@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
@@ -20,7 +20,8 @@ export const AdminPartnersPage: React.FC = () => {
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
-  
+  const hasRestoredRef = useRef(false)
+
   const { containerRef, containerWidth } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
     minWidth: MIN_WIDTH,
@@ -29,14 +30,17 @@ export const AdminPartnersPage: React.FC = () => {
 
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= TWO_PANEL_WIDTH ? 2 : 1)
 
-  // Restore previously selected partner if navigating to /admin/partners without a partnerId
+  // Restore previously selected partner ONLY on initial mount
   useEffect(() => {
-    const adminSelection = defaultSelection['admin']
-    const savedRoute = adminSelection?.['/admin/partners']
-    if (location.pathname === '/admin/partners' && savedRoute) {
-      history.replace(savedRoute)
+    if (!hasRestoredRef.current) {
+      const adminSelection = defaultSelection['admin']
+      const savedRoute = adminSelection?.['/admin/partners']
+      if (location.pathname === '/admin/partners' && savedRoute) {
+        history.replace(savedRoute)
+      }
+      hasRestoredRef.current = true
     }
-  }, [location.pathname, defaultSelection])
+  }, []) // Empty dependency array - only run once on mount
 
   const hasPartnerSelected = !!partnerId
   const showLeft = !hasPartnerSelected || maxPanels >= 2
@@ -47,18 +51,18 @@ export const AdminPartnersPage: React.FC = () => {
       <Box className={css.container}>
         {showLeft && (
           <>
-            <Box 
-              className={css.panel} 
-              style={{ 
+            <Box
+              className={css.panel}
+              style={{
                 width: hasPartnerSelected ? leftPanel.width : undefined,
                 minWidth: hasPartnerSelected ? leftPanel.width : undefined,
                 flex: hasPartnerSelected ? undefined : 1
-              }} 
+              }}
               ref={leftPanel.panelRef}
             >
               <AdminPartnersListPage />
             </Box>
-            
+
             {hasPartnerSelected && (
               <Box className={css.anchor}>
                 <Box className={css.handle} onMouseDown={leftPanel.onDown}>
@@ -68,7 +72,7 @@ export const AdminPartnersPage: React.FC = () => {
             )}
           </>
         )}
-        
+
         {showRight && (
           <Box className={css.rightPanel}>
             <AdminPartnerDetailPanel />

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Switch, Route, useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
@@ -23,7 +23,8 @@ export const AdminUsersWithDetailPage: React.FC = () => {
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
-  
+  const hasRestoredRef = useRef(false)
+
   const { containerRef, containerWidth } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
     minWidth: MIN_WIDTH,
@@ -34,14 +35,17 @@ export const AdminUsersWithDetailPage: React.FC = () => {
 
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= THREE_PANEL_WIDTH ? 3 : 2)
 
-  // Restore previously selected user if navigating to /admin/users without a userId
+  // Restore previously selected user ONLY on initial mount
   useEffect(() => {
-    const adminSelection = defaultSelection['admin']
-    const savedRoute = adminSelection?.['/admin/users']
-    if (location.pathname === '/admin/users' && savedRoute) {
-      history.replace(savedRoute)
+    if (!hasRestoredRef.current) {
+      const adminSelection = defaultSelection['admin']
+      const savedRoute = adminSelection?.['/admin/users']
+      if (location.pathname === '/admin/users' && savedRoute) {
+        history.replace(savedRoute)
+      }
+      hasRestoredRef.current = true
     }
-  }, [location.pathname, defaultSelection])
+  }, []) // Empty dependency array - only run once on mount
 
   // Redirect to /account tab if navigating directly to user without a sub-route
   useEffect(() => {
@@ -52,7 +56,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
 
   // Only show detail panels when a user is selected
   const hasUserSelected = !!userId
-  
+
   // When no user selected, show only the list (full width)
   // When user selected, show panels based on available space
   const showLeft = !hasUserSelected || maxPanels >= 3
@@ -64,18 +68,18 @@ export const AdminUsersWithDetailPage: React.FC = () => {
       <Box className={css.container}>
         {showLeft && (
           <>
-            <Box 
-              className={css.panel} 
-              style={{ 
+            <Box
+              className={css.panel}
+              style={{
                 width: hasUserSelected ? leftPanel.width : undefined,
                 minWidth: hasUserSelected ? leftPanel.width : undefined,
                 flex: hasUserSelected ? undefined : 1
-              }} 
+              }}
               ref={leftPanel.panelRef}
             >
               <AdminUsersListPage />
             </Box>
-            
+
             {hasUserSelected && (
               <Box className={css.anchor}>
                 <Box className={css.handle} onMouseDown={leftPanel.onDown}>
@@ -85,13 +89,13 @@ export const AdminUsersWithDetailPage: React.FC = () => {
             )}
           </>
         )}
-        
+
         {showMiddle && (
           <>
             <Box className={css.middlePanel}>
               <AdminUserDetailPage showRefresh={!showLeft} />
             </Box>
-            
+
             <Box className={css.anchor}>
               <Box className={css.handle} onMouseDown={rightPanel.onDown}>
                 <Box className={rightPanel.grab ? 'active' : undefined} />
@@ -99,10 +103,10 @@ export const AdminUsersWithDetailPage: React.FC = () => {
             </Box>
           </>
         )}
-        
+
         {showRight && (
-          <Box 
-            className={css.rightPanel} 
+          <Box
+            className={css.rightPanel}
             style={showMiddle ? { width: rightPanel.width, minWidth: rightPanel.width } : undefined}
           >
             <Switch>
