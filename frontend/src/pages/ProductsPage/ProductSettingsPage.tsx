@@ -24,7 +24,6 @@ import { Confirm } from '../../components/Confirm'
 import { spacing } from '../../styling'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
-import { platforms } from '../../platforms'
 
 type Props = {
   showBack?: boolean
@@ -45,30 +44,7 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
   const [deleting, setDeleting] = useState(false)
 
   const isLocked = product?.status === 'LOCKED'
-
-  // Generate registration command from platform template
-  const getRegistrationCommand = (): string | undefined => {
-    if (!product?.registrationCode || !isLocked) {
-      return undefined
-    }
-
-    const platform = platforms.get(product.platform?.id)
-    const installationCommand = platform?.installation?.command
-
-    // No installation command, boolean true, or '[CODE]' means show code only (no command)
-    if (!installationCommand || installationCommand === true || installationCommand === '[CODE]') {
-      return undefined
-    }
-
-    // String template - replace [CODE] with actual registration code
-    if (typeof installationCommand === 'string') {
-      return installationCommand.replace('[CODE]', product.registrationCode)
-    }
-
-    return undefined
-  }
-
-  const registrationCommand = getRegistrationCommand()
+  const registrationCommand = product?.registrationCommand
 
   const handleLockToggle = async () => {
     if (!product || isLocked) return
@@ -133,7 +109,6 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
             <CopyCodeBlock
               value={registrationCommand || product.registrationCode}
               code={registrationCommand ? product.registrationCode : undefined}
-              label={platforms.get(product.platform?.id)?.installation?.label}
             />
           </section>
         )}
@@ -202,7 +177,7 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
             Product Settings
           </Typography>
           <List>
-            <ListItem>
+            <ListItem sx={{ paddingRight: '80px' }}>
               <ListItemText
                 primary="Lock Product"
                 secondary={

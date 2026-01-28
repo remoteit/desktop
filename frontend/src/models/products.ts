@@ -28,6 +28,7 @@ export interface IDeviceProduct {
   platform: { id: number; name: string | null } | null
   status: 'NEW' | 'LOCKED'
   registrationCode?: string
+  registrationCommand?: string
   created: string
   updated: string
   services: IProductService[]
@@ -151,7 +152,7 @@ export default createModel<RootModel>()({
       )
 
       const successIds = selected.filter((id, i) => !graphQLGetErrors(results[i]))
-      
+
       dispatch.products.set({
         all: all.filter(p => !successIds.includes(p.id)),
         selected: [],
@@ -243,12 +244,12 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
       const productModel = getProductModel(state, accountId)
       const product = productModel.all.find(p => p.id === productId)
-      
+
       if (!product) return false
 
       dispatch.ui.set({ transferring: true })
       const response = await graphQLTransferDeviceProduct(productId, email)
-      
+
       if (!graphQLGetErrors(response)) {
         // Remove product from local state
         dispatch.products.set({
@@ -262,7 +263,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ transferring: false })
         return true
       }
-      
+
       dispatch.ui.set({ transferring: false })
       return false
     },

@@ -29,6 +29,7 @@ export async function graphQLDeviceProducts(options?: {
                 platform { id name }
                 status
                 registrationCode
+                registrationCommand
                 created
                 updated
                 services {
@@ -62,6 +63,7 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
                 platform { id name }
                 status
                 registrationCode
+                registrationCommand
                 created
                 updated
                 services {
