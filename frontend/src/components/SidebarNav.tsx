@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
@@ -11,11 +11,8 @@ import {
   Box,
   Badge,
   List,
-  ListItemButton,
   Divider,
-  Typography,
   Tooltip,
-  Collapse,
   Chip,
   useMediaQuery,
 } from '@mui/material'
@@ -23,14 +20,12 @@ import { ListItemLocation } from './ListItemLocation'
 import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
-import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
 import { getPartnerStatsModel } from '../models/partnerStats'
 
 export const SidebarNav: React.FC = () => {
-  const [more, setMore] = useState<boolean>()
   const counts = useCounts()
   const reseller = useSelector((state: State) => state.user.reseller)
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
@@ -129,15 +124,6 @@ export const SidebarNav: React.FC = () => {
       )}
       <ListItemLocation title="Products" to="/products" match="/products" icon="box" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
-      <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
-        <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
-          More
-          <ExpandIcon open={more} color="grayDark" />
-        </Typography>
-      </ListItemButton>
-      <Collapse in={more}>
-        <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
-      </Collapse>
       <Box className={css.footer}>
         <UpgradeBanner />
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
