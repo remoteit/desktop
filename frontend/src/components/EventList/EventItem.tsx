@@ -16,7 +16,7 @@ export function EventItem({ item, device, user }: { item: IEvent; device?: IDevi
   if (item.type === 'DEVICE_REFRESH') return null
   return (
     <ListItem>
-      <span>{new Date(item.timestamp).toLocaleDateString(navigator.language, options)}</span>
+      <span>{new Date(item.timestamp).toLocaleString(navigator.language, options)}</span>
       <ListItemIcon>
         <EventIcon item={item} loggedInUser={user} />
       </ListItemIcon>

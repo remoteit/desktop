@@ -35,6 +35,6 @@ export const timeOptions: ILookup<Intl.DateTimeFormatOptions, FormatProp> = {
 export const Timestamp: React.FC<Props> = ({ time: startTime, date: startDate, variant = 'numeric' }) => {
   startDate = startDate || (startTime ? new Date(startTime) : undefined)
   if (!startDate) return null
-  const display = !isNaN(startDate.getTime()) && startDate.toLocaleDateString(navigator.language, timeOptions[variant])
+  const display = !isNaN(startDate.getTime()) && startDate.toLocaleString(navigator.language, timeOptions[variant])
   return <>{display || '-'}</>
 }
