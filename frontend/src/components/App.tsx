@@ -3,7 +3,7 @@ import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
 import { persistor } from '../store'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useHistory } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
@@ -27,10 +27,12 @@ import { Sidebar } from './Sidebar'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
+import { ViewAsBanner } from './ViewAsBanner'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
   const location = useLocation()
+  const history = useHistory()
   const hideSplashScreen = useCapacitor()
   const authInitialized = useSelector((state: State) => state.auth.initialized)
   const installed = useSelector((state: State) => state.binaries.installed)
@@ -38,6 +40,7 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const reseller = useSelector(selectResellerRef)
+  const viewAsUser = useSelector((state: State) => state.ui.viewAsUser)
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
@@ -63,6 +66,44 @@ export const App: React.FC = () => {
   useEffect(() => {
     dispatch.ui.set({ layout })
   }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, sidePanelWidth])
+
+  // Handle viewAs URL parameter and restore from sessionStorage
+  useEffect(() => {
+    // First, try to restore from sessionStorage (survives refresh)
+    const savedViewAs = window.sessionStorage.getItem('viewAsUser')
+    if (savedViewAs) {
+      try {
+        const viewAsUser = JSON.parse(savedViewAs)
+        dispatch.ui.set({ viewAsUser })
+        console.log('Restored viewAs from sessionStorage:', viewAsUser)
+      } catch (e) {
+        console.error('Failed to parse viewAsUser from sessionStorage:', e)
+      }
+    }
+    
+    // Then check URL parameter (for initial open)
+    const params = new URLSearchParams(location.search)
+    const viewAsParam = params.get('viewAs')
+    
+    if (viewAsParam) {
+      const [userId, email] = viewAsParam.split(',')
+      if (userId && email) {
+        const viewAsUser = { id: userId, email: decodeURIComponent(email) }
+        dispatch.ui.set({ viewAsUser })
+        // Save to sessionStorage for persistence across refreshes
+        window.sessionStorage.setItem('viewAsUser', JSON.stringify(viewAsUser))
+        console.log('Set viewAs from URL:', viewAsUser)
+        
+        // Remove the parameter from URL
+        params.delete('viewAs')
+        const newSearch = params.toString()
+        history.replace({
+          pathname: location.pathname,
+          search: newSearch ? `?${newSearch}` : '',
+        })
+      }
+    }
+  }, [location.search])
 
   if (waitMessage)
     return (
@@ -98,6 +139,7 @@ export const App: React.FC = () => {
 
   return (
     <Page>
+      <ViewAsBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
         <Box
           sx={{
@@ -108,6 +150,7 @@ export const App: React.FC = () => {
             flexDirection: 'row',
             alignItems: 'start',
             justifyContent: 'start',
+            marginTop: viewAsUser ? '33px' : 0,
           }}
         >
           {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}

@@ -33,6 +33,7 @@ const SAVED_ACROSS_LOGOUT = [
   'serviceTimeSeries',
   'showDesktopNotice',
   'mobileWelcome',
+  // viewAsUser uses sessionStorage instead (window-isolated, survives refresh)
 ]
 
 export type UIState = {
@@ -108,6 +109,7 @@ export type UIState = {
   showDesktopNotice: boolean
   scriptForm?: IFileForm
   adminMode: boolean
+  viewAsUser: { id: string; email: string } | null
 }
 
 export const defaultState: UIState = {
@@ -213,6 +215,7 @@ export const defaultState: UIState = {
   showDesktopNotice: true,
   scriptForm: undefined,
   adminMode: false,
+  viewAsUser: null,
 }
 
 export default createModel<RootModel>()({
