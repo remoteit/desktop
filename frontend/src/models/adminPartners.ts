@@ -101,7 +101,7 @@ export const adminPartners = createModel<RootModel>()({
       if (result !== 'ERROR' && result?.data?.data?.admin?.partners) {
         const partners = result.data.data.admin.partners
         dispatch.adminPartners.setPartners(partners)
-        
+
         // Cache all partner details
         partners.forEach((partner: AdminPartner) => {
           dispatch.adminPartners.cachePartnerDetail({ partnerId: partner.id, partner })

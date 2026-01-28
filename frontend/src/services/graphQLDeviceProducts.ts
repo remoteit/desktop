@@ -171,3 +171,11 @@ export async function graphQLRemoveDeviceProductService(id: string) {
   )
 }
 
+export async function graphQLTransferDeviceProduct(productId: string, email: string) {
+  return await graphQLBasicRequest(
+    ` mutation TransferDeviceProduct($productId: ID!, $email: String!) {
+        transferDeviceProduct(productId: $productId, email: $email)
+      }`,
+    { productId, email }
+  )
+}

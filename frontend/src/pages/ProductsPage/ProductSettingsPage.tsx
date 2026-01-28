@@ -17,12 +17,14 @@ import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
 import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
+import { CopyCodeBlock } from '../../components/CopyCodeBlock'
 import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { Confirm } from '../../components/Confirm'
 import { spacing } from '../../styling'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
+import { platforms } from '../../platforms'
 
 type Props = {
   showBack?: boolean
@@ -43,6 +45,30 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
   const [deleting, setDeleting] = useState(false)
 
   const isLocked = product?.status === 'LOCKED'
+
+  // Generate registration command from platform template
+  const getRegistrationCommand = (): string | undefined => {
+    if (!product?.registrationCode || !isLocked) {
+      return undefined
+    }
+
+    const platform = platforms.get(product.platform?.id)
+    const installationCommand = platform?.installation?.command
+
+    // No installation command, boolean true, or '[CODE]' means show code only (no command)
+    if (!installationCommand || installationCommand === true || installationCommand === '[CODE]') {
+      return undefined
+    }
+
+    // String template - replace [CODE] with actual registration code
+    if (typeof installationCommand === 'string') {
+      return installationCommand.replace('[CODE]', product.registrationCode)
+    }
+
+    return undefined
+  }
+
+  const registrationCommand = getRegistrationCommand()
 
   const handleLockToggle = async () => {
     if (!product || isLocked) return
@@ -94,6 +120,24 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
       }
     >
       <div className={css.content}>
+        {isLocked && product.registrationCode && (
+          <section className={css.section}>
+            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+              {registrationCommand ? 'Registration Command' : 'Registration Code'}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom sx={{ marginBottom: 2 }}>
+              {registrationCommand 
+                ? 'Use this command to register devices with this product configuration:'
+                : 'Use this registration code to register devices with this product configuration:'}
+            </Typography>
+            <CopyCodeBlock
+              value={registrationCommand || product.registrationCode}
+              code={registrationCommand ? product.registrationCode : undefined}
+              label={platforms.get(product.platform?.id)?.installation?.label}
+            />
+          </section>
+        )}
+
         <section className={css.section}>
           <Typography variant="subtitle2" color="textSecondary" gutterBottom>
             Product Details
@@ -174,6 +218,28 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
                   disabled={updating || isLocked}
                 />
               </ListItemSecondaryAction>
+            </ListItem>
+          </List>
+        </section>
+
+        <section className={css.section}>
+          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+            Transfer Ownership
+          </Typography>
+          <List>
+            <ListItem>
+              <ListItemText
+                primary="Transfer Product"
+                secondary="Transfer this product and all its services to another user."
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => history.push(`/products/${productId}/transfer`)}
+                startIcon={<Icon name="arrow-turn-down-right" />}
+              >
+                Transfer
+              </Button>
             </ListItem>
           </List>
         </section>

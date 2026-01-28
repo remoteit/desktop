@@ -8,6 +8,7 @@ import {
   graphQLUpdateDeviceProductSettings,
   graphQLAddDeviceProductService,
   graphQLRemoveDeviceProductService,
+  graphQLTransferDeviceProduct,
 } from '../services/graphQLDeviceProducts'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -235,6 +236,34 @@ export default createModel<RootModel>()({
         })
         return true
       }
+      return false
+    },
+
+    async transferProduct({ productId, email }: { productId: string; email: string }, state) {
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
+      const product = productModel.all.find(p => p.id === productId)
+      
+      if (!product) return false
+
+      dispatch.ui.set({ transferring: true })
+      const response = await graphQLTransferDeviceProduct(productId, email)
+      
+      if (!graphQLGetErrors(response)) {
+        // Remove product from local state
+        dispatch.products.set({
+          all: productModel.all.filter(p => p.id !== productId),
+          selected: productModel.selected.filter(s => s !== productId),
+          accountId,
+        })
+        dispatch.ui.set({
+          successMessage: `"${product.name}" was successfully transferred to ${email}.`,
+        })
+        dispatch.ui.set({ transferring: false })
+        return true
+      }
+      
+      dispatch.ui.set({ transferring: false })
       return false
     },
 

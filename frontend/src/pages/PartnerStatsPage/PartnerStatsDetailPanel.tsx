@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { 
+import {
   Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Button
 } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -45,7 +45,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
     setExporting(true)
     const result = await graphQLExportPartnerDevices(partnerId)
     setExporting(false)
-    
+
     if (result !== 'ERROR' && result?.data?.data?.exportPartnerDevices) {
       const url = result.data.data.exportPartnerDevices
       windowOpen(url)
@@ -220,7 +220,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                   <ListItemIcon>
                     <Icon name="user" size="md" color="grayDark" />
                   </ListItemIcon>
-                  <ListItemText 
+                  <ListItemText
                     primary={user.email}
                     secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
                   />
@@ -247,7 +247,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                   <ListItemIcon>
                     <Icon name="user-shield" size="md" color="grayDark" />
                   </ListItemIcon>
-                  <ListItemText 
+                  <ListItemText
                     primary={user.email}
                     secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
                   />

@@ -110,7 +110,7 @@ export const adminUsers = createModel<RootModel>()({
           users,
           total: data.total || 0
         })
-        
+
         // Cache user details for users in the list
         users.forEach((user: AdminUser) => {
           dispatch.adminUsers.cacheUserDetail({ userId: user.id, user })

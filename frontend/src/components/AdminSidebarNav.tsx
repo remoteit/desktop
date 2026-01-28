@@ -20,23 +20,23 @@ export const AdminSidebarNav: React.FC = () => {
     <List
       sx={{
         position: 'static',
-        '& .MuiListItemIcon-root': { 
-          color: 'grayDark.main' 
+        '& .MuiListItemIcon-root': {
+          color: 'grayDark.main'
         },
-        '& .MuiListItemText-primary': { 
-          color: 'grayDarkest.main' 
+        '& .MuiListItemText-primary': {
+          color: 'grayDarkest.main'
         },
-        '& .MuiListItemButton-root:hover .MuiListItemText-primary': { 
-          color: 'black.main' 
+        '& .MuiListItemButton-root:hover .MuiListItemText-primary': {
+          color: 'black.main'
         },
         '& .Mui-selected, & .Mui-selected:hover': {
           backgroundColor: 'primaryLighter.main',
-          '& .MuiListItemIcon-root': { 
-            color: 'grayDarker.main' 
+          '& .MuiListItemIcon-root': {
+            color: 'grayDarker.main'
           },
-          '& .MuiListItemText-primary': { 
-            color: 'black.main', 
-            fontWeight: 500 
+          '& .MuiListItemText-primary': {
+            color: 'black.main',
+            fontWeight: 500
           },
         },
       }}
@@ -51,7 +51,7 @@ export const AdminSidebarNav: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary="Users" />
       </ListItemButton>
-      
+
       <ListItemButton
         dense
         selected={currentPath.includes('/admin/partners')}

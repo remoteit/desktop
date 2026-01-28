@@ -39,7 +39,7 @@ export const Header: React.FC = () => {
 
   const manager = permissions.includes('MANAGE')
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
-  
+
   // Admin pages have two-level roots: /admin/users and /admin/partners (without IDs)
   const adminRootPages = ['/admin/users', '/admin/partners', '/partner-stats']
   const isAdminRootPage = adminRootPages.includes(location.pathname)

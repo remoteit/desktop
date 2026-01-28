@@ -102,36 +102,36 @@ export const AdminUsersListPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <Gutters>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <ToggleButtonGroup
-                value={searchType}
-                exclusive
-                onChange={handleSearchTypeChange}
-                size="small"
-              >
-                <ToggleButton value="email" title="Search by email">
-                  <Icon name="envelope" size="sm" />
-                </ToggleButton>
-                <ToggleButton value="userId" title="Search by user ID">
-                  <Icon name="fingerprint" size="sm" />
-                </ToggleButton>
-                <ToggleButton value="all" title="Search all fields">
-                  <Icon name="search" size="sm" />
-                </ToggleButton>
-              </ToggleButtonGroup>
-              <TextField
-                fullWidth
-                placeholder={getPlaceholder()}
-                value={searchInput}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-                size="small"
-                InputProps={{
-                  startAdornment: <Icon name="search" size="sm" color="grayDark" inlineLeft />,
-                }}
-              />
-            </Stack>
-          </Gutters>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <ToggleButtonGroup
+              value={searchType}
+              exclusive
+              onChange={handleSearchTypeChange}
+              size="small"
+            >
+              <ToggleButton value="email" title="Search by email">
+                <Icon name="envelope" size="sm" />
+              </ToggleButton>
+              <ToggleButton value="userId" title="Search by user ID">
+                <Icon name="fingerprint" size="sm" />
+              </ToggleButton>
+              <ToggleButton value="all" title="Search all fields">
+                <Icon name="search" size="sm" />
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <TextField
+              fullWidth
+              placeholder={getPlaceholder()}
+              value={searchInput}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
+              size="small"
+              InputProps={{
+                startAdornment: <Icon name="search" size="sm" color="grayDark" inlineLeft />,
+              }}
+            />
+          </Stack>
+        </Gutters>
       }
     >
       {loading ? (

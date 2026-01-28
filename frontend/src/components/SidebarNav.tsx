@@ -42,7 +42,7 @@ export const SidebarNav: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active: counts.active, insets })
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
-  
+
   // Check if user has admin access to any partner entities
   const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
   const hasPartnerAdminAccess = partnerStatsModel.initialized && partnerStatsModel.all.length > 0
@@ -119,11 +119,11 @@ export const SidebarNav: React.FC = () => {
       />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       {hasPartnerAdminAccess && (
-        <ListItemLocation 
-          title="Partner Stats" 
-          to="/partner-stats" 
-          icon="chart-pie" 
-          dense 
+        <ListItemLocation
+          title="Partner Stats"
+          to="/partner-stats"
+          icon="chart-pie"
+          dense
           onClick={() => dispatch.partnerStats.fetchIfEmpty()}
         />
       )}

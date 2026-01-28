@@ -22,7 +22,7 @@ export function useResizablePanel(
   options: UseResizablePanelOptions = {}
 ) {
   const { minWidth = 250, maxWidthConstraint } = options
-  
+
   const panelRef = useRef<HTMLDivElement>(null)
   const handleRef = useRef<number>(defaultWidth)
   const moveRef = useRef<number>(0)
@@ -33,11 +33,11 @@ export function useResizablePanel(
     const fullWidth = containerRef?.current?.offsetWidth || 1000
     handleRef.current += event.clientX - moveRef.current
     moveRef.current = event.clientX
-    
-    const maxConstraint = maxWidthConstraint !== undefined 
-      ? maxWidthConstraint 
+
+    const maxConstraint = maxWidthConstraint !== undefined
+      ? maxWidthConstraint
       : fullWidth - minWidth
-    
+
     if (handleRef.current > minWidth && handleRef.current < maxConstraint) {
       setWidth(handleRef.current)
     }

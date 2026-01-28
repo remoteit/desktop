@@ -15,14 +15,14 @@ export function useContainerWidth() {
         setContainerWidth(containerRef.current.offsetWidth)
       }
     }
-    
+
     updateWidth()
-    
+
     const resizeObserver = new ResizeObserver(updateWidth)
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current)
     }
-    
+
     return () => resizeObserver.disconnect()
   }, [])
 

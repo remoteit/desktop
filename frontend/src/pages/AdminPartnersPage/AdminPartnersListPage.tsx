@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { 
+import {
   Typography, Box, TextField, InputAdornment, Stack, Button,
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material'
@@ -88,7 +88,7 @@ export const AdminPartnersListPage: React.FC = () => {
   const filteredPartners = useMemo(() => {
     if (!searchValue.trim()) return partners
     const search = searchValue.toLowerCase()
-    return partners.filter(partner => 
+    return partners.filter(partner =>
       partner.name?.toLowerCase().includes(search) ||
       partner.id?.toLowerCase().includes(search)
     )
@@ -101,11 +101,11 @@ export const AdminPartnersListPage: React.FC = () => {
 
   const handleCreatePartner = async () => {
     if (!newPartnerName.trim()) return
-    
+
     setCreating(true)
     const result = await graphQLCreatePartner(newPartnerName, newPartnerParentId || undefined)
     setCreating(false)
-    
+
     if (result !== 'ERROR' && result?.data?.data?.createPartner) {
       setCreateDialogOpen(false)
       setNewPartnerName('')

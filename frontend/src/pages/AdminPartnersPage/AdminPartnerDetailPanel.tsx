@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { 
+import {
   Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Button,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
   IconButton as MuiIconButton
@@ -13,9 +13,9 @@ import { Body } from '../../components/Body'
 import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { 
+import {
   graphQLAdminPartners,
-  graphQLAddPartnerAdmin, 
+  graphQLAddPartnerAdmin,
   graphQLRemovePartnerAdmin,
   graphQLAddPartnerRegistrant,
   graphQLRemovePartnerRegistrant,
@@ -80,11 +80,11 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleAddAdmin = async () => {
     if (!newAdminEmail) return
-    
+
     setAddingAdmin(true)
     const result = await graphQLAddPartnerAdmin(partnerId, newAdminEmail)
     setAddingAdmin(false)
-    
+
     if (result !== 'ERROR') {
       setAddAdminDialogOpen(false)
       setNewAdminEmail('')
@@ -96,11 +96,11 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleRemoveAdmin = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this admin?')) return
-    
+
     setRemovingAdmin(userId)
     const result = await graphQLRemovePartnerAdmin(partnerId, userId)
     setRemovingAdmin(null)
-    
+
     if (result !== 'ERROR') {
       fetchPartner(true)
     } else {
@@ -110,11 +110,11 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleAddRegistrant = async () => {
     if (!newRegistrantEmail) return
-    
+
     setAddingRegistrant(true)
     const result = await graphQLAddPartnerRegistrant(partnerId, newRegistrantEmail)
     setAddingRegistrant(false)
-    
+
     if (result !== 'ERROR') {
       setAddRegistrantDialogOpen(false)
       setNewRegistrantEmail('')
@@ -126,11 +126,11 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleRemoveRegistrant = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this registrant?')) return
-    
+
     setRemovingRegistrant(userId)
     const result = await graphQLRemovePartnerRegistrant(partnerId, userId)
     setRemovingRegistrant(null)
-    
+
     if (result !== 'ERROR') {
       fetchPartner(true)
     } else {
@@ -145,8 +145,8 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR' && result?.data?.data?.admin?.partners) {
       // Filter out current partner, its children, and its parent
       const childIds = children.map((c: any) => c.id)
-      const filtered = result.data.data.admin.partners.filter((p: any) => 
-        p.id !== partnerId && 
+      const filtered = result.data.data.admin.partners.filter((p: any) =>
+        p.id !== partnerId &&
         !childIds.includes(p.id) &&
         p.id !== partner.parent?.id
       )
@@ -156,11 +156,11 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleAddChild = async () => {
     if (!selectedChildId) return
-    
+
     setAddingChild(true)
     const result = await graphQLAddPartnerChild(partnerId, selectedChildId)
     setAddingChild(false)
-    
+
     if (result !== 'ERROR') {
       setAddChildDialogOpen(false)
       setSelectedChildId('')
@@ -172,11 +172,11 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleRemoveChild = async (childId: string) => {
     if (!confirm('Remove this child partner? It will become a top-level partner.')) return
-    
+
     setRemovingChild(childId)
     const result = await graphQLRemovePartnerChild(childId)
     setRemovingChild(null)
-    
+
     if (result !== 'ERROR') {
       fetchPartner(true)
     } else {
@@ -186,16 +186,16 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
   const handleDeletePartner = async () => {
     const childCount = children.length
-    const message = childCount > 0 
+    const message = childCount > 0
       ? `Delete this partner? Its ${childCount} child partner(s) will become top-level partners.`
       : 'Delete this partner? This action cannot be undone.'
-    
+
     if (!confirm(message)) return
-    
+
     setDeleting(true)
     const result = await graphQLDeletePartner(partnerId)
     setDeleting(false)
-    
+
     if (result !== 'ERROR') {
       history.push('/admin/partners')
     } else {
@@ -207,7 +207,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     setExporting(true)
     const result = await graphQLExportPartnerDevices(partnerId)
     setExporting(false)
-    
+
     if (result !== 'ERROR' && result?.data?.data?.exportPartnerDevices) {
       const url = result.data.data.exportPartnerDevices
       windowOpen(url)
@@ -435,7 +435,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                     <ListItemIcon>
                       <Icon name="user" size="md" color="grayDark" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary={user.email}
                       secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
                     />
@@ -482,7 +482,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                     <ListItemIcon>
                       <Icon name="user-shield" size="md" color="grayDark" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary={user.email}
                       secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
                     />

@@ -8,6 +8,7 @@ import { ProductPage } from './ProductPage'
 import { ProductSettingsPage } from './ProductSettingsPage'
 import { ProductServiceDetailPage } from './ProductServiceDetailPage'
 import { ProductServiceAddPage } from './ProductServiceAddPage'
+import { ProductTransferPage } from './ProductTransferPage'
 import { getProductModel } from '../../selectors/products'
 import { State } from '../../store'
 import { useContainerWidth } from '../../hooks/useContainerWidth'
@@ -21,10 +22,10 @@ const DEFAULT_RIGHT_WIDTH = 350
 export const ProductsWithDetailPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const css = useStyles()
-  
+
   // Get layout from Redux for singlePanel breakpoint (750px)
   const layout = useSelector((state: State) => state.ui.layout)
-  
+
   const { containerRef, containerWidth } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
     minWidth: MIN_WIDTH,
@@ -54,14 +55,14 @@ export const ProductsWithDetailPage: React.FC = () => {
         {/* Left Panel - Products List */}
         {showLeft && (
           <>
-            <Box 
-              className={css.panel} 
-              style={{ width: leftPanel.width, minWidth: leftPanel.width }} 
+            <Box
+              className={css.panel}
+              style={{ width: leftPanel.width, minWidth: leftPanel.width }}
               ref={leftPanel.panelRef}
             >
               <ProductsPage showHeader />
             </Box>
-            
+
             {/* Left Divider */}
             <Box className={css.anchor}>
               <Box className={css.handle} onMouseDown={leftPanel.onDown}>
@@ -70,14 +71,14 @@ export const ProductsWithDetailPage: React.FC = () => {
             </Box>
           </>
         )}
-        
+
         {/* Middle Panel - Product Details */}
         {showMiddle && (
           <>
             <Box className={css.middlePanel}>
               <ProductPage showRefresh={!showLeft} />
             </Box>
-            
+
             {/* Right Divider */}
             <Box className={css.anchor}>
               <Box className={css.handle} onMouseDown={rightPanel.onDown}>
@@ -86,16 +87,19 @@ export const ProductsWithDetailPage: React.FC = () => {
             </Box>
           </>
         )}
-        
+
         {/* Right Panel - Settings/Service Details */}
         {showRight && (
-          <Box 
-            className={css.rightPanel} 
+          <Box
+            className={css.rightPanel}
             style={showMiddle ? { width: rightPanel.width, minWidth: rightPanel.width } : undefined}
           >
             <Switch>
               <Route path="/products/:productId/add">
                 <ProductServiceAddPage showBack={!showMiddle} />
+              </Route>
+              <Route path="/products/:productId/transfer">
+                <ProductTransferPage showBack={!showMiddle} />
               </Route>
               <Route path="/products/:productId/details">
                 <ProductSettingsPage showBack={!showMiddle} />
