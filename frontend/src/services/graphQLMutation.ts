@@ -627,3 +627,21 @@ export async function graphQLRentANode(data: string[]) {
     { data }
   )
 }
+
+export async function graphQLAdminUpdateEmail(from: string, to: string) {
+  return await graphQLBasicRequest(
+    ` mutation UpdateEmail($from: String!, $to: String!) {
+        updateEmail(from: $from, to: $to)
+      }`,
+    { from, to }
+  )
+}
+
+export async function graphQLAdminDeleteUser(id: string, force: boolean = false) {
+  return await graphQLBasicRequest(
+    ` mutation AdminDeleteUser($id: String!, $force: Boolean) {
+        adminDeleteUser(id: $id, force: $force)
+      }`,
+    { id, force }
+  )
+}

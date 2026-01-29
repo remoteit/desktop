@@ -13,11 +13,7 @@ import { spacing } from '../../styling'
 import { Dispatch } from '../../store'
 import { windowOpen } from '../../services/browser'
 
-type Props = {
-  showRefresh?: boolean
-}
-
-export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => {
+export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -28,6 +24,16 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
     if (userId) {
       fetchUser()
     }
+  }, [userId])
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (userId) {
+        fetchUser(true)
+      }
+    }
+    window.addEventListener('refreshAdminData', handleRefresh)
+    return () => window.removeEventListener('refreshAdminData', handleRefresh)
   }, [userId])
 
   const fetchUser = async (forceRefresh = false) => {
@@ -87,15 +93,13 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
               onClick={handleBack}
               size="md"
             />
-            {showRefresh && (
-              <IconButton
-                icon="sync"
-                title="Refresh user"
-                onClick={() => fetchUser(true)}
-                spin={loading}
-                size="md"
-              />
-            )}
+            <IconButton
+              icon="sync"
+              title="Refresh user"
+              onClick={() => fetchUser(true)}
+              spin={loading}
+              size="md"
+            />
             <IconButton
               icon="eye"
               title="View as User"
