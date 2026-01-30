@@ -128,14 +128,10 @@ export default class ElectronApp {
     this.openWindow()
   }
 
-  private handleNavigate = (action: 'BACK' | 'FORWARD' | 'STATUS') => {
+  private handleNavigate = (action: 'BACK' | 'FORWARD' | 'STATUS' | 'CLEAR') => {
     if (!this.window) return
     const { navigationHistory } = this.window.webContents
 
-    const canNavigate = {
-      canGoBack: navigationHistory.canGoBack(),
-      canGoForward: navigationHistory.canGoForward(),
-    }
     switch (action) {
       case 'BACK':
         navigationHistory.goBack()
@@ -143,7 +139,16 @@ export default class ElectronApp {
       case 'FORWARD':
         navigationHistory.goForward()
         break
+      case 'CLEAR':
+        navigationHistory.clear()
+        break
     }
+    
+    const canNavigate = {
+      canGoBack: navigationHistory.canGoBack(),
+      canGoForward: navigationHistory.canGoForward(),
+    }
+
     EventBus.emit(EVENTS.canNavigate, canNavigate)
   }
 

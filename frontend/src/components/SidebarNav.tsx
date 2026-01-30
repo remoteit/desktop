@@ -1,20 +1,18 @@
-import React, { useState } from 'react'
+import React from 'react'
 import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import {
   Box,
   Badge,
   List,
-  ListItemButton,
   Divider,
-  Typography,
   Tooltip,
-  Collapse,
   Chip,
   useMediaQuery,
 } from '@mui/material'
@@ -22,13 +20,12 @@ import { ListItemLocation } from './ListItemLocation'
 import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
-import { ExpandIcon } from './ExpandIcon'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
+import { getPartnerStatsModel } from '../models/partnerStats'
 
 export const SidebarNav: React.FC = () => {
-  const [more, setMore] = useState<boolean>()
   const counts = useCounts()
   const reseller = useSelector((state: State) => state.user.reseller)
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
@@ -40,6 +37,10 @@ export const SidebarNav: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles({ active: counts.active, insets })
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
+
+  // Check if user has admin access to any partner entities
+  const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
+  const hasPartnerAdminAccess = partnerStatsModel.initialized && partnerStatsModel.all.length > 0
 
   if (remoteUI)
     return (
@@ -112,17 +113,17 @@ export const SidebarNav: React.FC = () => {
         dense
       />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
+      {hasPartnerAdminAccess && (
+        <ListItemLocation
+          title="Partner Stats"
+          to="/partner-stats"
+          icon="chart-pie"
+          dense
+          onClick={() => dispatch.partnerStats.fetchIfEmpty()}
+        />
+      )}
       <ListItemLocation title="Products" to="/products" match="/products" icon="box" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
-      <ListItemButton onClick={() => setMore(!more)} sx={{ marginTop: 2 }}>
-        <Typography variant="subtitle2" color="grayDark.main" marginLeft={1}>
-          More
-          <ExpandIcon open={more} color="grayDark" />
-        </Typography>
-      </ListItemButton>
-      <Collapse in={more}>
-        <ListItemLink title="Registrations" href="https://link.remote.it/app/registrations" icon="upload" dense />
-      </Collapse>
       <Box className={css.footer}>
         <UpgradeBanner />
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">

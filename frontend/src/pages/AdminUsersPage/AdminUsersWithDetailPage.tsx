@@ -1,30 +1,29 @@
-import React from 'react'
-import { Switch, Route, useParams, Redirect } from 'react-router-dom'
+import React, { useEffect, useRef } from 'react'
+import { Switch, Route, useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { ProductsPage } from './ProductsPage'
-import { ProductPage } from './ProductPage'
-import { ProductSettingsPage } from './ProductSettingsPage'
-import { ProductServiceDetailPage } from './ProductServiceDetailPage'
-import { ProductServiceAddPage } from './ProductServiceAddPage'
-import { ProductTransferPage } from './ProductTransferPage'
-import { getProductModel } from '../../selectors/products'
+import { AdminUsersListPage } from './AdminUsersListPage'
+import { AdminUserDetailPage } from './AdminUserDetailPage'
+import { AdminUserAccountPanel } from './AdminUserAccountPanel'
+import { AdminUserDevicesPanel } from './AdminUserDevicesPanel'
 import { State } from '../../store'
 import { useContainerWidth } from '../../hooks/useContainerWidth'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
 
 const MIN_WIDTH = 250
-const THREE_PANEL_WIDTH = 961 // Width threshold for showing 3 panels
+const THREE_PANEL_WIDTH = 961
 const DEFAULT_LEFT_WIDTH = 300
 const DEFAULT_RIGHT_WIDTH = 350
 
-export const ProductsWithDetailPage: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>()
+export const AdminUsersWithDetailPage: React.FC = () => {
+  const { userId } = useParams<{ userId?: string }>()
+  const history = useHistory()
+  const location = useLocation()
   const css = useStyles()
-
-  // Get layout from Redux for singlePanel breakpoint (750px)
   const layout = useSelector((state: State) => state.ui.layout)
+  const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
+  const hasRestoredRef = useRef(false)
 
   const { containerRef, containerWidth } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
@@ -34,52 +33,69 @@ export const ProductsWithDetailPage: React.FC = () => {
     minWidth: MIN_WIDTH,
   })
 
-  const { all: products } = useSelector(getProductModel)
-  const product = products.find(p => p.id === productId)
-
-  // Determine panel count based on layout.singlePanel and container width
-  // - singlePanel (<=750px): 1 panel
-  // - !singlePanel + wide container (>=900px): 3 panels
-  // - !singlePanel + narrow container: 2 panels
   const maxPanels = layout.singlePanel ? 1 : (containerWidth >= THREE_PANEL_WIDTH ? 3 : 2)
 
-  // Determine which panels to show based on available space
-  // Priority: right panel > middle panel > left panel
-  const showLeft = maxPanels >= 3
-  const showMiddle = maxPanels >= 2
-  const showRight = maxPanels >= 1
+  // Restore previously selected user ONLY on initial mount
+  useEffect(() => {
+    if (!hasRestoredRef.current) {
+      const adminSelection = defaultSelection['admin']
+      const savedRoute = adminSelection?.['/admin/users']
+      if (location.pathname === '/admin/users' && savedRoute) {
+        history.replace(savedRoute)
+      }
+      hasRestoredRef.current = true
+    }
+  }, []) // Empty dependency array - only run once on mount
+
+  // Redirect to /account tab if navigating directly to user without a sub-route
+  useEffect(() => {
+    if (userId && location.pathname === `/admin/users/${userId}`) {
+      history.replace(`/admin/users/${userId}/account`)
+    }
+  }, [userId, location.pathname, history])
+
+  // Only show detail panels when a user is selected
+  const hasUserSelected = !!userId
+
+  // When no user selected, show only the list (full width)
+  // When user selected, show panels based on available space
+  const showLeft = !hasUserSelected || maxPanels >= 3
+  const showMiddle = hasUserSelected && maxPanels >= 2
+  const showRight = hasUserSelected && maxPanels >= 1
 
   return (
     <Box className={css.wrapper} ref={containerRef}>
       <Box className={css.container}>
-        {/* Left Panel - Products List */}
         {showLeft && (
           <>
             <Box
               className={css.panel}
-              style={{ width: leftPanel.width, minWidth: leftPanel.width }}
+              style={{
+                width: hasUserSelected ? leftPanel.width : undefined,
+                minWidth: hasUserSelected ? leftPanel.width : undefined,
+                flex: hasUserSelected ? undefined : 1
+              }}
               ref={leftPanel.panelRef}
             >
-              <ProductsPage showHeader />
+              <AdminUsersListPage />
             </Box>
 
-            {/* Left Divider */}
-            <Box className={css.anchor}>
-              <Box className={css.handle} onMouseDown={leftPanel.onDown}>
-                <Box className={leftPanel.grab ? 'active' : undefined} />
+            {hasUserSelected && (
+              <Box className={css.anchor}>
+                <Box className={css.handle} onMouseDown={leftPanel.onDown}>
+                  <Box className={leftPanel.grab ? 'active' : undefined} />
+                </Box>
               </Box>
-            </Box>
+            )}
           </>
         )}
 
-        {/* Middle Panel - Product Details */}
         {showMiddle && (
           <>
             <Box className={css.middlePanel}>
-              <ProductPage showRefresh={!showLeft} />
+              <AdminUserDetailPage showRefresh={!showLeft} />
             </Box>
 
-            {/* Right Divider */}
             <Box className={css.anchor}>
               <Box className={css.handle} onMouseDown={rightPanel.onDown}>
                 <Box className={rightPanel.grab ? 'active' : undefined} />
@@ -88,32 +104,20 @@ export const ProductsWithDetailPage: React.FC = () => {
           </>
         )}
 
-        {/* Right Panel - Settings/Service Details */}
         {showRight && (
           <Box
             className={css.rightPanel}
             style={showMiddle ? { width: rightPanel.width, minWidth: rightPanel.width } : undefined}
           >
             <Switch>
-              <Route path="/products/:productId/add">
-                <ProductServiceAddPage showBack={!showMiddle} />
+              <Route path="/admin/users/:userId/account">
+                <AdminUserAccountPanel />
               </Route>
-              <Route path="/products/:productId/transfer">
-                <ProductTransferPage showBack={!showMiddle} />
+              <Route path="/admin/users/:userId/devices">
+                <AdminUserDevicesPanel />
               </Route>
-              <Route path="/products/:productId/details">
-                <ProductSettingsPage showBack={!showMiddle} />
-              </Route>
-              <Route path="/products/:productId/:serviceId">
-                <ProductServiceDetailPage showBack={!showMiddle} />
-              </Route>
-              <Route path="/products/:productId" exact>
-                {/* In single panel mode, show ProductPage; otherwise redirect to details */}
-                {showMiddle ? (
-                  <Redirect to={`/products/${productId}/details`} />
-                ) : (
-                  <ProductPage showRefresh />
-                )}
+              <Route path="/admin/users/:userId" exact>
+                {!showMiddle && <AdminUserDetailPage showRefresh />}
               </Route>
             </Switch>
           </Box>
@@ -159,7 +163,6 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
-    // When shown alone, take full width
     flex: 1,
   },
   anchor: {

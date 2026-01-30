@@ -14,6 +14,7 @@ type IUserState = {
   reseller: IResellerRef | null
   language: string
   attributes: ILookup<any>
+  admin: boolean
 }
 
 const defaultState: IUserState = {
@@ -24,6 +25,7 @@ const defaultState: IUserState = {
   reseller: null,
   language: 'en',
   attributes: {},
+  admin: false,
 }
 
 export default createModel<RootModel>()({

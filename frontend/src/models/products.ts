@@ -8,6 +8,7 @@ import {
   graphQLUpdateDeviceProductSettings,
   graphQLAddDeviceProductService,
   graphQLRemoveDeviceProductService,
+  graphQLTransferDeviceProduct,
 } from '../services/graphQLDeviceProducts'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -27,6 +28,7 @@ export interface IDeviceProduct {
   platform: { id: number; name: string | null } | null
   status: 'NEW' | 'LOCKED'
   registrationCode?: string
+  registrationCommand?: string
   created: string
   updated: string
   services: IProductService[]
@@ -87,9 +89,10 @@ export default createModel<RootModel>()({
     async fetchSingle(id: string, state) {
       const accountId = selectActiveAccountId(state)
       dispatch.products.set({ fetching: true, accountId })
-      const response = await graphQLDeviceProduct(id)
+      const response = await graphQLDeviceProduct(id, accountId)
       if (!graphQLGetErrors(response)) {
-        const product = response?.data?.data?.deviceProduct
+        const items = response?.data?.data?.login?.account?.deviceProducts?.items || []
+        const product = items[0]
         if (product) {
           const productModel = getProductModel(state, accountId)
           const exists = productModel.all.some(p => p.id === id)
@@ -149,7 +152,7 @@ export default createModel<RootModel>()({
       )
 
       const successIds = selected.filter((id, i) => !graphQLGetErrors(results[i]))
-      
+
       dispatch.products.set({
         all: all.filter(p => !successIds.includes(p.id)),
         selected: [],
@@ -234,6 +237,34 @@ export default createModel<RootModel>()({
         })
         return true
       }
+      return false
+    },
+
+    async transferProduct({ productId, email }: { productId: string; email: string }, state) {
+      const accountId = selectActiveAccountId(state)
+      const productModel = getProductModel(state, accountId)
+      const product = productModel.all.find(p => p.id === productId)
+
+      if (!product) return false
+
+      dispatch.ui.set({ transferring: true })
+      const response = await graphQLTransferDeviceProduct(productId, email)
+
+      if (!graphQLGetErrors(response)) {
+        // Remove product from local state
+        dispatch.products.set({
+          all: productModel.all.filter(p => p.id !== productId),
+          selected: productModel.selected.filter(s => s !== productId),
+          accountId,
+        })
+        dispatch.ui.set({
+          successMessage: `"${product.name}" was successfully transferred to ${email}.`,
+        })
+        dispatch.ui.set({ transferring: false })
+        return true
+      }
+
+      dispatch.ui.set({ transferring: false })
       return false
     },
 

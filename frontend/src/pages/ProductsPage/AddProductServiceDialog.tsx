@@ -40,6 +40,15 @@ export const AddProductServiceDialog: React.FC<Props> = ({
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const handleTypeChange = (selectedType: string) => {
+    setType(selectedType)
+    // Set default port for the selected application type
+    const appType = applicationTypes.find(t => String(t.id) === selectedType)
+    if (appType?.port) {
+      setPort(String(appType.port))
+    }
+  }
+
   const resetForm = () => {
     setName('')
     setType('')
@@ -115,7 +124,7 @@ export const AddProductServiceDialog: React.FC<Props> = ({
           <InputLabel>Service Type</InputLabel>
           <Select
             value={type}
-            onChange={e => setType(e.target.value)}
+            onChange={e => handleTypeChange(e.target.value)}
             label="Service Type"
             disabled={creating}
           >

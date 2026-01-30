@@ -17,6 +17,7 @@ import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
 import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
+import { CopyCodeBlock } from '../../components/CopyCodeBlock'
 import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { Confirm } from '../../components/Confirm'
@@ -43,6 +44,7 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
   const [deleting, setDeleting] = useState(false)
 
   const isLocked = product?.status === 'LOCKED'
+  const registrationCommand = product?.registrationCommand
 
   const handleLockToggle = async () => {
     if (!product || isLocked) return
@@ -94,6 +96,23 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
       }
     >
       <div className={css.content}>
+        {isLocked && product.registrationCode && (
+          <section className={css.section}>
+            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+              {registrationCommand ? 'Registration Command' : 'Registration Code'}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom sx={{ marginBottom: 2 }}>
+              {registrationCommand 
+                ? 'Use this command to register devices with this product configuration:'
+                : 'Use this registration code to register devices with this product configuration:'}
+            </Typography>
+            <CopyCodeBlock
+              value={registrationCommand || product.registrationCode}
+              code={registrationCommand ? product.registrationCode : undefined}
+            />
+          </section>
+        )}
+
         <section className={css.section}>
           <Typography variant="subtitle2" color="textSecondary" gutterBottom>
             Product Details
@@ -158,7 +177,7 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
             Product Settings
           </Typography>
           <List>
-            <ListItem>
+            <ListItem sx={{ paddingRight: '80px' }}>
               <ListItemText
                 primary="Lock Product"
                 secondary={
@@ -174,6 +193,28 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
                   disabled={updating || isLocked}
                 />
               </ListItemSecondaryAction>
+            </ListItem>
+          </List>
+        </section>
+
+        <section className={css.section}>
+          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+            Transfer Ownership
+          </Typography>
+          <List>
+            <ListItem>
+              <ListItemText
+                primary="Transfer Product"
+                secondary="Transfer this product and all its services to another user."
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => history.push(`/products/${productId}/transfer`)}
+                startIcon={<Icon name="arrow-turn-down-right" />}
+              >
+                Transfer
+              </Button>
             </ListItem>
           </List>
         </section>

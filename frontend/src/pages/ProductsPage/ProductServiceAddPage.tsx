@@ -48,6 +48,15 @@ export const ProductServiceAddPage: React.FC<Props> = ({ showBack = true }) => {
 
   const isLocked = product?.status === 'LOCKED'
 
+  const handleTypeChange = (selectedType: string) => {
+    setType(selectedType)
+    // Set default port for the selected application type
+    const appType = applicationTypes.find(t => String(t.id) === selectedType)
+    if (appType?.port) {
+      setPort(String(appType.port))
+    }
+  }
+
   const handleCreate = async () => {
     if (!productId) return
     
@@ -155,17 +164,15 @@ export const ProductServiceAddPage: React.FC<Props> = ({ showBack = true }) => {
             <InputLabel>Service Type</InputLabel>
             <Select
               value={type}
-              onChange={e => setType(e.target.value)}
+              onChange={e => handleTypeChange(e.target.value)}
               label="Service Type"
               disabled={creating}
             >
-              {applicationTypes
-                .filter(t => t.enabled)
-                .map(t => (
-                  <MenuItem key={t.id} value={String(t.id)}>
-                    {t.name}
-                  </MenuItem>
-                ))}
+              {applicationTypes.map(t => (
+                <MenuItem key={t.id} value={String(t.id)}>
+                  {t.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
