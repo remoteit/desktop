@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
+import { useViewAsUser } from '../hooks/useViewAsUser'
 import { persistor } from '../store'
 import { useLocation } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -27,6 +28,7 @@ import { Sidebar } from './Sidebar'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
+import { ViewAsBanner } from './ViewAsBanner'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
@@ -38,6 +40,7 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const reseller = useSelector(selectResellerRef)
+  const viewAsUser = useSelector((state: State) => state.ui.viewAsUser)
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
@@ -55,6 +58,8 @@ export const App: React.FC = () => {
     singlePanel,
     sidePanelWidth,
   }
+
+  useViewAsUser()
 
   useEffect(() => {
     hideSplashScreen()
@@ -98,6 +103,7 @@ export const App: React.FC = () => {
 
   return (
     <Page>
+      <ViewAsBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
         <Box
           sx={{

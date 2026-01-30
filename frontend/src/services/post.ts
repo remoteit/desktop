@@ -19,10 +19,19 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
     console.warn('Unable to get token for API request.', data)
     return
   }
+  
+  const headers: any = { Authorization: token, ...getTestHeader() }
+  
+  // Add x-r3-user header if in view-as mode
+  const viewAsUser = store.getState().ui.viewAsUser
+  if (viewAsUser) {
+    headers['X-R3-User'] = viewAsUser.id
+  }
+  
   const request = {
     url: getApiURL() + path,
     method: 'post' as 'post',
-    headers: { Authorization: token, ...getTestHeader() },
+    headers,
     data,
   }
 

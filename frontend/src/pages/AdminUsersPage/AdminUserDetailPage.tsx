@@ -11,6 +11,7 @@ import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { spacing } from '../../styling'
 import { Dispatch } from '../../store'
+import { windowOpen } from '../../services/browser'
 
 type Props = {
   showRefresh?: boolean
@@ -41,6 +42,13 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
 
   const handleBack = () => {
     history.push('/admin/users')
+  }
+
+  const handleViewAsUser = () => {
+    if (!user) return
+    const viewAsParam = `${user.id},${encodeURIComponent(user.email)}`
+    const url = `${window.location.origin}${window.location.pathname}#/devices?viewAs=${viewAsParam}`
+    windowOpen(url, '_blank')
   }
 
   if (loading) {
@@ -88,6 +96,13 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
                 size="md"
               />
             )}
+            <IconButton
+              icon="eye"
+              title="View as User"
+              onClick={handleViewAsUser}
+              size="md"
+              color="primary"
+            />
           </Box>
           <List>
             <ListItemLocation
