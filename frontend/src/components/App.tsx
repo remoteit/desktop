@@ -114,7 +114,6 @@ export const App: React.FC = () => {
             flexDirection: 'row',
             alignItems: 'start',
             justifyContent: 'start',
-            marginTop: viewAsUser ? '33px' : 0,
           }}
         >
           {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
