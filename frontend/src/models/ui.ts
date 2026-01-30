@@ -33,7 +33,6 @@ const SAVED_ACROSS_LOGOUT = [
   'serviceTimeSeries',
   'showDesktopNotice',
   'mobileWelcome',
-  // viewAsUser uses sessionStorage instead (window-isolated, survives refresh)
 ]
 
 export type UIState = {
