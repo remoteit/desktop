@@ -93,7 +93,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
         {showMiddle && (
           <>
             <Box className={css.middlePanel}>
-              <AdminUserDetailPage showRefresh={!showLeft} />
+              <AdminUserDetailPage />
             </Box>
 
             <Box className={css.anchor}>
@@ -117,7 +117,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
                 <AdminUserDevicesPanel />
               </Route>
               <Route path="/admin/users/:userId" exact>
-                {!showMiddle && <AdminUserDetailPage showRefresh />}
+                {!showMiddle && <AdminUserDetailPage />}
               </Route>
             </Switch>
           </Box>
