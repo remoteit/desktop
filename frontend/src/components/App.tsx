@@ -2,8 +2,9 @@ import React, { useEffect } from 'react'
 import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
+import { useViewAsUser } from '../hooks/useViewAsUser'
 import { persistor } from '../store'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
@@ -32,7 +33,6 @@ import { ViewAsBanner } from './ViewAsBanner'
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
   const location = useLocation()
-  const history = useHistory()
   const hideSplashScreen = useCapacitor()
   const authInitialized = useSelector((state: State) => state.auth.initialized)
   const installed = useSelector((state: State) => state.binaries.installed)
@@ -59,6 +59,8 @@ export const App: React.FC = () => {
     sidePanelWidth,
   }
 
+  useViewAsUser()
+
   useEffect(() => {
     hideSplashScreen()
   }, [])
@@ -66,44 +68,6 @@ export const App: React.FC = () => {
   useEffect(() => {
     dispatch.ui.set({ layout })
   }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, sidePanelWidth])
-
-  // Handle viewAs URL parameter and restore from sessionStorage
-  useEffect(() => {
-    // First, try to restore from sessionStorage (survives refresh)
-    const savedViewAs = window.sessionStorage.getItem('viewAsUser')
-    if (savedViewAs) {
-      try {
-        const viewAsUser = JSON.parse(savedViewAs)
-        dispatch.ui.set({ viewAsUser })
-        console.log('Restored viewAs from sessionStorage:', viewAsUser)
-      } catch (e) {
-        console.error('Failed to parse viewAsUser from sessionStorage:', e)
-      }
-    }
-    
-    // Then check URL parameter (for initial open)
-    const params = new URLSearchParams(location.search)
-    const viewAsParam = params.get('viewAs')
-    
-    if (viewAsParam) {
-      const [userId, email] = viewAsParam.split(',')
-      if (userId && email) {
-        const viewAsUser = { id: userId, email: decodeURIComponent(email) }
-        dispatch.ui.set({ viewAsUser })
-        // Save to sessionStorage for persistence across refreshes
-        window.sessionStorage.setItem('viewAsUser', JSON.stringify(viewAsUser))
-        console.log('Set viewAs from URL:', viewAsUser)
-        
-        // Remove the parameter from URL
-        params.delete('viewAs')
-        const newSearch = params.toString()
-        history.replace({
-          pathname: location.pathname,
-          search: newSearch ? `?${newSearch}` : '',
-        })
-      }
-    }
-  }, [location.search])
 
   if (waitMessage)
     return (
