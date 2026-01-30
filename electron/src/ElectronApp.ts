@@ -130,24 +130,28 @@ export default class ElectronApp {
 
   private handleNavigate = (action: 'BACK' | 'FORWARD' | 'STATUS' | 'CLEAR') => {
     if (!this.window) return
-    
+    const { navigationHistory } = this.window.webContents
     switch (action) {
       case 'BACK':
-        this.window.webContents.navigationHistory.goBack()
+        navigationHistory.goBack()
         break
       case 'FORWARD':
-        this.window.webContents.navigationHistory.goForward()
+        navigationHistory.goForward()
+        break
+      case 'CLEAR':
+        navigationHistory.clear()
         break
       case 'CLEAR':
         this.window.webContents.navigationHistory.clear()
         break
     }
-    
+
     // Get navigation state AFTER performing the action
     const canNavigate = {
-      canGoBack: this.window.webContents.navigationHistory.canGoBack,
-      canGoForward: this.window.webContents.navigationHistory.canGoForward,
+      canGoBack: navigationHistory.canGoBack(),
+      canGoForward: navigationHistory.canGoForward(),
     }
+
     EventBus.emit(EVENTS.canNavigate, canNavigate)
   }
 
@@ -361,10 +365,10 @@ export default class ElectronApp {
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
       : environment.isWindows
-      ? 'iconWinColor.ico'
-      : environment.isPi
-      ? 'iconLinuxColor.png'
-      : 'iconLinux.png'
+        ? 'iconWinColor.ico'
+        : environment.isPi
+          ? 'iconLinuxColor.png'
+          : 'iconLinux.png'
     return path.join(__dirname, 'images', iconFile)
   }
 

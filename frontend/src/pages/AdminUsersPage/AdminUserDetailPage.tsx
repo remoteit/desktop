@@ -103,7 +103,7 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
               size="md"
               color="primary"
             />
-          </Box>
+          </Box >
           <List>
             <ListItemLocation
               to={`/admin/users/${user.id}/account`}
@@ -113,7 +113,7 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
             />
           </List>
           <Divider />
-        </Box>
+        </Box >
       }
     >
       <Typography variant="subtitle1">
@@ -132,6 +132,6 @@ export const AdminUserDetailPage: React.FC<Props> = ({ showRefresh = true }) => 
           />
         </ListItemLocation>
       </List>
-    </Container>
+    </Container >
   )
 }
