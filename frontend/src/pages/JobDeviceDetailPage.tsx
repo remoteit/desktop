@@ -19,9 +19,10 @@ import { HIDE_SIDEBAR_WIDTH } from '../constants'
 
 type Props = {
   showBack?: boolean
+  showMenu?: boolean
 }
 
-export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
+export const JobDeviceDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
@@ -42,7 +43,7 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
       header={
         <>
           <Typography variant="h1">
-            {sidebarHidden && (
+            {showMenu && sidebarHidden && (
               <IconButton
                 name="bars"
                 size="md"

@@ -16,9 +16,10 @@ import { Gutters } from '../components/Gutters'
 
 type Props = {
   showBack?: boolean
+  showMenu?: boolean
 }
 
-export const ScriptDetailPage: React.FC<Props> = ({ showBack }) => {
+export const ScriptDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID: string; jobID?: string }>()
@@ -123,7 +124,7 @@ export const ScriptDetailPage: React.FC<Props> = ({ showBack }) => {
       header={
         <Gutters top="sm" bottom="sm">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {sidebarHidden && (
+            {showMenu && sidebarHidden && (
               <IconButton
                 name="bars"
                 size="md"

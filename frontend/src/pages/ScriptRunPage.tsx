@@ -17,9 +17,10 @@ import { Notice } from '../components/Notice'
 
 type Props = {
   showClose?: boolean
+  showMenu?: boolean
 }
 
-export const ScriptRunPage: React.FC<Props> = ({ showClose }) => {
+export const ScriptRunPage: React.FC<Props> = ({ showClose, showMenu }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID: string; jobID?: string }>()
@@ -148,7 +149,7 @@ export const ScriptRunPage: React.FC<Props> = ({ showClose }) => {
       header={
         <Gutters top="sm" bottom="sm">
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {sidebarHidden && (
+            {showMenu && sidebarHidden && (
               <IconButton
                 name="bars"
                 size="md"
@@ -165,7 +166,7 @@ export const ScriptRunPage: React.FC<Props> = ({ showClose }) => {
               />
             )}
             <Typography variant="h3">
-              Run Script
+              Run {script?.name || 'Script'}
             </Typography>
           </Box>
         </Gutters>

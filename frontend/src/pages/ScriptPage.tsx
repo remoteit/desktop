@@ -17,7 +17,11 @@ import { Icon } from '../components/Icon'
 import { spacing } from '../styling'
 import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 
-export const ScriptPage: React.FC = () => {
+type Props = {
+  showMenu?: boolean
+}
+
+export const ScriptPage: React.FC<Props> = ({ showMenu }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
@@ -38,61 +42,71 @@ export const ScriptPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Box>
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {sidebarHidden && (
-                <IconButton
-                  name="bars"
-                  size="md"
-                  color="grayDarker"
-                  onClick={() => dispatch.ui.set({ sidebarMenu: true })}
-                />
-              )}
+          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
+            {showMenu && sidebarHidden && (
               <IconButton
-                icon="chevron-left"
-                title="Back to Scripts"
-                onClick={() => history.push('/scripts')}
+                name="bars"
                 size="md"
+                color="grayDarker"
+                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
               />
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<Icon name="play" />}
-              onClick={() => history.push(`/script/${fileID}/run`)}
-            >
-              Configure & Run
-            </Button>
-          </Box>
-          <List>
-            <ListItemLocation
-              to={`/script/${fileID}/latest/edit`}
-              match={`/script/${fileID}/latest/edit`}
-              icon={<Icon name="scroll" size="lg" color="grayDark" />}
-              title={
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ marginRight: 1 }}>
-                  <Title>{file.name}</Title>
-                </Stack>
-              }
-            >
-              <ScriptDeleteButton />
-            </ListItemLocation>
-            {file.shortDesc && (
-              <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
-                <Typography variant="caption" color="grayDarker.main">
-                  {file.shortDesc}
-                </Typography>
-              </Stack>
             )}
-          </List>
+            <IconButton
+              icon="chevron-left"
+              title="Back to Scripts"
+              onClick={() => history.push('/scripts')}
+              size="md"
+            />
+          </Box>
+          <Box
+            sx={{
+              mx: 2,
+              py: 1,
+              px: 1,
+              bgcolor: 'grayLightest.main',
+              borderRadius: 1,
+              display: 'inline-flex',
+              flexDirection: 'column',
+              cursor: 'pointer',
+              '&:hover': { bgcolor: 'primaryHighlight.main' },
+            }}
+            onClick={() => history.push(`/script/${fileID}/latest/edit`)}
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <IconButton
+                icon="scroll"
+                size="lg"
+                color="grayDark"
+                title="Edit script"
+              />
+              <Typography variant="h3">
+                {file.name}
+              </Typography>
+              <ScriptDeleteButton />
+            </Stack>
+            {file.shortDesc && (
+              <Typography variant="caption" color="grayDarker.main" sx={{ pl: 6 }}>
+                {file.shortDesc}
+              </Typography>
+            )}
+          </Box>
           <LinearProgress loading={fetching} />
         </Box>
       }
     >
-      <>
+      <Box>
+        <Box sx={{ ml: 9, mr: 3, pt: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Icon name="play" />}
+            onClick={() => history.push(`/script/${fileID}/run`)}
+          >
+            Configure & Run
+          </Button>
+        </Box>
         {/* Runs List */}
-        <Typography variant="subtitle1" sx={{ px: 4, pt: 3 }}>
+        <Typography variant="subtitle1" sx={{ px: 4, pt: 2 }}>
           <Title>Run History</Title>
         </Typography>
         {!jobs.length ? (
@@ -138,7 +152,7 @@ export const ScriptPage: React.FC = () => {
             })}
           </List>
         )}
-      </>
+      </Box>
     </Container>
   )
 }

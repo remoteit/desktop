@@ -38,17 +38,21 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
           const text = new TextDecoder().decode(buffer)
           const isBinary = containsNonPrintableChars(text)
 
+          setFilename(file.name)
           if (!isBinary) {
             setIsText(true)
-            setFilename(file.name)
             onChange(text, file)
           } else {
+            // Binary files are allowed - pass the file with the binary token
             setIsText(false)
+            onChange(BINARY_DATA_TOKEN, file)
           }
         } catch (e) {
           console.error('Error decoding text:', e)
-          dispatch.ui.set({ errorMessage: 'File could not be decoded as text.' })
+          // If decoding fails, treat as binary
+          setFilename(file.name)
           setIsText(false)
+          onChange(BINARY_DATA_TOKEN, file)
         }
       }
 
@@ -131,7 +135,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
         </>
       ) : (
         <Notice onClose={clear} closeTitle="Clear" fullWidth>
-          This script appears to be binary.
+          Binary script uploaded: <strong>{filename}</strong>
         </Notice>
       )}
     </Stack>

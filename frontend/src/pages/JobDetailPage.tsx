@@ -20,9 +20,10 @@ import { DeleteButton } from '../buttons/DeleteButton'
 
 type Props = {
   showBack?: boolean
+  showMenu?: boolean
 }
 
-export const JobDetailPage: React.FC<Props> = ({ showBack }) => {
+export const JobDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID: string; jobID: string }>()
@@ -99,8 +100,8 @@ export const JobDetailPage: React.FC<Props> = ({ showBack }) => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Gutters top="sm" bottom="sm">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {sidebarHidden && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {showMenu && sidebarHidden && (
               <IconButton
                 name="bars"
                 size="md"
@@ -108,25 +109,15 @@ export const JobDetailPage: React.FC<Props> = ({ showBack }) => {
                 onClick={() => dispatch.ui.set({ sidebarMenu: true })}
               />
             )}
-            {showBack && (
-              <IconButton
-                name="chevron-left"
-                onClick={() => history.push(`/script/${fileID}`)}
-                size="md"
-                title="Back"
-              />
-            )}
-            <JobStatusIcon status={job.status} size="lg" />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h2" textTransform="capitalize">
-                {job.status.toLowerCase()}
-              </Typography>
-              {job.jobDevices[0]?.updated && (
-                <Typography variant="caption" color="text.secondary">
-                  <Timestamp date={new Date(job.jobDevices[0].updated)} />
-                </Typography>
-              )}
-            </Box>
+            <IconButton
+              name="chevron-left"
+              onClick={() => history.push(`/script/${fileID}`)}
+              size="md"
+              title="Back"
+            />
+            <Typography variant="h3" sx={{ flex: 1 }}>
+              {file.name}
+            </Typography>
             <DeleteButton
               title="Delete Run"
               warning="This will permanently delete this run and all its results."
@@ -140,6 +131,21 @@ export const JobDetailPage: React.FC<Props> = ({ showBack }) => {
       }
     >
       <Box sx={{ p: 2 }}>
+        {/* Status */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <JobStatusIcon status={job.status} size="lg" />
+          <Box>
+            <Typography variant="h2" textTransform="capitalize">
+              {job.status.toLowerCase()}
+            </Typography>
+            {job.jobDevices[0]?.updated && (
+              <Typography variant="caption" color="text.secondary">
+                <Timestamp date={new Date(job.jobDevices[0].updated)} />
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
         {/* Tags */}
         {!!job?.tag.values.length && (
           <Box mb={2}>
