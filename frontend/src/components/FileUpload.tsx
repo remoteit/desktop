@@ -72,6 +72,32 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
 
   return (
     <Stack width="100%" position="relative">
+      {showUpload && (
+        <>
+          <ButtonBase
+            {...getRootProps()}
+            disabled={disabled}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px dotted',
+              borderColor: isDragActive ? 'primary.main' : 'grayLightest.main',
+              backgroundColor: 'grayLightest.main',
+              padding: 2,
+              borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
+              minWidth: 200,
+              '&:hover': { backgroundColor: 'primaryHighlight.main', borderColor: 'primaryHighlight.main' },
+            }}
+          >
+            <input {...getInputProps()} />
+            <Typography variant="body2">Upload</Typography>
+            <Typography variant="caption">Drag and drop or click </Typography>
+          </ButtonBase>
+          <Divider sx={{ borderColor: 'grayLight.main' }} />
+        </>
+      )}
       {isText ? (
         <>
           <TextField
@@ -82,11 +108,10 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
             label="Script"
             value={loading ? 'loading...' : script.toString()}
             variant="filled"
-            maxRows={30}
             InputLabelProps={{ shrink: true }}
             InputProps={{
               sx: theme => ({
-                borderRadius: showUpload ? `${radius.sm}px ${radius.sm}px 0 0` : undefined,
+                borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
                 fontFamily: "'Roboto Mono', monospace",
                 fontSize: theme.typography.caption.fontSize,
                 lineHeight: theme.typography.caption.lineHeight,
@@ -108,32 +133,6 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
         <Notice onClose={clear} closeTitle="Clear" fullWidth>
           This script appears to be binary.
         </Notice>
-      )}
-      {showUpload && (
-        <>
-          <Divider sx={{ borderColor: 'grayLight.main' }} />
-          <ButtonBase
-            {...getRootProps()}
-            disabled={disabled}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px dotted',
-              borderColor: isDragActive ? 'primary.main' : 'grayLightest.main',
-              backgroundColor: 'grayLightest.main',
-              padding: 2,
-              borderRadius: `0 0 ${radius.sm}px ${radius.sm}px`,
-              minWidth: 200,
-              '&:hover': { backgroundColor: 'primaryHighlight.main', borderColor: 'primaryHighlight.main' },
-            }}
-          >
-            <input {...getInputProps()} />
-            <Typography variant="body2">Upload</Typography>
-            <Typography variant="caption">Drag and drop or click </Typography>
-          </ButtonBase>
-        </>
       )}
     </Stack>
   )

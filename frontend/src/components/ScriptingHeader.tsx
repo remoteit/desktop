@@ -34,7 +34,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" width="100%" paddingRight={4}>
             <ScriptingTabBar />
             {!selectedIds.length && (
-              <Route path={['/scripts', '/runs']}>
+              <Route path={['/scripts', '/runs', '/files']}>
                 <Stack flexDirection="row" alignItems="center">
                   <ColorChip
                     label="Feedback"
@@ -49,9 +49,9 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                   <Link href="https://link.remote.it/desktop/help/device-scripting">
                     <IconButton color="grayDark" icon="question-circle" sx={{ paddingLeft: 0.5 }} />
                   </Link>
-                  <Route path="/scripts">
+                  <Route path={['/scripts', '/files']}>
                     <Tooltip
-                      title={permissions.includes('ADMIN') ? '' : 'Admin permissions required to add scripts'}
+                      title={permissions.includes('ADMIN') ? '' : 'Admin permissions required to upload'}
                       placement="top"
                       arrow
                     >
@@ -65,7 +65,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                           startIcon={<Icon name="plus" />}
                           component={RouteLink}
                         >
-                          Add
+                          {location.pathname.startsWith('/files') ? 'Upload' : 'Add'}
                         </Button>
                       </span>
                     </Tooltip>

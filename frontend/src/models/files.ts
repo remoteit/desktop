@@ -3,7 +3,7 @@ import structuredClone from '@ungap/structured-clone'
 import { DEMO_SCRIPT_URL, BINARY_DATA_TOKEN } from '../constants'
 import { createModel } from '@rematch/core'
 import { graphQLFiles } from '../services/graphQLRequest'
-import { graphQLDeleteFile } from '../services/graphQLMutation'
+import { graphQLDeleteFile, graphQLModifyFile } from '../services/graphQLMutation'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
@@ -26,6 +26,8 @@ export const initialForm: IFileForm = {
   access: 'NONE',
   fileId: '',
   script: '',
+  argumentDefinitions: [],
+  argumentValues: [],
 }
 
 const defaultState: FilesState = {
@@ -51,10 +53,14 @@ export default createModel<RootModel>()({
       dispatch.files.set({ fetching: true })
       accountId = accountId || selectActiveAccountId(state)
       const result = await graphQLFiles(accountId, [fileId])
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        dispatch.files.set({ fetching: false })
+        return
+      }
       const files = await dispatch.files.parse(result)
-      console.log('LOADED FILE', accountId, files)
-      dispatch.files.setFile({ accountId, file: files[0] })
+      if (files?.[0]) {
+        dispatch.files.setFile({ accountId, file: files[0] })
+      }
       dispatch.files.set({ fetching: false })
     },
     async fetchIfEmpty(accountId: string | void, state) {
@@ -68,11 +74,16 @@ export default createModel<RootModel>()({
     async upload(form: IFileForm, state): Promise<string> {
       if (!form.file) return ''
 
-      const data = {
+      const data: Record<string, any> = {
         accountId: selectActiveAccountId(state),
         executable: form.executable,
         shortDesc: form.description,
         name: form.name,
+      }
+
+      // Include argument definitions if provided
+      if (form.argumentDefinitions?.length) {
+        data.arguments = JSON.stringify(form.argumentDefinitions)
       }
 
       const result = await postFile(form.file, data, `/file/upload`)
@@ -115,6 +126,18 @@ export default createModel<RootModel>()({
       }
 
       await dispatch.files.fetch()
+    },
+    async updateMetadata(params: { fileId: string; name?: string; shortDesc?: string }, state) {
+      console.log('UPDATE FILE METADATA', params)
+
+      const result = await graphQLModifyFile(params)
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Error updating file' })
+        return false
+      }
+
+      await dispatch.files.fetchSingle({ fileId: params.fileId })
+      return true
     },
     async setFile({ accountId, file }: { accountId: string; file: IFile }, state) {
       const files = structuredClone(state.files.all[accountId] || [])

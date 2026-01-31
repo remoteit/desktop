@@ -14,16 +14,17 @@ interface FileListProps {
   columnWidths: ILookup<number>
   fetching?: boolean
   scripts?: IScript[]
+  isScriptList?: boolean
 }
 
-export const FileList: React.FC<FileListProps> = ({ attributes, required, scripts = [], columnWidths, fetching }) => {
+export const FileList: React.FC<FileListProps> = ({ attributes, required, scripts = [], columnWidths, fetching, isScriptList = true }) => {
   const { fileID } = useParams<{ fileID?: string }>()
   const selectedIds = useSelector((state: State) => state.ui.selected)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   return (
     <GridList {...{ attributes, required, fetching, columnWidths, mobile }}>
       {scripts?.map((script, index) => (
-        <FileListItem key={index} {...{ script, required, attributes, mobile, selectedIds, fileID }} />
+        <FileListItem key={index} {...{ script, required, attributes, mobile, selectedIds, fileID, isScript: isScriptList }} />
       ))}
     </GridList>
   )

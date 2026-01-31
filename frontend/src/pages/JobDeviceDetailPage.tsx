@@ -1,9 +1,9 @@
 import React from 'react'
-import { State } from '../store'
-import { useParams } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { State, Dispatch } from '../store'
+import { useParams, useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { JobStatusIcon } from '../components/JobStatusIcon'
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, useMediaQuery } from '@mui/material'
 import { JobAttribute } from '../components/JobAttributes'
 import { selectScript } from '../selectors/scripting'
 import { DataDisplay } from '../components/DataDisplay'
@@ -15,9 +15,17 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { radius } from '../styling'
 import { Pre } from '../components/Pre'
+import { HIDE_SIDEBAR_WIDTH } from '../constants'
 
-export const JobDeviceDetailPage: React.FC = () => {
+type Props = {
+  showBack?: boolean
+}
+
+export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
+  const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
+  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const script = useSelector((state: State) => selectScript(state, undefined, fileID))
   const job = script?.jobs.find(j => j.id === jobID) || script?.jobs[0]
   const jobDevice = job?.jobDevices.find(jd => jd.id === jobDeviceID)
@@ -34,6 +42,22 @@ export const JobDeviceDetailPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
+            {sidebarHidden && (
+              <IconButton
+                name="bars"
+                size="md"
+                color="grayDarker"
+                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
+              />
+            )}
+            {showBack && (
+              <IconButton
+                name="chevron-left"
+                onClick={() => history.push(`/script/${fileID}/${jobID || 'latest'}`)}
+                size="md"
+                title="Back"
+              />
+            )}
             <Box marginRight={2}>
               <JobStatusIcon status={jobDevice?.status} size="xl" device />
             </Box>

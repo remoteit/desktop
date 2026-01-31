@@ -1,13 +1,13 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Switch, Route, useLocation } from 'react-router-dom'
-import { JobDeviceDetailPage } from '../pages/JobDeviceDetailPage'
 import { selectPermissions } from '../selectors/organizations'
-import { ScriptEditPage } from '../pages/ScriptEditPage'
+import { ScriptsWithDetailPage } from '../pages/ScriptsWithDetailPage'
+import { FilesWithDetailPage } from '../pages/FilesWithDetailPage'
 import { ScriptAddPage } from '../pages/ScriptAddPage'
+import { FileAddPage } from '../pages/FileAddPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { FilesPage } from '../pages/FilesPage'
-import { ScriptPage } from '../pages/ScriptPage'
 import { JobsPage } from '../pages/JobsPage'
 import { Notice } from '../components/Notice'
 import { Panel } from '../components/Panel'
@@ -32,42 +32,63 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     )
 
   const locationParts = location.pathname.split('/')
-  if ((locationParts[1] === 'scripts' && locationParts.length === 2) || locationParts[1] === 'runs')
+  
+  // Use single panel for scripts/files list and runs
+  if ((locationParts[1] === 'scripts' && locationParts.length === 2) || 
+      (locationParts[1] === 'files' && locationParts.length === 2) || 
+      locationParts[1] === 'runs')
     layout = { ...layout, singlePanel: true }
 
   return (
-    <DynamicPanel
-      primary={
-        <Switch>
-          <Route path="/runs/:fileID?">
-            <JobsPage />
-          </Route>
-          <Route path="/scripts/:fileID?">
-            <FilesPage scripts />
-          </Route>
-          <Route path="/script/:fileID/:jobID?/:jobDeviceID?">
-            <ScriptPage layout={layout} />
-          </Route>
-        </Switch>
-      }
-      secondary={
-        <Switch>
-          <Route path="/scripts/add">
-            <ScriptAddPage />
-          </Route>
-          <Route path="/scripts/:fileID">
-            <ScriptEditPage />
-          </Route>
-          <Route path="/script/:fileID/:jobID/edit">
-            <ScriptEditPage />
-          </Route>
-          <Route path="/script/:fileID/:jobID/:jobDeviceID?">
-            <JobDeviceDetailPage />
-          </Route>
-        </Switch>
-      }
-      layout={layout}
-      root={['/script/:fileID?/:jobID?', '/scripts', '/runs/:jobID?']}
-    />
+    <Switch>
+      {/* Scripts list with add panel */}
+      <Route path="/scripts/add">
+        <DynamicPanel
+          primary={<FilesPage scripts />}
+          secondary={<ScriptAddPage />}
+          layout={layout}
+          root="/scripts"
+        />
+      </Route>
+      {/* Files list with add panel */}
+      <Route path="/files/add">
+        <DynamicPanel
+          primary={<FilesPage />}
+          secondary={<FileAddPage />}
+          layout={layout}
+          root="/files"
+        />
+      </Route>
+      {/* Script detail routes - multi-panel layout */}
+      <Route path="/script/:fileID">
+        <Panel layout={layout} header={false}>
+          <ScriptsWithDetailPage />
+        </Panel>
+      </Route>
+      {/* File detail routes - multi-panel layout */}
+      <Route path="/file/:fileID">
+        <Panel layout={layout} header={false}>
+          <FilesWithDetailPage />
+        </Panel>
+      </Route>
+      {/* Jobs/runs page */}
+      <Route path="/runs/:fileID?">
+        <Panel layout={layout}>
+          <JobsPage />
+        </Panel>
+      </Route>
+      {/* Files list */}
+      <Route path="/files">
+        <Panel layout={layout}>
+          <FilesPage />
+        </Panel>
+      </Route>
+      {/* Scripts list */}
+      <Route path="/scripts">
+        <Panel layout={layout}>
+          <FilesPage scripts />
+        </Panel>
+      </Route>
+    </Switch>
   )
 }

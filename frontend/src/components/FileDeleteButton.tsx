@@ -6,9 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Notice } from './Notice'
 
-type Props = { device?: IDevice; service?: IService; user?: IUser }
-
-export const ScriptDeleteButton: React.FC<Props> = ({ device, service }) => {
+export const FileDeleteButton: React.FC = () => {
   const { fileID } = useParams<{ fileID?: string }>()
   const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()
@@ -18,7 +16,7 @@ export const ScriptDeleteButton: React.FC<Props> = ({ device, service }) => {
 
   return (
     <DeleteButton
-      title="Delete Script"
+      title="Delete File"
       warning={
         <Notice severity="error" fullWidth>
           This can not be undone.
@@ -26,7 +24,7 @@ export const ScriptDeleteButton: React.FC<Props> = ({ device, service }) => {
       }
       onDelete={async () => {
         await dispatch.files.delete(fileID)
-        history.push('/scripts')
+        history.push('/files')
       }}
     />
   )
