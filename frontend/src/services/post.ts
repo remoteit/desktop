@@ -48,7 +48,9 @@ export async function postFile(file: File, data: ILookup<any, string> = {}, path
   const form = new FormData()
 
   form.append('file', file)
-  Object.entries(data).forEach(([key, value]) => form.append(key, value))
+  Object.entries(data).forEach(([key, value]) => {
+    form.append(key, value)
+  })
 
   return await post(form, path)
 }

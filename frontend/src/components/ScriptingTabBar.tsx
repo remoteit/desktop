@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Tabs, Tab } from '@mui/material'
 
-const tabs = ['scripts', 'runs' /* , 'files' */]
-const tabTitles = ['Scripts', 'Runs', 'Assets']
+const tabs = ['scripts', 'runs', 'files']
+const tabTitles = ['Scripts', 'Runs', 'Files']
 
 export const ScriptingTabBar: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()

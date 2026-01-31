@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import structuredClone from '@ungap/structured-clone'
 import isEqual from 'lodash.isequal'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { List, ListItem, TextField, Button, Stack } from '@mui/material'
+import { List, ListItem, TextField, Button, Stack, Divider } from '@mui/material'
 import { DynamicButton } from '../buttons/DynamicButton'
+import { ArgumentDefinitionForm } from './ArgumentDefinitionForm'
+import { ArgumentsValueForm } from './ArgumentsValueForm'
 import { FileUpload } from './FileUpload'
 import { TagFilter } from './TagFilter'
 import { Notice } from './Notice'
@@ -15,10 +18,11 @@ type Props = {
   selectedIds: string[]
   loading?: boolean
   manager?: boolean
+  scriptArguments?: IFileArgument[]  // Existing argument definitions from file version
   onChange: (form: IFileForm) => void
 }
 
-export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, loading, manager, onChange }) => {
+export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, loading, manager, scriptArguments = [], onChange }) => {
   const [unauthorized, setUnauthorized] = useState<IDevice[]>()
   const [running, setRunning] = useState<boolean>(false)
   const [saving, setSaving] = useState<boolean>(false)
@@ -27,7 +31,10 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
   const changed = !isEqual(form, defaultForm)
   const canSave = !unauthorized && !!form.script && !!form.name
   const scriptChanged =
-    form.script !== defaultForm.script || form.description !== defaultForm.description || form.name !== defaultForm.name
+    form.script !== defaultForm.script || 
+    form.description !== defaultForm.description || 
+    form.name !== defaultForm.name ||
+    !isEqual(form.argumentDefinitions, defaultForm.argumentDefinitions)
   const canRun =
     (form.access === 'SELECTED' && selectedIds.length) ||
     (form.access === 'TAG' && form.tag?.values.length) ||
@@ -112,6 +119,16 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
             onChange={event => onChange({ ...form, description: event.target.value })}
           />
         </ListItem>
+        {manager && (
+          <ListItem disableGutters sx={{ display: 'block', mt: 2 }}>
+            <ArgumentDefinitionForm
+              definitions={form.argumentDefinitions ?? []}
+              onChange={argumentDefinitions => onChange({ ...form, argumentDefinitions })}
+              disabled={loading || saving}
+            />
+          </ListItem>
+        )}
+        <Divider sx={{ my: 2 }} />
         <TagFilter
           form={form}
           name="Devices"
@@ -140,6 +157,14 @@ export const ScriptForm: React.FC<Props> = ({ form, defaultForm, selectedIds, lo
             Remove Device{unauthorized.length > 1 ? 's' : ''}
           </Button>
         </Notice>
+      )}
+      {scriptArguments.length > 0 && (
+        <ArgumentsValueForm
+          arguments={scriptArguments}
+          values={form.argumentValues ?? []}
+          onChange={argumentValues => onChange({ ...form, argumentValues })}
+          disabled={loading || saving || running}
+        />
       )}
       <Stack flexDirection="row" gap={1} mt={2} sx={{ button: { paddingX: 4 } }}>
         <DynamicButton

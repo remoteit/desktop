@@ -21,15 +21,15 @@ export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
   const icon = (
     <Box padding={padding}>
       {status === 'READY' ? (
-        <Icon name="chevron-right" type="solid" color="primary" {...props} />
+        <Icon name="circle-play" type="solid" color="primary" {...props} />
       ) : status === 'SUCCESS' ? (
         <Icon name="badge-check" type="solid" color="primary" {...props} />
       ) : status === 'FAILED' || status === 'CANCELLED' ? (
         <Icon name="octagon-xmark" type="solid" color="error" {...props} />
       ) : status === 'WAITING' ? (
-        <Icon name="ellipsis" type="solid" color="info" {...props} />
+        <Icon name="circle-dot" type="solid" color="info" {...props} />
       ) : status === 'RUNNING' ? (
-        <Icon name="ellipsis" type="solid" color="primary" {...props} />
+        <Icon name="circle" type="solid" color="primary" {...props} />
       ) : device ? (
         <Icon platform={65535} platformIcon {...props} />
       ) : (
