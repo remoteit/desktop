@@ -148,16 +148,18 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
               )}
             </ListItem>
             <Collapse in={editing === index} unmountOnExit>
-              <ArgumentEditForm
-                form={editForm}
-                optionsText={optionsText}
-                showOptions={showOptions}
-                canSave={canSave}
-                onFormChange={setEditForm}
-                onOptionsChange={setOptionsText}
-                onSave={saveEdit}
-                onCancel={cancelEdit}
-              />
+              <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, mb: 1 }}>
+                <ArgumentEditForm
+                  form={editForm}
+                  optionsText={optionsText}
+                  showOptions={showOptions}
+                  canSave={canSave}
+                  onFormChange={setEditForm}
+                  onOptionsChange={setOptionsText}
+                  onSave={saveEdit}
+                  onCancel={cancelEdit}
+                />
+              </Box>
             </Collapse>
           </React.Fragment>
         ))}
@@ -223,18 +225,20 @@ const ArgumentEditForm: React.FC<EditFormProps> = ({
   onSave,
   onCancel,
 }) => (
-  <Stack spacing={2} sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, mb: 1 }}>
+  <Stack spacing={2}>
     <TextField
-      size="small"
+      fullWidth
+      variant="filled"
       label="Variable Name"
       placeholder="e.g., fileName, url, action"
       value={form.name}
       onChange={e => onFormChange({ ...form, name: e.target.value.replace(/\s/g, '_') })}
       helperText="Name used in script (no spaces)"
       error={form.name.trim().length === 0}
+      InputLabelProps={{ shrink: true }}
     />
-    <FormControl size="small" fullWidth>
-      <InputLabel>Type</InputLabel>
+    <FormControl fullWidth variant="filled">
+      <InputLabel shrink>Type</InputLabel>
       <Select
         value={form.type}
         label="Type"
@@ -251,16 +255,19 @@ const ArgumentEditForm: React.FC<EditFormProps> = ({
       </Select>
     </FormControl>
     <TextField
-      size="small"
+      fullWidth
+      variant="filled"
       label="Description"
       placeholder="Description shown to user"
       value={form.desc}
       onChange={e => onFormChange({ ...form, desc: e.target.value })}
       helperText="Help text displayed to user when filling in the value"
+      InputLabelProps={{ shrink: true }}
     />
     {showOptions && (
       <TextField
-        size="small"
+        fullWidth
+        variant="filled"
         label={form.type === 'FileSelect' ? 'File Extensions' : 'Options'}
         placeholder={form.type === 'FileSelect' ? '.txt, .log, .csv' : 'Option1, Option2, Option3'}
         value={optionsText}
@@ -270,6 +277,7 @@ const ArgumentEditForm: React.FC<EditFormProps> = ({
             ? 'Comma-separated file extensions to filter by (optional)'
             : 'Comma-separated list of options for dropdown'
         }
+        InputLabelProps={{ shrink: true }}
       />
     )}
     <Stack direction="row" spacing={1}>

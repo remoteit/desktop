@@ -29,7 +29,7 @@ export const FileListItem: React.FC<Props> = ({ script, required, attributes, mo
   const listPath = isScript ? 'scripts' : 'files'
 
   const handleClick = () => {
-    if (selectedIds?.length) history.push(`/${listPath}/${script.id}`)
+    if (selectedIds?.length) history.push(`/${basePath}/${script.id}/run`)
     else if (isScript && !singlePanel) history.push(`/${basePath}/${script.id}/latest/edit`)
     else history.push(`/${basePath}/${script.id}`)
   }
