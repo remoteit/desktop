@@ -3,8 +3,6 @@ import { Button, Dialog, DialogProps, DialogActions, DialogContent, DialogTitle,
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
-import { attributeName } from '@common/nameHelper'
-
 type Props = Omit<DialogProps, 'open'> & {
   device: IDevice
 }
@@ -36,7 +34,7 @@ export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
 
   return (
     <Dialog open={showRestoreModal} onClose={onClose} maxWidth="lg">
-      <DialogTitle>Restore “{attributeName(device)}”</DialogTitle>
+      <DialogTitle>Restore "{device.name}"</DialogTitle>
       <DialogContent sx={{ maxWidth: 620 }}>
         <Typography variant="body1" gutterBottom>
           If you lost or deleted this device you can restore it by running the <br />

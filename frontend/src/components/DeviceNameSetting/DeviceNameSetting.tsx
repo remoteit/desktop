@@ -3,7 +3,7 @@ import { DeviceContext } from '../../services/Context'
 import { State, Dispatch } from '../../store'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { useSelector, useDispatch } from 'react-redux'
-import { safeHostname, attributeName } from '@common/nameHelper'
+import { safeHostname } from '@common/nameHelper'
 import { InlineTextFieldSetting, InlineTextFieldSettingProps } from '../InlineTextFieldSetting'
 import { getDevices } from '../../selectors/devices'
 
@@ -17,7 +17,7 @@ export const DeviceNameSetting: React.FC<InlineTextFieldSettingProps> = props =>
 
   if (!device) return null
 
-  const name = attributeName(device)
+  const name = device.name
   const defaultValue = device.thisDevice ? safeHostname(hostname, nameBlacklist) : device.name
 
   return (

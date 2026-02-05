@@ -5,7 +5,6 @@ import { ListItemLocation, ListItemLocationProps } from './ListItemLocation'
 import { Typography, ListItemSecondaryAction, Box } from '@mui/material'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
-import { attributeName } from '@common/nameHelper'
 import { useDispatch } from 'react-redux'
 import { DeviceName } from './DeviceName'
 import { IconButton } from '../buttons/IconButton'
@@ -26,7 +25,7 @@ export const DeviceNameLocation: React.FC<Props> = props => {
     <Box marginBottom={0.75}>
       <InlineTextFieldSetting
         icon={icon}
-        value={attributeName(props.device)}
+        value={props.device.name}
         maxLength={MAX_NAME_LENGTH}
         disabled={!props.device.permissions.includes('MANAGE')}
         DisplayComponent={<DisplayComponent {...props} icon={icon} />}
