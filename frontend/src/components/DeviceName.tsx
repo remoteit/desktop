@@ -3,7 +3,6 @@ import { Icon } from './Icon'
 import { Title } from './Title'
 import { ColorChip } from './ColorChip'
 import { useLocation } from 'react-router-dom'
-import { attributeName } from '@common/nameHelper'
 import { REGEX_FIRST_PATH } from '../constants'
 import { Tooltip } from '@mui/material'
 
@@ -24,10 +23,10 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
 
   let name = ''
 
-  if (device) name += attributeName(device)
+  if (device) name += device.name
   if (service) {
     if (device) name += ' - '
-    name += attributeName(service)
+    name += service.name
   }
   if (connection?.name && menu?.[0] === '/networks') name = connection.name
 

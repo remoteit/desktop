@@ -4,7 +4,6 @@ import { IP_PRIVATE } from '@common/constants'
 import { makeStyles } from '@mui/styles'
 import { Typography, List, ListItem, ListItemText, Box } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
-import { attributeName } from '@common/nameHelper'
 import { selectOwnDevices } from '../selectors/devices'
 import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -19,7 +18,7 @@ export const RemoteManagement: React.FC = () => {
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
   const device = useSelector(selectOwnDevices).find(d => d.thisDevice)
   const remoteUI = useSelector((state: State) => isRemoteUI(state))
-  const name = attributeName(device)
+  const name = device?.name || ''
   const css = useStyles()
 
   if (!browser.isRemote) return null

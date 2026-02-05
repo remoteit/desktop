@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { Typography } from '@mui/material'
-import { attributeName } from '@common/nameHelper'
 import { State } from '../../store'
 import { getAllDevices, findById } from '../../selectors/devices'
 import { selectNetworks } from '../../selectors/networks'
@@ -38,10 +37,10 @@ export const Breadcrumbs: React.FC = () => {
     if (name) return name
 
     const device: IDevice | undefined = findDevice(path)
-    if (device) return attributeName(device)
+    if (device) return device.name
 
     const [service, d] = findById(devices, path)
-    if (service && d) return attributeName(service)
+    if (service && d) return service.name
 
     const network = networks.find(n => n.id === path)
     if (network) return network.name

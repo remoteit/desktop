@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from 'react'
 import { DeviceContext } from '../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { attributeName } from '@common/nameHelper'
 import { useHistory } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
@@ -38,7 +37,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
 
   const thisDevice = device?.thisDevice && instance?.owner.id === user.id
   const displayThisDevice = thisDevice && !connectThisDevice
-  const deviceName = attributeName(device)
+  const deviceName = device.name
 
   return (
     <Container

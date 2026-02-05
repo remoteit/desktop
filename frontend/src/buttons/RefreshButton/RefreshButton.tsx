@@ -10,7 +10,6 @@ import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devic
 import { selectLimit } from '../../selectors/organizations'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, ButtonProps } from '../IconButton'
-import { attributeName } from '@common/nameHelper'
 import { GuideBubble } from '../../components/GuideBubble'
 import { Typography } from '@mui/material'
 import { limitDays } from '../../models/plans'
@@ -64,7 +63,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // log pages
   } else if (logsPage) {
-    title = device ? `Refresh ${attributeName(device)} logs` : 'Refresh logs'
+    title = device ? `Refresh ${device.name} logs` : 'Refresh logs'
     methods.push(async () => {
       const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
       if (device) await dispatch.devices.fetchSingleFull({ id: device.id })
@@ -74,7 +73,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // device pages
   } else if (devicesPage) {
-    title = device ? `Refresh ${attributeName(device)}` : 'Refresh devices'
+    title = device ? `Refresh ${device.name}` : 'Refresh devices'
     methods.push(async () => {
       if (device) {
         await dispatch.devices.fetchSingleFull({ id: device.id })
