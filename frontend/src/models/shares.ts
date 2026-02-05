@@ -1,7 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { getAccess } from '../helpers/userHelper'
-import { attributeName } from '@common/nameHelper'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
 
@@ -79,8 +78,8 @@ export default createModel<RootModel>()({
         dispatch.ui.set({
           successMessage:
             data.email.length > 1
-              ? `${data.email.length} accounts shared to ${attributeName(device)}.`
-              : `${attributeName(device)} shared to ${data.email[0]}.`,
+              ? `${data.email.length} accounts shared to ${device?.name || ''}.`
+              : `${device?.name || ''} shared to ${data.email[0]}.`,
         })
       }
       set({ sharing: false })

@@ -10,11 +10,6 @@ import { adaptor } from './adaptor'
 
 const separator = ' - '
 
-export function attributeName(instance?: IDevice | IService) {
-  if (!instance) return ''
-  return instance.name
-}
-
 export function replaceHost(url?: string, localhost?: boolean) {
   if (!url) return ''
   if (localhost && url.includes(IP_PRIVATE)) {

@@ -1,5 +1,4 @@
 import React from 'react'
-import { attributeName } from '@common/nameHelper'
 import { Tooltip, TooltipProps, Divider } from '@mui/material'
 
 const MAX_SESSIONS_DISPLAY = 3
@@ -44,7 +43,7 @@ export const SessionsTooltip: React.FC<Props> = ({
       open={open}
       title={
         <>
-          {label && attributeName(service)}
+          {label && service.name}
           {!!list?.length && (
             <>
               {label && <Divider />}
