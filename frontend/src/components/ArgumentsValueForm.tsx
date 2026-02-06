@@ -55,15 +55,15 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
       <Typography variant="subtitle2" color="textSecondary" gutterBottom>
         Script Arguments
       </Typography>
-      <Stack spacing={1.5}>
+      <Stack spacing={1}>
         {sortedArgs.map(arg => (
           <Box
             key={arg.name}
             sx={{
-              border: 1,
+              borderLeft: 3,
               borderColor: 'grayLighter.main',
-              borderRadius: 1,
-              p: 2,
+              pl: 1.5,
+              py: 0.5,
             }}
           >
             <ArgumentInput
@@ -254,33 +254,27 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
             ))}
           </TextField>
 
-          {/* Upload option — visually grouped */}
-          <Divider sx={{ my: 1.5 }}>
-            <Typography variant="caption" color="textSecondary">
-              or upload new
-            </Typography>
-          </Divider>
+          {/* Upload option — compact */}
           <ButtonBase
             {...getRootProps()}
             disabled={disabled}
             sx={{
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px dashed',
+              mt: 0.5,
+              py: 0.75,
+              borderRadius: `${radius.sm}px`,
+              border: '1px dashed',
               borderColor: isDragActive ? 'primary.main' : 'grayLighter.main',
               backgroundColor: isDragActive ? 'primaryHighlight.main' : 'transparent',
-              padding: 1.5,
-              borderRadius: `${radius.sm}px`,
-              minHeight: 48,
               transition: 'all 0.15s ease',
               '&:hover': { backgroundColor: 'primaryHighlight.main', borderColor: 'primary.main' },
             }}
           >
             <input {...getInputProps()} />
-            <Typography variant="body2" color="textSecondary">
-              Drag and drop or click
+            <Typography variant="caption" color="textSecondary">
+              or upload new file
             </Typography>
           </ButtonBase>
         </Stack>

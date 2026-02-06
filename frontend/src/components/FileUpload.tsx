@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { BINARY_DATA_TOKEN } from '../constants'
 import { containsNonPrintableChars } from '../helpers/utilHelper'
 import { Typography, TextField, Box, ButtonBase, Stack, Divider } from '@mui/material'
@@ -74,6 +74,16 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
     onChange(demo + '\n\n' + script)
   }
 
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>()
+  const [copied, setCopied] = useState(false)
+
+  const copyScript = () => {
+    navigator.clipboard.writeText(script)
+    setCopied(true)
+    clearTimeout(copyTimer.current)
+    copyTimer.current = setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <Stack width="100%" position="relative">
       {showUpload && (
@@ -125,7 +135,16 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
             inputProps={{ sx: { transition: 'height 600ms' } }}
             onChange={event => onChange(event.target.value)}
           />
-          <Box sx={{ position: 'absolute', top: 4, right: 4 }}>
+          <Box sx={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 0.5 }}>
+            {script && !loading && (
+              <IconButton
+                name={copied ? 'check' : 'copy'}
+                title={copied ? 'Copied!' : 'Copy Script'}
+                color={copied ? 'success' : 'grayDark'}
+                size="sm"
+                onClick={copyScript}
+              />
+            )}
             {filename ? (
               <IconButton name="times" title="Clear" color="grayDark" size="sm" onClick={clear} />
             ) : (
