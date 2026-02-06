@@ -74,6 +74,15 @@ export async function graphQLJobs(accountId: string, fileIds?: string[], ids?: s
                   id
                   name
                 }
+                arguments {
+                  id
+                  name
+                  desc
+                  order
+                  argumentType
+                  value
+                  created
+                }
                 jobDevices {
                   id
                   status

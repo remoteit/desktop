@@ -3,18 +3,23 @@ import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Stack, Typography } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
 import { radius } from '../styling'
 import { Icon } from './Icon'
 
 export const ScriptingActionBar: React.FC = () => {
   const selected = useSelector((state: State) => state.ui.selected)
+  const scriptForm = useSelector((state: State) => state.ui.scriptForm)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
+  const location = useLocation()
 
-  if (!selected.length) return null
+  // Hide when no devices selected, when scriptForm is active (mid-device-selection),
+  // or when already on a script config/edit/add page
+  const onScriptConfigPage = location.pathname.includes('/edit') || location.pathname === '/scripts/add'
+  if (!selected.length || scriptForm || onScriptConfigPage) return null
 
   return (
     <Stack
