@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { List, ListItem, TextField, MenuItem, Typography, Box, ButtonBase, Stack } from '@mui/material'
+import { TextField, MenuItem, Typography, Box, ButtonBase, Stack, Divider } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useDropzone } from 'react-dropzone'
@@ -55,9 +55,17 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
       <Typography variant="subtitle2" color="textSecondary" gutterBottom>
         Script Arguments
       </Typography>
-      <List disablePadding>
+      <Stack spacing={1.5}>
         {sortedArgs.map(arg => (
-          <ListItem key={arg.name} disableGutters sx={{ display: 'block' }}>
+          <Box
+            key={arg.name}
+            sx={{
+              border: 1,
+              borderColor: 'grayLighter.main',
+              borderRadius: 1,
+              p: 2,
+            }}
+          >
             <ArgumentInput
               argument={arg}
               value={getValue(arg.name)}
@@ -65,9 +73,9 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
               disabled={disabled}
               files={files}
             />
-          </ListItem>
+          </Box>
         ))}
-      </List>
+      </Stack>
     </Box>
   )
 }
@@ -224,7 +232,7 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
       const dropdownValue = selectedFile ? getLatestVersionId(selectedFile) : '_none_'
 
       return (
-        <Stack spacing={1}>
+        <Stack spacing={0}>
           {/* Dropdown to select existing file */}
           <TextField
             select
@@ -246,10 +254,12 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
             ))}
           </TextField>
 
-          {/* Upload option */}
-          <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-            Or upload a new file:
-          </Typography>
+          {/* Upload option — visually grouped */}
+          <Divider sx={{ my: 1.5 }}>
+            <Typography variant="caption" color="textSecondary">
+              or upload new
+            </Typography>
+          </Divider>
           <ButtonBase
             {...getRootProps()}
             disabled={disabled}
@@ -258,19 +268,20 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px dotted',
-              borderColor: isDragActive ? 'primary.main' : 'grayLightest.main',
-              backgroundColor: 'grayLightest.main',
-              padding: 2,
+              border: '2px dashed',
+              borderColor: isDragActive ? 'primary.main' : 'grayLighter.main',
+              backgroundColor: isDragActive ? 'primaryHighlight.main' : 'transparent',
+              padding: 1.5,
               borderRadius: `${radius.sm}px`,
-              minWidth: 200,
-              minHeight: 60,
+              minHeight: 48,
+              transition: 'all 0.15s ease',
               '&:hover': { backgroundColor: 'primaryHighlight.main', borderColor: 'primary.main' },
             }}
           >
             <input {...getInputProps()} />
-            <Typography variant="body2">Upload New File</Typography>
-            <Typography variant="caption">Drag and drop or click</Typography>
+            <Typography variant="body2" color="textSecondary">
+              Drag and drop or click
+            </Typography>
           </ButtonBase>
         </Stack>
       )

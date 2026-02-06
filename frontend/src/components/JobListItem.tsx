@@ -20,7 +20,11 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
   if (!job) return null
 
   const handleClick = () => {
-    history.push(`/script/${job.file?.id}/${job.id}`)
+    if (job.status === 'READY') {
+      history.push(`/script/${job.file?.id}/edit/${job.id}`)
+    } else {
+      history.push(`/script/${job.file?.id}/${job.id}`)
+    }
   }
 
   return (

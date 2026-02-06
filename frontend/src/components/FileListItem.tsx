@@ -1,11 +1,9 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 import { AttributeValue } from './AttributeValue'
 import { JobStatusIcon } from './JobStatusIcon'
 import { GridListItem } from './GridListItem'
 import { Attribute } from './Attributes'
-import { State } from '../store'
 import { Icon } from './Icon'
 import { Box } from '@mui/material'
 
@@ -21,17 +19,13 @@ type Props = {
 
 export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile, selectedIds, fileID, isScript = true }) => {
   const history = useHistory()
-  const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
 
   if (!script) return null
 
   const basePath = isScript ? 'script' : 'file'
-  const listPath = isScript ? 'scripts' : 'files'
 
   const handleClick = () => {
-    if (selectedIds?.length) history.push(`/${basePath}/${script.id}/run`)
-    else if (isScript && !singlePanel) history.push(`/${basePath}/${script.id}/latest/edit`)
-    else history.push(`/${basePath}/${script.id}`)
+    history.push(`/${basePath}/${script.id}${isScript ? '/edit' : ''}`)
   }
 
   return (

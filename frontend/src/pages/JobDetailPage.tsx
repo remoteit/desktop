@@ -63,28 +63,8 @@ export const JobDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
       },
     })
 
-    // Navigate to configure & run page
-    history.push(`/script/${fileID}/run`)
-  }
-
-  const handlePrepareRun = async () => {
-    // Convert job arguments to argument values format for the form
-    const argumentValues: IArgumentValue[] = job.arguments?.map(arg => ({
-      name: arg.name,
-      value: arg.value || '',
-    })) || []
-
-    // Create a prepared job with the same selections
-    await dispatch.jobs.save({
-      name: file.name,
-      description: file.shortDesc || '',
-      executable: file.executable,
-      fileId: fileID,
-      deviceIds: job.jobDevices.map(jd => jd.device.id),
-      tag: job.tag,
-      access: job.tag.values.length > 0 ? 'TAG' : 'CUSTOM',
-      argumentValues,
-    })
+    // Navigate to script config page (combined edit + run panel)
+    history.push(`/script/${fileID}/edit`)
   }
 
   if (!file || !job) {
@@ -171,17 +151,7 @@ export const JobDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
             onClick={handleRunWithUpdates}
             fullWidth
           >
-            Run with Updated Selections
-          </Button>
-          <Button
-            variant="outlined"
-            color="grayDark"
-            size="small"
-            startIcon={<Icon name="save" />}
-            onClick={handlePrepareRun}
-            fullWidth
-          >
-            Prepare Run
+            Prepare with Updated Selections
           </Button>
         </Stack>
 

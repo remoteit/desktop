@@ -41,6 +41,8 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
   const [editing, setEditing] = useState<number | 'new' | null>(null)
   const [editForm, setEditForm] = useState<IArgumentDefinition>(emptyDefinition)
   const [optionsText, setOptionsText] = useState('')
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   const startEdit = (index: number) => {
     const def = definitions[index]
@@ -86,18 +88,46 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
     onChange(definitions.filter((_, i) => i !== index))
   }
 
-  const moveUp = (index: number) => {
-    if (index === 0) return
-    const newDefs = [...definitions]
-    ;[newDefs[index - 1], newDefs[index]] = [newDefs[index], newDefs[index - 1]]
-    onChange(newDefs)
+  const handleDragStart = (index: number) => {
+    setDragIndex(index)
   }
 
-  const moveDown = (index: number) => {
-    if (index === definitions.length - 1) return
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (dragIndex === null || dragIndex === index) return
+    setDragOverIndex(index)
+  }
+
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (dragIndex === null || dragIndex === index) {
+      setDragIndex(null)
+      setDragOverIndex(null)
+      return
+    }
     const newDefs = [...definitions]
-    ;[newDefs[index], newDefs[index + 1]] = [newDefs[index + 1], newDefs[index]]
+    const [moved] = newDefs.splice(dragIndex, 1)
+    newDefs.splice(index, 0, moved)
+
+    // If we're editing an item, update the editing index to follow the moved item
+    if (typeof editing === 'number') {
+      if (editing === dragIndex) {
+        setEditing(index)
+      } else if (dragIndex < editing && index >= editing) {
+        setEditing(editing - 1)
+      } else if (dragIndex > editing && index <= editing) {
+        setEditing(editing + 1)
+      }
+    }
+
     onChange(newDefs)
+    setDragIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDragIndex(null)
+    setDragOverIndex(null)
   }
 
   const canSave = editForm.name.trim().length > 0
@@ -106,20 +136,51 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
 
   return (
     <Box>
-      <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-        Script Arguments
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <Typography variant="subtitle2" color="textSecondary">
+          Script Arguments
+        </Typography>
+        {!disabled && editing !== 'new' && (
+          <Button
+            size="small"
+            startIcon={<Icon name="plus" size="sm" />}
+            onClick={startNew}
+            sx={{ ml: 'auto' }}
+          >
+            Add
+          </Button>
+        )}
+      </Box>
       <List disablePadding dense>
         {definitions.map((def, index) => (
           <React.Fragment key={index}>
             <ListItem
               disableGutters
+              draggable={!disabled && editing !== index}
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={e => handleDragOver(e, index)}
+              onDrop={e => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
               sx={{
-                bgcolor: editing === index ? 'action.selected' : 'transparent',
+                bgcolor:
+                  editing === index
+                    ? 'action.selected'
+                    : dragOverIndex === index
+                      ? 'action.hover'
+                      : 'transparent',
                 borderRadius: 1,
                 mb: 0.5,
+                opacity: dragIndex === index ? 0.4 : 1,
+                transition: 'background-color 0.15s ease',
+                cursor: !disabled && editing !== index ? 'grab' : undefined,
+                '&:active': !disabled && editing !== index ? { cursor: 'grabbing' } : undefined,
               }}
             >
+              {!disabled && editing !== index && (
+                <Box sx={{ display: 'flex', alignItems: 'center', mr: 1, color: 'text.disabled' }}>
+                  <Icon name="grip-vertical" size="sm" />
+                </Box>
+              )}
               <ListItemText
                 primary={def.name}
                 secondary={
@@ -132,12 +193,6 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
               />
               {!disabled && editing !== index && (
                 <ListItemSecondaryAction>
-                  <MuiIconButton size="small" onClick={() => moveUp(index)} disabled={index === 0}>
-                    <Icon name="chevron-up" size="sm" />
-                  </MuiIconButton>
-                  <MuiIconButton size="small" onClick={() => moveDown(index)} disabled={index === definitions.length - 1}>
-                    <Icon name="chevron-down" size="sm" />
-                  </MuiIconButton>
                   <MuiIconButton size="small" onClick={() => startEdit(index)}>
                     <Icon name="pencil" size="sm" />
                   </MuiIconButton>
@@ -164,17 +219,6 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
           </React.Fragment>
         ))}
       </List>
-
-      {!disabled && editing !== 'new' && (
-        <Button
-          size="small"
-          startIcon={<Icon name="plus" size="sm" />}
-          onClick={startNew}
-          sx={{ mt: 1 }}
-        >
-          Add Argument
-        </Button>
-      )}
 
       <Collapse in={editing === 'new'} unmountOnExit>
         <Box sx={{ mt: 1, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
