@@ -8,19 +8,24 @@ type Props = ListItemButtonProps & {
   icon?: React.ReactNode
   required?: React.ReactNode
   mobile?: boolean
+  stickyCenter?: boolean
 }
 
-export const GridListItem: React.FC<Props> = ({ required, icon, mobile, children, ...props }) => {
+export const GridListItem: React.FC<Props> = ({ required, icon, mobile, stickyCenter, children, ...props }) => {
   const css = useStyles()
+
+  const hasSticky = !!(icon || required)
 
   return (
     <ListItemButton className={css.row} {...props}>
-      <Box className={css.sticky}>
-        <Box>
-          {icon && <ListItemIcon>{icon}</ListItemIcon>}
-          {required}
+      {hasSticky && (
+        <Box className={css.sticky} sx={stickyCenter ? { justifyContent: 'center', paddingLeft: 0 } : undefined}>
+          <Box sx={stickyCenter ? { justifyContent: 'center', width: 'auto !important' } : undefined}>
+            {icon && <ListItemIcon sx={stickyCenter ? { minWidth: 'auto' } : undefined}>{icon}</ListItemIcon>}
+            {!stickyCenter && required}
+          </Box>
         </Box>
-      </Box>
+      )}
       {!mobile && children}
     </ListItemButton>
   )

@@ -13,14 +13,19 @@ type Props = {
 
 export const GridListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMouseDown, children }) => {
   const css = useStyles()
+  const justifyContent =
+    attribute?.align === 'center' ? 'center' : attribute?.align === 'right' ? 'flex-end' : undefined
+
+  const stickyCenter = sticky && justifyContent === 'center'
 
   return (
     <Box
       className={sticky ? css.sticky : css.title}
       textAlign={attribute?.align}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
+      sx={stickyCenter ? { paddingLeft: 0, justifyContent: 'center' } : undefined}
     >
-      <span className={css.text}>
+      <span className={css.text} style={justifyContent ? { justifyContent, width: '100%' } : undefined}>
         {children}
         {attribute.label}
       </span>
@@ -39,8 +44,8 @@ const useStyles = makeStyles(({ palette }) => ({
     borderBottom: `1px solid ${palette.grayLighter.main}`,
   },
   title: {
-    paddingLeft: spacing.xxs,
-    paddingRight: `${spacing.lg}px !important`,
+    paddingLeft: spacing.xs,
+    paddingRight: `${spacing.sm}px !important`,
     backgroundColor: palette.white.main,
     position: 'relative',
   },
@@ -58,6 +63,9 @@ const useStyles = makeStyles(({ palette }) => ({
     height: '100%',
     position: 'absolute',
     width: spacing.md,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     '&:hover': {
       cursor: 'col-resize',
     },
@@ -65,7 +73,7 @@ const useStyles = makeStyles(({ palette }) => ({
       content: '""',
       width: 1,
       height: spacing.sm,
-      display: 'inline-block',
+      display: 'block',
       background: palette.grayLight.main,
     },
     '&:hover::after': {

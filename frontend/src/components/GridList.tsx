@@ -71,7 +71,7 @@ const useStyles = makeStyles(({ palette }) => ({
     minWidth: '100%',
     width: requiredWidth + (mobile ? 0 : attributes?.reduce((w, a) => w + a.width(columnWidths), 0)),
     '& .MuiListItemButton-root, & .MuiListSubheader-root': {
-      gridTemplateColumns: `${requiredWidth}px ${
+      gridTemplateColumns: `${requiredWidth ? `${requiredWidth}px ` : ''}${
         mobile ? '' : attributes?.map(a => a.width(columnWidths)).join('px ') + 'px'
       }`,
     },
@@ -84,6 +84,7 @@ const useStyles = makeStyles(({ palette }) => ({
       display: 'inline-grid',
       alignItems: 'start',
       '& > .MuiBox-root': {
+        paddingLeft: spacing.xs,
         paddingRight: spacing.sm,
       },
     },

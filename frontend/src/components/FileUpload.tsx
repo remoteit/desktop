@@ -22,7 +22,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
   const [isText, setIsText] = useState(true)
 
   useEffect(() => {
-    if (script === BINARY_DATA_TOKEN) setIsText(false)
+    setIsText(script !== BINARY_DATA_TOKEN)
   }, [script])
 
   const onDrop = useCallback((files: File[]) => {
@@ -61,7 +61,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-  const showUpload = !filename && isText
+  const showUpload = !filename
 
   const clear = () => {
     setFilename(undefined)
@@ -107,7 +107,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
           >
             <input {...getInputProps()} />
             <Typography variant="body2">Upload</Typography>
-            <Typography variant="caption">Drag and drop or click </Typography>
+            <Typography variant="caption">Drag and drop or click</Typography>
           </ButtonBase>
           <Divider sx={{ borderColor: 'grayLight.main' }} />
         </>
@@ -154,7 +154,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
         </>
       ) : (
         <Notice onClose={clear} closeTitle="Clear" fullWidth>
-          Binary script uploaded: <strong>{filename}</strong>
+          Binary script uploaded{filename ? <>: <strong>{filename}</strong></> : null}
         </Notice>
       )}
     </Stack>

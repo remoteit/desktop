@@ -7,7 +7,6 @@ import { FilesPage } from './FilesPage'
 import { ScriptPage } from './ScriptPage'
 import { JobDetailPage } from './JobDetailPage'
 import { JobDeviceDetailPage } from './JobDeviceDetailPage'
-import { ScriptRunHistoryPage } from './ScriptRunHistoryPage'
 import { ScriptConfigPage } from './ScriptConfigPage'
 import { State } from '../store'
 import { useContainerWidth } from '../hooks/useContainerWidth'
@@ -31,26 +30,23 @@ export const ScriptsWithDetailPage: React.FC = () => {
 
   // Analyze URL to determine which panels should be shown
   // URL patterns:
-  // /script/:fileID - Panel 2 only (script overview)
+  // /script/:fileID - Panel 2 only (script overview with inline job lists)
   // /script/:fileID/edit - Panel 3 (combined edit + run config page)
-  // /script/:fileID/history - Panel 3 (run history list)
   // /script/:fileID/:jobID - Panel 3 (job detail)
   // /script/:fileID/:jobID/:jobDeviceID - Panel 3 (job detail) + Panel 4 (device detail)
   const pathParts = location.pathname.split('/').filter(Boolean)
 
   const hasFileID = pathParts.length >= 2 && pathParts[0] === 'script'
-  const isHistoryRoute = pathParts.length >= 3 && pathParts[2] === 'history'
-  const isPreparedRoute = pathParts.length >= 3 && pathParts[2] === 'prepared'
   const isRunRoute = pathParts.length >= 3 && pathParts[2] === 'run'
   const isEditRoute = pathParts.length >= 3 && pathParts[2] === 'edit' // matches both /edit and /edit/:jobID
   const isLatestRoute = pathParts.length >= 3 && pathParts[2] === 'latest'
-  const hasJobID = pathParts.length >= 3 && !isHistoryRoute && !isPreparedRoute && !isRunRoute && !isLatestRoute && !isEditRoute
+  const hasJobID = pathParts.length >= 3 && !isRunRoute && !isLatestRoute && !isEditRoute
   const isJobDeviceRoute = hasJobID && pathParts.length >= 4
 
   // Panel visibility based on URL
   const showPanel1 = !isJobDeviceRoute // Hide scripts list when viewing device run details
   const showPanel2 = hasFileID // Script overview
-  const showPanel3 = isEditRoute || isHistoryRoute || isPreparedRoute || hasJobID // Config page, run history, prepared, or job detail
+  const showPanel3 = isEditRoute || hasJobID // Config page or job detail
   const showPanel4 = isJobDeviceRoute // Device run detail (to the right of job detail)
 
   // Determine max panels based on container width
@@ -161,10 +157,10 @@ export const ScriptsWithDetailPage: React.FC = () => {
                   <Redirect to={`/script/${fileID}/edit`} />
                 </Route>
                 <Route path="/script/:fileID/history" exact>
-                  <ScriptRunHistoryPage showBack showMenu={!visiblePanel1 && !visiblePanel2} />
+                  <Redirect to={`/script/${fileID}`} />
                 </Route>
                 <Route path="/script/:fileID/prepared" exact>
-                  <ScriptRunHistoryPage showBack showMenu={!visiblePanel1 && !visiblePanel2} prepared />
+                  <Redirect to={`/script/${fileID}`} />
                 </Route>
                 <Route path="/script/:fileID/:jobID">
                   <JobDetailPage showBack={!visiblePanel2} showMenu={!visiblePanel1 && !visiblePanel2} />

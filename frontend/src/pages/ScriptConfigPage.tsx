@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import sleep from '../helpers/sleep'
 import structuredClone from '@ungap/structured-clone'
 import { useParams, useHistory } from 'react-router-dom'
@@ -9,15 +9,17 @@ import {
   ListItem,
   TextField,
   Button,
+  Chip,
   Stack,
   Box,
   Collapse,
   Divider,
   useMediaQuery,
 } from '@mui/material'
-import { State, Dispatch } from '../store'
+import { State, Dispatch, store } from '../store'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectScript } from '../selectors/scripting'
+import { getDevices, getAllDevices } from '../selectors/devices'
 import { selectRole } from '../selectors/organizations'
 import { initialForm } from '../models/files'
 import { ArgumentDefinitionForm } from '../components/ArgumentDefinitionForm'
@@ -47,6 +49,9 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
   const script = useSelector((state: State) => (fileID ? selectScript(state, undefined, fileID, jobID) : undefined))
   const selectedIds = useSelector((state: State) => state.ui.selected)
   const scriptFormFromState = useSelector((state: State) => state.ui.scriptForm)
+  const scriptRunForms = useSelector((state: State) => state.ui.scriptRunForms)
+  const devices = useSelector(getDevices)
+  const allDevices = useSelector(getAllDevices)
   const fetching = useSelector((state: State) => state.files.fetching)
 
   // Edit state
@@ -55,8 +60,8 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
   const [editForm, setEditForm] = useState<IFileForm | undefined>()
   const [defaultEditForm, setDefaultEditForm] = useState<IFileForm | undefined>()
 
-  // Run state — per-script open/closed persisted in accordion state
-  const accordionKey = `scriptRun-${fileID || 'new'}`
+  // Run state — per-script (and per-job) open/closed persisted in accordion state
+  const accordionKey = `scriptRun-${fileID || 'new'}${jobID ? `-${jobID}` : ''}`
   const accordion = useSelector((state: State) => state.ui.accordion)
   const runOpenPersisted = accordion[accordionKey]
   // Default to open if we have a jobID or returning from device selection, otherwise use persisted value
@@ -71,28 +76,58 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
     access: isNew && selectedIds.length ? 'SELECTED' : 'NONE',
   })
   const hasConsumedScriptForm = useRef(false)
+  const runFormRef = useRef(runForm)
+  runFormRef.current = runForm
+  const prevJobIDRef = useRef(jobID)
+  const jobIDRef = useRef(jobID)
+  jobIDRef.current = jobID
 
-  // Reset consumed flag when jobID changes so form reinitializes
-  // Also expand the run section when navigating to a prepared job
-  // Don't close if returning from device selection (scriptFormFromState present)
+  // Helper to save current "new run" form to per-script persistent storage
+  const saveRunForm = () => {
+    const id = fileID || 'new'
+    const current = store.getState().ui.scriptRunForms
+    dispatch.ui.set({ scriptRunForms: { ...current, [id]: { ...runFormRef.current, fileId: id } } })
+  }
+
+  // When jobID changes, save the current "new run" form before switching
+  // and reset consumed flag so form reinitializes
   useEffect(() => {
+    // Save the current form if we were on "new run" (no previous jobID)
+    if (!prevJobIDRef.current && !isNew) {
+      saveRunForm()
+    }
+    prevJobIDRef.current = jobID
     hasConsumedScriptForm.current = false
     if (!scriptFormFromState && jobID) {
       setRunOpen(true)
     }
   }, [jobID])
 
+  // Save working run form to per-script storage on unmount or script change
+  // Only save for "new run" (no jobID) — prepared runs load from job data
+  useEffect(() => {
+    return () => {
+      if (!isNew && !jobIDRef.current) {
+        const id = fileID || 'new'
+        // Use dispatch directly since refs have the latest values
+        dispatch.ui.set({
+          scriptRunForms: { ...store.getState().ui.scriptRunForms, [id]: { ...runFormRef.current, fileId: id } },
+        })
+      }
+    }
+  }, [fileID])
+
   // Get arguments from the script's latest file version (edit mode)
   // or from the edit form's argument definitions (new mode)
   const serverArguments = script?.versions?.[0]?.arguments || []
   const scriptArguments: IFileArgument[] = isNew
     ? (editForm?.argumentDefinitions ?? []).map((def, i) => ({
-        name: def.name,
-        desc: def.desc || '',
-        argumentType: def.type,
-        options: def.options || [],
-        order: i,
-      }))
+      name: def.name,
+      desc: def.desc || '',
+      argumentType: def.type,
+      options: def.options || [],
+      order: i,
+    }))
     : serverArguments
 
   // Get existing argument definitions for edit form
@@ -106,6 +141,32 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
   // Get previous job's device selection
   const defaultDeviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
   const tagValues = script?.job?.tag?.values || []
+
+  // Build a lookup of job device names from the job data
+  const jobDeviceNames: Record<string, string> = useMemo(() => {
+    const lookup: Record<string, string> = {}
+    script?.job?.jobDevices.forEach(jd => {
+      lookup[jd.device.id] = jd.device.name
+    })
+    return lookup
+  }, [script?.job?.jobDevices])
+
+  // Resolve device names for the current run form
+  const resolvedDevices: { id: string; name: string }[] = useMemo(() => {
+    const ids =
+      runForm.access === 'SELECTED'
+        ? selectedIds
+        : runForm.access === 'CUSTOM'
+          ? runForm.deviceIds
+          : []
+    return ids.map(id => {
+      // First check job device names (prepared runs)
+      if (jobDeviceNames[id]) return { id, name: jobDeviceNames[id] }
+      // Then check Redux device store
+      const device = devices.find(d => d.id === id) || allDevices.find(d => d.id === id)
+      return { id, name: device?.name || id.slice(0, 8) + '…' }
+    })
+  }, [runForm.access, runForm.deviceIds, selectedIds, jobDeviceNames, devices, allDevices])
 
   // Initialize edit form — new script
   useEffect(() => {
@@ -158,18 +219,21 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
     dispatch.files.fetchIfEmpty()
   }, [])
 
-  // Initialize run form from scriptFormFromState or previous job (existing only)
+  // Initialize run form from scriptFormFromState or prepared job (existing only)
   useEffect(() => {
     if (isNew || !script) return
 
-    if (scriptFormFromState && scriptFormFromState.fileId === script.id && !hasConsumedScriptForm.current) {
+    if (!jobID && scriptFormFromState && scriptFormFromState.fileId === script.id && !hasConsumedScriptForm.current) {
+      // Restore from one-off navigation (device selection round-trip, "Prepare with Updated Selections")
       hasConsumedScriptForm.current = true
       setRunForm(prev => ({
         ...prev,
         ...scriptFormFromState,
       }))
       dispatch.ui.set({ scriptForm: undefined })
-    } else if (!hasConsumedScriptForm.current) {
+    } else if (jobID && !hasConsumedScriptForm.current) {
+      // Pre-populate from a specific prepared job (opened via jobID in URL)
+      hasConsumedScriptForm.current = true
       const access = tagValues.length
         ? 'TAG'
         : defaultDeviceIds.length
@@ -177,18 +241,35 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
           : selectedIds.length
             ? 'SELECTED'
             : 'NONE'
-      // Load argument values from the job if available
       const argumentValues: IArgumentValue[] =
         script.job?.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' })) || []
-      setRunForm(prev => ({
-        ...prev,
+      setRunForm({
+        ...role,
+        ...initialForm,
         fileId: script.id,
         jobId: script.job?.status === 'READY' ? script.job?.id : undefined,
         deviceIds: defaultDeviceIds,
         tag: script.job?.tag ?? initialForm.tag,
         access,
         argumentValues,
-      }))
+      })
+    } else if (!jobID && !hasConsumedScriptForm.current && scriptRunForms[script.id]) {
+      // Restore from per-script persistent storage (switching between scripts)
+      hasConsumedScriptForm.current = true
+      setRunForm({
+        ...role,
+        ...initialForm,
+        ...scriptRunForms[script.id],
+      })
+    } else if (!hasConsumedScriptForm.current) {
+      // Fresh form — no saved state exists
+      hasConsumedScriptForm.current = true
+      setRunForm({
+        ...role,
+        ...initialForm,
+        fileId: script.id,
+        access: selectedIds.length ? 'SELECTED' : 'NONE',
+      })
     }
   }, [fileID, script?.id, jobID])
 
@@ -312,11 +393,11 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
   const hasEditChanges = isNew
     ? !!(editForm?.name && editForm?.script)
     : editForm &&
-      defaultEditForm &&
-      (editForm.script !== defaultEditForm.script ||
-        editForm.description !== defaultEditForm.description ||
-        editForm.name !== defaultEditForm.name ||
-        JSON.stringify(editForm.argumentDefinitions) !== JSON.stringify(defaultEditForm.argumentDefinitions))
+    defaultEditForm &&
+    (editForm.script !== defaultEditForm.script ||
+      editForm.description !== defaultEditForm.description ||
+      editForm.name !== defaultEditForm.name ||
+      JSON.stringify(editForm.argumentDefinitions) !== JSON.stringify(defaultEditForm.argumentDefinitions))
 
   const canRun =
     !unauthorized &&
@@ -405,6 +486,46 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
               />
             </List>
 
+            {resolvedDevices.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 0.5 }}>
+                {resolvedDevices.slice(0, 3).map(d => (
+                  <Chip key={d.id} label={d.name} size="small" variant="outlined" />
+                ))}
+                {resolvedDevices.length > 3 && (
+                  <Chip
+                    label={`+${resolvedDevices.length - 3} more`}
+                    size="small"
+                    color="primary"
+                    onClick={() => {
+                      const savedForm: IFileForm = {
+                        ...runForm,
+                        ...editForm,
+                        deviceIds: runForm.deviceIds,
+                        tag: runForm.tag,
+                        access: runForm.access,
+                        argumentValues: runForm.argumentValues,
+                        jobId: runForm.jobId,
+                      }
+                      dispatch.ui.set({ scriptForm: savedForm })
+                      history.push('/devices/select/scripts')
+                    }}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                )}
+              </Box>
+            )}
+
+            {runForm.access === 'TAG' && runForm.tag?.values && runForm.tag.values.length > 0 && resolvedDevices.length === 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 0.5 }}>
+                <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5, alignSelf: 'center' }}>
+                  Tag:
+                </Typography>
+                {runForm.tag.values.map(tag => (
+                  <Chip key={tag} label={tag} size="small" variant="outlined" />
+                ))}
+              </Box>
+            )}
+
             {unauthorized && (
               <Notice severity="error" solid fullWidth sx={{ mt: 2 }}>
                 You are not allowed to run scripts on
@@ -462,7 +583,16 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
                 variant="text"
                 color="grayDark"
                 fullWidth
-                onClick={() => setRunOpen(false)}
+                onClick={() => {
+                  setRunOpen(false)
+                  setRunForm({
+                    ...role,
+                    ...initialForm,
+                    fileId: fileID || '',
+                    access: 'NONE',
+                  })
+                  dispatch.ui.set({ selected: [] })
+                }}
               >
                 Cancel
               </Button>
