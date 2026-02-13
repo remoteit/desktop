@@ -94,10 +94,12 @@
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
-      "sign": "./scripts/sign.js",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
+      "signtoolOptions": {
+        "sign": "./scripts/sign.js",
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      },
       "target": [
         {
           "target": "nsis",
