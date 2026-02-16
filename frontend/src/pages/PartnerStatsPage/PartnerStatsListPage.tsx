@@ -129,12 +129,7 @@ export const PartnerStatsListPage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <GridList
-          attributes={attributes}
-          required={required}
-          columnWidths={columnWidths}
-          fetching={loading}
-        >
+        <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading} headerIcon>
           {filteredPartners.map(partner => (
             <GridListItem
               key={partner.id}
@@ -146,9 +141,7 @@ export const PartnerStatsListPage: React.FC = () => {
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
-                  <div className={css.truncate}>
-                    {attribute.value({ partner })}
-                  </div>
+                  <div className={css.truncate}>{attribute.value({ partner })}</div>
                 </Box>
               ))}
             </GridListItem>

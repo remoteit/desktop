@@ -3,7 +3,7 @@ import { State } from '../store'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery } from '@mui/material'
+import { Box, useMediaQuery } from '@mui/material'
 import { FileListItem } from './FileListItem'
 import { Attribute } from './Attributes'
 import { GridList } from './GridList'
@@ -22,9 +22,12 @@ export const FileList: React.FC<FileListProps> = ({ attributes, required, script
   const selectedIds = useSelector((state: State) => state.ui.selected)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   return (
-    <GridList {...{ attributes, required, fetching, columnWidths, mobile }}>
+    <GridList {...{ attributes, required, fetching, columnWidths, mobile }} headerIcon>
       {scripts?.map((script, index) => (
-        <FileListItem key={index} {...{ script, required, attributes, mobile, selectedIds, fileID, isScript: isScriptList }} />
+        <FileListItem
+          key={index}
+          {...{ script, required, attributes, mobile, selectedIds, fileID, isScript: isScriptList }}
+        />
       ))}
     </GridList>
   )

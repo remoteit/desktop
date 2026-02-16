@@ -14,7 +14,7 @@ type DeviceListProps = ListProps & {
   fetching?: boolean
   rowHeight?: number
   rowShrink?: number
-  headerIcon?: React.ReactNode
+  headerIcon?: React.ReactNode | boolean
   headerContextData?: any
   headerContextProvider?: React.Provider<any>
 }
