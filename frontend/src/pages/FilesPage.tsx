@@ -81,22 +81,5 @@ export const FilesPage: React.FC<Props> = ({ scripts, showHeader }) => {
     <FileList attributes={attributes} {...{ required, scripts: files, columnWidths, fetching, isScriptList: !!scripts }} />
   )
 
-  // Simple header for three-panel layout with hamburger menu for small screens
-  if (showHeader) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <ScriptsListHeader scripts={scripts} />
-        <Container
-          integrated
-          gutterBottom
-          bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
-        >
-          {content}
-        </Container>
-      </Box>
-    )
-  }
-
-  // Full header with tabs and action bar
   return <ScriptingHeader>{content}</ScriptingHeader>
 }

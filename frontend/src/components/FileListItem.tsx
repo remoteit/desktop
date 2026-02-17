@@ -25,7 +25,7 @@ export const FileListItem: React.FC<Props> = ({ script, required, attributes, mo
   const basePath = isScript ? 'script' : 'file'
 
   const handleClick = () => {
-    history.push(`/${basePath}/${script.id}${isScript ? '/edit' : ''}`)
+    history.push(`/${basePath}/${script.id}`)
   }
 
   return (

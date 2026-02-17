@@ -28,16 +28,19 @@ const ScriptTertiaryRoutes: React.FC = () => {
         <Redirect to={`/script/${fileID}/edit`} />
       </Route>
       <Route path="/script/:fileID/history" exact>
-        <Redirect to={`/script/${fileID}`} />
+        <Redirect to={`/script/${fileID}/edit`} />
       </Route>
       <Route path="/script/:fileID/prepared" exact>
-        <Redirect to={`/script/${fileID}`} />
+        <Redirect to={`/script/${fileID}/edit`} />
       </Route>
       <Route path="/script/:fileID/:jobID/:jobDeviceID">
         <JobDeviceDetailPage showBack />
       </Route>
       <Route path="/script/:fileID/:jobID">
         <JobDetailPage showBack />
+      </Route>
+      <Route path="/script/:fileID" exact>
+        <ScriptConfigPage />
       </Route>
     </Switch>
   )
@@ -98,7 +101,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           tertiary={<ScriptTertiaryRoutes />}
           layout={layout}
           root="/script/:fileID"
-          tertiaryRoot={['/script/:fileID/edit', '/script/:fileID/:jobID']}
+          subRoot={['/script/:fileID/edit', '/script/:fileID/:jobID', '/script/:fileID']}
         />
       </Route>
       {/* File detail routes */}

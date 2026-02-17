@@ -31,6 +31,8 @@ export const GridListHeader: React.FC<Props> = ({
   const containerRef = useRef<HTMLLIElement>(null)
   const moveRef = useRef<[string, number, number, number, number]>(['', 0, 0, 0, 0])
   const css = useStyles()
+  const showIconSlot = icon !== undefined && icon !== null && icon !== false
+  const iconNode = icon === true ? null : icon
 
   const onDown = (event: React.MouseEvent, attribute: Attribute) => {
     const containerX = containerRef.current?.getBoundingClientRect().left || 0
@@ -63,7 +65,7 @@ export const GridListHeader: React.FC<Props> = ({
       />
       {required && (
         <GridListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
-          {icon && <ListItemIcon>{icon}</ListItemIcon>}
+          {showIconSlot && <ListItemIcon>{iconNode}</ListItemIcon>}
         </GridListHeaderTitle>
       )}
       {!mobile &&
