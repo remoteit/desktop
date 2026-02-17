@@ -1,26 +1,20 @@
 import React, { useEffect } from 'react'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Stack, Typography, useMediaQuery } from '@mui/material'
+import { Box, List, Typography } from '@mui/material'
 import { JobAttribute, jobAttributes } from '../components/JobAttributes'
 import { toLookup } from '../helpers/utilHelper'
 import { LinearProgress } from '../components/LinearProgress'
+import { ListItemLocation } from '../components/ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { StickyTitle } from '../components/StickyTitle'
 import { Container } from '../components/Container'
 import { JobList } from '../components/JobList'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Icon } from '../components/Icon'
-import { spacing } from '../styling'
-import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
-
-type Props = {
-  showMenu?: boolean
-}
+type Props = {}
 
 // Required/sticky column for Complete section only
 const requiredResult = new JobAttribute({ id: 'historyIcon', label: 'Result', defaultWidth: 20, value: () => null, align: 'center' })
@@ -61,7 +55,7 @@ const completeAttrs = sectionAttrs(
   'complete'
 )
 
-export const ScriptPage: React.FC<Props> = ({ showMenu }) => {
+export const ScriptPage: React.FC<Props> = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const location = useLocation()
@@ -70,7 +64,7 @@ export const ScriptPage: React.FC<Props> = ({ showMenu }) => {
   const jobs = useSelector(selectJobs).filter(j => j.file?.id === fileID)
   const fetching = useSelector((state: State) => state.files.fetching)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+
 
   // Filter jobs into three sections
   const preparedJobs = jobs.filter(j => j.status === 'READY')
@@ -81,9 +75,6 @@ export const ScriptPage: React.FC<Props> = ({ showMenu }) => {
   const pathParts = location.pathname.split('/').filter(Boolean)
   // Extract active job ID: /script/:fileID/edit/:jobID or /script/:fileID/:jobID
   const activeJobId = pathParts[2] === 'edit' ? pathParts[3] : pathParts[2]
-  // Script name row highlights only for /script/:fileID/edit (no jobID)
-  const activeEdit = pathParts[2] === 'edit' && !pathParts[3]
-
   // load jobs if not already loaded
   useEffect(() => {
     if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
@@ -95,54 +86,18 @@ export const ScriptPage: React.FC<Props> = ({ showMenu }) => {
     <Container
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
-        <Box>
-          <Box
-            sx={{
-              height: 45,
-              display: 'flex',
-              alignItems: 'center',
-              paddingX: `${spacing.md}px`,
-              marginTop: `${spacing.sm}px`,
-            }}
-          >
-            {showMenu && sidebarHidden && (
-              <IconButton
-                name="bars"
-                size="md"
-                color="grayDarker"
-                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
-              />
-            )}
-            <IconButton icon="chevron-left" title="Back to Scripts" onClick={() => history.push('/scripts')} size="md" />
-            <Box sx={{ flex: 1 }} />
-            <ScriptDeleteButton />
-          </Box>
-          <Box
-            sx={{
-              mx: 2,
-              py: 0.75,
-              px: 1,
-              cursor: 'pointer',
-              borderRadius: 1,
-              bgcolor: activeEdit ? 'primaryHighlight.main' : 'grayLightest.main',
-              '&:hover': { bgcolor: 'primaryHighlight.main' },
-            }}
-            onClick={() => history.push(`/script/${fileID}/edit`)}
-          >
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Icon name="scroll" size="md" color="grayDark" />
-              <Typography variant="body2" fontWeight="bold">
-                {file.name}
-              </Typography>
-            </Stack>
-            {file.shortDesc && (
-              <Typography variant="caption" color="grayDarker.main" sx={{ pl: 4 }}>
-                {file.shortDesc}
-              </Typography>
-            )}
-          </Box>
+        <>
+          <List sx={{ marginBottom: 0 }}>
+            <ListItemLocation
+              to={`/script/${fileID}/edit`}
+              title={<Typography variant="h2">{file.name}</Typography>}
+              subtitle={file.shortDesc}
+              icon="scroll"
+              exactMatch
+            />
+          </List>
           <LinearProgress loading={fetching} />
-        </Box>
+        </>
       }
     >
       <Box>

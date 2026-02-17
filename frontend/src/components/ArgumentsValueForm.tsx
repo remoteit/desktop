@@ -52,7 +52,7 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
 
   return (
     <Box>
-      <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+      <Typography variant="subtitle2" gutterBottom>
         Script Arguments
       </Typography>
       <Stack spacing={1}>

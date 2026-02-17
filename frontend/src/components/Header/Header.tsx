@@ -12,7 +12,6 @@ import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { ProductsHeaderButtons } from './ProductsHeaderButtons'
-import { ScriptDeleteButton } from '../ScriptDeleteButton'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -142,9 +141,6 @@ export const Header: React.FC = () => {
             )}
             <Route path={['/products', '/products/add']} exact>
               <ProductsHeaderButtons />
-            </Route>
-            <Route path={layout.singlePanel ? '/script/:fileID' : '/script/:fileID/:jobID?/:jobDeviceID?'} exact>
-              <ScriptDeleteButton />
             </Route>
           </>
         )}

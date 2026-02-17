@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Stack, List, Typography, Divider, Button, useMediaQuery } from '@mui/material'
+import { Box, Stack, List, Typography, Divider, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectScript } from '../selectors/scripting'
 import { getJobAttribute } from '../components/JobAttributes'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -20,14 +19,12 @@ import { DeleteButton } from '../buttons/DeleteButton'
 
 type Props = {
   showBack?: boolean
-  showMenu?: boolean
 }
 
-export const JobDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
+export const JobDetailPage: React.FC<Props> = ({ showBack }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID: string; jobID: string }>()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   
   const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
   const file = script
@@ -81,20 +78,14 @@ export const JobDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
       header={
         <Gutters top="sm" bottom="sm">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {showMenu && sidebarHidden && (
+            {showBack && (
               <IconButton
-                name="bars"
+                name="chevron-left"
+                onClick={() => history.push(`/script/${fileID}`)}
                 size="md"
-                color="grayDarker"
-                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
+                title="Back"
               />
             )}
-            <IconButton
-              name="chevron-left"
-              onClick={() => history.push(`/script/${fileID}`)}
-              size="md"
-              title="Back"
-            />
             <Typography variant="h3" sx={{ flex: 1 }}>
               {file.name}
             </Typography>

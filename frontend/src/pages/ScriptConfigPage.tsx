@@ -3,21 +3,8 @@ import sleep from '../helpers/sleep'
 import structuredClone from '@ungap/structured-clone'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  Typography,
-  List,
-  ListItem,
-  TextField,
-  Button,
-  Chip,
-  Stack,
-  Box,
-  Collapse,
-  Divider,
-  useMediaQuery,
-} from '@mui/material'
+import { Typography, List, ListItem, TextField, Button, Chip, Stack, Box, Collapse, Divider } from '@mui/material'
 import { State, Dispatch, store } from '../store'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectScript } from '../selectors/scripting'
 import { getDevices, getAllDevices } from '../selectors/devices'
 import { selectRole } from '../selectors/organizations'
@@ -25,24 +12,20 @@ import { initialForm } from '../models/files'
 import { ArgumentDefinitionForm } from '../components/ArgumentDefinitionForm'
 import { ArgumentsValueForm } from '../components/ArgumentsValueForm'
 import { FileUpload } from '../components/FileUpload'
-import { IconButton } from '../buttons/IconButton'
+import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 import { TagFilter } from '../components/TagFilter'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 type Props = {
   isNew?: boolean
-  showBack?: boolean
-  showMenu?: boolean
 }
 
-export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu }) => {
+export const ScriptConfigPage: React.FC<Props> = ({ isNew }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
 
   const role = useSelector(selectRole)
   const manager = role.permissions.includes('MANAGE')
@@ -122,12 +105,12 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
   const serverArguments = script?.versions?.[0]?.arguments || []
   const scriptArguments: IFileArgument[] = isNew
     ? (editForm?.argumentDefinitions ?? []).map((def, i) => ({
-      name: def.name,
-      desc: def.desc || '',
-      argumentType: def.type,
-      options: def.options || [],
-      order: i,
-    }))
+        name: def.name,
+        desc: def.desc || '',
+        argumentType: def.type,
+        options: def.options || [],
+        order: i,
+      }))
     : serverArguments
 
   // Get existing argument definitions for edit form
@@ -153,12 +136,7 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
 
   // Resolve device names for the current run form
   const resolvedDevices: { id: string; name: string }[] = useMemo(() => {
-    const ids =
-      runForm.access === 'SELECTED'
-        ? selectedIds
-        : runForm.access === 'CUSTOM'
-          ? runForm.deviceIds
-          : []
+    const ids = runForm.access === 'SELECTED' ? selectedIds : runForm.access === 'CUSTOM' ? runForm.deviceIds : []
     return ids.map(id => {
       // First check job device names (prepared runs)
       if (jobDeviceNames[id]) return { id, name: jobDeviceNames[id] }
@@ -237,10 +215,10 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
       const access = tagValues.length
         ? 'TAG'
         : defaultDeviceIds.length
-          ? 'CUSTOM'
-          : selectedIds.length
-            ? 'SELECTED'
-            : 'NONE'
+        ? 'CUSTOM'
+        : selectedIds.length
+        ? 'SELECTED'
+        : 'NONE'
       const argumentValues: IArgumentValue[] =
         script.job?.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' })) || []
       setRunForm({
@@ -393,11 +371,11 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
   const hasEditChanges = isNew
     ? !!(editForm?.name && editForm?.script)
     : editForm &&
-    defaultEditForm &&
-    (editForm.script !== defaultEditForm.script ||
-      editForm.description !== defaultEditForm.description ||
-      editForm.name !== defaultEditForm.name ||
-      JSON.stringify(editForm.argumentDefinitions) !== JSON.stringify(defaultEditForm.argumentDefinitions))
+      defaultEditForm &&
+      (editForm.script !== defaultEditForm.script ||
+        editForm.description !== defaultEditForm.description ||
+        editForm.name !== defaultEditForm.name ||
+        JSON.stringify(editForm.argumentDefinitions) !== JSON.stringify(defaultEditForm.argumentDefinitions))
 
   const canRun =
     !unauthorized &&
@@ -416,42 +394,19 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
 
   return (
     <Container
-      bodyProps={{ verticalOverflow: true, gutterBottom: true }}
+      integrated
+      bodyProps={{ inset: true, verticalOverflow: true, gutterBottom: true }}
       header={
-        <Gutters top="sm" bottom="sm">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {showMenu && sidebarHidden && (
-              <IconButton
-                name="bars"
-                size="md"
-                color="grayDarker"
-                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
-              />
-            )}
-            {showBack && (
-              <IconButton
-                name="chevron-left"
-                onClick={() => history.push(isNew ? '/scripts' : `/script/${fileID}`)}
-                size="md"
-                title="Back"
-              />
-            )}
-            <Typography variant="h2" sx={{ flex: 1 }}>
-              {isNew ? 'Add Script' : script?.name}
-            </Typography>
-          </Box>
-        </Gutters>
+        <Typography variant="h1">
+          <Box sx={{ flex: 1 }}>{isNew ? 'Add Script' : script?.name}</Box>
+          {!isNew && <ScriptDeleteButton />}
+        </Typography>
       }
     >
       {/* ── Prepare & Run ── */}
-      <Box sx={{ px: 2, py: 1 }}>
+      <>
         {!runOpen && (
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={() => setRunOpen(true)}
-          >
+          <Button variant="contained" color="primary" fullWidth onClick={() => setRunOpen(true)}>
             Prepare & Run
           </Button>
         )}
@@ -487,7 +442,7 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
             </List>
 
             {resolvedDevices.length > 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 0.5 }}>
+              <Stack direction="row" flexWrap="wrap" gap={0.5} mt={1} mb={0.5}>
                 {resolvedDevices.slice(0, 3).map(d => (
                   <Chip key={d.id} label={d.name} size="small" variant="outlined" />
                 ))}
@@ -512,19 +467,22 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
                     sx={{ cursor: 'pointer' }}
                   />
                 )}
-              </Box>
+              </Stack>
             )}
 
-            {runForm.access === 'TAG' && runForm.tag?.values && runForm.tag.values.length > 0 && resolvedDevices.length === 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 0.5 }}>
-                <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5, alignSelf: 'center' }}>
-                  Tag:
-                </Typography>
-                {runForm.tag.values.map(tag => (
-                  <Chip key={tag} label={tag} size="small" variant="outlined" />
-                ))}
-              </Box>
-            )}
+            {runForm.access === 'TAG' &&
+              runForm.tag?.values &&
+              runForm.tag.values.length > 0 &&
+              resolvedDevices.length === 0 && (
+                <Stack direction="row" flexWrap="wrap" gap={0.5} alignItems="center" mt={1} mb={0.5}>
+                  <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5 }}>
+                    Tag:
+                  </Typography>
+                  {runForm.tag.values.map(tag => (
+                    <Chip key={tag} label={tag} size="small" variant="outlined" />
+                  ))}
+                </Stack>
+              )}
 
             {unauthorized && (
               <Notice severity="error" solid fullWidth sx={{ mt: 2 }}>
@@ -599,77 +557,74 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew, showBack, showMenu })
             </Stack>
           </Box>
         </Collapse>
-      </Box>
+      </>
 
       <Divider />
 
-      {/* ── Edit Script ── */}
-      <Box sx={{ px: 2, pt: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="subtitle1">
-            <Title>Edit Script</Title>
-          </Typography>
-          {manager && (
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={!hasEditChanges || saving || loading}
-              onClick={handleSave}
-              sx={{ ml: 'auto' }}
-            >
-              {saving ? 'Saving...' : 'Save Script'}
-            </Button>
-          )}
-        </Box>
-        {editForm && (
-          <Box sx={{ pt: 1 }}>
-            <List disablePadding>
-              <ListItem disableGutters>
-                <TextField
-                  required
-                  fullWidth
-                  label="Name"
-                  disabled={!manager}
-                  value={editForm.name}
-                  variant="filled"
-                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                />
-              </ListItem>
-              <ListItem disableGutters>
-                <TextField
-                  multiline
-                  fullWidth
-                  disabled={!manager}
-                  label="Description"
-                  value={editForm.description}
-                  variant="filled"
-                  onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                />
-              </ListItem>
-              {manager && (
-                <ListItem disableGutters sx={{ display: 'block', mt: 2 }}>
-                  <ArgumentDefinitionForm
-                    definitions={editForm.argumentDefinitions ?? []}
-                    onChange={argumentDefinitions => setEditForm({ ...editForm, argumentDefinitions })}
-                    disabled={loading || saving}
-                  />
-                </ListItem>
-              )}
-              <ListItem disableGutters sx={{ mt: 2 }}>
-                <FileUpload
-                  disabled={!manager}
-                  script={editForm.script}
-                  loading={loading}
-                  onChange={(script, file) =>
-                    setEditForm({ ...editForm, script, ...(file && { name: file.name, file }) })
-                  }
-                />
-              </ListItem>
-            </List>
-          </Box>
+      <Stack direction="row" alignItems="center" gap={1} mt={2}>
+        <Typography variant="subtitle2">
+          <Title>Edit Script</Title>
+        </Typography>
+        {manager && (
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            disabled={!hasEditChanges || saving || loading}
+            onClick={handleSave}
+            sx={{ ml: 'auto' }}
+          >
+            {saving ? 'Saving...' : 'Save Script'}
+          </Button>
         )}
-      </Box>
+      </Stack>
+      {editForm && (
+        <Box sx={{ pt: 1 }}>
+          <List disablePadding>
+            <ListItem disableGutters>
+              <TextField
+                required
+                fullWidth
+                label="Name"
+                disabled={!manager}
+                value={editForm.name}
+                variant="filled"
+                onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </ListItem>
+            <ListItem disableGutters sx={{ marginBottom: 3 }}>
+              <TextField
+                multiline
+                fullWidth
+                disabled={!manager}
+                label="Description"
+                value={editForm.description}
+                variant="filled"
+                onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+              />
+            </ListItem>
+            {manager && (
+              <ListItem disableGutters sx={{ display: 'block', mt: 2 }}>
+                <ArgumentDefinitionForm
+                  definitions={editForm.argumentDefinitions ?? []}
+                  onChange={argumentDefinitions => setEditForm({ ...editForm, argumentDefinitions })}
+                  disabled={loading || saving}
+                />
+              </ListItem>
+            )}
+            <ListItem disableGutters sx={{ mt: 2 }}>
+              <FileUpload
+                disabled={!manager}
+                script={editForm.script}
+                loading={loading}
+                onChange={(script, file) =>
+                  setEditForm({ ...editForm, script, ...(file && { name: file.name, file }) })
+                }
+              />
+            </ListItem>
+          </List>
+        </Box>
+      )}
     </Container>
   )
 }
