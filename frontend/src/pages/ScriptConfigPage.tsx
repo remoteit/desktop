@@ -518,29 +518,30 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew }) => {
             )}
 
             {/* Run Buttons */}
-            <Stack spacing={1} sx={{ mt: 2 }}>
+            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Button
                 variant="contained"
                 color="primary"
                 fullWidth
+                disableElevation
                 disabled={!canRun || !canSaveScript || !requiredArgsFilled || running || fetching}
                 onClick={handleRun}
               >
-                {running ? 'Running...' : 'Run Now'}
+                {running ? 'Running...' : 'Run'}
               </Button>
               <Button
-                variant="outlined"
+                variant="contained"
                 color="primary"
-                fullWidth
+                disableElevation
                 disabled={!canRun || !canSaveScript || !requiredArgsFilled || running || fetching}
                 onClick={handlePrepare}
               >
-                Save Run
+                Save
               </Button>
               <Button
                 variant="text"
-                color="grayDark"
-                fullWidth
+                color="primary"
+                disableElevation
                 onClick={() => {
                   setRunOpen(false)
                   setRunForm({
