@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
-import { dateOptions } from './Duration/Duration'
+import { dateDefaults } from './Duration/Duration'
 import { makeStyles } from '@mui/styles'
 import { Tooltip, Card, CardContent, CardMedia, CardHeader, CardActions, Button, Typography } from '@mui/material'
 
@@ -22,7 +22,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   const cardRef = useRef<HTMLDivElement>(null)
 
   const unread = !(data.read && data.read < new Date())
-  const date = data.read && data.read.toLocaleString(navigator.language, dateOptions)
+  const date = data.read && data.read.toLocaleString(navigator.language, dateDefaults)
   const css = useStyles({ unread })
 
   const handleRead = () => {

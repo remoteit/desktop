@@ -135,22 +135,15 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
   const showOptions = editForm.type === 'StringSelect' || editForm.type === 'FileSelect'
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <Typography variant="subtitle2" color="textSecondary">
-          Script Arguments
-        </Typography>
+    <Box marginBottom={2}>
+      <Stack direction="row" alignItems="center" mb={1}>
+        <Typography variant="subtitle2">Script Arguments</Typography>
         {!disabled && editing !== 'new' && (
-          <Button
-            size="small"
-            startIcon={<Icon name="plus" size="sm" />}
-            onClick={startNew}
-            sx={{ ml: 'auto' }}
-          >
+          <Button size="small" startIcon={<Icon name="plus" size="sm" />} onClick={startNew} sx={{ ml: 'auto' }}>
             Add
           </Button>
         )}
-      </Box>
+      </Stack>
       <List disablePadding dense>
         {definitions.map((def, index) => (
           <React.Fragment key={index}>
@@ -163,11 +156,7 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
               onDragEnd={handleDragEnd}
               sx={{
                 bgcolor:
-                  editing === index
-                    ? 'action.selected'
-                    : dragOverIndex === index
-                      ? 'action.hover'
-                      : 'transparent',
+                  editing === index ? 'action.selected' : dragOverIndex === index ? 'action.hover' : 'transparent',
                 borderRadius: 1,
                 mb: 0.5,
                 opacity: dragIndex === index ? 0.4 : 1,
@@ -177,9 +166,9 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
               }}
             >
               {!disabled && editing !== index && (
-                <Box sx={{ display: 'flex', alignItems: 'center', mr: 1, color: 'text.disabled' }}>
+                <Stack direction="row" alignItems="center" mr={1} color="text.disabled">
                   <Icon name="grip-vertical" size="sm" />
-                </Box>
+                </Stack>
               )}
               <ListItemText
                 primary={def.name}

@@ -39,7 +39,7 @@ export const Body: React.FC<BodyProps> = ({
     scrollbarWidth: browser.isMobile ? 0 : 15,
     scrollbarBackground: scrollbarBackground || 'white',
   })
-  const [hover, setHover] = useState<boolean>(true)
+  const [hover, setHover] = useState<boolean>(false)
   className = classnames(
     className,
     css.body,

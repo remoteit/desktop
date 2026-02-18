@@ -15,6 +15,7 @@ import {
   MOBILE_WIDTH,
   ORGANIZATION_BAR_WIDTH,
   REGEX_FIRST_PATH,
+  SHOW_TRIPLE_PANEL_WIDTH,
 } from '../constants'
 import { State, Dispatch } from '../store'
 import { useMediaQuery, Box } from '@mui/material'
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
+  const triplePanel = useMediaQuery(`(min-width:${SHOW_TRIPLE_PANEL_WIDTH}px)`)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const sidePanelWidth = hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
@@ -56,6 +58,7 @@ export const App: React.FC = () => {
     hideSidebar,
     showBottomMenu,
     singlePanel,
+    triplePanel,
     sidePanelWidth,
   }
 
@@ -67,7 +70,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, sidePanelWidth])
+  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, triplePanel, sidePanelWidth])
 
   if (waitMessage)
     return (

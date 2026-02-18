@@ -127,7 +127,7 @@ export default createModel<RootModel>()({
 
       await dispatch.files.fetch()
     },
-    async updateMetadata(params: { fileId: string; name?: string; shortDesc?: string }, state) {
+    async updateMetadata(params: { fileId: string; name?: string; shortDesc?: string }) {
       console.log('UPDATE FILE METADATA', params)
 
       const result = await graphQLModifyFile(params)
