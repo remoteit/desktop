@@ -2,8 +2,7 @@ import React, { useState, useRef } from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles } from '@mui/styles'
-import { ListSubheader, ListItemIcon, useMediaQuery } from '@mui/material'
-import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
+import { ListSubheader, ListItemIcon } from '@mui/material'
 import { GridListHeaderTitle } from './GridListHeaderTitle'
 import { LinearProgress } from './LinearProgress'
 import { Attribute } from './Attributes'
@@ -14,7 +13,7 @@ type Props = {
   required?: Attribute
   attributes?: Attribute[]
   columnWidths: ILookup<number>
-  icon?: React.ReactNode
+  icon?: React.ReactNode | boolean
   fetching?: boolean
   mobile?: boolean
 }

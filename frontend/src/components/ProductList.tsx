@@ -48,7 +48,7 @@ export const ProductList: React.FC<ProductListProps> = ({
       color="primary"
     />
   ) : (
-    <Icon name="box" size="md" color="grayDark" />
+    true
   )
 
   return (

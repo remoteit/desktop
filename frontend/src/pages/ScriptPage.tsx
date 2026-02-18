@@ -1,33 +1,88 @@
 import React, { useEffect } from 'react'
-import { VALID_JOB_ID_LENGTH } from '../constants'
+import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
-import { getJobAttribute } from '../components/JobAttributes'
-import { ListItemLocation } from '../components/ListItemLocation'
-import { Redirect, useParams } from 'react-router-dom'
+import { Redirect, useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Stack, List, Typography } from '@mui/material'
-import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
+import { Box, Stack, Typography, useMediaQuery } from '@mui/material'
+import { JobAttribute, jobAttributes } from '../components/JobAttributes'
+import { toLookup } from '../helpers/utilHelper'
 import { LinearProgress } from '../components/LinearProgress'
-import { JobStatusIcon } from '../components/JobStatusIcon'
+import { IconButton } from '../buttons/IconButton'
+import { StickyTitle } from '../components/StickyTitle'
 import { Container } from '../components/Container'
-import { Timestamp } from '../components/Timestamp'
-import { RunButton } from '../buttons/RunButton'
-import { Gutters } from '../components/Gutters'
+import { JobList } from '../components/JobList'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
-// import { Pre } from '../components/Pre'
+import { spacing } from '../styling'
+import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 
-export const ScriptPage: React.FC<{ layout: ILayout }> = ({ layout }) => {
+type Props = {
+  showMenu?: boolean
+}
+
+// Required/sticky column for Complete section only
+const requiredResult = new JobAttribute({ id: 'historyIcon', label: 'Result', defaultWidth: 20, value: () => null, align: 'center' })
+
+// Build per-section attribute lists with unique IDs so column widths are independent
+const attrLookup = toLookup<JobAttribute>(jobAttributes, 'id')
+
+// Clone an attribute with a section-specific ID (so width is stored/read independently)
+function sectionAttr(attr: JobAttribute, section: string): JobAttribute {
+  return new JobAttribute({
+    id: `${attr.id}_${section}`,
+    label: attr.label,
+    defaultWidth: attr.defaultWidth,
+    align: attr.align,
+    value: attr.value,
+  })
+}
+
+function sectionAttrs(attrs: JobAttribute[], section: string): JobAttribute[] {
+  return attrs.map(a => sectionAttr(a, section))
+}
+
+// Prepared: devices, targets, filter, match, run by
+const preparedAttrs = sectionAttrs(
+  [attrLookup.jobDeviceCount, attrLookup.jobDeviceNames, attrLookup.jobTags, attrLookup.jobMatches, attrLookup.jobRunBy].filter(Boolean),
+  'prepared'
+)
+
+// Running: devices, targets, waiting, running, success, failed, time, run by
+const runningAttrs = sectionAttrs(
+  [attrLookup.jobDeviceCount, attrLookup.jobDeviceNames, attrLookup.jobDeviceWaiting, attrLookup.jobDeviceRunning, attrLookup.jobDeviceSuccess, attrLookup.jobDeviceFailure, attrLookup.jobUpdated, attrLookup.jobRunBy].filter(Boolean),
+  'running'
+)
+
+// Complete: devices, targets, success, failed, time, run by
+const completeAttrs = sectionAttrs(
+  [attrLookup.jobDeviceCount, attrLookup.jobDeviceNames, attrLookup.jobDeviceSuccess, attrLookup.jobDeviceFailure, attrLookup.jobUpdated, attrLookup.jobRunBy].filter(Boolean),
+  'complete'
+)
+
+export const ScriptPage: React.FC<Props> = ({ showMenu }) => {
   const dispatch = useDispatch<Dispatch>()
-  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
+  const history = useHistory()
+  const location = useLocation()
+  const { fileID } = useParams<{ fileID?: string }>()
   const file = useSelector((state: State) => selectFile(state, undefined, fileID))
   const jobs = useSelector(selectJobs).filter(j => j.file?.id === fileID)
-  const job: IJob | undefined = jobs.find(j => j.id === jobID) || jobs[0]
   const fetching = useSelector((state: State) => state.files.fetching)
-  const noDevices = !job || !job?.jobDevices.length
-  const validJobID = jobID && jobID.length >= VALID_JOB_ID_LENGTH
+  const columnWidths = useSelector((state: State) => state.ui.columnWidths)
+  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+
+  // Filter jobs into three sections
+  const preparedJobs = jobs.filter(j => j.status === 'READY')
+  const runningJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'WAITING')
+  const completeJobs = jobs.filter(j => j.status === 'SUCCESS' || j.status === 'FAILED' || j.status === 'CANCELLED')
+
+  // Determine what's currently shown in the right panel for highlighting
+  const pathParts = location.pathname.split('/').filter(Boolean)
+  // Extract active job ID: /script/:fileID/edit/:jobID or /script/:fileID/:jobID
+  const activeJobId = pathParts[2] === 'edit' ? pathParts[3] : pathParts[2]
+  // Script name row highlights only for /script/:fileID/edit (no jobID)
+  const activeEdit = pathParts[2] === 'edit' && !pathParts[3]
 
   // load jobs if not already loaded
   useEffect(() => {
@@ -36,103 +91,101 @@ export const ScriptPage: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   if (!file) return <Redirect to={{ pathname: '/scripts', state: { isRedirect: true } }} />
 
-  if (
-    !layout.singlePanel &&
-    jobDeviceID !== 'edit' &&
-    (!jobDeviceID || (jobID === 'latest' && !job?.jobDevices.some(jd => jd.id === jobDeviceID)))
-  ) {
-    return (
-      <Redirect
-        to={{
-          pathname: `/script/${file.id}/${validJobID ? jobID : 'latest'}/${noDevices ? 'edit' : job?.jobDevices[0].id}`,
-          state: { isRedirect: true },
-        }}
-      />
-    )
-  }
-
   return (
     <Container
-      bodyProps={{ verticalOverflow: true }}
+      bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
-        <>
-          <List sx={{ marginBottom: 0 }}>
-            <ListItemLocation
-              to={`/script/${fileID}/${jobID}/edit`}
-              title={<Typography variant="h2">{file.name}</Typography>}
-              icon={<JobStatusIcon status={job?.status} size="lg" />}
-              exactMatch
-            >
-              <Box marginRight={2}>
-                <Icon name="chevron-right" color="grayDark" className="hidden" />
-              </Box>
-            </ListItemLocation>
-          </List>
-          <Gutters inset="icon" bottom="lg" top={null}>
-            {!!job?.tag.values.length && <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job })}</Box>}
-            {job?.jobDevices[0]?.updated && (
-              <Typography variant="caption" color="GrayText" marginTop={1} textTransform="capitalize" component="p">
-                {job?.status.toLowerCase()} &nbsp;
-                <Timestamp date={new Date(job?.jobDevices[0].updated)} />
-              </Typography>
+        <Box>
+          <Box
+            sx={{
+              height: 45,
+              display: 'flex',
+              alignItems: 'center',
+              paddingX: `${spacing.md}px`,
+              marginTop: `${spacing.sm}px`,
+            }}
+          >
+            {showMenu && sidebarHidden && (
+              <IconButton
+                name="bars"
+                size="md"
+                color="grayDarker"
+                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
+              />
             )}
+            <IconButton icon="chevron-left" title="Back to Scripts" onClick={() => history.push('/scripts')} size="md" />
+            <Box sx={{ flex: 1 }} />
+            <ScriptDeleteButton />
+          </Box>
+          <Box
+            sx={{
+              mx: 2,
+              py: 0.75,
+              px: 1,
+              cursor: 'pointer',
+              borderRadius: 1,
+              bgcolor: activeEdit ? 'primaryHighlight.main' : 'grayLightest.main',
+              '&:hover': { bgcolor: 'primaryHighlight.main' },
+            }}
+            onClick={() => history.push(`/script/${fileID}/edit`)}
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Icon name="scroll" size="md" color="grayDark" />
+              <Typography variant="body2" fontWeight="bold">
+                {file.name}
+              </Typography>
+            </Stack>
             {file.shortDesc && (
-              <Typography color="grayDarkest.main" variant="caption" component="p" marginTop={1}>
+              <Typography variant="caption" color="grayDarker.main" sx={{ pl: 4 }}>
                 {file.shortDesc}
               </Typography>
             )}
-          </Gutters>
-          <List>
-            <ListItemLocation title="Run History" to={`/runs/${fileID}`} icon="clock-rotate-left" />
-          </List>
+          </Box>
           <LinearProgress loading={fetching} />
-        </>
+        </Box>
       }
     >
-      <>
-        <Typography variant="subtitle1">
-          <Title>Devices</Title>
-          <Stack direction="row" spacing={1} marginRight={2}>
-            <Typography variant="caption" paddingLeft={2}>
-              {job?.jobDevices.length || '-'}
-            </Typography>
-            <JobStatusIcon device padding={0} />
-            <Typography variant="caption" paddingLeft={2}>
-              {job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
-            </Typography>
-            <JobStatusIcon status="SUCCESS" padding={0} />
-            <Typography variant="caption" paddingLeft={2}>
-              {job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
-            </Typography>
-            <JobStatusIcon status="FAILED" padding={0} />
-          </Stack>
-        </Typography>
-        {noDevices ? (
-          <Notice gutterTop>This script has not been run yet.</Notice>
+      <Box>
+        {/* ── Prepared ── */}
+        <StickyTitle>
+          <Title>Prepared</Title>
+          <Box sx={{ flex: 1 }} />
+          <IconButton
+            icon="plus"
+            title="New Run"
+            size="md"
+            onClick={() => {
+              dispatch.ui.accordion({ [`scriptRun-${fileID}`]: true })
+              history.push(`/script/${fileID}/edit`)
+            }}
+          />
+        </StickyTitle>
+        {preparedJobs.length ? (
+          <JobList attributes={preparedAttrs} jobs={preparedJobs} columnWidths={columnWidths} fetching={fetching} activeJobId={activeJobId} />
         ) : (
-          <Box marginY={3} marginX={4}>
-            <RunButton
-              job={job}
-              size="small"
-              onRun={async () => await dispatch.jobs.run({ jobId: job?.id, fileId: file.id })}
-              onRunAgain={async () => await dispatch.jobs.runAgain({ ...file, job })}
-              onCancel={async () => await dispatch.jobs.cancel(job?.id)}
-              fullWidth
-            />
-          </Box>
+          <Notice sx={{ mx: 2 }}>No prepared runs.</Notice>
         )}
-        <List>
-          {job?.jobDevices.map(jd => (
-            <ListItemLocation
-              sx={{ paddingRight: 2 }}
-              key={jd.id}
-              to={`/script/${fileID}/${validJobID ? jobID : 'latest'}/${jd.id}`}
-              title={jd.device.name}
-              icon={<JobStatusIcon status={jd.status} device />}
-            />
-          ))}
-        </List>
-      </>
+
+        {/* ── Running ── */}
+        <StickyTitle>
+          <Title>Running</Title>
+        </StickyTitle>
+        {runningJobs.length ? (
+          <JobList attributes={runningAttrs} jobs={runningJobs} columnWidths={columnWidths} fetching={fetching} activeJobId={activeJobId} />
+        ) : (
+          <Notice sx={{ mx: 2 }}>No running jobs.</Notice>
+        )}
+
+        {/* ── Complete ── */}
+        <StickyTitle>
+          <Title>Complete</Title>
+        </StickyTitle>
+        {completeJobs.length ? (
+          <JobList attributes={completeAttrs} required={requiredResult} jobs={completeJobs} columnWidths={columnWidths} fetching={fetching} activeJobId={activeJobId} />
+        ) : (
+          <Notice sx={{ mx: 2 }}>No completed runs.</Notice>
+        )}
+      </Box>
     </Container>
   )
 }

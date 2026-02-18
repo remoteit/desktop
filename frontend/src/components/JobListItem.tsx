@@ -11,16 +11,22 @@ type Props = {
   attributes: Attribute[]
   required?: Attribute
   mobile?: boolean
+  hideIcon?: boolean
+  activeJobId?: string
 }
 
-export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile }) => {
+export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile, hideIcon, activeJobId }) => {
   const history = useHistory()
   const disabled = !job.file
 
   if (!job) return null
 
   const handleClick = () => {
-    history.push(`/script/${job.file?.id}/${job.id}`)
+    if (job.status === 'READY') {
+      history.push(`/script/${job.file?.id}/edit/${job.id}`)
+    } else {
+      history.push(`/script/${job.file?.id}/${job.id}`)
+    }
   }
 
   return (
@@ -28,8 +34,10 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
       onClick={handleClick}
       mobile={mobile}
       disabled={disabled}
-      icon={<JobStatusIcon status={job.status} />}
-      required={<AttributeValue {...{ mobile, job, attribute: required }} />}
+      selected={activeJobId === job.id}
+      icon={required ? (hideIcon ? undefined : <JobStatusIcon status={job.status} />) : undefined}
+      required={required ? <AttributeValue {...{ mobile, job, attribute: required }} /> : undefined}
+      stickyCenter={required?.align === 'center'}
       disableGutters
     >
       {attributes?.map(attribute => (

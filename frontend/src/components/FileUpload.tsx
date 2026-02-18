@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { BINARY_DATA_TOKEN } from '../constants'
 import { containsNonPrintableChars } from '../helpers/utilHelper'
 import { Typography, TextField, Box, ButtonBase, Stack, Divider } from '@mui/material'
@@ -22,7 +22,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
   const [isText, setIsText] = useState(true)
 
   useEffect(() => {
-    if (script === BINARY_DATA_TOKEN) setIsText(false)
+    setIsText(script !== BINARY_DATA_TOKEN)
   }, [script])
 
   const onDrop = useCallback((files: File[]) => {
@@ -38,17 +38,21 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
           const text = new TextDecoder().decode(buffer)
           const isBinary = containsNonPrintableChars(text)
 
+          setFilename(file.name)
           if (!isBinary) {
             setIsText(true)
-            setFilename(file.name)
             onChange(text, file)
           } else {
+            // Binary files are allowed - pass the file with the binary token
             setIsText(false)
+            onChange(BINARY_DATA_TOKEN, file)
           }
         } catch (e) {
           console.error('Error decoding text:', e)
-          dispatch.ui.set({ errorMessage: 'File could not be decoded as text.' })
+          // If decoding fails, treat as binary
+          setFilename(file.name)
           setIsText(false)
+          onChange(BINARY_DATA_TOKEN, file)
         }
       }
 
@@ -57,7 +61,7 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-  const showUpload = !filename && isText
+  const showUpload = !filename
 
   const clear = () => {
     setFilename(undefined)
@@ -70,48 +74,20 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
     onChange(demo + '\n\n' + script)
   }
 
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>()
+  const [copied, setCopied] = useState(false)
+
+  const copyScript = () => {
+    navigator.clipboard.writeText(script)
+    setCopied(true)
+    clearTimeout(copyTimer.current)
+    copyTimer.current = setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <Stack width="100%" position="relative">
-      {isText ? (
-        <>
-          <TextField
-            multiline
-            fullWidth
-            required
-            disabled={disabled || loading}
-            label="Script"
-            value={loading ? 'loading...' : script.toString()}
-            variant="filled"
-            maxRows={30}
-            InputLabelProps={{ shrink: true }}
-            InputProps={{
-              sx: theme => ({
-                borderRadius: showUpload ? `${radius.sm}px ${radius.sm}px 0 0` : undefined,
-                fontFamily: "'Roboto Mono', monospace",
-                fontSize: theme.typography.caption.fontSize,
-                lineHeight: theme.typography.caption.lineHeight,
-                color: theme.palette.grayDarkest.main,
-              }),
-            }}
-            inputProps={{ sx: { transition: 'height 600ms' } }}
-            onChange={event => onChange(event.target.value)}
-          />
-          <Box sx={{ position: 'absolute', top: 4, right: 4 }}>
-            {filename ? (
-              <IconButton name="times" title="Clear" color="grayDark" size="sm" onClick={clear} />
-            ) : (
-              <IconButton name="terminal" title="Add Demo Script" color="grayDark" size="sm" onClick={paste} />
-            )}
-          </Box>
-        </>
-      ) : (
-        <Notice onClose={clear} closeTitle="Clear" fullWidth>
-          This script appears to be binary.
-        </Notice>
-      )}
       {showUpload && (
         <>
-          <Divider sx={{ borderColor: 'grayLight.main' }} />
           <ButtonBase
             {...getRootProps()}
             disabled={disabled}
@@ -124,16 +100,62 @@ export const FileUpload: React.FC<Props> = ({ script = '', loading, disabled, on
               borderColor: isDragActive ? 'primary.main' : 'grayLightest.main',
               backgroundColor: 'grayLightest.main',
               padding: 2,
-              borderRadius: `0 0 ${radius.sm}px ${radius.sm}px`,
+              borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
               minWidth: 200,
               '&:hover': { backgroundColor: 'primaryHighlight.main', borderColor: 'primaryHighlight.main' },
             }}
           >
             <input {...getInputProps()} />
             <Typography variant="body2">Upload</Typography>
-            <Typography variant="caption">Drag and drop or click </Typography>
+            <Typography variant="caption">Drag and drop or click</Typography>
           </ButtonBase>
+          <Divider sx={{ borderColor: 'grayLight.main' }} />
         </>
+      )}
+      {isText ? (
+        <>
+          <TextField
+            multiline
+            fullWidth
+            required
+            disabled={disabled || loading}
+            label="Script"
+            value={loading ? 'loading...' : script.toString()}
+            variant="filled"
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              sx: theme => ({
+                borderRadius: showUpload ? `0 0 ${radius.sm}px ${radius.sm}px` : undefined,
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: theme.typography.caption.fontSize,
+                lineHeight: theme.typography.caption.lineHeight,
+                color: theme.palette.grayDarkest.main,
+              }),
+            }}
+            inputProps={{ sx: { transition: 'height 600ms' } }}
+            onChange={event => onChange(event.target.value)}
+          />
+          <Box sx={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 0.5 }}>
+            {script && !loading && (
+              <IconButton
+                name={copied ? 'check' : 'copy'}
+                title={copied ? 'Copied!' : 'Copy Script'}
+                color={copied ? 'success' : 'grayDark'}
+                size="sm"
+                onClick={copyScript}
+              />
+            )}
+            {filename ? (
+              <IconButton name="times" title="Clear" color="grayDark" size="sm" onClick={clear} />
+            ) : (
+              <IconButton name="terminal" title="Add Demo Script" color="grayDark" size="sm" onClick={paste} />
+            )}
+          </Box>
+        </>
+      ) : (
+        <Notice onClose={clear} closeTitle="Clear" fullWidth>
+          Binary script uploaded{filename ? <>: <strong>{filename}</strong></> : null}
+        </Notice>
       )}
     </Stack>
   )
