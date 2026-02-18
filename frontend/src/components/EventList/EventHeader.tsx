@@ -10,20 +10,12 @@ import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
 
-const DAY = 1000 * 60 * 60 * 24
-
-const endOfToday = () => DateTime.now().endOf('day')
-
-const retentionSpanDays = (allowedDays: number, device?: IDevice): number => {
-  if (!device?.createdAt) return allowedDays
-  const createdAt = new Date(device.createdAt)
-  const lifetime = Math.max(Math.floor((Date.now() - createdAt.getTime()) / DAY), 0)
-  return lifetime ? Math.min(lifetime, allowedDays) : allowedDays
-}
-
 const retentionStartDate = (allowedDays: number, device?: IDevice): Date | undefined => {
   if (!allowedDays) return undefined
-  return endOfToday().minus({ days: retentionSpanDays(allowedDays, device) }).toJSDate()
+  const cutoff = DateTime.utc().minus({ days: allowedDays }).toMillis()
+  const createdAt = device?.createdAt ? new Date(device.createdAt).getTime() : undefined
+  if (!createdAt || Number.isNaN(createdAt)) return new Date(cutoff)
+  return new Date(Math.max(cutoff, createdAt))
 }
 
 const hasDateChanged = (lhs?: Date, rhs?: Date) => lhs?.getTime() !== rhs?.getTime()
