@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, Button, List } from '@mui/material'
+import { TextField, Button, List, Typography, Box } from '@mui/material'
 import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
+import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
@@ -79,15 +80,17 @@ export const NotificationMode: React.FC = () => {
             onChange={e => changeWebHookUrl(e.currentTarget.value.trim())}
             value={webHookUrl}
             label="URL endpoint"
-            placeholder="Webhook Endpoint"
+            placeholder="https://example.com/webhooks/remoteit"
             required
             variant="filled"
             error={error}
             fullWidth
             helperText={error ? 'Please provide a valid URL' : undefined}
           />
-          <br />
-          <br />
+          <Typography variant="caption" color="text.secondary" component="p" marginTop={2} marginBottom={1}>
+            Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds.{' '}
+            <Link href="https://docs.remote.it/developer-tools/webhooks">Docs</Link>
+          </Typography>
           <Button
             variant="contained"
             color="primary"

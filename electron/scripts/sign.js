@@ -28,17 +28,19 @@ exports.default = async function sign(configuration) {
   const userTOTP = process.env.WINDOWS_SIGN_USER_TOTP
 
   if (username && userPassword && userTOTP && credentialId) {
-    const { name, dir } = path.parse(configuration.path)
+    const { base, name, dir } = path.parse(configuration.path)
 
     // Sign and replace file
-    const tempFile = path.join(TEMP_DIR, name)
+    const tempFile = path.join(TEMP_DIR, base)
+    const legacyTempFile = path.join(TEMP_DIR, name)
     const signFile = `${CMD_PATH} /C ${TOOL_PATH} sign -input_file_path="${configuration.path}" -output_dir_path="${TEMP_DIR}" -credential_id="${credentialId}" -username="${username}" -password="${userPassword}" -totp_secret="${userTOTP}"`
-    const moveFile = `mv "${tempFile}" "${dir}"`
+    const outputFile = path.join(dir, base)
 
     console.log(`  ${BLUE}•${END} signing         ${BLUE}path${END}=${configuration.path}`)
 
     execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
-    execSync(moveFile)
+    const signedTempPath = fs.existsSync(tempFile) ? tempFile : legacyTempFile
+    fs.renameSync(signedTempPath, outputFile)
   } else {
     // Missing data
     console.warn(`Can't sign file ${configuration.path}, missing .env data:

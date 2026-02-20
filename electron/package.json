@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.43.2",
+  "version": "3.43.3",
   "private": true,
   "main": "build/index.js",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
@@ -94,10 +94,12 @@
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
-      "sign": "./scripts/sign.js",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
+      "signtoolOptions": {
+        "sign": "./scripts/sign.js",
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      },
       "target": [
         {
           "target": "nsis",
