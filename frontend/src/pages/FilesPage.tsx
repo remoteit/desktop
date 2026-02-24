@@ -3,26 +3,25 @@ import { useHistory } from 'react-router-dom'
 import { removeObject } from '../helpers/utilHelper'
 import { State, Dispatch } from '../store'
 import { ScriptingHeader } from '../components/ScriptingHeader'
-import { ScriptsListHeader } from '../components/ScriptsListHeader'
 import { scriptAttributes } from '../components/FileAttributes'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectScripts, selectFiles } from '../selectors/scripting'
-import { Typography, Button, Box } from '@mui/material'
+import { Typography, Button, Stack } from '@mui/material'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { initialForm } from '../models/files'
 import { selectRole } from '../selectors/organizations'
 import { FileList } from '../components/FileList'
-import { Container } from '../components/Container'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
+import { Notice } from '../components/Notice'
 
 type Props = {
   scripts?: boolean
   showHeader?: boolean
 }
 
-export const FilesPage: React.FC<Props> = ({ scripts, showHeader }) => {
+export const FilesPage: React.FC<Props> = ({ scripts }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const [loading, setLoading] = useState<boolean>(false)
@@ -53,11 +52,11 @@ export const FilesPage: React.FC<Props> = ({ scripts, showHeader }) => {
     <LoadingMessage />
   ) : !files.length ? (
     <Body center>
-      <Button onClick={handleDemo} variant="contained" color="primary" size="medium">
-        <Icon name={loading ? 'spinner-third' : 'plus'} type="solid" spin={loading} inlineLeft /> Demo Script
-      </Button>
       {scripts ? (
         <>
+          <Button onClick={handleDemo} variant="contained" color="primary" size="medium">
+            <Icon name={loading ? 'spinner-third' : 'plus'} type="solid" spin={loading} inlineLeft /> Demo Script
+          </Button>
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
             See how easy it is to run a script with our demo script.
             <br />
@@ -72,9 +71,9 @@ export const FilesPage: React.FC<Props> = ({ scripts, showHeader }) => {
           </Typography>
         </>
       ) : (
-        <Typography variant="body2" gutterBottom>
-          No files found
-        </Typography>
+        <Stack alignItems="center">
+          <Notice gutterBottom>Upload a file for use in your scripts.</Notice>
+        </Stack>
       )}
     </Body>
   ) : (
