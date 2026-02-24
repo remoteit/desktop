@@ -404,163 +404,166 @@ export const ScriptConfigPage: React.FC<Props> = ({ isNew }) => {
       }
     >
       {/* ── Prepare & Run ── */}
-      <>
-        {!runOpen && (
-          <Button variant="contained" color="primary" fullWidth onClick={() => setRunOpen(true)}>
-            Prepare & Run
-          </Button>
-        )}
-        <Collapse in={runOpen}>
-          <Box sx={{ pb: 1 }}>
-            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-              Target Devices
-            </Typography>
-            <List disablePadding>
-              <TagFilter
-                form={runForm}
-                name="Devices"
-                selectDevices
-                disableGutters
-                onChange={f => setRunForm({ ...runForm, ...structuredClone(f) })}
-                selectedIds={selectedIds}
-                onSelectIds={() => {
-                  // Merge edit fields (name, desc, script, argDefs) with run fields (devices, tag, argValues)
-                  // editForm spreads last so its name/description/script aren't overwritten by runForm's empty defaults
-                  const savedForm: IFileForm = {
-                    ...runForm,
-                    ...editForm,
-                    deviceIds: runForm.deviceIds,
-                    tag: runForm.tag,
-                    access: runForm.access,
-                    argumentValues: runForm.argumentValues,
-                    jobId: runForm.jobId,
-                  }
-                  dispatch.ui.set({ scriptForm: savedForm })
-                  history.push('/devices/select/scripts')
-                }}
-              />
-            </List>
+      {!runOpen && (
+        <Button variant="contained" color="primary" fullWidth onClick={() => setRunOpen(true)}>
+          Prepare & Run
+        </Button>
+      )}
+      <Collapse in={runOpen}>
+        <Box sx={{ pb: 1 }}>
+          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+            Target Devices
+          </Typography>
+          <List disablePadding>
+            <TagFilter
+              form={runForm}
+              name="Devices"
+              selectDevices
+              disableGutters
+              onChange={f => setRunForm({ ...runForm, ...structuredClone(f) })}
+              selectedIds={selectedIds}
+              onSelectIds={() => {
+                // Merge edit fields (name, desc, script, argDefs) with run fields (devices, tag, argValues)
+                // editForm spreads last so its name/description/script aren't overwritten by runForm's empty defaults
+                const savedForm: IFileForm = {
+                  ...runForm,
+                  ...editForm,
+                  deviceIds: runForm.deviceIds,
+                  tag: runForm.tag,
+                  access: runForm.access,
+                  argumentValues: runForm.argumentValues,
+                  jobId: runForm.jobId,
+                }
+                dispatch.ui.set({ scriptForm: savedForm })
+                history.push('/devices/select/scripts')
+              }}
+            />
+          </List>
 
-            {resolvedDevices.length > 0 && (
-              <Stack direction="row" flexWrap="wrap" gap={0.5} mt={1} mb={0.5}>
-                {resolvedDevices.slice(0, 3).map(d => (
-                  <Chip key={d.id} label={d.name} size="small" variant="outlined" />
+          {resolvedDevices.length > 0 && (
+            <Stack direction="row" flexWrap="wrap" gap={0.5} mt={1} mb={0.5}>
+              {resolvedDevices.slice(0, 3).map(d => (
+                <Chip key={d.id} label={d.name} size="small" variant="outlined" />
+              ))}
+              {resolvedDevices.length > 3 && (
+                <Chip
+                  label={`+${resolvedDevices.length - 3} more`}
+                  size="small"
+                  color="primary"
+                  onClick={() => {
+                    const savedForm: IFileForm = {
+                      ...runForm,
+                      ...editForm,
+                      deviceIds: runForm.deviceIds,
+                      tag: runForm.tag,
+                      access: runForm.access,
+                      argumentValues: runForm.argumentValues,
+                      jobId: runForm.jobId,
+                    }
+                    dispatch.ui.set({ scriptForm: savedForm })
+                    history.push('/devices/select/scripts')
+                  }}
+                  sx={{ cursor: 'pointer' }}
+                />
+              )}
+            </Stack>
+          )}
+
+          {runForm.access === 'TAG' &&
+            runForm.tag?.values &&
+            runForm.tag.values.length > 0 &&
+            resolvedDevices.length === 0 && (
+              <Stack direction="row" flexWrap="wrap" gap={0.5} alignItems="center" mt={1} mb={0.5}>
+                <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5 }}>
+                  Tag:
+                </Typography>
+                {runForm.tag.values.map(tag => (
+                  <Chip key={tag} label={tag} size="small" variant="outlined" />
                 ))}
-                {resolvedDevices.length > 3 && (
-                  <Chip
-                    label={`+${resolvedDevices.length - 3} more`}
-                    size="small"
-                    color="primary"
-                    onClick={() => {
-                      const savedForm: IFileForm = {
-                        ...runForm,
-                        ...editForm,
-                        deviceIds: runForm.deviceIds,
-                        tag: runForm.tag,
-                        access: runForm.access,
-                        argumentValues: runForm.argumentValues,
-                        jobId: runForm.jobId,
-                      }
-                      dispatch.ui.set({ scriptForm: savedForm })
-                      history.push('/devices/select/scripts')
-                    }}
-                    sx={{ cursor: 'pointer' }}
-                  />
-                )}
               </Stack>
             )}
 
-            {runForm.access === 'TAG' &&
-              runForm.tag?.values &&
-              runForm.tag.values.length > 0 &&
-              resolvedDevices.length === 0 && (
-                <Stack direction="row" flexWrap="wrap" gap={0.5} alignItems="center" mt={1} mb={0.5}>
-                  <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5 }}>
-                    Tag:
-                  </Typography>
-                  {runForm.tag.values.map(tag => (
-                    <Chip key={tag} label={tag} size="small" variant="outlined" />
-                  ))}
-                </Stack>
-              )}
-
-            {unauthorized && (
-              <Notice severity="error" solid fullWidth sx={{ mt: 2 }}>
-                You are not allowed to run scripts on
-                <List disablePadding>
-                  {unauthorized.map(d => (
-                    <ListItem key={d.id}>
-                      <b>{d.name}</b>
-                    </ListItem>
-                  ))}
-                </List>
-                <Button
-                  size="small"
-                  onClick={clearUnauthorized}
-                  sx={{ color: 'alwaysWhite.main', bgcolor: 'screen.main' }}
-                >
-                  Remove Device{unauthorized.length > 1 ? 's' : ''}
-                </Button>
-              </Notice>
-            )}
-
-            {/* Script Arguments */}
-            {scriptArguments.length > 0 && (
-              <>
-                <Divider sx={{ my: 2 }} />
-                <ArgumentsValueForm
-                  arguments={scriptArguments}
-                  values={runForm.argumentValues ?? []}
-                  onChange={argumentValues => setRunForm({ ...runForm, argumentValues })}
-                  disabled={running}
-                />
-              </>
-            )}
-
-            {/* Run Buttons */}
-            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+          {unauthorized && (
+            <Notice severity="error" solid fullWidth sx={{ mt: 2 }}>
+              You are not allowed to run scripts on
+              <List disablePadding>
+                {unauthorized.map(d => (
+                  <ListItem key={d.id}>
+                    <b>{d.name}</b>
+                  </ListItem>
+                ))}
+              </List>
               <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                disableElevation
-                disabled={!canRun || !canSaveScript || !requiredArgsFilled || running || fetching}
-                onClick={handleRun}
+                size="small"
+                onClick={clearUnauthorized}
+                sx={{ color: 'alwaysWhite.main', bgcolor: 'screen.main' }}
               >
-                {running ? 'Running...' : 'Run'}
+                Remove Device{unauthorized.length > 1 ? 's' : ''}
               </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                disableElevation
-                disabled={!canRun || !canSaveScript || !requiredArgsFilled || running || fetching}
-                onClick={handlePrepare}
-              >
-                Save
-              </Button>
-              <Button
-                variant="text"
-                color="primary"
-                disableElevation
-                onClick={() => {
-                  setRunOpen(false)
-                  setRunForm({
-                    ...role,
-                    ...initialForm,
-                    fileId: fileID || '',
-                    access: 'NONE',
-                  })
-                  dispatch.ui.set({ selected: [] })
-                }}
-              >
-                Cancel
-              </Button>
-            </Stack>
-          </Box>
-        </Collapse>
-      </>
+            </Notice>
+          )}
 
-      <Divider />
+          {/* Script Arguments */}
+          {scriptArguments.length > 0 && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <ArgumentsValueForm
+                arguments={scriptArguments}
+                values={runForm.argumentValues ?? []}
+                onChange={argumentValues => setRunForm({ ...runForm, argumentValues })}
+                disabled={running}
+              />
+            </>
+          )}
+          <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!canRun || !canSaveScript || !requiredArgsFilled || running || fetching}
+              onClick={handleRun}
+              sx={{ flexGrow: 1 }}
+            >
+              {running ? 'Running...' : 'Run'}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!canRun || !canSaveScript || !requiredArgsFilled || running || fetching}
+              onClick={handlePrepare}
+            >
+              Save
+            </Button>
+            <Button
+              variant="text"
+              color="primary"
+              onClick={() => {
+                setRunOpen(false)
+                setRunForm({
+                  ...role,
+                  ...initialForm,
+                  fileId: fileID || '',
+                  access: 'NONE',
+                })
+                dispatch.ui.set({ selected: [] })
+              }}
+            >
+              Cancel
+            </Button>
+          </Stack>
+          {!isNew && hasEditChanges && (
+            <Notice severity="warning" fullWidth gutterTop>
+              You have unsaved script edits. Prepare/Run actions use the last saved script version. Click Save Script
+              below to publish your script changes.
+            </Notice>
+          )}
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
+            Save creates a prepared run with the selected devices, tag, and argument values. It does not save script
+            edits.
+          </Typography>
+        </Box>
+      </Collapse>
+
+      <Divider sx={{ my: 4 }} />
 
       <Stack direction="row" alignItems="center" gap={1} mt={2}>
         <Typography variant="subtitle2">
