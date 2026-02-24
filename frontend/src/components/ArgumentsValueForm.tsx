@@ -4,6 +4,7 @@ import { TextField, MenuItem, Typography, Box, ButtonBase, Stack, Divider } from
 import { State, Dispatch } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useDropzone } from 'react-dropzone'
+import { Quote } from './Quote'
 import { radius } from '../styling'
 
 type Props = {
@@ -32,7 +33,6 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
   
   // Sort arguments by order
   const sortedArgs = [...argDefs].sort((a, b) => a.order - b.order)
-
   const getValue = (name: string): string => {
     return values.find(v => v.name === name)?.value || ''
   }
@@ -55,27 +55,21 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
       <Typography variant="subtitle2" gutterBottom>
         Script Arguments
       </Typography>
-      <Stack spacing={1}>
-        {sortedArgs.map(arg => (
-          <Box
-            key={arg.name}
-            sx={{
-              borderLeft: 3,
-              borderColor: 'grayLighter.main',
-              pl: 1.5,
-              py: 0.5,
-            }}
-          >
-            <ArgumentInput
-              argument={arg}
-              value={getValue(arg.name)}
-              onChange={value => setValue(arg.name, value)}
-              disabled={disabled}
-              files={files}
-            />
-          </Box>
-        ))}
-      </Stack>
+      <Quote margin={null}>
+        <Stack spacing={1}>
+          {sortedArgs.map(arg => (
+            <Box key={arg.name} sx={{ py: 0.5 }}>
+              <ArgumentInput
+                argument={arg}
+                value={getValue(arg.name)}
+                onChange={value => setValue(arg.name, value)}
+                disabled={disabled}
+                files={files}
+              />
+            </Box>
+          ))}
+        </Stack>
+      </Quote>
     </Box>
   )
 }
