@@ -228,34 +228,50 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       )}
 
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        {manager && (
+        {isNew ? (
           <>
-            <Button color="primary" disabled={!hasEditChanges || saving || loading} onClick={handleSave}>
-              {saving ? 'Saving...' : 'Save'}
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!canNext || saving || loading}
+              onClick={handleSaveAndRun}
+              sx={{ flexGrow: 1 }}
+            >
+              {saving ? 'Saving...' : 'Save and Run'}
             </Button>
-            {isNew && (
+            {manager && (
               <Button
                 variant="contained"
                 color="primary"
-                disabled={!canNext || saving || loading}
-                onClick={handleSaveAndRun}
-                sx={{ ml: 'auto' }}
+                disabled={!hasEditChanges || saving || loading}
+                onClick={handleSave}
               >
-                {saving ? 'Saving...' : 'Save and Run'}
+                {saving ? 'Saving...' : 'Save'}
               </Button>
             )}
           </>
-        )}
-        {!isNew && (
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={!canNext || loading}
-            onClick={handleNext}
-            sx={{ ml: 'auto' }}
-          >
-            New Run
-          </Button>
+        ) : (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!canNext || loading}
+              onClick={handleNext}
+              sx={{ flexGrow: 1 }}
+            >
+              New Run
+            </Button>
+            {manager && (
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={!hasEditChanges || saving || loading}
+                onClick={handleSave}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+            )}
+          </>
         )}
       </Stack>
 
