@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import sleep from '../helpers/sleep'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -8,10 +8,11 @@ import { selectScript } from '../selectors/scripting'
 import { selectRole } from '../selectors/organizations'
 import { initialForm } from '../models/files'
 import { ArgumentDefinitionForm } from '../components/ArgumentDefinitionForm'
-import { FileUpload } from '../components/FileUpload'
+import { FileUpload, FileUploadActionApi } from '../components/FileUpload'
 import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
+import { IconButton } from '../buttons/IconButton'
 
 type Props = {
   isNew?: boolean
@@ -29,6 +30,8 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>()
   const [editForm, setEditForm] = useState<IFileForm | undefined>()
   const [defaultEditForm, setDefaultEditForm] = useState<IFileForm | undefined>()
 
@@ -159,6 +162,35 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
 
   const canNext = isNew ? !!(editForm?.name && editForm?.script) : true
 
+  const renderScriptUploadActions = (api: FileUploadActionApi) => (
+    <>
+      {!!editForm?.script && !loading && (
+        <IconButton
+          name={copied ? 'check' : 'copy'}
+          title={copied ? 'Copied!' : 'Copy Script'}
+          color={copied ? 'success' : 'grayDark'}
+          size="sm"
+          onClick={() => {
+            navigator.clipboard.writeText(editForm.script || '')
+            setCopied(true)
+            clearTimeout(copyTimer.current)
+            copyTimer.current = setTimeout(() => setCopied(false), 2000)
+          }}
+        />
+      )}
+      <IconButton
+        name="terminal"
+        title="Add Demo Script"
+        color="grayDark"
+        size="sm"
+        onClick={async () => {
+          const demo = await dispatch.files.downloadDemoScript()
+          api.insertText(`${demo}\n\n`)
+        }}
+      />
+    </>
+  )
+
   if (!isNew && !script) return null
 
   return (
@@ -215,9 +247,12 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
             )}
             <ListItem disableGutters sx={{ mt: 2 }}>
               <FileUpload
+                mode="script"
                 disabled={!manager}
-                script={editForm.script}
+                attached
+                value={editForm.script}
                 loading={loading}
+                topActions={renderScriptUploadActions}
                 onChange={(script, file) =>
                   setEditForm({ ...editForm, script, ...(file && { name: file.name, file }) })
                 }
