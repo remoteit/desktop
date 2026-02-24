@@ -48,7 +48,7 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
               />
             )}
             <Box marginRight={2}>
-              <JobStatusIcon status={jobDevice?.status} size="xl" device />
+              <JobStatusIcon status={jobDevice?.status} size="xl" device padding={0} />
             </Box>
             <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
             <IconButton name="router" to={`/devices/${jobDevice?.device.id}`} title="Device details" />

@@ -3,7 +3,7 @@ import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, List, ListItemText, Typography } from '@mui/material'
+import { List, ListItemText, Typography, Chip } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -47,10 +47,11 @@ export const ScriptPage: React.FC = () => {
     const deviceLabel =
       deviceCount === 1 ? job.jobDevices[0].device.name : deviceCount === 0 ? 'No devices' : `${deviceCount} devices`
     const tagNames = job.tag?.values || []
-    const to = job.status === 'READY' ? `/script/${file.id}/edit/${job.id}` : `/script/${file.id}/${job.id}`
+    const to = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
+    const matchPath = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
 
     return (
-      <ListItemLocation key={job.id} to={to} dense inset={1.5} match={`/script/${file.id}/${job.id}`}>
+      <ListItemLocation key={job.id} to={to} dense inset={1.5} match={matchPath}>
         <JobStatusIcon status={job.status} padding={0.5} />
         <ListItemText
           primary={deviceLabel}
@@ -74,7 +75,7 @@ export const ScriptPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <>
-          <List sx={{ marginBottom: 0 }}>
+          <List disablePadding>
             <ListItemLocation
               to={`/script/${fileID}/edit`}
               title={<Typography variant="h2">{file.name}</Typography>}
@@ -82,32 +83,35 @@ export const ScriptPage: React.FC = () => {
               exactMatch
             />
           </List>
-          <LinearProgress loading={fetching} />
-
           {/* ── Script Details ── */}
-          <Gutters top={null} bottom="lg" inset="xl" sx={{ marginLeft: 5 }}>
-            {file.shortDesc && (
-              <Typography variant="caption" color="grayDarkest.main" component="p" gutterBottom>
+          {file.shortDesc && (
+            <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
+              <Typography variant="caption" component="p">
                 {file.shortDesc}
               </Typography>
-            )}
-            {file.longDesc && (
-              <Typography variant="body2" color="textSecondary" component="p" gutterBottom>
-                {file.longDesc}
-              </Typography>
-            )}
-            <Typography variant="caption" component="div">
-              Created <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
-            </Typography>
-            <Typography variant="caption" component="div">
-              Updated <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
-            </Typography>
+            </Gutters>
+          )}
+          <List disablePadding sx={{ marginBottom: 2 }}>
             {args && args.length > 0 && (
-              <Typography variant="caption" color="grayDarkest.main" component="div">
-                {args.length} argument{args.length !== 1 ? 's' : ''}: {args.map(a => a.name).join(', ')}
-              </Typography>
+              <ListItemLocation icon="sliders" iconTooltip="Arguments" dense>
+                {args.map(arg => (
+                  <Chip key={arg.name} label={arg.name} size="small" variant="outlined" />
+                ))}
+              </ListItemLocation>
             )}
-          </Gutters>
+            <ListItemLocation
+              icon="calendar"
+              iconTooltip="Timestamps"
+              subtitle={
+                <>
+                  Created <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
+                  <br />
+                  Updated <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
+                </>
+              }
+            ></ListItemLocation>
+          </List>
+          <LinearProgress loading={fetching} />
         </>
       }
     >
@@ -116,15 +120,7 @@ export const ScriptPage: React.FC = () => {
         <>
           <Typography variant="subtitle1">
             <Title>Ready</Title>
-            <IconButton
-              icon="plus"
-              title="New Run"
-              size="md"
-              onClick={() => {
-                dispatch.ui.accordion({ [`scriptRun-${fileID}`]: true })
-                history.push(`/script/${fileID}/edit`)
-              }}
-            />
+            <IconButton icon="plus" title="New Run" size="md" onClick={() => history.push(`/script/${fileID}/run`)} />
           </Typography>
           <List>{readyJobs.map(renderJobRow)}</List>
         </>
@@ -149,8 +145,7 @@ export const ScriptPage: React.FC = () => {
             title="New Run"
             size="md"
             onClick={() => {
-              dispatch.ui.accordion({ [`scriptRun-${fileID}`]: true })
-              history.push(`/script/${fileID}/edit`)
+              history.push(`/script/${fileID}/run`)
             }}
           />
         )}
