@@ -93,11 +93,14 @@ export const ScriptPage: React.FC = () => {
           )}
           <List disablePadding sx={{ marginBottom: 2 }}>
             {args && args.length > 0 && (
-              <ListItemLocation icon="sliders" iconTooltip="Arguments" dense>
-                {args.map(arg => (
+              <ListItemLocation
+                dense
+                icon="sliders"
+                iconTooltip="Arguments"
+                title={args.map(arg => (
                   <Chip key={arg.name} label={arg.name} size="small" variant="outlined" />
                 ))}
-              </ListItemLocation>
+              />
             )}
             <ListItemLocation
               icon="calendar"

@@ -50,9 +50,7 @@ export const ScriptRunForm: React.FC<Props> = ({
         </Notice>
       )}
 
-      <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-        Target Devices
-      </Typography>
+      <Typography variant="subtitle2">Target Devices</Typography>
       <List disablePadding>
         <TagFilter
           form={runForm}
@@ -83,46 +81,29 @@ export const ScriptRunForm: React.FC<Props> = ({
         </Stack>
       )}
 
-      {runForm.access === 'TAG' &&
-        runForm.tag?.values &&
-        runForm.tag.values.length > 0 &&
-        resolvedDevices.length === 0 && (
-          <Stack direction="row" flexWrap="wrap" gap={0.5} alignItems="center" mt={1} mb={0.5}>
-            <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5 }}>
-              Tag:
-            </Typography>
-            {runForm.tag.values.map(tag => (
-              <Chip key={tag} label={tag} size="small" variant="outlined" />
-            ))}
-          </Stack>
-        )}
-
       {unauthorized && (
-        <Notice severity="error" solid fullWidth sx={{ mt: 2 }}>
+        <Notice severity="error" solid fullWidth gutterTop>
           You are not allowed to run scripts on
           <List disablePadding>
             {unauthorized.map(d => (
-              <ListItem key={d.id}>
+              <ListItem key={d.id} disableGutters>
                 <b>{d.name}</b>
               </ListItem>
             ))}
           </List>
-          <Button size="small" onClick={onClearUnauthorized} sx={{ color: 'alwaysWhite.main', bgcolor: 'screen.main' }}>
+          <Button size="small" onClick={onClearUnauthorized} sx={{ color: 'alwaysWhite.main', bgcolor: 'shadow.main' }}>
             Remove Device{unauthorized.length > 1 ? 's' : ''}
           </Button>
         </Notice>
       )}
 
       {scriptArguments.length > 0 && (
-        <>
-          <Divider sx={{ my: 2 }} />
-          <ArgumentsValueForm
-            arguments={scriptArguments}
-            values={runForm.argumentValues ?? []}
-            onChange={argumentValues => onFormChange({ ...runForm, argumentValues })}
-            disabled={disabled || running}
-          />
-        </>
+        <ArgumentsValueForm
+          arguments={scriptArguments}
+          values={runForm.argumentValues ?? []}
+          onChange={argumentValues => onFormChange({ ...runForm, argumentValues })}
+          disabled={disabled || running}
+        />
       )}
 
       {!disabled && (
