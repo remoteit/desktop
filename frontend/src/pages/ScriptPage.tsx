@@ -51,19 +51,16 @@ export const ScriptPage: React.FC = () => {
     const matchPath = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
 
     return (
-      <ListItemLocation key={job.id} to={to} dense inset={1.5} match={matchPath}>
-        <JobStatusIcon status={job.status} padding={0.5} />
-        <ListItemText
-          primary={deviceLabel}
-          primaryTypographyProps={{
-            noWrap: true,
-            variant: 'body2',
-            sx: { overflow: 'hidden', textOverflow: 'ellipsis' },
-          }}
-          sx={{ mx: 0.5, flexShrink: 1, minWidth: 0 }}
-        />
+      <ListItemLocation
+        dense
+        key={job.id}
+        to={to}
+        match={matchPath}
+        icon={<JobStatusIcon status={job.status} padding={0.5} />}
+        title={deviceLabel}
+      >
         {tagNames.length > 0 && <ReactiveTagNames tags={tagNames} small max={1} />}
-        <Typography variant="caption" color="grayDarkest.main" noWrap sx={{ flexShrink: 0, ml: 0.5 }}>
+        <Typography variant="caption" color="grayDarkest.main" noWrap sx={{ flexShrink: 0, ml: 0.5, mr: 2 }}>
           <Duration startDate={new Date(job.updated)} humanizeOptions={{ largest: 1 }} tiered ago />
         </Typography>
       </ListItemLocation>
