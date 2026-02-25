@@ -37,6 +37,14 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
     setOptionsText(def.options?.join(', ') || '')
   }
 
+  const toggleEdit = (index: number) => {
+    if (editing === index) {
+      cancelEdit()
+      return
+    }
+    startEdit(index)
+  }
+
   const startNew = () => {
     setEditing('new')
     setEditForm(emptyDefinition)
@@ -138,7 +146,7 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
         dragOverIndex={dragOverIndex}
         argumentTypes={ARGUMENT_TYPES}
         onStartNew={startNew}
-        onStartEdit={startEdit}
+        onToggleEdit={toggleEdit}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDrop={handleDrop}

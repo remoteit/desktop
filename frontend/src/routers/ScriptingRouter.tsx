@@ -87,6 +87,15 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   return (
     <Switch>
+      <Route path="/file" exact>
+        <Redirect to="/files" />
+      </Route>
+      <Route path="/script" exact>
+        <Redirect to="/scripts" />
+      </Route>
+      <Route path="/run" exact>
+        <Redirect to="/runs" />
+      </Route>
       {/* New script run config (step 2 of new script workflow) */}
       <Route path="/scripts/add/run">
         <DynamicPanel

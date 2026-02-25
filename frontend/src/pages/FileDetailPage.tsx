@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useHistory, Redirect } from 'react-router-dom'
+import { useParams, Redirect } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography, List, ListItem, TextField, Box, Divider, Button, useMediaQuery } from '@mui/material'
 import { State, Dispatch } from '../store'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectFile } from '../selectors/scripting'
 import { selectRole } from '../selectors/organizations'
 import { initialForm } from '../models/files'
 import { FileDeleteButton } from '../components/FileDeleteButton'
 import { Container } from '../components/Container'
-import { IconButton } from '../buttons/IconButton'
-import { Gutters } from '../components/Gutters'
-import { FileUpload } from '../components/FileUpload'
+import { FileEditorForm } from '../components/FileEditorForm'
 
 export const FileDetailPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
   const { fileID } = useParams<{ fileID: string }>()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
 
   const role = useSelector(selectRole)
   const manager = role.permissions.includes('MANAGE')
@@ -45,7 +39,8 @@ export const FileDetailPage: React.FC = () => {
     setUploadedFile(undefined)
   }, [fileID, file?.id])
 
-  const handleSave = async () => {
+  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     if (!form || !file) return
     setSaving(true)
 
@@ -84,94 +79,29 @@ export const FileDetailPage: React.FC = () => {
   if (!form) return null
 
   return (
-    <Container
-      bodyProps={{ verticalOverflow: true, gutterBottom: true }}
-      header={
-        <Gutters top="sm" bottom="sm">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {sidebarHidden && (
-              <IconButton
-                name="bars"
-                size="md"
-                color="grayDarker"
-                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
-              />
-            )}
-            <IconButton
-              name="chevron-left"
-              onClick={() => history.push('/files')}
-              size="md"
-              title="Back to Files"
-            />
-            <Typography variant="h2" sx={{ flex: 1 }}>
-              {file.name}
-            </Typography>
-            {manager && (
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                disabled={!canSave || saving || fetching}
-                onClick={handleSave}
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            )}
-          </Box>
-        </Gutters>
-      }
-    >
-      <Box sx={{ p: 2 }}>
-        <List disablePadding>
-          <ListItem disableGutters>
-            <TextField
-              required
-              fullWidth
-              label="Name"
-              disabled={!manager}
-              value={form.name}
-              variant="filled"
-              onChange={e => setForm({ ...form, name: e.target.value })}
-            />
-          </ListItem>
-          <ListItem disableGutters>
-            <TextField
-              fullWidth
-              label="Description"
-              disabled={!manager}
-              value={form.description}
-              variant="filled"
-              onChange={e => setForm({ ...form, description: e.target.value })}
-            />
-          </ListItem>
-        </List>
-
-        {manager && (
-          <>
-            <Divider sx={{ my: 3 }} />
-            
-            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-              Upload New Version
-            </Typography>
-
-            <FileUpload
-              mode="file"
-              label="Upload New Version"
-              value={uploadedFile}
-              onChange={file => {
-                setUploadedFile(file)
-                if (file && form.name === defaultForm?.name) {
-                  setForm(prev => (prev ? { ...prev, name: file.name } : prev))
-                }
-              }}
-            />
-          </>
-        )}
-
-        <Divider sx={{ my: 3 }} />
-
-        <FileDeleteButton />
-      </Box>
+    <Container bodyProps={{ inset: true, gutterTop: true, gutterBottom: true, verticalOverflow: true }}>
+      <FileEditorForm
+        title={file.name}
+        titleAction={<FileDeleteButton />}
+        form={{ name: form.name, description: form.description }}
+        disabled={!manager}
+        showUpload={manager}
+        uploadLabel="Upload New Version"
+        uploadedFile={uploadedFile || null}
+        onFormChange={changes => setForm(prev => (prev ? { ...prev, ...changes } : prev))}
+        onUploadedFileChange={file => {
+          setUploadedFile(file)
+          if (file && form.name === defaultForm?.name) {
+            setForm(prev => (prev ? { ...prev, name: file.name } : prev))
+          }
+        }}
+        actionLabel="Save"
+        actionLoadingLabel="Saving..."
+        showAction={manager}
+        actionLoading={saving}
+        actionDisabled={!canSave || saving || fetching}
+        onSubmit={handleSave}
+      />
     </Container>
   )
 }

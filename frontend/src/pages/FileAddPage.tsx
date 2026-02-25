@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
-import { State } from '../store'
-import { Typography, Box, List, ListItem, TextField, Button } from '@mui/material'
+import { Typography } from '@mui/material'
 import { selectRole } from '../selectors/organizations'
 import { initialForm } from '../models/files'
 import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Body } from '../components/Body'
 import { Dispatch } from '../store'
-import { FileUpload } from '../components/FileUpload'
+import { FileEditorForm } from '../components/FileEditorForm'
 
 type Props = { center?: boolean }
 
@@ -63,60 +62,26 @@ export const FileAddPage: React.FC<Props> = ({ center }) => {
 
   return (
     <Body center={center} inset gutterTop gutterBottom>
-      <Box width="100%" maxWidth={600}>
-        <Typography variant="h1" gutterBottom>
-          Upload File
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <List disablePadding>
-            <ListItem disableGutters>
-              <TextField
-                required
-                fullWidth
-                label="Name"
-                value={form.name}
-                variant="filled"
-                onChange={event => setForm({ ...form, name: event.target.value })}
-              />
-            </ListItem>
-            <ListItem disableGutters>
-              <TextField
-                fullWidth
-                multiline
-                label="Description"
-                value={form.description}
-                variant="filled"
-                onChange={event => setForm({ ...form, description: event.target.value })}
-              />
-            </ListItem>
-            <ListItem disableGutters sx={{ mt: 2 }}>
-              <FileUpload
-                mode="file"
-                label="Upload File"
-                value={uploadedFile}
-                onChange={file => {
-                  if (!file) {
-                    clearFile()
-                    return
-                  }
-                  setUploadedFile(file)
-                  setForm(prev => ({ ...prev, name: file.name, file }))
-                }}
-              />
-            </ListItem>
-          </List>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={!uploadedFile || !form.name || loading}
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            {loading ? 'Uploading...' : 'Upload File'}
-          </Button>
-        </form>
-      </Box>
+      <FileEditorForm
+        title="Upload File"
+        form={{ name: form.name, description: form.description }}
+        uploadLabel="Upload File"
+        uploadedFile={uploadedFile}
+        onFormChange={changes => setForm(prev => ({ ...prev, ...changes }))}
+        onUploadedFileChange={file => {
+          if (!file) {
+            clearFile()
+            return
+          }
+          setUploadedFile(file)
+          setForm(prev => ({ ...prev, name: file.name, file }))
+        }}
+        actionLabel="Upload File"
+        actionLoadingLabel="Uploading..."
+        actionLoading={loading}
+        actionDisabled={!uploadedFile || !form.name || loading}
+        onSubmit={handleSubmit}
+      />
     </Body>
   )
 }

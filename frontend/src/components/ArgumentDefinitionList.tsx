@@ -1,7 +1,7 @@
 import React from 'react'
 import { List, ListItem, ListItemIcon, ListItemText, Button, Stack, Typography } from '@mui/material'
 import { Icon } from './Icon'
-import { EditButton } from '../buttons/EditButton'
+import { IconButton } from '../buttons/IconButton'
 
 type ArgumentTypeOption = {
   value: IFileArgumentType
@@ -17,7 +17,7 @@ type Props = {
   dragOverIndex: number | null
   argumentTypes: ArgumentTypeOption[]
   onStartNew: () => void
-  onStartEdit: (index: number) => void
+  onToggleEdit: (index: number) => void
   onDragStart: (index: number) => void
   onDragOver: (e: React.DragEvent, index: number) => void
   onDrop: (e: React.DragEvent, index: number) => void
@@ -33,7 +33,7 @@ export const ArgumentDefinitionList: React.FC<Props> = ({
   dragOverIndex,
   argumentTypes,
   onStartNew,
-  onStartEdit,
+  onToggleEdit,
   onDragStart,
   onDragOver,
   onDrop,
@@ -87,7 +87,15 @@ export const ArgumentDefinitionList: React.FC<Props> = ({
                   </>
                 }
               />
-              {!disabled && editing !== index && <EditButton className="hidden" onClick={() => onStartEdit(index)} />}
+              {!disabled && (
+                <span className="hidden">
+                  <IconButton
+                    title={editing === index ? 'Cancel' : 'Edit'}
+                    icon={editing === index ? 'close' : 'pencil'}
+                    onClick={() => onToggleEdit(index)}
+                  />
+                </span>
+              )}
             </ListItem>
             {renderItemEditor?.(index)}
           </React.Fragment>

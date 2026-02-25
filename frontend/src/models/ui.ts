@@ -186,6 +186,8 @@ export const defaultState: UIState = {
     devices: 400,
     networks: 450,
     connections: 450,
+    files: 450,
+    file: 450,
     settings: 350,
     account: 300,
     organization: 350,
