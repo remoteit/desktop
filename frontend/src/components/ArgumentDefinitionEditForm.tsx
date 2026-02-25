@@ -89,7 +89,7 @@ export const ArgumentDefinitionEditForm: React.FC<Props> = ({
       />
     )}
     <Stack direction="row" justifyContent="space-between" alignItems="center">
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row">
         <Button size="small" variant="contained" onClick={onSave} disabled={!canSave}>
           Save
         </Button>
