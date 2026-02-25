@@ -13,6 +13,7 @@ import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { IconButton } from '../buttons/IconButton'
+import { Gutters } from '../components/Gutters'
 
 type Props = {
   isNew?: boolean
@@ -205,14 +206,11 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
         </Typography>
       }
     >
-      <Stack direction="row" alignItems="center" gap={1} mt={2} mb={1}>
-        <Typography variant="subtitle2">
-          <Title>Edit Script</Title>
-        </Typography>
-      </Stack>
-
+      <Typography variant="subtitle2">
+        <Title>Edit Script</Title>
+      </Typography>
       {editForm && (
-        <Box sx={{ pt: 1 }}>
+        <>
           <List disablePadding>
             <ListItem disableGutters>
               <TextField
@@ -259,9 +257,8 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
               />
             </ListItem>
           </List>
-        </Box>
+        </>
       )}
-
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
         {isNew ? (
           <>
@@ -309,7 +306,6 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
           </>
         )}
       </Stack>
-
       {!isNew && hasEditChanges && (
         <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
           Unsaved changes won't affect the run — it uses the last saved version.

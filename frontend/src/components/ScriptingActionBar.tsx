@@ -18,12 +18,12 @@ export const ScriptingActionBar: React.FC = () => {
 
   // Hide when no devices selected, when scriptForm is active (mid-device-selection),
   // or when already on a script edit/run/add page
-  const onScriptConfigPage =
+  const onScriptWorkflowPage =
     location.pathname.includes('/edit') ||
     location.pathname.includes('/run') ||
     location.pathname === '/scripts/add' ||
     location.pathname === '/scripts/add/run'
-  if (!selected.length || scriptForm || onScriptConfigPage) return null
+  if (!selected.length || scriptForm || onScriptWorkflowPage) return null
 
   return (
     <Stack
