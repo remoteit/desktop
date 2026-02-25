@@ -30,5 +30,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Generate brand files
+        run: npm run brand-web
+
+      - name: Build common declarations
+        run: npx tsc -p common/tsconfig.json
+
       - name: Run typecheck
         run: npm run typecheck
