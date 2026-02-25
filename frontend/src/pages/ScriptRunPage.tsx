@@ -42,6 +42,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   const editFormSnapshotRef = useRef<IFileForm | undefined>(undefined)
 
   const hasConsumedScriptForm = useRef(false)
+  const hasMountedJobEffectRef = useRef(false)
   const runFormRef = useRef(runForm)
   runFormRef.current = runForm
   const prevJobIDRef = useRef(jobID)
@@ -57,7 +58,8 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
 
   // When jobID changes, save the current "new run" form before switching
   useEffect(() => {
-    if (!prevJobIDRef.current && !isNew) saveRunForm()
+    if (hasMountedJobEffectRef.current && !prevJobIDRef.current && !!jobID && !isNew) saveRunForm()
+    hasMountedJobEffectRef.current = true
     prevJobIDRef.current = jobID
     hasConsumedScriptForm.current = false
   }, [jobID])
@@ -216,6 +218,14 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
     history.push('/devices/select/scripts')
   }
 
+  const handleClearUnauthorized = () => {
+    const unauthorizedIds = new Set((unauthorized ?? []).map(device => device.id))
+    dispatch.ui.set({ selected: selectedIds.filter(id => !unauthorizedIds.has(id)) })
+    if (runForm.access === 'CUSTOM') {
+      setRunForm(prev => ({ ...prev, deviceIds: prev.deviceIds.filter(id => !unauthorizedIds.has(id)) }))
+    }
+  }
+
   const handleBack = () => {
     if (isNew && editFormSnapshotRef.current) dispatch.ui.set({ scriptForm: editFormSnapshotRef.current })
     history.push(isNew ? '/scripts/add' : `/script/${fileID}/edit`)
@@ -259,7 +269,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
         hasValidEditSnapshot={hasValidEditSnapshot}
         onFormChange={setRunForm}
         onSelectDevices={handleSelectDevices}
-        onClearUnauthorized={() => dispatch.ui.set({ selected: selectedIds.filter(id => !unauthorized?.find(u => u.id === id)) })}
+        onClearUnauthorized={handleClearUnauthorized}
         onRun={handleRun}
         onPrepare={handlePrepare}
       />
