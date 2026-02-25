@@ -2,6 +2,9 @@ name: Context testing
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   dump_contexts_to_log:
     runs-on: ubuntu-latest
